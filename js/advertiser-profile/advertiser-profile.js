@@ -232,11 +232,19 @@ function initializeProfile() {
 }
 
 function updateProfileUI() {
-    document.getElementById('hero-name').textContent = AppState.user.name;
-    document.getElementById('hero-avatar').src = AppState.user.profilePic;
-    document.getElementById('hero-cover').src = AppState.user.coverPic;
-    document.getElementById('nav-profile-name').textContent = AppState.user.name;
-    document.getElementById('nav-profile-pic').src = AppState.user.profilePic;
+    // NOTE: Profile UI is now managed by profile-data-loader.js
+    // These elements are legacy and may not exist in the new design
+    const heroName = document.getElementById('hero-name');
+    const heroAvatar = document.getElementById('hero-avatar');
+    const heroCover = document.getElementById('hero-cover');
+    const navProfileName = document.getElementById('nav-profile-name');
+    const navProfilePic = document.getElementById('nav-profile-pic');
+
+    if (heroName) heroName.textContent = AppState.user.name;
+    if (heroAvatar) heroAvatar.src = AppState.user.profilePic;
+    if (heroCover) heroCover.src = AppState.user.coverPic;
+    if (navProfileName) navProfileName.textContent = AppState.user.name;
+    if (navProfilePic) navProfilePic.src = AppState.user.profilePic;
 }
 
 function loadProfileStats() {
@@ -245,13 +253,19 @@ function loadProfileStats() {
     animateValue('stat-total-impressions', 0, AppState.analytics.impressions, 2000);
     animateValue('stat-ctr', 0, AppState.analytics.clickRate, 2000);
     animateValue('stat-conversions', 0, AppState.analytics.conversions, 2000);
-    
-    // Update hero stats
-    document.getElementById('stat-campaigns').textContent = '247';
-    document.getElementById('stat-impressions').textContent = '2.4M';
-    document.getElementById('stat-followers').textContent = '12.5K';
-    document.getElementById('stat-success').textContent = '98%';
-    document.getElementById('stat-rating').textContent = '4.9/5';
+
+    // Update hero stats (with null checks for legacy elements)
+    const statCampaigns = document.getElementById('stat-campaigns');
+    const statImpressions = document.getElementById('stat-impressions');
+    const statFollowers = document.getElementById('stat-followers');
+    const statSuccess = document.getElementById('stat-success');
+    const statRating = document.getElementById('stat-rating');
+
+    if (statCampaigns) statCampaigns.textContent = '247';
+    if (statImpressions) statImpressions.textContent = '2.4M';
+    if (statFollowers) statFollowers.textContent = '12.5K';
+    if (statSuccess) statSuccess.textContent = '98%';
+    if (statRating) statRating.textContent = '4.9/5';
 }
 
 // Enhanced Campaign Management
@@ -1904,6 +1918,7 @@ function openModal(modalId) {
         // initializationManager.js sets inline style="display: none" on all modals
         // So we need to change style.display, not just remove the 'hidden' class
         modal.classList.remove('hidden');
+        modal.classList.add('active'); // Required for modals that use .active for visibility/animations
         modal.style.display = 'flex'; // Override inline style
         trapFocus(modal);
         document.body.style.overflow = 'hidden';
@@ -1919,6 +1934,8 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('hidden');
+        modal.classList.remove('active'); // Remove active class for modals that use it
+        modal.classList.remove('show'); // Also remove show class if used
         modal.style.display = 'none'; // Set inline style back to none
         restoreFocus();
         document.body.style.overflow = '';

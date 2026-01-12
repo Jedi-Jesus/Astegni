@@ -2,6 +2,13 @@
 Astegni Educational Platform - Refactored Main Application
 """
 
+# CRITICAL: Configure multipart form max size BEFORE importing FastAPI/Starlette
+# Default is 1MB per field, we need more for base64 encoded images (KYC uploads)
+# This MUST happen FIRST before any other imports that use starlette internally
+import starlette.formparsers
+starlette.formparsers.MultiPartParser.max_part_size = 50 * 1024 * 1024  # 50MB per field
+starlette.formparsers.MultiPartParser.max_file_size = 50 * 1024 * 1024  # 50MB for files
+
 import os
 import sys
 import uvicorn
@@ -13,6 +20,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+from starlette.requests import Request as StarletteRequest
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,7 +29,7 @@ load_dotenv()
 sys.path.append(os.path.join(os.path.dirname(__file__), 'app.py modules'))
 
 from config import CORS_ORIGINS, RATE_LIMIT_DEFAULT
-from models import Base, engine
+from models import Base, engine, SessionLocal
 from routes import router
 
 # Add these imports to your app.py
@@ -126,6 +134,10 @@ if os.path.exists("../pictures"):
 from google_oauth_endpoints import router as google_oauth_router
 app.include_router(google_oauth_router)
 
+# Include Two-Factor Authentication routes
+from tfa_endpoints import router as tfa_router
+app.include_router(tfa_router)
+
 # Include tutor packages routes (must be before routes.py to avoid /api/tutor/{tutor_id} conflict)
 from tutor_packages_endpoints import router as tutor_packages_router
 app.include_router(tutor_packages_router)
@@ -163,9 +175,33 @@ app.include_router(student_requests_router)
 from parent_invitation_endpoints import router as parent_invitation_router
 app.include_router(parent_invitation_router)
 
+# Child invitation endpoints (parent invites child)
+from child_invitation_endpoints import router as child_invitation_router
+app.include_router(child_invitation_router)
+
 # Include parent profile routes (has wildcard /api/parent/{parent_id} - must come after specific routes)
 from parent_endpoints import router as parent_router
 app.include_router(parent_router)
+
+# Include advertiser brands routes (MUST be BEFORE routes.py to avoid wildcard /api/advertiser/{id} conflict)
+from advertiser_brands_endpoints import router as advertiser_brands_router
+from campaign_cancellation_endpoints import router as campaign_cancellation_router
+from campaign_cancellation_endpoints_enhanced import router as campaign_cancellation_enhanced_router
+app.include_router(advertiser_brands_router)
+app.include_router(campaign_cancellation_router)
+app.include_router(campaign_cancellation_enhanced_router)
+
+# Include advertiser team management routes
+from advertiser_team_endpoints import router as advertiser_team_router
+app.include_router(advertiser_team_router)
+
+# Include job board routes (advertiser job posting system)
+from job_board_endpoints import router as job_board_router
+app.include_router(job_board_router)
+
+# Include job alerts and notifications routes
+from job_alerts_endpoints import router as job_alerts_router
+app.include_router(job_alerts_router)
 
 # Include all routes from routes.py
 app.include_router(router)
@@ -185,6 +221,10 @@ app.include_router(dashboard_router)
 # Include astegni reviews routes
 from astegni_reviews_endpoints import router as astegni_reviews_router
 app.include_router(astegni_reviews_router)
+
+# Include platform reviews routes (user reviews of Astegni)
+from platform_reviews_endpoints import router as platform_reviews_router
+app.include_router(platform_reviews_router)
 
 # Include student reviews routes
 from student_reviews_endpoints import router as student_reviews_router
@@ -215,6 +255,18 @@ app.include_router(pricing_router)
 from campaign_packages_endpoints import router as campaign_packages_router
 app.include_router(campaign_packages_router)
 
+# Include CPI (Cost Per Impression) settings routes
+from cpi_settings_endpoints import router as cpi_settings_router
+app.include_router(cpi_settings_router)
+
+# Include advertiser balance and CPM billing routes
+from advertiser_balance_endpoints import router as advertiser_balance_router
+app.include_router(advertiser_balance_router)
+
+# Include campaign impression tracking routes
+from campaign_impression_endpoints import router as campaign_impression_router
+app.include_router(campaign_impression_router)
+
 # Tutor packages routes already included above (before routes.py to avoid conflicts)
 
 # Include affiliate performance routes
@@ -232,6 +284,10 @@ app.include_router(manage_contents_router)
 # Include earnings and investments routes
 from earnings_investments_endpoints import router as earnings_investments_router
 app.include_router(earnings_investments_router)
+
+# Include affiliate earnings routes (Advertisement, Subscription, Commission)
+from affiliate_earnings_endpoints import router as affiliate_earnings_router
+app.include_router(affiliate_earnings_router)
 
 # Include content management routes
 from content_management_endpoints import router as content_management_router
@@ -302,6 +358,8 @@ app.include_router(admin_schools_router)
 from admin_advertisers_endpoints import router as admin_advertisers_router
 app.include_router(admin_advertisers_router)
 
+# Note: advertiser_brands_router moved BEFORE routes.py to avoid wildcard /api/advertiser/{id} conflict
+
 # Include admin admins routes (manage-admins page profile and reviews)
 from admin_admins_endpoints import router as admin_admins_router
 app.include_router(admin_admins_router)
@@ -313,6 +371,34 @@ app.include_router(admin_leave_router)
 # Include chat routes
 from chat_endpoints import router as chat_router
 app.include_router(chat_router)
+
+# Include poll routes
+from poll_endpoints import router as poll_router
+app.include_router(poll_router)
+
+# Include KYC (Know Your Customer) liveliness verification routes
+from kyc_endpoints import router as kyc_router
+app.include_router(kyc_router)
+
+# Include TrueVoice (voice-personalized messaging) routes
+from truevoice_endpoints import router as truevoice_router
+app.include_router(truevoice_router)
+
+# Include Translation (Google Translate API) routes
+from translation_endpoints import router as translation_router
+app.include_router(translation_router)
+
+# Include User Settings routes (2FA, Sessions, Connected Accounts, Data Export, Reviews, Appearance)
+from user_settings_endpoints import router as user_settings_router
+app.include_router(user_settings_router)
+
+# Include Account Deletion routes (Leave Astegni flow with 90-day grace period)
+from account_deletion_endpoints import router as account_deletion_router
+app.include_router(account_deletion_router)
+
+# Include Payment Methods routes (Bank, TeleBirr, Mobile Money, CBE Birr)
+from payment_methods_endpoints import router as payment_methods_router
+app.include_router(payment_methods_router)
 
 # Student documents routes already included above (before student reviews to avoid route conflicts)
 
@@ -347,6 +433,85 @@ def health_check():
         "status": "healthy",
         "timestamp": "2024-01-01T00:00:00Z"
     }
+
+# ============================================
+# WEBSOCKET ENDPOINT FOR REAL-TIME COMMUNICATION
+# ============================================
+
+from fastapi import WebSocket, WebSocketDisconnect
+from websocket_manager import manager, handle_chat_message, handle_session_message, handle_video_call_message, handle_get_online_users, handle_whiteboard_message
+import json
+
+@app.websocket("/ws/{profile_id}/{role}")
+async def websocket_endpoint(websocket: WebSocket, profile_id: int, role: str):
+    """
+    WebSocket endpoint for real-time communication using profile IDs.
+
+    Args:
+        profile_id: The profile ID (tutor_profile_id or student_profile_id)
+        role: The role type ("tutor" or "student")
+
+    Handles: chat messages, session updates, video call signaling, online status
+    """
+    # Create a unique connection key using profile_id and role
+    connection_key = f"{role}_{profile_id}"
+
+    # Get database session for online status tracking
+    db = SessionLocal()
+
+    try:
+        # Connect and mark user online in profile table
+        await manager.connect(websocket, connection_key, db)
+        print(f"🔌 WebSocket connected: {role} profile {profile_id} (key: {connection_key})")
+
+        while True:
+            # Receive message from client
+            data = await websocket.receive_text()
+
+            try:
+                message = json.loads(data)
+                message_type = message.get("type", "")
+
+                # Route to appropriate handler based on message type
+                if message_type in ["private_message", "room_message", "typing"]:
+                    await handle_chat_message(message, connection_key, None)
+
+                elif message_type in ["join_session", "leave_session", "screen_share", "whiteboard_update"]:
+                    await handle_session_message(message, connection_key, None)
+
+                elif message_type in ["video_call_invitation", "video_offer", "video_answer",
+                                      "ice_candidate", "video_call_declined", "video_call_ended",
+                                      "video_call_cancelled", "video_call_participant_left"]:
+                    await handle_video_call_message(message, connection_key, db)
+
+                elif message_type == "get_online_users":
+                    # Get list of online users from database
+                    profile_types = message.get("profile_types")  # Optional filter
+                    await handle_get_online_users(db, connection_key, profile_types)
+
+                elif message_type in ["whiteboard_stroke", "whiteboard_cursor",
+                                      "whiteboard_text_typing", "whiteboard_tool_change",
+                                      "whiteboard_permission_request", "whiteboard_permission_granted",
+                                      "whiteboard_permission_denied", "whiteboard_permission_revoked",
+                                      "whiteboard_page_change", "whiteboard_clear", "whiteboard_undo"]:
+                    await handle_whiteboard_message(message, connection_key, db)
+
+                elif message_type == "ping":
+                    # Heartbeat to keep connection alive
+                    await websocket.send_text(json.dumps({"type": "pong"}))
+
+                else:
+                    print(f"Unknown WebSocket message type: {message_type}")
+
+            except json.JSONDecodeError:
+                print(f"Invalid JSON received from {connection_key}")
+
+    except WebSocketDisconnect:
+        # Disconnect and mark user offline in profile table
+        await manager.disconnect(websocket, connection_key, db)
+        print(f"🔌 WebSocket disconnected: {role} profile {profile_id}")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

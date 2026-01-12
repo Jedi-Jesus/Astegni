@@ -7,10 +7,122 @@
 let currentViewedRequest = null;
 
 /**
+ * Generate initials from a name (first letter of first name and father name)
+ * @param {string} name - Full name
+ * @returns {string} - Two letter initials
+ */
+function generateInitials(name) {
+    if (!name || typeof name !== 'string') return '??';
+
+    const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
+    if (parts.length === 0) return '??';
+
+    // Get first letter of first name
+    const firstInitial = parts[0].charAt(0).toUpperCase();
+
+    // Get first letter of second name (father name) if available
+    const secondInitial = parts.length > 1 ? parts[1].charAt(0).toUpperCase() : '';
+
+    return firstInitial + secondInitial;
+}
+
+/**
+ * Generate a consistent color based on name
+ * @param {string} name - Full name
+ * @returns {string} - HSL color string
+ */
+function generateAvatarColor(name) {
+    if (!name) return 'hsl(200, 70%, 50%)';
+
+    // Generate a hash from the name
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    // Use hash to generate a hue (0-360)
+    const hue = Math.abs(hash % 360);
+
+    return `hsl(${hue}, 65%, 50%)`;
+}
+
+/**
+ * Set avatar with initials fallback
+ * @param {HTMLElement} container - The avatar container element
+ * @param {HTMLImageElement} imgElement - The image element
+ * @param {string} avatarUrl - The avatar URL
+ * @param {string} name - The person's name for generating initials
+ */
+function setAvatarWithInitialsFallback(container, imgElement, avatarUrl, name) {
+    if (!container || !imgElement) return;
+
+    // Remove any existing initials div
+    const existingInitials = container.querySelector('.initials-avatar');
+    if (existingInitials) {
+        existingInitials.remove();
+    }
+
+    // Show image element
+    imgElement.style.display = 'block';
+
+    if (avatarUrl && avatarUrl.trim() && !avatarUrl.includes('default-avatar')) {
+        imgElement.src = avatarUrl;
+        imgElement.onerror = function() {
+            // On error, hide image and show initials
+            this.style.display = 'none';
+            showInitialsAvatar(container, name);
+        };
+    } else {
+        // No valid URL, show initials directly
+        imgElement.style.display = 'none';
+        showInitialsAvatar(container, name);
+    }
+}
+
+/**
+ * Create and show initials avatar
+ * @param {HTMLElement} container - The avatar container
+ * @param {string} name - The person's name
+ */
+function showInitialsAvatar(container, name) {
+    if (!container) return;
+
+    // Remove any existing initials
+    const existing = container.querySelector('.initials-avatar');
+    if (existing) existing.remove();
+
+    const initials = generateInitials(name);
+    const color = generateAvatarColor(name);
+
+    const initialsDiv = document.createElement('div');
+    initialsDiv.className = 'initials-avatar tutor-avatar';
+    initialsDiv.textContent = initials;
+    initialsDiv.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: ${color};
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        border: 2px solid #f59e0b;
+        box-sizing: border-box;
+    `;
+
+    container.appendChild(initialsDiv);
+}
+
+/**
  * Open the view request modal with the given request data
  * @param {Object} requestData - The session request data from the chat message
  */
-function openViewRequestModal(requestData) {
+async function openViewRequestModal(requestData) {
     console.log('[ViewRequestModal] Opening with data:', requestData);
     console.log('[ViewRequestModal] requestData type:', typeof requestData);
     console.log('[ViewRequestModal] package_details:', requestData?.package_details);
@@ -37,40 +149,96 @@ function openViewRequestModal(requestData) {
         : (requestData.media_metadata || {});
 
     const pkg = requestData.package_details || {};
-    const requestStatus = requestData.session_request_status || {};
+    let requestStatus = requestData.session_request_status || {};
+
+    // Fetch the latest status from the API to ensure we have the current state
+    const sessionRequestId = metadata.session_request_id;
+    if (sessionRequestId) {
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (token) {
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${sessionRequestId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (response.ok) {
+                    const latestData = await response.json();
+                    console.log('[ViewRequestModal] Fetched latest status:', latestData.status);
+                    // Update the status with the latest from API
+                    requestStatus = { status: latestData.status };
+                    // Also update metadata status for consistency
+                    metadata.status = latestData.status;
+                    // Update currentViewedRequest with latest data
+                    currentViewedRequest.session_request_status = requestStatus;
+                } else {
+                    console.log('[ViewRequestModal] Could not fetch latest status, using cached data');
+                }
+            }
+        } catch (error) {
+            console.log('[ViewRequestModal] Error fetching latest status:', error.message);
+            // Continue with cached data if API call fails
+        }
+    }
 
     console.log('[ViewRequestModal] Parsed - metadata:', metadata, 'pkg:', pkg, 'status:', requestStatus);
 
+    // Check if package has been deleted
+    const isPackageDeleted = !pkg.id && !pkg.name;
+
     // Update status badge
     const status = requestStatus.status || metadata.status || 'pending';
-    updateStatusBadge(status);
+    if (isPackageDeleted) {
+        updateStatusBadge('deleted');
+    } else {
+        updateStatusBadge(status);
+    }
 
     // Package name and description
     const packageName = document.getElementById('view-request-package-name');
     const packageDesc = document.getElementById('view-request-package-desc');
-    if (packageName) packageName.textContent = pkg.name || 'Tutoring Package';
+    if (packageName) {
+        if (isPackageDeleted) {
+            packageName.textContent = 'Package Unavailable';
+            packageName.style.color = '#6b7280';
+        } else {
+            packageName.textContent = pkg.name || 'Tutoring Package';
+            packageName.style.color = '';
+        }
+    }
     if (packageDesc) {
-        if (pkg.description) {
+        if (isPackageDeleted) {
+            packageDesc.textContent = 'This package has been deleted by the tutor.';
+            packageDesc.style.display = 'block';
+            packageDesc.style.color = '#9ca3af';
+            packageDesc.style.fontStyle = 'italic';
+        } else if (pkg.description) {
             packageDesc.textContent = pkg.description;
             packageDesc.style.display = 'block';
+            packageDesc.style.color = '';
+            packageDesc.style.fontStyle = '';
         } else {
             packageDesc.style.display = 'none';
         }
     }
 
     // Tutor info
+    const tutorAvatarContainer = document.getElementById('view-request-tutor-avatar-container');
     const tutorAvatar = document.getElementById('view-request-tutor-avatar');
     const tutorName = document.getElementById('view-request-tutor-name');
-    if (tutorAvatar && pkg.tutor) {
-        tutorAvatar.src = pkg.tutor.avatar || '/system_images/default-avatar.svg';
-        tutorAvatar.onerror = function() { this.src = '/system_images/default-avatar.svg'; };
-    }
+    const tutorDisplayName = pkg.tutor?.name || 'Tutor';
+
     if (tutorName && pkg.tutor) {
-        tutorName.textContent = pkg.tutor.name || 'Tutor';
+        tutorName.textContent = tutorDisplayName;
+    }
+
+    if (tutorAvatarContainer && tutorAvatar && pkg.tutor) {
+        setAvatarWithInitialsFallback(tutorAvatarContainer, tutorAvatar, pkg.tutor.avatar, tutorDisplayName);
     }
 
     // Student info (who the session is for - from requested_to_id)
     const studentSection = document.getElementById('view-request-student-section');
+    const studentAvatarContainer = document.getElementById('view-request-student-avatar-container');
     const studentAvatar = document.getElementById('view-request-student-avatar');
     const studentNameEl = document.getElementById('view-request-student-name');
 
@@ -78,17 +246,17 @@ function openViewRequestModal(requestData) {
     const requestedToName = requestData.requested_to_name;
     const requestedToId = requestData.requested_to_id;
     const requestedToAvatarUrl = requestData.requested_to_avatar;
+    const studentDisplayName = requestedToName || `Student #${requestedToId}`;
 
     if (studentSection) {
         if (requestedToName || requestedToId) {
             // Show student section
             studentSection.style.display = 'block';
             if (studentNameEl) {
-                studentNameEl.textContent = requestedToName || `Student #${requestedToId}`;
+                studentNameEl.textContent = studentDisplayName;
             }
-            if (studentAvatar) {
-                studentAvatar.src = requestedToAvatarUrl || '/system_images/default-avatar.svg';
-                studentAvatar.onerror = function() { this.src = '/system_images/default-avatar.svg'; };
+            if (studentAvatarContainer && studentAvatar) {
+                setAvatarWithInitialsFallback(studentAvatarContainer, studentAvatar, requestedToAvatarUrl, studentDisplayName);
             }
         } else {
             // Hide student section if no student info
@@ -242,12 +410,43 @@ function openViewRequestModal(requestData) {
         }
     }
 
+    // Counter-Offer (show only if student/parent proposed a different price)
+    const counterOfferSection = document.getElementById('view-request-counter-offer-section');
+    const counterOfferPriceEl = document.getElementById('view-request-counter-offer-price');
+    const listedPriceEl = document.getElementById('view-request-listed-price');
+
+    // Get counter-offer from metadata (from chat message) or from requestData (from API)
+    const counterOfferPrice = metadata.counter_offer_price || requestData.counter_offer_price;
+    const listedPrice = pkg.hourly_rate || pkg.session_price || 0;
+
+    if (counterOfferSection) {
+        if (counterOfferPrice && counterOfferPrice > 0) {
+            // Show counter-offer section
+            counterOfferSection.style.display = 'block';
+            if (counterOfferPriceEl) {
+                counterOfferPriceEl.textContent = Math.round(counterOfferPrice);
+            }
+            if (listedPriceEl) {
+                listedPriceEl.textContent = Math.round(listedPrice);
+            }
+        } else {
+            // Hide counter-offer section if no counter-offer
+            counterOfferSection.style.display = 'none';
+        }
+    }
+
     // Request meta info
     const requesterEl = document.getElementById('view-request-requester');
     const dateEl = document.getElementById('view-request-date');
     if (requesterEl) {
         const requesterType = metadata.requester_type || 'Student';
-        requesterEl.textContent = requesterType.charAt(0).toUpperCase() + requesterType.slice(1);
+        const senderName = requestData.sender_name;
+        // Show sender name if available, with type in parentheses
+        if (senderName && senderName !== 'You') {
+            requesterEl.textContent = `${senderName} (${requesterType.charAt(0).toUpperCase() + requesterType.slice(1)})`;
+        } else {
+            requesterEl.textContent = requesterType.charAt(0).toUpperCase() + requesterType.slice(1);
+        }
     }
     if (dateEl) {
         const date = requestData.created_at || requestData.time;
@@ -258,13 +457,29 @@ function openViewRequestModal(requestData) {
         }
     }
 
-    // Show/hide action buttons based on user role and status
+    // Show/hide action buttons based on user role, status, and package availability
     const actionsFooter = document.getElementById('view-request-actions');
     if (actionsFooter) {
-        // Only show actions if user is the tutor and status is pending
-        const isTutor = window.currentRole === 'tutor' || window.activeRole === 'tutor';
-        const isPending = status === 'pending';
-        actionsFooter.style.display = (isTutor && isPending) ? 'flex' : 'none';
+        // Don't show actions if package is deleted
+        if (isPackageDeleted) {
+            actionsFooter.style.display = 'none';
+        } else {
+            // Detect if user is a tutor - check multiple sources
+            const activeRole = window.currentRole ||
+                              window.activeRole ||
+                              localStorage.getItem('userRole') ||
+                              localStorage.getItem('active_role') ||
+                              localStorage.getItem('currentRole') ||
+                              localStorage.getItem('activeRole') || '';
+
+            // Also detect from page context - if on tutor-profile.html, user is a tutor
+            const isOnTutorProfile = window.location.pathname.includes('tutor-profile');
+            const isTutor = activeRole.toLowerCase() === 'tutor' || isOnTutorProfile;
+
+            const isPending = status === 'pending';
+            console.log('[ViewRequestModal] Role detection:', { activeRole, isOnTutorProfile, isTutor, isPending });
+            actionsFooter.style.display = (isTutor && isPending) ? 'flex' : 'none';
+        }
     }
 
     // Show modal
@@ -284,7 +499,8 @@ function updateStatusBadge(status) {
     const statusConfig = {
         pending: { icon: 'fa-clock', label: 'Pending Review' },
         accepted: { icon: 'fa-check-circle', label: 'Accepted' },
-        rejected: { icon: 'fa-times-circle', label: 'Declined' }
+        rejected: { icon: 'fa-times-circle', label: 'Declined' },
+        deleted: { icon: 'fa-trash-alt', label: 'Package Deleted' }
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -330,7 +546,7 @@ function closeViewRequestModal() {
 }
 
 /**
- * Accept the session request (placeholder - implement actual API call)
+ * Accept the session request
  */
 async function acceptSessionRequest() {
     if (!currentViewedRequest) return;
@@ -346,15 +562,62 @@ async function acceptSessionRequest() {
         return;
     }
 
+    if (!confirm('Are you sure you want to accept this session request?')) {
+        return;
+    }
+
     console.log('[ViewRequestModal] Accepting session request:', sessionRequestId);
 
-    // TODO: Implement actual API call to accept the request
-    // For now, just show a message
-    alert('Accept functionality will be implemented - Request ID: ' + sessionRequestId);
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please log in to accept requests');
+            return;
+        }
+
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${sessionRequestId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'accepted' })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to accept request');
+        }
+
+        // Update the status badge
+        updateStatusBadge('accepted');
+
+        // Hide action buttons
+        const actionsFooter = document.getElementById('view-request-actions');
+        if (actionsFooter) {
+            actionsFooter.style.display = 'none';
+        }
+
+        // Show success message
+        alert('✅ Session request accepted! The student has been added to your students list.');
+
+        // Close modal after a short delay
+        setTimeout(() => {
+            closeViewRequestModal();
+            // Refresh the requests list if SessionRequestManager is available
+            if (typeof SessionRequestManager !== 'undefined' && typeof SessionRequestManager.loadRequests === 'function') {
+                SessionRequestManager.loadRequests('pending');
+            }
+        }, 500);
+
+    } catch (error) {
+        console.error('[ViewRequestModal] Error accepting request:', error);
+        alert('❌ Failed to accept request: ' + error.message);
+    }
 }
 
 /**
- * Reject the session request (placeholder - implement actual API call)
+ * Reject the session request
  */
 async function rejectSessionRequest() {
     if (!currentViewedRequest) return;
@@ -370,11 +633,69 @@ async function rejectSessionRequest() {
         return;
     }
 
+    // Prompt for rejection reason
+    const rejectedReason = prompt('Please provide a reason for declining this request (optional):');
+
+    // User clicked cancel on prompt
+    if (rejectedReason === null) {
+        return;
+    }
+
+    if (!confirm('Are you sure you want to decline this session request?')) {
+        return;
+    }
+
     console.log('[ViewRequestModal] Rejecting session request:', sessionRequestId);
 
-    // TODO: Implement actual API call to reject the request
-    // For now, just show a message
-    alert('Decline functionality will be implemented - Request ID: ' + sessionRequestId);
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please log in to decline requests');
+            return;
+        }
+
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${sessionRequestId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: 'rejected',
+                rejected_reason: rejectedReason || null
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to decline request');
+        }
+
+        // Update the status badge
+        updateStatusBadge('rejected');
+
+        // Hide action buttons
+        const actionsFooter = document.getElementById('view-request-actions');
+        if (actionsFooter) {
+            actionsFooter.style.display = 'none';
+        }
+
+        // Show success message
+        alert('Request has been declined.');
+
+        // Close modal after a short delay
+        setTimeout(() => {
+            closeViewRequestModal();
+            // Refresh the requests list if SessionRequestManager is available
+            if (typeof SessionRequestManager !== 'undefined' && typeof SessionRequestManager.loadRequests === 'function') {
+                SessionRequestManager.loadRequests('pending');
+            }
+        }, 500);
+
+    } catch (error) {
+        console.error('[ViewRequestModal] Error declining request:', error);
+        alert('❌ Failed to decline request: ' + error.message);
+    }
 }
 
 /**

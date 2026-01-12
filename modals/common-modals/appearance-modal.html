@@ -1,0 +1,230 @@
+<!-- Appearance Settings Modal -->
+<div id="appearance-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeAppearanceModal()"></div>
+    <div class="modal-content" style="max-width: 550px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">&#127912;</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Appearance</h2>
+                    <p class="text-sm text-gray-500">Customize your visual experience</p>
+                </div>
+            </div>
+            <button onclick="closeAppearanceModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Theme Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                Theme
+            </h3>
+            <div class="grid grid-cols-3 gap-3">
+                <!-- Light Theme -->
+                <button onclick="setThemePreference('light')" id="theme-light-btn" class="theme-option p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="w-full aspect-video bg-white border border-gray-200 rounded-lg mb-2 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800">Light</p>
+                </button>
+
+                <!-- Dark Theme -->
+                <button onclick="setThemePreference('dark')" id="theme-dark-btn" class="theme-option p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="w-full aspect-video bg-gray-900 border border-gray-700 rounded-lg mb-2 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800">Dark</p>
+                </button>
+
+                <!-- System Theme -->
+                <button onclick="setThemePreference('system')" id="theme-system-btn" class="theme-option p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="w-full aspect-video bg-gradient-to-r from-white to-gray-900 border border-gray-300 rounded-lg mb-2 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800">System</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Font Size Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+                Font Size
+            </h3>
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs text-gray-500">A</span>
+                    <span class="text-lg text-gray-500">A</span>
+                </div>
+                <input type="range" id="font-size-slider" min="12" max="20" value="16" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" oninput="previewFontSize(this.value)">
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-xs text-gray-500">Small</span>
+                    <span id="font-size-value" class="text-sm font-medium text-indigo-600">16px</span>
+                    <span class="text-xs text-gray-500">Large</span>
+                </div>
+            </div>
+            <div id="font-size-preview" class="mt-3 p-3 bg-white border border-gray-200 rounded-lg">
+                <p class="preview-text text-gray-800">This is a preview of your selected font size. Adjust the slider to see changes.</p>
+            </div>
+        </div>
+
+        <!-- Display Density Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                </svg>
+                Display Density
+            </h3>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="setDisplayDensity('compact')" id="density-compact-btn" class="density-option p-3 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="space-y-0.5 mb-2">
+                        <div class="h-1.5 bg-gray-300 rounded"></div>
+                        <div class="h-1.5 bg-gray-300 rounded"></div>
+                        <div class="h-1.5 bg-gray-300 rounded"></div>
+                    </div>
+                    <p class="text-xs font-medium text-gray-800">Compact</p>
+                </button>
+
+                <button onclick="setDisplayDensity('comfortable')" id="density-comfortable-btn" class="density-option p-3 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="space-y-1 mb-2">
+                        <div class="h-2 bg-gray-300 rounded"></div>
+                        <div class="h-2 bg-gray-300 rounded"></div>
+                        <div class="h-2 bg-gray-300 rounded"></div>
+                    </div>
+                    <p class="text-xs font-medium text-gray-800">Comfortable</p>
+                </button>
+
+                <button onclick="setDisplayDensity('spacious')" id="density-spacious-btn" class="density-option p-3 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all text-center">
+                    <div class="space-y-2 mb-2">
+                        <div class="h-2.5 bg-gray-300 rounded"></div>
+                        <div class="h-2.5 bg-gray-300 rounded"></div>
+                        <div class="h-2.5 bg-gray-300 rounded"></div>
+                    </div>
+                    <p class="text-xs font-medium text-gray-800">Spacious</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Accent Color Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+                Accent Color
+            </h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="setAccentColor('indigo')" class="accent-color-btn w-10 h-10 rounded-full bg-indigo-600 hover:ring-4 hover:ring-indigo-200 transition-all" data-color="indigo"></button>
+                <button onclick="setAccentColor('blue')" class="accent-color-btn w-10 h-10 rounded-full bg-blue-600 hover:ring-4 hover:ring-blue-200 transition-all" data-color="blue"></button>
+                <button onclick="setAccentColor('green')" class="accent-color-btn w-10 h-10 rounded-full bg-green-600 hover:ring-4 hover:ring-green-200 transition-all" data-color="green"></button>
+                <button onclick="setAccentColor('amber')" class="accent-color-btn w-10 h-10 rounded-full bg-amber-500 hover:ring-4 hover:ring-amber-200 transition-all" data-color="amber"></button>
+                <button onclick="setAccentColor('red')" class="accent-color-btn w-10 h-10 rounded-full bg-red-600 hover:ring-4 hover:ring-red-200 transition-all" data-color="red"></button>
+                <button onclick="setAccentColor('purple')" class="accent-color-btn w-10 h-10 rounded-full bg-purple-600 hover:ring-4 hover:ring-purple-200 transition-all" data-color="purple"></button>
+                <button onclick="setAccentColor('pink')" class="accent-color-btn w-10 h-10 rounded-full bg-pink-600 hover:ring-4 hover:ring-pink-200 transition-all" data-color="pink"></button>
+                <button onclick="setAccentColor('teal')" class="accent-color-btn w-10 h-10 rounded-full bg-teal-600 hover:ring-4 hover:ring-teal-200 transition-all" data-color="teal"></button>
+            </div>
+        </div>
+
+        <!-- Animations Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Motion & Animations
+            </h3>
+            <div class="space-y-3">
+                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer">
+                    <div>
+                        <p class="font-medium text-gray-800">Enable animations</p>
+                        <p class="text-xs text-gray-500">Smooth transitions and effects</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="enable-animations" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </div>
+                </label>
+
+                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer">
+                    <div>
+                        <p class="font-medium text-gray-800">Reduce motion</p>
+                        <p class="text-xs text-gray-500">For accessibility - minimizes motion effects</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="reduce-motion" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Sidebar Position Section -->
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                Sidebar Position
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="setSidebarPosition('left')" id="sidebar-left-btn" class="sidebar-option p-3 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all">
+                    <div class="flex gap-1 mb-2">
+                        <div class="w-3 h-8 bg-indigo-400 rounded"></div>
+                        <div class="flex-1 h-8 bg-gray-200 rounded"></div>
+                    </div>
+                    <p class="text-xs font-medium text-gray-800 text-center">Left</p>
+                </button>
+
+                <button onclick="setSidebarPosition('right')" id="sidebar-right-btn" class="sidebar-option p-3 border-2 border-gray-200 rounded-xl hover:border-indigo-500 transition-all">
+                    <div class="flex gap-1 mb-2">
+                        <div class="flex-1 h-8 bg-gray-200 rounded"></div>
+                        <div class="w-3 h-8 bg-indigo-400 rounded"></div>
+                    </div>
+                    <p class="text-xs font-medium text-gray-800 text-center">Right</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Reset to Defaults -->
+        <div class="border-t border-gray-200 pt-6 mb-6">
+            <button onclick="resetAppearanceDefaults()" class="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Reset to Defaults
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex gap-3">
+            <button onclick="closeAppearanceModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+            <button onclick="saveAppearanceSettings()" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>

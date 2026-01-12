@@ -1,0 +1,170 @@
+/* Access Restricted Modal Styles */
+
+/* Modal overlay - ensure it's visible and properly layered */
+#accessRestrictedModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#accessRestrictedModal.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Modal container - CRITICAL: Force vertical flex layout */
+#accessRestrictedModal > .modal-container {
+    background: white !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    max-width: 28rem !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    animation: accessRestrictedSlideUp 0.3s ease-out !important;
+    position: relative !important;
+    /* CRITICAL: Force vertical column layout */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Modal header - spans full width at top */
+#accessRestrictedModal > .modal-container > .modal-header {
+    position: relative !important;
+    padding: 1.25rem 1.5rem !important;
+    border-radius: 1rem 1rem 0 0 !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Modal body - main content area */
+#accessRestrictedModal > .modal-container > .modal-body {
+    background: white !important;
+    flex: 1 !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Modal footer - buttons at bottom */
+#accessRestrictedModal > .modal-container > .modal-footer {
+    background: #f9fafb !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    border-radius: 0 0 1rem 1rem !important;
+}
+
+@keyframes accessRestrictedSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    #accessRestrictedModal > .modal-container {
+        margin: 1rem !important;
+        max-height: calc(100vh - 2rem) !important;
+    }
+
+    #accessRestrictedModal > .modal-container > .modal-body {
+        padding: 1rem !important;
+    }
+
+    #accessRestrictedModal > .modal-container > .modal-footer {
+        flex-direction: column !important;
+    }
+
+    #accessRestrictedModal > .modal-container > .modal-footer button {
+        width: 100% !important;
+    }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] #accessRestrictedModal > .modal-container {
+    background: var(--card-bg, #1f2937) !important;
+    border: 1px solid rgba(255, 213, 79, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal > .modal-container > .modal-header {
+    background: linear-gradient(135deg, #D97706, #B45309) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal > .modal-container > .modal-body {
+    background: var(--card-bg, #1f2937) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal > .modal-container > .modal-footer {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal h3 {
+    color: #FFD54F !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal p {
+    color: #E0E0E0 !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .bg-amber-50 {
+    background: rgba(255, 213, 79, 0.1) !important;
+    border-color: rgba(255, 213, 79, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .bg-amber-100 {
+    background: rgba(255, 213, 79, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .bg-amber-200 {
+    background: rgba(255, 213, 79, 0.3) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .text-amber-600,
+[data-theme="dark"] #accessRestrictedModal .text-amber-700,
+[data-theme="dark"] #accessRestrictedModal .text-amber-800 {
+    color: #FFD54F !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .bg-gray-50 {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .text-gray-600,
+[data-theme="dark"] #accessRestrictedModal .text-gray-700,
+[data-theme="dark"] #accessRestrictedModal .text-gray-800 {
+    color: #E0E0E0 !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .border-gray-200 {
+    border-color: rgba(255, 213, 79, 0.1) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .border-gray-300 {
+    border-color: rgba(255, 213, 79, 0.2) !important;
+}
+
+[data-theme="dark"] #accessRestrictedModal .hover\:bg-gray-100:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}

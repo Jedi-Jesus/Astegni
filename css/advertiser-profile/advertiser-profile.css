@@ -4191,17 +4191,170 @@ body {
     transform: translateY(-2px);
 }
 
+/* ============================================ */
+/* METRIC WIDGET CARDS (Curved Cards)          */
+/* ============================================ */
+
+.metric-widget-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-widget-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Impressions Widget - Purple gradient */
+.metric-widget-card.impressions {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* CTR Widget - Green gradient */
+.metric-widget-card.ctr {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* Conversion Widget - Orange gradient */
+.metric-widget-card.conversion {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.metric-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.metric-widget-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.metric-widget-header .live-badge {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.metric-widget-content {
+    position: relative;
+    z-index: 2;
+}
+
+.metric-widget-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.metric-widget-change {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.metric-change-badge {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.metric-change-badge.positive {
+    background: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.metric-widget-change span:last-child {
+    opacity: 0.9;
+    font-size: 0.875rem;
+}
 
+/* Sparkline Chart */
+.metric-sparkline {
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 1rem;
+    display: flex;
+    align-items: flex-end;
+    padding: 0.5rem;
+    gap: 2px;
+}
 
+.metric-sparkline.small {
+    height: 40px;
+    margin-bottom: 1rem;
+}
 
+.metric-sparkline-bar {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+}
 
+.metric-sparkline-bar:last-child {
+    background: rgba(255, 255, 255, 0.8);
+}
 
+/* Target Progress */
+.metric-target-progress {
+    margin-top: 1rem;
+}
 
+.metric-target-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
 
+.metric-target-header span:first-child {
+    opacity: 0.9;
+}
 
+.metric-target-header span:last-child {
+    font-weight: 600;
+}
 
+.metric-target-bar {
+    background: rgba(255, 255, 255, 0.2);
+    height: 8px;
+    border-radius: 10px;
+    overflow: hidden;
+}
 
+.metric-target-fill {
+    background: rgba(255, 255, 255, 0.9);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
 
+/* Background decoration circle */
+.metric-widget-decoration {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 1;
+}
 
 
 
@@ -4300,3 +4453,436 @@ body {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================
+   CAMPAIGN FINANCES TAB STYLES
+   ============================================ */
+
+/* Finance Overview Grid */
+.finance-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Finance Card */
+.finance-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.finance-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.finance-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.finance-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Total Investment - Brand/Theme purple */
+.total-investment-icon {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7c3aed 100%);
+}
+
+/* Amount Used - Green (successfully utilized) */
+.amount-used-icon {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+/* Remaining Balance - Amber/Orange (pending) */
+.remaining-balance-icon {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.finance-card-title h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.finance-card-title p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.finance-card-body {
+    margin-top: 16px;
+}
+
+.finance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+/* Total Investment - Brand/Theme color (purple) */
+.total-investment-amount {
+    color: var(--primary-color, #8B5CF6);
+}
+
+/* Amount Used - Green (money spent/utilized) */
+.amount-used-amount {
+    color: #10b981;
+}
+
+/* Remaining Balance - Amber/Orange (pending funds) */
+.remaining-balance-amount {
+    color: #f59e0b;
+}
+
+.finance-progress-bar {
+    height: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.finance-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+    transition: width 0.5s ease;
+}
+
+.finance-progress-fill.remaining {
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.finance-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.finance-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.finance-meta-item i {
+    color: var(--primary-color);
+}
+
+.finance-note {
+    background: var(--bg-tertiary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.non-refundable-note {
+    border-left: 4px solid #f44336;
+}
+
+.non-refundable-note i {
+    color: #f44336;
+    margin-top: 2px;
+}
+
+.refundable-note {
+    border-left: 4px solid #4caf50;
+}
+
+.refundable-note i {
+    color: #4caf50;
+    margin-top: 2px;
+}
+
+/* Cancellation Policy Card */
+.cancellation-policy-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 2px solid #ff9800;
+    margin-bottom: 32px;
+    overflow: hidden;
+}
+
+.cancellation-policy-header {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cancellation-policy-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.cancellation-policy-header h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.cancellation-policy-body {
+    padding: 24px;
+}
+
+.cancellation-policy-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cancellation-policy-row:last-of-type {
+    border-bottom: none;
+}
+
+.policy-label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.policy-value {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.policy-value.calculation {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.cancellation-policy-row.total {
+    background: var(--bg-tertiary);
+    padding: 20px;
+    margin: 16px -24px 0;
+    border: none;
+}
+
+.cancellation-policy-row.total .policy-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.refund-amount {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #4caf50 !important;
+}
+
+.cancellation-policy-note {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.cancellation-policy-note i {
+    color: #2196f3;
+    margin-top: 2px;
+}
+
+.cancellation-policy-footer {
+    padding: 20px 24px;
+    border-top: 2px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cancel-campaign-btn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancel-campaign-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.cancel-campaign-btn i {
+    font-size: 1.1rem;
+}
+
+/* Transaction History */
+.finance-transactions-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    border: 2px solid var(--border-color);
+}
+
+.finance-transactions-header {
+    margin-bottom: 20px;
+}
+
+.finance-transactions-header h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.finance-transactions-header h4 i {
+    color: var(--primary-color);
+}
+
+.finance-transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.finance-no-transactions {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.finance-no-transactions i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.finance-no-transactions p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Transaction Item */
+.finance-transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.2s ease;
+}
+
+.finance-transaction-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.transaction-description {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.transaction-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.transaction-amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.transaction-amount.deduction {
+    color: #f44336;
+}
+
+.transaction-amount.refund {
+    color: #4caf50;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .finance-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-amount {
+        font-size: 1.5rem;
+    }
+
+    .cancellation-policy-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .finance-transaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
     <link rel="stylesheet" href="./css/admin-pages/manage-system-settings.css">
     <link rel="stylesheet" href="./css/admin-pages/manage-reviews.css">
-    <link rel="stylesheet" href="../css/page-structure/fab.css">
+    <!-- fab.css removed - not needed for admin pages -->
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -947,50 +947,49 @@
                             </div>
                         </div>
 
-                        <!-- Brand Packages Pricing -->
-                        <div class="card p-6 mb-6" id="brand-packages-section">
+                        <!-- CPI (Cost Per Impression) Pricing -->
+                        <div class="card p-6 mb-6" id="brand-cpi-section">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <h3 class="text-xl font-bold">
-                                        <i class="fas fa-ad mr-2 text-orange-600"></i>
-                                        Brand Packages
+                                        <i class="fas fa-eye mr-2 text-orange-600"></i>
+                                        CPI Pricing (Cost Per Impression)
                                     </h3>
-                                    <p class="text-sm text-gray-600">Manage advertiser brand packages with custom pricing tiers</p>
+                                    <p class="text-sm text-gray-600">Set cost per impression rates with audience and location targeting premiums</p>
                                 </div>
-                                <button onclick="openAddBrandPackageModal()"
+                                <button onclick="openCpiSettingsModal()"
                                     class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                                    <i class="fas fa-plus mr-2"></i>Add Package
+                                    <i class="fas fa-cog mr-2"></i>CPI Settings
                                 </button>
                             </div>
 
-                            <!-- Dynamic Packages Grid -->
-                            <div id="brand-packages-grid"
-                                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                                <!-- Packages will be loaded dynamically by pricing-features-manager.js -->
+                            <!-- CPI Rates Grid -->
+                            <div id="cpi-rates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                <!-- CPI rates will be loaded dynamically -->
                             </div>
 
-                            <!-- Brand Package Features Information -->
+                            <!-- CPI Pricing Information -->
                             <div class="p-4 bg-orange-50 rounded-lg border border-orange-200">
                                 <h5 class="font-semibold mb-2 flex items-center gap-2">
                                     <i class="fas fa-info-circle text-orange-600"></i>
-                                    Brand Package Features (Applied to All Packages)
+                                    How CPI Pricing Works
                                 </h5>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
                                     <div class="flex items-start gap-2">
-                                        <i class="fas fa-eye text-orange-600 mt-1"></i>
-                                        <div><strong>Unlimited Impressions:</strong> No cap on ad views during package period</div>
+                                        <i class="fas fa-coins text-orange-600 mt-1"></i>
+                                        <div><strong>Base CPI:</strong> Cost per impression for untargeted ads</div>
                                     </div>
                                     <div class="flex items-start gap-2">
-                                        <i class="fas fa-bullseye text-orange-600 mt-1"></i>
-                                        <div><strong>Custom Targeting:</strong> Target by grade level, subject, location, and interests</div>
+                                        <i class="fas fa-users text-orange-600 mt-1"></i>
+                                        <div><strong>Audience Exclusion:</strong> Premium charged when excluding Tutors, Students, Parents, Advertisers, or Users</div>
                                     </div>
                                     <div class="flex items-start gap-2">
-                                        <i class="fas fa-star text-orange-600 mt-1"></i>
-                                        <div><strong>Priority Placement:</strong> Ads appear in premium positions across the platform</div>
+                                        <i class="fas fa-map-marker-alt text-orange-600 mt-1"></i>
+                                        <div><strong>Location Targeting:</strong> International (lowest), National (medium), Regional (highest)</div>
                                     </div>
                                     <div class="flex items-start gap-2">
-                                        <i class="fas fa-chart-bar text-orange-600 mt-1"></i>
-                                        <div><strong>Full Analytics Suite:</strong> Real-time metrics, engagement data, and performance reports</div>
+                                        <i class="fas fa-calculator text-orange-600 mt-1"></i>
+                                        <div><strong>Stacking Premiums:</strong> More targeting = higher CPI (base + audience + location)</div>
                                     </div>
                                 </div>
                             </div>
@@ -4619,187 +4618,392 @@ The Team" required></textarea>
         </div>
     </div>
 
-    <!-- Brand Package Modal (Add/Edit) -->
-    <div id="campaign-package-modal" class="modal hidden">
-        <div class="modal-overlay" onclick="closeBrandPackageModal()"></div>
-        <div class="modal-content" style="max-width: 800px;">
+    <!-- CPI Settings Modal -->
+    <div id="cpi-settings-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeCpiSettingsModal()"></div>
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2 class="text-xl font-bold" id="campaign-modal-title">
-                    <i class="fas fa-bullhorn mr-2"></i>Add Brand Package
+                <h2 class="text-xl font-bold">
+                    <i class="fas fa-cog mr-2 text-orange-600"></i>CPI Pricing Settings
                 </h2>
-                <button class="modal-close" onclick="closeBrandPackageModal()">×</button>
+                <button class="modal-close" onclick="closeCpiSettingsModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="campaign-package-form" onsubmit="saveBrandPackage(event)">
-                    <!-- Hidden ID for editing -->
-                    <input type="hidden" id="campaign-package-id" placeholder="">
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Left Column: Package Details -->
-                        <div>
-                            <!-- Package Name -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Package Name *</label>
-                                <input type="text" id="campaign-package-name" class="w-full px-3 py-2 border rounded-lg"
-                                    placeholder="e.g., Monthly, 3 Months, 6 Months, Yearly" required>
-                                <p class="text-xs text-gray-500 mt-1">Display name for this package (e.g., Monthly Package, Yearly Package)</p>
+                <form id="cpi-settings-form" onsubmit="saveCpiSettings(event)">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Left Column: CPI Rate Settings -->
+                        <div class="space-y-6">
+                            <!-- Base CPI Rate -->
+                            <div class="p-4 bg-gray-50 rounded-lg border">
+                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <i class="fas fa-coins text-orange-600"></i>
+                                    Base CPI Rate
+                                </h4>
+                                <div class="mb-3">
+                                    <label class="block text-sm font-semibold mb-2">Cost Per Impression (ETB) *</label>
+                                    <input type="number" id="cpi-base-rate" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.05" min="0" step="0.001" required oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Base rate charged per ad impression (no targeting)</p>
+                                </div>
                             </div>
 
-                            <!-- Daily Price -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Daily Price (ETB) *</label>
-                                <input type="number" id="campaign-package-daily-price" class="w-full px-3 py-2 border rounded-lg"
-                                    placeholder="e.g., 2000" min="0" step="1" required oninput="calculateBrandPackagePreview()">
-                                <p class="text-xs text-gray-500 mt-1">Daily advertising price for this package</p>
-                            </div>
+                            <!-- Audience Exclusion Premiums -->
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <i class="fas fa-users text-blue-600"></i>
+                                    Audience Exclusion Premiums
+                                </h4>
+                                <p class="text-xs text-gray-600 mb-4">Charged when advertisers EXCLUDE (uncheck) audience types. More exclusions = higher CPI.</p>
+                                <div class="mb-3 p-2 bg-blue-100 border border-blue-300 rounded-lg flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-blue-600"></i>
+                                    <span class="text-xs text-blue-700"><strong>How it works:</strong> All audiences checked = Base CPI. Unchecking an audience adds its exclusion premium.</span>
+                                </div>
 
-                            <!-- Duration Days -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Duration (Days) *</label>
-                                <input type="number" id="campaign-package-duration-days" class="w-full px-3 py-2 border rounded-lg"
-                                    placeholder="e.g., 30" min="1" step="1" value="30" required>
-                                <p class="text-xs text-gray-500 mt-1">Number of days for this package (30=Monthly, 90=3 Months, 180=6 Months, 365=Yearly)</p>
-                            </div>
-
-                            <!-- Base Package Toggle -->
-                            <div class="mb-4 p-4 border-2 border-dashed rounded-lg" id="brand-base-package-section">
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" id="campaign-is-base-package" class="w-5 h-5 rounded" onchange="toggleBrandBasePackage()">
-                                    <div>
-                                        <span class="font-semibold text-sm">Set as Base Package (Monthly)</span>
-                                        <p class="text-xs text-gray-500">Other packages will calculate discounts relative to this package's daily rate</p>
+                                <!-- Tutor Exclusion Premium -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-chalkboard-teacher text-blue-600"></i>
+                                            <span class="font-semibold">Tutor</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Exclusion premium</span>
                                     </div>
-                                </label>
-                                <!-- Current Base Package Info -->
-                                <div id="brand-current-base-info" class="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200 hidden">
-                                    <div class="text-sm">
-                                        <i class="fas fa-info-circle text-orange-600 mr-1"></i>
-                                        <span class="text-gray-700">Current base package: </span>
-                                        <strong id="brand-current-base-name" class="text-orange-700">--</strong>
-                                        <span class="text-gray-600"> at </span>
-                                        <strong id="brand-current-base-price" class="text-orange-700">--</strong>
-                                        <span class="text-gray-600"> ETB/day</span>
+                                    <input type="number" id="cpi-tutor-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.02" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-400 mt-1">Added when Tutor audience is excluded</p>
+                                </div>
+
+                                <!-- Student Exclusion Premium -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-user-graduate text-green-600"></i>
+                                            <span class="font-semibold">Student</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Exclusion premium</span>
+                                    </div>
+                                    <input type="number" id="cpi-student-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.015" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-400 mt-1">Added when Student audience is excluded</p>
+                                </div>
+
+                                <!-- Parent Exclusion Premium -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-user-friends text-yellow-600"></i>
+                                            <span class="font-semibold">Parent</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Exclusion premium</span>
+                                    </div>
+                                    <input type="number" id="cpi-parent-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.025" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-400 mt-1">Added when Parent audience is excluded</p>
+                                </div>
+
+                                <!-- Advertiser Exclusion Premium -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-bullhorn text-purple-600"></i>
+                                            <span class="font-semibold">Advertiser</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Exclusion premium</span>
+                                    </div>
+                                    <input type="number" id="cpi-advertiser-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.03" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-400 mt-1">Added when Advertiser audience is excluded</p>
+                                </div>
+
+                                <!-- User Exclusion Premium -->
+                                <div class="p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-user text-gray-600"></i>
+                                            <span class="font-semibold">User</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Exclusion premium</span>
+                                    </div>
+                                    <input type="number" id="cpi-user-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.01" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-400 mt-1">Added when User audience is excluded</p>
+                                </div>
+                            </div>
+
+                            <!-- Location Targeting Premiums -->
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <i class="fas fa-map-marker-alt text-green-600"></i>
+                                    Location Targeting Premiums
+                                </h4>
+                                <p class="text-xs text-gray-600 mb-4">Configure premiums based on geographic targeting level</p>
+
+                                <!-- Location Type Selector -->
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">
+                                        <i class="fas fa-globe-americas text-green-500 mr-1"></i>
+                                        Configure Location Level
+                                    </label>
+                                    <select id="cpi-location-type" class="w-full px-3 py-2 border rounded-lg"
+                                        onchange="onCpiLocationTypeChange()">
+                                        <option value="global">Global (International) - Base CPI only</option>
+                                        <option value="national">National - Add national premium</option>
+                                        <option value="regional">Regional - Configure region exclusion premiums</option>
+                                    </select>
+                                </div>
+
+                                <!-- Global Info (shown when Global selected) -->
+                                <div id="cpi-global-info" class="p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center gap-2 text-green-700">
+                                        <i class="fas fa-globe text-green-500"></i>
+                                        <span class="font-semibold">Global (International)</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">No location premium applied. Advertisers pay only the base CPI rate.</p>
+                                </div>
+
+                                <!-- National Premium (shown when National selected) -->
+                                <div id="cpi-national-section" class="p-3 bg-white rounded-lg border hidden">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-flag text-blue-500"></i>
+                                            <span class="font-semibold">National Premium</span>
+                                        </label>
+                                        <span class="text-xs text-gray-500">Premium per impression</span>
+                                    </div>
+                                    <input type="number" id="cpi-national-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.02" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Added when advertiser targets a specific country</p>
+                                </div>
+                            </div>
+
+                            <!-- Region Exclusion Premiums (shown only when Regional selected) -->
+                            <div id="cpi-regional-section" class="p-4 bg-orange-50 rounded-lg border border-orange-200 hidden">
+                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <i class="fas fa-map-marked-alt text-orange-600"></i>
+                                    Region Exclusion Premiums
+                                </h4>
+                                <p class="text-xs text-gray-600 mb-4">Charged when advertisers EXCLUDE (uncheck) regions. More exclusions = higher CPI.</p>
+                                <div class="mb-3 p-2 bg-amber-100 border border-amber-300 rounded-lg flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-amber-600"></i>
+                                    <span class="text-xs text-amber-700"><strong>How it works:</strong> All regions checked = Base CPI. Unchecking a region adds its exclusion premium.</span>
+                                </div>
+
+                                <!-- Country Selector -->
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">
+                                        <i class="fas fa-globe text-orange-500 mr-1"></i>
+                                        Select Country
+                                    </label>
+                                    <select id="cpi-region-country-selector" class="w-full px-3 py-2 border rounded-lg"
+                                        onchange="onCpiCountryChange()">
+                                        <option value="ET">Ethiopia (ET)</option>
+                                        <option value="KE">Kenya (KE)</option>
+                                        <option value="NG">Nigeria (NG)</option>
+                                        <option value="GH">Ghana (GH)</option>
+                                        <option value="ZA">South Africa (ZA)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Dynamic Regions Container - 2 column grid -->
+                                <div id="cpi-regions-container" class="grid grid-cols-2 gap-3">
+                                    <!-- Regions will be dynamically rendered based on selected country -->
+                                    <div class="col-span-2 text-center py-4 text-gray-500">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                                        Loading regions...
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Package Labels -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Package Label</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="campaign-package-label" value="none" class="w-4 h-4" checked>
-                                        <span class="text-sm">No Label</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-orange-50 transition">
-                                        <input type="radio" name="campaign-package-label" value="popular" class="w-4 h-4">
-                                        <span class="flex items-center gap-2">
-                                            <span class="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded">POPULAR</span>
-                                            <span class="text-sm">Mark as Popular</span>
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Package Features -->
-                            <div class="mb-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-sm font-semibold">Package Features</label>
-                                    <button type="button" onclick="addPackageInclude()"
-                                        class="flex items-center gap-1 px-3 py-1.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Add Feature</span>
-                                    </button>
-                                </div>
-                                <p class="text-xs text-gray-500 mb-3">What features are included in this package</p>
-
-                                <!-- Container for dynamic feature items -->
-                                <div id="package-includes-container" class="space-y-2">
-                                    <!-- Dynamic feature items will be added here -->
+                            <!-- Ad Placement Exclusion Premiums -->
+                            <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <i class="fas fa-ad text-purple-600"></i>
+                                    Placement Exclusion Premiums
+                                </h4>
+                                <p class="text-xs text-gray-600 mb-4">Charged when advertisers EXCLUDE (uncheck) placements. More exclusions = higher CPI.</p>
+                                <div class="mb-3 p-2 bg-amber-100 border border-amber-300 rounded-lg flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-amber-600"></i>
+                                    <span class="text-xs text-amber-700"><strong>How it works:</strong> All placements checked = Base CPI. Unchecking a placement adds its exclusion premium.</span>
                                 </div>
 
-                                <!-- Empty state message -->
-                                <div id="includes-empty-state" class="text-center py-4 text-gray-400 text-sm border-2 border-dashed rounded-lg">
-                                    <i class="fas fa-list-ul mb-2"></i>
-                                    <p>No features added yet. Click "Add Feature" to start.</p>
+                                <!-- Ad Placeholder Exclusion -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-rectangle-ad text-gray-500"></i>
+                                            <span class="font-semibold">Exclude Ad Placeholder</span>
+                                        </label>
+                                    </div>
+                                    <input type="number" id="cpi-placeholder-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.01" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Ad Placeholder</p>
                                 </div>
-                            </div>
 
-                            <!-- Description -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Description</label>
-                                <textarea id="campaign-package-description" class="w-full px-3 py-2 border rounded-lg" rows="2"
-                                    placeholder="e.g., Best for small businesses"></textarea>
+                                <!-- Ad Widget Exclusion -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-window-maximize text-blue-500"></i>
+                                            <span class="font-semibold">Exclude Ad Widget</span>
+                                        </label>
+                                    </div>
+                                    <input type="number" id="cpi-widget-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.02" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Ad Widget</p>
+                                </div>
+
+                                <!-- Whiteboard Pop-up Exclusion -->
+                                <div class="mb-3 p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-window-restore text-orange-500"></i>
+                                            <span class="font-semibold">Exclude WB Pop-up</span>
+                                        </label>
+                                    </div>
+                                    <input type="number" id="cpi-popup-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.05" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Whiteboard Pop-up</p>
+                                </div>
+
+                                <!-- Whiteboard In-Session Exclusion -->
+                                <div class="p-3 bg-white rounded-lg border">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="flex items-center gap-2">
+                                            <i class="fas fa-chalkboard text-red-500"></i>
+                                            <span class="font-semibold">Exclude WB In-Session</span>
+                                        </label>
+                                    </div>
+                                    <input type="number" id="cpi-insession-premium" class="w-full px-3 py-2 border rounded-lg"
+                                        placeholder="e.g., 0.10" min="0" step="0.001" oninput="calculateCpiPreview()">
+                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Whiteboard In-Session</p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Right Column: Price Preview & Discount Calculator -->
+                        <!-- Right Column: Live Preview Calculator -->
                         <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-5 border border-orange-200">
                             <h4 class="font-bold text-lg mb-4 text-orange-700">
-                                <i class="fas fa-calculator mr-2"></i>Price & Discount Preview
+                                <i class="fas fa-calculator mr-2"></i>CPI Calculator Preview
                             </h4>
 
-                            <div class="space-y-4">
-                                <!-- This Package Price -->
-                                <div class="bg-white rounded-lg p-4 shadow-sm border border-orange-300">
+                            <!-- Scenario Selector -->
+                            <div class="mb-4 p-3 bg-white rounded-lg border">
+                                <label class="block text-sm font-semibold mb-2">Preview Scenario</label>
+                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Exclude Audience</label>
+                                        <select id="cpi-preview-audience" class="w-full px-2 py-1.5 border rounded text-sm" onchange="calculateCpiPreview()">
+                                            <option value="none">All Audiences (Base)</option>
+                                            <option value="tutor">Exclude Tutor</option>
+                                            <option value="student">Exclude Student</option>
+                                            <option value="parent">Exclude Parent</option>
+                                            <option value="advertiser">Exclude Advertiser</option>
+                                            <option value="user">Exclude User</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Target Location</label>
+                                        <select id="cpi-preview-location" class="w-full px-2 py-1.5 border rounded text-sm" onchange="calculateCpiPreview()">
+                                            <option value="none">No targeting</option>
+                                            <option value="national">National</option>
+                                            <option value="regional">Regional</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Exclude Placement</label>
+                                        <select id="cpi-preview-placement" class="w-full px-2 py-1.5 border rounded text-sm" onchange="calculateCpiPreview()">
+                                            <option value="none">All Placements (Base)</option>
+                                            <option value="placeholder">Exclude Placeholder</option>
+                                            <option value="widget">Exclude Widget</option>
+                                            <option value="popup">Exclude WB Pop-up</option>
+                                            <option value="insession">Exclude WB In-Session</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CPI Breakdown -->
+                            <div class="space-y-3">
+                                <!-- Base Rate -->
+                                <div class="bg-white rounded-lg p-3 shadow-sm border">
                                     <div class="flex justify-between items-center">
-                                        <div>
-                                            <div class="font-semibold text-gray-700">This Package</div>
-                                            <div class="text-xs text-gray-500">Daily rate you entered</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div id="brand-preview-daily-price" class="text-2xl font-bold text-orange-600">-- ETB</div>
-                                            <div class="text-xs text-gray-500">/day</div>
-                                        </div>
+                                        <span class="text-sm text-gray-600">Base CPI</span>
+                                        <span id="cpi-preview-base" class="font-semibold text-gray-800">0.00 ETB</span>
                                     </div>
                                 </div>
 
-                                <!-- Monthly Total -->
-                                <div class="bg-white rounded-lg p-4 shadow-sm border">
+                                <!-- Audience Premium -->
+                                <div id="cpi-preview-audience-row" class="bg-blue-50 rounded-lg p-3 border border-blue-200 hidden">
                                     <div class="flex justify-between items-center">
-                                        <div>
-                                            <div class="font-semibold text-gray-700">Monthly Total</div>
-                                            <div class="text-xs text-gray-500">30 days</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div id="brand-preview-monthly-price" class="text-xl font-bold text-orange-600">-- ETB</div>
-                                        </div>
+                                        <span class="text-sm text-blue-700">
+                                            <i class="fas fa-users mr-1"></i>
+                                            <span id="cpi-preview-audience-label">Audience Premium</span>
+                                        </span>
+                                        <span id="cpi-preview-audience-value" class="font-semibold text-blue-700">+0.00 ETB</span>
                                     </div>
                                 </div>
 
-                                <!-- Auto-Calculated Discount (compared to base) -->
-                                <div id="brand-discount-preview-section" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                                    <h5 class="font-semibold text-green-800 mb-3">
-                                        <i class="fas fa-percentage mr-1"></i>Auto-Calculated Discount
+                                <!-- Location Premium (National) -->
+                                <div id="cpi-preview-location-row" class="bg-green-50 rounded-lg p-3 border border-green-200 hidden">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-green-700">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            <span id="cpi-preview-location-label">Location Premium</span>
+                                        </span>
+                                        <span id="cpi-preview-location-value" class="font-semibold text-green-700">+0.00 ETB</span>
+                                    </div>
+                                </div>
+
+                                <!-- Region Exclusion Premium (only for regional - shown with sample region) -->
+                                <div id="cpi-preview-region-row" class="bg-orange-50 rounded-lg p-3 border border-orange-200 hidden">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-orange-700">
+                                            <i class="fas fa-map-marked-alt mr-1"></i>
+                                            <span id="cpi-preview-region-label">Region Exclusion (sample)</span>
+                                        </span>
+                                        <span id="cpi-preview-region-value" class="font-semibold text-orange-700">+0.00 ETB</span>
+                                    </div>
+                                    <p class="text-xs text-orange-500 mt-1">Actual varies by excluded regions</p>
+                                </div>
+
+                                <!-- Placement Exclusion Premium -->
+                                <div id="cpi-preview-placement-row" class="bg-purple-50 rounded-lg p-3 border border-purple-200 hidden">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-purple-700">
+                                            <i class="fas fa-minus-circle mr-1"></i>
+                                            <span id="cpi-preview-placement-label">Exclusion Premium</span>
+                                        </span>
+                                        <span id="cpi-preview-placement-value" class="font-semibold text-purple-700">+0.00 ETB</span>
+                                    </div>
+                                </div>
+
+                                <!-- Total CPI -->
+                                <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-semibold">Total CPI</span>
+                                        <span id="cpi-preview-total" class="text-2xl font-bold">0.00 ETB</span>
+                                    </div>
+                                    <p class="text-xs text-orange-100 mt-1">Cost per impression with selected targeting</p>
+                                </div>
+
+                                <!-- Example Calculations -->
+                                <div class="bg-white rounded-lg p-4 border mt-4">
+                                    <h5 class="font-semibold text-sm mb-3 text-gray-700">
+                                        <i class="fas fa-chart-bar mr-1"></i>Example Costs
                                     </h5>
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm text-gray-600">Base Package Rate:</span>
-                                            <span id="brand-base-rate-display" class="font-semibold text-gray-800">-- ETB/day</span>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">1,000 impressions:</span>
+                                            <span id="cpi-example-1k" class="font-semibold">0.00 ETB</span>
                                         </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm text-gray-600">This Package Rate:</span>
-                                            <span id="brand-this-rate-display" class="font-semibold text-gray-800">-- ETB/day</span>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">10,000 impressions:</span>
+                                            <span id="cpi-example-10k" class="font-semibold">0.00 ETB</span>
                                         </div>
-                                        <div class="border-t border-green-300 pt-2 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-semibold text-green-700">Discount vs Base:</span>
-                                                <span id="brand-calculated-discount" class="text-2xl font-bold text-green-600">--%</span>
-                                            </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">100,000 impressions:</span>
+                                            <span id="cpi-example-100k" class="font-semibold">0.00 ETB</span>
                                         </div>
-                                        <p class="text-xs text-gray-500 mt-2">
-                                            <i class="fas fa-info-circle mr-1"></i>
-                                            Discount is auto-calculated: ((Base - This) / Base) x 100
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Base Package Notice -->
-                                <div id="brand-is-base-notice" class="bg-orange-100 rounded-lg p-4 border border-orange-300 hidden">
-                                    <div class="text-center">
-                                        <i class="fas fa-crown text-orange-600 text-2xl mb-2"></i>
-                                        <p class="font-semibold text-orange-800">This is the Base Package</p>
-                                        <p class="text-xs text-orange-600">Other packages will calculate discounts relative to this rate</p>
                                     </div>
                                 </div>
                             </div>
@@ -4808,12 +5012,12 @@ The Team" required></textarea>
 
                     <!-- Submit Buttons -->
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-                        <button type="button" onclick="closeBrandPackageModal()"
+                        <button type="button" onclick="closeCpiSettingsModal()"
                             class="px-6 py-2 border rounded-lg hover:bg-gray-50">
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-                            <i class="fas fa-save mr-2"></i>Save Package
+                            <i class="fas fa-save mr-2"></i>Save CPI Settings
                         </button>
                     </div>
                 </form>
@@ -4938,42 +5142,12 @@ The Team" required></textarea>
                                 <p class="text-xs text-gray-500 mt-1">Select who this subscription plan is for</p>
                             </div>
 
-                            <!-- Monthly Price (Storage-based subscription) -->
+                            <!-- Monthly Price -->
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-2">Monthly Price (ETB) *</label>
                                 <input type="number" id="subscription-plan-price" class="w-full px-3 py-2 border rounded-lg"
                                     placeholder="e.g., 99" min="0" step="1" required oninput="calculateSubscriptionPreview()">
-                                <p class="text-xs text-gray-500 mt-1">Monthly subscription price for this storage plan</p>
-                            </div>
-
-                            <!-- Storage Amount -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold mb-2">Storage Amount (GB) *</label>
-                                <input type="number" id="subscription-plan-storage" class="w-full px-3 py-2 border rounded-lg"
-                                    placeholder="e.g., 64" min="1" step="1" value="64" required oninput="calculateSubscriptionPreview()">
-                                <p class="text-xs text-gray-500 mt-1">Storage included in this plan (e.g., 64GB, 256GB, 1024GB for 1TB)</p>
-                            </div>
-
-                            <!-- Base Plan Toggle (for package-based discount calculation) -->
-                            <div class="mb-4 p-4 border-2 border-dashed rounded-lg" id="subscription-base-plan-section">
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" id="subscription-is-base-plan" class="w-5 h-5 rounded" onchange="toggleSubscriptionBasePlan()">
-                                    <div>
-                                        <span class="font-semibold text-sm">Set as Base Plan</span>
-                                        <p class="text-xs text-gray-500">Other plans will calculate package discounts relative to this plan's price per GB</p>
-                                    </div>
-                                </label>
-                                <!-- Current Base Plan Info -->
-                                <div id="subscription-current-base-info" class="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200 hidden">
-                                    <div class="text-sm">
-                                        <i class="fas fa-info-circle text-purple-600 mr-1"></i>
-                                        <span class="text-gray-700">Current base plan: </span>
-                                        <strong id="subscription-current-base-name" class="text-purple-700">--</strong>
-                                        <span class="text-gray-600"> at </span>
-                                        <strong id="subscription-current-base-price-per-gb" class="text-purple-700">--</strong>
-                                        <span class="text-gray-600"> ETB/GB</span>
-                                    </div>
-                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Monthly subscription price for this plan</p>
                             </div>
 
                             <!-- Upfront Payment Discounts Section -->
@@ -5084,64 +5258,6 @@ The Team" required></textarea>
                                     </div>
                                 </div>
 
-                                <!-- Storage & Price Per GB -->
-                                <div class="bg-white rounded-lg p-4 shadow-sm border">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <div>
-                                            <div class="font-semibold text-gray-700">Storage Included</div>
-                                            <div class="text-xs text-gray-500">Cloud storage capacity</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div id="preview-storage-amount" class="text-xl font-bold text-blue-600">-- GB</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between items-center pt-2 border-t">
-                                        <div>
-                                            <div class="font-semibold text-gray-700">Price per GB</div>
-                                            <div class="text-xs text-gray-500">Cost per gigabyte</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div id="preview-price-per-gb" class="text-lg font-bold text-purple-600">-- ETB/GB</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Package Discount (vs Base Plan) -->
-                                <div id="subscription-package-discount-section" class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 border border-orange-200">
-                                    <h5 class="font-semibold text-orange-800 mb-3">
-                                        <i class="fas fa-box mr-1"></i>Package Discount (vs Base)
-                                    </h5>
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm text-gray-600">Base Plan Rate:</span>
-                                            <span id="subscription-base-rate-display" class="font-semibold text-gray-800">-- ETB/GB</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm text-gray-600">This Plan Rate:</span>
-                                            <span id="subscription-this-rate-display" class="font-semibold text-gray-800">-- ETB/GB</span>
-                                        </div>
-                                        <div class="border-t border-orange-300 pt-2 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-semibold text-orange-700">Package Discount:</span>
-                                                <span id="subscription-package-discount" class="text-2xl font-bold text-orange-600">--%</span>
-                                            </div>
-                                        </div>
-                                        <p class="text-xs text-gray-500 mt-2">
-                                            <i class="fas fa-info-circle mr-1"></i>
-                                            Discount for larger storage packages vs base plan
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Base Plan Notice -->
-                                <div id="subscription-is-base-notice" class="bg-purple-100 rounded-lg p-4 border border-purple-300 hidden">
-                                    <div class="text-center">
-                                        <i class="fas fa-crown text-purple-600 text-2xl mb-2"></i>
-                                        <p class="font-semibold text-purple-800">This is the Base Plan</p>
-                                        <p class="text-xs text-purple-600">Other plans calculate package discounts relative to this plan's rate</p>
-                                    </div>
-                                </div>
-
                                 <!-- Upfront Payment Pricing Preview -->
                                 <div id="subscription-tier-preview-section" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
                                     <h5 class="font-semibold text-green-800 mb-3">
@@ -5179,12 +5295,12 @@ The Team" required></textarea>
                                     </p>
                                 </div>
 
-                                <!-- Two Discount Types Notice -->
+                                <!-- Discount Info Notice -->
                                 <div class="bg-blue-100 rounded-lg p-4 border border-blue-300">
                                     <div class="text-center">
-                                        <i class="fas fa-tags text-blue-600 text-2xl mb-2"></i>
-                                        <p class="font-semibold text-blue-800">Two Types of Discounts</p>
-                                        <p class="text-xs text-blue-600">Package discount (larger storage) + Upfront payment discount</p>
+                                        <i class="fas fa-info-circle text-blue-600 text-2xl mb-2"></i>
+                                        <p class="font-semibold text-blue-800">Upfront Payment Discounts</p>
+                                        <p class="text-xs text-blue-600">Offer discounts for customers who pay multiple months upfront</p>
                                     </div>
                                 </div>
                             </div>
@@ -5248,12 +5364,12 @@ The Team" required></textarea>
                         <p class="text-xs text-gray-500 mt-1">Percentage of subscription value earned as commission</p>
                     </div>
 
-                    <!-- Duration Months -->
+                    <!-- Max Duration Months -->
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-2">Duration (Months) *</label>
+                        <label class="block text-sm font-semibold mb-2">Max Duration (Months) *</label>
                         <input type="number" id="affiliate-tier-duration" class="w-full px-3 py-2 border rounded-lg"
                             placeholder="12" min="1" max="60" required>
-                        <p class="text-xs text-gray-500 mt-1">How long the affiliate earns commission from this referral</p>
+                        <p class="text-xs text-gray-500 mt-1">Maximum time the affiliate earns commission (ends early if user unsubscribes or leaves Astegni)</p>
                     </div>
 
                     <!-- Active Toggle -->
@@ -5276,7 +5392,7 @@ The Team" required></textarea>
                             If a referred user subscribes for <strong>100 ETB/month</strong> and this tier has <strong>10% commission</strong>:
                         </p>
                         <p class="text-sm text-purple-700 mt-2 font-semibold">
-                            Affiliate earns: 10 ETB/month for the configured duration
+                            Affiliate earns: 10 ETB/month for up to the max duration
                         </p>
                     </div>
 

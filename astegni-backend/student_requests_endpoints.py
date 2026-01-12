@@ -323,7 +323,7 @@ async def get_my_requests_counts(
                 cur.execute("""
                     SELECT status, COUNT(*) as count
                     FROM parent_invitations
-                    WHERE inviter_id = %s
+                    WHERE inviter_user_id = %s
                     GROUP BY status
                 """, (current_user['id'],))
                 parenting_rows = cur.fetchall()

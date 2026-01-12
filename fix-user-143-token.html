@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix User 143 Token</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-2xl font-bold mb-4">Fix User 143 Token Issue</h1>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Problem:</h2>
+            <p class="text-sm text-gray-700">User 143's JWT token is missing the <code class="bg-gray-200 px-1">role_ids.advertiser</code> value, causing brand creation to fail with "Advertiser profile not found".</p>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Solution:</h2>
+            <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2">
+                <li>Click "Clear Token" to remove the old JWT token</li>
+                <li>You'll be redirected to the login page</li>
+                <li>Login again as <strong>contact@astegni.com</strong></li>
+                <li>New token will have correct <code class="bg-gray-200 px-1">role_ids.advertiser: 24</code></li>
+                <li>Brand creation will work!</li>
+            </ol>
+        </div>
+
+        <button
+            id="clearTokenBtn"
+            class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold">
+            Clear Token & Logout
+        </button>
+
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold text-sm mb-2">Current Token Status:</h3>
+            <pre id="tokenStatus" class="text-xs bg-white p-2 rounded overflow-auto max-h-40"></pre>
+        </div>
+
+        <div class="mt-4 p-4 bg-green-50 rounded-lg hidden" id="successMessage">
+            <p class="text-sm text-green-700">✅ Token cleared! Redirecting to login...</p>
+        </div>
+    </div>
+
+    <script>
+        // Display current token status
+        function displayTokenStatus() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            const status = {
+                hasToken: !!token,
+                userId: user.id || 'N/A',
+                email: user.email || 'N/A',
+                activeRole: user.active_role || 'N/A',
+                roleIds: user.role_ids || {},
+                advertiserProfileId: (user.role_ids || {}).advertiser || 'MISSING (This is the problem!)'
+            };
+
+            document.getElementById('tokenStatus').textContent = JSON.stringify(status, null, 2);
+        }
+
+        // Clear token and logout
+        document.getElementById('clearTokenBtn').addEventListener('click', () => {
+            // Clear all auth data
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('tokenExpiration');
+            sessionStorage.clear();
+
+            // Show success message
+            document.getElementById('successMessage').classList.remove('hidden');
+            document.getElementById('clearTokenBtn').disabled = true;
+
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 2000);
+        });
+
+        // Display status on load
+        displayTokenStatus();
+    </script>
+</body>
+</html>

@@ -249,7 +249,16 @@ body {
 .rating-tooltip-container {
     position: relative;
     display: inline-block;
+}
+
+/* Stars trigger element */
+.rating-stars-trigger {
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.rating-stars-trigger:hover {
+    transform: scale(1.1);
 }
 
 .rating-tooltip {
@@ -281,7 +290,9 @@ body {
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
 }
 
-.rating-tooltip-container:hover .rating-tooltip {
+/* Only show tooltip when hovering on the stars trigger */
+.rating-stars-trigger:hover + .rating-tooltip,
+.rating-tooltip:hover {
     opacity: 1;
     visibility: visible;
     bottom: calc(100% + 10px);
@@ -446,8 +457,6 @@ body {
     position: sticky;
     top: 5rem;
     height: fit-content;
-    max-height: calc(100vh - 6rem);
-    overflow-y: auto;
 }
 
 .admin-right-widgets > div {

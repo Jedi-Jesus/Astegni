@@ -1,0 +1,169 @@
+<!-- Review & Rate Astegni Modal -->
+<div id="review-astegni-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeReviewAstegniModal()"></div>
+    <div class="modal-content" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">&#11088;</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Review Astegni</h2>
+                    <p class="text-sm text-gray-500">Share your experience with us</p>
+                </div>
+            </div>
+            <button onclick="closeReviewAstegniModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Main Review Form -->
+        <div id="review-form-content">
+            <!-- Existing Review Banner (if exists) -->
+            <div id="existing-review-banner" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-blue-800">You've already submitted a review. You can update it below.</p>
+                </div>
+            </div>
+
+            <!-- Category Ratings -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4 text-center">Rate your experience with Astegni</h3>
+                <p class="text-sm text-gray-500 mb-4 text-center">Please rate the following areas (all required)</p>
+            </div>
+
+            <!-- Category Ratings -->
+            <div class="space-y-4 mb-6">
+
+                <!-- Ease of Use -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="text-sm text-gray-700">Ease of Use</span>
+                    <div class="flex gap-1" id="ease-rating-stars">
+                        <button onclick="setCategoryRating('ease', 1)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('ease', 2)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('ease', 3)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('ease', 4)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('ease', 5)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="text-sm text-gray-700">Features & Tools</span>
+                    <div class="flex gap-1" id="features-rating-stars">
+                        <button onclick="setCategoryRating('features', 1)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('features', 2)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('features', 3)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('features', 4)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('features', 5)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                    </div>
+                </div>
+
+                <!-- Support -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="text-sm text-gray-700">Customer Support</span>
+                    <div class="flex gap-1" id="support-rating-stars">
+                        <button onclick="setCategoryRating('support', 1)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('support', 2)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('support', 3)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('support', 4)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('support', 5)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                    </div>
+                </div>
+
+                <!-- Pricing -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="text-sm text-gray-700">Pricing</span>
+                    <div class="flex gap-1" id="value-rating-stars">
+                        <button onclick="setCategoryRating('value', 1)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('value', 2)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('value', 3)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('value', 4)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                        <button onclick="setCategoryRating('value', 5)" class="category-star text-xl text-gray-300 hover:text-yellow-400 transition-colors">&#9733;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Written Review -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tell us more (optional)</label>
+                <textarea id="review-text" rows="5" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none" placeholder="Share your thoughts about Astegni... What do you like? Any suggestions for improvement or features you'd like to see?"></textarea>
+                <p class="text-xs text-gray-500 mt-1"><span id="review-char-count">0</span>/1000 characters</p>
+            </div>
+
+            <!-- Recommend Toggle -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-800">Would you recommend Astegni?</p>
+                        <p class="text-xs text-gray-500">To friends, family, or colleagues</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="setRecommendation(true)" id="recommend-yes" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-700 transition-colors">
+                            Yes
+                        </button>
+                        <button onclick="setRecommendation(false)" id="recommend-no" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors">
+                            No
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="submitAstegniReview()" id="submit-review-btn" disabled class="w-full py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Submit Review
+            </button>
+        </div>
+
+        <!-- Success State -->
+        <div id="review-success-content" class="hidden text-center py-8">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Thank You!</h3>
+            <p class="text-gray-500 mb-6">Your feedback helps us improve Astegni for everyone.</p>
+
+            <div class="bg-indigo-50 rounded-xl p-4 mb-6">
+                <p class="text-sm text-indigo-800">Your review will be visible to the Astegni team and may help other users.</p>
+            </div>
+
+            <!-- Share Options -->
+            <div class="mb-6">
+                <p class="text-sm font-medium text-gray-700 mb-3">Share your experience:</p>
+                <div class="flex justify-center gap-3">
+                    <button onclick="shareReviewOn('twitter')" class="p-3 bg-[#1DA1F2] text-white rounded-xl hover:opacity-90 transition-opacity">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                    </button>
+                    <button onclick="shareReviewOn('facebook')" class="p-3 bg-[#1877F2] text-white rounded-xl hover:opacity-90 transition-opacity">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </button>
+                    <button onclick="shareReviewOn('linkedin')" class="p-3 bg-[#0A66C2] text-white rounded-xl hover:opacity-90 transition-opacity">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="closeReviewAstegniModal()" class="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
+                Close
+            </button>
+        </div>
+    </div>
+</div>

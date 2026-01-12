@@ -703,3 +703,252 @@ async def get_week_availability(tutor_id: int):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
+
+
+# ============================================
+# GET SIMILAR TUTORS
+# ============================================
+
+@router.get("/{tutor_id}/similar")
+async def get_similar_tutors(
+    tutor_id: int,
+    limit: int = Query(default=8, le=20),
+    by_user_id: bool = Query(False)
+):
+    """
+    Get similar tutors based on courses, subjects, location, and languages.
+    Returns tutors who teach similar subjects or are in the same location.
+
+    Args:
+        tutor_id: Can be either tutor_profile.id or user.id (depending on by_user_id)
+        limit: Maximum number of similar tutors to return (default 8)
+        by_user_id: If True, treats tutor_id as user.id instead of tutor_profile.id
+    """
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # First, get the current tutor's profile to find matching criteria
+            where_clause = "tp.user_id = %s" if by_user_id else "tp.id = %s"
+
+            cur.execute(f"""
+                SELECT tp.id, tp.user_id, tp.location, tp.languages
+                FROM tutor_profiles tp
+                WHERE {where_clause}
+            """, (tutor_id,))
+
+            current_tutor = cur.fetchone()
+            if not current_tutor:
+                raise HTTPException(status_code=404, detail="Tutor not found")
+
+            current_tutor_profile_id = current_tutor[0]
+            current_location = current_tutor[2]
+            current_languages = current_tutor[3] or []
+
+            # Get courses/subjects from tutor's packages
+            cur.execute("""
+                SELECT DISTINCT unnest(course_ids) as course_id
+                FROM tutor_packages
+                WHERE tutor_id = %s AND is_active = TRUE
+            """, (current_tutor_profile_id,))
+            current_courses = [row[0] for row in cur.fetchall()]
+
+            # Build query to find similar tutors
+            # Priority: 1) Same courses, 2) Same location, 3) Same languages
+            # Exclude the current tutor
+
+            # Convert languages list to a format suitable for JSON comparison
+            languages_json = current_languages if current_languages else []
+
+            cur.execute("""
+                WITH tutor_scores AS (
+                    SELECT
+                        tp.id,
+                        tp.user_id,
+                        tp.username,
+                        tp.profile_picture,
+                        tp.location,
+                        tp.languages,
+                        tp.is_verified,
+                        tp.expertise_badge,
+                        u.first_name,
+                        u.father_name,
+                        u.grandfather_name,
+                        -- Calculate similarity score
+                        (
+                            -- Score for matching courses (highest priority)
+                            CASE WHEN EXISTS (
+                                SELECT 1 FROM tutor_packages pkg
+                                WHERE pkg.tutor_id = tp.id
+                                AND pkg.is_active = TRUE
+                                AND pkg.course_ids && %s::integer[]
+                            ) THEN 50 ELSE 0 END
+                            +
+                            -- Score for same location
+                            CASE WHEN tp.location = %s THEN 30 ELSE 0 END
+                            +
+                            -- Score for overlapping languages (tp.languages is JSON/JSONB)
+                            CASE WHEN EXISTS (
+                                SELECT 1 FROM jsonb_array_elements_text(
+                                    CASE WHEN tp.languages IS NOT NULL AND tp.languages::text != 'null'
+                                         THEN tp.languages::jsonb
+                                         ELSE '[]'::jsonb
+                                    END
+                                ) AS lang
+                                WHERE lang = ANY(%s::text[])
+                            ) THEN 20 ELSE 0 END
+                        ) as similarity_score,
+                        -- Get average rating from reviews
+                        COALESCE(
+                            (SELECT AVG(rating) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
+                            0
+                        ) as avg_rating,
+                        -- Get review count
+                        COALESCE(
+                            (SELECT COUNT(*) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
+                            0
+                        ) as review_count,
+                        -- Get total students from enrolled_courses
+                        COALESCE(
+                            (SELECT SUM(array_length(students_id, 1))
+                             FROM enrolled_courses ec
+                             WHERE ec.tutor_id = tp.id AND ec.status = 'active'),
+                            0
+                        ) as total_students
+                    FROM tutor_profiles tp
+                    JOIN users u ON tp.user_id = u.id
+                    WHERE tp.id != %s
+                    AND tp.is_active = TRUE
+                    AND (tp.is_suspended IS NULL OR tp.is_suspended = FALSE)
+                )
+                SELECT
+                    id, user_id, username, profile_picture, location, languages,
+                    is_verified, expertise_badge,
+                    first_name, father_name, grandfather_name,
+                    similarity_score, avg_rating, review_count, total_students
+                FROM tutor_scores
+                WHERE similarity_score > 0
+                ORDER BY similarity_score DESC, avg_rating DESC, review_count DESC
+                LIMIT %s
+            """, (current_courses if current_courses else [],
+                  current_location,
+                  current_languages if current_languages else [],
+                  current_tutor_profile_id,
+                  limit))
+
+            similar_tutors = []
+            for row in cur.fetchall():
+                # Build full name
+                first_name = row[8] or ""
+                father_name = row[9] or ""
+                grandfather_name = row[10] or ""
+                full_name = " ".join(filter(None, [first_name, father_name, grandfather_name]))
+
+                # Get tutor's main subjects from packages
+                cur.execute("""
+                    SELECT DISTINCT c.course_name
+                    FROM tutor_packages pkg
+                    JOIN courses c ON c.id = ANY(pkg.course_ids)
+                    WHERE pkg.tutor_id = %s AND pkg.is_active = TRUE
+                    LIMIT 3
+                """, (row[0],))
+                subjects = [r[0] for r in cur.fetchall()]
+
+                similar_tutors.append({
+                    "id": row[0],
+                    "user_id": row[1],
+                    "username": row[2],
+                    "full_name": full_name or row[2] or "Tutor",
+                    "profile_picture": row[3],
+                    "location": row[4],
+                    "languages": row[5] or [],
+                    "is_verified": row[6],
+                    "expertise_badge": row[7],
+                    "subjects": subjects,
+                    "subjects_display": ", ".join(subjects) if subjects else "Various Subjects",
+                    "similarity_score": row[11],
+                    "rating": round(float(row[12]), 1) if row[12] else 0.0,
+                    "review_count": row[13] or 0,
+                    "total_students": row[14] or 0
+                })
+
+            # If we don't have enough similar tutors, fill with random active tutors
+            if len(similar_tutors) < limit:
+                remaining = limit - len(similar_tutors)
+                existing_ids = [t["id"] for t in similar_tutors]
+                existing_ids.append(current_tutor_profile_id)
+
+                cur.execute("""
+                    SELECT
+                        tp.id, tp.user_id, tp.username, tp.profile_picture,
+                        tp.location, tp.languages, tp.is_verified, tp.expertise_badge,
+                        u.first_name, u.father_name, u.grandfather_name,
+                        COALESCE(
+                            (SELECT AVG(rating) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
+                            0
+                        ) as avg_rating,
+                        COALESCE(
+                            (SELECT COUNT(*) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
+                            0
+                        ) as review_count,
+                        COALESCE(
+                            (SELECT SUM(array_length(students_id, 1))
+                             FROM enrolled_courses ec
+                             WHERE ec.tutor_id = tp.id AND ec.status = 'active'),
+                            0
+                        ) as total_students
+                    FROM tutor_profiles tp
+                    JOIN users u ON tp.user_id = u.id
+                    WHERE tp.id != ALL(%s)
+                    AND tp.is_active = TRUE
+                    AND (tp.is_suspended IS NULL OR tp.is_suspended = FALSE)
+                    ORDER BY avg_rating DESC, review_count DESC
+                    LIMIT %s
+                """, (existing_ids, remaining))
+
+                for row in cur.fetchall():
+                    first_name = row[8] or ""
+                    father_name = row[9] or ""
+                    grandfather_name = row[10] or ""
+                    full_name = " ".join(filter(None, [first_name, father_name, grandfather_name]))
+
+                    # Get tutor's main subjects
+                    cur.execute("""
+                        SELECT DISTINCT c.course_name
+                        FROM tutor_packages pkg
+                        JOIN courses c ON c.id = ANY(pkg.course_ids)
+                        WHERE pkg.tutor_id = %s AND pkg.is_active = TRUE
+                        LIMIT 3
+                    """, (row[0],))
+                    subjects = [r[0] for r in cur.fetchall()]
+
+                    similar_tutors.append({
+                        "id": row[0],
+                        "user_id": row[1],
+                        "username": row[2],
+                        "full_name": full_name or row[2] or "Tutor",
+                        "profile_picture": row[3],
+                        "location": row[4],
+                        "languages": row[5] or [],
+                        "is_verified": row[6],
+                        "expertise_badge": row[7],
+                        "subjects": subjects,
+                        "subjects_display": ", ".join(subjects) if subjects else "Various Subjects",
+                        "similarity_score": 0,
+                        "rating": round(float(row[11]), 1) if row[11] else 0.0,
+                        "review_count": row[12] or 0,
+                        "total_students": row[13] or 0
+                    })
+
+            return {
+                "similar_tutors": similar_tutors,
+                "total": len(similar_tutors),
+                "current_tutor_id": current_tutor_profile_id
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching similar tutors: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()

@@ -1,0 +1,261 @@
+<!--
+  Modal: kyc-verification-modal
+  Purpose: KYC (Know Your Customer) Liveliness Verification
+  Features: Document capture, selfie capture, liveliness challenges (blink, smile, turn)
+-->
+
+<div id="kyc-verification-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeKYCModal()"></div>
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h2 class="modal-title">Identity Verification</h2>
+            <button class="modal-close" onclick="closeKYCModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Progress Steps -->
+            <div class="kyc-progress" style="display: flex; justify-content: space-between; margin-bottom: 24px; padding: 0 20px;">
+                <div class="kyc-step active" id="step1">
+                    <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color, #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 8px;">1</div>
+                    <div class="step-label" style="text-align: center; font-size: 12px; color: var(--text-secondary);">Document</div>
+                </div>
+                <div class="step-line" style="flex: 1; height: 2px; background: var(--border-color, #e5e7eb); margin-top: 20px;"></div>
+                <div class="kyc-step" id="step2">
+                    <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--border-color, #e5e7eb); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 8px;">2</div>
+                    <div class="step-label" style="text-align: center; font-size: 12px; color: var(--text-secondary);">Liveliness</div>
+                </div>
+                <div class="step-line" style="flex: 1; height: 2px; background: var(--border-color, #e5e7eb); margin-top: 20px;"></div>
+                <div class="kyc-step" id="step3">
+                    <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--border-color, #e5e7eb); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 8px;">3</div>
+                    <div class="step-label" style="text-align: center; font-size: 12px; color: var(--text-secondary);">Verification</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Document Capture -->
+            <div id="kyc-step-document" class="kyc-step-content">
+                <div class="step-header" style="text-align: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 8px; color: var(--text-primary);">Capture Your Digital ID</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Hold your Ethiopian Digital ID clearly in front of the camera</p>
+                </div>
+
+                <div class="camera-container" style="position: relative; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+                    <video id="kyc-video-document" autoplay playsinline style="width: 100%; height: 350px; object-fit: cover;"></video>
+                    <canvas id="kyc-canvas-document" style="display: none;"></canvas>
+
+                    <!-- Document frame guide -->
+                    <div class="document-frame" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 60%; border: 3px dashed rgba(255,255,255,0.7); border-radius: 8px; pointer-events: none;">
+                        <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px;">Place ID here</div>
+                    </div>
+
+                    <!-- Captured image preview -->
+                    <img id="kyc-preview-document" style="display: none; width: 100%; height: 350px; object-fit: contain; background: #1a1a1a;">
+                </div>
+
+                <div class="capture-controls" style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="btn-capture-document" class="finance-btn-primary" onclick="captureDocument()" style="padding: 12px 32px;">
+                        Capture Document
+                    </button>
+                    <button id="btn-retake-document" class="btn-secondary" onclick="retakeDocument()" style="display: none; padding: 12px 32px;">
+                        Retake
+                    </button>
+                    <button id="btn-continue-document" class="finance-btn-primary" onclick="proceedToLiveliness()" style="display: none; padding: 12px 32px;">
+                        Continue
+                    </button>
+                </div>
+
+                <div class="tips-section" style="margin-top: 20px; padding: 16px; background: var(--bg-secondary, #f3f4f6); border-radius: 8px;">
+                    <p style="font-weight: 600; margin: 0 0 8px; font-size: 14px;">Tips for a clear photo:</p>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+                        <li>Ensure good lighting</li>
+                        <li>Avoid glare and shadows</li>
+                        <li>Keep the ID flat and steady</li>
+                        <li>Make sure all text is readable</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 2: Liveliness Challenges -->
+            <div id="kyc-step-liveliness" class="kyc-step-content" style="display: none;">
+                <div class="step-header" style="text-align: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 8px; color: var(--text-primary);">Liveliness Check</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Follow the instructions to verify you are a real person</p>
+                </div>
+
+                <div class="camera-container" style="position: relative; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+                    <video id="kyc-video-selfie" autoplay playsinline style="width: 100%; height: 350px; object-fit: cover; transform: scaleX(-1);"></video>
+                    <canvas id="kyc-canvas-selfie" style="display: none;"></canvas>
+
+                    <!-- Face oval guide -->
+                    <div class="face-oval" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 280px; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none;"></div>
+
+                    <!-- Challenge instruction overlay -->
+                    <div id="challenge-instruction" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; text-align: center;">
+                        Position your face in the oval
+                    </div>
+
+                    <!-- Challenge progress -->
+                    <div id="challenge-progress" style="position: absolute; top: 20px; right: 20px; display: flex; gap: 8px;">
+                        <div id="check-blink" class="challenge-check" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;" title="Blink"></div>
+                        <div id="check-smile" class="challenge-check" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;" title="Smile"></div>
+                        <div id="check-turn" class="challenge-check" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;" title="Head Turn"></div>
+                    </div>
+                </div>
+
+                <!-- Challenge buttons -->
+                <div class="challenge-controls" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                    <div id="challenge-buttons" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                        <button id="btn-challenge-blink" class="challenge-btn" onclick="startChallenge('blink')"
+                            style="padding: 12px 24px; border: 2px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Blink Test
+                        </button>
+                        <button id="btn-challenge-smile" class="challenge-btn" onclick="startChallenge('smile')"
+                            style="padding: 12px 24px; border: 2px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Smile Test
+                        </button>
+                        <button id="btn-challenge-turn" class="challenge-btn" onclick="startChallenge('turn')"
+                            style="padding: 12px 24px; border: 2px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Head Turn
+                        </button>
+                    </div>
+                    <button id="btn-complete-liveliness" class="finance-btn-primary" onclick="completeLiveliness()" style="display: none; padding: 12px 32px;">
+                        Complete Verification
+                    </button>
+                </div>
+
+                <div class="challenge-status" style="margin-top: 20px; padding: 16px; background: var(--bg-secondary, #f3f4f6); border-radius: 8px;">
+                    <p style="font-weight: 600; margin: 0 0 12px; font-size: 14px;">Verification Status:</p>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <div class="status-item" style="display: flex; align-items: center; gap: 8px;">
+                            <span id="status-blink" style="font-size: 18px;">&#9675;</span>
+                            <span style="font-size: 13px;">Blink detected</span>
+                        </div>
+                        <div class="status-item" style="display: flex; align-items: center; gap: 8px;">
+                            <span id="status-smile" style="font-size: 18px;">&#9675;</span>
+                            <span style="font-size: 13px;">Smile detected</span>
+                        </div>
+                        <div class="status-item" style="display: flex; align-items: center; gap: 8px;">
+                            <span id="status-turn" style="font-size: 18px;">&#9675;</span>
+                            <span style="font-size: 13px;">Head turn detected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Verification Result -->
+            <div id="kyc-step-result" class="kyc-step-content" style="display: none;">
+                <div id="kyc-result-success" style="display: none; text-align: center; padding: 40px 20px;">
+                    <div style="width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 style="color: #10b981; margin: 0 0 12px;">Identity Verified!</h3>
+                    <p style="color: var(--text-secondary); margin: 0 0 24px;">Your identity has been successfully verified. You now have full access to all platform features.</p>
+
+                    <div class="verification-details" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; text-align: left; margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Face Match Score:</span>
+                            <span id="result-face-score" style="font-weight: 600; color: #10b981;">95%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Liveliness Score:</span>
+                            <span id="result-liveliness-score" style="font-weight: 600; color: #10b981;">100%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary);">Verified At:</span>
+                            <span id="result-verified-at" style="font-weight: 600;"></span>
+                        </div>
+                    </div>
+
+                    <button class="finance-btn-primary" onclick="closeKYCModal()" style="padding: 12px 40px;">
+                        Continue
+                    </button>
+                </div>
+
+                <div id="kyc-result-failed" style="display: none; text-align: center; padding: 40px 20px;">
+                    <div style="width: 80px; height: 80px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                    <h3 style="color: #ef4444; margin: 0 0 12px;">Verification Failed</h3>
+                    <p id="result-failure-reason" style="color: var(--text-secondary); margin: 0 0 24px;">We could not verify your identity. Please try again.</p>
+
+                    <div id="retry-info" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="margin: 0; font-size: 14px;">
+                            Attempts remaining: <span id="result-attempts-remaining" style="font-weight: 600;">2</span>
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn-secondary" onclick="closeKYCModal()" style="padding: 12px 32px;">
+                            Cancel
+                        </button>
+                        <button id="btn-retry-kyc" class="finance-btn-primary" onclick="retryKYC()" style="padding: 12px 32px;">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+
+                <div id="kyc-result-processing" style="text-align: center; padding: 40px 20px;">
+                    <div class="spinner" style="width: 60px; height: 60px; border: 4px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                    <h3 style="margin: 0 0 12px;">Verifying Your Identity...</h3>
+                    <p style="color: var(--text-secondary); margin: 0;">This may take a few seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .kyc-step.active .step-circle {
+        background: var(--primary-color, #3b82f6) !important;
+        color: white !important;
+    }
+
+    .kyc-step.completed .step-circle {
+        background: #10b981 !important;
+        color: white !important;
+    }
+
+    .kyc-step.completed .step-circle::after {
+        content: '\\2713';
+    }
+
+    .challenge-btn:hover {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .challenge-btn.completed {
+        background: #10b981 !important;
+        border-color: #10b981 !important;
+        color: white !important;
+    }
+
+    .challenge-btn.completed::after {
+        content: ' \\2713';
+    }
+
+    .challenge-check.passed {
+        background: #10b981 !important;
+    }
+
+    .challenge-check.passed::after {
+        content: '\\2713';
+    }
+
+    #kyc-verification-modal .modal-content {
+        background: var(--bg-primary, white);
+    }
+
+    #kyc-verification-modal .modal-overlay {
+        background: rgba(0, 0, 0, 0.7);
+    }
+</style>

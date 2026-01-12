@@ -8,6 +8,7 @@ const StatsCounter = {
     defaultStats: {
         tutors_count: 500,
         courses_count: 50,
+        schools_count: 10,
         average_rating: 4.5
     },
 
@@ -40,22 +41,28 @@ const StatsCounter = {
     },
 
     updateStatTargets(stats) {
-        // Update tutors count
+        // Update tutors count (use nullish coalescing to allow 0 values)
         const tutorsEl = document.getElementById('stat-tutors');
         if (tutorsEl) {
-            tutorsEl.setAttribute('data-target', stats.tutors_count || this.defaultStats.tutors_count);
+            tutorsEl.setAttribute('data-target', stats.tutors_count ?? this.defaultStats.tutors_count);
         }
 
         // Update courses count
         const coursesEl = document.getElementById('stat-courses');
         if (coursesEl) {
-            coursesEl.setAttribute('data-target', stats.courses_count || this.defaultStats.courses_count);
+            coursesEl.setAttribute('data-target', stats.courses_count ?? this.defaultStats.courses_count);
+        }
+
+        // Update schools count
+        const schoolsEl = document.getElementById('stat-schools');
+        if (schoolsEl) {
+            schoolsEl.setAttribute('data-target', stats.schools_count ?? this.defaultStats.schools_count);
         }
 
         // Update average rating
         const ratingEl = document.getElementById('stat-rating');
         if (ratingEl) {
-            ratingEl.setAttribute('data-target', stats.average_rating || this.defaultStats.average_rating);
+            ratingEl.setAttribute('data-target', stats.average_rating ?? this.defaultStats.average_rating);
         }
     },
 
@@ -82,6 +89,12 @@ const StatsCounter = {
 
     animateCounter(element) {
         const target = parseFloat(element.getAttribute('data-target'));
+
+        // Skip elements without a valid numeric target (e.g., "Coming Soon" stats)
+        if (isNaN(target)) {
+            return;
+        }
+
         const suffix = element.getAttribute('data-suffix') || '';
         const decimal = parseInt(element.getAttribute('data-decimal')) || 0;
         const duration = 2000; // 2 seconds

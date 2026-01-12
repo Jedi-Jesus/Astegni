@@ -1,134 +1,397 @@
 <!--
   Modal: verify-personal-info-modal
   Purpose: Verify and update user personal information from users table
-  Features: Personal info tab + Change password tab
+  Features: Personal info tab + Identity Verification tab + Change password tab
 -->
 
 <div id="verify-personal-info-modal" class="modal hidden"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-overlay" onclick="closeVerifyPersonalInfoModal()"></div>
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 class="modal-title">🔐 Account Settings</h2>
-                <button class="modal-close" onclick="closeVerifyPersonalInfoModal()">×</button>
-            </div>
-
-            <!-- Tab Navigation -->
-            <div class="modal-tabs" style="display: flex; border-bottom: 2px solid var(--border-color, #e5e7eb); margin-bottom: 20px;">
-                <button class="modal-tab active" id="personalInfoTab" onclick="switchVerifyTab('personal')"
-                    style="flex: 1; padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 600; color: var(--primary-color, #3b82f6); border-bottom: 2px solid var(--primary-color, #3b82f6); margin-bottom: -2px;">
-                    👤 Personal Info
-                </button>
-                <button class="modal-tab" id="changePasswordTab" onclick="switchVerifyTab('password')"
-                    style="flex: 1; padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--text-secondary, #6b7280); border-bottom: 2px solid transparent; margin-bottom: -2px;">
-                    🔑 Change Password
-                </button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Personal Info Tab Content -->
-                <div id="personalInfoContent" class="tab-content">
-                    <form id="verifyPersonalInfoForm" class="enhanced-form">
-                        <div class="form-group">
-                            <label class="form-label">First Name *</label>
-                            <input type="text" id="modalFirstName" class="form-input" placeholder="First name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Father Name *</label>
-                            <input type="text" id="modalFatherName" class="form-input" placeholder="Father name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Grandfather Name *</label>
-                            <input type="text" id="modalGrandfatherName" class="form-input" placeholder="Grandfather name"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Gender</label>
-                            <select id="modalGender" class="form-select">
-                                <option value="">Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email Addresses</label>
-                            <div id="modalEmailContainer" class="space-y-2 mb-3">
-                                <!-- Dynamically populated -->
-                            </div>
-                            <button type="button" class="btn-secondary" onclick="addModalEmail()">
-                                ➕ Add Email
-                            </button>
-                            <small class="status-message">⚠️ Changing email requires OTP verification</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Phone Numbers</label>
-                            <div id="modalPhoneContainer" class="space-y-2 mb-3">
-                                <!-- Dynamically populated -->
-                            </div>
-                            <button type="button" class="btn-secondary" onclick="addModalPhone()">
-                                ➕ Add Phone Number
-                            </button>
-                            <small class="status-message">⚠️ Changing phone requires OTP verification</small>
-                        </div>
-                    </form>
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeVerifyPersonalInfoModal()"></div>
+    <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
                 </div>
-
-                <!-- Change Password Tab Content -->
-                <div id="changePasswordContent" class="tab-content" style="display: none;">
-                    <form id="changePasswordForm" class="enhanced-form">
-                        <div class="form-group">
-                            <label class="form-label">Current Password *</label>
-                            <div class="password-input-wrapper" style="position: relative;">
-                                <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password" required>
-                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('currentPassword')"
-                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
-                                    👁️
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">New Password *</label>
-                            <div class="password-input-wrapper" style="position: relative;">
-                                <input type="password" id="newPassword" class="form-input" placeholder="Enter new password" required>
-                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('newPassword')"
-                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
-                                    👁️
-                                </button>
-                            </div>
-                            <div id="passwordStrength" style="margin-top: 8px; font-size: 12px;"></div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirm New Password *</label>
-                            <div class="password-input-wrapper" style="position: relative;">
-                                <input type="password" id="confirmNewPassword" class="form-input" placeholder="Confirm new password" required>
-                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmNewPassword')"
-                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
-                                    👁️
-                                </button>
-                            </div>
-                            <div id="passwordMatch" style="margin-top: 8px; font-size: 12px;"></div>
-                        </div>
-                        <div class="password-requirements" style="background: var(--bg-secondary, #f3f4f6); padding: 12px; border-radius: 8px; margin-top: 16px;">
-                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Password Requirements:</p>
-                            <ul style="font-size: 12px; color: var(--text-secondary, #6b7280); margin: 0; padding-left: 20px;">
-                                <li id="reqLength">At least 8 characters</li>
-                                <li id="reqUppercase">One uppercase letter</li>
-                                <li id="reqLowercase">One lowercase letter</li>
-                                <li id="reqNumber">One number</li>
-                            </ul>
-                        </div>
-                    </form>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Account Settings</h2>
+                    <p class="text-sm text-gray-500">Manage your personal information</p>
                 </div>
             </div>
+            <button onclick="closeVerifyPersonalInfoModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
 
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeVerifyPersonalInfoModal()">Cancel</button>
-                <button id="savePersonalInfoBtn" class="finance-btn-primary" onclick="saveAllPersonalInfo()">
-                    💾 Save Changes
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition-all" id="personalInfoTab" onclick="switchVerifyTab('personal')">
+                Personal Info
+            </button>
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-all" id="identityVerifyTab" onclick="switchVerifyTab('identity')">
+                Identity Verification
+            </button>
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-all" id="changePasswordTab" onclick="switchVerifyTab('password')">
+                Password
+            </button>
+        </div>
+
+        <!-- Personal Info Tab Content -->
+        <div id="personalInfoContent" class="tab-content">
+            <form id="verifyPersonalInfoForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                    <input type="text" id="modalFirstName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your first name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Father Name *</label>
+                    <input type="text" id="modalFatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your father's name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Grandfather Name *</label>
+                    <input type="text" id="modalGrandfatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your grandfather's name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                    <input type="date" id="modalDateOfBirth" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" required>
+                    <p class="text-xs text-gray-500 mt-1">Required for full access to platform features</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
+                    <select id="modalGender" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Required for full access to platform features</p>
+                </div>
+                <!-- Digital ID Number - Hidden for now -->
+                <div id="digitalIdFormGroup" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Digital ID Number</label>
+                    <input type="text" id="modalDigitalIdNo" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your Ethiopian Digital ID" maxlength="50">
+                    <p class="text-xs text-gray-500 mt-1">Your Ethiopian Digital ID is required for full access to platform features</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Addresses</label>
+                    <div id="modalEmailContainer" class="space-y-2 mb-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium" onclick="addModalEmail()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Email
+                    </button>
+                    <p class="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        Changing email requires OTP verification
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Numbers</label>
+                    <div id="modalPhoneContainer" class="space-y-2 mb-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium" onclick="addModalPhone()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Phone Number
+                    </button>
+                    <p class="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        Changing phone requires OTP verification
+                    </p>
+                </div>
+            </form>
+
+            <!-- Footer for Personal Info Tab -->
+            <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button onclick="closeVerifyPersonalInfoModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                <button id="savePersonalInfoBtn" onclick="saveAllPersonalInfo()" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Changes
                 </button>
-                <button id="changePasswordBtn" class="finance-btn-primary" onclick="changeUserPassword()" style="display: none;">
-                    🔑 Change Password
+            </div>
+        </div>
+
+        <!-- Identity Verification Tab Content -->
+        <div id="identityVerifyContent" class="tab-content" style="display: none;">
+            <div class="kyc-status-section">
+                <!-- Loading State -->
+                <div id="kycLoadingStatus" class="flex flex-col items-center justify-center py-12">
+                    <div class="w-10 h-10 border-3 border-gray-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                    <p class="text-gray-500 text-sm">Loading verification status...</p>
+                    <style>
+                        @keyframes spin { to { transform: rotate(360deg); } }
+                        .animate-spin { animation: spin 1s linear infinite; }
+                    </style>
+                </div>
+
+                <!-- KYC Verified State -->
+                <div id="kycVerifiedStatus" style="display: none;">
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-green-800 mb-1">Identity Verified</h3>
+                                <p class="text-sm text-green-600 mb-4">Your identity has been verified. You have full access to all platform features.</p>
+
+                                <!-- Document Image - Hidden for now -->
+                                <div id="kycDocumentImageContainer" style="display: none !important;" class="mb-4">
+                                    <label class="text-xs text-gray-500 block mb-2">Verified Document</label>
+                                    <div class="relative inline-block">
+                                        <img id="kycVerifiedDocumentImage" src="" alt="Verified ID Document" class="max-w-48 max-h-32 rounded-lg border-2 border-green-500 object-cover shadow-md">
+                                        <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Verified Digital ID - Hidden for now -->
+                                <div id="kycDigitalIdSection" style="display: none;" class="bg-white p-3 rounded-lg mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <rect x="3" y="4" width="18" height="16" rx="2" stroke-width="2"></rect>
+                                            <line x1="7" y1="9" x2="17" y2="9" stroke-width="2"></line>
+                                            <line x1="7" y1="13" x2="12" y2="13" stroke-width="2"></line>
+                                        </svg>
+                                        <div>
+                                            <span class="text-xs text-gray-500 block">Digital ID Number</span>
+                                            <span id="kycVerifiedDigitalId" class="font-semibold text-gray-800"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Verification Date -->
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                                        <polyline points="12 6 12 12 16 14" stroke-width="2"></polyline>
+                                    </svg>
+                                    <span>Verified on: </span>
+                                    <span id="kycVerifiedDate" class="font-medium"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KYC Not Verified State -->
+                <div id="kycNotVerifiedStatus" style="display: none;">
+                    <div class="flex items-start gap-5 mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Verify Your Identity</h3>
+                            <p class="text-sm text-gray-500 leading-relaxed">
+                                Complete identity verification to unlock full access to platform features and ensure the safety of our community.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-5 mb-5">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-3">What you'll need:</h4>
+                        <div class="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Ethiopian Digital ID
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Working camera
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Good lighting
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                2-3 minutes
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-6">
+                        <p class="text-sm text-amber-800">
+                            <strong>Steps:</strong> Photo of ID &#8594; Selfie &#8594; Liveliness check (blink, smile, turn head)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- KYC In Progress State -->
+                <div id="kycInProgressStatus" style="display: none;">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                                    <polyline points="12 6 12 12 16 14" stroke-width="2"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-indigo-800 mb-1">Verification In Progress</h3>
+                                <p class="text-sm text-indigo-600">You have a verification in progress. Click the button below to continue where you left off.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KYC Failed State -->
+                <div id="kycFailedStatus" style="display: none;">
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-red-800 mb-1">Verification Failed</h3>
+                                <p id="kycFailureReason" class="text-sm text-red-600 mb-3"></p>
+                                <p id="kycAttemptsInfo" class="text-xs bg-red-100 text-red-700 px-3 py-2 rounded-lg inline-block"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer for Identity Verification Tab -->
+            <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button onclick="closeVerifyPersonalInfoModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                <button id="startVerificationBtn" onclick="startKYCVerification()" style="display: none;" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    Start Verification
+                </button>
+                <button id="continueVerificationBtn" onclick="continueKYCVerification()" style="display: none;" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                    Continue Verification
+                </button>
+                <button id="retryVerificationBtn" onclick="retryKYCVerification()" style="display: none;" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Try Again
+                </button>
+            </div>
+        </div>
+
+        <!-- Change Password Tab Content -->
+        <div id="changePasswordContent" class="tab-content" style="display: none;">
+            <form id="changePasswordForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Current Password *</label>
+                    <div class="relative">
+                        <input type="password" id="currentPassword" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all pr-12" placeholder="Enter current password" required>
+                        <button type="button" onclick="togglePasswordVisibility('currentPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">New Password *</label>
+                    <div class="relative">
+                        <input type="password" id="newPassword" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all pr-12" placeholder="Enter new password" required>
+                        <button type="button" onclick="togglePasswordVisibility('newPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="passwordStrength" class="mt-2"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password *</label>
+                    <div class="relative">
+                        <input type="password" id="confirmNewPassword" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all pr-12" placeholder="Confirm new password" required>
+                        <button type="button" onclick="togglePasswordVisibility('confirmNewPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="passwordMatch" class="mt-2"></div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 mt-4">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3">Password Requirements:</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li id="reqLength" class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            </svg>
+                            At least 8 characters
+                        </li>
+                        <li id="reqUppercase" class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            </svg>
+                            One uppercase letter
+                        </li>
+                        <li id="reqLowercase" class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            </svg>
+                            One lowercase letter
+                        </li>
+                        <li id="reqNumber" class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            </svg>
+                            One number
+                        </li>
+                    </ul>
+                </div>
+            </form>
+
+            <!-- Footer for Password Tab -->
+            <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button onclick="closeVerifyPersonalInfoModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                <button id="changePasswordBtn" onclick="changeUserPassword()" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    Change Password
                 </button>
             </div>
         </div>
     </div>
+</div>

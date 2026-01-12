@@ -46,11 +46,14 @@
     <!-- Styles -->
     <link href="css/root.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
+    <link href="css/index/responsive.css" rel="stylesheet" />
 
     <!-- Common Modals and Components -->
     <link href="css/index/auth-modals.css" rel="stylesheet" />
+    <link href="css/index/social-login-modal.css" rel="stylesheet" />
     <link href="css/common-modals/ad-modal.css" rel="stylesheet" />
     <link href="css/common-modals/coming-soon-modal.css" rel="stylesheet" />
+    <link href="css/common-modals/accept-team-invite-modal.css" rel="stylesheet" />
 
 
     <!-- Favicon -->
@@ -179,49 +182,141 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu Button -->
-            <button class="lg:hidden focus:outline-none hamburger" id="menu-btn">
-                <span></span>
-                <span></span>
-                <span></span>
+            <!-- Mobile Menu Button (< 1024px) -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                <span class="mobile-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
             </button>
         </div>
+    </nav>
 
-        <!-- Mobile Menu -->
-        <div class="mobile-menu hidden" id="mobile-menu">
-            <div class="mobile-menu-content">
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
-                    <span class="nav-icon">📰</span> News
+    <!-- Mobile Menu Slide-in Panel (< 1024px) -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-content">
+            <!-- Mobile Menu Header with Logo (shown only under 768px) -->
+            <div class="mobile-menu-header">
+                <a href="index.html" class="mobile-logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Home</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
                 </a>
-                <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
-                    onclick="handleNavLinkClick(event, 'find-tutors')">
-                    <span class="nav-icon">👨‍🏫</span> Find Tutors
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
-                    onclick="handleNavLinkClick(event, 'reels')">
-                    <span class="nav-icon">🎬</span> Reels
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
-                    <span class="nav-icon">🛒</span> Store
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
-                    <span class="nav-icon">💼</span> Find a Job
-                </a>
+            </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Navigation Links -->
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'news'); closeMobileMenu();">
+                <span class="nav-icon">📰</span> News
+            </a>
+            <a class="mobile-menu-link" href="branch/find-tutors.html">
+                <span class="nav-icon">👨‍🏫</span> Find Tutors
+            </a>
+            <a class="mobile-menu-link" href="branch/reels.html">
+                <span class="nav-icon">🎬</span> Reels
+            </a>
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'store'); closeMobileMenu();">
+                <span class="nav-icon">📚</span> Bookstore
+            </a>
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs'); closeMobileMenu();">
+                <span class="nav-icon">💼</span> Find a Job
+            </a>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Mobile Profile Section (shown when logged in) -->
+            <div id="mobile-profile-section" class="mobile-profile-section hidden">
+                <div class="mobile-profile-dropdown">
+                    <!-- Clickable Header (toggles dropdown) -->
+                    <button id="mobile-profile-toggle" class="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                        <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                        <div class="mobile-profile-info">
+                            <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                            <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                        </div>
+                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Expandable Dropdown Content -->
+                    <div id="mobile-profile-dropdown-content" class="mobile-profile-dropdown-content">
+                        <!-- User Info -->
+                        <a href="#" id="mobile-profile-link" class="mobile-dropdown-user-info">
+                            <img id="mobile-dropdown-pic" class="mobile-dropdown-pic" alt="Profile">
+                            <div class="mobile-dropdown-info">
+                                <span id="mobile-dropdown-name" class="mobile-dropdown-name"></span>
+                                <span id="mobile-dropdown-email" class="mobile-dropdown-email"></span>
+                            </div>
+                        </a>
+
+                        <!-- Role Switcher (shown only if user has multiple roles) -->
+                        <div id="mobile-role-switcher-section" class="mobile-role-switcher-section hidden">
+                            <div class="mobile-role-switcher-header">Switch Role</div>
+                            <div id="mobile-role-options" class="mobile-role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Logout Button -->
+                        <button id="mobile-logout-btn" class="mobile-dropdown-logout" onclick="logout(); closeMobileMenu();">
+                            <svg class="mobile-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
                 <div class="mobile-menu-divider"></div>
-                <button id="mobile-login-btn" class="mobile-menu-item" onclick="openModal('login-modal')">Login</button>
-                <button id="mobile-register-btn" class="mobile-menu-item"
-                    onclick="openModal('register-modal')">Register</button>
-                <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
+            </div>
+
+            <!-- Auth buttons (shown when logged out) -->
+            <div id="mobile-auth-section" class="mobile-auth-section">
+                <button id="mobile-login-btn" class="mobile-menu-item mobile-auth-btn" onclick="openModal('login-modal'); closeMobileMenu();">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                     </svg>
-                    Toggle Theme
+                    Login
+                </button>
+                <button id="mobile-register-btn" class="mobile-menu-item mobile-auth-btn" onclick="openModal('register-modal'); closeMobileMenu();">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                    Register
                 </button>
             </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Theme Toggle -->
+            <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
+                <svg id="mobile-theme-icon" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                Toggle Theme
+            </button>
+
+            <!-- Notification Button (Mobile) -->
+            <button id="mobile-notification-btn" class="mobile-menu-item hidden" onclick="openModal('notification-modal'); closeMobileMenu();">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                    </path>
+                </svg>
+                Notifications
+                <span id="mobile-notification-badge" class="mobile-notification-badge">3</span>
+            </button>
         </div>
-    </nav>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Enhanced Hero Section -->
     <section class="hero-section text-center">
@@ -235,8 +330,9 @@
                     <span class="typing-cursor">|</span>
                 </h1>
 
-                <!-- Animated Counter Cards (3 cards in single row) -->
+                <!-- Animated Counter Cards -->
                 <div class="counter-grid-wrapper">
+                    <!-- Top row: 4 cards -->
                     <div class="counter-grid-top">
                         <div class="counter-card-enhanced hover-lift">
                             <div class="counter-icon">👨‍👩‍👧‍👦</div>
@@ -253,7 +349,24 @@
                             <h3 id="counter-tutors" class="counter-number">0</h3>
                             <p class="counter-label">Expert Tutors</p>
                         </div>
-                        <!-- Hidden: Training Centers, Books Available, Job Opportunities -->
+                        <div class="counter-card-enhanced hover-lift coming-soon-card">
+                            <div class="counter-icon">🌍</div>
+                            <h3 class="counter-number coming-soon-text">Coming Soon</h3>
+                            <p class="counter-label">Countries</p>
+                        </div>
+                    </div>
+                    <!-- Bottom row: 2 wide cards (each spans 2 columns) -->
+                    <div class="counter-grid-bottom">
+                        <div class="counter-card-enhanced counter-card-wide hover-lift">
+                            <div class="counter-icon">🏫</div>
+                            <h3 id="counter-schools" class="counter-number">0</h3>
+                            <p class="counter-label">Schools</p>
+                        </div>
+                        <div class="counter-card-enhanced counter-card-wide hover-lift">
+                            <div class="counter-icon">📚</div>
+                            <h3 id="counter-courses" class="counter-number">0</h3>
+                            <p class="counter-label">Courses</p>
+                        </div>
                     </div>
                 </div>
 
@@ -357,32 +470,92 @@
         </div>
     </section>
 
-    <!-- Premium Advertisement -->
-    <section class="ad-section premium">
-        <div class="container mx-auto px-4">
-            <div class="premium-ad-container">
-                <div class="ad-backdrop"></div>
-                <div class="ad-content-wrapper">
-                    <div class="ad-text-content">
-                        <span class="ad-tag">Place your Ad. here</span>
-                        <h3 class="ad-headline">Transform Your Ad. Experience</h3>
-                        <p class="ad-description">Advertise to the most targated audience.</p>
-                        <div class="ad-buttons">
-
-                            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn more</button>
-                        </div>
-                    </div>
-                    <div class="ad-visual-content">
-                        <div class="floating-card card-1"></div>
-                        <div class="floating-card card-2"></div>
-                        <div class="floating-card card-3"></div>
-                    </div>
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Premium Advertising Services</h3>
+                <p class="ad-text">Reach your target audience effectively</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
                 </div>
             </div>
         </div>
-    </section>
 
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Boost Your Brand Visibility</h3>
+                <p class="ad-text">Connect with thousands of students and educators</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Started</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Targeted Education Marketing</h3>
+                <p class="ad-text">Reach parents and students across Ethiopia</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Could Be Here</h3>
+                <p class="ad-text">Premium placement for maximum visibility</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Start Campaign</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Enhanced News Section with Larger Text -->
     <section class="news-section py-16">
@@ -510,30 +683,92 @@
         </div>
     </section>
 
-    <!-- Premium Advertisement -->
-    <section class="ad-section premium">
-        <div class="container mx-auto px-4">
-            <div class="premium-ad-container">
-                <div class="ad-backdrop"></div>
-                <div class="ad-content-wrapper">
-                    <div class="ad-text-content">
-                        <span class="ad-tag">Place your Ad. here</span>
-                        <h3 class="ad-headline">Transform Your Ad. Experience</h3>
-                        <p class="ad-description">Advertise to the most targated audience.</p>
-                        <div class="ad-buttons">
-                            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn more</button>
-                        </div>
-                    </div>
-                    <div class="ad-visual-content">
-                        <div class="floating-card card-1"></div>
-                        <div class="floating-card card-2"></div>
-                        <div class="floating-card card-3"></div>
-                    </div>
+    <!-- Rotating Ad Section 2 - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Discover Top Tutors</h3>
+                <p class="ad-text">Find expert educators in your area</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
                 </div>
             </div>
         </div>
-    </section>
 
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Partner With Astegni</h3>
+                <p class="ad-text">Expand your educational business reach</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Partner Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">School Management Solutions</h3>
+                <p class="ad-text">Streamline your institution's operations</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Advertise With Us</h3>
+                <p class="ad-text">Premium placement for maximum impact</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Quote</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Testimonials Section (New) - Hidden until we have real testimonials -->
     <section class="testimonials-section py-16" style="display: none;">
         <div class="container mx-auto px-4">
@@ -840,8 +1075,10 @@
 
     <!-- Modal Scripts -->
     <script src="js/common-modals/ad-modal.js"></script>
+    <script src="js/common-modals/ad-rotation-manager.js"></script>
     <script src="js/common-modals/coming-soon-modal.js"></script>
     <script src="js/common-modals/logout-modal.js"></script>
+    <script src="js/common-modals/accept-team-invite-modal.js"></script>
 
     <!-- Add Role Modal functionality is in js/root/profile-system.js -->
 </body>

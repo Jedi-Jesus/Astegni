@@ -595,6 +595,12 @@ async function loadMediaSettings() {
 }
 
 function updateTierUI(tier) {
+    // Validate tier object before accessing properties
+    if (!tier || typeof tier.tier_name !== 'string') {
+        console.warn('updateTierUI: Invalid tier object or tier_name is not a string', tier);
+        return;
+    }
+
     // Update tier fields in UI based on tier_name
     const prefix = tier.tier_name.toLowerCase();
 

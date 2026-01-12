@@ -35,11 +35,6 @@ const ModalLoader = (function() {
         'achievement-modal.html',
         'certification-modal.html',
         'custom-filter-modal.html',
-        'delete-modal1.html',
-        'delete-final-modal.html',
-        'delete-password-modal.html',
-        'delete-subscription-check-modal.html',
-        'delete-verify-modal.html',
         'edit-profile-modal.html',
         'experience-modal.html',
         'contact-confirmation-modal.html',
@@ -66,29 +61,39 @@ const ModalLoader = (function() {
     // Modals in common-modals folder (shared across profiles)
     const COMMON_MODALS = [
         'accept-parent-invitation-modal.html',
+        'access-restricted-modal.html',
         'ad-analytics-modal.html',
         'add-role-modal.html',
+        'appearance-modal.html',
         'coming-soon-modal.html',
+        'connected-accounts-modal.html',
         'course-request-modal.html',
         'community-modal.html',
         'create-club-modal.html',
         'create-event-modal.html',
         'coursework-main-modal.html',
+        'digital-lab-modal.html',
         'coursework-give-modal.html',
         'coursework-my-courseworks-modal.html',
         'coursework-view-answers-modal.html',
         'coursework-view-details-modal.html',
+        'export-data-modal.html',
         'folder-modal.html',
         'invite-parent-modal.html',
+        'language-preferences-modal.html',
         'leave-astegni-modal.html',
+        'login-activity-modal.html',
         'logout-modal.html',
         'payment-method-modal.html',
+        'review-astegni-modal.html',
         'schedule-modal.html',
         'student-details-modal.html',
         'subscription-modal.html',
+        'two-factor-auth-modal.html',
         'upload-document-modal.html',
         'universal-upload-modal.html',
-        'verify-personal-info-modal.html'
+        'verify-personal-info-modal.html',
+        'whiteboard-modal.html'
     ];
 
     // Modal ID to filename and path mapping
@@ -97,11 +102,6 @@ const ModalLoader = (function() {
         'achievementModal': { file: 'achievement-modal.html', path: 'tutor-profile' },
         'certificationModal': { file: 'certification-modal.html', path: 'tutor-profile' },
         'customFilterModal': { file: 'custom-filter-modal.html', path: 'tutor-profile' },
-        'deleteModal1': { file: 'delete-modal1.html', path: 'tutor-profile' },
-        'deleteFinalModal': { file: 'delete-final-modal.html', path: 'tutor-profile' },
-        'deletePasswordModal': { file: 'delete-password-modal.html', path: 'tutor-profile' },
-        'deleteSubscriptionCheckModal': { file: 'delete-subscription-check-modal.html', path: 'tutor-profile' },
-        'deleteVerifyModal': { file: 'delete-verify-modal.html', path: 'tutor-profile' },
         'edit-profile-modal': { file: 'edit-profile-modal.html', path: 'tutor-profile' },
         'experienceModal': { file: 'experience-modal.html', path: 'tutor-profile' },
         'contact-confirmation-modal': { file: 'contact-confirmation-modal.html', path: 'tutor-profile' },
@@ -128,6 +128,8 @@ const ModalLoader = (function() {
 
         // Common modals (shared across profiles)
         'accept-parent-invitation-modal': { file: 'accept-parent-invitation-modal.html', path: 'common-modals' },
+        'access-restricted-modal': { file: 'access-restricted-modal.html', path: 'common-modals' },
+        'accessRestrictedModal': { file: 'access-restricted-modal.html', path: 'common-modals' },
         'adAnalyticsModal': { file: 'ad-analytics-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },
         'coming-soon-modal': { file: 'coming-soon-modal.html', path: 'common-modals' },
@@ -152,7 +154,24 @@ const ModalLoader = (function() {
         'scheduleModal': { file: 'schedule-modal.html', path: 'common-modals' },
         'subscription-modal': { file: 'subscription-modal.html', path: 'common-modals' },
         'uploadDocumentModal': { file: 'upload-document-modal.html', path: 'common-modals' },
-        'verify-personal-info-modal': { file: 'verify-personal-info-modal.html', path: 'common-modals' }
+        'verify-personal-info-modal': { file: 'verify-personal-info-modal.html', path: 'common-modals' },
+
+        // Settings modals (new)
+        'two-factor-auth-modal': { file: 'two-factor-auth-modal.html', path: 'common-modals' },
+        'login-activity-modal': { file: 'login-activity-modal.html', path: 'common-modals' },
+        'connected-accounts-modal': { file: 'connected-accounts-modal.html', path: 'common-modals' },
+        'language-preferences-modal': { file: 'language-preferences-modal.html', path: 'common-modals' },
+        'export-data-modal': { file: 'export-data-modal.html', path: 'common-modals' },
+        'review-astegni-modal': { file: 'review-astegni-modal.html', path: 'common-modals' },
+        'appearance-modal': { file: 'appearance-modal.html', path: 'common-modals' },
+
+        // Digital Whiteboard modal
+        'whiteboardModal': { file: 'whiteboard-modal.html', path: 'common-modals' },
+        'whiteboard-modal': { file: 'whiteboard-modal.html', path: 'common-modals' },
+
+        // Digital Lab modal
+        'digitalLabModal': { file: 'digital-lab-modal.html', path: 'common-modals' },
+        'digital-lab-modal': { file: 'digital-lab-modal.html', path: 'common-modals' }
     };
 
     // Cache for loaded modals
@@ -389,3 +408,13 @@ if (document.readyState === 'loading') {
 } else {
     ModalLoader.init();
 }
+
+// Expose as window.modalLoader for compatibility with settings-manager.js
+window.modalLoader = {
+    loadModal: async function(modalFile) {
+        // Extract modal ID from filename (e.g., 'two-factor-auth-modal.html' -> 'two-factor-auth-modal')
+        const modalId = modalFile.replace('.html', '');
+        await ModalLoader.load(modalFile);
+        return document.getElementById(modalId);
+    }
+};

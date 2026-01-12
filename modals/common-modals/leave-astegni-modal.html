@@ -1,51 +1,309 @@
 <!--
   Modal: leave-astegni-modal
-  Extracted from: tutor-profile.html
-  Purpose: [Auto-extracted modal component]
+  Purpose: Account deletion confirmation with sliding panels
+  Features: Dramatic red design, multi-step flow with smooth transitions
 -->
 
 <div id="leave-astegni-modal" class="modal hidden"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-overlay" onclick="closeLeaveAstegniModal()"></div>
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 class="modal-title">🚪 Leave Astegni</h2>
-                <button class="modal-close" onclick="closeLeaveAstegniModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="warning-card">
-                    <div class="warning-icon">⚠️</div>
-                    <h3 class="warning-text">
-                        Are you sure you want to permanently delete your account?
-                    </h3>
-                    <p class="text-sm text-red-700 mb-4">
-                        This action cannot be undone. All your data will be permanently deleted, including:
-                    </p>
-                    <ul class="text-left text-sm text-red-700 mb-4">
-                        <li>• Profile information and settings</li>
-                        <li>• Uploaded videos, documents, and materials</li>
-                        <li>• Student connections and reviews</li>
-                        <li>• Earnings history and payment information</li>
-                        <li>• Subscriptions and storage data</li>
-                    </ul>
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(239, 68, 68, 0.1); backdrop-filter: blur(4px);">
+    <div class="modal-overlay" onclick="closeLeaveAstegniModal()" style="background: rgba(220, 38, 38, 0.2);"></div>
+    <div class="modal-content" style="position: relative; max-width: 600px; max-height: 90vh; overflow: hidden; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);">
 
-                    <div class="form-group text-left">
-                        <label class="form-label">Type "DELETE" to confirm *</label>
-                        <input type="text" id="deleteConfirmation" class="form-input" placeholder="Type DELETE here">
+        <!-- Close Button (Top Right) -->
+        <button onclick="closeLeaveAstegniModal()"
+            class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 transition-all duration-200"
+            style="z-index: 100;">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Panels Container (slides left/right) -->
+        <div id="leave-astegni-panels" style="display: flex; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); will-change: transform;">
+
+            <!-- PANEL 1: Initial Confirmation -->
+            <div class="leave-panel" data-panel="1" style="min-width: 100%; max-height: 90vh; overflow-y: auto;">
+
+                <!-- Icon Header -->
+                <div class="flex flex-col items-center text-center mb-8 pt-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
                     </div>
+                    <h2 class="text-3xl font-bold text-red-900 mb-2">Delete Your Account?</h2>
+                    <p class="text-red-700 text-base">This action cannot be undone</p>
+                </div>
 
-                    <div class="form-group text-left">
-                        <label class="form-label">Tell us why you're leaving (optional)</label>
-                        <textarea id="leaveReason" class="form-textarea" rows="3"
-                            placeholder="Your feedback helps us improve..."></textarea>
+                <!-- Warning Section -->
+                <div class="bg-white border-2 border-red-300 rounded-2xl p-6 mb-6 mx-6">
+                    <p class="text-sm font-semibold text-red-800 mb-4">All your data will be permanently deleted:</p>
+                    <ul class="space-y-3 text-sm text-red-700">
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span>Profile information and settings</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span>Uploaded videos, documents, and materials</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span>Student connections and reviews</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span>Earnings history and payment information</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span>Subscriptions and storage data</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Confirmation Input -->
+                <div class="mb-6 mx-6">
+                    <label class="block text-sm font-semibold text-red-900 mb-3 text-center">
+                        Type <span class="font-bold text-red-600 text-lg">DELETE</span> to confirm
+                    </label>
+                    <input type="text" id="deleteConfirmation"
+                        class="w-full p-4 text-center text-lg font-semibold border-2 border-red-300 rounded-xl bg-white focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all placeholder-red-300"
+                        placeholder="DELETE"
+                        autocomplete="off">
+                </div>
+
+                <!-- Alternative Actions -->
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 mb-6 mx-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm text-amber-900 font-semibold mb-1">Need help instead?</p>
+                            <p class="text-sm text-amber-800">Consider <a href="#" onclick="openSupportModal()" class="underline font-semibold hover:text-amber-900">contacting support</a> before deleting your account.</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Footer -->
+                <div class="flex gap-4 px-6 pb-8">
+                    <button onclick="closeLeaveAstegniModal()"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm">
+                        Cancel
+                    </button>
+                    <button onclick="goToDeletePanel(2)"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                        Continue
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeLeaveAstegniModal()">Cancel</button>
-                <button class="btn-danger" onclick="confirmDeleteAccount()">
-                    🗑️ Delete My Account
-                </button>
+
+            <!-- PANEL 2: Why are you leaving? -->
+            <div class="leave-panel" data-panel="2" style="min-width: 100%; max-height: 90vh; overflow-y: auto;">
+                <!-- Icon Header -->
+                <div class="flex flex-col items-center text-center mb-8 pt-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-red-900 mb-2">Why Are You Leaving?</h2>
+                    <p class="text-red-700 text-base">Your feedback helps us improve</p>
+                </div>
+
+                <!-- Reasons Checkboxes -->
+                <div class="mx-6 mb-6">
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="not_useful" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500">
+                            <span class="text-sm font-medium text-red-900">Not useful</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="too_expensive" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500">
+                            <span class="text-sm font-medium text-red-900">Too expensive</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="found_alternative" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500">
+                            <span class="text-sm font-medium text-red-900">Found alternative</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="privacy_concerns" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500">
+                            <span class="text-sm font-medium text-red-900">Privacy concerns</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="not_satisfied" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500">
+                            <span class="text-sm font-medium text-red-900">Not satisfied</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 bg-white border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                            <input type="checkbox" name="deleteReason" value="other" id="deleteOtherCheckbox" class="w-5 h-5 text-red-600 rounded border-red-300 focus:ring-red-500" onchange="toggleOtherTextarea(this)">
+                            <span class="text-sm font-medium text-red-900">Other (specify)</span>
+                        </label>
+                    </div>
+                    <textarea id="otherTextDelete"
+                        class="hidden w-full mt-3 p-4 border-2 border-red-300 rounded-xl bg-white focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all resize-none"
+                        rows="3"
+                        placeholder="Please tell us more..."></textarea>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex gap-4 px-6 pb-8">
+                    <button onclick="goToDeletePanel(1)"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                        </svg>
+                        Back
+                    </button>
+                    <button onclick="submitDeleteReasons()"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        Continue
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
+
+            <!-- PANEL 3: 90-Day Warning -->
+            <div class="leave-panel" data-panel="3" style="min-width: 100%; max-height: 90vh; overflow-y: auto;">
+                <!-- Icon Header -->
+                <div class="flex flex-col items-center text-center mb-8 pt-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-red-900 mb-2">90-Day Deletion Period</h2>
+                    <p class="text-red-700 text-base">You can still come back</p>
+                </div>
+
+                <!-- Info Card -->
+                <div class="bg-blue-50 border-2 border-blue-300 rounded-2xl p-6 mb-4 mx-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-900 mb-2">Your account will be deactivated immediately, but data will be kept for 90 days.</p>
+                            <p class="text-sm text-blue-800">If you log in within this period, your account will be fully restored automatically with all your data intact!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deletion Fee Warning -->
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 mb-6 mx-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-900 mb-2">Deletion Fee Applies</p>
+                            <p class="text-sm text-amber-800">A <span class="font-bold">200 ETB deletion fee</span> will be charged upon account deletion.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex gap-4 px-6 pb-8">
+                    <button onclick="goToDeletePanel(2)"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                        </svg>
+                        Back
+                    </button>
+                    <button onclick="proceedToSubscriptionCheck()"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        I Understand
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 4: Password Confirmation -->
+            <div class="leave-panel" data-panel="4" style="min-width: 100%; max-height: 90vh; overflow-y: auto;">
+                <!-- Icon Header -->
+                <div class="flex flex-col items-center text-center mb-8 pt-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-red-900 mb-2">Final Confirmation</h2>
+                    <p class="text-red-700 text-base">Enter your password to proceed</p>
+                </div>
+
+                <!-- Password Input -->
+                <div class="mb-6 mx-6">
+                    <label class="block text-sm font-semibold text-red-900 mb-3">
+                        Password *
+                    </label>
+                    <input type="password" id="deletePassword"
+                        class="w-full p-4 text-lg border-2 border-red-300 rounded-xl bg-white focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all"
+                        placeholder="Enter your password">
+                </div>
+
+                <!-- Footer -->
+                <div class="flex gap-4 px-6 pb-8">
+                    <button onclick="goToDeletePanel(3)"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                        </svg>
+                        Back
+                    </button>
+                    <button onclick="finalConfirmDeleteAccount()"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Confirm Deletion
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 5: Farewell -->
+            <div class="leave-panel" data-panel="5" style="min-width: 100%; max-height: 90vh; overflow-y: auto;">
+                <!-- Icon Header -->
+                <div class="flex flex-col items-center text-center mb-8 pt-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-green-900 mb-2">Account Deactivated</h2>
+                    <p class="text-green-700 text-base">We hope to see you again soon</p>
+                </div>
+
+                <!-- Success Message -->
+                <div class="bg-green-50 border-2 border-green-300 rounded-2xl p-6 mb-4 mx-6">
+                    <p class="text-sm font-semibold text-green-900 mb-3 text-center">Your account has been scheduled for deletion in 90 days.</p>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm text-green-800">Simply log in within the next 90 days to automatically restore your account with all your data intact!</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex px-6 pb-8">
+                    <button onclick="closeDeleteFinalModal()"
+                        class="w-full py-4 px-6 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all font-semibold shadow-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Goodbye
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>

@@ -19,13 +19,13 @@
                         <h3 id="chatCurrentUserName">You</h3>
                         <span class="user-occupation" id="chatCurrentUserRole">User</span>
                     </div>
-                    <button class="btn-settings" onclick="toggleChatSettings()" title="Chat Settings">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                    </button>
                 </div>
+                <button class="sidebar-header-settings-btn" onclick="toggleChatSettings()" title="Chat Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
             </div>
 
             <!-- Search Bar -->
@@ -41,10 +41,13 @@
 
             <!-- Tabs -->
             <div class="sidebar-tabs">
-                <button class="tab-btn active" data-tab="all">All</button>
-                <button class="tab-btn" data-tab="personal">Personal</button>
-                <button class="tab-btn" data-tab="groups">Groups</button>
-                <button class="tab-btn" data-tab="unread">Unread</button>
+                <button class="tab-btn active" data-tab="all"><i class="fas fa-comments"></i> All</button>
+                <button class="tab-btn" data-tab="requests"><i class="fas fa-user-plus"></i> Requests</button>
+                <button class="tab-btn" data-tab="personal"><i class="fas fa-user"></i> Personal</button>
+                <button class="tab-btn" data-tab="groups"><i class="fas fa-users"></i> Groups</button>
+                <button class="tab-btn" data-tab="channels"><i class="fas fa-bullhorn"></i> Channels</button>
+                <button class="tab-btn" data-tab="archived"><i class="fas fa-archive"></i> Archived</button>
+                <button class="tab-btn" data-tab="blocked"><i class="fas fa-ban"></i> Blocked</button>
             </div>
 
             <!-- Contacts List -->
@@ -58,12 +61,12 @@
             </div>
 
             <!-- Sidebar Footer -->
-            <div class="sidebar-footer">
-                <button class="sidebar-action-btn" id="newChatBtn" onclick="startNewChatFromModal()">
+            <div class="sidebar-footer" id="chatSidebarFooter" style="display: none;">
+                <button class="sidebar-action-btn" id="createGroupChannelBtn" onclick="ChatModalManager.showCreateGroupChannel()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14M5 12h14"></path>
                     </svg>
-                    New Chat
+                    <span id="createGroupChannelLabel">Create Group</span>
                 </button>
             </div>
         </div>
@@ -114,7 +117,9 @@
                         <div class="online-indicator" id="chatUserOnlineIndicator"></div>
                     </div>
                     <div class="user-basic-info">
-                        <h2 id="chatUserName">User Name</h2>
+                        <a href="#" id="chatUserNameLink" class="chat-user-name-link" title="View profile">
+                            <h2 id="chatUserName">User Name</h2>
+                        </a>
                         <span class="user-occupation-header" id="chatUserRole">Role</span>
                         <span class="last-seen" id="chatLastSeen">Last seen recently</span>
                     </div>
@@ -125,7 +130,7 @@
                                 <path d="m21 21-4.35-4.35"></path>
                             </svg>
                         </button>
-                        <button class="header-btn read-messages" id="chatReadMessagesBtn" onclick="showComingSoonReadMessages()" title="Read Messages Aloud">
+                        <button class="header-btn read-messages" id="chatReadMessagesBtn" onclick="toggleReadMessages()" title="Read Messages Aloud">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -406,22 +411,38 @@
                         <img src="" alt="" id="chatInfoPanelAvatar">
                         <h3 id="chatInfoPanelName">User Name</h3>
                         <p id="chatInfoPanelRole">Role</p>
+                        <p class="info-location" id="chatInfoLocation" style="display: none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span class="info-value"></span>
+                        </p>
                         <p id="chatInfoPanelLastSeen">Last seen today</p>
                     </div>
-
-                    <div class="info-section">
-                        <h4>Location</h4>
-                        <div class="info-detail" id="chatInfoLocation" style="display: none;">
-                            <span class="info-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                            </span>
-                            <span class="info-value"></span>
+                    
+                    <!-- Action Cards Row -->
+                    <div class="info-actions-row">
+                        <div class="info-action-card" id="infoPanelMuteCard" onclick="ChatModalManager.toggleMuteFromInfoPanel()">
+                            <div class="action-card-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <span class="action-card-title">Mute</span>
+                        </div>
+                        <div class="info-action-card" id="infoPanelPinCard" onclick="ChatModalManager.togglePinFromInfoPanel()">
+                            <div class="action-card-icon">
+                                <i class="fas fa-thumbtack"></i>
+                            </div>
+                            <span class="action-card-title">Pin</span>
+                        </div>
+                        <div class="info-action-card" id="infoPanelArchiveCard" onclick="ChatModalManager.toggleArchiveFromInfoPanel()">
+                            <div class="action-card-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <span class="action-card-title">Archive</span>
                         </div>
                     </div>
-                    
+
                     <div class="info-section info-quote-section">
                         <h4>Quote</h4>
                         <p class="info-quote" id="chatInfoPanelQuote">No quote available</p>
@@ -434,6 +455,8 @@
                             <button class="media-tab" onclick="showChatMediaTab('videos')">Videos</button>
                             <button class="media-tab" onclick="showChatMediaTab('files')">Files</button>
                             <button class="media-tab" onclick="showChatMediaTab('links')">Links</button>
+                            <button class="media-tab" onclick="showChatMediaTab('members')" id="chatMembersTabBtn" style="display: none;">Members</button>
+                            <button class="media-tab" onclick="showChatMediaTab('polls')" id="chatPollsTabBtn" style="display: none;">Polls</button>
                         </div>
 
                         <div class="media-content">
@@ -462,6 +485,49 @@
                                     <p class="no-media">No shared links</p>
                                 </div>
                             </div>
+
+                            <!-- Members Tab (for groups/channels only) -->
+                            <div id="chatMembersTab" class="media-tab-content">
+                                <button class="add-member-btn" id="chatAddMemberBtn" onclick="openAddMemberModal()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="8.5" cy="7" r="4"></circle>
+                                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                                    </svg>
+                                    Add Member
+                                </button>
+                                <button class="leave-group-btn" id="chatLeaveGroupBtn" onclick="leaveGroupOrChannel()" style="display: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <polyline points="16 17 21 12 16 7"></polyline>
+                                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                                    </svg>
+                                    <span id="chatLeaveGroupBtnText">Leave Group</span>
+                                </button>
+                                <div class="members-header">
+                                    <h4><i class="fas fa-users"></i> Members</h4>
+                                    <span class="members-count" id="chatMembersCount">0 members</span>
+                                </div>
+                                <div class="members-list" id="chatMembersList">
+                                    <!-- Members will be loaded dynamically -->
+                                    <p class="no-media">No members</p>
+                                </div>
+                            </div>
+
+                            <!-- Polls Tab -->
+                            <div id="chatPollsTab" class="media-tab-content">
+                                <button class="create-poll-btn" onclick="openCreatePollModal()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 5v14M5 12h14"></path>
+                                    </svg>
+                                    Create Poll
+                                </button>
+                                <div class="polls-list" id="chatPollsList">
+                                    <!-- Polls will be loaded dynamically -->
+                                    <p class="no-media">No polls yet</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -470,7 +536,7 @@
                             <span class="block-text">Block Contact</span>
                             <span class="unblock-text" style="display: none;">Unblock Contact</span>
                         </button>
-                        <button class="info-action-btn danger" onclick="deleteChatHistory()">Delete Chat</button>
+                        <button class="info-action-btn danger" onclick="showDeleteContactConfirmation()">Delete Contact</button>
                     </div>
                 </div>
             </div>
@@ -642,6 +708,177 @@
         </div>
     </div>
 
+    <!-- Two-Step Verification Modal (shown when 2FA is enabled) -->
+    <div class="two-step-verify-modal" id="twoStepVerifyModal" style="display: none;">
+        <div class="two-step-verify-overlay"></div>
+        <div class="two-step-verify-content">
+            <div class="two-step-verify-header">
+                <div class="two-step-verify-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <h3>Two-Step Verification</h3>
+                <p>Enter your chat security password to continue</p>
+            </div>
+            <div class="two-step-verify-body">
+                <div class="two-step-verify-form">
+                    <div class="form-group">
+                        <label>Security Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="twoStepVerifyPassword" placeholder="Enter your security password" class="settings-input" autocomplete="off">
+                            <button type="button" class="toggle-password-btn" onclick="toggleTwoStepPasswordVisibility()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-off-icon" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="form-error" id="twoStepVerifyError" style="display: none;">Incorrect password. Please try again.</span>
+                    </div>
+                    <button class="settings-action-btn primary full-width" id="twoStepVerifyBtn" onclick="verifyTwoStepPassword()">
+                        <span id="twoStepVerifyBtnText">Verify & Continue</span>
+                        <div class="btn-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+                <div class="two-step-verify-footer">
+                    <a href="javascript:void(0)" onclick="forgotTwoStepPassword()" class="forgot-password-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Forgot password?
+                    </a>
+                </div>
+            </div>
+            <button class="two-step-verify-close" onclick="closeChatModalCompletely()" title="Cancel and close chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Forgot Two-Step Password Modal -->
+    <div class="forgot-two-step-modal" id="forgotTwoStepModal" style="display: none;">
+        <div class="forgot-two-step-overlay" onclick="closeForgotTwoStepModal()"></div>
+        <div class="forgot-two-step-content">
+            <div class="forgot-two-step-header">
+                <div class="forgot-two-step-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+                <h3>Reset Security Password</h3>
+                <p id="forgotTwoStepDesc">We'll send a reset code to your account email</p>
+            </div>
+            <div class="forgot-two-step-body">
+                <!-- Step 1: Show account email and send code -->
+                <div class="forgot-step" id="forgotStep1">
+                    <div class="recovery-email-display">
+                        <span class="recovery-label">Account email:</span>
+                        <span class="recovery-email" id="recoveryEmailDisplay">j***@gmail.com</span>
+                    </div>
+                    <button class="settings-action-btn primary full-width" onclick="sendTwoStepResetCode()">
+                        <span id="sendResetCodeBtnText">Send Reset Code</span>
+                        <div class="btn-spinner" style="display: none;"></div>
+                    </button>
+                    <div class="no-recovery-email" id="noRecoveryEmail" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <p>No email found for your account. Please contact support to reset your security password.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Enter code and new password -->
+                <div class="forgot-step" id="forgotStep2" style="display: none;">
+                    <div class="form-group">
+                        <label>Enter the 6-digit code sent to your email</label>
+                        <div class="otp-input-group">
+                            <input type="text" maxlength="1" class="otp-input" data-index="0" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                            <input type="text" maxlength="1" class="otp-input" data-index="1" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                            <input type="text" maxlength="1" class="otp-input" data-index="2" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                            <input type="text" maxlength="1" class="otp-input" data-index="3" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                            <input type="text" maxlength="1" class="otp-input" data-index="4" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                            <input type="text" maxlength="1" class="otp-input" data-index="5" oninput="handleOtpInput(this)" onkeydown="handleOtpKeydown(event, this)">
+                        </div>
+                        <span class="form-error" id="otpError" style="display: none;">Invalid code. Please try again.</span>
+                    </div>
+                    <div class="form-group">
+                        <label>New Security Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="newTwoStepPassword" placeholder="Enter new password (min 6 characters)" class="settings-input">
+                            <button type="button" class="toggle-password-btn" onclick="toggleSetupPasswordVisibility('newTwoStepPassword', this)">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-off-icon" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmNewTwoStepPassword" placeholder="Confirm new password" class="settings-input">
+                            <button type="button" class="toggle-password-btn" onclick="toggleSetupPasswordVisibility('confirmNewTwoStepPassword', this)">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-off-icon" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="form-error" id="newPasswordError" style="display: none;">Passwords don't match</span>
+                    </div>
+                    <button class="settings-action-btn primary full-width" onclick="resetTwoStepPassword()">
+                        <span id="resetPasswordBtnText">Reset Password</span>
+                        <div class="btn-spinner" style="display: none;"></div>
+                    </button>
+                    <div class="resend-code-section">
+                        <span>Didn't receive the code?</span>
+                        <button class="resend-code-btn" onclick="sendTwoStepResetCode()" id="resendCodeBtn">Resend</button>
+                        <span class="resend-countdown" id="resendCountdown" style="display: none;">Resend in <span id="countdownTimer">60</span>s</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Success -->
+                <div class="forgot-step" id="forgotStep3" style="display: none;">
+                    <div class="success-message">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <h4>Password Reset Successfully!</h4>
+                        <p>Your security password has been updated. You can now access your chats.</p>
+                        <button class="settings-action-btn primary" onclick="closeForgotTwoStepModal(); verifyTwoStepPassword();">Continue to Chat</button>
+                    </div>
+                </div>
+            </div>
+            <button class="forgot-two-step-close" onclick="closeForgotTwoStepModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <!-- Chat Settings Modal (separate from main chat modal) -->
     <div class="chat-settings-modal" id="chatSettingsModal">
         <div class="chat-settings-modal-overlay" onclick="toggleChatSettings()"></div>
@@ -664,46 +901,261 @@
                             </svg>
                             Privacy & Security
                         </h4>
-                        <div class="settings-option">
-                            <div class="option-info">
-                                <span class="option-label">Who can message me</span>
-                                <span class="option-desc">Control who can start conversations</span>
+
+                        <!-- Subsection: Visibility -->
+                        <div class="settings-subsection">
+                            <span class="subsection-label">Visibility</span>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Last seen</span>
+                                    <span class="option-desc">Who can see when you were last active</span>
+                                </div>
+                                <select class="settings-select" id="settingLastSeenVisibility" onchange="updateChatSetting('last_seen_visibility', this.value)">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="connections">Connections only</option>
+                                    <option value="nobody">Nobody</option>
+                                </select>
                             </div>
-                            <select class="settings-select" id="settingWhoCanMessage" onchange="updateChatSetting('who_can_message', this.value)">
-                                <option value="everyone">Everyone</option>
-                                <option value="connections">Connections only</option>
-                                <option value="none">No one</option>
-                            </select>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Online status</span>
+                                    <span class="option-desc">Show when you're online</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingOnlineStatus" checked onchange="updateChatSetting('online_status', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Read receipts</span>
+                                    <span class="option-desc">Show when you've read messages</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingReadReceipts" checked onchange="updateChatSetting('read_receipts', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Typing indicators</span>
+                                    <span class="option-desc">Show when you're typing</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingTypingIndicators" checked onchange="updateChatSetting('typing_indicators', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="settings-option">
-                            <div class="option-info">
-                                <span class="option-label">Read receipts</span>
-                                <span class="option-desc">Show when you've read messages</span>
+
+                        <!-- Subsection: Messaging -->
+                        <div class="settings-subsection">
+                            <span class="subsection-label">Messaging</span>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Who can message me</span>
+                                    <span class="option-desc">Control who can start conversations</span>
+                                </div>
+                                <select class="settings-select" id="settingWhoCanMessage" onchange="updateChatSetting('who_can_message', this.value)">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="connections">Connections only</option>
+                                    <option value="none">No one</option>
+                                </select>
                             </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="settingReadReceipts" checked onchange="updateChatSetting('read_receipts', this.checked)">
-                                <span class="toggle-slider"></span>
-                            </label>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Who can call me</span>
+                                    <span class="option-desc">Control who can make voice/video calls</span>
+                                </div>
+                                <select class="settings-select" id="settingAllowCallsFrom" onchange="updateChatSetting('allow_calls_from', this.value)">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="connections">Connections only</option>
+                                    <option value="none">No one</option>
+                                </select>
+                            </div>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Who can add me to groups</span>
+                                    <span class="option-desc">Control who can add you to group chats</span>
+                                </div>
+                                <select class="settings-select" id="settingAllowGroupAdds" onchange="updateChatSetting('allow_group_adds', this.value)">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="connections">Connections only</option>
+                                    <option value="none">No one</option>
+                                </select>
+                            </div>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Who can add me to channels</span>
+                                    <span class="option-desc">Control who can add you to channels</span>
+                                </div>
+                                <select class="settings-select" id="settingAllowChannelAdds" onchange="updateChatSetting('allow_channel_adds', this.value)">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="connections">Connections only</option>
+                                    <option value="none">No one</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="settings-option">
-                            <div class="option-info">
-                                <span class="option-label">Online status</span>
-                                <span class="option-desc">Show when you're online</span>
+
+                        <!-- Subsection: Message Protection -->
+                        <div class="settings-subsection">
+                            <span class="subsection-label">Message Protection</span>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Block screenshots</span>
+                                    <span class="option-desc">Prevent others from taking screenshots of your chats</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingBlockScreenshots" onchange="updateChatSetting('block_screenshots', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="settingOnlineStatus" checked onchange="updateChatSetting('online_status', this.checked)">
-                                <span class="toggle-slider"></span>
-                            </label>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Disable message forwarding</span>
+                                    <span class="option-desc">Prevent your messages from being forwarded</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingDisableForwarding" onchange="updateChatSetting('disable_forwarding', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="settings-option">
-                            <div class="option-info">
-                                <span class="option-label">Typing indicators</span>
-                                <span class="option-desc">Show when you're typing</span>
+
+                        <!-- Subsection: Account Security -->
+                        <div class="settings-subsection">
+                            <span class="subsection-label">Account Security</span>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Two-step verification</span>
+                                    <span class="option-desc">Add an extra layer of security to your account</span>
+                                </div>
+                                <button class="settings-action-btn" id="settingTwoStepBtn" onclick="openTwoStepVerification()">
+                                    <span id="twoStepBtnText">Set Up</span>
+                                </button>
                             </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="settingTypingIndicators" checked onchange="updateChatSetting('typing_indicators', this.checked)">
-                                <span class="toggle-slider"></span>
-                            </label>
+                            <div class="settings-option">
+                                <div class="option-info">
+                                    <span class="option-label">Active sessions</span>
+                                    <span class="option-desc">Manage devices where you're logged in</span>
+                                </div>
+                                <button class="settings-action-btn" onclick="openActiveSessionsPanel()">
+                                    <span id="activeSessionsCount">View</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Sessions Panel (slides in) -->
+                    <div class="active-sessions-panel" id="activeSessionsPanel">
+                        <div class="active-sessions-header">
+                            <button class="active-sessions-back" onclick="closeActiveSessionsPanel()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <h4>Active Sessions</h4>
+                        </div>
+                        <div class="active-sessions-content">
+                            <div class="current-session-card">
+                                <div class="session-device-icon current">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                </div>
+                                <div class="session-info">
+                                    <span class="session-device-name">This device</span>
+                                    <span class="session-details" id="currentSessionDetails">Loading...</span>
+                                    <span class="session-status active">Online now</span>
+                                </div>
+                            </div>
+
+                            <div class="other-sessions-header">
+                                <span>Other sessions</span>
+                                <button class="terminate-all-btn" onclick="terminateAllOtherSessions()">Terminate all</button>
+                            </div>
+
+                            <div class="other-sessions-list" id="otherSessionsList">
+                                <div class="sessions-loading">
+                                    <div class="loading-spinner"></div>
+                                    <p>Loading sessions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Step Verification Panel (slides in) -->
+                    <div class="two-step-panel" id="twoStepPanel">
+                        <div class="two-step-header">
+                            <button class="two-step-back" onclick="closeTwoStepPanel()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <h4>Two-Step Verification</h4>
+                        </div>
+                        <div class="two-step-content">
+                            <div class="two-step-status" id="twoStepStatus">
+                                <div class="two-step-icon disabled">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                </div>
+                                <h5 id="twoStepStatusTitle">Two-Step Verification is Off</h5>
+                                <p id="twoStepStatusDesc">Set up an additional password to protect your account.</p>
+                            </div>
+
+                            <div class="two-step-form" id="twoStepForm">
+                                <div class="form-group">
+                                    <label>Create a password</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" id="twoStepPassword" placeholder="Enter password (min 6 characters)" class="settings-input">
+                                        <button type="button" class="toggle-password-btn" onclick="toggleSetupPasswordVisibility('twoStepPassword', this)">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-off-icon" style="display: none;">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Confirm password</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" id="twoStepConfirmPassword" placeholder="Re-enter password" class="settings-input">
+                                        <button type="button" class="toggle-password-btn" onclick="toggleSetupPasswordVisibility('twoStepConfirmPassword', this)">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-off-icon" style="display: none;">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group form-hint-only">
+                                    <span class="form-hint">If you forget your password, a reset code will be sent to your account email.</span>
+                                </div>
+                                <button class="settings-action-btn primary full-width" onclick="enableTwoStepVerification()">Enable Two-Step Verification</button>
+                            </div>
+
+                            <div class="two-step-enabled" id="twoStepEnabled" style="display: none;">
+                                <div class="two-step-option">
+                                    <span>Change password</span>
+                                    <button class="settings-action-btn" onclick="changeTwoStepPassword()">Change</button>
+                                </div>
+                                <div class="two-step-option danger">
+                                    <span>Turn off two-step verification</span>
+                                    <button class="settings-action-btn danger" onclick="disableTwoStepVerification()">Disable</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -805,68 +1257,61 @@
                                 <option value="newline">New line</option>
                             </select>
                         </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Typing indicator style</span>
+                                <span class="option-desc">Shape of typing animation dots</span>
+                            </div>
+                            <select class="settings-select" id="settingTypingStyle" onchange="updateChatSetting('typing_indicator_style', this.value)">
+                                <option value="circle" selected>Circle</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Media & Storage Section -->
-                    <div class="settings-section">
+                    <!-- Media & Storage Section (Coming Soon) -->
+                    <div class="settings-section coming-soon-section">
                         <h4 class="settings-section-title">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                             </svg>
                             Media & Storage
+                            <span class="coming-soon-badge">Coming Soon</span>
                         </h4>
-                        <div class="settings-option">
+                        <div class="settings-option" onclick="showComingSoonPanel('Media & Storage')">
                             <div class="option-info">
                                 <span class="option-label">Auto-download media</span>
                                 <span class="option-desc">Automatically download images/videos</span>
                             </div>
-                            <select class="settings-select" id="settingAutoDownload" onchange="updateChatSetting('auto_download', this.value)">
+                            <select class="settings-select" disabled>
                                 <option value="wifi">Wi-Fi only</option>
-                                <option value="always">Always</option>
-                                <option value="never">Never</option>
                             </select>
                         </div>
-                        <div class="settings-option">
+                        <div class="settings-option" onclick="showComingSoonPanel('Media & Storage')">
                             <div class="option-info">
                                 <span class="option-label">Image quality</span>
                                 <span class="option-desc">Quality when sending images</span>
                             </div>
-                            <select class="settings-select" id="settingImageQuality" onchange="updateChatSetting('image_quality', this.value)">
-                                <option value="original">Original</option>
-                                <option value="compressed" selected>Compressed</option>
+                            <select class="settings-select" disabled>
+                                <option value="compressed">Compressed</option>
                             </select>
                         </div>
-                        <div class="settings-option storage-info">
+                        <div class="settings-option storage-info" onclick="showComingSoonPanel('Media & Storage')">
                             <div class="option-info">
                                 <span class="option-label">Storage used</span>
-                                <span class="option-desc" id="settingStorageUsed">Calculating...</span>
+                                <span class="option-desc">Calculating...</span>
                             </div>
-                            <button class="settings-action-btn" onclick="clearChatCache()">Clear Cache</button>
-                        </div>
-                    </div>
-
-                    <!-- Blocked Contacts Section -->
-                    <div class="settings-section">
-                        <h4 class="settings-section-title">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="m4.93 4.93 14.14 14.14"></path>
-                            </svg>
-                            Blocked Contacts
-                        </h4>
-                        <div class="blocked-contacts-list" id="settingsBlockedList">
-                            <p class="no-blocked">No blocked contacts</p>
+                            <button class="settings-action-btn" disabled>Clear Cache</button>
                         </div>
                     </div>
 
                     <!-- Voice Preferences Section -->
-                    <div class="settings-section">
+                    <div class="settings-section" id="voicePreferencesSection">
                         <h4 class="settings-section-title">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                <line x1="12" y1="19" x2="12" y2="23"></line>
-                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
                             </svg>
                             Voice Preferences
                         </h4>
@@ -875,10 +1320,10 @@
                                 <span class="option-label">Text-to-speech voice</span>
                                 <span class="option-desc">Voice for reading messages aloud</span>
                             </div>
-                            <select class="settings-select" id="settingTTSVoice" onchange="updateChatSetting('tts_voice', this.value)">
-                                <option value="default">Default</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
+                            <select class="settings-select" id="settingTTSVoice" onchange="handleVoiceSelection(this.value)">
+                                <option value="none">Off</option>
+                                <option value="synthetic" selected>Synthetic Voice</option>
+                                <option value="truevoice">TrueVoice (Sender's Voice)</option>
                             </select>
                         </div>
                         <div class="settings-option">
@@ -887,10 +1332,11 @@
                                 <span class="option-desc">Speed of text-to-speech playback</span>
                             </div>
                             <select class="settings-select" id="settingSpeechRate" onchange="updateChatSetting('speech_rate', this.value)">
-                                <option value="0.75">Slow</option>
-                                <option value="1" selected>Normal</option>
-                                <option value="1.25">Fast</option>
-                                <option value="1.5">Very Fast</option>
+                                <option value="0.75">0.75x (Slow)</option>
+                                <option value="1" selected>1x (Normal)</option>
+                                <option value="1.25">1.25x (Fast)</option>
+                                <option value="1.5">1.5x (Faster)</option>
+                                <option value="2">2x (Very Fast)</option>
                             </select>
                         </div>
                         <div class="settings-option">
@@ -909,18 +1355,21 @@
                     <div class="settings-section">
                         <h4 class="settings-section-title">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                <path d="M5 8l6 6"></path>
+                                <path d="M4 14l6-6 2-3"></path>
+                                <path d="M2 5h12"></path>
+                                <path d="M7 2v3"></path>
+                                <path d="M22 22l-5-10-5 10"></path>
+                                <path d="M14 18h6"></path>
                             </svg>
                             Language & Translation
                         </h4>
                         <div class="settings-option">
                             <div class="option-info">
-                                <span class="option-label">Default translation</span>
-                                <span class="option-desc">Language for auto-translate</span>
+                                <span class="option-label">Default translation language</span>
+                                <span class="option-desc">Language for translating messages</span>
                             </div>
-                            <select class="settings-select" id="settingDefaultTranslation" onchange="updateChatSetting('default_translation', this.value)">
+                            <select class="settings-select" id="settingDefaultTranslation" onchange="ChatModalManager.updateTranslationSetting('default_translation', this.value)">
                                 <option value="none">No translation</option>
                                 <option value="en">English</option>
                                 <option value="am">Amharic</option>
@@ -929,9 +1378,16 @@
                                 <option value="fr">French</option>
                                 <option value="ar">Arabic</option>
                                 <option value="es">Spanish</option>
+                                <option value="pt">Portuguese</option>
                                 <option value="zh">Chinese</option>
                                 <option value="hi">Hindi</option>
                                 <option value="sw">Swahili</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                                <option value="ja">Japanese</option>
+                                <option value="ko">Korean</option>
+                                <option value="ru">Russian</option>
+                                <option value="tr">Turkish</option>
                             </select>
                         </div>
                         <div class="settings-option">
@@ -940,9 +1396,20 @@
                                 <span class="option-desc">Automatically translate incoming messages</span>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="settingAutoTranslate" onchange="updateChatSetting('auto_translate', this.checked)">
+                                <input type="checkbox" id="settingAutoTranslate" onchange="ChatModalManager.updateTranslationSetting('auto_translate', this.checked)">
                                 <span class="toggle-slider"></span>
                             </label>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Translation service status</span>
+                                <span class="option-desc" id="translationServiceStatus">Checking...</span>
+                            </div>
+                            <span class="status-indicator" id="translationStatusIndicator">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                            </span>
                         </div>
                     </div>
 
@@ -971,6 +1438,217 @@
                             <button class="settings-action-btn danger" onclick="deleteAllChatData()">Delete All</button>
                         </div>
                     </div>
+            </div>
+
+            <!-- Coming Soon Slide Panel -->
+            <div class="coming-soon-panel" id="comingSoonPanel">
+                <div class="coming-soon-panel-header">
+                    <button class="coming-soon-back-btn" onclick="hideComingSoonPanel()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h3 id="comingSoonPanelTitle">Coming Soon</h3>
+                </div>
+                <div class="coming-soon-panel-content">
+                    <div class="coming-soon-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h4>Feature Coming Soon</h4>
+                    <p id="comingSoonPanelDesc">This feature is currently under development and will be available in a future update.</p>
+                    <div class="coming-soon-features">
+                        <span class="feature-tag">In Development</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TrueVoice Setup Slide Panel -->
+            <div class="coming-soon-panel truevoice-setup-panel" id="truevoiceSetupPanel">
+                <div class="coming-soon-panel-header">
+                    <button class="coming-soon-back-btn" onclick="hideTrueVoiceSetupPanel()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h3>TrueVoice Setup</h3>
+                    <span class="truevoice-new-badge">NEW</span>
+                </div>
+                <div class="coming-soon-panel-content truevoice-setup-content">
+                    <div class="truevoice-setup-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </div>
+                    <h4>Create Your TrueVoice</h4>
+                    <p>Let others hear your messages in your own voice! Record a few sentences to create your unique voice profile.</p>
+                    <div class="truevoice-features-list">
+                        <div class="truevoice-feature-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Record 5 short sentences</span>
+                        </div>
+                        <div class="truevoice-feature-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Takes about 2 minutes</span>
+                        </div>
+                        <div class="truevoice-feature-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Your voice, your messages</span>
+                        </div>
+                    </div>
+                    <button class="truevoice-start-btn" onclick="startTrueVoiceSetup()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        </svg>
+                        Start Recording
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Chat Modal -->
+    <div id="chatExportModal" class="chat-export-modal" style="display: none;">
+        <div class="export-modal-overlay" onclick="ChatModalManager.closeExportModal()"></div>
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3>Export Chat History</h3>
+                <button class="export-modal-close" onclick="ChatModalManager.closeExportModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="export-modal-body">
+                <div class="export-two-column-layout">
+                    <!-- Left Column: Options -->
+                    <div class="export-left-column">
+                        <!-- Date Range Options -->
+                        <div class="export-options">
+                            <h4>Date Range</h4>
+                            <div class="export-date-range-options">
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="all" checked onchange="ChatModalManager.onDateRangeChange('all')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>All time</span>
+                                </label>
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="7days" onchange="ChatModalManager.onDateRangeChange('7days')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>Last 7 days</span>
+                                </label>
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="30days" onchange="ChatModalManager.onDateRangeChange('30days')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>Last 30 days</span>
+                                </label>
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="3months" onchange="ChatModalManager.onDateRangeChange('3months')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>Last 3 months</span>
+                                </label>
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="1year" onchange="ChatModalManager.onDateRangeChange('1year')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>Last year</span>
+                                </label>
+                                <label class="export-radio-label">
+                                    <input type="radio" name="exportDateRange" value="custom" onchange="ChatModalManager.onDateRangeChange('custom')">
+                                    <span class="export-radio-custom"></span>
+                                    <span>Custom range</span>
+                                </label>
+                            </div>
+                            <!-- Custom Date Range Inputs -->
+                            <div class="export-custom-date-range" id="exportCustomDateRange" style="display: none;">
+                                <div class="export-date-input-group">
+                                    <label for="exportDateFrom">From</label>
+                                    <input type="date" id="exportDateFrom" class="export-date-input">
+                                </div>
+                                <div class="export-date-input-group">
+                                    <label for="exportDateTo">To</label>
+                                    <input type="date" id="exportDateTo" class="export-date-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="export-options">
+                            <h4>Export Options</h4>
+                            <div class="export-option-row">
+                                <label class="export-checkbox-label">
+                                    <input type="checkbox" id="exportIncludeMedia" checked>
+                                    <span class="export-checkbox-custom"></span>
+                                    <span>Include media file names</span>
+                                </label>
+                            </div>
+                            <div class="export-option-row">
+                                <label class="export-checkbox-label">
+                                    <input type="checkbox" id="exportIncludeTimestamps" checked>
+                                    <span class="export-checkbox-custom"></span>
+                                    <span>Include timestamps</span>
+                                </label>
+                            </div>
+                            <div class="export-option-row">
+                                <label class="export-checkbox-label">
+                                    <input type="checkbox" id="exportIncludeSenderNames" checked>
+                                    <span class="export-checkbox-custom"></span>
+                                    <span>Include sender names</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Search and List -->
+                    <div class="export-right-column">
+                        <!-- Search -->
+                        <div class="export-search-container">
+                            <input type="text" id="exportChatSearch" class="export-search-input" placeholder="Search conversations..." oninput="ChatModalManager.filterExportChats(this.value)">
+                        </div>
+
+                        <!-- Select All Option -->
+                        <div class="export-select-all">
+                            <label class="export-checkbox-label">
+                                <input type="checkbox" id="exportSelectAll" onchange="ChatModalManager.toggleSelectAllExport(this.checked)">
+                                <span class="export-checkbox-custom"></span>
+                                <span>Select All Conversations</span>
+                            </label>
+                        </div>
+
+                        <!-- Conversations List -->
+                        <div class="export-conversations-list" id="exportConversationsList">
+                            <!-- Conversations will be loaded here -->
+                            <div class="export-loading">Loading conversations...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-modal-footer">
+                <span class="export-selected-count" id="exportSelectedCount">0 conversations selected</span>
+                <div class="export-footer-buttons">
+                    <button class="export-btn-cancel" onclick="ChatModalManager.closeExportModal()">Cancel</button>
+                    <button class="export-btn-primary" id="exportConfirmBtn" onclick="ChatModalManager.confirmExport()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export as .txt
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1004,7 +1682,7 @@
     <!-- Context Menu -->
     <div id="chatContextMenu" class="context-menu">
         <div class="context-menu-content">
-            <button onclick="replyChatMessage()">
+            <button id="chatReplyMsgBtn" onclick="replyChatMessage()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 17 4 12 9 7"></polyline>
                     <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
@@ -1018,12 +1696,23 @@
                 </svg>
                 Copy
             </button>
-            <button onclick="forwardChatMessage()">
+            <button id="chatForwardMsgBtn" onclick="forwardChatMessage()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="15 17 20 12 15 7"></polyline>
                     <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
                 </svg>
                 Forward
+            </button>
+            <button id="chatTranslateMsgBtn" onclick="translateChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 8l6 6"></path>
+                    <path d="M4 14l6-6 2-3"></path>
+                    <path d="M2 5h12"></path>
+                    <path d="M7 2v3"></path>
+                    <path d="M22 22l-5-10-5 10"></path>
+                    <path d="M14 18h6"></path>
+                </svg>
+                Translate
             </button>
             <hr>
             <button id="chatEditMsgBtn" onclick="editChatMessage()">
@@ -1039,6 +1728,10 @@
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
                 Delete
+            </button>
+            <button id="chatPinMsgBtn" style="display: none;">
+                <i class="fas fa-thumbtack"></i>
+                Pin Message
             </button>
             <hr>
             <div class="reaction-buttons">
@@ -1154,4 +1847,90 @@
 
     <!-- Toast Container -->
     <div class="chat-toast-container" id="chatToastContainer"></div>
+
+    <!-- Create Group/Channel Modal -->
+    <div class="create-group-modal" id="createGroupChannelModal">
+        <div class="create-group-modal-overlay" onclick="ChatModalManager.closeCreateGroupModal()"></div>
+        <div class="create-group-modal-content">
+            <div class="create-group-header">
+                <h3 id="createGroupModalTitle">Create Group</h3>
+                <button class="create-group-close" onclick="ChatModalManager.closeCreateGroupModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="create-group-body">
+                <!-- Group/Channel Name Input -->
+                <div class="create-group-name-section">
+                    <div class="group-icon-picker" onclick="ChatModalManager.pickGroupIcon()">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <input type="text" id="createGroupNameInput" placeholder="Group name" maxlength="50">
+                    <input type="file" id="groupIconInput" accept="image/*" style="display: none;" onchange="ChatModalManager.handleGroupIconChange(event)">
+                </div>
+
+                <!-- Description (for channels) -->
+                <div class="create-group-desc-section" id="channelDescSection" style="display: none;">
+                    <textarea id="createChannelDescInput" placeholder="Channel description (optional)" maxlength="200"></textarea>
+                </div>
+
+                <!-- Search Contacts -->
+                <div class="create-group-search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="createGroupContactSearch" placeholder="Search contacts..." oninput="ChatModalManager.searchGroupContacts(this.value)">
+                </div>
+
+                <!-- Selected Members -->
+                <div class="selected-members" id="selectedMembersList">
+                    <!-- Selected members will appear here as chips -->
+                </div>
+
+                <!-- Contact List -->
+                <div class="create-group-contacts" id="createGroupContactsList">
+                    <div class="contacts-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading contacts...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="create-group-footer">
+                <span class="selected-count" id="selectedMembersCount">0 members selected</span>
+                <button class="create-group-btn" id="createGroupSubmitBtn" onclick="ChatModalManager.submitCreateGroup()" disabled>
+                    <span id="createGroupSubmitLabel">Create Group</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Contact Confirmation Modal -->
+    <div class="delete-contact-modal" id="deleteContactModal">
+        <div class="delete-contact-modal-overlay" onclick="hideDeleteContactConfirmation()"></div>
+        <div class="delete-contact-modal-content">
+            <div class="delete-contact-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="18" y1="8" x2="23" y2="13"></line>
+                    <line x1="23" y1="8" x2="18" y2="13"></line>
+                </svg>
+            </div>
+            <h3>Delete Contact?</h3>
+            <p id="deleteContactMessage">Are you sure you want to delete this contact? This will remove the connection and delete all chat history. This action cannot be undone.</p>
+            <div class="delete-contact-user" id="deleteContactUserInfo">
+                <img src="" alt="" id="deleteContactAvatar">
+                <span id="deleteContactName">Contact Name</span>
+            </div>
+            <div class="delete-contact-actions">
+                <button class="delete-contact-btn cancel" onclick="hideDeleteContactConfirmation()">Cancel</button>
+                <button class="delete-contact-btn confirm" onclick="confirmDeleteContact()">Delete Contact</button>
+            </div>
+        </div>
+    </div>
 </div>

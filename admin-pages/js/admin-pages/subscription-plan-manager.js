@@ -1,18 +1,24 @@
 // Subscription Plan Manager
-// Handles STORAGE-BASED subscription plan management with TWO types of discounts:
-// 1. Package-based discount: Calculated from base plan's price per GB
-//    (e.g., 1TB plan cheaper per GB than 64GB base plan)
-// 2. Upfront payment discount: For subscribers who pay multiple months at once
-//    (e.g., 5% off for paying 3 months upfront, 10% for 6 months, 20% for yearly)
+// Handles subscription plan management with upfront payment discounts:
+// - Upfront payment discount: For subscribers who pay multiple months at once
+//   (e.g., 5% off for paying 3 months upfront, 10% for 6 months, 20% for yearly)
+// Note: Storage limits are managed separately in Media Management section
 
-// API Configuration (check if already defined globally)
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'http://localhost:8000';
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // Subscription Plans State
 let subscriptionPlans = [];
-let subscriptionBasePlan = null; // The base plan for package-based discount calculations
 let currentSubscriptionTab = 'tutor'; // Currently active subscription type tab
 
 // Load Subscription Plans from API
@@ -20,7 +26,7 @@ async function loadSubscriptionPlans() {
     console.log('loadSubscriptionPlans() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading default plans');
             subscriptionPlans = getDefaultSubscriptionPlans();
@@ -28,8 +34,9 @@ async function loadSubscriptionPlans() {
             return;
         }
 
-        console.log('Fetching plans from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/subscription-plans`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching plans from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin-db/subscription-plans`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -46,18 +53,16 @@ async function loadSubscriptionPlans() {
         console.log('API Response data:', data);
 
         if (data.success && data.plans) {
-            // Map database format to UI format - storage-based subscriptions
+            // Map database format to UI format
             subscriptionPlans = data.plans.map(plan => ({
                 id: plan.id,
                 plan_name: plan.package_title || plan.plan_name || plan.name,
                 monthly_price: plan.package_price || plan.monthly_price || plan.price || 0,
-                storage_gb: plan.storage_gb || plan.duration_days || 64, // Default 64GB (base plan)
                 subscription_type: plan.subscription_type || 'tutor',
                 currency: plan.currency || 'ETB',
                 features: plan.features || [],
                 label: plan.label || 'none',
                 is_popular: plan.label === 'popular' || plan.is_popular || false,
-                is_base_package: plan.is_base_package || false, // Base plan for package discount calculation
                 is_active: plan.is_active !== false,
                 display_order: plan.display_order || 0,
                 // Upfront payment discount tiers
@@ -66,13 +71,7 @@ async function loadSubscriptionPlans() {
                 discount_yearly: plan.discount_yearly || 20
             }));
 
-            // Find and store the base plan for package-based discount calculations
-            findSubscriptionBasePlan();
-
-            console.log(`Loaded ${subscriptionPlans.length} storage-based plans from database`);
-            if (subscriptionBasePlan) {
-                console.log(`Base plan: ${subscriptionBasePlan.plan_name} at ${(subscriptionBasePlan.monthly_price / subscriptionBasePlan.storage_gb).toFixed(2)} ETB/GB`);
-            }
+            console.log(`Loaded ${subscriptionPlans.length} subscription plans from database`);
             renderSubscriptionPlans();
         } else {
             throw new Error('Invalid response format');
@@ -92,13 +91,11 @@ function getDefaultSubscriptionPlans() {
             id: 1,
             plan_name: 'Basic',
             monthly_price: 99,
-            storage_gb: 64,
-            features: ['Access to basic features', '64 GB storage', 'Email support', 'Basic analytics'],
+            features: ['Access to basic features', 'Email support', 'Basic analytics'],
             discount_3_months: 5,
             discount_6_months: 10,
             discount_yearly: 20,
             is_popular: false,
-            is_base_package: true, // This is the base plan
             is_active: true,
             display_order: 1
         },
@@ -106,44 +103,17 @@ function getDefaultSubscriptionPlans() {
             id: 2,
             plan_name: 'Premium',
             monthly_price: 199,
-            storage_gb: 256,
-            features: ['All basic features', '256 GB storage', 'Priority support', 'Advanced analytics', 'API access', 'Custom branding'],
+            features: ['All basic features', 'Priority support', 'Advanced analytics', 'API access', 'Custom branding'],
             discount_3_months: 10,
             discount_6_months: 15,
             discount_yearly: 25,
             is_popular: true,
-            is_base_package: false,
             is_active: true,
             display_order: 2
         }
     ];
 }
 
-// Find and store the base plan for package-based discount calculations
-function findSubscriptionBasePlan() {
-    subscriptionBasePlan = subscriptionPlans.find(p => p.is_base_package) || null;
-    return subscriptionBasePlan;
-}
-
-// Toggle base plan status (called from HTML checkbox)
-function toggleSubscriptionBasePlan() {
-    const checkbox = document.getElementById('subscription-is-base-plan');
-    const basePlanNotice = document.getElementById('subscription-base-plan-notice');
-    const packageDiscountSection = document.getElementById('subscription-package-discount-section');
-
-    if (checkbox && checkbox.checked) {
-        // Show base plan notice, hide package discount section
-        if (basePlanNotice) basePlanNotice.classList.remove('hidden');
-        if (packageDiscountSection) packageDiscountSection.classList.add('hidden');
-    } else {
-        // Hide base plan notice, show package discount section
-        if (basePlanNotice) basePlanNotice.classList.add('hidden');
-        if (packageDiscountSection) packageDiscountSection.classList.remove('hidden');
-    }
-
-    // Recalculate preview to update package discount display
-    calculateSubscriptionPreview();
-}
 
 // Switch subscription tab
 function switchSubscriptionTab(tabType) {
@@ -228,36 +198,14 @@ function renderSubscriptionPlans() {
         grid.innerHTML = typePlans.map((plan, index) => {
             const color = colors[index % colors.length];
             const monthlyPrice = parseFloat(plan.monthly_price) || 0;
-            const storageGB = parseInt(plan.storage_gb) || 64;
 
             // Calculate tier prices (upfront payment discounts)
-            const discount3 = plan.discount_3_months || 5;
-            const discount6 = plan.discount_6_months || 10;
             const discountYearly = plan.discount_yearly || 20;
             const yearlyPrice = Math.round(monthlyPrice * 12 * (1 - discountYearly / 100));
-
-            // Calculate price per GB and package discount
-            const pricePerGB = storageGB > 0 ? (monthlyPrice / storageGB) : 0;
-            let packageDiscount = 0;
-            if (subscriptionBasePlan && !plan.is_base_package && storageGB > 0) {
-                const basePricePerGB = subscriptionBasePlan.storage_gb > 0 ?
-                    (subscriptionBasePlan.monthly_price / subscriptionBasePlan.storage_gb) : 0;
-                if (basePricePerGB > 0 && pricePerGB < basePricePerGB) {
-                    packageDiscount = Math.round(((basePricePerGB - pricePerGB) / basePricePerGB) * 100);
-                }
-            }
 
             // Upfront yearly payment discount badge
             const yearlyBadge = discountYearly > 0 ?
                 `<span class="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded">Pay Yearly: ${discountYearly}% OFF</span>` : '';
-
-            // Package discount badge (vs base plan)
-            const packageDiscountBadge = packageDiscount > 0 ?
-                `<span class="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded">Pkg: ${packageDiscount}% OFF</span>` : '';
-
-            // Base plan badge
-            const basePlanBadge = plan.is_base_package ?
-                `<span class="px-2 py-0.5 bg-purple-600 text-white text-xs font-bold rounded">BASE PLAN</span>` : '';
 
             // Popular badge
             const popularBadge = plan.is_popular ? `
@@ -275,8 +223,6 @@ function renderSubscriptionPlans() {
 
                     <!-- Badges (Top Right) -->
                     <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
-                        ${basePlanBadge}
-                        ${packageDiscountBadge}
                         ${yearlyBadge}
                         ${popularBadge}
                     </div>
@@ -291,16 +237,11 @@ function renderSubscriptionPlans() {
                         <h4 class="text-xl font-bold text-${color.text}">${plan.plan_name}</h4>
                     </div>
 
-                    <!-- Monthly Price & Storage -->
+                    <!-- Monthly Price -->
                     <div class="text-center mb-4 p-3 bg-white/50 rounded-lg border">
                         <div class="text-3xl font-bold text-${color.text}">${monthlyPrice.toLocaleString()} ETB</div>
                         <div class="text-sm text-gray-600">/month</div>
-                        <div class="flex items-center justify-center gap-2 mt-2 text-blue-600">
-                            <i class="fas fa-database"></i>
-                            <span class="font-semibold">${storageGB} GB Storage</span>
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">${pricePerGB.toFixed(2)} ETB/GB</div>
-                        <div class="text-xs text-gray-500">Pay yearly: ${yearlyPrice.toLocaleString()} ETB (${discountYearly}% off)</div>
+                        <div class="text-xs text-gray-500 mt-2">Pay yearly: ${yearlyPrice.toLocaleString()} ETB (${discountYearly}% off)</div>
                     </div>
 
                     <!-- Features -->
@@ -334,10 +275,6 @@ function openAddSubscriptionPlanModal() {
     document.getElementById('subscription-plan-form').reset();
     document.getElementById('subscription-plan-id').value = '';
 
-    // Reset storage amount to default 64 GB (typical base plan)
-    const storageEl = document.getElementById('subscription-plan-storage');
-    if (storageEl) storageEl.value = '64';
-
     // Pre-select current tab's subscription type
     const subscriptionTypeEl = document.getElementById('subscription-plan-type');
     if (subscriptionTypeEl) subscriptionTypeEl.value = currentSubscriptionTab || 'tutor';
@@ -349,10 +286,6 @@ function openAddSubscriptionPlanModal() {
     if (discount3El) discount3El.value = '5';
     if (discount6El) discount6El.value = '10';
     if (discountYearlyEl) discountYearlyEl.value = '20';
-
-    // Reset base plan checkbox
-    const basePlanCheckbox = document.getElementById('subscription-is-base-plan');
-    if (basePlanCheckbox) basePlanCheckbox.checked = false;
 
     // Reset label radio buttons
     const labelRadios = document.querySelectorAll('input[name="subscription-plan-label"]');
@@ -370,36 +303,10 @@ function openAddSubscriptionPlanModal() {
         emptyState.style.display = 'block';
     }
 
-    // Update current base plan info display
-    updateCurrentBasePlanInfo();
-
-    // Show/hide base plan sections appropriately
-    toggleSubscriptionBasePlan();
-
     // Reset preview
     calculateSubscriptionPreview();
 
     modal.classList.remove('hidden');
-}
-
-// Update current base plan info display in modal
-function updateCurrentBasePlanInfo() {
-    const infoEl = document.getElementById('subscription-current-base-info');
-    const nameEl = document.getElementById('subscription-current-base-name');
-    const pricePerGBEl = document.getElementById('subscription-current-base-price-per-gb');
-
-    if (!infoEl) return;
-
-    if (subscriptionBasePlan) {
-        const basePricePerGB = subscriptionBasePlan.storage_gb > 0 ?
-            (subscriptionBasePlan.monthly_price / subscriptionBasePlan.storage_gb) : 0;
-
-        if (nameEl) nameEl.textContent = subscriptionBasePlan.plan_name;
-        if (pricePerGBEl) pricePerGBEl.textContent = basePricePerGB.toFixed(2);
-        infoEl.classList.remove('hidden');
-    } else {
-        infoEl.classList.add('hidden');
-    }
 }
 
 // Edit Plan
@@ -416,10 +323,6 @@ function editSubscriptionPlan(id) {
     document.getElementById('subscription-plan-name').value = plan.plan_name;
     document.getElementById('subscription-plan-price').value = plan.monthly_price || 0;
 
-    // Set storage amount (stored as storage_gb)
-    const storageEl = document.getElementById('subscription-plan-storage');
-    if (storageEl) storageEl.value = plan.storage_gb || 64;
-
     // Set subscription type
     const subscriptionTypeEl = document.getElementById('subscription-plan-type');
     if (subscriptionTypeEl) subscriptionTypeEl.value = plan.subscription_type || 'tutor';
@@ -431,10 +334,6 @@ function editSubscriptionPlan(id) {
     if (discount3El) discount3El.value = plan.discount_3_months || 5;
     if (discount6El) discount6El.value = plan.discount_6_months || 10;
     if (discountYearlyEl) discountYearlyEl.value = plan.discount_yearly || 20;
-
-    // Set base plan checkbox
-    const basePlanCheckbox = document.getElementById('subscription-is-base-plan');
-    if (basePlanCheckbox) basePlanCheckbox.checked = plan.is_base_package || false;
 
     // Set label
     const labelRadios = document.querySelectorAll('input[name="subscription-plan-label"]');
@@ -455,12 +354,6 @@ function editSubscriptionPlan(id) {
         }
     }
 
-    // Update current base plan info display
-    updateCurrentBasePlanInfo();
-
-    // Show/hide base plan sections appropriately
-    toggleSubscriptionBasePlan();
-
     // Update preview
     calculateSubscriptionPreview();
 
@@ -478,11 +371,9 @@ function closeSubscriptionPlanModal() {
     }
 }
 
-// Calculate Price Preview with discount tiers (storage-based subscription)
+// Calculate Price Preview with upfront payment discounts
 function calculateSubscriptionPreview() {
     const monthlyPrice = parseFloat(document.getElementById('subscription-plan-price')?.value) || 0;
-    const storageGB = parseInt(document.getElementById('subscription-plan-storage')?.value) || 64;
-    const isBasePlan = document.getElementById('subscription-is-base-plan')?.checked || false;
 
     // Get upfront payment discount tier values
     const discount3 = parseFloat(document.getElementById('subscription-discount-3-months')?.value) || 0;
@@ -494,42 +385,12 @@ function calculateSubscriptionPreview() {
     const price6Months = Math.round(monthlyPrice * 6 * (1 - discount6 / 100));
     const priceYearly = Math.round(monthlyPrice * 12 * (1 - discountYearly / 100));
 
-    // Calculate price per GB
-    const pricePerGB = storageGB > 0 ? (monthlyPrice / storageGB) : 0;
-
-    // Calculate package-based discount (vs base plan)
-    let packageDiscount = 0;
-    let basePricePerGB = 0;
-    if (subscriptionBasePlan && !isBasePlan && storageGB > 0) {
-        basePricePerGB = subscriptionBasePlan.storage_gb > 0 ?
-            (subscriptionBasePlan.monthly_price / subscriptionBasePlan.storage_gb) : 0;
-        if (basePricePerGB > 0 && pricePerGB < basePricePerGB) {
-            packageDiscount = Math.round(((basePricePerGB - pricePerGB) / basePricePerGB) * 100);
-        }
-    }
-
     // Format helpers
     const formatPrice = (price) => monthlyPrice > 0 ? `${Math.round(price).toLocaleString()} ETB` : '-- ETB';
 
     // Monthly price display
     const monthlyEl = document.getElementById('preview-monthly-price');
     if (monthlyEl) monthlyEl.textContent = formatPrice(monthlyPrice);
-
-    // Storage amount display
-    const storageEl = document.getElementById('preview-storage-amount');
-    if (storageEl) storageEl.textContent = `${storageGB} GB`;
-
-    // Price per GB display
-    const pricePerGBEl = document.getElementById('subscription-price-per-gb');
-    if (pricePerGBEl) pricePerGBEl.textContent = pricePerGB > 0 ? `${pricePerGB.toFixed(2)} ETB/GB` : '-- ETB/GB';
-
-    // Package discount display (vs base plan)
-    const baseRateEl = document.getElementById('subscription-base-rate-display');
-    const thisRateEl = document.getElementById('subscription-this-rate-display');
-    const packageDiscountEl = document.getElementById('subscription-package-discount');
-    if (baseRateEl) baseRateEl.textContent = basePricePerGB > 0 ? `${basePricePerGB.toFixed(2)} ETB/GB` : '-- ETB/GB';
-    if (thisRateEl) thisRateEl.textContent = pricePerGB > 0 ? `${pricePerGB.toFixed(2)} ETB/GB` : '-- ETB/GB';
-    if (packageDiscountEl) packageDiscountEl.textContent = packageDiscount > 0 ? `${packageDiscount}%` : '--%';
 
     // 3 Months pricing
     const price3El = document.getElementById('preview-3-month-price');
@@ -551,9 +412,6 @@ function calculateSubscriptionPreview() {
 
     return {
         monthlyPrice,
-        storageGB,
-        pricePerGB,
-        packageDiscount,
         discount3,
         discount6,
         discountYearly,
@@ -570,11 +428,7 @@ async function saveSubscriptionPlan(event) {
     const id = document.getElementById('subscription-plan-id').value;
     const planName = document.getElementById('subscription-plan-name').value.trim();
     const monthlyPrice = parseFloat(document.getElementById('subscription-plan-price').value);
-    const storageGB = parseInt(document.getElementById('subscription-plan-storage')?.value) || 64;
     const subscriptionType = document.getElementById('subscription-plan-type')?.value || 'tutor';
-
-    // Get base plan status
-    const isBasePlan = document.getElementById('subscription-is-base-plan')?.checked || false;
 
     // Get upfront payment discount tier values
     const discount3Months = parseFloat(document.getElementById('subscription-discount-3-months')?.value) || 5;
@@ -606,36 +460,34 @@ async function saveSubscriptionPlan(event) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        // Storage-based subscription plan data with TWO discount types:
-        // 1. is_base_package - for package-based discount calculation
-        // 2. discount_*_months - for upfront payment discounts
+        const apiUrl = getApiBaseUrl();
+
+        // Subscription plan data with upfront payment discounts
         const planData = {
             package_title: planName,
             package_price: monthlyPrice,
-            duration_days: storageGB, // Repurpose duration_days as storage_gb for now
             subscription_type: subscriptionType,
             currency: 'ETB',
             features: features,
             label: label,
             is_active: true,
-            is_base_package: isBasePlan, // For package-based discount calculation
             // Upfront payment discount tier values
             discount_3_months: discount3Months,
             discount_6_months: discount6Months,
             discount_yearly: discountYearly
         };
 
-        console.log('Saving storage-based subscription plan:', planData);
+        console.log('Saving subscription plan:', planData);
 
         let response;
         if (id) {
             // Update existing plan
-            response = await fetch(`${window.API_BASE_URL}/api/admin-db/subscription-plans/${id}`, {
+            response = await fetch(`${apiUrl}/api/admin-db/subscription-plans/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -645,7 +497,7 @@ async function saveSubscriptionPlan(event) {
             });
         } else {
             // Create new plan
-            response = await fetch(`${window.API_BASE_URL}/api/admin-db/subscription-plans`, {
+            response = await fetch(`${apiUrl}/api/admin-db/subscription-plans`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -686,12 +538,13 @@ async function deleteSubscriptionPlan(id) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/subscription-plans/${id}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/subscription-plans/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -784,9 +637,6 @@ window.loadSubscriptionPlans = loadSubscriptionPlans;
 window.addSubscriptionPlanFeature = addSubscriptionPlanFeature;
 window.removeSubscriptionPlanFeature = removeSubscriptionPlanFeature;
 window.calculateSubscriptionPreview = calculateSubscriptionPreview;
-window.toggleSubscriptionBasePlan = toggleSubscriptionBasePlan;
-window.updateCurrentBasePlanInfo = updateCurrentBasePlanInfo;
-window.findSubscriptionBasePlan = findSubscriptionBasePlan;
 window.switchSubscriptionTab = switchSubscriptionTab;
 window.updateSubscriptionTabCounts = updateSubscriptionTabCounts;
 

@@ -64,7 +64,7 @@ const initializeDocumentManager = initializeCredentialManager;
  */
 async function loadAllCredentials() {
     try {
-        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (!token) {
             console.warn('No auth token found');
             return;
@@ -106,7 +106,7 @@ const loadAllDocuments = loadAllCredentials;
  */
 async function uploadCredential(formData) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (!token) {
             throw new Error('No auth token found');
         }
@@ -146,7 +146,7 @@ const uploadDocument = uploadCredential;
  */
 async function updateCredential(credentialId, formData) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (!token) {
             throw new Error('No auth token found');
         }
@@ -185,7 +185,7 @@ const updateDocument = updateCredential;
  */
 async function deleteCredential(credentialId) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (!token) {
             throw new Error('No auth token found');
         }
@@ -430,8 +430,27 @@ function updateCredentialCounts() {
 
 /**
  * Open upload document modal
+ * Guards feature access - requires complete profile and KYC verification
  */
 function openUploadCredentialModal() {
+    // Guard: Check profile completion and KYC before allowing upload
+    if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.guard === 'function') {
+        const allowed = ProfileCompletionGuard.guard('Upload Credentials', () => {
+            _openUploadCredentialModalInternal();
+        });
+        if (!allowed) {
+            return; // User was shown the appropriate modal to complete profile/KYC
+        }
+    } else {
+        // Guard not available, proceed directly
+        _openUploadCredentialModalInternal();
+    }
+}
+
+/**
+ * Internal function to open the modal (called after guard check passes)
+ */
+function _openUploadCredentialModalInternal() {
     const modal = document.getElementById('uploadDocumentModal');
     if (modal) {
         modal.classList.remove('hidden');
@@ -825,6 +844,168 @@ setTimeout(() => {
     console.log('📄 Delayed check (2000ms) - checking credentials panel...');
     checkAndInitializeCredentials();
 }, 2000);
+
+// ============================================================================
+// FEATURED TOGGLE HANDLER (Coming Soon)
+// ============================================================================
+
+/**
+ * Handle the "Featured Document" toggle
+ * Shows coming soon modal and unchecks the toggle
+ * Saving continues normally but without is_featured = true
+ */
+function handleFeaturedToggle(checkbox) {
+    if (checkbox.checked) {
+        // Uncheck it immediately
+        checkbox.checked = false;
+
+        // Custom message for featured documents - tells user they can still save
+        const customMessage = "The Featured Documents feature is coming soon! You can still save your credential - it just won't be highlighted on your profile yet.";
+
+        // Use the global openComingSoonModal function if available
+        if (typeof window.openComingSoonModal === 'function') {
+            window.openComingSoonModal('Featured Documents');
+            // Update message after modal opens to include the "you can still save" note
+            setTimeout(() => {
+                const messageEl = document.querySelector('#coming-soon-message');
+                if (messageEl) {
+                    messageEl.textContent = customMessage;
+                }
+            }, 50);
+        } else {
+            // Fallback: Try to show the coming-soon-modal directly
+            const modal = document.getElementById('coming-soon-modal');
+            if (modal) {
+                // Update the message
+                const messageEl = modal.querySelector('#coming-soon-message');
+                if (messageEl) {
+                    messageEl.textContent = customMessage;
+                }
+
+                // Check login state and show appropriate content
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const isLoggedIn = user && (user.id || user.email || user.first_name);
+                const formEl = modal.querySelector('#coming-soon-form');
+                const loggedInEl = modal.querySelector('#coming-soon-logged-in');
+                const userNameEl = modal.querySelector('#coming-soon-user-name');
+
+                if (isLoggedIn) {
+                    if (formEl) formEl.style.display = 'none';
+                    if (loggedInEl) loggedInEl.style.display = 'block';
+                    if (userNameEl) {
+                        const displayName = user.first_name || user.full_name || user.email?.split('@')[0] || 'there';
+                        userNameEl.textContent = displayName;
+                    }
+                } else {
+                    if (formEl) formEl.style.display = 'block';
+                    if (loggedInEl) loggedInEl.style.display = 'none';
+                }
+
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+            } else {
+                // Ultimate fallback: show notification
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(customMessage, 'info');
+                } else {
+                    alert(customMessage);
+                }
+            }
+        }
+
+        console.log('[CredentialManager] Featured toggle blocked - feature coming soon');
+    }
+}
+
+// Expose to window for HTML onclick
+window.handleFeaturedToggle = handleFeaturedToggle;
+
+// ============================================================================
+// COMING SOON MODAL FUNCTIONS
+// ============================================================================
+// These functions are defined here because inline scripts in dynamically
+// loaded HTML modals don't execute. This ensures the functions are available.
+
+/**
+ * Open the coming soon modal
+ * Shows different content based on login state
+ */
+function openComingSoonModal(featureName) {
+    const modal = document.getElementById('coming-soon-modal');
+    if (!modal) {
+        console.warn('[ComingSoon] Modal not found in DOM');
+        return;
+    }
+
+    // Update message if feature name provided
+    if (featureName) {
+        const messageEl = document.getElementById('coming-soon-message');
+        if (messageEl) {
+            messageEl.textContent = `The ${featureName} feature is coming soon! We're working hard to bring it to you.`;
+        }
+    }
+
+    // Check if user is logged in
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isLoggedIn = user && (user.id || user.email || user.first_name);
+
+    const formEl = document.getElementById('coming-soon-form');
+    const loggedInEl = document.getElementById('coming-soon-logged-in');
+    const userNameEl = document.getElementById('coming-soon-user-name');
+
+    if (isLoggedIn) {
+        // Show logged-in message
+        if (formEl) formEl.style.display = 'none';
+        if (loggedInEl) loggedInEl.style.display = 'block';
+        if (userNameEl) {
+            const displayName = user.first_name || user.full_name || user.email?.split('@')[0] || 'there';
+            userNameEl.textContent = displayName;
+        }
+    } else {
+        // Show email signup form
+        if (formEl) formEl.style.display = 'block';
+        if (loggedInEl) loggedInEl.style.display = 'none';
+    }
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    console.log('[ComingSoon] Modal opened for:', featureName || 'unspecified feature');
+}
+
+/**
+ * Close the coming soon modal
+ */
+function closeComingSoonModal() {
+    const modal = document.getElementById('coming-soon-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        console.log('[ComingSoon] Modal closed');
+    }
+}
+
+// Expose to window for HTML onclick handlers
+window.openComingSoonModal = openComingSoonModal;
+window.closeComingSoonModal = closeComingSoonModal;
+
+// Also close on ESC key for coming soon modal
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const comingSoonModal = document.getElementById('coming-soon-modal');
+        if (comingSoonModal && !comingSoonModal.classList.contains('hidden')) {
+            closeComingSoonModal();
+        }
+    }
+});
+
+// Close on clicking overlay (but not content)
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('coming-soon-modal');
+    if (e.target === modal) {
+        closeComingSoonModal();
+    }
+});
 
 // ============================================================================
 // EXPOSE FUNCTIONS TO WINDOW (for HTML onclick handlers)

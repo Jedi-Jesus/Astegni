@@ -1038,5 +1038,378 @@ Astegni Team
             return False
 
 
+    def send_two_step_reset_email(self, to_email: str, otp_code: str) -> bool:
+        """Send Two-Step Verification password reset OTP email"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. 2FA Reset OTP for {to_email}: {otp_code}")
+            return False
+
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Astegni Chat - Reset Your Security Password"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            text = f"""
+Hello,
+
+You requested to reset your Astegni Chat security password (Two-Step Verification).
+
+Your reset code is: {otp_code}
+
+This code is valid for 10 minutes.
+
+If you didn't request this reset, please ignore this email and your password will remain unchanged.
+
+For security, please do not share this code with anyone.
+
+Best regards,
+Astegni Team
+            """
+
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .shield-icon {{ font-size: 48px; margin-bottom: 10px; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .otp-box {{ background: white; border: 2px solid #F59E0B; border-radius: 10px; padding: 25px; margin: 25px 0; text-align: center; }}
+        .otp-code {{ background: #FEF3C7; border: 2px dashed #F59E0B; border-radius: 8px; padding: 20px; font-size: 36px; font-weight: bold; letter-spacing: 10px; margin: 15px 0; color: #D97706; font-family: 'Courier New', monospace; }}
+        .validity {{ color: #DC2626; font-weight: bold; font-size: 14px; margin-top: 15px; }}
+        .warning {{ background: #FEF2F2; border-left: 4px solid #DC2626; padding: 15px; margin: 20px 0; font-size: 14px; color: #991B1B; }}
+        .footer {{ text-align: center; margin-top: 25px; color: #666; font-size: 12px; padding-top: 20px; border-top: 1px solid #e5e7eb; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="shield-icon">🔐</div>
+            <h1>Reset Security Password</h1>
+            <p>Two-Step Verification</p>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>You requested to reset your <strong>Astegni Chat security password</strong> (Two-Step Verification).</p>
+
+            <div class="otp-box">
+                <h3 style="color: #F59E0B; margin-top: 0;">Your Reset Code</h3>
+                <p>Enter this code in the app to reset your password:</p>
+                <div class="otp-code">{otp_code}</div>
+                <div class="validity">⏰ Valid for 10 minutes</div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Security Notice:</strong><br>
+                If you didn't request this reset, please ignore this email. Your password will remain unchanged.
+                <br><br>
+                Never share this code with anyone, including Astegni support staff.
+            </div>
+
+            <div class="footer">
+                <p>&copy; 2025 Astegni - Ethiopian Educational Platform</p>
+                <p>This is an automated message. Please do not reply.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending 2FA reset OTP to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] 2FA reset OTP sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send 2FA reset OTP to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] 2FA Reset OTP for {to_email}: {otp_code}")
+            return False
+
+
+    def send_child_invitation_email(self, to_email: str, child_name: str, parent_name: str, temp_password: str) -> bool:
+        """Send child invitation email with temporary password (for NEW users invited as children)"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. Temp password for {to_email}: {temp_password}")
+            return False
+
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Astegni - {parent_name} has added you as their child"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            text = f"""
+Hello {child_name},
+
+{parent_name} has added you to their family on Astegni!
+
+Astegni is Ethiopia's leading educational platform connecting students with tutors and parents.
+
+YOUR ACCOUNT DETAILS
+--------------------
+Email: {to_email}
+Temporary Password: {temp_password}
+
+Please log in to Astegni and change your password immediately.
+
+Once logged in, you can:
+- Complete your student profile
+- Find tutors for any subject
+- Track your academic progress
+- Connect with your parents
+
+NEXT STEPS
+----------
+1. Go to Astegni website/app
+2. Log in with your email and temporary password
+3. Complete your student profile
+4. Change your password to something secure
+
+If you did not expect this, please contact your parent.
+
+Best regards,
+Astegni Team
+            """
+
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .credentials {{ background: white; border: 2px solid #10B981; border-radius: 10px; padding: 20px; margin: 20px 0; }}
+        .password-box {{ background: #D1FAE5; border: 2px dashed #10B981; border-radius: 5px; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 15px 0; color: #059669; font-family: monospace; }}
+        .steps {{ background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }}
+        .step {{ display: flex; align-items: center; margin: 10px 0; }}
+        .step-number {{ background: #10B981; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        .parent-name {{ display: inline-block; background: #D1FAE5; color: #059669; padding: 5px 15px; border-radius: 20px; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Astegni!</h1>
+            <p><span class="parent-name">{parent_name}</span> has added you to their family</p>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{child_name}</strong>,</p>
+            <p>Great news! <strong>{parent_name}</strong> has added you as their child on Astegni.</p>
+            <p>Astegni is Ethiopia's leading educational platform connecting students with tutors and parents.</p>
+
+            <div class="credentials">
+                <h3 style="color: #10B981; margin-top: 0;">Your Account Details</h3>
+                <p><strong>Email:</strong> {to_email}</p>
+                <p><strong>Temporary Password:</strong></p>
+                <div class="password-box">{temp_password}</div>
+                <p style="color: #DC2626; font-size: 14px;">Please change this password after your first login!</p>
+            </div>
+
+            <div class="steps">
+                <h3 style="color: #10B981; margin-top: 0;">Next Steps</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Go to Astegni website/app</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Log in with your email and temporary password</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Complete your student profile</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>Change your password to something secure</div>
+                </div>
+            </div>
+
+            <p style="font-size: 14px; color: #666;">If you did not expect this, please contact your parent.</p>
+
+            <div class="footer">
+                <p>&copy; 2025 Astegni - Ethiopian Educational Platform</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending child invitation to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] Child invitation sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send child invitation to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] Temp password for {to_email}: {temp_password}")
+            return False
+
+    def send_team_invitation_email(self, to_email: str, invitee_name: str, inviter_name: str,
+                                    brand_name: str, invitation_token: str, base_url: str = "https://astegni.com") -> bool:
+        """Send team invitation email with link to accept invitation"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. Invitation token for {to_email}: {invitation_token}")
+            return False
+
+        try:
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"You're invited to join {brand_name} on Astegni"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            # Create invitation link
+            invitation_link = f"{base_url}/accept-team-invite?token={invitation_token}"
+
+            # Plain text version
+            text = f"""
+Hello {invitee_name or 'there'},
+
+{inviter_name} has invited you to join {brand_name} as a Brand Manager on Astegni.
+
+As a Brand Manager, you'll be able to:
+- Create and manage advertising campaigns
+- View campaign analytics and performance
+- Manage brand assets and creatives
+
+ACCEPT YOUR INVITATION
+----------------------
+Click this link to accept: {invitation_link}
+
+Or copy and paste this URL into your browser:
+{invitation_link}
+
+This invitation link is unique to you. Please don't share it with others.
+
+If you don't have an Astegni account yet, you'll be asked to create one first.
+
+If you didn't expect this invitation, please ignore this email.
+
+Best regards,
+Astegni Team
+            """
+
+            # HTML version
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .brand-badge {{ display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 25px; font-weight: bold; margin-top: 10px; }}
+        .permissions {{ background: white; border-radius: 10px; padding: 20px; margin: 20px 0; }}
+        .permission-item {{ display: flex; align-items: center; margin: 12px 0; }}
+        .permission-icon {{ background: #DBEAFE; color: #3B82F6; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 16px; }}
+        .accept-btn {{ display: inline-block; background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: white !important; padding: 15px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0; }}
+        .accept-btn:hover {{ opacity: 0.9; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        .link-fallback {{ background: #f3f4f6; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 12px; color: #666; margin-top: 20px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0;">You're Invited!</h1>
+            <div class="brand-badge">{brand_name}</div>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{invitee_name or 'there'}</strong>,</p>
+            <p><strong>{inviter_name}</strong> has invited you to join <strong>{brand_name}</strong> as a <span style="color: #3B82F6; font-weight: bold;">Brand Manager</span> on Astegni.</p>
+
+            <div class="permissions">
+                <h3 style="color: #3B82F6; margin-top: 0;">As a Brand Manager, you'll be able to:</h3>
+                <div class="permission-item">
+                    <div class="permission-icon">&#128640;</div>
+                    <div>Create and manage advertising campaigns</div>
+                </div>
+                <div class="permission-item">
+                    <div class="permission-icon">&#128200;</div>
+                    <div>View campaign analytics and performance</div>
+                </div>
+                <div class="permission-item">
+                    <div class="permission-icon">&#127912;</div>
+                    <div>Manage brand assets and creatives</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{invitation_link}" class="accept-btn">Accept Invitation</a>
+            </div>
+
+            <div class="link-fallback">
+                <strong>Can't click the button?</strong> Copy and paste this link into your browser:<br>
+                {invitation_link}
+            </div>
+
+            <p style="color: #666; font-size: 13px; margin-top: 25px;">
+                This invitation link is unique to you. Please don't share it with others.<br>
+                If you don't have an Astegni account yet, you'll be asked to create one first.
+            </p>
+
+            <div class="footer">
+                <p>&copy; 2025 Astegni - Ethiopian Educational Platform</p>
+                <p style="font-size: 11px;">If you didn't expect this invitation, you can safely ignore this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            # Attach both versions
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            # Send email using SMTP
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending team invitation to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] Team invitation sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send team invitation to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] Invitation token for {to_email}: {invitation_token}")
+            return False
+
+
 # Create singleton instance
 email_service = EmailService()

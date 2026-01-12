@@ -44,7 +44,10 @@ const ParentRequestsManager = {
     async loadCourses() {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                console.log('[ParentRequestsManager] No token found, skipping courses load');
+                return;
+            }
 
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/my-courses`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -53,6 +56,11 @@ const ParentRequestsManager = {
             if (response.ok) {
                 const data = await response.json();
                 this.allData.courses = data.courses || data || [];
+            } else {
+                // Log detailed error for debugging
+                const errorText = await response.text();
+                console.error(`[ParentRequestsManager] Courses API error ${response.status}:`, errorText);
+                this.allData.courses = [];
             }
         } catch (error) {
             console.error('[ParentRequestsManager] Error loading courses:', error);
@@ -66,7 +74,10 @@ const ParentRequestsManager = {
     async loadSchools() {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                console.log('[ParentRequestsManager] No token found, skipping schools load');
+                return;
+            }
 
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/my-schools`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -75,6 +86,11 @@ const ParentRequestsManager = {
             if (response.ok) {
                 const data = await response.json();
                 this.allData.schools = data.schools || data || [];
+            } else {
+                // Log detailed error for debugging
+                const errorText = await response.text();
+                console.error(`[ParentRequestsManager] Schools API error ${response.status}:`, errorText);
+                this.allData.schools = [];
             }
         } catch (error) {
             console.error('[ParentRequestsManager] Error loading schools:', error);
@@ -110,18 +126,37 @@ const ParentRequestsManager = {
     async loadParentingInvitations() {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                console.warn('[ParentRequestsManager] ⚠️ No auth token found - cannot load parenting invitations');
+                return;
+            }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
+            console.log('[ParentRequestsManager] 🔄 Loading parenting invitations...');
+            const apiUrl = `${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`;
+            console.log('[ParentRequestsManager] API URL:', apiUrl);
+
+            const response = await fetch(apiUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            console.log('[ParentRequestsManager] API response status:', response.status, response.statusText);
+
             if (response.ok) {
                 const data = await response.json();
+                console.log('[ParentRequestsManager] ✅ API response data:', data);
+                console.log('[ParentRequestsManager] Total invitations received:', (data.invitations || []).length);
+
                 this.allData.parenting = data.invitations || [];
+                console.log('[ParentRequestsManager] Parenting invitations stored:', this.allData.parenting.length);
+                console.log('[ParentRequestsManager] Invitation details:', this.allData.parenting);
+            } else {
+                const errorText = await response.text();
+                console.error('[ParentRequestsManager] ❌ API error response:', errorText);
+                console.error('[ParentRequestsManager] Status:', response.status, response.statusText);
             }
         } catch (error) {
-            console.error('[ParentRequestsManager] Error loading parenting invitations:', error);
+            console.error('[ParentRequestsManager] ❌ Error loading parenting invitations:', error);
+            console.error('[ParentRequestsManager] Error details:', error.message, error.stack);
             this.allData.parenting = [];
         }
     },
@@ -503,26 +538,35 @@ const ParentRequestsManager = {
 
     /**
      * Render parenting invitation card
+     * UPDATED: Now uses inviter_name, inviter_type (USER-ID SYSTEM)
      */
     renderParentingCard(invitation) {
         const statusConfig = this.getStatusConfig(invitation.status);
         const formattedDate = this.formatDate(invitation.created_at);
-        const studentName = invitation.student_name || 'Unknown Student';
-        const studentPicture = invitation.student_profile_picture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=8b5cf6&color=fff`;
+        // UPDATED: Use inviter_name instead of student_name
+        const inviterName = invitation.inviter_name || 'Unknown User';
+        const inviterType = invitation.inviter_type || 'student';
+        const inviterPicture = invitation.student_profile_picture ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(inviterName)}&background=8b5cf6&color=fff`;
+
+        // Determine inviter type badge
+        const inviterTypeBadge = inviterType === 'student' ? '👨‍🎓 Student' :
+                                 inviterType === 'parent' ? '👨‍👩‍👧 Parent' :
+                                 inviterType === 'tutor' ? '👨‍🏫 Tutor' : inviterType;
 
         return `
             <div class="card p-6 mb-4 hover:shadow-lg transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <img src="${studentPicture}"
-                             alt="${studentName}"
+                        <img src="${inviterPicture}"
+                             alt="${inviterName}"
                              class="w-14 h-14 rounded-full object-cover"
-                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=8b5cf6&color=fff'">
+                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(inviterName)}&background=8b5cf6&color=fff'">
                         <div>
-                            <h3 class="font-semibold text-lg">${studentName}</h3>
+                            <h3 class="font-semibold text-lg">${inviterName}</h3>
                             <p class="text-sm text-gray-500">
-                                Wants you as their <span class="font-semibold text-purple-600">${invitation.relationship_type || 'Parent'}</span>
+                                <span class="px-2 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 mr-1">${inviterTypeBadge}</span>
+                                wants you as their <span class="font-semibold text-purple-600">${invitation.relationship_type || 'Parent'}</span>
                             </p>
                             <p class="text-xs text-gray-400 mt-1">
                                 <i class="far fa-calendar mr-1"></i> Received ${formattedDate}
@@ -724,7 +768,85 @@ const ParentRequestsManager = {
 // ============================================
 
 function filterParentRequestType(type) {
+    console.log('[filterParentRequestType] Called with type:', type);
+
+    // Show/hide parenting direction tabs
+    const parentingDirectionTabs = document.getElementById('parent-parenting-direction-tabs');
+    const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
+
+    console.log('[filterParentRequestType] parentingDirectionTabs:', parentingDirectionTabs);
+    console.log('[filterParentRequestType] statusTabs:', statusTabs);
+
+    if (type === 'parenting') {
+        // Show parenting direction tabs
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.remove('hidden');
+            parentingDirectionTabs.style.display = 'block';
+            console.log('[filterParentRequestType] Showing parenting direction tabs');
+        }
+        // Hide status tabs for parenting
+        if (statusTabs) {
+            statusTabs.style.display = 'none';
+            console.log('[filterParentRequestType] Hiding status tabs');
+        }
+        // Load parenting invitations using the function from parent-profile.js
+        if (typeof loadParentParentingInvitations === 'function') {
+            loadParentParentingInvitations();
+        }
+    } else if (type === 'child-invitations') {
+        // Hide parenting direction tabs for child invitations
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
+        // Show status tabs for child invitations
+        if (statusTabs) {
+            statusTabs.style.display = 'flex';
+        }
+        // Load child invitations
+        loadParentChildInvitations();
+    } else {
+        // Hide parenting direction tabs for other types
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
+        // Show status tabs for other types
+        if (statusTabs) {
+            statusTabs.style.display = 'flex';
+        }
+    }
+
+    // Also call the original manager filter
     ParentRequestsManager.filterByType(type);
+}
+
+/**
+ * Load child invitations for parent profile - Parents inviting you as their child
+ */
+async function loadParentChildInvitations() {
+    const container = document.getElementById('parent-requests-list');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+            <p>Loading child invitations...</p>
+        </div>
+    `;
+
+    // Use the child invitation manager
+    if (typeof childInvitationManager !== 'undefined') {
+        await childInvitationManager.loadChildInvitations();
+        childInvitationManager.renderChildInvitations('parent-requests-list', 'all');
+    } else {
+        container.innerHTML = `
+            <div class="card p-6 text-center text-gray-500">
+                <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
+                <p>Child invitation manager not loaded</p>
+            </div>
+        `;
+    }
 }
 
 function filterParentRequestStatus(status) {

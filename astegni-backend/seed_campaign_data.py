@@ -192,7 +192,7 @@ digital advertising, and content marketing to reach our target audience effectiv
             budget_range = BUDGET_RANGES["small"]
 
         budget = random.uniform(*budget_range)
-        daily_budget = budget / random.randint(14, 45)
+        campaign_budget = budget / random.randint(14, 45)
 
         # Date ranges
         if status in ["verified", "suspended"]:
@@ -241,7 +241,7 @@ digital advertising, and content marketing to reach our target audience effectiv
             INSERT INTO ad_campaigns (
                 advertiser_id, name, description, objective,
                 is_verified, verification_status,
-                budget, spent, daily_budget, currency,
+                budget, spent, campaign_budget, currency,
                 start_date, end_date,
                 target_audience, locations,
                 ad_type, creative_urls,
@@ -262,7 +262,7 @@ digital advertising, and content marketing to reach our target audience effectiv
         """, (
             advertiser_id, campaign_name, description, objective,
             is_verified, status,
-            budget, spent, daily_budget, "ETB",
+            budget, spent, campaign_budget, "ETB",
             start_date, end_date,
             target_audience, target_region,
             ad_type, creative_urls,

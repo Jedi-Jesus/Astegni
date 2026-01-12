@@ -385,3 +385,75 @@ async def get_comments(blog_id: int, db: Session = Depends(get_db)):
 
     comments = json.loads(blog.comments) if isinstance(blog.comments, str) else blog.comments
     return {"comments": comments, "count": len(comments)}
+
+
+@router.get("/api/blogs/by-profile/{profile_id}")
+async def get_blogs_by_profile(
+    profile_id: int,
+    role: str,
+    skip: int = 0,
+    limit: int = 20,
+    category: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all blogs by a specific profile (profile_id + role)
+    Used for viewing blogs on profile pages (view-tutor, view-student, view-parent, etc.)
+    """
+    # Validate role
+    valid_roles = ['tutor', 'student', 'parent', 'advertiser', 'institute']
+    if role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+
+    # Build query
+    query = db.query(Blog).filter(
+        Blog.profile_id == profile_id,
+        Blog.role == role
+    )
+
+    # Apply category filter if provided
+    if category:
+        query = query.filter(Blog.category == category)
+
+    # Get blogs with pagination
+    blogs = query.order_by(Blog.created_at.desc()).offset(skip).limit(limit).all()
+
+    # Get total count for pagination
+    total_count = db.query(Blog).filter(
+        Blog.profile_id == profile_id,
+        Blog.role == role
+    ).count()
+
+    # Enrich with author info
+    result = []
+    for blog in blogs:
+        author_name, author_profile_picture = get_author_info(db, blog.profile_id, blog.role)
+
+        blog_dict = {
+            'id': blog.id,
+            'profile_id': blog.profile_id,
+            'role': blog.role,
+            'blog_picture': blog.blog_picture,
+            'title': blog.title,
+            'description': blog.description,
+            'blog_text': blog.blog_text,
+            'reading_time': blog.reading_time,
+            'likes': blog.likes,
+            'dislikes': blog.dislikes,
+            'shares': blog.shares,
+            'saves': blog.saves,
+            'comments': json.loads(blog.comments) if isinstance(blog.comments, str) else blog.comments,
+            'category': blog.category,
+            'created_at': blog.created_at,
+            'updated_at': blog.updated_at,
+            'author_name': author_name,
+            'author_profile_picture': author_profile_picture
+        }
+        result.append(blog_dict)
+
+    return {
+        "posts": result,
+        "total": total_count,
+        "skip": skip,
+        "limit": limit
+    }

@@ -12,11 +12,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css?v=3">
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <!-- admin.css removed - not needed for view pages, was causing tooltip transparency -->
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css?v=3">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css?v=3">
     <link rel="stylesheet" href="../css/view-tutor/view-tutor.css?v=4">
     <!-- Shared Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/access-restricted-modal.css">
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
@@ -169,6 +172,49 @@
         .tutor-card-minimal .view-profile-btn:hover {
             background: var(--button-hover);
             transform: scale(1.05);
+        }
+
+        /* Pulse animation fallback for loading states */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Similar Tutors Panel Styles - uses same tutor-card-minimal as related-tutors-section */
+        #similar-panel .tutor-card-minimal {
+            text-align: center;
+        }
+
+        #similar-panel .related-tutors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Empty state styling */
+        .col-span-2 {
+            grid-column: span 2;
+        }
+
+        #similar-panel .col-span-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Related tutors section text colors for dark mode */
+        .related-tutors-section h2 {
+            color: var(--heading);
+        }
+
+        .related-tutors-section .text-gray-600 {
+            color: var(--text-secondary);
         }
 
         /* Right sidebar container - matching student-profile.html exactly */
@@ -804,27 +850,196 @@
                         </path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <span class="logo-main">Astegni</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Find Your Perfect Tutor</h3>
-            <p class="ad-text">Connect with expert educators</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+
+        <div class="mobile-menu-content">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-section">
+                <a href="../index.html" class="mobile-menu-link">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a href="../branch/find-tutors.html" class="mobile-menu-link">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a href="../branch/reels.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                <div class="mobile-profile-header" id="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                    <div class="mobile-profile-info">
+                        <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                        <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                    </div>
+                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="mobile-profile-dropdown">
+                    <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                        <div class="mobile-dropdown-divider"></div>
+                        <div class="mobile-dropdown-label">Switch Role</div>
+                        <div id="mobile-role-options"></div>
+                    </div>
+                    <div class="mobile-dropdown-divider"></div>
+                    <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="mobile-theme-section">
+                <button class="mobile-theme-toggle" onclick="toggleTheme()">
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <div class="mobile-notifications-section">
+                <button class="mobile-notifications-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Notifications</span>
+                    <span class="mobile-notification-badge">3</span>
+                </button>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Find Your Perfect Tutor</h3>
+                <p class="ad-text">Connect with expert educators</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Book a Session Now</h3>
+                <p class="ad-text">Start learning today</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Book Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Explore More Tutors</h3>
+                <p class="ad-text">Find your ideal match</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space Here</h3>
+                <p class="ad-text">Reach learners & educators</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -850,18 +1065,6 @@
                     <span>Stories</span>
                     <span class="badge-count" style="background: var(--button-bg);">24</span>
                 </a>
-                <a href="#" onclick="switchPanel('videos'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🎬</span>
-                    <span>Videos</span>
-                    <span class="badge-count">12</span>
-                </a>
-                <!--
-                <a href="#" onclick="switchPanel('podcasts'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🎙️</span>
-                    <span>Podcasts</span>
-                    <span class="badge-count">5</span>
-                </a>
-            -->
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('packages'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📦</span>
@@ -875,11 +1078,6 @@
                 <a href="#" onclick="switchPanel('similar'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">👥</span>
                     <span>Similar Tutors</span>
-                </a>
-                <hr class="my-4 border-gray-300">
-                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">⚙️</span>
-                    <span>Settings</span>
                 </a>
             </div>
         </div>
@@ -1015,11 +1213,6 @@
                                                 <span style="color: var(--text); font-size: 0.95rem;">
                                                     <span style="color: var(--text-muted); font-style: italic;">Loading location...</span>
                                                 </span>
-                                            </div>
-
-                                            <!-- Contact Information (Email & Phone) - Populated dynamically by JS -->
-                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <!-- Contact info will be populated dynamically -->
                                             </div>
 
                                             <!-- Teaches At & Languages (Contact Info Style) -->
@@ -1351,24 +1544,6 @@
                                 </div>
                             </div>
 
-                            <!-- Videos Panel -->
-                            <div id="videos-panel" class="panel-content">
-                                <div class="card p-6 mb-8">
-                                    <h3 class="text-xl font-semibold mb-4">Featured Videos & Lessons</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div
-                                            class="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition">
-                                            <img src="https://via.placeholder.com/300x180" alt="Video" class="w-full">
-                                            <div class="p-4">
-                                                <h4 class="font-semibold mb-2">Introduction Video</h4>
-                                                <p class="text-sm text-gray-600">Get to know my teaching style</p>
-                                                <span class="text-xs text-gray-500">5:30</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Packages Panel -->
                             <div id="packages-panel" class="panel-content">
                                 <div class="card p-6 mb-8">
@@ -1394,38 +1569,7 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Podcasts Panel 
-                            <div id="podcasts-panel" class="panel-content">
-                                <div class="card p-6 mb-8">
-                                    <h3 class="text-xl font-semibold mb-4">Educational Podcasts</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <div style="font-size: 2rem;">🎙️</div>
-                                                <div class="ml-3">
-                                                    <h4 class="font-semibold">Math Mastery Tips</h4>
-                                                    <p class="text-sm text-gray-500">Episode 15 - 45 min</p>
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-600">Tips and tricks for mastering calculus
-                                                concepts</p>
-                                        </div>
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <div style="font-size: 2rem;">🎙️</div>
-                                                <div class="ml-3">
-                                                    <h4 class="font-semibold">Physics Fundamentals</h4>
-                                                    <p class="text-sm text-gray-500">Episode 8 - 38 min</p>
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-600">Understanding the basics of mechanics</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            -->
-
+                            
                             <!-- Credentials Panel (Unified: Achievements, Certifications, Experience) -->
                             <div id="credentials-panel" class="panel-content">
                                 <div class="mb-8">
@@ -1511,138 +1655,132 @@
 
                             <!-- Similar Tutors Panel -->
                             <div id="similar-panel" class="panel-content">
-                                <div class="card p-6 mb-8">
-                                    <h3 class="text-xl font-semibold mb-4">Similar Tutors</h3>
-                                    <p class="text-gray-600 mb-6">Discover other expert tutors in mathematics, physics,
-                                        and related subjects</p>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <img src="https://via.placeholder.com/60" alt="Tutor"
-                                                    class="w-15 h-15 rounded-full mr-3">
-                                                <div>
-                                                    <h4 class="font-semibold">Dr. Yohannes Tadesse</h4>
-                                                    <div class="text-yellow-500 text-sm">⭐⭐⭐⭐⭐ 4.8</div>
-                                                </div>
+                                <div class="card p-6 mb-8" style="background: var(--card-bg); border-radius: 16px;">
+                                    <h3 class="text-xl font-semibold mb-4" style="color: var(--heading);">Similar Tutors</h3>
+                                    <p class="text-gray-600 mb-6" style="color: var(--text-secondary);">
+                                        Discover other expert tutors in similar subjects and areas
+                                    </p>
+                                    <div class="grid related-tutors-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                        <!-- Loading State - will be replaced by JavaScript -->
+                                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                                             </div>
-                                            <p class="text-sm text-gray-600 mb-2">Mathematics, Physics</p>
-                                            <p class="text-sm text-gray-500">6 years experience • 1,200+ students</p>
-                                            <button
-                                                class="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">View
-                                                Profile</button>
                                         </div>
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <img src="https://via.placeholder.com/60" alt="Tutor"
-                                                    class="w-15 h-15 rounded-full mr-3">
-                                                <div>
-                                                    <h4 class="font-semibold">Sara Mekonnen</h4>
-                                                    <div class="text-yellow-500 text-sm">⭐⭐⭐⭐⭐ 4.9</div>
-                                                </div>
+                                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                                             </div>
-                                            <p class="text-sm text-gray-600 mb-2">Chemistry, Biology</p>
-                                            <p class="text-sm text-gray-500">5 years experience • 800+ students</p>
-                                            <button
-                                                class="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">View
-                                                Profile</button>
                                         </div>
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <img src="https://via.placeholder.com/60" alt="Tutor"
-                                                    class="w-15 h-15 rounded-full mr-3">
-                                                <div>
-                                                    <h4 class="font-semibold">Daniel Hailu</h4>
-                                                    <div class="text-yellow-500 text-sm">⭐⭐⭐⭐☆ 4.7</div>
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-600 mb-2">Advanced Calculus</p>
-                                            <p class="text-sm text-gray-500">4 years experience • 600+ students</p>
-                                            <button
-                                                class="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">View
-                                                Profile</button>
-                                        </div>
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
-                                            <div class="flex items-center mb-3">
-                                                <img src="https://via.placeholder.com/60" alt="Tutor"
-                                                    class="w-15 h-15 rounded-full mr-3">
-                                                <div>
-                                                    <h4 class="font-semibold">Helen Assefa</h4>
-                                                    <div class="text-yellow-500 text-sm">⭐⭐⭐⭐⭐ 5.0</div>
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-600 mb-2">Physics, Engineering</p>
-                                            <p class="text-sm text-gray-500">8 years experience • 1,500+ students</p>
-                                            <button
-                                                class="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">View
-                                                Profile</button>
-                                        </div>
+                                        <!-- Dynamic content will be inserted here by JavaScript -->
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Settings Panel -->
-                            <div id="settings-panel" class="panel-content">
-                                <div class="card p-6 mb-8">
-                                    <h3 class="text-xl font-semibold mb-4">Profile Settings</h3>
-                                    <div class="space-y-4">
-                                        <div class="p-4 border rounded-lg hover:shadow transition cursor-pointer">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="font-semibold">📧 Contact Preferences</h4>
-                                                    <p class="text-sm text-gray-600">Manage how students can contact you
-                                                    </p>
-                                                </div>
-                                                <span class="text-gray-400">→</span>
-                                            </div>
-                                        </div>
-                                        <div class="p-4 border rounded-lg hover:shadow transition cursor-pointer">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="font-semibold">🔔 Notification Settings</h4>
-                                                    <p class="text-sm text-gray-600">Control your notification
-                                                        preferences</p>
-                                                </div>
-                                                <span class="text-gray-400">→</span>
-                                            </div>
-                                        </div>
-                                        <div class="p-4 border rounded-lg hover:shadow transition cursor-pointer">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="font-semibold">🔒 Privacy Settings</h4>
-                                                    <p class="text-sm text-gray-600">Manage who can see your profile</p>
-                                                </div>
-                                                <span class="text-gray-400">→</span>
-                                            </div>
-                                        </div>
-                                        <div class="p-4 border rounded-lg hover:shadow transition cursor-pointer">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="font-semibold">🚫 Block List</h4>
-                                                    <p class="text-sm text-gray-600">Manage blocked users</p>
-                                                </div>
-                                                <span class="text-gray-400">→</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="p-4 border rounded-lg hover:shadow transition cursor-pointer bg-red-50 border-red-200">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="font-semibold text-red-600">🚨 Report Profile</h4>
-                                                    <p class="text-sm text-gray-600">Report inappropriate content or
-                                                        behavior</p>
-                                                </div>
-                                                <span class="text-red-400">→</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <!-- Right Sidebar -->
                     <div class="right-sidebar-container">
                         <div class="right-sidebar-content">
+
+                            <!-- Ad Widget -->
+                            <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
+                                <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                                    <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                                </div>
+                                <div class="ad-content" id="ad-container" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                                    <!-- Rotating Ad Messages -->
+                                    <div id="ad-message-container" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                        <div class="ad-message active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                            <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                        </div>
+                                        <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                            <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                        </div>
+                                        <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                            <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                        </div>
+                                        <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                            <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                        </div>
+                                        <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                            <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                            <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                        </div>
+                                    </div>
+                                    <!-- Ticker at bottom -->
+                                    <div id="ad-ticker" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                        <div id="ad-ticker-content" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                            <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                            <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                            <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                            <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                            <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                            <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <style>
+                                    @keyframes tickerScroll {
+                                        0% { transform: translateX(0); }
+                                        100% { transform: translateX(-50%); }
+                                    }
+                                    #ad-ticker-content {
+                                        animation: tickerScroll 20s linear infinite;
+                                    }
+                                    .ad-message {
+                                        visibility: hidden;
+                                    }
+                                    .ad-message.active {
+                                        opacity: 1 !important;
+                                        transform: scale(1) !important;
+                                        visibility: visible !important;
+                                    }
+                                    .ad-message.fade-out {
+                                        opacity: 0 !important;
+                                        transform: scale(0.8) !important;
+                                        visibility: visible !important;
+                                    }
+                                </style>
+                                <script>
+                                    (function() {
+                                        const messages = document.querySelectorAll('#ad-message-container .ad-message');
+                                        let currentIndex = 0;
+
+                                        function rotateMessages() {
+                                            const prevIndex = currentIndex;
+                                            currentIndex = (currentIndex + 1) % messages.length;
+
+                                            // Fade out current
+                                            messages[prevIndex].classList.remove('active');
+                                            messages[prevIndex].classList.add('fade-out');
+
+                                            // Fade in next
+                                            messages[currentIndex].classList.add('active');
+
+                                            // Hide previous after animation
+                                            setTimeout(() => {
+                                                messages[prevIndex].classList.remove('fade-out');
+                                            }, 600);
+                                        }
+
+                                        setInterval(rotateMessages, 10000);
+                                    })();
+                                </script>
+                            </div>
 
                             <!-- Student Success Stories Widget - Populated by JS -->
                             <div class="sidebar-widget success-widget card" style="padding: 1.5rem;">
@@ -1737,58 +1875,51 @@
             <section class="related-tutors-section">
                 <div class="container mx-auto px-4">
                     <div style="text-align: center; margin-bottom: 2rem;">
-                        <h2 class="text-3xl font-bold mb-2">Related Tutors</h2>
-                        <p class="text-gray-600">Discover more expert educators in similar subjects</p>
+                        <h2 class="text-3xl font-bold mb-2" style="color: var(--heading);">Related Tutors</h2>
+                        <p class="text-gray-600" style="color: var(--text-secondary);">
+                            Discover more expert educators in similar subjects
+                        </p>
                     </div>
 
                     <div class="related-tutors-grid">
-                        <!-- Tutor Card 1 -->
-                        <div class="tutor-card-minimal" onclick="viewTutor('tutor-1')">
-                            <img src="https://via.placeholder.com/80" alt="Tutor" class="tutor-avatar">
-                            <h4 class="tutor-name">Yohannes Tadesse</h4>
-                            <p class="tutor-subjects">Mathematics, Physics</p>
-                            <div class="tutor-rating">
-                                <span>⭐⭐⭐⭐⭐</span>
-                                <span>4.8</span>
+                        <!-- Loading State - will be replaced by JavaScript -->
+                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                             </div>
-                            <button class="view-profile-btn">View Profile</button>
                         </div>
-
-                        <!-- Tutor Card 2 -->
-                        <div class="tutor-card-minimal" onclick="viewTutor('tutor-2')">
-                            <img src="https://via.placeholder.com/80" alt="Tutor" class="tutor-avatar">
-                            <h4 class="tutor-name">Sara Mekonnen</h4>
-                            <p class="tutor-subjects">Chemistry, Biology</p>
-                            <div class="tutor-rating">
-                                <span>⭐⭐⭐⭐⭐</span>
-                                <span>4.9</span>
+                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                             </div>
-                            <button class="view-profile-btn">View Profile</button>
                         </div>
-
-                        <!-- Tutor Card 3 -->
-                        <div class="tutor-card-minimal" onclick="viewTutor('tutor-3')">
-                            <img src="https://via.placeholder.com/80" alt="Tutor" class="tutor-avatar">
-                            <h4 class="tutor-name">Daniel Hailu</h4>
-                            <p class="tutor-subjects">Advanced Calculus</p>
-                            <div class="tutor-rating">
-                                <span>⭐⭐⭐⭐☆</span>
-                                <span>4.7</span>
+                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                             </div>
-                            <button class="view-profile-btn">View Profile</button>
                         </div>
-
-                        <!-- Tutor Card 4 -->
-                        <div class="tutor-card-minimal" onclick="viewTutor('tutor-4')">
-                            <img src="https://via.placeholder.com/80" alt="Tutor" class="tutor-avatar">
-                            <h4 class="tutor-name">Helen Assefa</h4>
-                            <p class="tutor-subjects">Physics, Engineering</p>
-                            <div class="tutor-rating">
-                                <span>⭐⭐⭐⭐⭐</span>
-                                <span>5.0</span>
+                        <div class="tutor-card-minimal" style="opacity: 0.6;">
+                            <div class="animate-pulse" style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; margin-bottom: 1rem;"></div>
+                                <div style="width: 120px; height: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                                <div style="width: 100px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 0.75rem;"></div>
+                                <div style="width: 80px; height: 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 1rem;"></div>
+                                <div style="width: 100%; height: 36px; background: var(--bg-secondary); border-radius: 8px;"></div>
                             </div>
-                            <button class="view-profile-btn">View Profile</button>
                         </div>
+                        <!-- Dynamic content will be inserted here by JavaScript -->
                     </div>
                 </div>
             </section>
@@ -2492,6 +2623,10 @@
     <!-- Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/nav.js"></script>
+    <!-- Access Restricted Modal - MUST load before ProfileCompletionGuard -->
+    <script src="../js/common-modals/access-restricted-modal.js?v=20251229"></script>
+    <script src="../js/root/profile-completion-guard.js?v=20251224"></script>
     <script src="../js/root/profile-system.js"></script>
     <!-- page-structure-manager.js removed - functionality is inline -->
     <!-- <script src="../js/page-structure/weather-manager.js"></script> -->
@@ -2499,7 +2634,12 @@
     <script src="../modals/common-modals/common-modal-loader.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
+
+    <!-- Protected API Wrapper (2FA protection for session requests) -->
+    <script src="../js/common-modals/protected-api-wrapper.js"></script>
+
     <!-- Sidebar Toggle (shared) -->
     <script src="../js/shared/sidebar-toggle.js"></script>
     <!-- OLD LOADER REMOVED - Using view-tutor-db-loader.js instead (loaded at bottom) -->
@@ -2507,7 +2647,21 @@
 
     <script>
         // Panel switching functionality
-        function switchPanel(panelName) {
+        async function switchPanel(panelName) {
+            // 2FA-protected panels - require verification if user has 2FA enabled
+            const protectedPanels = ['packages'];
+
+            if (protectedPanels.includes(panelName)) {
+                // Check if ProtectedAPI is available and require verification
+                if (typeof ProtectedAPI !== 'undefined') {
+                    const verified = await ProtectedAPI.requireVerification('view_tutor_packages');
+                    if (!verified) {
+                        console.log('2FA verification required for packages panel - access denied');
+                        return; // Don't switch panel if verification failed/cancelled
+                    }
+                }
+            }
+
             // Hide all panels
             document.querySelectorAll('.panel-content').forEach(panel => {
                 panel.classList.remove('active');
@@ -2934,101 +3088,6 @@
         </div>
     </div>
 
-    <!-- Request Session Modal -->
-    <div id="requestSessionModal" class="modal hidden"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none;">
-        <div class="modal-overlay" onclick="closeRequestModal()"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        <div class="modal-content"
-            style="position: relative; max-width: 600px; margin: 50px auto; background: white; border-radius: 12px; padding: 24px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h2 style="font-size: 1.5rem; font-weight: bold;"><i class="fas fa-paper-plane"></i> Request a Session
-                </h2>
-                <button class="modal-close" onclick="closeRequestModal()"
-                    style="background: none; border: none; font-size: 2rem; cursor: pointer; color: #666;">&times;</button>
-            </div>
-
-            <form id="sessionRequestForm" onsubmit="submitSessionRequest(event)"
-                style="display: flex; flex-direction: column; gap: 20px;">
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Select Package *</label>
-                    <select id="packageSelect" required
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <option value="">-- Select a package --</option>
-                        <option value="Basic Package">Basic Package</option>
-                        <option value="Premium Package">Premium Package</option>
-                        <option value="Advanced Package">Advanced Package</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Student Name *</label>
-                    <input type="text" id="studentName" required placeholder="Enter student name"
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Grade Level *</label>
-                    <select id="gradeLevel" required
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <option value="">-- Select grade level --</option>
-                        <option value="KG">Kindergarten</option>
-                        <option value="Grade 1">Grade 1</option>
-                        <option value="Grade 2">Grade 2</option>
-                        <option value="Grade 3">Grade 3</option>
-                        <option value="Grade 4">Grade 4</option>
-                        <option value="Grade 5">Grade 5</option>
-                        <option value="Grade 6">Grade 6</option>
-                        <option value="Grade 7">Grade 7</option>
-                        <option value="Grade 8">Grade 8</option>
-                        <option value="Grade 9">Grade 9</option>
-                        <option value="Grade 10">Grade 10</option>
-                        <option value="Grade 11">Grade 11</option>
-                        <option value="Grade 12">Grade 12</option>
-                        <option value="University Level">University Level</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Contact Phone</label>
-                    <input type="tel" id="contactPhone" placeholder="+251 9..."
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Contact Email</label>
-                    <input type="email" id="contactEmail" placeholder="example@email.com"
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Preferred Schedule</label>
-                    <input type="text" id="preferredSchedule" placeholder="e.g., Weekday afternoons, Saturday mornings"
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Message (Optional)</label>
-                    <textarea id="requestMessage" rows="4"
-                        placeholder="Tell the tutor about your goals and expectations..."
-                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; resize: vertical;"></textarea>
-                </div>
-
-                <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid #ddd;">
-                    <button type="submit"
-                        style="flex: 1; padding: 14px; background: #3B82F6; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer;">
-                        <i class="fas fa-paper-plane"></i> Send Request
-                    </button>
-                    <button type="button" onclick="closeRequestModal()"
-                        style="padding: 14px 24px; background: #E5E7EB; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Package Details Modal - Modern Design -->
     <div id="packageDetailsModal" class="modal hidden"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: center; justify-content: center;">
@@ -3052,10 +3111,6 @@
             <!-- Scrollable Content -->
             <div style="padding: 24px 28px; max-height: calc(90vh - 180px); overflow-y: auto;">
 
-                <!-- Package Details Display -->
-                <div id="packageDetailsContent" style="margin-bottom: 24px;">
-                    <!-- Will be populated by JavaScript -->
-                </div>
 
                 <!-- Student Information - For Parents Only (with child search) -->
                 <div id="parentChildSelectionSection" class="modal-section" style="background: var(--card-bg); border: 2px solid var(--primary-color); padding: 20px; border-radius: 16px; margin-bottom: 20px; display: none; position: relative; overflow: visible;">
@@ -3116,6 +3171,11 @@
                             <i class="fas fa-plus"></i> Add Children
                         </a>
                     </div>
+                </div>
+
+                <!-- Package Details Display -->
+                <div id="packageDetailsContent" style="margin-bottom: 24px;">
+                    <!-- Will be populated by JavaScript -->
                 </div>
 
                 <!-- Schedule Preferences Section -->
@@ -3287,6 +3347,37 @@
                             <input type="time" id="endTime" value="17:00"
                                 style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color);">
                         </div>
+                    </div>
+                </div>
+
+                <!-- Counter Offer Price Section -->
+                <div class="modal-section" style="background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 16px 0; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-hand-holding-usd" style="color: var(--primary-color);"></i> Your Offer (Optional)
+                    </h3>
+
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 16px 0; line-height: 1.5;">
+                        Want to propose a different price? Enter your counter-offer below. The tutor will review and respond to your request.
+                    </p>
+
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="flex: 1; position: relative;">
+                            <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">ETB</span>
+                            <input type="number" id="counterOfferPrice" min="0" step="10" placeholder="Enter your offer"
+                                style="width: 100%; padding: 14px 16px 14px 55px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; font-weight: 600; background: var(--bg-color); color: var(--text-color); transition: border-color 0.2s;"
+                                onfocus="this.style.borderColor='var(--primary-color)'"
+                                onblur="this.style.borderColor='var(--border-color)'">
+                        </div>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap;">per session</span>
+                    </div>
+
+                    <!-- Reference Price Display -->
+                    <div id="counterOfferReference" style="margin-top: 12px; padding: 12px 16px; background: rgba(var(--primary-rgb), 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">
+                            <i class="fas fa-info-circle" style="color: var(--primary-color); margin-right: 6px;"></i>
+                            Tutor's listed price:
+                        </span>
+                        <span id="listedPriceDisplay" style="font-weight: 700; color: var(--primary-color); font-size: 1rem;">ETB 0</span>
                     </div>
                 </div>
 
@@ -3608,6 +3699,9 @@
             }
         }
     </script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 </body>
 
 </html>

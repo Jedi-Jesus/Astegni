@@ -97,8 +97,17 @@ window.getTierFeatures = getTierFeatures;
 // ============================================
 
 function calculateLivePricing() {
-    const basicBasePrice = parseFloat(document.getElementById('basic-base-price').value) || 0;
-    const premiumBasePrice = parseFloat(document.getElementById('premium-base-price').value) || 0;
+    // Check if elements exist before accessing values
+    const basicBasePriceEl = document.getElementById('basic-base-price');
+    const premiumBasePriceEl = document.getElementById('premium-base-price');
+
+    // If elements don't exist, silently return (pricing panel not visible)
+    if (!basicBasePriceEl && !premiumBasePriceEl) {
+        return;
+    }
+
+    const basicBasePrice = basicBasePriceEl ? parseFloat(basicBasePriceEl.value) || 0 : 0;
+    const premiumBasePrice = premiumBasePriceEl ? parseFloat(premiumBasePriceEl.value) || 0 : 0;
 
     if (basicBasePrice === 0 && premiumBasePrice === 0) {
         // Reset all prices to --

@@ -89,13 +89,43 @@
 
 .counter-grid-top {
     display: grid;
-    grid-template-columns: repeat(3, minmax(280px, 320px));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
     justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .counter-grid-bottom {
-    display: none; /* Hidden - no longer needed */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 1.5rem auto 0;
+}
+
+.counter-card-wide {
+    /* Each card spans width equivalent to 2 top cards */
+    min-width: 100%;
+}
+
+/* Responsive adjustments for counter grids */
+@media (max-width: 1024px) {
+    .counter-grid-top {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .counter-grid-bottom {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .counter-grid-top {
+        grid-template-columns: 1fr;
+    }
+    .counter-grid-bottom {
+        grid-template-columns: 1fr;
+    }
 }
 
 .counter-card-enhanced {
@@ -148,6 +178,37 @@
     font-size: 1rem;
     color: var(--text-muted);
     text-align: center;
+}
+
+/* Coming Soon Card Styles */
+.coming-soon-card {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.95) 100%);
+    border: 2px dashed rgba(var(--button-bg-rgb), 0.3);
+}
+
+.coming-soon-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent 40%, rgba(var(--button-bg-rgb), 0.05) 50%, transparent 60%);
+    animation: shimmer 3s infinite;
+    border-radius: 18px;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.coming-soon-text {
+    font-size: 1.25rem !important;
+    background: linear-gradient(135deg, var(--button-bg), var(--primary-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 /* Mock Badge (Test Data) */

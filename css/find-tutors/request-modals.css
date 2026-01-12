@@ -277,7 +277,27 @@ textarea.modal-input {
     background-color: var(--primary-hover, #3b82f6);
 }
 
-/* Responsive Design */
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 92%;
+        max-height: 92vh;
+    }
+
+    .modal-header {
+        padding: 20px 18px 14px;
+    }
+
+    .modal-title {
+        font-size: 1.35rem;
+    }
+}
+
+/* Mobile (640px) */
 @media (max-width: 640px) {
     .modal-content {
         width: 95%;
@@ -304,6 +324,190 @@ textarea.modal-input {
     .modal-btn-submit {
         width: 100%;
         padding: 12px;
+    }
+}
+
+/* Small phones (480px) */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .modal-header {
+        padding: 16px 14px 10px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--card-bg, #ffffff);
+    }
+
+    .modal-title {
+        font-size: 1.15rem;
+    }
+
+    .modal-form {
+        padding: 16px 14px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+
+    .modal-input {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    select.modal-input {
+        padding-right: 36px;
+        background-size: 18px;
+    }
+
+    textarea.modal-input {
+        min-height: 80px;
+    }
+
+    .modal-actions {
+        position: sticky;
+        bottom: 0;
+        background: var(--card-bg, #ffffff);
+        padding-top: 12px;
+        padding-bottom: 16px;
+        margin: 0 -14px;
+        padding-left: 14px;
+        padding-right: 14px;
+        border-top: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    .modal-btn-cancel,
+    .modal-btn-submit {
+        padding: 14px;
+        font-size: 0.9rem;
+    }
+
+    .form-success-message,
+    .form-error-message {
+        font-size: 0.8rem;
+        padding: 10px 14px;
+    }
+}
+
+/* Extra small phones (375px) */
+@media (max-width: 375px) {
+    .modal-header {
+        padding: 14px 12px 8px;
+    }
+
+    .modal-title {
+        font-size: 1.1rem;
+    }
+
+    .modal-form {
+        padding: 14px 12px;
+    }
+
+    .form-label {
+        font-size: 0.75rem;
+    }
+
+    .modal-input {
+        padding: 9px 10px;
+        font-size: 0.9rem;
+    }
+
+    .modal-btn-cancel,
+    .modal-btn-submit {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 12px 16px 8px;
+    }
+
+    .modal-form {
+        padding: 12px 16px;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .modal-input {
+        padding: 8px 12px;
+    }
+
+    .modal-actions {
+        padding-top: 8px;
+    }
+
+    .modal-btn-cancel,
+    .modal-btn-submit {
+        padding: 10px;
+    }
+}
+
+/* Touch-friendly */
+@media (hover: none) and (pointer: coarse) {
+    .modal-input {
+        min-height: 44px;
+    }
+
+    .modal-btn-cancel,
+    .modal-btn-submit {
+        min-height: 48px;
+    }
+
+    .modal-close {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Prevent zoom on input focus */
+    .modal-input {
+        font-size: 16px;
+    }
+}
+
+/* Safe area insets */
+@supports (padding: env(safe-area-inset-bottom)) {
+    @media (max-width: 480px) {
+        .modal-actions {
+            padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .modal-overlay,
+    .modal-content,
+    .modal-input,
+    .modal-btn-cancel,
+    .modal-btn-submit {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .animate__zoomIn {
+        animation: none !important;
     }
 }
 

@@ -26,7 +26,8 @@ class ViewTutorDBLoader {
             experience: [],
             videos: [],
             packages: [],
-            weekAvailability: []
+            weekAvailability: [],
+            similarTutors: []
         };
     }
 
@@ -46,7 +47,8 @@ class ViewTutorDBLoader {
                 this.loadExperience(),
                 this.loadVideos(),
                 this.loadPackages(),
-                this.loadWeekAvailability()
+                this.loadWeekAvailability(),
+                this.loadSimilarTutors()
             ]);
 
             // Populate all sections
@@ -214,6 +216,25 @@ class ViewTutorDBLoader {
     }
 
     /**
+     * Load similar tutors
+     */
+    async loadSimilarTutors() {
+        try {
+            const byUserIdParam = this.byUserId ? '&by_user_id=true' : '';
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/similar?limit=8${byUserIdParam}`);
+            if (!response.ok) throw new Error('Failed to fetch similar tutors');
+
+            const data = await response.json();
+            this.data.similarTutors = data.similar_tutors || [];
+
+            console.log('✓ Loaded similar tutors:', this.data.similarTutors.length);
+        } catch (error) {
+            console.error('Error loading similar tutors:', error);
+            this.data.similarTutors = [];
+        }
+    }
+
+    /**
      * Populate all sections of the page
      */
     populateAllSections() {
@@ -239,6 +260,8 @@ class ViewTutorDBLoader {
         this.populatePricingWidget();
         this.populateAvailabilityWidget();
         this.populateAchievementsWidget();
+        this.populateSimilarTutorsPanel();
+        this.populateRelatedTutorsSection();
     }
 
     /**
@@ -416,9 +439,6 @@ class ViewTutorDBLoader {
             locationEl.textContent = locationParts.length > 0 ? locationParts.join(' | ') : 'None';
         }
 
-        // Contact Info
-        this.updateContactInfo(profile);
-
         // Profile Info Grid
         this.updateProfileInfoGrid(profile);
 
@@ -481,39 +501,6 @@ class ViewTutorDBLoader {
             }
         }
         starsContainer.innerHTML = starsHTML;
-    }
-
-    /**
-     * Update contact information (matching view-parent.html card-based design)
-     * Always show cards with placeholder text if data is missing
-     */
-    updateContactInfo(profile) {
-        const contactContainer = document.querySelector('.profile-contact-info');
-        if (!contactContainer) return;
-
-        // Always show email card
-        const emailHTML = `
-            <div id="email-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                <span style="font-size: 1.25rem;">📧</span>
-                <div style="flex: 1; overflow: hidden;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
-                    <div id="tutor-email" style="color: ${profile.email ? 'var(--text)' : 'var(--text-muted)'}; font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${!profile.email ? 'font-style: italic;' : ''}">${profile.email || 'Email will be displayed here'}</div>
-                </div>
-            </div>
-        `;
-
-        // Always show phone card
-        const phoneHTML = `
-            <div id="phone-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                <span style="font-size: 1.25rem;">📱</span>
-                <div style="flex: 1;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Phone</div>
-                    <div id="tutor-phone" style="color: ${profile.phone ? 'var(--text)' : 'var(--text-muted)'}; font-size: 0.875rem; font-weight: 500; ${!profile.phone ? 'font-style: italic;' : ''}">${profile.phone || 'Phone will be displayed here'}</div>
-                </div>
-            </div>
-        `;
-
-        contactContainer.innerHTML = emailHTML + phoneHTML;
     }
 
     /**
@@ -821,11 +808,10 @@ class ViewTutorDBLoader {
                 transition: all 0.3s ease;
                 animation: fadeInUp 0.6s ease-out backwards;
                 animation-delay: ${index * 0.1}s;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                box-shadow: var(--shadow-md);
                 cursor: pointer;
-                border: 1px solid rgba(0, 0, 0, 0.05);
-            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 40px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.05)';">
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${stat.gradient};"></div>
+                border: 1px solid var(--border-color);
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-xl)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)';">
                 <div style="text-align: center;">
                     <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">${stat.icon}</div>
                     <div style="font-size: 1.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">${stat.value}</div>
@@ -1695,6 +1681,162 @@ class ViewTutorDBLoader {
         }
     }
 
+    /**
+     * Populate Similar Tutors Panel (in the main content area)
+     * Shows tutors with similar courses, location, or languages
+     * Uses same card style as related-tutors-section (tutor-card-minimal)
+     */
+    populateSimilarTutorsPanel() {
+        const similarTutors = this.data.similarTutors;
+        const panel = document.getElementById('similar-panel');
+
+        if (!panel) return;
+
+        const gridContainer = panel.querySelector('.related-tutors-grid') || panel.querySelector('.grid');
+        if (!gridContainer) return;
+
+        // If no similar tutors, show a message
+        if (!similarTutors || similarTutors.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="col-span-2 text-center py-8">
+                    <div style="color: var(--text-muted); font-size: 3rem; margin-bottom: 1rem;">👨‍🏫</div>
+                    <p style="color: var(--text-secondary);">No similar tutors found at this time.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                        Check back later for tutor recommendations.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        // Take first 4 tutors for the panel
+        const displayTutors = similarTutors.slice(0, 4);
+
+        // Use same card style as related-tutors-section (tutor-card-minimal)
+        const tutorsHTML = displayTutors.map((tutor, index) => {
+            // Generate initials-based avatar as fallback (first letter of first name + father name)
+            const nameParts = (tutor.full_name || 'Tutor').split(' ');
+            const initials = nameParts.length >= 2
+                ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                : (nameParts[0][0] || 'T').toUpperCase();
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4F46E5&color=fff&size=128&bold=true`;
+            const profilePic = tutor.profile_picture || defaultAvatar;
+            const ratingStars = this.generateStars(tutor.rating);
+
+            return `
+                <div class="tutor-card-minimal"
+                     onclick="window.location.href='view-tutor.html?id=${tutor.id}'"
+                     style="animation-delay: ${0.1 + (index * 0.1)}s;">
+                    <img src="${profilePic}" alt="${tutor.full_name}" class="tutor-avatar"
+                         onerror="this.src='${defaultAvatar}'">
+                    <h4 class="tutor-name">
+                        ${tutor.full_name}
+                        ${tutor.is_verified ? '<span style="color: #22c55e; font-size: 0.875rem;" title="Verified">✓</span>' : ''}
+                    </h4>
+                    <p class="tutor-subjects">${tutor.subjects_display}</p>
+                    <div class="tutor-rating">
+                        <span>${ratingStars}</span>
+                        <span>${tutor.rating.toFixed(1)}</span>
+                    </div>
+                    <button class="view-profile-btn">View Profile</button>
+                </div>
+            `;
+        }).join('');
+
+        gridContainer.innerHTML = tutorsHTML;
+
+        // Update the description text
+        const descEl = panel.querySelector('p.text-gray-600');
+        if (descEl && this.data.profile) {
+            const subjects = this.data.similarTutors.length > 0
+                ? this.data.similarTutors[0].subjects?.join(', ') || 'various subjects'
+                : 'similar subjects';
+            descEl.textContent = `Discover other expert tutors in ${subjects} and related areas`;
+            descEl.style.color = 'var(--text-secondary)';
+        }
+    }
+
+    /**
+     * Populate Related Tutors Section (bottom of the page)
+     * Shows tutors in a horizontal card grid
+     */
+    populateRelatedTutorsSection() {
+        const similarTutors = this.data.similarTutors;
+        const section = document.querySelector('.related-tutors-section');
+
+        if (!section) return;
+
+        const grid = section.querySelector('.related-tutors-grid');
+        if (!grid) return;
+
+        // If no similar tutors, hide the section
+        if (!similarTutors || similarTutors.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        // Show section if we have tutors
+        section.style.display = 'block';
+
+        // Take first 4 for the related section (or 8 if more space)
+        const displayTutors = similarTutors.slice(0, 4);
+
+        const tutorsHTML = displayTutors.map((tutor, index) => {
+            // Generate initials-based avatar as fallback (first letter of first name + father name)
+            const nameParts = (tutor.full_name || 'Tutor').split(' ');
+            const initials = nameParts.length >= 2
+                ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                : (nameParts[0][0] || 'T').toUpperCase();
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4F46E5&color=fff&size=128&bold=true`;
+            const profilePic = tutor.profile_picture || defaultAvatar;
+            const ratingStars = this.generateStars(tutor.rating);
+
+            return `
+                <div class="tutor-card-minimal"
+                     onclick="window.location.href='view-tutor.html?id=${tutor.id}'"
+                     style="animation-delay: ${0.5 + (index * 0.1)}s;">
+                    <img src="${profilePic}" alt="${tutor.full_name}" class="tutor-avatar"
+                         onerror="this.src='${defaultAvatar}'">
+                    <h4 class="tutor-name">
+                        ${tutor.full_name}
+                        ${tutor.is_verified ? '<span style="color: #22c55e; font-size: 0.875rem;" title="Verified">✓</span>' : ''}
+                    </h4>
+                    <p class="tutor-subjects">${tutor.subjects_display}</p>
+                    <div class="tutor-rating">
+                        <span>${ratingStars}</span>
+                        <span>${tutor.rating.toFixed(1)}</span>
+                    </div>
+                    <button class="view-profile-btn">View Profile</button>
+                </div>
+            `;
+        }).join('');
+
+        grid.innerHTML = tutorsHTML;
+
+        // Update the description text based on current tutor's subjects
+        const descEl = section.querySelector('p.text-gray-600');
+        if (descEl && this.data.profile) {
+            descEl.textContent = 'Discover more expert educators in similar subjects';
+            descEl.style.color = 'var(--text-secondary)';
+        }
+    }
+
+    /**
+     * Generate star rating HTML
+     */
+    generateStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        let stars = '';
+        for (let i = 0; i < fullStars; i++) stars += '⭐';
+        if (hasHalfStar) stars += '⭐'; // Using full star for half (can be changed to half star emoji if available)
+        for (let i = 0; i < emptyStars; i++) stars += '☆';
+
+        return stars;
+    }
+
     // ============================================
     // HELPER METHODS
     // ============================================
@@ -1764,10 +1906,20 @@ class ViewTutorDBLoader {
 
 /**
  * Open package details modal - Global function accessible from HTML onclick
+ * Guards feature access - requires 2FA verification (if enabled)
  * @param {number} packageId - Package ID
  * @param {string} packageName - Package name
  */
 window.openPackageDetailsModal = async function(packageId, packageName) {
+    // Guard: Check 2FA verification first (if user has 2FA enabled)
+    if (window.ProtectedAPI && typeof ProtectedAPI.requireVerification === 'function') {
+        const verified = await ProtectedAPI.requireVerification('request_session');
+        if (!verified) {
+            console.log('[2FA] Package details modal blocked - verification failed or cancelled');
+            return; // User cancelled or failed 2FA verification
+        }
+    }
+
     const modal = document.getElementById('packageDetailsModal');
     if (!modal) {
         console.error('Package details modal not found');
@@ -1837,6 +1989,19 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
 
         // Populate package details
         populatePackageDetails(packageData);
+
+        // Update the listed price display for counter-offer reference
+        const price = packageData.session_price || packageData.package_price || 0;
+        const listedPriceDisplay = document.getElementById('listedPriceDisplay');
+        if (listedPriceDisplay) {
+            listedPriceDisplay.textContent = `ETB ${Math.round(price)}`;
+        }
+
+        // Clear any previous counter-offer
+        const counterOfferInput = document.getElementById('counterOfferPrice');
+        if (counterOfferInput) {
+            counterOfferInput.value = '';
+        }
 
         // Pre-fill user info
         prefillPackageModalUserInfo();
@@ -2648,6 +2813,10 @@ window.submitPackageRequest = async function() {
         }
     }
 
+    // Get counter-offer price if provided
+    const counterOfferInput = document.getElementById('counterOfferPrice');
+    const counterOfferPrice = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
+
     // Prepare request data with structured schedule fields
     const requestData = {
         tutor_id: parseInt(window.currentTutorId),
@@ -2662,7 +2831,9 @@ window.submitPackageRequest = async function() {
         days: days.length > 0 ? days : null,
         specific_dates: specificDates.length > 0 ? specificDates : null,
         start_time: startTime || null,
-        end_time: endTime || null
+        end_time: endTime || null,
+        // Counter-offer price
+        counter_offer_price: counterOfferPrice
     };
 
     // Show loading state

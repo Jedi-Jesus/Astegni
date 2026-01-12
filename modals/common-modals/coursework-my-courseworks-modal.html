@@ -1,10 +1,10 @@
 <!--
-  Modal: courseworkMyCourseworkzesModal
+  Modal: courseworkMyCourseworksModal
   Extracted from: tutor-profile.html
   Purpose: [Auto-extracted modal component]
 -->
 
-<div id="courseworkMyCourseworkzesModal" class="coursework-modal">
+<div id="courseworkMyCourseworksModal" class="coursework-modal">
         <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
         <div class="coursework-modal-content coursework-modal-large">
             <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
@@ -29,23 +29,24 @@
                 <!-- Main Content -->
                 <div class="coursework-content-area flex-1">
                     <h2 class="coursework-content-title">
-                        <span>📚</span> My Courseworkzes
+                        <span>📚</span> My Quizzes
                     </h2>
                     <div class="coursework-table-wrapper">
                         <table class="coursework-data-table">
                             <thead>
                                 <tr>
-                                    <th>Course Name</th>
-                                    <th>Coursework Type</th>
-                                    <th>Score</th>
-                                    <th>Time Given</th>
+                                    <th>Course</th>
+                                    <th>Type</th>
+                                    <th>Tutor</th>
+                                    <th>Time</th>
                                     <th>Due Date</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="courseworkMyTableBody">
                                 <tr>
-                                    <td colspan="6" class="text-center text-gray-500 py-8">No courseworkzes assigned yet</td>
+                                    <td colspan="7" class="text-center text-gray-500 py-8">No quizzes assigned yet</td>
                                 </tr>
                             </tbody>
                         </table>

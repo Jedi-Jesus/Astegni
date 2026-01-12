@@ -21,15 +21,11 @@
                         <span>Give a Coursework</span>
                         <span class="coursework-notification-badge" id="courseworkGiveBadge"></span>
                     </button>
-                    <button class="coursework-action-btn coursework-btn-success" onclick="courseworkManager.openMyCourseworkzesModal()">
+                    <!-- My Courseworks - Hidden for tutors, shown for students -->
+                    <button id="myCourseworksBtn" class="coursework-action-btn coursework-btn-success hidden" onclick="courseworkManager.openMyCourseworksModal()">
                         <span class="coursework-btn-icon">📚</span>
-                        <span>My Courseworkzes</span>
+                        <span>My Courseworks</span>
                         <span class="coursework-notification-badge" id="courseworkMyBadge"></span>
-                    </button>
-                    <button class="coursework-action-btn coursework-btn-purple" onclick="courseworkManager.openViewAnswersModal()">
-                        <span class="coursework-btn-icon">✅</span>
-                        <span>View Answers</span>
-                        <span class="coursework-notification-badge" id="courseworkAnswersBadge"></span>
                     </button>
                 </div>
 

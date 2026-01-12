@@ -6,7 +6,7 @@
 #coming-soon-modal {
     display: none;
     position: fixed;
-    z-index: 9999;
+    z-index: 999999; /* Higher than upload-document modal to appear on top */
     left: 0;
     top: 0;
     width: 100%;
@@ -529,36 +529,203 @@
 }
 
 /* Mobile responsiveness */
+@media (max-width: 768px) {
+    #coming-soon-modal {
+        padding: 0.75rem;
+    }
+
+    .coming-soon-content {
+        padding: 1.75rem !important;
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+        border-radius: 20px;
+    }
+
+    .coming-soon-content .modal-title {
+        font-size: 1.625rem;
+    }
+
+    .coming-soon-icon {
+        width: 85px;
+        height: 85px;
+    }
+
+    .coming-soon-icon svg {
+        width: 42px;
+        height: 42px;
+    }
+
+    .modal-subtitle {
+        font-size: 1rem;
+    }
+
+    .coming-soon-features {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem;
+    }
+
+    .feature-item {
+        flex: 1 1 auto;
+        min-width: 80px;
+    }
+}
+
 @media (max-width: 640px) {
+    #coming-soon-modal {
+        padding: 0.5rem;
+    }
+
     .coming-soon-content {
         padding: 1.5rem !important;
-        margin: 1rem;
+        margin: 0.25rem;
+        max-height: calc(100vh - 1rem);
+        border-radius: 16px;
     }
-    
+
+    .coming-soon-content .modal-close-enhanced {
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .coming-soon-content .modal-close-enhanced svg {
+        width: 16px;
+        height: 16px;
+    }
+
     .coming-soon-content .modal-title {
         font-size: 1.5rem;
     }
-    
+
     .coming-soon-icon {
         width: 80px;
         height: 80px;
     }
-    
+
     .coming-soon-icon svg {
         width: 40px;
         height: 40px;
     }
-    
+
+    .modal-subtitle {
+        font-size: 0.9375rem;
+        margin-bottom: 1rem;
+    }
+
     .coming-soon-features {
         flex-direction: column;
         gap: 0.75rem;
         padding: 0.75rem;
     }
-    
+
     .feature-item {
         flex-direction: row;
         justify-content: center;
         width: 100%;
+    }
+
+    .feature-icon {
+        font-size: 1.5rem;
+    }
+
+    .feature-item span:last-child {
+        font-size: 0.8rem;
+    }
+
+    #notify-email {
+        padding: 0.75rem;
+        font-size: 16px; /* Prevents iOS zoom */
+    }
+
+    #coming-soon-form .submit-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9375rem;
+        min-height: 48px;
+    }
+
+    .auth-footer {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .coming-soon-content {
+        padding: 1.25rem !important;
+    }
+
+    .coming-soon-content .modal-title {
+        font-size: 1.35rem;
+    }
+
+    .coming-soon-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .coming-soon-icon svg {
+        width: 35px;
+        height: 35px;
+    }
+
+    .modal-subtitle {
+        font-size: 0.875rem;
+    }
+
+    #coming-soon-form label {
+        font-size: 0.875rem;
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    #coming-soon-modal {
+        padding: 0.5rem;
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+
+    .coming-soon-content {
+        max-height: calc(100vh - 20px);
+        max-width: 500px;
+        padding: 1.25rem !important;
+    }
+
+    .coming-soon-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 0.5rem;
+    }
+
+    .coming-soon-icon svg {
+        width: 30px;
+        height: 30px;
+    }
+
+    .coming-soon-content .modal-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-subtitle {
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .coming-soon-features {
+        flex-direction: row;
+        padding: 0.5rem;
+        margin: 0.75rem 0;
+    }
+
+    .feature-item {
+        flex-direction: column;
+    }
+
+    #coming-soon-form .form-group {
+        margin-bottom: 0.75rem;
     }
 }
 

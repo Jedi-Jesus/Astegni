@@ -1,0 +1,231 @@
+<!-- Export Data Modal -->
+<div id="export-data-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeExportDataModal()"></div>
+    <div class="modal-content" style="max-width: 550px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">&#128230;</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Export Your Data</h2>
+                    <p class="text-sm text-gray-500">Download a copy of your personal data</p>
+                </div>
+            </div>
+            <button onclick="closeExportDataModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="export-main-content">
+            <!-- Info Banner -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm text-blue-800 font-medium">GDPR Compliant Data Export</p>
+                        <p class="text-sm text-blue-700 mt-1">You have the right to download all your personal data. This includes your profile information, content, messages, and activity history.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Categories -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Select data to export:</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-profile" checked class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Profile Information</p>
+                            <p class="text-xs text-gray-500">Name, email, phone, profile photo, bio</p>
+                        </div>
+                        <span class="text-xs text-gray-400">~1 KB</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-content" checked class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Your Content</p>
+                            <p class="text-xs text-gray-500">Videos, blogs, courses, playlists, credentials</p>
+                        </div>
+                        <span id="export-content-size" class="text-xs text-gray-400">Calculating...</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-messages" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Messages & Chats</p>
+                            <p class="text-xs text-gray-500">All conversations and message history</p>
+                        </div>
+                        <span id="export-messages-size" class="text-xs text-gray-400">Calculating...</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-sessions" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Tutoring Sessions</p>
+                            <p class="text-xs text-gray-500">Session history, whiteboard data, recordings</p>
+                        </div>
+                        <span id="export-sessions-size" class="text-xs text-gray-400">Calculating...</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-activity" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Activity & Analytics</p>
+                            <p class="text-xs text-gray-500">Login history, views, interactions</p>
+                        </div>
+                        <span class="text-xs text-gray-400">~50 KB</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" id="export-connections" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Connections & Reviews</p>
+                            <p class="text-xs text-gray-500">Students, tutors, reviews given/received</p>
+                        </div>
+                        <span class="text-xs text-gray-400">~10 KB</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Export Format -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Export format:</h3>
+                <div class="flex gap-3">
+                    <label class="flex-1 flex items-center gap-2 p-3 border-2 border-indigo-500 bg-indigo-50 rounded-xl cursor-pointer">
+                        <input type="radio" name="export-format" value="json" checked class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <div>
+                            <p class="font-medium text-gray-800">JSON</p>
+                            <p class="text-xs text-gray-500">Machine readable</p>
+                        </div>
+                    </label>
+                    <label class="flex-1 flex items-center gap-2 p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-gray-300">
+                        <input type="radio" name="export-format" value="csv" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <div>
+                            <p class="font-medium text-gray-800">CSV</p>
+                            <p class="text-xs text-gray-500">Spreadsheet compatible</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <p class="text-sm text-yellow-800">For security, you'll need to verify your identity before downloading. A verification code will be sent to your email.</p>
+                </div>
+            </div>
+
+            <!-- Request Button -->
+            <button onclick="requestDataExport()" class="w-full py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Request Data Export
+            </button>
+        </div>
+
+        <!-- Verification Step -->
+        <div id="export-verify-content" class="hidden">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Verify Your Identity</h3>
+                <p class="text-gray-500 mt-2">We sent a verification code to <span id="export-verify-email" class="font-medium">your email</span></p>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex justify-center gap-2">
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 0)">
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 1)">
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 2)">
+                    <span class="flex items-center text-gray-400">-</span>
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 3)">
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 4)">
+                    <input type="text" maxlength="1" class="export-code-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" oninput="handleExportCodeInput(this, 5)">
+                </div>
+            </div>
+
+            <p class="text-center text-sm text-gray-500 mb-4">
+                Didn't receive the code? <button onclick="resendExportCode()" class="text-indigo-600 hover:text-indigo-800 font-medium">Resend</button>
+            </p>
+
+            <div class="flex gap-3">
+                <button onclick="cancelExportVerification()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                <button onclick="verifyAndExport()" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium">Verify & Download</button>
+            </div>
+        </div>
+
+        <!-- Processing Step -->
+        <div id="export-processing-content" class="hidden">
+            <div class="text-center py-8">
+                <div class="w-20 h-20 mx-auto mb-6 relative">
+                    <svg class="animate-spin w-20 h-20 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Preparing Your Data</h3>
+                <p class="text-gray-500">This may take a few minutes depending on the amount of data...</p>
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="export-progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="export-progress-text" class="text-sm text-gray-500 mt-2">Starting export...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Ready Step -->
+        <div id="export-ready-content" class="hidden">
+            <div class="text-center py-6">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Your Data is Ready!</h3>
+                <p class="text-gray-500 mb-4">Your data export has been prepared successfully.</p>
+
+                <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <p id="export-filename" class="font-medium text-gray-800">astegni-data-export.zip</p>
+                                <p id="export-filesize" class="text-sm text-gray-500">2.3 MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="downloadExportedData()" class="w-full py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2 mb-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Download Now
+                </button>
+
+                <p class="text-xs text-gray-500">This download link will expire in 24 hours</p>
+            </div>
+        </div>
+    </div>
+</div>

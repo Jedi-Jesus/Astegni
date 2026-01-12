@@ -24,17 +24,28 @@ const CommonModalLoader = (function() {
 
     // Common modals shared across all pages
     const COMMON_MODALS = [
+        'access-restricted-modal.html',
         'add-role-modal.html',
         'coming-soon-modal.html',
+        'community-modal.html',
+        'create-job-modal.html',
         'logout-modal.html',
+        'subscription-modal.html',
         'view-request-modal.html'
     ];
 
     // Modal ID to filename mapping
     const MODAL_ID_MAP = {
+        'access-restricted-modal': 'access-restricted-modal.html',
+        'accessRestrictedModal': 'access-restricted-modal.html',
         'add-role-modal': 'add-role-modal.html',
         'coming-soon-modal': 'coming-soon-modal.html',
+        'community-modal': 'community-modal.html',
+        'communityModal': 'community-modal.html',
+        'create-job-modal': 'create-job-modal.html',
+        'createJobModal': 'create-job-modal.html',
         'logout-modal': 'logout-modal.html',
+        'subscription-modal': 'subscription-modal.html',
         'view-request-modal': 'view-request-modal.html'
     };
 

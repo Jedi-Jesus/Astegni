@@ -131,14 +131,6 @@
                         this.checked ? 'block' : 'none';
                 });
             }
-
-            const deleteOtherCheckbox = document.getElementById('deleteOtherCheckbox');
-            if (deleteOtherCheckbox) {
-                deleteOtherCheckbox.addEventListener('change', function () {
-                    document.getElementById('otherTextDelete').style.display =
-                        this.checked ? 'block' : 'none';
-                });
-            }
         });
 
         function closeUnsubscribeModal1() {
@@ -275,8 +267,10 @@
 
         // ===== LEAVE ASTEGNI / DELETE ACCOUNT FUNCTIONS =====
 
+        let currentDeletePanel = 1; // Track current panel
+
         /**
-         * Step 1: Open initial warning modal (RED DANGER styling with TYPE "DELETE")
+         * Open Leave Astegni Modal and reset to panel 1
          */
         function openLeaveAstegniModal() {
             console.log('🔵 Opening Leave Astegni Modal...');
@@ -286,14 +280,97 @@
                 return;
             }
 
-            // Clear previous input
-            document.getElementById('deleteConfirmation').value = '';
-            document.getElementById('leaveReason').value = '';
+            // Reset to panel 1
+            currentDeletePanel = 1;
+            goToDeletePanel(1);
+
+            // Clear previous inputs
+            const deleteConfirmationInput = document.getElementById('deleteConfirmation');
+            if (deleteConfirmationInput) {
+                deleteConfirmationInput.value = '';
+            }
+
+            // Clear checkboxes and textarea in panel 2
+            document.querySelectorAll('input[name="deleteReason"]').forEach(cb => cb.checked = false);
+            const otherTextDelete = document.getElementById('otherTextDelete');
+            if (otherTextDelete) {
+                otherTextDelete.value = '';
+                otherTextDelete.style.display = 'none';
+            }
+
+            // Setup "Other" checkbox listener using event delegation on parent
+            // This ensures it works even if modal content is loaded dynamically
+            setTimeout(() => {
+                const deleteOtherCheckbox = document.getElementById('deleteOtherCheckbox');
+                const otherTextDelete = document.getElementById('otherTextDelete');
+                console.log('🔍 Looking for deleteOtherCheckbox:', deleteOtherCheckbox);
+                console.log('🔍 Looking for otherTextDelete:', otherTextDelete);
+
+                if (deleteOtherCheckbox && otherTextDelete) {
+                    // Force initial state
+                    otherTextDelete.style.display = deleteOtherCheckbox.checked ? 'block' : 'none';
+                    console.log('✅ Elements found and initial state set');
+                } else {
+                    console.error('❌ Elements not found:', {
+                        checkbox: !!deleteOtherCheckbox,
+                        textarea: !!otherTextDelete
+                    });
+                }
+            }, 100); // Small delay to ensure modal content is loaded
 
             modal.classList.remove('hidden');
             modal.classList.add('active');
             modal.style.display = 'flex';
             console.log('✅ Leave Astegni Modal opened');
+        }
+
+        /**
+         * Handle "Other" checkbox change
+         */
+        function handleOtherCheckboxChange() {
+            const otherTextDelete = document.getElementById('otherTextDelete');
+            if (otherTextDelete) {
+                otherTextDelete.style.display = this.checked ? 'block' : 'none';
+                console.log('📝 Other textarea visibility:', this.checked ? 'visible' : 'hidden');
+            }
+        }
+
+        /**
+         * Toggle Other textarea (called from HTML onchange)
+         */
+        function toggleOtherTextarea(checkbox) {
+            const otherTextDelete = document.getElementById('otherTextDelete');
+            console.log('🔄 toggleOtherTextarea called, checkbox checked:', checkbox.checked);
+            console.log('🔍 otherTextDelete element:', otherTextDelete);
+            if (otherTextDelete) {
+                if (checkbox.checked) {
+                    // SHOW: Remove hidden class and explicitly set display to block
+                    otherTextDelete.classList.remove('hidden');
+                    otherTextDelete.style.display = 'block';
+                    console.log('✅ Removed hidden class and set display to block');
+                } else {
+                    // HIDE: Add hidden class and set display to none
+                    otherTextDelete.classList.add('hidden');
+                    otherTextDelete.style.display = 'none';
+                    console.log('✅ Added hidden class and set display to none');
+                }
+
+                // Log the computed style and classes to verify
+                const computedStyle = window.getComputedStyle(otherTextDelete);
+                console.log('📊 Computed display value:', computedStyle.display);
+                console.log('📋 Classes:', otherTextDelete.className);
+
+                // Scroll textarea into view when it appears
+                if (checkbox.checked) {
+                    setTimeout(() => {
+                        otherTextDelete.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        otherTextDelete.focus();
+                        console.log('📍 Scrolled textarea into view and focused');
+                    }, 150);
+                }
+            } else {
+                console.error('❌ otherTextDelete textarea not found!');
+            }
         }
 
         function closeLeaveAstegniModal() {
@@ -302,56 +379,45 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('active');
                 modal.style.display = 'none';
+                // Reset to panel 1
+                currentDeletePanel = 1;
+                goToDeletePanel(1);
             }
         }
 
         /**
-         * Step 1 → Step 2: Validate "DELETE" text and proceed to reasons
+         * Navigate to a specific panel with sliding animation
          */
-        function confirmDeleteAccount() {
-            const confirmation = document.getElementById('deleteConfirmation').value;
-            const reason = document.getElementById('leaveReason').value;
-
-            if (confirmation !== 'DELETE') {
-                alert('⚠️ Please type "DELETE" to confirm account deletion');
+        function goToDeletePanel(panelNumber) {
+            const panelsContainer = document.getElementById('leave-astegni-panels');
+            if (!panelsContainer) {
+                console.error('❌ Panels container not found!');
                 return;
             }
 
-            console.log('📝 Initial confirmation:', reason || 'No reason provided');
-
-            // Close first modal, open reasons modal
-            closeLeaveAstegniModal();
-
-            const modal = document.getElementById('deleteModal1');
-            if (modal) {
-                // Clear previous selections
-                document.querySelectorAll('input[name="deleteReason"]').forEach(cb => cb.checked = false);
-                document.getElementById('otherTextDelete').value = '';
-                document.getElementById('otherTextDelete').style.display = 'none';
-
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
+            // Validate DELETE confirmation before moving from panel 1 to panel 2
+            if (currentDeletePanel === 1 && panelNumber === 2) {
+                const confirmationInput = document.getElementById('deleteConfirmation');
+                if (confirmationInput && confirmationInput.value !== 'DELETE') {
+                    alert('⚠️ Please type "DELETE" to confirm account deletion');
+                    return;
+                }
             }
+
+            currentDeletePanel = panelNumber;
+            const offset = (panelNumber - 1) * 100;
+            panelsContainer.style.transform = `translateX(-${offset}%)`;
+            console.log(`📍 Navigated to panel ${panelNumber}`);
         }
 
         /**
-         * Step 2: Close reasons modal
-         */
-        function closeDeleteModal1() {
-            const modal = document.getElementById('deleteModal1');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            }
-        }
-
-        /**
-         * Step 2 → Step 3: Submit reasons and proceed to 90-day warning
+         * Panel 2: Submit reasons and proceed to panel 3
          */
         function submitDeleteReasons() {
             const reasons = Array.from(document.querySelectorAll('input[name="deleteReason"]:checked'))
                 .map(cb => cb.value);
-            const otherText = document.getElementById('otherTextDelete').value;
+            const otherTextDelete = document.getElementById('otherTextDelete');
+            const otherText = otherTextDelete ? otherTextDelete.value : '';
 
             if (reasons.length === 0) {
                 alert('⚠️ Please select at least one reason.');
@@ -364,76 +430,36 @@
             }
 
             console.log('📝 Delete reasons:', reasons, otherText);
-            closeDeleteModal1();
-
-            const modal = document.getElementById('deleteVerifyModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
-            }
+            goToDeletePanel(3); // Move to 90-day warning panel
         }
 
         /**
-         * Step 3: Close 90-day warning modal
-         */
-        function closeDeleteVerifyModal() {
-            const modal = document.getElementById('deleteVerifyModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            }
-        }
-
-        /**
-         * Step 3 → Step 4: Check subscriptions
+         * Panel 3: Check subscriptions and proceed to panel 4 (password)
          */
         function proceedToSubscriptionCheck() {
-            closeDeleteVerifyModal();
-
             // Check if user has active subscriptions
             if (currentSubscription) {
-                const modal = document.getElementById('deleteSubscriptionCheckModal');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.style.display = 'flex';
-                }
-            } else {
-                // No active subscriptions, proceed directly to password
-                const modal = document.getElementById('deletePasswordModal');
-                if (modal) {
-                    document.getElementById('deletePassword').value = '';
-                    modal.classList.remove('hidden');
-                    modal.style.display = 'flex';
-                }
+                alert('⚠️ Please cancel all active subscriptions before proceeding with account deletion.\n\nGo to Settings → Subscription to manage your active subscriptions.');
+                return;
             }
+
+            // No active subscriptions, proceed to password panel
+            const deletePasswordInput = document.getElementById('deletePassword');
+            if (deletePasswordInput) {
+                deletePasswordInput.value = '';
+            }
+            goToDeletePanel(4);
         }
 
         /**
-         * Step 4: Close subscription check modal
+         * Panel 4: Final confirmation with password - calls real API
+         *
+         * ROLE-BASED DELETION:
+         * - Sends the current role being deleted
+         * - If user has multiple roles: Only this profile is deleted
+         * - If user has only one role: Both profile AND user account are deleted
          */
-        function closeDeleteSubscriptionCheckModal() {
-            const modal = document.getElementById('deleteSubscriptionCheckModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            }
-        }
-
-        /**
-         * Step 5: Close password modal
-         */
-        function closeDeletePasswordModal() {
-            const modal = document.getElementById('deletePasswordModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            }
-        }
-
-        /**
-         * Step 5 → Step 6: Final confirmation with password
-         */
-        function finalConfirmDeleteAccount() {
+        async function finalConfirmDeleteAccount() {
             const password = document.getElementById('deletePassword').value;
 
             if (!password) {
@@ -441,45 +467,117 @@
                 return;
             }
 
-            // TODO: Verify password with backend
-            console.log('🗑️ Account scheduled for deletion in 90 days');
+            // Get the reasons from Panel 2
+            const reasons = Array.from(document.querySelectorAll('input[name="deleteReason"]:checked'))
+                .map(cb => cb.value);
+            const otherTextDelete = document.getElementById('otherTextDelete');
+            const otherReason = otherTextDelete ? otherTextDelete.value : null;
 
-            closeDeletePasswordModal();
+            // Get token from localStorage (check both 'token' and 'access_token' keys)
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                alert('⚠️ You must be logged in to delete your account.');
+                window.location.href = '../index.html';
+                return;
+            }
 
-            const modal = document.getElementById('deleteFinalModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
+            // Determine current role from the page context
+            // Check URL path or data attribute to determine which profile page we're on
+            let currentRole = 'tutor'; // Default for tutor-profile.html
+            const path = window.location.pathname.toLowerCase();
+            if (path.includes('student-profile')) {
+                currentRole = 'student';
+            } else if (path.includes('parent-profile')) {
+                currentRole = 'parent';
+            } else if (path.includes('advertiser-profile')) {
+                currentRole = 'advertiser';
+            } else if (path.includes('tutor-profile')) {
+                currentRole = 'tutor';
+            }
+
+            // Also check for data attribute on body or modal (can be set dynamically)
+            const bodyRole = document.body.dataset.currentRole;
+            if (bodyRole) {
+                currentRole = bodyRole;
+            }
+
+            console.log('🔄 Deleting role:', currentRole);
+
+            // Show loading state
+            const confirmBtn = document.querySelector('[onclick="finalConfirmDeleteAccount()"]');
+            const originalText = confirmBtn ? confirmBtn.innerHTML : '';
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+            }
+
+            try {
+                const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+                const response = await fetch(`${API_BASE_URL}/api/account/delete/initiate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        role: currentRole,
+                        reasons: reasons,
+                        other_reason: otherReason
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    console.log('✅ Account deletion scheduled successfully:', data);
+                    console.log(`📋 Role: ${data.role}, Delete User: ${data.delete_user}`);
+
+                    // Update Panel 5 message based on whether user account is being deleted
+                    const farewellMessage = document.querySelector('[data-panel="5"] .bg-green-50 p.text-sm.font-semibold');
+                    if (farewellMessage && data.delete_user === false) {
+                        farewellMessage.innerHTML = `Your <strong>${data.role}</strong> profile has been scheduled for deletion in 90 days. Your other profiles will remain active.`;
+                    }
+
+                    goToDeletePanel(5); // Move to farewell panel
+                } else {
+                    // Handle specific errors
+                    if (response.status === 401) {
+                        alert('❌ Incorrect password. Please try again.');
+                    } else if (response.status === 400) {
+                        alert(`⚠️ ${data.detail || 'Invalid request. Please try again.'}`);
+                    } else if (response.status === 404) {
+                        alert(`⚠️ ${data.detail || 'Profile not found.'}`);
+                    } else {
+                        alert(`❌ ${data.detail || 'Failed to initiate account deletion. Please try again.'}`);
+                    }
+
+                    // Restore button
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = originalText;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error initiating account deletion:', error);
+                alert('❌ Network error. Please check your connection and try again.');
+
+                // Restore button
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalText;
+                }
             }
         }
 
         /**
-         * Step 6: Close final message and redirect
+         * Panel 5: Close modal, logout and redirect to home
          */
         function closeDeleteFinalModal() {
-            const modal = document.getElementById('deleteFinalModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-
-                // Redirect to home after a delay
-                setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = '../index.html';
-                }, 2000);
-            }
+            console.log('🔓 Logging out and redirecting to home page...');
+            localStorage.clear();
+            window.location.href = '../index.html';
         }
-
-        // Handle "Other" checkbox visibility
-        document.addEventListener('DOMContentLoaded', function () {
-            const deleteOtherCheckbox = document.getElementById('deleteOtherCheckbox');
-            if (deleteOtherCheckbox) {
-                deleteOtherCheckbox.addEventListener('change', function () {
-                    document.getElementById('otherTextDelete').style.display =
-                        this.checked ? 'block' : 'none';
-                });
-            }
-        });
 
         /**
          * Update Current Subscription Card visibility and details
@@ -530,14 +628,11 @@
         window.closeUnsubscribeFinalModal = closeUnsubscribeFinalModal;
         window.openLeaveAstegniModal = openLeaveAstegniModal;
         window.closeLeaveAstegniModal = closeLeaveAstegniModal;
-        window.confirmDeleteAccount = confirmDeleteAccount;
-        window.closeDeleteModal1 = closeDeleteModal1;
+        window.goToDeletePanel = goToDeletePanel;
         window.submitDeleteReasons = submitDeleteReasons;
-        window.closeDeleteVerifyModal = closeDeleteVerifyModal;
         window.proceedToSubscriptionCheck = proceedToSubscriptionCheck;
-        window.closeDeleteSubscriptionCheckModal = closeDeleteSubscriptionCheckModal;
-        window.closeDeletePasswordModal = closeDeletePasswordModal;
         window.finalConfirmDeleteAccount = finalConfirmDeleteAccount;
         window.closeDeleteFinalModal = closeDeleteFinalModal;
+        window.toggleOtherTextarea = toggleOtherTextarea;
 
         console.log('✅ Subscription & Leave Astegni: JavaScript loaded');

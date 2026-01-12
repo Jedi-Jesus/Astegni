@@ -169,8 +169,8 @@ class UserSearchResult(BaseModel):
 class InviteExistingUserRequest(BaseModel):
     target_user_id: int
     relationship_type: str  # Father, Mother, Guardian, Uncle, Aunt, etc.
-    security_father_name: str  # Parent's father name for verification
-    security_grandfather_name: str  # Parent's grandfather name for verification
+    security_dob: str  # Parent's date of birth for verification (YYYY-MM-DD format)
+    requested_as: str = "parent"  # "parent" (student inviting parent) or "coparent" (parent inviting coparent)
 
 
 class InviteNewUserRequest(BaseModel):
@@ -181,6 +181,7 @@ class InviteNewUserRequest(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     relationship_type: str
+    requested_as: str = "parent"  # "parent" (student inviting parent) or "coparent" (parent inviting coparent)
 
 
 class LinkedParentResponse(BaseModel):
@@ -298,23 +299,25 @@ async def invite_existing_parent(
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             # Check if target user exists and get their info for verification
-            cur.execute("SELECT id, first_name, father_name, grandfather_name, email, phone, roles FROM users WHERE id = %s", (request.target_user_id,))
+            cur.execute("SELECT id, first_name, father_name, grandfather_name, email, phone, roles, date_of_birth FROM users WHERE id = %s", (request.target_user_id,))
             target_user = cur.fetchone()
 
             if not target_user:
                 raise HTTPException(status_code=404, detail="User not found")
 
-            # Security verification - check if father_name and grandfather_name match
-            target_father_name = (target_user['father_name'] or '').strip().lower()
-            target_grandfather_name = (target_user['grandfather_name'] or '').strip().lower()
-            provided_father_name = request.security_father_name.strip().lower()
-            provided_grandfather_name = request.security_grandfather_name.strip().lower()
-
-            if target_father_name != provided_father_name or target_grandfather_name != provided_grandfather_name:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Security verification failed. The father's name or grandfather's name does not match."
-                )
+            # Security verification - check if date of birth matches
+            target_dob = target_user.get('date_of_birth')
+            if target_dob:
+                # Convert to string format YYYY-MM-DD for comparison
+                target_dob_str = target_dob.strftime('%Y-%m-%d') if hasattr(target_dob, 'strftime') else str(target_dob)
+                if target_dob_str != request.security_dob:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Security verification failed. The date of birth does not match."
+                    )
+            else:
+                # If target user has no DOB set, skip verification but log warning
+                print(f"[WARNING] User {request.target_user_id} has no date_of_birth set, skipping DOB verification")
 
             # Get student profile and name (inviter is always the student profile)
             cur.execute("""
@@ -328,7 +331,7 @@ async def invite_existing_parent(
             if not student_data:
                 raise HTTPException(status_code=404, detail="Student profile not found")
 
-            student_profile_id = student_data['id']  # This is the profile ID to use as inviter_id
+            student_profile_id = student_data['id']  # Student profile for metadata (optional)
             student_name = f"{student_data['first_name']} {student_data['father_name']}"
 
             # Check if already linked (parent_id stores parent profile IDs)
@@ -359,29 +362,68 @@ async def invite_existing_parent(
             if parent_profile_id in parent_ids:
                 raise HTTPException(status_code=400, detail="This parent is already linked to your profile")
 
-            # Check for existing pending invitation using profile IDs
+            # Check for ANY existing invitation to this user (regardless of status or relationship_type)
+            # This prevents sending duplicate invitations with different relationship types or roles
             cur.execute("""
-                SELECT id FROM parent_invitations
-                WHERE inviter_id = %s
-                AND inviter_profile_type = 'student'
-                AND invites_id = %s
-                AND invites_profile_type = 'parent'
-                AND status = 'pending'
-            """, (student_profile_id, parent_profile_id))
+                SELECT id, status, relationship_type FROM parent_invitations
+                WHERE inviter_user_id = %s
+                AND invited_to_user_id = %s
+            """, (current_user['id'], request.target_user_id))
 
-            if cur.fetchone():
-                raise HTTPException(status_code=400, detail="A pending invitation already exists for this user")
+            existing_invitation = cur.fetchone()
+            if existing_invitation:
+                if existing_invitation['status'] == 'pending':
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"A pending invitation already exists for this user (as {existing_invitation['relationship_type']}). Cancel it first to send a new invitation."
+                    )
+                elif existing_invitation['status'] == 'accepted':
+                    raise HTTPException(status_code=400, detail="This parent has already accepted a previous invitation")
+                elif existing_invitation['status'] == 'rejected':
+                    raise HTTPException(
+                        status_code=400,
+                        detail="This user previously rejected your invitation. Please contact them directly."
+                    )
+
+            # Check for REVERSE invitation (target user already invited current user)
+            # This prevents bidirectional invitations between the same two users
+            cur.execute("""
+                SELECT id, status, relationship_type FROM parent_invitations
+                WHERE inviter_user_id = %s
+                AND invited_to_user_id = %s
+            """, (request.target_user_id, current_user['id']))
+
+            reverse_invitation = cur.fetchone()
+            if reverse_invitation:
+                if reverse_invitation['status'] == 'pending':
+                    raise HTTPException(
+                        status_code=400,
+                        detail="This user has already sent you a parenting invitation. Check your received invitations to accept or reject it."
+                    )
+                elif reverse_invitation['status'] == 'accepted':
+                    raise HTTPException(status_code=400, detail="You have already accepted an invitation from this user")
+                elif reverse_invitation['status'] == 'rejected':
+                    raise HTTPException(
+                        status_code=400,
+                        detail="You previously rejected an invitation from this user."
+                    )
 
             # Generate OTP for existing user verification (7 days expiry)
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             otp_expires_at = datetime.utcnow() + timedelta(days=7)
 
-            # Create invitation with profile IDs
+            # Create invitation with USER IDs
             cur.execute("""
-                INSERT INTO parent_invitations (inviter_id, inviter_profile_type, invites_id, invites_profile_type, relationship_type, status, created_at)
-                VALUES (%s, %s, %s, %s, %s, 'pending', %s)
+                INSERT INTO parent_invitations (
+                    inviter_user_id, inviter_type, invited_to_user_id,
+                    relationship_type, status, created_at, requested_as
+                )
+                VALUES (%s, %s, %s, %s, 'pending', %s, %s)
                 RETURNING id
-            """, (student_profile_id, 'student', parent_profile_id, 'parent', request.relationship_type, datetime.utcnow()))
+            """, (
+                current_user['id'], 'student', request.target_user_id,
+                request.relationship_type, datetime.utcnow(), request.requested_as
+            ))
             invitation_id = cur.fetchone()['id']
 
             # Store OTP in otps table for existing user verification
@@ -414,8 +456,8 @@ async def invite_existing_parent(
 
     return {
         "message": "Invitation sent successfully! An OTP has been sent to the parent's email.",
-        "invites_id": parent_profile_id,
-        "invites_profile_type": "parent",
+        "invited_to_user_id": request.target_user_id,
+        "inviter_type": "student",
         "status": "pending",
         "email_sent": email_sent,
         "expires_in_days": 7
@@ -469,50 +511,77 @@ async def invite_new_parent(
             if not student_data:
                 raise HTTPException(status_code=404, detail="Student profile not found")
 
-            student_profile_id = student_data['id']  # This is the profile ID to use as inviter_id
+            student_profile_id = student_data['id']  # Student profile for metadata (optional)
             student_name = f"{student_data['first_name']} {student_data['father_name']}"
 
-            # Check for existing pending invitation for this email/phone using profile ID
+            # Check for ANY existing invitation for this email/phone (regardless of status)
+            # This prevents sending duplicate invitations with different relationship types
             if request.email:
                 cur.execute("""
-                    SELECT id FROM parent_invitations
-                    WHERE inviter_id = %s AND inviter_profile_type = 'student' AND pending_email = %s AND status = 'pending'
-                """, (student_profile_id, request.email))
-                if cur.fetchone():
-                    raise HTTPException(status_code=400, detail="A pending invitation already exists for this email")
+                    SELECT id, status, relationship_type FROM parent_invitations
+                    WHERE inviter_user_id = %s AND pending_email = %s
+                """, (current_user['id'], request.email))
+                existing = cur.fetchone()
+                if existing:
+                    if existing['status'] == 'pending':
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"A pending invitation already exists for this email (as {existing['relationship_type']}). Cancel it first to send a new invitation."
+                        )
+                    elif existing['status'] == 'accepted':
+                        raise HTTPException(status_code=400, detail="This person has already accepted a previous invitation")
+                    elif existing['status'] == 'rejected':
+                        raise HTTPException(
+                            status_code=400,
+                            detail="This person previously rejected your invitation. Please contact them directly."
+                        )
 
             if request.phone:
                 cur.execute("""
-                    SELECT id FROM parent_invitations
-                    WHERE inviter_id = %s AND inviter_profile_type = 'student' AND pending_phone = %s AND status = 'pending'
-                """, (student_profile_id, request.phone))
-                if cur.fetchone():
-                    raise HTTPException(status_code=400, detail="A pending invitation already exists for this phone")
+                    SELECT id, status, relationship_type FROM parent_invitations
+                    WHERE inviter_user_id = %s AND pending_phone = %s
+                """, (current_user['id'], request.phone))
+                existing = cur.fetchone()
+                if existing:
+                    if existing['status'] == 'pending':
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"A pending invitation already exists for this phone (as {existing['relationship_type']}). Cancel it first to send a new invitation."
+                        )
+                    elif existing['status'] == 'accepted':
+                        raise HTTPException(status_code=400, detail="This person has already accepted a previous invitation")
+                    elif existing['status'] == 'rejected':
+                        raise HTTPException(
+                            status_code=400,
+                            detail="This person previously rejected your invitation. Please contact them directly."
+                        )
 
             # Generate 6-digit OTP and invitation token
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             invitation_token = secrets.token_urlsafe(32)
             otp_expires_at = datetime.utcnow() + timedelta(days=7)  # OTP valid for 7 days
 
-            # Create invitation with profile ID (NO user created yet for invitee!)
+            # Create invitation with USER IDs (NEW SYSTEM)
+            # For new users, invited_to_user_id is NULL until they register
+            # Create invitation for new user (invited_to_user_id is NULL until they register)
             cur.execute("""
                 INSERT INTO parent_invitations (
-                    inviter_id, inviter_profile_type, invites_id, invites_profile_type,
+                    inviter_user_id, inviter_type, invited_to_user_id,
                     relationship_type, status, created_at,
                     is_new_user, pending_email, pending_phone, pending_first_name,
                     pending_father_name, pending_grandfather_name, pending_gender,
-                    invitation_token, token_expires_at
+                    invitation_token, token_expires_at, requested_as
                 )
                 VALUES (
-                    %s, 'student', NULL, 'parent',
+                    %s, %s, NULL,
                     %s, 'pending', %s,
                     TRUE, %s, %s, %s,
                     %s, %s, %s,
-                    %s, %s
+                    %s, %s, %s
                 )
                 RETURNING id
             """, (
-                student_profile_id,
+                current_user['id'], 'student',  # NEW inviter_user_id, inviter_type
                 request.relationship_type,
                 datetime.utcnow(),
                 request.email,
@@ -522,7 +591,8 @@ async def invite_new_parent(
                 request.grandfather_name,
                 request.gender,
                 invitation_token,
-                otp_expires_at  # Token expires same time as OTP (7 days)
+                otp_expires_at,  # Token expires same time as OTP (7 days)
+                request.requested_as
             ))
             invitation_id = cur.fetchone()['id']
 
@@ -588,7 +658,7 @@ async def get_student_invitations(
 
             student_profile_id = student_profile['id']
 
-            # Query using profile ID and join with parent_profiles for invitee info
+            # Query using user_id and join with parent_profiles for invitee info
             cur.execute("""
                 SELECT pi.*,
                        pp.id as parent_profile_id,
@@ -596,35 +666,33 @@ async def get_student_invitations(
                        u.father_name as parent_father_name,
                        pp.profile_picture as parent_profile_picture
                 FROM parent_invitations pi
-                LEFT JOIN parent_profiles pp ON pi.invites_id = pp.id AND pi.invites_profile_type = 'parent'
-                LEFT JOIN users u ON pp.user_id = u.id
-                WHERE pi.inviter_id = %s AND pi.inviter_profile_type = 'student'
+                LEFT JOIN parent_profiles pp ON pi.invited_to_user_id = pp.user_id
+                LEFT JOIN users u ON pi.invited_to_user_id = u.id
+                WHERE pi.inviter_user_id = %s AND pi.inviter_type = 'student'
                 ORDER BY pi.created_at DESC
-            """, (student_profile_id,))
+            """, (current_user['id'],))
 
             invitations = cur.fetchall()
 
     result_invitations = []
     for inv in invitations:
-        is_new_user = inv['is_new_user'] or inv['invites_id'] is None
+        is_new_user = inv['is_new_user'] or inv['invited_to_user_id'] is None
 
         if is_new_user:
             parent_name = f"{inv['pending_first_name'] or ''} {inv['pending_father_name'] or ''}".strip() or "Pending User"
             parent_email = inv['pending_email']
             parent_phone = inv['pending_phone']
             parent_profile_picture = None
-            invites_id = None
         else:
             parent_name = f"{inv['parent_first_name'] or ''} {inv['parent_father_name'] or ''}".strip()
             parent_email = None
             parent_phone = None
             parent_profile_picture = inv['parent_profile_picture']
-            invites_id = inv['invites_id']
 
         result_invitations.append({
             "id": inv['id'],
-            "invites_id": invites_id,
-            "invites_profile_type": inv['invites_profile_type'],
+            "invited_to_user_id": inv['invited_to_user_id'],
+            "inviter_type": inv['inviter_type'],
             "parent_name": parent_name,
             "parent_email": parent_email,
             "parent_phone": parent_phone,
@@ -647,147 +715,202 @@ async def get_parent_pending_invitations(
     Get all pending invitations for current user to accept/reject.
     Works for ANY user (tutor, student, parent, etc.) - if they have a pending invitation, they can see it.
     When accepted, the 'parent' role will be added to their account.
-    Now uses profile IDs - checks all profile types the user might have.
+
+    UPDATED: Now uses user_id system (invited_to_user_id) instead of profile_id.
+    Invitations are visible across ALL profiles for the user.
     """
     # No role restriction - any user can receive parent invitations
 
+    print("\n" + "="*80)
+    print("[BACKEND DEBUG] /api/parent/pending-invitations CALLED (USER-ID SYSTEM)")
+    print("="*80)
+    print(f"Current User ID: {current_user['id']}")
+    print(f"Current User Email: {current_user.get('email', 'N/A')}")
+    print(f"Current User Roles: {current_user.get('roles', [])}")
+
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Get all profile IDs for the current user
-            profile_conditions = []
-            profile_params = []
+            # NEW SYSTEM: Simply match invited_to_user_id (no need to check profiles!)
+            print(f"\n[NEW SYSTEM] Fetching invitations for user_id={current_user['id']}")
+            print("This will show invitations across ALL profile types (student, tutor, parent)")
 
-            # Check parent profile
-            cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
-            parent_profile = cur.fetchone()
-            if parent_profile:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'parent')")
-                profile_params.append(parent_profile['id'])
-
-            # Check tutor profile
-            cur.execute("SELECT id FROM tutor_profiles WHERE user_id = %s", (current_user['id'],))
-            tutor_profile = cur.fetchone()
-            if tutor_profile:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'tutor')")
-                profile_params.append(tutor_profile['id'])
-
-            # Check student profile (in case students can be invited as parents)
-            cur.execute("SELECT id FROM student_profiles WHERE user_id = %s", (current_user['id'],))
-            student_profile = cur.fetchone()
-            if student_profile:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'student')")
-                profile_params.append(student_profile['id'])
-
-            if not profile_conditions:
-                return {"invitations": []}
-
-            # Build the query with all possible profile matches
-            where_clause = " OR ".join(profile_conditions)
-            query = f"""
+            # Query joins on all profile types to get username and profile_picture
+            # based on inviter_type (student, parent, or tutor)
+            query = """
                 SELECT pi.*,
+                       inviter_user.first_name as inviter_first_name,
+                       inviter_user.father_name as inviter_father_name,
+                       inviter_user.email as inviter_email,
+                       inviter_user.phone as inviter_phone,
+                       inviter_user.profile_picture as user_profile_picture,
+                       -- Student profile fields
                        sp.id as student_profile_id,
-                       u.first_name as student_first_name,
-                       u.father_name as student_father_name,
-                       u.email as student_email,
-                       u.phone as student_phone,
                        sp.profile_picture as student_profile_picture,
+                       sp.username as student_username,
                        sp.grade_level,
-                       sp.studying_at
+                       sp.studying_at,
+                       -- Parent profile fields
+                       pp.id as parent_profile_id,
+                       pp.profile_picture as parent_profile_picture,
+                       pp.username as parent_username,
+                       -- Tutor profile fields
+                       tp.id as tutor_profile_id,
+                       tp.profile_picture as tutor_profile_picture,
+                       tp.username as tutor_username
                 FROM parent_invitations pi
-                JOIN student_profiles sp ON pi.inviter_id = sp.id AND pi.inviter_profile_type = 'student'
-                JOIN users u ON sp.user_id = u.id
-                WHERE ({where_clause}) AND pi.status = 'pending'
+                JOIN users inviter_user ON pi.inviter_user_id = inviter_user.id
+                LEFT JOIN student_profiles sp ON inviter_user.id = sp.user_id
+                LEFT JOIN parent_profiles pp ON inviter_user.id = pp.user_id
+                LEFT JOIN tutor_profiles tp ON inviter_user.id = tp.user_id
+                WHERE pi.invited_to_user_id = %s AND pi.status = 'pending'
                 ORDER BY pi.created_at DESC
             """
-            cur.execute(query, profile_params)
+
+            print(f"\n[SQL Query]:\n{query}")
+            print(f"[Query Params]: invited_to_user_id={current_user['id']}")
+
+            cur.execute(query, (current_user['id'],))
             invitations = cur.fetchall()
 
-    return {
-        "invitations": [
-            {
-                "id": inv['id'],
-                "inviter_id": inv['inviter_id'],
-                "inviter_profile_type": inv['inviter_profile_type'],
-                "student_profile_id": inv['student_profile_id'],
-                "student_name": f"{inv['student_first_name']} {inv['student_father_name']}",
-                "student_email": inv['student_email'],
-                "student_phone": inv['student_phone'],
-                "student_profile_picture": inv['student_profile_picture'],
-                "grade_level": inv['grade_level'],
-                "studying_at": inv['studying_at'],
-                "relationship_type": inv['relationship_type'],
-                "status": inv['status'],
-                "created_at": inv['created_at'].isoformat() if inv['created_at'] else None
-            }
-            for inv in invitations
-        ]
+            print(f"\n[QUERY RESULT] Total invitations found: {len(invitations)}")
+
+            if invitations:
+                print(f"\n[INVITATION DETAILS]:")
+                for idx, inv in enumerate(invitations, 1):
+                    print(f"  {idx}. ID={inv['id']}, inviter_user_id={inv['inviter_user_id']} ({inv['inviter_type']}), invited_to_user_id={inv['invited_to_user_id']}, status={inv['status']}")
+            else:
+                print("[WARN] No pending invitations found for this user")
+
+                # Debug query: Check total invitations in DB
+                cur.execute("SELECT COUNT(*) as total FROM parent_invitations WHERE status = 'pending'")
+                total_pending = cur.fetchone()['total']
+                print(f"\n[DEBUG] Total pending invitations in database: {total_pending}")
+
+                if total_pending > 0:
+                    print("[DEBUG] There are pending invitations, but none match this user_id")
+                    cur.execute("SELECT id, inviter_user_id, inviter_type, invited_to_user_id FROM parent_invitations WHERE status = 'pending' LIMIT 5")
+                    sample_invitations = cur.fetchall()
+                    print("[DEBUG] Sample pending invitations:")
+                    for inv in sample_invitations:
+                        print(f"     - ID={inv['id']}, inviter_user_id={inv['inviter_user_id']}, invited_to_user_id={inv['invited_to_user_id']}")
+
+    # Build response with username and profile_picture based on inviter_type
+    def get_inviter_data(inv):
+        inviter_type = inv['inviter_type']
+
+        # Get username based on inviter_type
+        if inviter_type == 'student':
+            username = inv.get('student_username')
+            profile_picture = inv.get('student_profile_picture')
+            profile_id = inv.get('student_profile_id')
+        elif inviter_type == 'parent':
+            username = inv.get('parent_username')
+            profile_picture = inv.get('parent_profile_picture')
+            profile_id = inv.get('parent_profile_id')
+        elif inviter_type == 'tutor':
+            username = inv.get('tutor_username')
+            profile_picture = inv.get('tutor_profile_picture')
+            profile_id = inv.get('tutor_profile_id')
+        else:
+            username = None
+            profile_picture = None
+            profile_id = None
+
+        # Fallback to user's profile picture if no profile-specific picture
+        if not profile_picture:
+            profile_picture = inv.get('user_profile_picture')
+
+        return {
+            "id": inv['id'],
+            "inviter_user_id": inv['inviter_user_id'],
+            "inviter_type": inviter_type,
+            "inviter_name": " ".join(filter(None, [inv.get('inviter_first_name'), inv.get('inviter_father_name')])) or "Unknown User",
+            "inviter_username": username,
+            "inviter_email": inv['inviter_email'],
+            "inviter_phone": inv['inviter_phone'],
+            "inviter_profile_id": profile_id,
+            "inviter_profile_picture": profile_picture,
+            # Keep student-specific fields for backwards compatibility
+            "student_profile_id": inv.get('student_profile_id'),
+            "student_profile_picture": inv.get('student_profile_picture'),
+            "grade_level": inv.get('grade_level'),
+            "studying_at": inv.get('studying_at'),
+            "relationship_type": inv['relationship_type'],
+            "status": inv['status'],
+            "created_at": inv['created_at'].isoformat() if inv['created_at'] else None
+        }
+
+    result = {
+        "invitations": [get_inviter_data(inv) for inv in invitations]
     }
+
+    print(f"\n[OK] Returning {len(result['invitations'])} invitations to client")
+    print("="*80 + "\n")
+
+    return result
 
 
 @router.get("/api/parent/sent-invitations")
 async def get_parent_sent_invitations(
     status: Optional[str] = None,
+    inviter_type: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Get all invitations sent by the current user (inviting others to be parents).
-    This is for students who have invited someone to be their parent.
-    Now uses profile IDs.
+    Works for any role (student, parent, tutor) who have invited someone.
+
+    Query params:
+    - status: Filter by invitation status (pending, accepted, rejected, all)
+    - inviter_type: Filter by inviter role type (student, parent, tutor) - if not specified, returns all
     """
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Get student profile ID first
-            cur.execute("SELECT id FROM student_profiles WHERE user_id = %s", (current_user['id'],))
-            student_profile = cur.fetchone()
-            if not student_profile:
-                return {"invitations": []}
+            # Build base query
+            base_query = """
+                SELECT pi.*,
+                       pp.id as parent_profile_id,
+                       pp.username as invitee_username,
+                       u.first_name as invitee_first_name,
+                       u.father_name as invitee_father_name,
+                       u.email as invitee_email,
+                       u.phone as invitee_phone,
+                       u.profile_picture as user_profile_picture,
+                       pp.profile_picture as invitee_profile_picture
+                FROM parent_invitations pi
+                LEFT JOIN parent_profiles pp ON pi.invited_to_user_id = pp.user_id
+                LEFT JOIN users u ON pi.invited_to_user_id = u.id
+                WHERE pi.inviter_user_id = %s
+            """
 
-            student_profile_id = student_profile['id']
+            params = [current_user['id']]
 
-            # Build query based on status filter using profile ID
+            # Add inviter_type filter if specified
+            if inviter_type and inviter_type != 'all':
+                base_query += " AND pi.inviter_type = %s"
+                params.append(inviter_type)
+
+            # Add status filter if specified
             if status and status != 'all':
-                cur.execute("""
-                    SELECT pi.*,
-                           pp.id as parent_profile_id,
-                           u.first_name as invitee_first_name,
-                           u.father_name as invitee_father_name,
-                           u.email as invitee_email,
-                           u.phone as invitee_phone,
-                           pp.profile_picture as invitee_profile_picture
-                    FROM parent_invitations pi
-                    LEFT JOIN parent_profiles pp ON pi.invites_id = pp.id AND pi.invites_profile_type = 'parent'
-                    LEFT JOIN users u ON pp.user_id = u.id
-                    WHERE pi.inviter_id = %s AND pi.inviter_profile_type = 'student' AND pi.status = %s
-                    ORDER BY pi.created_at DESC
-                """, (student_profile_id, status))
-            else:
-                cur.execute("""
-                    SELECT pi.*,
-                           pp.id as parent_profile_id,
-                           u.first_name as invitee_first_name,
-                           u.father_name as invitee_father_name,
-                           u.email as invitee_email,
-                           u.phone as invitee_phone,
-                           pp.profile_picture as invitee_profile_picture
-                    FROM parent_invitations pi
-                    LEFT JOIN parent_profiles pp ON pi.invites_id = pp.id AND pi.invites_profile_type = 'parent'
-                    LEFT JOIN users u ON pp.user_id = u.id
-                    WHERE pi.inviter_id = %s AND pi.inviter_profile_type = 'student'
-                    ORDER BY pi.created_at DESC
-                """, (student_profile_id,))
+                base_query += " AND pi.status = %s"
+                params.append(status)
 
+            base_query += " ORDER BY pi.created_at DESC"
+
+            cur.execute(base_query, tuple(params))
             invitations = cur.fetchall()
 
     return {
         "invitations": [
             {
                 "id": inv['id'],
-                "invites_id": inv['invites_id'],
-                "invites_profile_type": inv['invites_profile_type'],
+                "invited_to_user_id": inv['invited_to_user_id'],
+                "inviter_type": inv['inviter_type'],
                 "invitee_name": f"{inv['invitee_first_name'] or inv['pending_first_name'] or ''} {inv['invitee_father_name'] or inv['pending_father_name'] or ''}".strip() or "Pending User",
+                "invitee_username": inv.get('invitee_username'),
                 "invitee_email": inv['invitee_email'] or inv['pending_email'],
                 "invitee_phone": inv['invitee_phone'] or inv['pending_phone'],
-                "invitee_profile_picture": inv['invitee_profile_picture'],
+                "invitee_profile_picture": inv['invitee_profile_picture'] or inv.get('user_profile_picture'),
                 "relationship_type": inv['relationship_type'],
                 "status": inv['status'],
                 "is_new_user": inv['is_new_user'],
@@ -819,11 +942,11 @@ async def cancel_parent_invitation(
 
             student_profile_id = student_profile['id']
 
-            # Check if invitation exists and belongs to current user's student profile
+            # Check if invitation exists and belongs to current user
             cur.execute("""
                 SELECT * FROM parent_invitations
-                WHERE id = %s AND inviter_id = %s AND inviter_profile_type = 'student' AND status = 'pending'
-            """, (invitation_id, student_profile_id))
+                WHERE id = %s AND inviter_user_id = %s AND inviter_type = 'student' AND status = 'pending'
+            """, (invitation_id, current_user['id']))
 
             invitation = cur.fetchone()
             if not invitation:
@@ -845,85 +968,125 @@ async def respond_to_invitation(
     """
     Accept or reject a parent invitation.
     Works for ANY user - when accepting, 'parent' role is added to their account.
-    Now uses profile IDs.
+
+    Handles two scenarios based on 'requested_as' field:
+    - 'parent': Student inviting someone to be their parent
+    - 'coparent': Parent inviting another parent to co-parent their children
     """
     # No role restriction - any user can respond to parent invitations
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Get all profile IDs for the current user to check if they're the invitee
-            profile_conditions = []
-            profile_params = [invitation_id]
-
-            # Check parent profile
-            cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
-            parent_profile = cur.fetchone()
-            if parent_profile:
-                profile_conditions.append("(invites_id = %s AND invites_profile_type = 'parent')")
-                profile_params.append(parent_profile['id'])
-
-            # Check tutor profile
-            cur.execute("SELECT id FROM tutor_profiles WHERE user_id = %s", (current_user['id'],))
-            tutor_profile = cur.fetchone()
-            if tutor_profile:
-                profile_conditions.append("(invites_id = %s AND invites_profile_type = 'tutor')")
-                profile_params.append(tutor_profile['id'])
-
-            if not profile_conditions:
-                raise HTTPException(status_code=404, detail="No profile found for current user")
-
-            # Get invitation
-            where_clause = " OR ".join(profile_conditions)
-            cur.execute(f"""
+            # Get invitation for current user using user_id
+            cur.execute("""
                 SELECT * FROM parent_invitations
-                WHERE id = %s AND ({where_clause}) AND status = 'pending'
-            """, profile_params)
+                WHERE id = %s AND invited_to_user_id = %s AND status = 'pending'
+            """, (invitation_id, current_user['id']))
 
             invitation = cur.fetchone()
             if not invitation:
                 raise HTTPException(status_code=404, detail="Invitation not found or already processed")
 
+            requested_as = invitation.get('requested_as', 'parent')  # Default to 'parent' for backward compatibility
+
             if accept:
                 # Add 'parent' role to user if they don't have it
                 user_roles = current_user['roles'] or []
+                role_added = False
                 if 'parent' not in user_roles:
                     new_roles = user_roles + ['parent']
                     cur.execute("""
                         UPDATE users SET roles = %s WHERE id = %s
                     """, (Json(new_roles), current_user['id']))
+                    role_added = True
 
-                # Get student profile using profile ID from invitation
-                cur.execute("SELECT id, user_id, parent_id FROM student_profiles WHERE id = %s", (invitation['inviter_id'],))
-                student_profile = cur.fetchone()
-
-                # Get or create parent profile
-                cur.execute("SELECT id, children_ids FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
+                # Get or create parent profile for the accepting user
+                cur.execute("SELECT id, children_ids, coparent_ids FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
                 current_parent_profile = cur.fetchone()
 
                 if not current_parent_profile:
                     cur.execute("""
                         INSERT INTO parent_profiles (user_id, relationship_type)
                         VALUES (%s, %s)
-                        RETURNING id
+                        RETURNING id, children_ids, coparent_ids
                     """, (current_user['id'], invitation['relationship_type']))
-                    current_parent_profile = {'id': cur.fetchone()['id'], 'children_ids': []}
+                    result = cur.fetchone()
+                    current_parent_profile = {'id': result['id'], 'children_ids': [], 'coparent_ids': []}
 
-                # Link parent profile ID to student (parent_id stores parent profile IDs)
-                if student_profile:
-                    parent_ids = student_profile['parent_id'] if student_profile['parent_id'] else []
-                    if current_parent_profile['id'] not in parent_ids:
-                        parent_ids = parent_ids + [current_parent_profile['id']]
+                if requested_as == 'parent':
+                    # SCENARIO 1: Student invited this user to be their parent
+                    # Get student profile using inviter_user_id from invitation
+                    cur.execute("SELECT id, user_id, parent_id FROM student_profiles WHERE user_id = %s", (invitation['inviter_user_id'],))
+                    student_profile = cur.fetchone()
+
+                    # Link parent profile ID to student (parent_id stores parent profile IDs)
+                    if student_profile:
+                        parent_ids = student_profile['parent_id'] if student_profile['parent_id'] else []
+                        if current_parent_profile['id'] not in parent_ids:
+                            parent_ids = parent_ids + [current_parent_profile['id']]
+                            cur.execute("""
+                                UPDATE student_profiles SET parent_id = %s WHERE id = %s
+                            """, (parent_ids, student_profile['id']))
+
+                        # Link student profile ID to parent (children_ids stores student profile IDs)
+                        children_ids = current_parent_profile['children_ids'] if current_parent_profile.get('children_ids') else []
+                        if student_profile['id'] not in children_ids:
+                            children_ids = children_ids + [student_profile['id']]
+                            cur.execute("""
+                                UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
+                            """, (children_ids, len(children_ids), current_parent_profile['id']))
+
+                    message = "Invitation accepted. You are now linked as parent."
+
+                else:  # requested_as == 'coparent'
+                    # SCENARIO 2: Another parent invited this user to be a co-parent
+                    # Get the inviter's parent profile and their children
+                    cur.execute("SELECT id, children_ids, coparent_ids FROM parent_profiles WHERE user_id = %s", (invitation['inviter_user_id'],))
+                    inviter_parent_profile = cur.fetchone()
+
+                    if inviter_parent_profile:
+                        inviter_children_ids = inviter_parent_profile['children_ids'] if inviter_parent_profile.get('children_ids') else []
+
+                        # Share all of inviter's children with the new co-parent
+                        current_children_ids = current_parent_profile['children_ids'] if current_parent_profile.get('children_ids') else []
+                        for child_id in inviter_children_ids:
+                            if child_id not in current_children_ids:
+                                current_children_ids.append(child_id)
+
+                                # Also add the new parent to the student's parent_id array
+                                cur.execute("SELECT id, parent_id FROM student_profiles WHERE id = %s", (child_id,))
+                                student = cur.fetchone()
+                                if student:
+                                    student_parent_ids = student['parent_id'] if student['parent_id'] else []
+                                    if current_parent_profile['id'] not in student_parent_ids:
+                                        student_parent_ids = student_parent_ids + [current_parent_profile['id']]
+                                        cur.execute("""
+                                            UPDATE student_profiles SET parent_id = %s WHERE id = %s
+                                        """, (student_parent_ids, child_id))
+
+                        # Update accepting user's children_ids
                         cur.execute("""
-                            UPDATE student_profiles SET parent_id = %s WHERE id = %s
-                        """, (parent_ids, invitation['inviter_id']))
+                            UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
+                        """, (current_children_ids, len(current_children_ids), current_parent_profile['id']))
 
-                # Link student profile ID to parent (children_ids stores student profile IDs)
-                children_ids = current_parent_profile['children_ids'] if current_parent_profile.get('children_ids') else []
-                if invitation['inviter_id'] not in children_ids:
-                    children_ids = children_ids + [invitation['inviter_id']]
-                    cur.execute("""
-                        UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
-                    """, (children_ids, len(children_ids), current_parent_profile['id']))
+                        # Update coparent_ids for both parents (mutual co-parenting)
+                        # Add accepting user to inviter's coparent_ids
+                        inviter_coparent_ids = inviter_parent_profile['coparent_ids'] if inviter_parent_profile.get('coparent_ids') else []
+                        if current_parent_profile['id'] not in inviter_coparent_ids:
+                            inviter_coparent_ids = inviter_coparent_ids + [current_parent_profile['id']]
+                            cur.execute("""
+                                UPDATE parent_profiles SET coparent_ids = %s WHERE id = %s
+                            """, (inviter_coparent_ids, inviter_parent_profile['id']))
+
+                        # Add inviter to accepting user's coparent_ids
+                        current_coparent_ids = current_parent_profile['coparent_ids'] if current_parent_profile.get('coparent_ids') else []
+                        if inviter_parent_profile['id'] not in current_coparent_ids:
+                            current_coparent_ids = current_coparent_ids + [inviter_parent_profile['id']]
+                            cur.execute("""
+                                UPDATE parent_profiles SET coparent_ids = %s WHERE id = %s
+                            """, (current_coparent_ids, current_parent_profile['id']))
+
+                    message = "Invitation accepted. You are now a co-parent."
 
                 # Update invitation status
                 cur.execute("""
@@ -931,7 +1094,7 @@ async def respond_to_invitation(
                 """, (datetime.utcnow(), invitation_id))
 
                 conn.commit()
-                return {"message": "Invitation accepted. You are now linked as parent.", "status": "accepted", "role_added": 'parent' not in user_roles}
+                return {"message": message, "status": "accepted", "role_added": role_added, "requested_as": requested_as}
             else:
                 # Reject invitation
                 cur.execute("""
@@ -962,47 +1125,17 @@ async def accept_invitation_with_otp(
     The OTP was generated when the student invited them.
     When accepted, 'parent' role is added to the user's account.
 
-    NOTE: invites_id stores the profile ID (not user ID) with invites_profile_type indicating which profile table.
+    NOTE: Uses invited_to_user_id (user_id of who receives invitation).
     """
     # No role restriction - any user can accept parent invitations
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Get all profile IDs for current user to check if invitation is for them
-            profile_conditions = []
-            profile_params = []
-
-            # Check parent profile
-            cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
-            parent_profile = cur.fetchone()
-            if parent_profile:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'parent')")
-                profile_params.append(parent_profile['id'])
-
-            # Check tutor profile
-            cur.execute("SELECT id FROM tutor_profiles WHERE user_id = %s", (current_user['id'],))
-            tutor_profile = cur.fetchone()
-            if tutor_profile:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'tutor')")
-                profile_params.append(tutor_profile['id'])
-
-            # Check student profile
-            cur.execute("SELECT id FROM student_profiles WHERE user_id = %s", (current_user['id'],))
-            student_profile_check = cur.fetchone()
-            if student_profile_check:
-                profile_conditions.append("(pi.invites_id = %s AND pi.invites_profile_type = 'student')")
-                profile_params.append(student_profile_check['id'])
-
-            if not profile_conditions:
-                raise HTTPException(status_code=404, detail="No profile found for current user")
-
-            # Get the invitation using profile IDs
-            where_clause = " OR ".join(profile_conditions)
-            query = f"""
+            # Get the invitation for current user using user_id
+            cur.execute("""
                 SELECT pi.* FROM parent_invitations pi
-                WHERE pi.id = %s AND ({where_clause}) AND pi.status = 'pending'
-            """
-            cur.execute(query, [request.invitation_id] + profile_params)
+                WHERE pi.id = %s AND pi.invited_to_user_id = %s AND pi.status = 'pending'
+            """, (request.invitation_id, current_user['id']))
             invitation = cur.fetchone()
 
             if not invitation:
@@ -1046,22 +1179,12 @@ async def accept_invitation_with_otp(
                 """, (Json(new_roles), current_user['id']))
                 role_added = True
 
-            # Get student profile using inviter_id (which is now a profile ID)
-            # inviter_profile_type tells us which table to look up
-            inviter_user_id = None
-            if invitation['inviter_profile_type'] == 'student':
-                cur.execute("SELECT id, user_id, parent_id FROM student_profiles WHERE id = %s", (invitation['inviter_id'],))
-                student_profile = cur.fetchone()
-                if student_profile:
-                    inviter_user_id = student_profile['user_id']
-            elif invitation['inviter_profile_type'] == 'tutor':
-                cur.execute("SELECT id, user_id FROM tutor_profiles WHERE id = %s", (invitation['inviter_id'],))
-                tutor_profile_inviter = cur.fetchone()
-                if tutor_profile_inviter:
-                    inviter_user_id = tutor_profile_inviter['user_id']
-                    # Also get student profile if tutor has one
-                    cur.execute("SELECT id, parent_id FROM student_profiles WHERE user_id = %s", (inviter_user_id,))
-                    student_profile = cur.fetchone()
+            # Get student profile using inviter_user_id
+            inviter_user_id = invitation['inviter_user_id']
+
+            # Get student profile for the inviter
+            cur.execute("SELECT id, user_id, parent_id FROM student_profiles WHERE user_id = %s", (inviter_user_id,))
+            student_profile = cur.fetchone()
 
             # Get or create parent profile for current user
             cur.execute("SELECT id, children_ids FROM parent_profiles WHERE user_id = %s", (current_user['id'],))
@@ -1085,12 +1208,13 @@ async def accept_invitation_with_otp(
                     """, (parent_profile_ids, student_profile['id']))
 
             # Link student profile to parent (store student profile ID, not user ID)
-            children_ids = parent_profile_current['children_ids'] if parent_profile_current.get('children_ids') else []
-            if invitation['inviter_id'] not in children_ids:
-                children_ids = children_ids + [invitation['inviter_id']]
-                cur.execute("""
-                    UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
-                """, (children_ids, len(children_ids), parent_profile_current['id']))
+            if student_profile:
+                children_ids = parent_profile_current['children_ids'] if parent_profile_current.get('children_ids') else []
+                if student_profile['id'] not in children_ids:
+                    children_ids = children_ids + [student_profile['id']]
+                    cur.execute("""
+                        UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
+                    """, (children_ids, len(children_ids), parent_profile_current['id']))
 
             # Update invitation status
             cur.execute("""
@@ -1227,14 +1351,14 @@ async def get_invitation_by_token(token: str):
     Returns the invitation details (name, email, student name, etc.) for the registration form.
     Does NOT require authentication.
 
-    NOTE: inviter_id is now a profile ID with inviter_profile_type indicating which profile table.
+    NOTE: Uses inviter_user_id (user_id of who sent invitation).
     """
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             # Find the invitation by token
             cur.execute("""
                 SELECT
-                    pi.id, pi.inviter_id, pi.inviter_profile_type, pi.relationship_type, pi.status,
+                    pi.id, pi.inviter_user_id, pi.inviter_type, pi.relationship_type, pi.status,
                     pi.pending_email, pi.pending_phone, pi.pending_first_name,
                     pi.pending_father_name, pi.pending_grandfather_name, pi.pending_gender,
                     pi.token_expires_at, pi.is_new_user
@@ -1257,32 +1381,19 @@ async def get_invitation_by_token(token: str):
             if invitation['status'] == 'rejected':
                 raise HTTPException(status_code=400, detail="This invitation has been rejected")
 
-            # Get inviter's name based on profile type
+            # Get inviter's name using user_id
             student_first_name = ""
             student_father_name = ""
 
-            if invitation['inviter_profile_type'] == 'student':
-                cur.execute("""
-                    SELECT u.first_name, u.father_name
-                    FROM student_profiles sp
-                    JOIN users u ON u.id = sp.user_id
-                    WHERE sp.id = %s
-                """, (invitation['inviter_id'],))
-                inviter = cur.fetchone()
-                if inviter:
-                    student_first_name = inviter['first_name']
-                    student_father_name = inviter['father_name']
-            elif invitation['inviter_profile_type'] == 'tutor':
-                cur.execute("""
-                    SELECT u.first_name, u.father_name
-                    FROM tutor_profiles tp
-                    JOIN users u ON u.id = tp.user_id
-                    WHERE tp.id = %s
-                """, (invitation['inviter_id'],))
-                inviter = cur.fetchone()
-                if inviter:
-                    student_first_name = inviter['first_name']
-                    student_father_name = inviter['father_name']
+            cur.execute("""
+                SELECT first_name, father_name
+                FROM users
+                WHERE id = %s
+            """, (invitation['inviter_user_id'],))
+            inviter = cur.fetchone()
+            if inviter:
+                student_first_name = inviter['first_name']
+                student_father_name = inviter['father_name']
 
             # Return invitation details for the registration form
             student_name = f"{student_first_name} {student_father_name}".strip()
@@ -1323,15 +1434,14 @@ async def login_with_otp(
     2. Verify the OTP from otps table
     3. Create the user account in users table with user's chosen password
     4. Create the parent profile
-    5. Update invitation with invites_id (parent profile ID)
+    5. Update invitation with invited_to_user_id (new user's user_id)
     6. Auto-accept the invitation (login = acceptance)
     7. Link parent and student using profile IDs
     8. Mark OTP as used
 
     Returns JWT tokens for the newly created user.
 
-    NOTE: inviter_id is a profile ID with inviter_profile_type indicating which profile table.
-    invites_id will store the new parent's profile ID.
+    NOTE: Uses inviter_user_id (user_id of who sent invitation) and invited_to_user_id.
     """
     if not request.email and not request.phone:
         raise HTTPException(status_code=400, detail="Email or phone is required")
@@ -1423,19 +1533,10 @@ async def login_with_otp(
             """, (new_user_id, invitation['relationship_type']))
             parent_profile_id = cur.fetchone()['id']
 
-            # Get student profile using inviter_id (which is now a profile ID)
-            # inviter_profile_type tells us which table to look up
-            student_profile = None
-            if invitation['inviter_profile_type'] == 'student':
-                cur.execute("SELECT id, parent_id FROM student_profiles WHERE id = %s", (invitation['inviter_id'],))
-                student_profile = cur.fetchone()
-            elif invitation['inviter_profile_type'] == 'tutor':
-                # If inviter is a tutor, try to find their student profile
-                cur.execute("SELECT user_id FROM tutor_profiles WHERE id = %s", (invitation['inviter_id'],))
-                tutor_profile = cur.fetchone()
-                if tutor_profile:
-                    cur.execute("SELECT id, parent_id FROM student_profiles WHERE user_id = %s", (tutor_profile['user_id'],))
-                    student_profile = cur.fetchone()
+            # Get student profile using inviter_user_id
+            inviter_user_id = invitation['inviter_user_id']
+            cur.execute("SELECT id, parent_id FROM student_profiles WHERE user_id = %s", (inviter_user_id,))
+            student_profile = cur.fetchone()
 
             # Link parent profile to student (store parent profile ID, not user ID)
             if student_profile:
@@ -1446,27 +1547,25 @@ async def login_with_otp(
                               (parent_profile_ids, student_profile['id']))
 
             # Link student profile to parent (store student profile ID, not user ID)
-            # inviter_id is already a student profile ID if inviter_profile_type is 'student'
-            student_profile_id_for_parent = invitation['inviter_id'] if invitation['inviter_profile_type'] == 'student' else (student_profile['id'] if student_profile else None)
-            if student_profile_id_for_parent:
+            if student_profile:
                 # Get existing children_ids to append (in case parent already has children)
                 cur.execute("SELECT children_ids FROM parent_profiles WHERE id = %s", (parent_profile_id,))
                 parent_profile_row = cur.fetchone()
                 existing_children_ids = parent_profile_row['children_ids'] if parent_profile_row and parent_profile_row['children_ids'] else []
 
-                if student_profile_id_for_parent not in existing_children_ids:
-                    existing_children_ids = existing_children_ids + [student_profile_id_for_parent]
+                if student_profile['id'] not in existing_children_ids:
+                    existing_children_ids = existing_children_ids + [student_profile['id']]
 
                 cur.execute("""
                     UPDATE parent_profiles SET children_ids = %s, total_children = %s WHERE id = %s
                 """, (existing_children_ids, len(existing_children_ids), parent_profile_id))
 
-            # Update invitation: set invites_id (parent profile ID) and mark as accepted
+            # Update invitation: set invited_to_user_id and mark as accepted
             cur.execute("""
                 UPDATE parent_invitations
-                SET invites_id = %s, invites_profile_type = 'parent', status = 'accepted', responded_at = %s
+                SET invited_to_user_id = %s, status = 'accepted', responded_at = %s
                 WHERE id = %s
-            """, (parent_profile_id, datetime.utcnow(), invitation['id']))
+            """, (new_user_id, datetime.utcnow(), invitation['id']))
 
             # Mark OTP as used
             cur.execute("""
@@ -1494,7 +1593,7 @@ async def login_with_otp(
             "roles": ["parent"],
             "active_role": "parent"
         },
-        "linked_student_profile_id": invitation['inviter_id'] if invitation['inviter_profile_type'] == 'student' else (student_profile['id'] if student_profile else None)
+        "linked_student_profile_id": student_profile['id'] if student_profile else None
     }
 
 

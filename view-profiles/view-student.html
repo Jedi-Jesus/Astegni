@@ -12,12 +12,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css?v=3">
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <!-- admin.css removed - not needed for view pages, was causing tooltip transparency -->
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css?v=3">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css?v=3">
     <link rel="stylesheet" href="../css/view-student/view-student.css?v=4">
-    <!-- Clubs & Events Styles -->
-    <link rel="stylesheet" href="../css/view-student/clubs-events.css">
     <!-- Shared Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
@@ -800,27 +800,196 @@
                         </path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <span class="logo-main">Astegni</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Unlock Your Full Potential</h3>
-            <p class="ad-text">Premium tutoring available</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+
+        <div class="mobile-menu-content">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-section">
+                <a href="../index.html" class="mobile-menu-link">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a href="../branch/find-tutors.html" class="mobile-menu-link">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a href="../branch/reels.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                <div class="mobile-profile-header" id="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                    <div class="mobile-profile-info">
+                        <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                        <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                    </div>
+                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="mobile-profile-dropdown">
+                    <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                        <div class="mobile-dropdown-divider"></div>
+                        <div class="mobile-dropdown-label">Switch Role</div>
+                        <div id="mobile-role-options"></div>
+                    </div>
+                    <div class="mobile-dropdown-divider"></div>
+                    <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="mobile-theme-section">
+                <button class="mobile-theme-toggle" onclick="toggleTheme()">
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <div class="mobile-notifications-section">
+                <button class="mobile-notifications-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Notifications</span>
+                    <span class="mobile-notification-badge">3</span>
+                </button>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Unlock Your Full Potential</h3>
+                <p class="ad-text">Premium tutoring available</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Study Materials Available</h3>
+                <p class="ad-text">Access quality resources</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Connect with Tutors</h3>
+                <p class="ad-text">Find expert guidance</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Find Tutors</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space Here</h3>
+                <p class="ad-text">Connect with students</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -850,16 +1019,6 @@
                     <span class="sidebar-icon">📝</span>
                     <span>Blog</span>
                     <span class="badge-count">7</span>
-                </a>
-                <a href="#" onclick="switchPanel('clubs'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">👥</span>
-                    <span>Clubs</span>
-                    <span class="badge-count">Active</span>
-                </a>
-                <a href="#" onclick="switchPanel('events'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">📅</span>
-                    <span>Events</span>
-                    <span class="badge-count">3</span>
                 </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('parents'); return false;" class="sidebar-link">
@@ -1024,35 +1183,6 @@
                                                 <div class="profile-location">
                                                     <span class="location-icon">📍</span>
                                                     <span id="student-location">Addis Ababa, Ethiopia | 12th Grade</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Contact Information (Email & Phone) -->
-                                            <div class="profile-contact-info"
-                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div id="email-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📧</span>
-                                                    <div style="flex: 1; overflow: hidden;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Email</div>
-                                                        <div id="student-email"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                            email@example.com</div>
-                                                    </div>
-                                                </div>
-                                                <div id="phone-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📱</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Phone</div>
-                                                        <div id="student-phone"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            +251 912 345 678</div>
-                                                    </div>
                                                 </div>
                                             </div>
 
@@ -2072,25 +2202,6 @@
                             </div>
                         </div>
 
-                        <!-- Clubs Panel -->
-                        <div id="clubs-panel" class="panel-content">
-                            <section class="sidebar-content-panel">
-                                <div class="section-header">
-                                    <h2 class="section-title">
-                                        <i class="fas fa-users"></i> Student Clubs & Activities
-                                    </h2>
-                                </div>
-
-                                <!-- Clubs Content (Dynamic - Loaded from Database) -->
-                                <div class="clubs-content">
-                                    <!-- Loading state -->
-                                    <div style="text-align: center; padding: 3rem;">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-                                        <p style="color: var(--text-secondary);">Loading clubs...</p>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
 
                         <!-- Blog Panel -->
                         <div id="blog-panel" class="panel-content">
@@ -2112,25 +2223,6 @@
                             </section>
                         </div>
 
-                        <!-- Events Panel -->
-                        <div id="events-panel" class="panel-content">
-                            <section class="sidebar-content-panel">
-                                <div class="section-header">
-                                    <h2 class="section-title">
-                                        <i class="fas fa-calendar-alt"></i> Student Events & Schedule
-                                    </h2>
-                                </div>
-
-                                <!-- Events Content (Dynamic - Loaded from Database) -->
-                                <div class="events-content">
-                                    <!-- Loading state -->
-                                    <div style="text-align: center; padding: 3rem;">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-                                        <p style="color: var(--text-secondary);">Loading events...</p>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
 
                         <!-- Parents Panel -->
                         <div id="parents-panel" class="panel-content">
@@ -2331,25 +2423,94 @@
                         <div class="right-sidebar-content">
 
                     
-                    <!-- Interested In Widget (Single Item Display) -->
-                    <div class="sidebar-widget interested-widget card" style="padding: 1.5rem;">
-                        <div class="widget-header" style="margin-bottom: 1rem;">
-                            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">
-                                💡 Interested In</h3>
+                    <!-- Ad Widget -->
+                    <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
+                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="interested-single-display" style="min-height: 60px; display: flex; align-items: center; justify-content: center;">
-                            <div class="interested-item-container" style="position: relative; width: 100%; text-align: center;">
-                                <span class="interested-current-item active"
-                                    style="background: var(--button-bg); color: white; padding: 0.75rem 1.5rem; border-radius: 25px; font-size: 1rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.6rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.5s ease; opacity: 1;">
-                                    <span style="font-size: 1.5rem;">🧮</span>
-                                    <span>Mathematics</span>
-                                </span>
+                        <div class="ad-content" id="ad-container" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <!-- Rotating Ad Messages -->
+                            <div id="ad-message-container" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                </div>
+                            </div>
+                            <!-- Ticker at bottom -->
+                            <div id="ad-ticker" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Navigation dots (dynamically generated based on student data) -->
-                        <div class="interested-dots" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
-                            <!-- Dots will be generated by InterestedSingleDisplayManager -->
-                        </div>
+                        <style>
+                            @keyframes tickerScroll {
+                                0% { transform: translateX(0); }
+                                100% { transform: translateX(-50%); }
+                            }
+                            #ad-ticker-content {
+                                animation: tickerScroll 20s linear infinite;
+                            }
+                            .ad-message {
+                                visibility: hidden;
+                            }
+                            .ad-message.active {
+                                opacity: 1 !important;
+                                transform: scale(1) !important;
+                                visibility: visible !important;
+                            }
+                            .ad-message.fade-out {
+                                opacity: 0 !important;
+                                transform: scale(0.8) !important;
+                                visibility: visible !important;
+                            }
+                        </style>
+                        <script>
+                            (function() {
+                                const messages = document.querySelectorAll('#ad-message-container .ad-message');
+                                let currentIndex = 0;
+
+                                function rotateMessages() {
+                                    const prevIndex = currentIndex;
+                                    currentIndex = (currentIndex + 1) % messages.length;
+
+                                    // Fade out current
+                                    messages[prevIndex].classList.remove('active');
+                                    messages[prevIndex].classList.add('fade-out');
+
+                                    // Fade in next
+                                    messages[currentIndex].classList.add('active');
+
+                                    // Hide previous after animation
+                                    setTimeout(() => {
+                                        messages[prevIndex].classList.remove('fade-out');
+                                    }, 600);
+                                }
+
+                                setInterval(rotateMessages, 10000);
+                            })();
+                        </script>
                     </div>
 
                     <!-- Academic Statistics Widget -->
@@ -2643,6 +2804,7 @@
     <!-- Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/nav.js"></script>
     <script src="../js/root/default-avatar.js"></script>
     <script src="../js/root/profile-system.js"></script>
     <script src="../js/root/theme-toggle.js"></script>
@@ -2651,6 +2813,7 @@
     <script src="../modals/common-modals/common-modal-loader.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
     <!-- Student Reviews Loader - Loads reviews from tutors and parents -->
     <script src="../js/view-student/view-student-reviews.js"></script>
@@ -2664,10 +2827,6 @@
     <script src="../js/view-student/view-student-parents.js"></script>
     <!-- View Student Blogs Manager - Loads and displays blog posts from database -->
     <script src="../js/view-student/view-student-blogs.js"></script>
-    <!-- View Student Clubs Manager - Loads and displays clubs from database -->
-    <script src="../js/view-student/view-student-clubs.js"></script>
-    <!-- View Student Events Manager - Loads and displays events from database -->
-    <script src="../js/view-student/view-student-events.js"></script>
     <!-- Connection Manager - Handles connection requests -->
     <script src="../js/view-tutor/connection-manager.js?v=3"></script>
 
@@ -2738,11 +2897,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const studentId = urlParams.get('id');
 
-            if (panelName === 'clubs' && studentId && typeof loadStudentClubs === 'function') {
-                loadStudentClubs(studentId);
-            } else if (panelName === 'events' && studentId && typeof loadStudentEvents === 'function') {
-                loadStudentEvents(studentId);
-            }
         }
 
         // Handle nav clicks
@@ -3299,8 +3453,8 @@
                     return;
                 }
 
-                // Get subjects from student data (same as interested-ticker.js)
-                const interests = studentData?.interested_in || ['Mathematics', 'Science', 'Literature', 'Art', 'Music'];
+                // Get subjects from student data - use empty array if none, don't default to fake subjects
+                const interests = studentData?.interested_in || [];
 
                 this.subjects = interests.map(subject => ({
                     emoji: this.getEmojiForSubject(subject),
@@ -3309,11 +3463,26 @@
 
                 console.log('✅ Interested single display loaded with subjects:', this.subjects);
 
+                // If no subjects, show empty state and don't start rotation
+                if (this.subjects.length === 0) {
+                    this.itemContainer.innerHTML = `
+                        <span style="font-size: 1.5rem;">📚</span>
+                        <span style="color: var(--text-secondary);">No interests added yet</span>
+                    `;
+                    this.dotsContainer.innerHTML = '';
+                    return;
+                }
+
                 // Generate dots based on number of subjects
                 this.generateDots();
 
-                // Start rotation
-                this.startRotation();
+                // Show first subject immediately
+                this.updateSubject(0);
+
+                // Start rotation only if more than one subject
+                if (this.subjects.length > 1) {
+                    this.startRotation();
+                }
             }
 
             generateDots() {
@@ -3336,12 +3505,19 @@
             }
 
             updateSubject(index) {
+                // Safety check - don't update if no subjects or invalid index
+                if (!this.subjects || this.subjects.length === 0 || index >= this.subjects.length) {
+                    return;
+                }
+
                 // Fade out
                 this.itemContainer.style.opacity = '0';
                 this.itemContainer.style.transform = 'translateY(10px)';
 
                 setTimeout(() => {
                     const subject = this.subjects[index];
+                    if (!subject) return; // Extra safety check
+
                     this.itemContainer.innerHTML = `
                         <span style="font-size: 1.5rem;">${subject.emoji}</span>
                         <span>${subject.name}</span>
@@ -3408,6 +3584,9 @@
                 .catch(err => console.log('Chat modal will load on demand:', err.message));
         })();
     </script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 </body>
 
 </html>

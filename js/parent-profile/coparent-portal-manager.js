@@ -259,6 +259,9 @@ class CoparentPortalManager {
      * Show a specific step
      */
     showStep(stepNumber) {
+        // Clear any error messages when switching steps
+        this.clearInvitationError();
+
         // Hide all steps
         document.querySelectorAll('.invite-step').forEach(step => {
             step.classList.add('hidden');
@@ -329,7 +332,10 @@ class CoparentPortalManager {
                     CoparentsManager.loadCoparents();
                 }
             } else {
-                this.showToast(data.detail || 'Failed to add co-parent', 'error');
+                // Display error message in modal instead of just toast
+                const errorMessage = data.detail || 'Failed to add co-parent';
+                this.showInvitationError(errorMessage);
+                this.showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Error adding co-parent:', error);
@@ -400,7 +406,10 @@ class CoparentPortalManager {
                     CoparentsManager.loadCoparents();
                 }
             } else {
-                this.showToast(data.detail || 'Failed to add co-parent', 'error');
+                // Display error message in modal instead of just toast
+                const errorMessage = data.detail || 'Failed to add co-parent';
+                this.showInvitationError(errorMessage);
+                this.showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Error adding co-parent:', error);
@@ -433,6 +442,62 @@ class CoparentPortalManager {
             toast.classList.add('opacity-0', 'translate-y-2');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    /**
+     * Show error message in the invite parent modal
+     * @param {string} message - Error message to display
+     */
+    showInvitationError(message) {
+        // Remove any existing error message
+        this.clearInvitationError();
+
+        // Find the current visible step
+        const visibleStep = document.querySelector('.invite-step:not(.hidden)');
+        if (!visibleStep) return;
+
+        // Find the modal body within the visible step
+        const modalBody = visibleStep.querySelector('.modal-body');
+        if (!modalBody) return;
+
+        // Create error alert element
+        const errorAlert = document.createElement('div');
+        errorAlert.id = 'invitation-error-alert';
+        errorAlert.className = 'mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50';
+        errorAlert.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-red-700 dark:text-red-400 mb-1">Unable to Add Co-Parent</h4>
+                    <p class="text-sm text-red-600 dark:text-red-500">${message}</p>
+                </div>
+                <button onclick="parentPortalManager.clearInvitationError()" class="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        // Insert at the top of modal body
+        modalBody.insertBefore(errorAlert, modalBody.firstChild);
+
+        // Scroll to top of modal body to show error
+        modalBody.scrollTop = 0;
+    }
+
+    /**
+     * Clear error message from invite parent modal
+     */
+    clearInvitationError() {
+        const existingError = document.getElementById('invitation-error-alert');
+        if (existingError) {
+            existingError.remove();
+        }
     }
 }
 

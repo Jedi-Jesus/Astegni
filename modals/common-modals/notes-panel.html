@@ -1,0 +1,126 @@
+<!--
+  Panel: notes-panel
+  Purpose: Notes Dashboard - Grid view of all notes with stats, search, and filters
+  Shared across: tutor-profile, student-profile, parent-profile
+
+  Usage: Include this panel content inside a panel-content div in profile pages
+  Example:
+  <div id="notes-panel" class="panel-content hidden">
+      [Include this content here]
+  </div>
+
+  Dependencies:
+  - css/common-modals/advanced-notes.css
+  - js/common-modals/advanced-notes.js
+-->
+
+<!-- Notes Panel Header -->
+<div class="dashboard-header">
+  <div class="dashboard-title-section">
+    <h1 class="dashboard-title">
+      <i class="fas fa-sticky-note"></i>
+      My Notes
+    </h1>
+    <p class="dashboard-subtitle">Organize your thoughts and knowledge</p>
+  </div>
+  <div class="dashboard-actions">
+    <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
+      <i class="fas fa-plus"></i> New Note
+    </button>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-icon">
+      <i class="fas fa-file-alt"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number" id="totalNotes">0</span>
+      <span class="stat-label">Total Notes</span>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon words">
+      <i class="fas fa-font"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number" id="totalWords">0</span>
+      <span class="stat-label">Total Words</span>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon courses">
+      <i class="fas fa-book"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number" id="totalCourses">0</span>
+      <span class="stat-label">Courses</span>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon recent">
+      <i class="fas fa-clock"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number" id="recentNotes">0</span>
+      <span class="stat-label">This Week</span>
+    </div>
+  </div>
+</div>
+
+<!-- Controls Bar: Search, Filter, Sort -->
+<div class="controls-bar">
+  <div class="search-box">
+    <i class="fas fa-search search-icon"></i>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search notes..." oninput="NotesManager.searchNotes(this.value)">
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="all" onclick="NotesManager.filterNotes('all', this)">
+      <i class="fas fa-th"></i> All Notes
+    </button>
+    <button class="filter-btn" data-filter="recent" onclick="NotesManager.filterNotes('recent', this)">
+      <i class="fas fa-clock"></i> Recent
+    </button>
+    <button class="filter-btn" data-filter="favorites" onclick="NotesManager.filterNotes('favorites', this)">
+      <i class="fas fa-star"></i> Favorites
+    </button>
+    <button class="filter-btn" data-filter="media" onclick="NotesManager.filterNotes('media', this)">
+      <i class="fas fa-microphone"></i> Media Notes
+    </button>
+  </div>
+  <select class="sort-select" id="sortSelect" onchange="NotesManager.sortNotes()">
+    <option value="date-desc">Newest First</option>
+    <option value="date-asc">Oldest First</option>
+    <option value="title">Title A-Z</option>
+    <option value="course">By Course</option>
+  </select>
+</div>
+
+<!-- Notes Grid -->
+<div class="notes-grid" id="notesGrid">
+  <!-- New Note Card (always shown first) -->
+  <div class="note-card new-note" onclick="NotesManager.createNewNote()">
+    <div class="new-note-content">
+      <div class="new-note-icon">
+        <i class="fas fa-plus"></i>
+      </div>
+      <h3>Create New Note</h3>
+      <p>Start writing your next note</p>
+    </div>
+  </div>
+  <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
+</div>
+
+<!-- Empty State (shown when no notes exist) -->
+<div class="notes-empty-state" id="notesEmptyState" style="display: none;">
+  <div class="empty-icon">
+    <i class="fas fa-sticky-note"></i>
+  </div>
+  <h3>No Notes Yet</h3>
+  <p>Start taking notes to organize your learning journey</p>
+  <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
+    <i class="fas fa-plus"></i> Create Your First Note
+  </button>
+</div>

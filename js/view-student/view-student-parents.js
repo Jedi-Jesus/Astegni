@@ -99,8 +99,6 @@ function createParentCard(parent, isPrimary = false) {
     const colors = getRelationshipColors(parent.relationship_type);
     const fullName = `${parent.first_name || ''} ${parent.father_name || ''}`.trim() || 'Parent';
     const avatar = parent.profile_picture || getDefaultParentAvatar(parent.relationship_type);
-    const email = parent.email || 'Not provided';
-    const phone = parent.phone || 'Not provided';
     const relationship = parent.relationship_type || 'Parent';
     const badgeText = isPrimary ? 'Primary Guardian' : colors.badge;
 
@@ -134,33 +132,17 @@ function createParentCard(parent, isPrimary = false) {
                 </div>
             </div>
 
+            ${parent.location ? `
             <div style="background: rgba(245, 158, 11, 0.05); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.1);">
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 1.25rem;">📧</span>
-                        <div>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Email</p>
-                            <p style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">${email}</p>
-                        </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.25rem;">📍</span>
+                    <div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Location</p>
+                        <p style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">${parent.location}</p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 1.25rem;">📱</span>
-                        <div>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Phone</p>
-                            <p style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">${phone}</p>
-                        </div>
-                    </div>
-                    ${parent.location ? `
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 1.25rem;">📍</span>
-                        <div>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Location</p>
-                            <p style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">${parent.location}</p>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
             </div>
+            ` : ''}
 
             <div style="display: flex; justify-content: center;">
                 <button onclick="messageParent(${parent.user_id || parent.id}, ${parent.id}, '${fullName.replace(/'/g, "\\'")}', '${avatar.replace(/'/g, "\\'")}')"

@@ -17,6 +17,7 @@ let studentCredentials = {
 /**
  * Fetch student credentials from API
  * Uses the /api/view-student/{student_profile_id}/credentials endpoint
+ * Only returns featured credentials (is_featured = true) for public view pages
  * @param {number} studentProfileId - The student_profiles.id (NOT user_id)
  * @param {string} credentialType - Optional filter: 'achievement', 'academic_certificate', 'extracurricular'
  */
@@ -30,9 +31,11 @@ async function fetchStudentCredentials(studentProfileId, credentialType = null) 
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const credentials = await response.json();
-        console.log(`Fetched ${credentials.length} credentials for type: ${credentialType || 'all'}`);
-        return credentials;
+        const allCredentials = await response.json();
+        // Only show featured credentials on public view pages
+        const featuredCredentials = allCredentials.filter(cred => cred.is_featured === true);
+        console.log(`Fetched ${allCredentials.length} credentials, ${featuredCredentials.length} featured for type: ${credentialType || 'all'}`);
+        return featuredCredentials;
     } catch (error) {
         console.error('Error fetching student credentials:', error);
         return [];

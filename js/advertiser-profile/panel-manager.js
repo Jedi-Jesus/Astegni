@@ -7,8 +7,19 @@
  * Switch between different panels in the advertiser profile dashboard
  * @param {string} panelName - The name of the panel to switch to (e.g., 'dashboard', 'campaigns')
  */
-function switchPanel(panelName) {
+async function switchPanel(panelName) {
     console.log(`🔄 [Advertiser Profile] Switching to panel: ${panelName}`);
+
+    // ✅ 2FA PRE-VERIFICATION - Uses user-configurable protected panels
+    // Check if ProtectedAPI is available and use dynamic panel protection
+    if (typeof ProtectedAPI !== 'undefined' && ProtectedAPI.requirePanelVerification) {
+        const verified = await ProtectedAPI.requirePanelVerification(panelName, 'advertiser');
+
+        if (!verified) {
+            console.log('❌ 2FA verification failed or cancelled');
+            return; // Don't switch panel
+        }
+    }
 
     // Hide all panels
     const allPanels = document.querySelectorAll('.panel-content');
@@ -74,6 +85,12 @@ function switchPanel(panelName) {
         detail: { panelName }
     });
     window.dispatchEvent(panelSwitchEvent);
+
+    // Initialize panel-specific managers when switching
+    if (panelName === 'brands' && typeof BrandsManager !== 'undefined') {
+        console.log('🏷️ Initializing BrandsManager for brands panel...');
+        BrandsManager.initialize();
+    }
 }
 
 /**
@@ -107,8 +124,76 @@ function initPanelManager() {
     console.log('✅ Advertiser Profile Panel Manager initialized');
 }
 
+/**
+ * Switch between tabs within the Job Board panel
+ * @param {string} tabName - The name of the tab to switch to (e.g., 'draft-post', 'active-jobs')
+ */
+function switchJobTab(tabName) {
+    console.log(`🔄 [Job Board] Switching to tab: ${tabName}`);
+
+    // Hide all job tab contents
+    const allJobTabs = document.querySelectorAll('.job-tab-content');
+    allJobTabs.forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
+    });
+
+    // Show selected job tab
+    const selectedTab = document.getElementById(`${tabName}-tab`);
+    if (selectedTab) {
+        selectedTab.style.display = 'block';
+        selectedTab.classList.add('active');
+        console.log(`✅ Job tab "${tabName}" activated`);
+    } else {
+        console.error(`❌ Job tab "${tabName}-tab" not found in DOM`);
+    }
+
+    // Update tab button active state
+    const allTabButtons = document.querySelectorAll('.tab-btn');
+    allTabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.borderBottomColor = 'transparent';
+        btn.style.color = 'var(--text-muted)';
+    });
+
+    // Find and activate the corresponding tab button
+    const activeTabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeTabBtn) {
+        activeTabBtn.classList.add('active');
+        activeTabBtn.style.borderBottomColor = 'var(--button-bg)';
+        activeTabBtn.style.color = 'var(--text-primary)';
+        console.log(`✅ Tab button for "${tabName}" activated`);
+    }
+
+    // Load data for the selected tab (lazy loading)
+    switch (tabName) {
+        case 'drafts':
+            if (typeof loadDrafts === 'function') loadDrafts();
+            break;
+        case 'active-jobs':
+            if (typeof loadActiveJobs === 'function') loadActiveJobs();
+            break;
+        case 'closed-jobs':
+            if (typeof loadClosedJobs === 'function') loadClosedJobs();
+            break;
+        case 'applications':
+            if (typeof loadApplications === 'function') loadApplications();
+            break;
+        case 'analytics':
+            if (typeof loadJobAnalytics === 'function') loadJobAnalytics();
+            break;
+    }
+
+    // Scroll to top of panel for better UX
+    const jobsPanel = document.getElementById('jobs-panel');
+    if (jobsPanel) {
+        jobsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
 // Export to window for onclick handlers
 window.switchPanel = switchPanel;
+window.switchJobTab = switchJobTab;
 window.initPanelManager = initPanelManager;
 
 // Auto-initialize when DOM is ready

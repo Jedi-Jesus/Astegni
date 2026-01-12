@@ -63,6 +63,9 @@ const AdvertiserProfileDataLoader = {
             // Populate all sections
             this.populateProfileHeader();
 
+            // Load connections count from database
+            await this.loadConnectionsCount();
+
             // Hide loading state
             this.hideLoading();
 
@@ -133,26 +136,37 @@ const AdvertiserProfileDataLoader = {
     populateProfileHeader() {
         const data = this.profileData;
 
-        // Username - update in profile-header-section
+        // Full Name - constructed from users table (first_name + father_name + grandfather_name)
+        // OR use full_name if available
+        if (data.full_name) {
+            this.updateElement('advertiserName', data.full_name);
+        }
+
+        // Username - display below name (replaces hero-title in profile header)
         if (data.username) {
-            this.updateElement('advertiserName', data.username);
+            this.updateElement('advertiser-username-display', `@${data.username}`);
         }
 
-        // Hero Title (array) - join with line breaks or space
+        // Hero Section Title (array) - displayed in top hero banner with typing effect
         if (data.hero_title && Array.isArray(data.hero_title) && data.hero_title.length > 0) {
-            const titleText = data.hero_title.join(' ');
-            this.updateElement('advertiser-hero-title', titleText);
+            const heroTitleText = data.hero_title.join(' ');
+            this.updateElement('typedText', heroTitleText);
         }
 
-        // Hero Subtitle (array) - join with line breaks or space
+        // Hero Subtitle (array) - displayed in top hero banner below title
         if (data.hero_subtitle && Array.isArray(data.hero_subtitle) && data.hero_subtitle.length > 0) {
             const subtitleText = data.hero_subtitle.join(' ');
-            this.updateElement('advertiser-hero-subtitle', subtitleText);
+            this.updateElement('hero-subtitle', subtitleText);
         }
 
-        // Bio - update in profile info grid
+        // Bio - update in About section and show it
         if (data.bio) {
             this.updateElement('advertiser-bio', data.bio);
+            // Show About section
+            const aboutSection = document.getElementById('about-section');
+            if (aboutSection) {
+                aboutSection.style.display = 'block';
+            }
         }
 
         // Quote/Tagline
@@ -206,19 +220,60 @@ const AdvertiserProfileDataLoader = {
             verificationBadge.style.display = data.is_verified ? 'inline-flex' : 'none';
         }
 
-        // Member since date (joined_in)
-        if (data.joined_in) {
-            const joinDate = new Date(data.joined_in);
+        // Member since date (created_at from advertiser_profiles)
+        if (data.created_at) {
+            const joinDate = new Date(data.created_at);
             // Validate the date is real and not in the future
             if (!isNaN(joinDate.getTime()) && joinDate <= new Date()) {
                 const formattedDate = joinDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 this.updateElement('advertiser-joined', formattedDate);
             } else {
-                console.warn('[AdvertiserProfileDataLoader] Invalid joined_in date:', data.joined_in);
+                console.warn('[AdvertiserProfileDataLoader] Invalid created_at date:', data.created_at);
             }
         }
 
+        // Rating data from advertiser_reviews table
+        if (data.rating_data) {
+            this.populateRatingSection(data.rating_data);
+        }
+
         console.log('[AdvertiserProfileDataLoader] Profile header populated with database data');
+    },
+
+    // Populate rating section from advertiser_reviews
+    populateRatingSection(ratingData) {
+        // Overall rating
+        if (ratingData.overall_rating !== undefined) {
+            const rating = parseFloat(ratingData.overall_rating).toFixed(1);
+            this.updateElement('advertiser-rating', rating);
+
+            // Update star display
+            const stars = Math.round(ratingData.overall_rating);
+            const starsDisplay = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+            this.updateElement('rating-stars', starsDisplay);
+        }
+
+        // Review count
+        if (ratingData.review_count !== undefined) {
+            this.updateElement('rating-count', `(${ratingData.review_count} reviews)`);
+        }
+
+        // Update individual rating metrics in tooltip
+        const metrics = {
+            'campaign_quality': ratingData.campaign_quality || 0,
+            'response_time': ratingData.response_time || 0,
+            'professionalism': ratingData.professionalism || 0,
+            'value_for_money': ratingData.value_for_money || 0
+        };
+
+        // Update metric scores and bars (these should match the HTML IDs in the tooltip)
+        Object.keys(metrics).forEach(metric => {
+            const score = parseFloat(metrics[metric]).toFixed(1);
+            const percentage = (metrics[metric] / 5) * 100;
+
+            // You can add individual metric updates here if needed
+            console.log(`[Rating] ${metric}: ${score} (${percentage}%)`);
+        });
     },
 
     // Populate social links from socials JSONB
@@ -299,6 +354,20 @@ const AdvertiserProfileDataLoader = {
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
+        }
+    },
+
+    // Load connections count from database
+    async loadConnectionsCount() {
+        try {
+            const connectionsData = await AdvertiserProfileAPI.getConnectionsCount();
+            if (connectionsData && connectionsData.count !== undefined) {
+                this.updateElement('connections-count', connectionsData.count);
+                console.log(`[AdvertiserProfileDataLoader] Connections count loaded: ${connectionsData.count}`);
+            }
+        } catch (error) {
+            console.error('[AdvertiserProfileDataLoader] Error loading connections count:', error);
+            this.updateElement('connections-count', '0'); // Fallback
         }
     }
 };

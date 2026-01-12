@@ -72,7 +72,7 @@ def run_migration():
                     status VARCHAR DEFAULT 'draft',
                     budget FLOAT NOT NULL,
                     spent FLOAT DEFAULT 0.0,
-                    daily_budget FLOAT,
+                    campaign_budget FLOAT,
                     currency VARCHAR DEFAULT 'ETB',
                     start_date DATE NOT NULL,
                     end_date DATE NOT NULL,

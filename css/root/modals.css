@@ -63,11 +63,20 @@
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     animation: overlayFadeIn 0.3s ease;
+    /* Centering for modal content */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
 .modal-overlay.active {
     opacity: 1;
     visibility: visible;
+}
+
+.modal-overlay.hidden {
+    display: none;
 }
 
 .modal-content {

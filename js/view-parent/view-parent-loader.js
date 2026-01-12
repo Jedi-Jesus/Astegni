@@ -164,9 +164,6 @@ class ViewParentLoader {
         // Update relationship and occupation info
         this.updateRelationshipInfo(data);
 
-        // Update contact information
-        this.updateContactInfo(data);
-
         // Update quote
         this.updateQuote(data);
 
@@ -425,29 +422,6 @@ class ViewParentLoader {
         if (relationshipBadge) {
             const emoji = data.relationship_type === 'Mother' ? '👩‍👧‍👦' : '👨‍👩‍👧‍👦';
             relationshipBadge.innerHTML = `${emoji} ${data.relationship_type || 'Parent'}`;
-        }
-    }
-
-    /**
-     * Update contact information
-     */
-    updateContactInfo(data) {
-        // Email - we don't have email in parent_profiles, check if available
-        const emailContainer = document.querySelector('.profile-contact-info:nth-of-type(2) div:first-child');
-        if (emailContainer) {
-            const emailValue = emailContainer.querySelector('div:last-child div:last-child');
-            if (emailValue) {
-                emailValue.textContent = data.email || 'Not provided';
-            }
-        }
-
-        // Phone - we don't have phone in parent_profiles
-        const phoneContainer = document.querySelector('.profile-contact-info:nth-of-type(2) div:last-child');
-        if (phoneContainer) {
-            const phoneValue = phoneContainer.querySelector('div:last-child div:last-child');
-            if (phoneValue) {
-                phoneValue.textContent = data.phone || 'Not provided';
-            }
         }
     }
 

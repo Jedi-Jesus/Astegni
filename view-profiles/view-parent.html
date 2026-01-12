@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <link rel="stylesheet" href="../css/view-parent.css">
     <!-- Shared Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
@@ -143,27 +145,196 @@
                         </path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <span class="logo-main">Astegni</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Premium Tutoring Services</h3>
-            <p class="ad-text">Find the best tutors for your children</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+
+        <div class="mobile-menu-content">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-section">
+                <a href="../index.html" class="mobile-menu-link">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a href="../branch/find-tutors.html" class="mobile-menu-link">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a href="../branch/reels.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                <div class="mobile-profile-header" id="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                    <div class="mobile-profile-info">
+                        <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                        <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                    </div>
+                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="mobile-profile-dropdown">
+                    <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                        <div class="mobile-dropdown-divider"></div>
+                        <div class="mobile-dropdown-label">Switch Role</div>
+                        <div id="mobile-role-options"></div>
+                    </div>
+                    <div class="mobile-dropdown-divider"></div>
+                    <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="mobile-theme-section">
+                <button class="mobile-theme-toggle" onclick="toggleTheme()">
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <div class="mobile-notifications-section">
+                <button class="mobile-notifications-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Notifications</span>
+                    <span class="mobile-notification-badge">5</span>
+                </button>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Premium Tutoring Services</h3>
+                <p class="ad-text">Find the best tutors for your children</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Track Learning Progress</h3>
+                <p class="ad-text">Monitor your child's education</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Started</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Safe Learning Environment</h3>
+                <p class="ad-text">Verified tutors & content</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Explore Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space Here</h3>
+                <p class="ad-text">Connect with parents</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -181,37 +352,25 @@
                     <span class="sidebar-icon">📊</span>
                     <span>Dashboard</span>
                 </a>
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel(event, 'children-profiles'); return false;" class="sidebar-link"
                     data-panel="children-profiles">
                     <span class="sidebar-icon">👨‍👩‍👧‍👦</span>
                     <span>Children Profiles</span>
                     <span class="badge-count" id="children-count-badge">0</span>
                 </a>
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel(event, 'blog'); return false;" class="sidebar-link" data-panel="blog">
                     <span class="sidebar-icon">📝</span>
                     <span>Blog</span>
                     <span class="badge-count">7</span>
                 </a>
-                <a href="#" onclick="switchPanel(event, 'clubs'); return false;" class="sidebar-link"
-                    data-panel="clubs">
-                    <span class="sidebar-icon">🎭</span>
-                    <span>Clubs</span>
-                </a>
-                <a href="#" onclick="switchPanel(event, 'events'); return false;" class="sidebar-link"
-                    data-panel="events">
-                    <span class="sidebar-icon">📅</span>
-                    <span>Events</span>
-                </a>
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel(event, 'reviews-ratings'); return false;" class="sidebar-link"
                     data-panel="reviews-ratings">
                     <span class="sidebar-icon">⭐</span>
                     <span>Reviews & Ratings</span>
-                    <span class="badge-count">45</span>
-                </a>
-                <hr class="my-4 border-gray-300">
-                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">⚙️</span>
-                    <span>Settings</span>
+                    <span id="reviews-badge-count" class="badge-count">0</span>
                 </a>
             </div>
         </div>
@@ -316,7 +475,7 @@
                                                 <div class="rating-wrapper"
                                                     style="display: flex; align-items: center; gap: 0.75rem;">
                                                     <div class="rating-tooltip-container">
-                                                        <div class="rating-stars"
+                                                        <div class="rating-stars rating-stars-trigger"
                                                             style="color: #f59e0b; font-size: 1.5rem;">★★★★★</div>
                                                         <div class="rating-tooltip">
                                                             <h4
@@ -411,35 +570,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Contact Information (Email & Phone) -->
-                                            <div class="profile-contact-info"
-                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📧</span>
-                                                    <div style="flex: 1; overflow: hidden;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Email</div>
-                                                        <div
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                            mulugeta.alemu@email.com</div>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📱</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Phone</div>
-                                                        <div
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            +251 911 234567</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             <div class="profile-quote"
                                                 style="background: linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(124,58,237,0.05) 100%); border-left: 4px solid #4f46e5; border-radius: 12px; padding: 1.25rem 1.5rem; margin-top: 1.5rem; font-style: italic; color: var(--text);">
                                                 <span>"Investing in my children's education for a brighter
@@ -530,7 +660,7 @@
                             </section>
 
                             <!-- Reviews & Ratings Section -->
-                            <section
+                            <section id="dashboard-reviews-section"
                                 style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                                 <div
                                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -544,208 +674,12 @@
                                     </button>
                                 </div>
 
-                                <!-- Reviews Grid -->
-                                <div style="display: grid; gap: 1.5rem;">
-                                    <!-- Review 1 -->
-                                    <div
-                                        style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #f59e0b;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                                <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                                    alt="Tutor"
-                                                    style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
-                                                <div>
-                                                    <h4
-                                                        style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                        Dr. Almaz Tesfaye</h4>
-                                                    <p
-                                                        style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
-                                                        Mathematics Tutor</p>
-                                                </div>
-                                            </div>
-                                            <div class="rating-tooltip-container">
-                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★★</div>
-                                                <div class="rating-tooltip">
-                                                    <div class="tooltip-header">Dr. Almaz's Rating</div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-tutor"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Child</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-child"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Responsiveness</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill responsiveness"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Payment Consistency</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill payment"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-overall">
-                                                        <div class="tooltip-overall-label">Overall</div>
-                                                        <div class="tooltip-overall-value">5.0 / 5.0</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">
-                                            "Excellent parent! Very supportive and actively involved in children's
-                                            education. Always ensures timely communication and payment. The children are
-                                            well-prepared and motivated."</p>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 weeks ago</span>
-                                    </div>
-
-                                    <!-- Review 2 -->
-                                    <div
-                                        style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #3b82f6;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                                <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
-                                                    alt="Tutor"
-                                                    style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
-                                                <div>
-                                                    <h4
-                                                        style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                        Yohannes Bekele</h4>
-                                                    <p
-                                                        style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
-                                                        Physics Tutor</p>
-                                                </div>
-                                            </div>
-                                            <div class="rating-tooltip-container">
-                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★★</div>
-                                                <div class="rating-tooltip">
-                                                    <div class="tooltip-header">Yohannes's Rating</div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-tutor"
-                                                                style="width: 90%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">4.5</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Child</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-child"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Responsiveness</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill responsiveness"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Payment Consistency</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill payment"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-overall">
-                                                        <div class="tooltip-overall-label">Overall</div>
-                                                        <div class="tooltip-overall-value">4.9 / 5.0</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">"Great
-                                            engagement from this parent. Shows genuine interest in the learning process
-                                            and provides a conducive environment for studies. Highly recommended!"</p>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">1 month ago</span>
-                                    </div>
-
-                                    <!-- Review 3 -->
-                                    <div
-                                        style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #10b981;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                                <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                                    alt="Tutor"
-                                                    style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
-                                                <div>
-                                                    <h4
-                                                        style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                        Hanna Solomon</h4>
-                                                    <p
-                                                        style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
-                                                        English Tutor</p>
-                                                </div>
-                                            </div>
-                                            <div class="rating-tooltip-container">
-                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★☆</div>
-                                                <div class="rating-tooltip">
-                                                    <div class="tooltip-header">Hanna's Rating</div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-tutor"
-                                                                style="width: 80%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">4.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Engagement with Child</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill engagement-child"
-                                                                style="width: 90%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">4.5</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Responsiveness</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill responsiveness"
-                                                                style="width: 80%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">4.0</div>
-                                                    </div>
-                                                    <div class="tooltip-rating-row">
-                                                        <div class="tooltip-rating-label">Payment Consistency</div>
-                                                        <div class="tooltip-progress-bar">
-                                                            <div class="tooltip-progress-fill payment"
-                                                                style="width: 100%;"></div>
-                                                        </div>
-                                                        <div class="tooltip-progress-value">5.0</div>
-                                                    </div>
-                                                    <div class="tooltip-overall">
-                                                        <div class="tooltip-overall-label">Overall</div>
-                                                        <div class="tooltip-overall-value">4.4 / 5.0</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">"Very
-                                            responsible parent who values education. Good communication and follows up
-                                            on children's progress regularly. A pleasure to work with!"</p>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 months ago</span>
+                                <!-- Reviews Grid - Dynamically populated from parent_reviews table -->
+                                <div id="dashboard-reviews-grid" style="display: grid; gap: 1.5rem;">
+                                    <!-- Loading placeholder - will be replaced by view-parent-reviews.js -->
+                                    <div id="dashboard-reviews-loading" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        <div style="width: 40px; height: 40px; border: 3px solid rgba(var(--button-bg-rgb), 0.2); border-top-color: var(--button-bg); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                        <p>Loading reviews...</p>
                                     </div>
                                 </div>
                             </section>
@@ -817,91 +751,6 @@
                             </div>
                         </div>
 
-                        <div id="clubs-panel" class="panel-content">
-                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Clubs & Activities</h2>
-                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Clubs created by this parent
-                            </p>
-
-                            <!-- Loading State -->
-                            <div id="clubs-loading" style="text-align: center; padding: 3rem;">
-                                <div
-                                    style="display: inline-block; width: 50px; height: 50px; border: 4px solid rgba(var(--button-bg-rgb), 0.2); border-top-color: var(--button-bg); border-radius: 50%; animation: spin 1s linear infinite;">
-                                </div>
-                                <p style="margin-top: 1rem; color: var(--text-secondary);">Loading clubs...</p>
-                            </div>
-
-                            <!-- Clubs Grid -->
-                            <div id="clubs-grid" style="display: none;"></div>
-
-                            <!-- Empty State -->
-                            <div id="clubs-empty-state"
-                                style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px dashed var(--border-color);">
-                                <div style="font-size: 4rem; margin-bottom: 1rem;">🎭</div>
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
-                                    No Clubs Yet</h3>
-                                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">This parent hasn't
-                                    created any clubs yet.</p>
-                            </div>
-
-                            <!-- Error State -->
-                            <div id="clubs-error-state"
-                                style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px solid #ef4444;">
-                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
-                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #ef4444;">
-                                    Unable to Load Clubs</h3>
-                                <p id="clubs-error-message"
-                                    style="color: var(--text-secondary); margin-bottom: 1.5rem;"></p>
-                                <button onclick="loadClubsData()"
-                                    style="padding: 0.75rem 1.5rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                    Try Again
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="events-panel" class="panel-content">
-                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Events</h2>
-                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Events and activities
-                                organized by this parent</p>
-
-                            <!-- Loading State -->
-                            <div id="events-loading" style="display: none; text-align: center; padding: 4rem 2rem;">
-                                <div
-                                    style="width: 60px; height: 60px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;">
-                                </div>
-                                <p style="color: var(--text-secondary); font-size: 1.125rem;">Loading events...</p>
-                            </div>
-
-                            <!-- Events Grid -->
-                            <div id="events-grid"
-                                style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
-                                <!-- Events will be populated here -->
-                            </div>
-
-                            <!-- Empty State -->
-                            <div id="events-empty-state" style="display: none; text-align: center; padding: 4rem 2rem;">
-                                <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
-                                    No Events Yet</h3>
-                                <p style="color: var(--text-secondary);">This parent hasn't created any events yet.</p>
-                            </div>
-
-                            <!-- Error State -->
-                            <div id="events-error-state" style="display: none; text-align: center; padding: 4rem 2rem;">
-                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
-                                    Error Loading Events</h3>
-                                <p id="events-error-message" style="color: var(--text-secondary); margin-bottom: 2rem;">
-                                    Something went wrong. Please try again later.</p>
-                                <button onclick="loadEventsData()"
-                                    style="padding: 0.75rem 1.5rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                    Try Again
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Reviews & Ratings Panel -->
                         <div id="reviews-ratings-panel" class="panel-content">
                             <div style="margin-bottom: 2rem;">
@@ -916,7 +765,7 @@
                             </div>
 
                             <!-- Rating Overview Card -->
-                            <section
+                            <section id="reviews-overview-card"
                                 style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 16px rgba(245,158,11,0.3); color: white;">
                                 <div
                                     style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
@@ -926,14 +775,14 @@
                                             Overall Parent Rating</div>
                                         <div
                                             style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                            <div style="font-size: 3.5rem; font-weight: 700; line-height: 1;">4.8</div>
+                                            <div id="overall-rating-value" style="font-size: 3.5rem; font-weight: 700; line-height: 1;">0.0</div>
                                             <div style="font-size: 1.25rem; opacity: 0.9;">/ 5.0</div>
                                         </div>
-                                        <div
+                                        <div id="overall-rating-stars"
                                             style="color: rgba(255,255,255,0.95); font-size: 1rem; margin-bottom: 1rem;">
-                                            ★★★★★
+                                            ☆☆☆☆☆
                                         </div>
-                                        <div style="font-size: 0.95rem; opacity: 0.9;">Based on 45 tutor reviews</div>
+                                        <div id="total-reviews-text" style="font-size: 0.95rem; opacity: 0.9;">Based on 0 tutor reviews</div>
                                     </div>
 
                                     <div style="flex: 2; min-width: 300px;">
@@ -944,12 +793,12 @@
                                                     Tutor</span>
                                                 <div
                                                     style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
-                                                    <div
-                                                        style="height: 100%; width: 96%; background: white; border-radius: 4px;">
+                                                    <div id="engagement-tutor-bar"
+                                                        style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.5s ease;">
                                                     </div>
                                                 </div>
-                                                <span
-                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.8</span>
+                                                <span id="engagement-tutor-value"
+                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
                                             </div>
                                             <!-- Engagement with Student -->
                                             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -957,36 +806,36 @@
                                                     Student</span>
                                                 <div
                                                     style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
-                                                    <div
-                                                        style="height: 100%; width: 94%; background: white; border-radius: 4px;">
+                                                    <div id="engagement-child-bar"
+                                                        style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.5s ease;">
                                                     </div>
                                                 </div>
-                                                <span
-                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.7</span>
+                                                <span id="engagement-child-value"
+                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
                                             </div>
                                             <!-- Responsiveness -->
                                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                                 <span style="font-size: 0.875rem; width: 160px;">Responsiveness</span>
                                                 <div
                                                     style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
-                                                    <div
-                                                        style="height: 100%; width: 98%; background: white; border-radius: 4px;">
+                                                    <div id="responsiveness-bar"
+                                                        style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.5s ease;">
                                                     </div>
                                                 </div>
-                                                <span
-                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.9</span>
+                                                <span id="responsiveness-value"
+                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
                                             </div>
                                             <!-- Payment History -->
                                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                                 <span style="font-size: 0.875rem; width: 160px;">Payment History</span>
                                                 <div
                                                     style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
-                                                    <div
-                                                        style="height: 100%; width: 100%; background: white; border-radius: 4px;">
+                                                    <div id="payment-bar"
+                                                        style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.5s ease;">
                                                     </div>
                                                 </div>
-                                                <span
-                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">5.0</span>
+                                                <span id="payment-value"
+                                                    style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1027,447 +876,22 @@
                                 </div>
                             </div>
 
-                            <!-- Reviews List -->
+                            <!-- Reviews List - Dynamically populated from parent_reviews table -->
                             <div id="reviews-list" style="display: grid; gap: 1.5rem;">
-                                <!-- Review 1 - Featured/Helpful -->
-                                <div class="review-card" data-rating="5"
-                                    style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #f59e0b;">
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                                        <div style="display: flex; gap: 1rem; align-items: center;">
-                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                                alt="Tutor"
-                                                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #f59e0b;">
-                                            <div>
-                                                <h4
-                                                    style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                    Dr. Almaz Tesfaye</h4>
-                                                <p
-                                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">
-                                                    Mathematics Tutor • 5 years experience</p>
-                                                <div class="rating-tooltip-container" style="display: inline-block;">
-                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
-                                                    <div class="rating-tooltip">
-                                                        <div class="tooltip-header">Dr. Almaz's Rating</div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Tutor
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-tutor"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Child
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-child"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Responsiveness</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill responsiveness"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Payment Consistency</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill payment"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-overall">
-                                                            <div class="tooltip-overall-label">Overall</div>
-                                                            <div class="tooltip-overall-value">5.0 / 5.0</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <div
-                                                style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
-                                                ⭐ Featured Review
-                                            </div>
-                                            <span style="font-size: 0.875rem; color: var(--text-muted);">2 weeks
-                                                ago</span>
-                                        </div>
-                                    </div>
-                                    <p
-                                        style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">
-                                        "Excellent parent! Very supportive and actively involved in children's
-                                        education. Always ensures timely communication and payment. The children are
-                                        well-prepared and motivated for each session. Working with this family has been
-                                        a truly rewarding experience. Highly recommended!"</p>
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
-                                        <div style="display: flex; gap: 1rem;">
-                                            <button onclick="markHelpful(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>👍</span> Helpful (23)
-                                            </button>
-                                            <button onclick="reportReview(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>🚩</span> Report
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Review 2 -->
-                                <div class="review-card" data-rating="5"
-                                    style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #3b82f6;">
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                                        <div style="display: flex; gap: 1rem; align-items: center;">
-                                            <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
-                                                alt="Tutor"
-                                                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
-                                            <div>
-                                                <h4
-                                                    style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                    Yohannes Bekele</h4>
-                                                <p
-                                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">
-                                                    Physics Tutor • 3 years experience</p>
-                                                <div class="rating-tooltip-container" style="display: inline-block;">
-                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
-                                                    <div class="rating-tooltip">
-                                                        <div class="tooltip-header">Yohannes's Rating</div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Tutor
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-tutor"
-                                                                    style="width: 90%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.5</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Child
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-child"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Responsiveness</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill responsiveness"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Payment Consistency</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill payment"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-overall">
-                                                            <div class="tooltip-overall-label">Overall</div>
-                                                            <div class="tooltip-overall-value">4.9 / 5.0</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">1 month ago</span>
-                                    </div>
-                                    <p
-                                        style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">
-                                        "Great engagement from this parent. Shows genuine interest in the learning
-                                        process and provides a conducive environment for studies. The children are
-                                        disciplined and respectful. Payment is always on time. Highly recommended!"</p>
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
-                                        <div style="display: flex; gap: 1rem;">
-                                            <button onclick="markHelpful(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>👍</span> Helpful (18)
-                                            </button>
-                                            <button onclick="reportReview(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>🚩</span> Report
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Review 3 -->
-                                <div class="review-card" data-rating="4"
-                                    style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #10b981;">
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                                        <div style="display: flex; gap: 1rem; align-items: center;">
-                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                                alt="Tutor"
-                                                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
-                                            <div>
-                                                <h4
-                                                    style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                    Hanna Solomon</h4>
-                                                <p
-                                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">
-                                                    English Tutor • 4 years experience</p>
-                                                <div class="rating-tooltip-container" style="display: inline-block;">
-                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★☆</div>
-                                                    <div class="rating-tooltip">
-                                                        <div class="tooltip-header">Hanna's Rating</div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Tutor
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-tutor"
-                                                                    style="width: 80%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Child
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-child"
-                                                                    style="width: 90%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.5</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Responsiveness</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill responsiveness"
-                                                                    style="width: 80%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Payment Consistency</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill payment"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-overall">
-                                                            <div class="tooltip-overall-label">Overall</div>
-                                                            <div class="tooltip-overall-value">4.4 / 5.0</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 months ago</span>
-                                    </div>
-                                    <p
-                                        style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">
-                                        "Very responsible parent who values education. Good communication and follows up
-                                        on children's progress regularly. A pleasure to work with! Would appreciate more
-                                        advance notice for schedule changes."</p>
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
-                                        <div style="display: flex; gap: 1rem;">
-                                            <button onclick="markHelpful(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>👍</span> Helpful (12)
-                                            </button>
-                                            <button onclick="reportReview(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>🚩</span> Report
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Review 4 -->
-                                <div class="review-card" data-rating="5"
-                                    style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #8b5cf6;">
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                                        <div style="display: flex; gap: 1rem; align-items: center;">
-                                            <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
-                                                alt="Tutor"
-                                                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
-                                            <div>
-                                                <h4
-                                                    style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                    Dawit Hagos</h4>
-                                                <p
-                                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">
-                                                    Chemistry Tutor • 6 years experience</p>
-                                                <div class="rating-tooltip-container" style="display: inline-block;">
-                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
-                                                    <div class="rating-tooltip">
-                                                        <div class="tooltip-header">Dawit's Rating</div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Tutor
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-tutor"
-                                                                    style="width: 96%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.8</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Child
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-child"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Responsiveness</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill responsiveness"
-                                                                    style="width: 96%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.8</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Payment Consistency</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill payment"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-overall">
-                                                            <div class="tooltip-overall-label">Overall</div>
-                                                            <div class="tooltip-overall-value">4.9 / 5.0</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">3 months ago</span>
-                                    </div>
-                                    <p
-                                        style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">
-                                        "Outstanding parent involvement! Creates an ideal learning environment for the
-                                        children. They are always prepared with necessary materials and homework
-                                        completed. Communication is excellent and professional. One of the best families
-                                        I've worked with."</p>
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
-                                        <div style="display: flex; gap: 1rem;">
-                                            <button onclick="markHelpful(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>👍</span> Helpful (15)
-                                            </button>
-                                            <button onclick="reportReview(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>🚩</span> Report
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Review 5 -->
-                                <div class="review-card" data-rating="5"
-                                    style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #f59e0b;">
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                                        <div style="display: flex; gap: 1rem; align-items: center;">
-                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                                alt="Tutor"
-                                                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
-                                            <div>
-                                                <h4
-                                                    style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                                    Meron Tadesse</h4>
-                                                <p
-                                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">
-                                                    Biology Tutor • 2 years experience</p>
-                                                <div class="rating-tooltip-container" style="display: inline-block;">
-                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
-                                                    <div class="rating-tooltip">
-                                                        <div class="tooltip-header">Meron's Rating</div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Tutor
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-tutor"
-                                                                    style="width: 94%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.7</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Engagement with Child
-                                                            </div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill engagement-child"
-                                                                    style="width: 98%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.9</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Responsiveness</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill responsiveness"
-                                                                    style="width: 92%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">4.6</div>
-                                                        </div>
-                                                        <div class="tooltip-rating-row">
-                                                            <div class="tooltip-rating-label">Payment Consistency</div>
-                                                            <div class="tooltip-progress-bar">
-                                                                <div class="tooltip-progress-fill payment"
-                                                                    style="width: 100%;"></div>
-                                                            </div>
-                                                            <div class="tooltip-progress-value">5.0</div>
-                                                        </div>
-                                                        <div class="tooltip-overall">
-                                                            <div class="tooltip-overall-label">Overall</div>
-                                                            <div class="tooltip-overall-value">4.8 / 5.0</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">4 months ago</span>
-                                    </div>
-                                    <p
-                                        style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">
-                                        "Working with this parent has been wonderful. Very understanding and
-                                        appreciative of tutoring efforts. Children are motivated and show genuine
-                                        interest in learning. Payment is prompt and communication is clear. Definitely
-                                        recommend!"</p>
-                                    <div
-                                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
-                                        <div style="display: flex; gap: 1rem;">
-                                            <button onclick="markHelpful(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>👍</span> Helpful (9)
-                                            </button>
-                                            <button onclick="reportReview(this)"
-                                                style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
-                                                <span>🚩</span> Report
-                                            </button>
-                                        </div>
-                                    </div>
+                                <!-- Loading placeholder - will be replaced by view-parent-reviews.js -->
+                                <div id="reviews-list-loading" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                                    <div style="width: 50px; height: 50px; border: 4px solid rgba(var(--button-bg-rgb), 0.2); border-top-color: var(--button-bg); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                    <p>Loading reviews...</p>
                                 </div>
                             </div>
 
-                            <!-- Load More Button -->
-                            <div style="text-align: center; margin-top: 2rem;">
+                            <!-- Load More Button - Updated dynamically -->
+                            <div id="load-more-container" style="text-align: center; margin-top: 2rem; display: none;">
                                 <button onclick="loadMoreReviews()"
                                     style="padding: 0.875rem 2rem; border-radius: 12px; background: var(--button-bg); color: white; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);">
                                     Load More Reviews
                                 </button>
-                                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">Showing 5 of
-                                    45 reviews</p>
+                                <p id="reviews-count-text" style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">Showing 0 of 0 reviews</p>
                             </div>
                         </div>
                     </div>
@@ -1476,6 +900,69 @@
                 <!-- Right Sidebar Widgets (Persistent across all panels) -->
                 <div class="admin-right-widgets"
                     style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+
+                    <!-- Ad Widget -->
+                    <div class="admin-widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        </div>
+                        <div class="ad-content" id="ad-container-parent" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="ad-message-container-parent" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message-parent active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                </div>
+                                <div class="ad-message-parent" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                </div>
+                                <div class="ad-message-parent" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                </div>
+                                <div class="ad-message-parent" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                </div>
+                                <div class="ad-message-parent" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                </div>
+                            </div>
+                            <div id="ad-ticker-parent" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content-parent" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                </div>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes tickerScrollParent { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+                            #ad-ticker-content-parent { animation: tickerScrollParent 20s linear infinite; }
+                            .ad-message-parent { visibility: hidden; }
+                            .ad-message-parent.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
+                            .ad-message-parent.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
+                        </style>
+                        <script>
+                            (function() {
+                                const messages = document.querySelectorAll('#ad-message-container-parent .ad-message-parent');
+                                let currentIndex = 0;
+                                function rotateMessages() {
+                                    const prevIndex = currentIndex;
+                                    currentIndex = (currentIndex + 1) % messages.length;
+                                    messages[prevIndex].classList.remove('active');
+                                    messages[prevIndex].classList.add('fade-out');
+                                    messages[currentIndex].classList.add('active');
+                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
+                                }
+                                setInterval(rotateMessages, 10000);
+                            })();
+                        </script>
+                    </div>
 
                     <!-- Payment Punctuality Widget -->
                     <div class="admin-widget-card"
@@ -1741,12 +1228,14 @@
     <!-- Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/nav.js"></script>
     <script src="../js/root/profile-system.js"></script>
     <script src="../js/root/theme.js"></script>
     <!-- Common Modal Loader for add-role, logout, coming-soon modals -->
     <script src="../modals/common-modals/common-modal-loader.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
     <!-- View Parent Profile Loaders -->
     <script src="../js/view-parent/view-parent-reviews.js"></script>
@@ -1848,30 +1337,6 @@
                     loadBlogPosts();
                 } else {
                     console.log('Blog posts already loaded, skipping...');
-                }
-            }
-
-            // Load clubs when switching to clubs panel
-            if (panelName === 'clubs') {
-                const grid = document.getElementById('clubs-grid');
-                // Only load if not already loaded (check if there are no child elements)
-                if (grid && grid.children.length === 0) {
-                    console.log('Clubs panel activated - loading clubs...');
-                    loadClubsData();
-                } else {
-                    console.log('Clubs already loaded, skipping...');
-                }
-            }
-
-            // Load events when switching to events panel
-            if (panelName === 'events') {
-                const grid = document.getElementById('events-grid');
-                // Only load if not already loaded (check if there are no child elements)
-                if (grid && grid.children.length === 0) {
-                    console.log('Events panel activated - loading events...');
-                    loadEventsData();
-                } else {
-                    console.log('Events already loaded, skipping...');
                 }
             }
 
@@ -2260,8 +1725,9 @@
             document.getElementById('blog-error-state').style.display = 'none';
 
             try {
-                // Fetch blog posts from API
-                const apiUrl = `https://api.astegni.com/api/blog/posts/author/${parentId}?status=published`;
+                // Fetch blog posts from API - uses profile_id and role='parent'
+                const baseUrl = window.API_BASE_URL || 'http://localhost:8000';
+                const apiUrl = `${baseUrl}/api/blogs/by-profile/${parentId}?role=parent`;
                 console.log('Fetching from:', apiUrl);
                 const response = await fetch(apiUrl);
                 console.log('Response status:', response.status);
@@ -2347,14 +1813,17 @@
                 ? post.description.substring(0, maxDescriptionLength) + '...'
                 : post.description || 'No description available';
 
-            // Thumbnail with fallback
-            const thumbnailUrl = post.thumbnail_url || 'https://via.placeholder.com/400x200?text=Blog+Post';
+            // Blog picture with fallback (database column is blog_picture)
+            const blogPictureUrl = post.blog_picture || 'https://via.placeholder.com/400x200?text=Blog+Post';
+
+            // Reading time
+            const readingTime = post.reading_time || 5;
 
             card.innerHTML = `
-                <!-- Thumbnail -->
+                <!-- Blog Picture -->
                 <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
                     <img
-                        src="${thumbnailUrl}"
+                        src="${blogPictureUrl}"
                         alt="${post.title}"
                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
                         onerror="this.src='https://via.placeholder.com/400x200?text=Blog+Post'"
@@ -2393,12 +1862,16 @@
                         <!-- Stats -->
                         <div style="display: flex; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
                             <span style="display: flex; align-items: center; gap: 0.25rem;">
-                                <span>👁️</span>
-                                <span>${post.views || 0}</span>
+                                <span>⏱️</span>
+                                <span>${readingTime} min</span>
                             </span>
                             <span style="display: flex; align-items: center; gap: 0.25rem;">
                                 <span>❤️</span>
                                 <span>${post.likes || 0}</span>
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span>💬</span>
+                                <span>${Array.isArray(post.comments) ? post.comments.length : 0}</span>
                             </span>
                         </div>
                     </div>
@@ -2434,483 +1907,6 @@
             // TODO: Implement navigation to blog post detail page
             // Example: window.location.href = `/blog/post?id=${postId}`;
             alert(`Blog post viewing functionality coming soon! Post ID: ${postId}`);
-        }
-
-        // ============================================
-        // CLUBS PANEL FUNCTIONS
-        // ============================================
-
-        // Load clubs data from API
-        async function loadClubsData() {
-            const parentId = new URLSearchParams(window.location.search).get('id');
-
-            if (!parentId) {
-                console.error('No parent ID found in URL');
-                return;
-            }
-
-            console.log('Loading clubs for parent ID:', parentId);
-
-            // Show loading state, hide other states
-            document.getElementById('clubs-loading').style.display = 'block';
-            document.getElementById('clubs-grid').style.display = 'none';
-            document.getElementById('clubs-empty-state').style.display = 'none';
-            document.getElementById('clubs-error-state').style.display = 'none';
-
-            try {
-                // Fetch clubs from API
-                const apiUrl = `https://api.astegni.com/api/clubs/by-parent/${parentId}`;
-                console.log('Fetching from:', apiUrl);
-                const response = await fetch(apiUrl);
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch clubs: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Clubs data received:', data);
-                console.log('Number of clubs:', data.clubs ? data.clubs.length : 0);
-
-                // Hide loading state
-                document.getElementById('clubs-loading').style.display = 'none';
-
-                // Check if there are any clubs
-                if (!data.clubs || data.clubs.length === 0) {
-                    console.log('No clubs found - showing empty state');
-                    // Show empty state
-                    document.getElementById('clubs-empty-state').style.display = 'block';
-                } else {
-                    console.log('Clubs found - displaying club cards');
-                    // Display clubs
-                    displayClubs(data.clubs);
-                    document.getElementById('clubs-grid').style.display = 'grid';
-                }
-
-            } catch (error) {
-                console.error('Error loading clubs:', error);
-
-                // Hide loading state
-                document.getElementById('clubs-loading').style.display = 'none';
-
-                // Show error state
-                document.getElementById('clubs-error-state').style.display = 'block';
-                document.getElementById('clubs-error-message').textContent =
-                    error.message || 'Unable to load clubs. Please try again later.';
-            }
-        }
-
-        // Display clubs in the grid
-        function displayClubs(clubs) {
-            const grid = document.getElementById('clubs-grid');
-            grid.innerHTML = ''; // Clear existing content
-
-            clubs.forEach(club => {
-                const clubCard = createClubCard(club);
-                grid.appendChild(clubCard);
-            });
-        }
-
-        // Create a club card element
-        function createClubCard(club) {
-            const card = document.createElement('div');
-            card.className = 'club-card';
-            card.style.cssText = `
-                background: var(--card-bg);
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-                cursor: pointer;
-                display: flex;
-                flex-direction: column;
-            `;
-
-            // Format date
-            const createdDate = club.created_at
-                ? new Date(club.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                })
-                : 'N/A';
-
-            // Truncate description
-            const maxDescriptionLength = 120;
-            const description = club.description && club.description.length > maxDescriptionLength
-                ? club.description.substring(0, maxDescriptionLength) + '...'
-                : club.description || 'No description available';
-
-            // Club picture with fallback
-            const clubPictureUrl = club.club_picture || 'https://via.placeholder.com/400x200?text=Club';
-
-            // Membership type badge color
-            const membershipColors = {
-                'open': '#10b981',
-                'approval': '#f59e0b',
-                'invite': '#6366f1',
-                'closed': '#ef4444'
-            };
-            const membershipColor = membershipColors[club.membership_type] || '#6b7280';
-
-            // Status badge
-            const statusBadge = club.status === 'active'
-                ? '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Active</span>'
-                : '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #6b7280; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Inactive</span>';
-
-            card.innerHTML = `
-                <!-- Club Picture -->
-                <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
-                    <img
-                        src="${clubPictureUrl}"
-                        alt="${club.title}"
-                        style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
-                        onerror="this.src='https://via.placeholder.com/400x200?text=Club'"
-                    >
-                </div>
-
-                <!-- Content -->
-                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                    <!-- Category Badge and Status -->
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                        ${club.category ? `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-color); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                                ${club.category}
-                            </span>
-                        ` : ''}
-                        ${statusBadge}
-                    </div>
-
-                    <!-- Title -->
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--heading); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        ${club.title}
-                    </h3>
-
-                    <!-- Description -->
-                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem; flex: 1; line-height: 1.6;">
-                        ${description}
-                    </p>
-
-                    <!-- Membership Info -->
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${membershipColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">
-                            ${club.membership_type}
-                        </span>
-                        ${club.is_paid ? `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                ${club.membership_fee} ETB
-                            </span>
-                        ` : `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                Free
-                            </span>
-                        `}
-                    </div>
-
-                    <!-- Footer -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                        <!-- Date -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <span>📅</span>
-                            <span>${createdDate}</span>
-                        </div>
-
-                        <!-- Member Stats -->
-                        <div style="display: flex; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <span style="display: flex; align-items: center; gap: 0.25rem;">
-                                <span>👥</span>
-                                <span>${club.member_count || 0}/${club.member_limit}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Add hover effect
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-8px)';
-                card.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
-                const img = card.querySelector('img');
-                if (img) img.style.transform = 'scale(1.1)';
-            });
-
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                const img = card.querySelector('img');
-                if (img) img.style.transform = 'scale(1)';
-            });
-
-            // Add click handler to view club
-            card.addEventListener('click', () => {
-                viewClub(club.id);
-            });
-
-            return card;
-        }
-
-        // View club (placeholder - implement based on your club viewing page)
-        function viewClub(clubId) {
-            console.log('Viewing club:', clubId);
-            // TODO: Implement navigation to club detail page
-            alert(`Club viewing functionality coming soon! Club ID: ${clubId}`);
-        }
-
-        // ============================================
-        // EVENTS PANEL FUNCTIONS
-        // ============================================
-
-        async function loadEventsData() {
-            const parentId = new URLSearchParams(window.location.search).get('id');
-
-            if (!parentId) {
-                console.error('No parent ID found in URL');
-                return;
-            }
-
-            console.log('Loading events for parent ID:', parentId);
-
-            // Show loading state, hide other states
-            document.getElementById('events-loading').style.display = 'block';
-            document.getElementById('events-grid').style.display = 'none';
-            document.getElementById('events-empty-state').style.display = 'none';
-            document.getElementById('events-error-state').style.display = 'none';
-
-            try {
-                // Fetch events from API
-                const apiUrl = `https://api.astegni.com/api/events/by-parent/${parentId}`;
-                console.log('Fetching from:', apiUrl);
-                const response = await fetch(apiUrl);
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch events: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Events data received:', data);
-                console.log('Number of events:', data.events ? data.events.length : 0);
-
-                // Hide loading state
-                document.getElementById('events-loading').style.display = 'none';
-
-                // Check if there are any events
-                if (!data.events || data.events.length === 0) {
-                    console.log('No events found - showing empty state');
-                    // Show empty state
-                    document.getElementById('events-empty-state').style.display = 'block';
-                } else {
-                    console.log('Events found - displaying event cards');
-                    // Display events
-                    displayEvents(data.events);
-                    document.getElementById('events-grid').style.display = 'grid';
-                }
-
-            } catch (error) {
-                console.error('Error loading events:', error);
-
-                // Hide loading state
-                document.getElementById('events-loading').style.display = 'none';
-
-                // Show error state
-                document.getElementById('events-error-state').style.display = 'block';
-                document.getElementById('events-error-message').textContent =
-                    error.message || 'Unable to load events. Please try again later.';
-            }
-        }
-
-        // Display events in the grid
-        function displayEvents(events) {
-            const grid = document.getElementById('events-grid');
-            grid.innerHTML = ''; // Clear existing content
-
-            events.forEach(event => {
-                const eventCard = createEventCard(event);
-                grid.appendChild(eventCard);
-            });
-        }
-
-        // Create an event card element
-        function createEventCard(event) {
-            const card = document.createElement('div');
-            card.className = 'event-card';
-            card.style.cssText = `
-                background: var(--card-bg);
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-                cursor: pointer;
-                display: flex;
-                flex-direction: column;
-            `;
-
-            // Format dates
-            const startDate = event.start_datetime
-                ? new Date(event.start_datetime).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-                : 'TBA';
-
-            const endDate = event.end_datetime
-                ? new Date(event.end_datetime).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-                : 'TBA';
-
-            // Truncate description
-            const maxDescriptionLength = 120;
-            const description = event.description && event.description.length > maxDescriptionLength
-                ? event.description.substring(0, maxDescriptionLength) + '...'
-                : event.description || 'No description available';
-
-            // Event picture with fallback
-            const eventPictureUrl = event.event_picture || 'https://via.placeholder.com/400x200?text=Event';
-
-            // Status badge
-            const statusColors = {
-                'upcoming': '#3b82f6',
-                'ongoing': '#10b981',
-                'completed': '#6b7280',
-                'cancelled': '#ef4444'
-            };
-            const statusColor = statusColors[event.status] || '#6b7280';
-            const statusBadge = `<span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${statusColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">${event.status || 'Upcoming'}</span>`;
-
-            // Online/In-person badge
-            const locationBadge = event.is_online
-                ? '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #8b5cf6; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🌐 Online</span>'
-                : '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">📍 In-person</span>';
-
-            // Available seats calculation
-            const seatsLeft = event.available_seats - (event.registered_count || 0);
-            const seatsColor = seatsLeft > 5 ? '#10b981' : seatsLeft > 0 ? '#f59e0b' : '#ef4444';
-
-            card.innerHTML = `
-                <!-- Event Picture -->
-                <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
-                    <img
-                        src="${eventPictureUrl}"
-                        alt="${event.title}"
-                        style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
-                        onerror="this.src='https://via.placeholder.com/400x200?text=Event'"
-                    >
-                </div>
-
-                <!-- Content -->
-                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                    <!-- Type Badge and Status -->
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                        ${event.type ? `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-color); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                                ${event.type}
-                            </span>
-                        ` : ''}
-                        ${statusBadge}
-                        ${locationBadge}
-                    </div>
-
-                    <!-- Title -->
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--heading); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        ${event.title}
-                    </h3>
-
-                    <!-- Description -->
-                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem; flex: 1; line-height: 1.6;">
-                        ${description}
-                    </p>
-
-                    <!-- Event Details -->
-                    <div style="margin-bottom: 1rem;">
-                        <!-- Date and Time -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
-                            <span>📅</span>
-                            <span><strong>Start:</strong> ${startDate}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
-                            <span>⏰</span>
-                            <span><strong>End:</strong> ${endDate}</span>
-                        </div>
-                        <!-- Location -->
-                        ${!event.is_online ? `
-                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
-                                <span>📍</span>
-                                <span>${event.location || 'Location TBA'}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    <!-- Price and Seats -->
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                        ${event.price && event.price > 0 ? `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                ${event.price} ETB
-                            </span>
-                        ` : `
-                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                Free
-                            </span>
-                        `}
-                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${seatsColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                            ${seatsLeft} seats left
-                        </span>
-                    </div>
-
-                    <!-- Footer -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                        <!-- Registered Count -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <span>👥</span>
-                            <span>${event.registered_count || 0}/${event.available_seats} registered</span>
-                        </div>
-
-                        <!-- Subjects/Grade Levels -->
-                        ${event.subjects && event.subjects.length > 0 ? `
-                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                                <span>📚</span>
-                                <span>${event.subjects.slice(0, 2).join(', ')}${event.subjects.length > 2 ? '...' : ''}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-
-            // Add hover effect
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-8px)';
-                card.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
-                const img = card.querySelector('img');
-                if (img) img.style.transform = 'scale(1.1)';
-            });
-
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                const img = card.querySelector('img');
-                if (img) img.style.transform = 'scale(1)';
-            });
-
-            // Add click handler to view event
-            card.addEventListener('click', () => {
-                viewEvent(event.id);
-            });
-
-            return card;
-        }
-
-        // View event (placeholder - implement based on your event viewing page)
-        function viewEvent(eventId) {
-            console.log('Viewing event:', eventId);
-            // TODO: Implement navigation to event detail page
-            alert(`Event viewing functionality coming soon! Event ID: ${eventId}`);
         }
     </script>
 
@@ -3013,50 +2009,38 @@
         })();
     </script>
 
-    <!-- Make Reviewer Names Clickable in Reviews Section -->
+    <!-- Reviewer Names Clickable Handler - For dynamically loaded reviews -->
     <script>
-        (function makeReviewerNamesClickable() {
-            // Sample tutor data - in production this would come from the database
-            const tutorData = {
-                'Dr. Almaz Tesfaye': { role: 'tutor', id: 1 },
-                'Yohannes Bekele': { role: 'tutor', id: 2 },
-                'Hanna Solomon': { role: 'tutor', id: 3 },
-                'Dawit Hagos': { role: 'tutor', id: 4 }
-            };
-
-            // Find all reviewer names in review cards and make them clickable
-            document.querySelectorAll('.review-card h4').forEach(nameElement => {
-                const name = nameElement.textContent.trim();
-                const tutorInfo = tutorData[name];
-
-                if (tutorInfo) {
-                    const profileUrl = `/view-profiles/view-tutor.html?id=${tutorInfo.id}`;
-
-                    // Wrap name in clickable link
-                    nameElement.innerHTML = `<a href="${profileUrl}" style="color: inherit; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'">${name}</a>`;
-
-                    // Also make the avatar clickable
-                    const avatarImg = nameElement.closest('.review-card').querySelector('img');
-                    if (avatarImg) {
-                        const avatarLink = document.createElement('a');
-                        avatarLink.href = profileUrl;
-                        avatarLink.style.textDecoration = 'none';
-                        avatarImg.parentNode.insertBefore(avatarLink, avatarImg);
-                        avatarLink.appendChild(avatarImg);
-
-                        // Add hover effect to avatar
-                        avatarImg.style.cursor = 'pointer';
-                        avatarImg.style.transition = 'all 0.3s';
-                        avatarImg.addEventListener('mouseover', () => {
-                            avatarImg.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.3)';
-                        });
-                        avatarImg.addEventListener('mouseout', () => {
-                            avatarImg.style.boxShadow = 'none';
-                        });
-                    }
-                }
+        // This function will be called after reviews are loaded dynamically
+        // The review cards now include reviewer_id from the API, so links are generated in JS
+        window.makeReviewerNamesClickable = function() {
+            // Find all reviewer names in review cards and add hover effects
+            document.querySelectorAll('.review-card h4 a').forEach(link => {
+                link.addEventListener('mouseover', () => {
+                    link.style.color = '#3b82f6';
+                });
+                link.addEventListener('mouseout', () => {
+                    link.style.color = 'var(--heading)';
+                });
             });
-        })();
+
+            // Add hover effects to avatars
+            document.querySelectorAll('.review-card img').forEach(avatarImg => {
+                avatarImg.style.cursor = 'pointer';
+                avatarImg.style.transition = 'all 0.3s';
+                avatarImg.addEventListener('mouseover', () => {
+                    avatarImg.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.3)';
+                });
+                avatarImg.addEventListener('mouseout', () => {
+                    avatarImg.style.boxShadow = 'none';
+                });
+            });
+        };
+
+        // Call on page load and after dynamic content loads
+        window.addEventListener('parentDataLoaded', () => {
+            setTimeout(makeReviewerNamesClickable, 500);
+        });
     </script>
 
     <!-- Chat Modal Container -->
@@ -3082,6 +2066,9 @@
                 .catch(err => console.log('Chat modal will load on demand:', err.message));
         })();
     </script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 </body>
 
 </html>

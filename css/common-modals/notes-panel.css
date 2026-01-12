@@ -1,0 +1,567 @@
+/* ============================================
+   NOTES PANEL STYLES
+   Dashboard panel for viewing all notes in profile pages
+   ============================================ */
+
+/* Panel Header */
+.notes-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.notes-panel-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notes-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text, #333);
+    margin: 0;
+}
+
+.notes-panel-title i {
+    color: var(--primary, #F59E0B);
+}
+
+.notes-panel-subtitle {
+    color: var(--text-muted, #888);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.notes-panel-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.notes-panel-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notes-panel-btn-primary {
+    background: linear-gradient(135deg, var(--primary, #F59E0B), var(--primary-dark, #D97706));
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.notes-panel-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+/* Stats Row */
+.notes-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.notes-stat-card {
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border, rgba(0,0,0,0.1));
+    transition: all 0.3s ease;
+}
+
+.notes-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+}
+
+.notes-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--primary, #F59E0B);
+}
+
+.notes-stat-icon.words {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+    color: #3b82f6;
+}
+
+.notes-stat-icon.courses {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    color: #10b981;
+}
+
+.notes-stat-icon.recent {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+    color: #8b5cf6;
+}
+
+.notes-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text, #333);
+}
+
+.notes-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+}
+
+/* Controls Row */
+.notes-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.notes-filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.notes-filter-btn {
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 2px solid var(--border, rgba(0,0,0,0.1));
+    background: var(--card-bg, #fff);
+    color: var(--text, #333);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.notes-filter-btn:hover {
+    border-color: var(--primary, #F59E0B);
+    color: var(--primary, #F59E0B);
+}
+
+.notes-filter-btn.active {
+    background: linear-gradient(135deg, var(--primary, #F59E0B), var(--primary-dark, #D97706));
+    color: white;
+    border-color: var(--primary, #F59E0B);
+}
+
+.notes-search-sort {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.notes-search-box {
+    position: relative;
+    min-width: 250px;
+}
+
+.notes-search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted, #888);
+}
+
+.notes-search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: 2px solid var(--border, rgba(0,0,0,0.1));
+    border-radius: 50px;
+    font-size: 0.95rem;
+    background: var(--card-bg, #fff);
+    color: var(--text, #333);
+    transition: all 0.3s ease;
+}
+
+.notes-search-box input:focus {
+    outline: none;
+    border-color: var(--primary, #F59E0B);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.notes-sort-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border, rgba(0,0,0,0.1));
+    border-radius: 50px;
+    background: var(--card-bg, #fff);
+    color: var(--text, #333);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notes-sort-select:focus {
+    outline: none;
+    border-color: var(--primary, #F59E0B);
+}
+
+/* Notes Grid */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Note Card */
+.notes-card {
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px solid var(--border, rgba(0,0,0,0.1));
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+    position: relative;
+    overflow: hidden;
+}
+
+.notes-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.15);
+    border-color: var(--primary, #F59E0B);
+}
+
+.notes-card.has-background {
+    background-size: cover;
+    background-position: center;
+    color: white;
+}
+
+.notes-card.has-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+    z-index: 0;
+}
+
+.notes-card.has-background > * {
+    position: relative;
+    z-index: 1;
+}
+
+.notes-card.has-background .notes-card-title,
+.notes-card.has-background .notes-card-date,
+.notes-card.has-background .notes-card-meta-item,
+.notes-card.has-background .notes-card-preview {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* New Note Card */
+.notes-new-card {
+    border: 3px dashed rgba(245, 158, 11, 0.4);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.03), rgba(217, 119, 6, 0.03));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notes-new-card:hover {
+    border-color: var(--primary, #F59E0B);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08));
+}
+
+.notes-new-card-content {
+    text-align: center;
+    color: var(--text-muted, #888);
+}
+
+.notes-new-card-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary, #F59E0B), var(--primary-dark, #D97706));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.notes-new-card:hover .notes-new-card-icon {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.notes-new-card-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: var(--text, #333);
+}
+
+.notes-new-card-content p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Card Header */
+.notes-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.notes-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text, #333);
+    margin: 0 0 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notes-card-date {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.notes-card-favorite {
+    color: #FFD700;
+    font-size: 1rem;
+}
+
+/* Card Meta */
+.notes-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.notes-card-meta-item {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Card Preview */
+.notes-card-preview {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-muted, #888);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+/* Card Tags */
+.notes-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.notes-card-tag {
+    padding: 4px 10px;
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--primary, #F59E0B);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.notes-card.has-background .notes-card-tag {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Media Indicator */
+.notes-card-media-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+}
+
+.notes-card-media-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.notes-card-media-badge.video {
+    background: rgba(59, 130, 246, 0.9);
+}
+
+/* Empty State */
+.notes-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted, #888);
+}
+
+.notes-empty-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--primary, #F59E0B);
+}
+
+.notes-empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text, #333);
+    margin: 0 0 8px;
+}
+
+.notes-empty-state p {
+    margin: 0 0 24px;
+    font-size: 1rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .notes-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .notes-panel-title {
+        font-size: 1.5rem;
+    }
+
+    .notes-controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .notes-filter-buttons {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .notes-search-sort {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .notes-search-box {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .notes-sort-select {
+        width: 100%;
+    }
+
+    .notes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notes-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .notes-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .notes-stat-card {
+        padding: 16px;
+    }
+
+    .notes-filter-btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================
+   DARK THEME SUPPORT
+   ============================================ */
+
+[data-theme="dark"] .notes-card {
+    background: var(--card-bg, #2A2A2A);
+}
+
+[data-theme="dark"] .notes-stat-card {
+    background: var(--card-bg, #2A2A2A);
+}
+
+[data-theme="dark"] .notes-search-box input,
+[data-theme="dark"] .notes-sort-select {
+    background: var(--card-bg, #2A2A2A);
+}
+
+[data-theme="dark"] .notes-filter-btn {
+    background: var(--card-bg, #2A2A2A);
+}
+
+[data-theme="dark"] .notes-new-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(217, 119, 6, 0.05));
+}

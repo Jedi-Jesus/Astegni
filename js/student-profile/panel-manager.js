@@ -7,8 +7,19 @@
  * Switch between different panels in the student profile dashboard
  * @param {string} panelName - The name of the panel to switch to (e.g., 'dashboard', 'my-courses')
  */
-function switchPanel(panelName) {
+async function switchPanel(panelName) {
     console.log(`🔄 [Student Profile] Switching to panel: ${panelName}`);
+
+    // ✅ 2FA PRE-VERIFICATION - Uses user-configurable protected panels
+    // Check if ProtectedAPI is available and use dynamic panel protection
+    if (typeof ProtectedAPI !== 'undefined' && ProtectedAPI.requirePanelVerification) {
+        const verified = await ProtectedAPI.requirePanelVerification(panelName, 'student');
+
+        if (!verified) {
+            console.log('❌ 2FA verification failed or cancelled');
+            return; // Don't switch panel
+        }
+    }
 
     // Hide all panels
     const allPanels = document.querySelectorAll('.panel-content');

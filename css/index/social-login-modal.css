@@ -1,0 +1,543 @@
+/* ============================================
+   SOCIAL LOGIN MODAL STYLES
+   ============================================ */
+
+/* Modal Container */
+#social-login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+#social-login-modal.active,
+#social-login-modal.show {
+    display: flex;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+/* Modal Content */
+#social-login-modal .modal-content.enhanced {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    background: var(--modal-bg, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#social-login-modal.active .modal-content.enhanced,
+#social-login-modal.show .modal-content.enhanced {
+    transform: scale(1);
+    opacity: 1;
+}
+
+[data-theme="dark"] #social-login-modal .modal-content.enhanced {
+    background: #1f2937;
+}
+
+/* Header Icon */
+.social-login-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--primary-color, #f59e0b), var(--primary-hover, #d97706));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+}
+
+.social-login-icon svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+/* Social Platforms Grid */
+.social-platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 0 2rem 1.5rem;
+}
+
+/* Social Platform Button */
+.social-platform-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-platform-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.social-platform-btn svg {
+    width: 32px;
+    height: 32px;
+    transition: transform 0.3s ease;
+}
+
+.social-platform-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.social-platform-btn span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+}
+
+/* Platform-specific colors */
+.social-platform-btn.tiktok {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+.social-platform-btn.tiktok:hover {
+    border-color: #000000;
+    background: rgba(0, 0, 0, 0.05);
+}
+.social-platform-btn.tiktok svg {
+    color: #000000;
+}
+
+.social-platform-btn.instagram {
+    border-color: rgba(225, 48, 108, 0.2);
+}
+.social-platform-btn.instagram:hover {
+    border-color: #E1306C;
+    background: linear-gradient(45deg, rgba(245, 96, 64, 0.1), rgba(225, 48, 108, 0.1), rgba(131, 58, 180, 0.1));
+}
+.social-platform-btn.instagram svg {
+    color: #E1306C;
+}
+
+.social-platform-btn.snapchat {
+    border-color: rgba(255, 252, 0, 0.3);
+}
+.social-platform-btn.snapchat:hover {
+    border-color: #FFFC00;
+    background: rgba(255, 252, 0, 0.1);
+}
+.social-platform-btn.snapchat svg {
+    color: #FFFC00;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+}
+
+.social-platform-btn.facebook {
+    border-color: rgba(24, 119, 242, 0.2);
+}
+.social-platform-btn.facebook:hover {
+    border-color: #1877F2;
+    background: rgba(24, 119, 242, 0.1);
+}
+.social-platform-btn.facebook svg {
+    color: #1877F2;
+}
+
+.social-platform-btn.telegram {
+    border-color: rgba(0, 136, 204, 0.2);
+}
+.social-platform-btn.telegram:hover {
+    border-color: #0088CC;
+    background: rgba(0, 136, 204, 0.1);
+}
+.social-platform-btn.telegram svg {
+    color: #0088CC;
+}
+
+.social-platform-btn.whatsapp {
+    border-color: rgba(37, 211, 102, 0.2);
+}
+.social-platform-btn.whatsapp:hover {
+    border-color: #25D366;
+    background: rgba(37, 211, 102, 0.1);
+}
+.social-platform-btn.whatsapp svg {
+    color: #25D366;
+}
+
+.social-platform-btn.linkedin {
+    border-color: rgba(0, 119, 181, 0.2);
+}
+.social-platform-btn.linkedin:hover {
+    border-color: #0077B5;
+    background: rgba(0, 119, 181, 0.1);
+}
+.social-platform-btn.linkedin svg {
+    color: #0077B5;
+}
+
+.social-platform-btn.twitter {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+.social-platform-btn.twitter:hover {
+    border-color: #000000;
+    background: rgba(0, 0, 0, 0.05);
+}
+.social-platform-btn.twitter svg {
+    color: #000000;
+}
+
+/* Footer text */
+.social-login-footer {
+    text-align: center;
+    padding: 1rem 2rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Dark mode */
+[data-theme="dark"] .social-platform-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .social-platform-btn span {
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .social-platform-btn.tiktok svg,
+[data-theme="dark"] .social-platform-btn.twitter svg {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .social-platform-btn.snapchat svg {
+    color: #FFFC00;
+}
+
+[data-theme="dark"] .social-login-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #social-login-modal {
+        padding: 0.75rem;
+    }
+
+    #social-login-modal .modal-content.enhanced {
+        max-width: 100%;
+        border-radius: 14px;
+    }
+
+    .social-login-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .social-login-icon svg {
+        width: 35px;
+        height: 35px;
+    }
+
+    .social-platforms-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.875rem;
+        padding: 0 1.75rem 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #social-login-modal {
+        padding: 0.5rem;
+    }
+
+    #social-login-modal .modal-content.enhanced {
+        border-radius: 12px;
+    }
+
+    .social-login-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .social-login-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .social-platforms-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        padding: 0 1.25rem 1.25rem;
+    }
+
+    .social-platform-btn {
+        padding: 0.875rem 0.5rem;
+    }
+
+    .social-platform-btn svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .social-platform-btn span {
+        font-size: 0.7rem;
+    }
+
+    .social-login-footer {
+        padding: 1rem 1.25rem 1.25rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .social-platforms-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.625rem;
+        padding: 0 1rem 1rem;
+    }
+
+    .social-platform-btn {
+        padding: 0.75rem 0.25rem;
+        border-radius: 10px;
+    }
+
+    .social-platform-btn svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    .social-platform-btn span {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .social-platforms-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .social-platform-btn {
+        padding: 0.875rem 0.5rem;
+    }
+
+    .social-platform-btn svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .social-platform-btn span {
+        font-size: 0.7rem;
+    }
+}
+
+/* Touch-friendly adjustments */
+@media (hover: none) and (pointer: coarse) {
+    .social-platform-btn {
+        min-height: 60px;
+    }
+
+    .social-platform-btn:hover {
+        transform: none;
+    }
+
+    .social-platform-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    #social-login-modal {
+        padding: 0.5rem;
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+
+    #social-login-modal .modal-content.enhanced {
+        max-height: calc(100vh - 20px);
+        max-width: 500px;
+    }
+
+    .social-login-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 0.5rem;
+    }
+
+    .social-login-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+
+    .social-platforms-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        padding: 0 1rem 1rem;
+    }
+
+    .social-platform-btn {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .social-platform-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .social-platform-btn span {
+        font-size: 0.6rem;
+    }
+
+    .social-login-footer {
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* ============================================
+   LOGIN COMING SOON MODAL STYLES
+   ============================================ */
+
+/* Modal Container */
+#login-coming-soon-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    z-index: 1001;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+#login-coming-soon-modal.active,
+#login-coming-soon-modal.show {
+    display: flex;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+/* Modal Content */
+#login-coming-soon-modal .modal-content.enhanced {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    background: var(--modal-bg, #ffffff);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#login-coming-soon-modal.active .modal-content.enhanced,
+#login-coming-soon-modal.show .modal-content.enhanced {
+    transform: scale(1);
+    opacity: 1;
+}
+
+[data-theme="dark"] #login-coming-soon-modal .modal-content.enhanced {
+    background: #1f2937;
+}
+
+/* Body */
+.login-coming-soon-body {
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+/* Smile Emoji Container */
+.smile-emoji-container {
+    margin-bottom: 1.5rem;
+}
+
+.smile-emoji {
+    font-size: 5rem;
+    display: inline-block;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Title */
+.coming-soon-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color, #f59e0b);
+    margin: 0 0 0.75rem 0;
+}
+
+/* Platform Name */
+.coming-soon-platform {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    margin: 0 0 0.75rem 0;
+}
+
+[data-theme="dark"] .coming-soon-platform {
+    color: #e5e7eb;
+}
+
+/* Message */
+.coming-soon-message {
+    font-size: 0.9375rem;
+    color: var(--text-muted, #6b7280);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+}
+
+/* Button */
+#login-coming-soon-modal .submit-btn {
+    width: 100%;
+    max-width: 200px;
+    height: 44px;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#login-coming-soon-modal .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}

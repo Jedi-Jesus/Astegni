@@ -1,9 +1,17 @@
 // Affiliate Tier Manager
 // Handles dynamic affiliate tier management with modal-based CRUD
 
-// API Configuration
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'https://api.astegni.com';
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // State
@@ -23,7 +31,7 @@ async function loadAffiliateProgram() {
     console.log('loadAffiliateProgram() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading defaults');
             affiliateTiers = getDefaultTiers();
@@ -31,8 +39,9 @@ async function loadAffiliateProgram() {
             return;
         }
 
-        console.log('Fetching affiliate program from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/affiliate-program`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching affiliate program from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-program`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -172,7 +181,7 @@ function renderAffiliateTiers() {
                 </div>
 
                 <div class="text-center py-2 bg-white/30 rounded-lg">
-                    <div class="text-lg font-semibold text-gray-700">${duration} months</div>
+                    <div class="text-lg font-semibold text-gray-700">Valid Max ${duration} months</div>
                     <div class="text-xs text-gray-500">Duration</div>
                 </div>
             </div>
@@ -268,12 +277,12 @@ async function saveAffiliateTier(event) {
         return;
     }
     if (isNaN(durationMonths) || durationMonths < 1) {
-        alert('Please enter a valid duration (1 month or more)');
+        alert('Please enter a valid max duration (1 month or more)');
         return;
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -289,7 +298,8 @@ async function saveAffiliateTier(event) {
 
         console.log('Saving affiliate tier:', tierData);
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/affiliate-tiers`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-tiers`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -328,13 +338,14 @@ async function deleteAffiliateTier(tierLevel) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
         const programId = affiliateProgram.id || tier.program_id;
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/affiliate-tiers/${programId}/${tierLevel}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-tiers/${programId}/${tierLevel}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -401,7 +412,7 @@ async function saveAffiliateProgramSettings(event) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -414,7 +425,8 @@ async function saveAffiliateProgramSettings(event) {
             payout_schedule: payoutSchedule
         };
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/affiliate-program`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-program`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

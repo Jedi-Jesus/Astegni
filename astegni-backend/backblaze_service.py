@@ -7,6 +7,10 @@ from typing import Optional, Dict, Any
 import logging
 from datetime import datetime
 import mimetypes
+from dotenv import load_dotenv
+
+# Ensure environment variables are loaded
+load_dotenv()
 
 try:
     from b2sdk.v2 import InMemoryAccountInfo, B2Api
@@ -37,6 +41,7 @@ class BackblazeService:
         'blog_image': 'images/blog/',
         'news_image': 'images/news/',
         'story_image': 'images/stories/',  # Image stories (profile-based separation)
+        'campaign_image': 'images/campaigns/',  # Campaign ad images
 
         # Audio specific folders
         'lecture_audio': 'audio/lectures/',
@@ -54,13 +59,26 @@ class BackblazeService:
         'story_video': 'videos/stories/',  # Video stories (profile-based separation)
         'story': 'videos/stories/',  # Default story type maps to video
         'user_story': 'videos/stories/',
+        'campaign_video': 'videos/campaigns/',  # Campaign ad videos
 
         # Document specific folders
         'chat_document': 'documents/chat/',
         'resource': 'documents/resources/',
         'resource_document': 'documents/resources/',
         'files': 'documents/files/',  # Student files (achievements, certificates, extracurricular)
-        'student_files': 'documents/files/'
+        'student_files': 'documents/files/',
+
+        # KYC verification images
+        'kyc_document': 'images/kyc/documents/',  # Digital ID, passport photos
+        'kyc_selfie': 'images/kyc/selfies/',  # Selfie photos for face matching
+        'kyc': 'images/kyc/',  # General KYC folder
+
+        # Company verification documents (for advertisers)
+        'business_license': 'documents/company/business_license/',  # Business license documents
+        'tin_certificate': 'documents/company/tin_certificate/',  # TIN certificate documents
+        'company_logo': 'images/company/logos/',  # Company logos
+        'company_document': 'documents/company/',  # General company documents
+        'additional_company_docs': 'documents/company/additional/'  # Additional company documents
     }
 
     def __init__(self):
@@ -199,6 +217,80 @@ class BackblazeService:
 
         except Exception as e:
             logger.error(f"Failed to upload file: {str(e)}")
+            return None
+
+    def upload_file_to_folder(
+        self,
+        file_data: bytes,
+        file_name: str,
+        folder_path: str,
+        content_type: str = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Upload file to a specific folder path in Backblaze B2
+
+        Args:
+            file_data: File content as bytes
+            file_name: Original file name
+            folder_path: Custom folder path (e.g., 'images/user_115/BrandName/CampaignName/')
+            content_type: MIME type of the file
+
+        Returns:
+            Dict with file information or None on failure
+        """
+        if not content_type:
+            content_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
+
+        # Add timestamp to prevent naming conflicts
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        name_parts = os.path.splitext(file_name)
+
+        # Create a clean filename
+        clean_name = name_parts[0].replace(' ', '_').replace('/', '_').replace('\\', '_')
+        unique_name = f"{clean_name}_{timestamp}{name_parts[1]}"
+
+        # Ensure folder path ends with /
+        if not folder_path.endswith('/'):
+            folder_path += '/'
+
+        # Build full path
+        file_path = f"{folder_path}{unique_name}"
+
+        if not self.configured or not B2_AVAILABLE:
+            logger.warning(f"B2 not configured - would upload to: {file_path}")
+            return {
+                'fileId': 'mock_file_id',
+                'fileName': file_path,
+                'uploadTimestamp': datetime.now().isoformat(),
+                'url': f'https://mock.backblazeb2.com/{file_path}',
+                'folder': folder_path
+            }
+
+        try:
+            # Upload to B2
+            file_info = self.bucket.upload_bytes(
+                file_data,
+                file_path,
+                content_type=content_type
+            )
+
+            # Get public URL
+            download_url = self.bucket.get_download_url(file_path)
+
+            result = {
+                'fileId': file_info.id_,
+                'fileName': file_path,
+                'uploadTimestamp': file_info.upload_timestamp,
+                'url': download_url,
+                'folder': folder_path,
+                'size': file_info.size
+            }
+
+            logger.info(f"Successfully uploaded file to: {file_path}")
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to upload file to folder: {str(e)}")
             return None
 
     def download_file(self, file_path: str) -> Optional[bytes]:

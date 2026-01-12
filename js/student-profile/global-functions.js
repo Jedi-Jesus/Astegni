@@ -442,6 +442,9 @@ window.closeInviteParentModal = closeInviteParentModal;
 
 let currentStudentRequestType = 'courses';
 let currentStudentRequestStatus = 'all';
+let currentStudentParentingDirection = 'received'; // 'received' or 'sent'
+let studentParentingReceivedInvitations = [];
+let studentParentingSentInvitations = [];
 
 /**
  * Filter student requests by type (courses, schools, tutors, parenting)
@@ -467,6 +470,18 @@ function filterStudentRequestType(type) {
     const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
     if (statusTabs) statusTabs.style.display = 'flex';
 
+    // Show/hide parenting direction tabs
+    const parentingDirectionTabs = document.getElementById('student-parenting-direction-tabs');
+    if (parentingDirectionTabs) {
+        if (type === 'parenting') {
+            parentingDirectionTabs.classList.remove('hidden');
+            parentingDirectionTabs.style.display = 'block';
+        } else {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
+    }
+
     // Load the appropriate content based on type
     if (type === 'courses') {
         loadStudentCourseRequests();
@@ -476,6 +491,36 @@ function filterStudentRequestType(type) {
         loadStudentTutorRequests();
     } else if (type === 'parenting') {
         loadStudentParentingInvitations();
+    } else if (type === 'child-invitations') {
+        loadStudentChildInvitations();
+    }
+}
+
+/**
+ * Load child invitations - Parents inviting you as their child
+ */
+async function loadStudentChildInvitations() {
+    const container = document.getElementById('student-requests-list');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+            <p>Loading child invitations...</p>
+        </div>
+    `;
+
+    // Use the child invitation manager
+    if (typeof childInvitationManager !== 'undefined') {
+        await childInvitationManager.loadChildInvitations();
+        childInvitationManager.renderChildInvitations('student-requests-list', currentStudentRequestStatus);
+    } else {
+        container.innerHTML = `
+            <div class="card p-6 text-center text-gray-500">
+                <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
+                <p>Child invitation manager not loaded</p>
+            </div>
+        `;
     }
 }
 
@@ -506,8 +551,8 @@ function filterStudentRequestStatus(status) {
 }
 
 /**
- * Load parenting invitations - ONLY received invitations (for students who are also parents)
- * Sent invitations are already shown in Parent Portal panel
+ * Load parenting invitations - Both received and sent invitations
+ * Shows tabs for switching between received (others inviting you) and sent (you inviting others)
  */
 async function loadStudentParentingInvitations() {
     const container = document.getElementById('student-requests-list');
@@ -532,56 +577,34 @@ async function loadStudentParentingInvitations() {
             return;
         }
 
-        // Fetch ONLY received invitations (as parent) - sent invitations are in Parent Portal
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
+        // Fetch received invitations (others inviting you as parent)
+        const receivedResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
             headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(() => ({ ok: false })); // Gracefully handle if user is not a parent
+        }).catch(() => ({ ok: false }));
 
-        let receivedInvitations = [];
+        // Fetch sent invitations (you inviting others as your parent)
+        const sentResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/parent-invitations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => ({ ok: false }));
 
-        if (response.ok) {
-            const data = await response.json();
-            receivedInvitations = data.invitations || [];
+        studentParentingReceivedInvitations = [];
+        studentParentingSentInvitations = [];
+
+        if (receivedResponse.ok) {
+            const data = await receivedResponse.json();
+            studentParentingReceivedInvitations = data.invitations || [];
         }
 
-        // Update count badge - only pending received invitations
-        const pendingCount = receivedInvitations.filter(inv => inv.status === 'pending').length;
-
-        const countBadge = document.getElementById('student-parenting-invitation-count');
-        if (countBadge) {
-            if (pendingCount > 0) {
-                countBadge.textContent = pendingCount;
-                countBadge.classList.remove('hidden');
-            } else {
-                countBadge.classList.add('hidden');
-            }
+        if (sentResponse.ok) {
+            const data = await sentResponse.json();
+            studentParentingSentInvitations = data.invitations || [];
         }
 
-        // If no received invitations
-        if (receivedInvitations.length === 0) {
-            container.innerHTML = `
-                <div class="card p-6 text-center text-gray-500">
-                    <i class="fas fa-user-friends text-3xl mb-3"></i>
-                    <p>No parenting invitations received</p>
-                    <p class="text-sm mt-2">You'll see invitations here when other students invite you as their parent</p>
-                </div>
-            `;
-            return;
-        }
+        // Update count badges
+        updateStudentParentingCountBadges();
 
-        // Render received invitations
-        container.innerHTML = `
-            <div class="mb-8">
-                <h3 class="text-lg font-bold mb-4" style="color: var(--heading);">
-                    <i class="fas fa-inbox text-green-500 mr-2"></i>
-                    Invitations Received (${receivedInvitations.length})
-                </h3>
-                <p class="text-sm text-gray-500 mb-4">Students inviting you as their parent</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    ${receivedInvitations.map(inv => renderReceivedParentingInvitationCard(inv)).join('')}
-                </div>
-            </div>
-        `;
+        // Render based on current direction
+        renderStudentParentingInvitationsContent();
 
     } catch (error) {
         console.error('Error loading parenting invitations:', error);
@@ -590,6 +613,133 @@ async function loadStudentParentingInvitations() {
                 <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
                 <p>Failed to load parenting invitations</p>
                 <p class="text-sm mt-2">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Update count badges for received and sent parenting invitations
+ */
+function updateStudentParentingCountBadges() {
+    // Update received count badge
+    const receivedCountBadge = document.getElementById('student-parenting-received-count');
+    const pendingReceivedCount = studentParentingReceivedInvitations.filter(inv => inv.status === 'pending').length;
+    if (receivedCountBadge) {
+        if (pendingReceivedCount > 0) {
+            receivedCountBadge.textContent = pendingReceivedCount;
+            receivedCountBadge.classList.remove('hidden');
+        } else {
+            receivedCountBadge.classList.add('hidden');
+        }
+    }
+
+    // Update sent count badge
+    const sentCountBadge = document.getElementById('student-parenting-sent-count');
+    const pendingSentCount = studentParentingSentInvitations.filter(inv => inv.status === 'pending').length;
+    if (sentCountBadge) {
+        if (pendingSentCount > 0) {
+            sentCountBadge.textContent = pendingSentCount;
+            sentCountBadge.classList.remove('hidden');
+        } else {
+            sentCountBadge.classList.add('hidden');
+        }
+    }
+
+    // Update main parenting card badge (total pending)
+    const mainBadge = document.getElementById('student-parenting-invitation-count');
+    const totalPending = pendingReceivedCount + pendingSentCount;
+    if (mainBadge) {
+        if (totalPending > 0) {
+            mainBadge.textContent = totalPending;
+            mainBadge.classList.remove('hidden');
+        } else {
+            mainBadge.classList.add('hidden');
+        }
+    }
+}
+
+/**
+ * Switch between received and sent parenting invitations
+ */
+function switchStudentParentingDirection(direction) {
+    currentStudentParentingDirection = direction;
+
+    // Update tab active states
+    const receivedTab = document.getElementById('student-parenting-received-tab');
+    const sentTab = document.getElementById('student-parenting-sent-tab');
+
+    if (receivedTab) {
+        if (direction === 'received') {
+            receivedTab.style.color = 'var(--button-bg)';
+            receivedTab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            receivedTab.style.color = 'var(--text-muted)';
+            receivedTab.style.borderBottomColor = 'transparent';
+        }
+    }
+
+    if (sentTab) {
+        if (direction === 'sent') {
+            sentTab.style.color = 'var(--button-bg)';
+            sentTab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            sentTab.style.color = 'var(--text-muted)';
+            sentTab.style.borderBottomColor = 'transparent';
+        }
+    }
+
+    // Render content for selected direction
+    renderStudentParentingInvitationsContent();
+}
+
+/**
+ * Render parenting invitations content based on current direction
+ */
+function renderStudentParentingInvitationsContent() {
+    const container = document.getElementById('student-requests-list');
+    if (!container) return;
+
+    if (currentStudentParentingDirection === 'received') {
+        // Show received invitations
+        if (studentParentingReceivedInvitations.length === 0) {
+            container.innerHTML = `
+                <div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
+                    <p class="font-semibold">No invitations received</p>
+                    <p class="text-sm mt-2">You'll see invitations here when other students invite you as their parent</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-4">Students inviting you to be their parent/guardian</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${studentParentingReceivedInvitations.map(inv => renderReceivedParentingInvitationCard(inv)).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        // Show sent invitations
+        if (studentParentingSentInvitations.length === 0) {
+            container.innerHTML = `
+                <div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-paper-plane text-4xl mb-3 opacity-50"></i>
+                    <p class="font-semibold">No invitations sent</p>
+                    <p class="text-sm mt-2">Go to <strong>Parent Portal</strong> to invite parents to connect with you</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-4">Invitations you've sent to invite someone as your parent</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${studentParentingSentInvitations.map(inv => renderStudentParentingInvitationCard(inv)).join('')}
+                </div>
             </div>
         `;
     }
@@ -702,11 +852,23 @@ async function resendParentInvitation(invitationId) {
 /**
  * Render a received parenting invitation card (for students who are also parents)
  * Shows invitations from other students who want this user to be their parent
+ * Updated to use inviter_name, inviter_username, inviter_profile_picture from API
  */
 function renderReceivedParentingInvitationCard(invitation) {
-    const studentInitial = (invitation.student_name || 'S').charAt(0).toUpperCase();
+    // Use inviter fields (new API) with fallback to student fields (old API)
+    const inviterName = invitation.inviter_name || invitation.student_name || 'Unknown User';
+    const inviterUsername = invitation.inviter_username || null;
+    const inviterType = invitation.inviter_type || 'student';
+    const profilePic = invitation.inviter_profile_picture || invitation.student_profile_picture || null;
+    const inviterInitial = (inviterName || 'U').charAt(0).toUpperCase();
+
     const createdDate = new Date(invitation.created_at);
     const timeAgo = getTimeAgo(createdDate);
+
+    // Determine inviter type badge
+    const inviterTypeBadge = inviterType === 'student' ? '<i class="fas fa-user-graduate"></i> Student' :
+                             inviterType === 'parent' ? '<i class="fas fa-user-friends"></i> Parent' :
+                             inviterType === 'tutor' ? '<i class="fas fa-chalkboard-teacher"></i> Tutor' : inviterType;
 
     // Status badge
     let statusBadge = '';
@@ -737,20 +899,24 @@ function renderReceivedParentingInvitationCard(invitation) {
         `;
     }
 
+    // Profile picture HTML
+    const profilePicHtml = profilePic
+        ? `<img src="${profilePic}" alt="${inviterName}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #10B981, #059669); color: white; font-size: 1.25rem; font-weight: bold;\\'>${inviterInitial}</div>'">`
+        : `<div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #10B981, #059669); color: white; font-size: 1.25rem; font-weight: bold;">${inviterInitial}</div>`;
+
     return `
         <div class="card p-4" style="border: 2px solid ${statusColor}; border-radius: 12px;">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center gap-3">
-                    <!-- Student Avatar (Initial) -->
-                    <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #10B981, #059669); color: white; font-size: 1.25rem; font-weight: bold;">
-                        ${studentInitial}
-                    </div>
+                    <!-- Inviter Avatar -->
+                    ${profilePicHtml}
                     <div>
                         <h4 class="font-bold text-lg" style="color: var(--heading);">
-                            ${invitation.student_name || 'Student'}
+                            ${inviterName}
                         </h4>
+                        ${inviterUsername ? `<p class="text-xs text-gray-500 mb-1">@${inviterUsername}</p>` : ''}
                         <p class="text-xs" style="color: var(--text-secondary);">
-                            <i class="fas fa-user-graduate"></i> Student
+                            ${inviterTypeBadge}
                         </p>
                     </div>
                 </div>
@@ -782,7 +948,7 @@ async function acceptStudentParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/invitation/${invitationId}/accept`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=true`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -819,7 +985,7 @@ async function rejectStudentParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/invitation/${invitationId}/reject`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=false`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1370,6 +1536,9 @@ async function loadStudentRequestCounts() {
 window.filterStudentRequestType = filterStudentRequestType;
 window.filterStudentRequestStatus = filterStudentRequestStatus;
 window.loadStudentParentingInvitations = loadStudentParentingInvitations;
+window.switchStudentParentingDirection = switchStudentParentingDirection;
+window.updateStudentParentingCountBadges = updateStudentParentingCountBadges;
+window.renderStudentParentingInvitationsContent = renderStudentParentingInvitationsContent;
 window.resendParentInvitation = resendParentInvitation;
 window.renderReceivedParentingInvitationCard = renderReceivedParentingInvitationCard;
 window.acceptStudentParentInvitation = acceptStudentParentInvitation;
@@ -1378,6 +1547,7 @@ window.loadStudentCourseRequests = loadStudentCourseRequests;
 window.loadStudentSchoolRequests = loadStudentSchoolRequests;
 window.loadStudentTutorRequests = loadStudentTutorRequests;
 window.loadStudentRequestCounts = loadStudentRequestCounts;
+window.loadStudentChildInvitations = loadStudentChildInvitations;
 
 
 // ============================================
@@ -2710,23 +2880,30 @@ function renderSessionCard(session) {
                 ` : ''}
             </div>
 
-            ${session.status === 'scheduled' && session.whiteboard_id ? `
-                <div class="mt-4 pt-3 border-t dark:border-gray-700">
+            <!-- Action Buttons -->
+            <div class="mt-4 pt-3 border-t dark:border-gray-700 flex flex-col gap-2">
+                <!-- View Quizzes Button - Always show for sessions with enrolled_courses_id -->
+                ${session.enrolled_courses_id ? `
+                    <button onclick="event.stopPropagation(); viewSessionCourseworks(${session.enrolled_courses_id})"
+                            class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
+                        <i class="fas fa-clipboard-list mr-2"></i>View Quizzes
+                    </button>
+                ` : ''}
+
+                ${session.status === 'scheduled' && session.whiteboard_id ? `
                     <button onclick="event.stopPropagation(); joinSessionWhiteboard(${session.whiteboard_id})"
                             class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
                         <i class="fas fa-chalkboard mr-2"></i>Join Whiteboard
                     </button>
-                </div>
-            ` : ''}
+                ` : ''}
 
-            ${session.status === 'in_progress' ? `
-                <div class="mt-4 pt-3 border-t dark:border-gray-700">
+                ${session.status === 'in_progress' ? `
                     <button onclick="event.stopPropagation(); joinSessionWhiteboard(${session.whiteboard_id || 0})"
                             class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium">
                         <i class="fas fa-play mr-2"></i>Join Session
                     </button>
-                </div>
-            ` : ''}
+                ` : ''}
+            </div>
         </div>
     `;
 }
@@ -2777,6 +2954,61 @@ function joinSessionWhiteboard(whiteboardId) {
     }
 }
 
+/**
+ * View courseworks/quizzes for a specific session enrollment
+ * Opens the My Quizzes modal filtered by enrollment, or goes directly to graded results
+ * @param {number} enrolledCoursesId - The enrolled_courses ID to filter by
+ */
+async function viewSessionCourseworks(enrolledCoursesId) {
+    console.log('[Sessions] viewSessionCourseworks called with enrolledCoursesId:', enrolledCoursesId);
+
+    if (typeof courseworkManager === 'undefined' || !courseworkManager) {
+        console.error('Coursework manager not loaded');
+        openComingSoonModal('My Quizzes');
+        return;
+    }
+
+    try {
+        // Load courseworks for the student
+        await courseworkManager.loadMyCourseworks();
+
+        // Filter courseworks by enrolled_courses_id
+        const filteredCourseworks = courseworkManager.courseworks.filter(
+            c => c.enrolled_courses_id === enrolledCoursesId
+        );
+
+        console.log('[Sessions] Filtered courseworks:', filteredCourseworks.length);
+
+        if (filteredCourseworks.length === 0) {
+            // No courseworks for this enrollment - open My Quizzes modal anyway
+            courseworkManager.openMyCourseworksModal();
+            return;
+        }
+
+        // Check if there's exactly one coursework and it's graded
+        if (filteredCourseworks.length === 1) {
+            const coursework = filteredCourseworks[0];
+            const submissionStatus = coursework.submission_status || coursework.submissionStatus;
+
+            if (submissionStatus === 'graded' || submissionStatus === 'completed') {
+                // Single graded coursework - go directly to results
+                console.log('[Sessions] Single graded coursework - opening results directly');
+                courseworkManager.viewCourseworkResults(coursework.id);
+                return;
+            }
+        }
+
+        // Multiple courseworks or not all graded - open My Quizzes modal
+        // The modal will show all quizzes, user can filter/select
+        courseworkManager.openMyCourseworksModal();
+
+    } catch (error) {
+        console.error('[Sessions] Error viewing session courseworks:', error);
+        // Fallback to opening My Quizzes modal
+        courseworkManager.openMyCourseworksModal();
+    }
+}
+
 // Export session functions
 window.switchScheduleSection = switchScheduleSection;
 window.loadSchedulePanelCounts = loadSchedulePanelCounts;
@@ -2786,6 +3018,7 @@ window.renderSessionsList = renderSessionsList;
 window.renderSessionCard = renderSessionCard;
 window.filterSessions = filterSessions;
 window.joinSessionWhiteboard = joinSessionWhiteboard;
+window.viewSessionCourseworks = viewSessionCourseworks;
 
 // ============================================
 // LEARNING TOOLS PANEL FUNCTIONS
@@ -2798,8 +3031,8 @@ window.joinSessionWhiteboard = joinSessionWhiteboard;
  */
 function openStudentWhiteboard() {
     if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
-        // Open whiteboard - it will show sessions available to the student
-        whiteboardManager.openWhiteboard();
+        // Open whiteboard from Learning Tools - shows tutors instead of students
+        whiteboardManager.openWhiteboardFromLearningTools();
     } else {
         console.error('Whiteboard manager not loaded');
         openComingSoonModal('Digital Whiteboard');
@@ -2807,19 +3040,174 @@ function openStudentWhiteboard() {
 }
 
 /**
- * Open Coursework for Student
- * Students can view and complete coursework assigned by tutors
+ * Open My Quizzes for Student
+ * Students can view and complete quizzes/coursework assigned by tutors
+ * Opens directly to the My Quizzes view (bypasses main coursework menu)
  */
 function openStudentCoursework() {
     if (typeof courseworkManager !== 'undefined' && courseworkManager) {
-        // Open the coursework modal - shows coursework assigned to the student
-        courseworkManager.openMainModal();
+        // Open directly to My Quizzes modal - shows quizzes assigned to the student
+        courseworkManager.openMyCourseworksModal();
     } else {
         console.error('Coursework manager not loaded');
-        openComingSoonModal('Coursework');
+        openComingSoonModal('My Quizzes');
     }
+}
+
+// ============================================
+// DIGITAL LAB FUNCTIONS
+// Opens Digital Lab modal with subject-specific virtual labs
+// ============================================
+
+/**
+ * Open Digital Lab Modal
+ * Shows the main Digital Lab modal with all available labs
+ */
+function openDigitalLabModal() {
+    const modal = document.getElementById('digitalLabModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Close Digital Lab Modal
+ */
+function closeDigitalLabModal() {
+    const modal = document.getElementById('digitalLabModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+/**
+ * Open Coming Soon modal for a specific lab
+ * @param {string} labName - Name of the lab (e.g., "Biology Lab", "Physics Lab")
+ */
+function openDigitalLabComingSoon(labName) {
+    const modal = document.getElementById('digitalLabComingSoonModal');
+    const title = document.getElementById('digitalLabComingSoonTitle');
+    const message = document.getElementById('digitalLabComingSoonMessage');
+
+    if (modal) {
+        if (title) {
+            title.textContent = `${labName} - Coming Soon`;
+        }
+        if (message) {
+            message.textContent = `The ${labName} is currently under development. We're working hard to bring you an amazing virtual experiment experience!`;
+        }
+        modal.classList.add('active');
+    }
+}
+
+/**
+ * Close Digital Lab Coming Soon modal
+ */
+function closeDigitalLabComingSoon() {
+    const modal = document.getElementById('digitalLabComingSoonModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+/**
+ * Main entry point for Digital Lab
+ * Loads modal dynamically if not already in DOM
+ */
+function openDigitalLab() {
+    // Check if modal exists in DOM
+    if (document.getElementById('digitalLabModal')) {
+        openDigitalLabModal();
+    } else {
+        // Load the modal first
+        loadDigitalLabModal().then(() => {
+            openDigitalLabModal();
+        }).catch((error) => {
+            console.error('Failed to load Digital Lab modal:', error);
+            openComingSoonModal('Digital Lab');
+        });
+    }
+}
+
+/**
+ * Load Digital Lab Modal dynamically
+ * Fetches HTML from common-modals and injects into DOM
+ */
+async function loadDigitalLabModal() {
+    // Check if already loaded
+    if (document.getElementById('digitalLabModal')) {
+        return Promise.resolve();
+    }
+
+    try {
+        const response = await fetch('../modals/common-modals/digital-lab-modal.html');
+        if (!response.ok) throw new Error('Failed to load modal');
+
+        const html = await response.text();
+        const container = document.getElementById('modal-container') || document.body;
+
+        // Insert modal HTML
+        container.insertAdjacentHTML('beforeend', html);
+
+        // Setup event listeners for the newly loaded modal
+        setupDigitalLabEventListeners();
+
+        return Promise.resolve();
+    } catch (error) {
+        console.error('Error loading Digital Lab modal:', error);
+        return Promise.reject(error);
+    }
+}
+
+/**
+ * Setup event listeners for Digital Lab modal
+ * Handles overlay clicks and ESC key
+ */
+function setupDigitalLabEventListeners() {
+    // Close on overlay click
+    const overlay = document.getElementById('digitalLabModal');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeDigitalLabModal();
+            }
+        });
+    }
+
+    // Close coming soon on overlay click
+    const comingSoonOverlay = document.getElementById('digitalLabComingSoonModal');
+    if (comingSoonOverlay) {
+        comingSoonOverlay.addEventListener('click', function(e) {
+            if (e.target === comingSoonOverlay) {
+                closeDigitalLabComingSoon();
+            }
+        });
+    }
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const comingSoonModal = document.getElementById('digitalLabComingSoonModal');
+            const labModal = document.getElementById('digitalLabModal');
+
+            if (comingSoonModal && comingSoonModal.classList.contains('active')) {
+                closeDigitalLabComingSoon();
+            } else if (labModal && labModal.classList.contains('active')) {
+                closeDigitalLabModal();
+            }
+        }
+    });
 }
 
 // Export learning tools functions
 window.openStudentWhiteboard = openStudentWhiteboard;
 window.openStudentCoursework = openStudentCoursework;
+
+// Export Digital Lab functions
+window.openDigitalLab = openDigitalLab;
+window.openDigitalLabModal = openDigitalLabModal;
+window.closeDigitalLabModal = closeDigitalLabModal;
+window.openDigitalLabComingSoon = openDigitalLabComingSoon;
+window.closeDigitalLabComingSoon = closeDigitalLabComingSoon;

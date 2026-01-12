@@ -181,6 +181,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     # Attach role_ids to user object for easy access
     user.role_ids = payload.get("role_ids", {})
+
+    # Attach current active role from token (the role user is currently logged in as)
+    user.current_role = payload.get("role", user.active_role)
+    print(f"[get_current_user] User {user.id} current_role from token: {user.current_role}")
     print(f"[get_current_user] User {user.id} role_ids from token: {user.role_ids}")
 
     # Convert string IDs back to integers
@@ -379,3 +383,68 @@ def update_rating_breakdown(breakdown: dict, new_rating: int):
 
     breakdown[str(new_rating)] = breakdown.get(str(new_rating), 0) + 1
     return breakdown
+
+
+# ============================================
+# TWO-FACTOR AUTHENTICATION UTILITIES
+# ============================================
+
+def require_2fa_verification(verification_token: Optional[str] = None):
+    """
+    Dependency to require 2FA verification for protected actions
+
+    Usage in endpoints:
+        @router.post("/protected-action")
+        async def protected_action(
+            current_user: User = Depends(get_current_user),
+            verified: bool = Depends(require_2fa_verification),
+            db: Session = Depends(get_db)
+        ):
+            # Your protected action here
+            ...
+
+    Returns True if verification is valid, raises HTTPException otherwise
+    """
+    def check_verification(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+        token: Optional[str] = verification_token
+    ) -> bool:
+        # Check if user has 2FA enabled
+        user = db.query(User).filter(User.id == current_user.id).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # If 2FA is not enabled, allow action
+        if not user.two_factor_enabled:
+            return True
+
+        # If 2FA is enabled, require verification token
+        if not token:
+            raise HTTPException(
+                status_code=403,
+                detail="2FA verification required. Please verify your identity first."
+            )
+
+        # Check if verification token is valid
+        if not user.two_factor_verification_token or user.two_factor_verification_token != token:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid verification token"
+            )
+
+        # Check if verification token has expired
+        if user.two_factor_verification_expiry and user.two_factor_verification_expiry < datetime.utcnow():
+            # Clear expired token
+            user.two_factor_verification_token = None
+            user.two_factor_verification_expiry = None
+            db.commit()
+            raise HTTPException(
+                status_code=401,
+                detail="Verification token expired. Please verify again."
+            )
+
+        return True
+
+    return check_verification

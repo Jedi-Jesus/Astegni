@@ -202,15 +202,12 @@ async def get_coparents(
     db: Session = Depends(get_db)
 ):
     """
-    Get all co-parents from three sources:
-    1. Directly linked via coparent_ids (for parents who added co-parents before children)
-    2. Derived from children's parent_id arrays (for co-parents who share children)
-    3. Pending invitations from coparent_invitations table
+    Get ONLY accepted/linked co-parents from:
+    1. Directly linked via coparent_ids in parent_profiles
+    2. Derived from children's parent_id arrays (co-parents who share children)
 
-    This dual approach supports both use cases:
-    - New parents can add co-parents before adding children
-    - Existing relationships remain intact via shared children
-    - Pending invitations are shown with status="pending"
+    NOTE: Pending invitations are NOT shown here. They should be viewed via
+    the parenting invitations panel (My Requests > Parenting Invitations > Sent tab).
     """
     if "parent" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have parent role")
@@ -224,26 +221,36 @@ async def get_coparents(
 
     coparent_user_ids = set()
 
-    # Source 1: Direct coparent_ids (for co-parents added before children)
+    # Source 1: Direct coparent_ids (stores PARENT PROFILE IDs, not user IDs)
     if parent_profile.coparent_ids:
-        for coparent_id in parent_profile.coparent_ids:
-            if coparent_id != current_user.id:
-                coparent_user_ids.add(coparent_id)
+        for coparent_profile_id in parent_profile.coparent_ids:
+            # Look up the user_id from the parent profile
+            coparent_parent_profile = db.query(ParentProfile).filter(
+                ParentProfile.id == coparent_profile_id
+            ).first()
+            if coparent_parent_profile and coparent_parent_profile.user_id != current_user.id:
+                coparent_user_ids.add(coparent_parent_profile.user_id)
 
     # Source 2: Derive co-parents from children's parent_id arrays
+    # children_ids stores STUDENT PROFILE IDs, not user IDs
     if parent_profile.children_ids:
-        for child_id in parent_profile.children_ids:
+        for child_profile_id in parent_profile.children_ids:
+            # Query by student profile ID, not user_id
             student_profile = db.query(StudentProfile).filter(
-                StudentProfile.user_id == child_id
+                StudentProfile.id == child_profile_id
             ).first()
 
             if student_profile and student_profile.parent_id:
-                # Add all parent IDs except current user
-                for parent_user_id in student_profile.parent_id:
-                    if parent_user_id != current_user.id:
-                        coparent_user_ids.add(parent_user_id)
+                # parent_id stores PARENT PROFILE IDs, not user IDs
+                for parent_profile_id in student_profile.parent_id:
+                    # Look up the user_id from the parent profile
+                    other_parent_profile = db.query(ParentProfile).filter(
+                        ParentProfile.id == parent_profile_id
+                    ).first()
+                    if other_parent_profile and other_parent_profile.user_id != current_user.id:
+                        coparent_user_ids.add(other_parent_profile.user_id)
 
-    # Fetch co-parent details (accepted/linked co-parents)
+    # Fetch co-parent details (ONLY accepted/linked co-parents)
     coparents = []
     for coparent_user_id in coparent_user_ids:
         parent_user = db.query(User).filter(User.id == coparent_user_id).first()
@@ -254,6 +261,7 @@ async def get_coparents(
 
             coparents.append({
                 "user_id": parent_user.id,
+                "parent_id": coparent_profile.id if coparent_profile else None,
                 "name": f"{parent_user.first_name} {parent_user.father_name} {parent_user.grandfather_name}",
                 "email": parent_user.email,
                 "phone": parent_user.phone,
@@ -263,61 +271,6 @@ async def get_coparents(
                 "created_at": parent_user.created_at,
                 "status": "accepted"
             })
-
-    # Source 3: Pending invitations from parent_invitations table (parent-to-parent invitations)
-    pending_invitations = db.execute(text("""
-        SELECT
-            pi.id as invitation_id,
-            pi.invites_id as invitee_user_id,
-            pi.relationship_type,
-            pi.status,
-            pi.created_at,
-            pi.is_new_user,
-            pi.pending_email,
-            pi.pending_phone,
-            pi.pending_first_name,
-            pi.pending_father_name,
-            pi.pending_grandfather_name,
-            pi.pending_gender,
-            u.first_name,
-            u.father_name,
-            u.grandfather_name,
-            u.email,
-            u.phone,
-            u.gender,
-            pp.profile_picture
-        FROM parent_invitations pi
-        LEFT JOIN users u ON pi.invites_id = u.id
-        LEFT JOIN parent_profiles pp ON u.id = pp.user_id
-        WHERE pi.inviter_id = :inviter_id
-        AND pi.inviter_profile_type = 'parent'
-        AND pi.invites_profile_type = 'parent'
-        AND pi.status = 'pending'
-    """), {"inviter_id": current_user.id}).fetchall()
-
-    for inv in pending_invitations:
-        # Skip if already in coparents list (accepted)
-        if inv.invitee_user_id and inv.invitee_user_id in coparent_user_ids:
-            continue
-
-        # Build name from user table or pending fields
-        if inv.first_name:
-            name = f"{inv.first_name} {inv.father_name or ''} {inv.grandfather_name or ''}".strip()
-        else:
-            name = f"{inv.pending_first_name or ''} {inv.pending_father_name or ''} {inv.pending_grandfather_name or ''}".strip()
-
-        coparents.append({
-            "user_id": inv.invitee_user_id,
-            "invitation_id": inv.invitation_id,
-            "name": name or "Unknown",
-            "email": inv.email or inv.pending_email,
-            "phone": inv.phone or inv.pending_phone,
-            "gender": inv.gender or inv.pending_gender,
-            "relationship_type": inv.relationship_type,
-            "profile_picture": inv.profile_picture,
-            "created_at": inv.created_at,
-            "status": "pending"
-        })
 
     return {"coparents": coparents, "total": len(coparents)}
 
@@ -617,6 +570,7 @@ async def get_parent_sessions(
 
 @router.get("/api/parent/tutors")
 async def get_parent_tutors(
+    student_id: int = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -625,6 +579,9 @@ async def get_parent_tutors(
 
     Reads from enrolled_students table to find tutors connected to the parent's children.
     Returns detailed tutor information with enrollment status.
+
+    Optional query parameter:
+    - student_id: Filter tutors for a specific child (student_profile.id)
     """
     if "parent" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have parent role")
@@ -639,7 +596,15 @@ async def get_parent_tutors(
     if not parent_profile.children_ids or len(parent_profile.children_ids) == 0:
         return {"tutors": [], "total": 0, "message": "No children found. Add children to see their tutors."}
 
-    # Get all tutors for all children via enrolled_students
+    # If student_id is provided, verify it's one of the parent's children
+    if student_id:
+        if student_id not in parent_profile.children_ids:
+            raise HTTPException(status_code=403, detail="This child is not linked to your account")
+        children_to_query = [student_id]
+    else:
+        children_to_query = parent_profile.children_ids
+
+    # Get all tutors for the specified children via enrolled_students
     # children_ids stores student_profile.id values
     tutors_data = db.execute(text("""
         SELECT DISTINCT ON (tp.id)
@@ -692,7 +657,7 @@ async def get_parent_tutors(
         JOIN users sp_user ON sp.user_id = sp_user.id
         WHERE es.student_id = ANY(:children_ids)
         ORDER BY tp.id, es.enrolled_at DESC
-    """), {"children_ids": parent_profile.children_ids}).fetchall()
+    """), {"children_ids": children_to_query}).fetchall()
 
     # Group tutors and their students
     tutors_map = {}
@@ -769,82 +734,128 @@ async def get_parent_tutors(
 
 
 # ============================================
-# WILDCARD PARENT ID ROUTE - MUST BE LAST
+# GET TUTORS FOR A SPECIFIC STUDENT (by student_profile_id)
 # ============================================
 
-@router.get("/api/parent/{parent_id}")
-async def get_parent_by_id(
-    parent_id: int,
-    by_user_id: bool = False,
+@router.get("/api/student/{student_profile_id}/tutors")
+async def get_tutors_for_specific_student(
+    student_profile_id: int,
     db: Session = Depends(get_db)
 ):
-    """Get specific parent profile (public view)"""
-    if by_user_id:
-        parent_profile = db.query(ParentProfile).filter(
-            ParentProfile.user_id == parent_id
-        ).first()
-    else:
-        parent_profile = db.query(ParentProfile).filter(
-            ParentProfile.id == parent_id
-        ).first()
+    """
+    Get all tutors for a specific student by their profile ID.
 
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
+    Reads from enrolled_students table to find tutors connected to the student.
+    Returns detailed tutor information with enrollment status.
+    This endpoint is public (used by parent-profile to view children's tutors).
+    """
+    # Get all tutors for this student via enrolled_students
+    tutors_data = db.execute(text("""
+        SELECT DISTINCT ON (tp.id)
+            tp.id as tutor_profile_id,
+            tp.user_id as tutor_user_id,
+            tp.username as tutor_username,
+            tp.bio,
+            tp.quote,
+            tp.location,
+            tp.is_verified,
+            tp.verification_status,
+            tp.profile_picture,
+            tp.cover_image,
+            tp.languages,
+            tp.expertise_badge,
+            tp.hero_titles,
+            tp.hero_subtitle,
+            u.first_name,
+            u.father_name,
+            u.grandfather_name,
+            u.gender,
+            u.email as tutor_email,
+            u.phone as tutor_phone,
+            es.status as enrollment_status,
+            es.enrolled_at,
+            pkg.id as package_id,
+            pkg.name as package_name,
+            pkg.hourly_rate,
+            pkg.session_format,
+            pkg.grade_level,
+            pkg.course_ids,
+            (
+                SELECT COALESCE(AVG(tr.rating), 0)
+                FROM tutor_reviews tr
+                WHERE tr.tutor_id = tp.id
+            ) as avg_rating,
+            (
+                SELECT COUNT(*)
+                FROM tutor_reviews tr
+                WHERE tr.tutor_id = tp.id
+            ) as rating_count
+        FROM enrolled_students es
+        JOIN tutor_profiles tp ON es.tutor_id = tp.id
+        JOIN users u ON tp.user_id = u.id
+        LEFT JOIN tutor_packages pkg ON es.package_id = pkg.id
+        WHERE es.student_id = :student_id
+        ORDER BY tp.id, es.enrolled_at DESC
+    """), {"student_id": student_profile_id}).fetchall()
 
-    user = db.query(User).filter(User.id == parent_profile.user_id).first()
+    # Build tutors list
+    tutors_list = []
+    for row in tutors_data:
+        # Build tutor name
+        name_parts = [row.first_name or '', row.father_name or '', row.grandfather_name or '']
+        full_name = ' '.join(part for part in name_parts if part).strip()
 
-    # Get children info - children_ids stores student_profile.id (not user_id)
-    children_info = []
-    if parent_profile.children_ids:
-        for student_profile_id in parent_profile.children_ids:
-            # Look up by student_profile.id
-            child_student = db.query(StudentProfile).filter(
-                StudentProfile.id == student_profile_id
-            ).first()
-            if child_student:
-                # Get user info for this student
-                child_user = db.query(User).filter(User.id == child_student.user_id).first()
-                if child_user:
-                    children_info.append({
-                        "id": child_student.id,  # student_profile.id
-                        "user_id": child_user.id,
-                        "name": f"{child_user.first_name or ''} {child_user.father_name or ''}".strip() or "Student",
-                        "first_name": child_user.first_name,
-                        "father_name": child_user.father_name,
-                        "profile_picture": child_student.profile_picture,
-                        "cover_image": child_student.cover_image,
-                        "grade_level": child_student.grade_level,
-                        "studying_at": child_student.studying_at,
-                        "location": child_student.location,
-                        "username": child_student.username,
-                        "gender": child_user.gender,
-                        "about": child_student.about,
-                        "interested_in": child_student.interested_in or [],
-                        "hobbies": child_student.hobbies or [],
-                        "languages": child_student.languages or []
-                    })
+        # Parse languages (JSON field)
+        languages = []
+        if row.languages:
+            try:
+                import json
+                languages = json.loads(row.languages) if isinstance(row.languages, str) else row.languages
+            except:
+                languages = []
 
-    return {
-        "id": parent_profile.id,
-        "user_id": parent_profile.user_id,
-        "username": parent_profile.username,
-        "name": f"{user.first_name} {user.father_name} {user.grandfather_name}",
-        "bio": parent_profile.bio,
-        "quote": parent_profile.quote,
-        "relationship_type": parent_profile.relationship_type,
-        "location": parent_profile.location,
-        "children_ids": parent_profile.children_ids or [],
-        "children_info": children_info,
-        "rating": parent_profile.rating,
-        "rating_count": parent_profile.rating_count,
-        "is_verified": parent_profile.is_verified,
-        "profile_picture": parent_profile.profile_picture,
-        "cover_image": parent_profile.cover_image,
-        "total_children": parent_profile.total_children,
-        "total_sessions_booked": parent_profile.total_sessions_booked,
-        "total_amount_spent": parent_profile.total_amount_spent,
-        "created_at": parent_profile.created_at
-    }
+        # Parse course_ids from package
+        course_ids = []
+        if row.course_ids:
+            try:
+                import json
+                course_ids = json.loads(row.course_ids) if isinstance(row.course_ids, str) else row.course_ids
+            except:
+                course_ids = row.course_ids if isinstance(row.course_ids, list) else []
+
+        tutors_list.append({
+            "id": row.tutor_profile_id,
+            "user_id": row.tutor_user_id,
+            "username": row.tutor_username,
+            "name": full_name or "Unknown Tutor",
+            "first_name": row.first_name,
+            "father_name": row.father_name,
+            "grandfather_name": row.grandfather_name,
+            "bio": row.bio,
+            "quote": row.quote,
+            "location": row.location,
+            "is_verified": row.is_verified,
+            "verification_status": row.verification_status,
+            "profile_picture": row.profile_picture,
+            "cover_image": row.cover_image,
+            "gender": row.gender,
+            "email": row.tutor_email,
+            "phone": row.tutor_phone,
+            "languages": languages,
+            "expertise_badge": row.expertise_badge,
+            "rating": float(row.avg_rating) if row.avg_rating else 0.0,
+            "rating_count": row.rating_count or 0,
+            "course_ids": course_ids,
+            "hourly_rate": float(row.hourly_rate) if row.hourly_rate else None,
+            "session_format": row.session_format,
+            "grade_level": row.grade_level,
+            "package_id": row.package_id,
+            "package_name": row.package_name,
+            "enrollment_status": row.enrollment_status,
+            "enrolled_at": row.enrolled_at.isoformat() if row.enrolled_at else None
+        })
+
+    return {"tutors": tutors_list, "total": len(tutors_list)}
 
 
 # ============================================
@@ -895,22 +906,26 @@ async def add_child(
         if "student" not in existing_user.roles:
             raise HTTPException(status_code=400, detail="User exists but is not a student")
 
-        # Link existing student to parent
-        if not parent_profile.children_ids:
-            parent_profile.children_ids = []
-        if existing_user.id not in parent_profile.children_ids:
-            parent_profile.children_ids = parent_profile.children_ids + [existing_user.id]
-            parent_profile.total_children = len(parent_profile.children_ids)
-
-        # Update student's parent_id array
+        # Get student profile first (needed for both linking operations)
         student_profile = db.query(StudentProfile).filter(
             StudentProfile.user_id == existing_user.id
         ).first()
-        if student_profile:
-            if not student_profile.parent_id:
-                student_profile.parent_id = []
-            if current_user.id not in student_profile.parent_id:
-                student_profile.parent_id = student_profile.parent_id + [current_user.id]
+
+        if not student_profile:
+            raise HTTPException(status_code=404, detail="Student profile not found for this user")
+
+        # Link existing student to parent (use student_profile.id, NOT user.id)
+        if not parent_profile.children_ids:
+            parent_profile.children_ids = []
+        if student_profile.id not in parent_profile.children_ids:
+            parent_profile.children_ids = parent_profile.children_ids + [student_profile.id]
+            parent_profile.total_children = len(parent_profile.children_ids)
+
+        # Update student's parent_id array (use parent_profile.id, NOT user.id)
+        if not student_profile.parent_id:
+            student_profile.parent_id = []
+        if parent_profile.id not in student_profile.parent_id:
+            student_profile.parent_id = student_profile.parent_id + [parent_profile.id]
 
         db.commit()
 
@@ -940,14 +955,15 @@ async def add_child(
     # Create basic student profile
     student_profile = StudentProfile(
         user_id=new_user.id,
-        parent_id=[current_user.id]  # Add parent to student's parent_id array
+        parent_id=[parent_profile.id]  # Add parent_profile.id (NOT user.id) to student's parent_id array
     )
     db.add(student_profile)
+    db.flush()  # Flush to get student_profile.id
 
-    # Update parent's children_ids array
+    # Update parent's children_ids array (use student_profile.id, NOT user.id)
     if not parent_profile.children_ids:
         parent_profile.children_ids = []
-    parent_profile.children_ids = parent_profile.children_ids + [new_user.id]
+    parent_profile.children_ids = parent_profile.children_ids + [student_profile.id]
     parent_profile.total_children = len(parent_profile.children_ids)
 
     db.commit()
@@ -989,7 +1005,7 @@ async def add_coparent(
     Sends email/SMS with temporary password.
     The invitation must be accepted by the co-parent before linking.
 
-    For existing users: Creates invitation with invitee_user_id set
+    For existing users: Creates invitation with invited_to_user_id set
     For new users: Creates invitation with pending_* fields and creates user account
     """
     from email_service import email_service
@@ -1005,6 +1021,14 @@ async def add_coparent(
     if not parent_profile:
         raise HTTPException(status_code=404, detail="Parent profile not found")
 
+    # Check if the inviter has children - you can only invite a co-parent if you have children to share
+    inviter_children_ids = parent_profile.children_ids if parent_profile.children_ids else []
+    if not inviter_children_ids or len(inviter_children_ids) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="You need to have at least one child linked to your parent profile before you can invite a co-parent. Please add children to your profile first."
+        )
+
     # Validate email or phone
     if not email and not phone:
         raise HTTPException(status_code=400, detail="Email or phone is required")
@@ -1019,47 +1043,78 @@ async def add_coparent(
     if not existing_user and phone:
         existing_user = db.query(User).filter(User.phone == phone).first()
 
-    # Check if there's already a pending invitation in parent_invitations table
+    # Check if there's already ANY invitation (pending, accepted, rejected) in parent_invitations table
     existing_invitation = db.execute(text("""
-        SELECT id FROM parent_invitations
-        WHERE inviter_id = :inviter_id
-        AND inviter_profile_type = 'parent'
-        AND invites_profile_type = 'parent'
-        AND status = 'pending'
+        SELECT id, status, relationship_type FROM parent_invitations
+        WHERE inviter_user_id = :inviter_user_id
         AND (
-            (invites_id = :invitee_id AND :invitee_id IS NOT NULL)
+            (invited_to_user_id = :invitee_id AND :invitee_id IS NOT NULL)
             OR (pending_email = :email AND :email IS NOT NULL)
             OR (pending_phone = :phone AND :phone IS NOT NULL)
         )
     """), {
-        "inviter_id": current_user.id,
+        "inviter_user_id": current_user.id,
         "invitee_id": existing_user.id if existing_user else None,
         "email": email,
         "phone": phone
     }).fetchone()
 
     if existing_invitation:
-        raise HTTPException(status_code=400, detail="An invitation is already pending for this person")
+        status = existing_invitation[1]
+        rel_type = existing_invitation[2]
+        if status == 'pending':
+            raise HTTPException(status_code=400, detail=f"A pending invitation already exists for this person (as {rel_type})")
+        elif status == 'accepted':
+            raise HTTPException(status_code=400, detail="This person has already accepted a previous invitation")
+        elif status == 'rejected':
+            raise HTTPException(status_code=400, detail="This person previously rejected your invitation")
+
+    # Check for REVERSE invitation (target user already invited current user)
+    if existing_user:
+        reverse_invitation = db.execute(text("""
+            SELECT id, status, relationship_type FROM parent_invitations
+            WHERE inviter_user_id = :invitee_id
+            AND invited_to_user_id = :inviter_user_id
+        """), {
+            "invitee_id": existing_user.id,
+            "inviter_user_id": current_user.id
+        }).fetchone()
+
+        if reverse_invitation:
+            rev_status = reverse_invitation[1]
+            if rev_status == 'pending':
+                raise HTTPException(status_code=400, detail="This user has already sent you an invitation. Check your received invitations to accept or reject it.")
+            elif rev_status == 'accepted':
+                raise HTTPException(status_code=400, detail="You have already accepted an invitation from this user")
+            elif rev_status == 'rejected':
+                raise HTTPException(status_code=400, detail="You previously rejected an invitation from this user")
 
     # Generate temporary password and invitation token
     temp_password = secrets.token_urlsafe(12)
     invitation_token = secrets.token_urlsafe(32)
 
     if existing_user:
-        # Existing user - create invitation with invites_id
+        # Existing user - create invitation with USER IDs (NEW SYSTEM)
+        # Get parent profiles for old columns (backward compatibility)
+        inviter_parent_result = db.execute(text("SELECT id FROM parent_profiles WHERE user_id = :user_id"), {"user_id": current_user.id}).fetchone()
+        invitee_parent_result = db.execute(text("SELECT id FROM parent_profiles WHERE user_id = :user_id"), {"user_id": existing_user.id}).fetchone()
+
+        inviter_parent_id = inviter_parent_result[0] if inviter_parent_result else None
+        invitee_parent_id = invitee_parent_result[0] if invitee_parent_result else None
+
         db.execute(text("""
             INSERT INTO parent_invitations (
-                inviter_id, invites_id, relationship_type, status,
-                inviter_profile_type, invites_profile_type,
-                invitation_token, token_expires_at, created_at
+                inviter_user_id, inviter_type, invited_to_user_id,
+                relationship_type, status,
+                invitation_token, token_expires_at, created_at, requested_as
             ) VALUES (
-                :inviter_id, :invitee_id, :relationship_type, 'pending',
-                'parent', 'parent',
-                :invitation_token, NOW() + INTERVAL '7 days', NOW()
+                :inviter_user_id, 'parent', :invited_to_user_id,
+                :relationship_type, 'pending',
+                :invitation_token, NOW() + INTERVAL '7 days', NOW(), 'coparent'
             )
         """), {
-            "inviter_id": current_user.id,
-            "invitee_id": existing_user.id,
+            "inviter_user_id": current_user.id,
+            "invited_to_user_id": existing_user.id,
             "relationship_type": relationship_type,
             "invitation_token": invitation_token
         })
@@ -1107,24 +1162,28 @@ async def add_coparent(
         )
         db.add(coparent_profile)
 
-        # Create invitation in parent_invitations with is_new_user flag
+        # Create invitation in parent_invitations with USER IDs (NEW SYSTEM)
+        # Get parent profiles for old columns (backward compatibility)
+        inviter_parent_result = db.execute(text("SELECT id FROM parent_profiles WHERE user_id = :user_id"), {"user_id": current_user.id}).fetchone()
+        inviter_parent_id = inviter_parent_result[0] if inviter_parent_result else None
+
         db.execute(text("""
             INSERT INTO parent_invitations (
-                inviter_id, invites_id, relationship_type, status,
-                inviter_profile_type, invites_profile_type,
+                inviter_user_id, inviter_type, invited_to_user_id,
+                relationship_type, status,
                 is_new_user, pending_email, pending_phone, pending_first_name,
                 pending_father_name, pending_grandfather_name, pending_gender,
-                temp_password_hash, invitation_token, token_expires_at, created_at
+                temp_password_hash, invitation_token, token_expires_at, created_at, requested_as
             ) VALUES (
-                :inviter_id, :invitee_id, :relationship_type, 'pending',
-                'parent', 'parent',
+                :inviter_user_id, 'parent', :invited_to_user_id,
+                :relationship_type, 'pending',
                 TRUE, :email, :phone, :first_name,
                 :father_name, :grandfather_name, :gender,
-                :temp_password_hash, :invitation_token, NOW() + INTERVAL '7 days', NOW()
+                :temp_password_hash, :invitation_token, NOW() + INTERVAL '7 days', NOW(), 'coparent'
             )
         """), {
-            "inviter_id": current_user.id,
-            "invitee_id": new_user.id,
+            "inviter_user_id": current_user.id,
+            "invited_to_user_id": new_user.id,
             "relationship_type": relationship_type,
             "email": email,
             "phone": phone,
@@ -1181,20 +1240,19 @@ async def resend_coparent_invitation(
     # Get the invitation from parent_invitations table
     invitation = db.execute(text("""
         SELECT
-            pi.id, pi.inviter_id, pi.invites_id as invitee_user_id, pi.relationship_type,
+            pi.id, pi.inviter_user_id, pi.invited_to_user_id, pi.relationship_type,
             pi.status, pi.is_new_user, pi.pending_email,
             u.email as user_email, u.first_name, u.father_name
         FROM parent_invitations pi
-        LEFT JOIN users u ON pi.invites_id = u.id
+        LEFT JOIN users u ON pi.invited_to_user_id = u.id
         WHERE pi.id = :invitation_id
-        AND pi.inviter_profile_type = 'parent'
-        AND pi.invites_profile_type = 'parent'
+        AND pi.inviter_type = 'parent'
     """), {"invitation_id": invitation_id}).fetchone()
 
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found")
 
-    if invitation.inviter_id != current_user.id:
+    if invitation.inviter_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only resend your own invitations")
 
     if invitation.status != 'pending':
@@ -1218,7 +1276,7 @@ async def resend_coparent_invitation(
             WHERE id = :user_id
         """), {
             "password_hash": hash_password(temp_password),
-            "user_id": invitation.invitee_user_id
+            "user_id": invitation.invited_to_user_id
         })
         db.commit()
 
@@ -1260,17 +1318,16 @@ async def cancel_coparent_invitation(
 
     # Get the invitation from parent_invitations table
     invitation = db.execute(text("""
-        SELECT id, inviter_id, status
+        SELECT id, inviter_user_id, status
         FROM parent_invitations
         WHERE id = :invitation_id
-        AND inviter_profile_type = 'parent'
-        AND invites_profile_type = 'parent'
+        AND inviter_type = 'parent'
     """), {"invitation_id": invitation_id}).fetchone()
 
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found")
 
-    if invitation.inviter_id != current_user.id:
+    if invitation.inviter_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only cancel your own invitations")
 
     if invitation.status != 'pending':
@@ -1604,3 +1661,90 @@ async def get_parent_review_stats(
     }
 
 
+# ============================================
+# WILDCARD PARENT ID ROUTE - MUST BE LAST
+# This route catches /api/parent/{any_integer}
+# It MUST be defined after all specific routes like:
+# - /api/parent/my-courses
+# - /api/parent/my-schools
+# - /api/parent/add-child
+# - /api/parent/profile
+# Otherwise FastAPI will try to parse "my-courses" as an integer
+# ============================================
+
+@router.get("/api/parent/{parent_id}")
+async def get_parent_by_id(
+    parent_id: int,
+    by_user_id: bool = False,
+    db: Session = Depends(get_db)
+):
+    """Get specific parent profile (public view)"""
+    if by_user_id:
+        parent_profile = db.query(ParentProfile).filter(
+            ParentProfile.user_id == parent_id
+        ).first()
+    else:
+        parent_profile = db.query(ParentProfile).filter(
+            ParentProfile.id == parent_id
+        ).first()
+
+    if not parent_profile:
+        raise HTTPException(status_code=404, detail="Parent profile not found")
+
+    user = db.query(User).filter(User.id == parent_profile.user_id).first()
+
+    # Get children info - children_ids stores student_profile.id (not user_id)
+    children_info = []
+    if parent_profile.children_ids:
+        for student_profile_id in parent_profile.children_ids:
+            # Look up by student_profile.id
+            child_student = db.query(StudentProfile).filter(
+                StudentProfile.id == student_profile_id
+            ).first()
+            if child_student:
+                # Get user info for this student
+                child_user = db.query(User).filter(User.id == child_student.user_id).first()
+                if child_user:
+                    children_info.append({
+                        "id": child_student.id,  # student_profile.id
+                        "user_id": child_user.id,
+                        "name": f"{child_user.first_name or ''} {child_user.father_name or ''}".strip() or "Student",
+                        "first_name": child_user.first_name,
+                        "father_name": child_user.father_name,
+                        "profile_picture": child_student.profile_picture,
+                        "cover_image": child_student.cover_image,
+                        "grade_level": child_student.grade_level,
+                        "studying_at": child_student.studying_at,
+                        "location": child_student.location,
+                        "username": child_student.username,
+                        "gender": child_user.gender,
+                        "about": child_student.about,
+                        "interested_in": child_student.interested_in or [],
+                        "hobbies": child_student.hobbies or [],
+                        "languages": child_student.languages or []
+                    })
+
+    return {
+        "id": parent_profile.id,
+        "user_id": parent_profile.user_id,
+        "username": parent_profile.username,
+        "name": f"{user.first_name} {user.father_name} {user.grandfather_name}",
+        "bio": parent_profile.bio,
+        "quote": parent_profile.quote,
+        "relationship_type": parent_profile.relationship_type,
+        "location": parent_profile.location,
+        "children_ids": parent_profile.children_ids or [],
+        "children_info": children_info,
+        "rating": parent_profile.rating,
+        "rating_count": parent_profile.rating_count,
+        "is_verified": parent_profile.is_verified,
+        "profile_picture": parent_profile.profile_picture,
+        "cover_image": parent_profile.cover_image,
+        "total_children": parent_profile.total_children,
+        "total_sessions_booked": parent_profile.total_sessions_booked,
+        "total_amount_spent": parent_profile.total_amount_spent,
+        "created_at": parent_profile.created_at,
+        # Include user contact info for parent cards
+        "email": user.email if user else None,
+        "phone": user.phone if user else None
+    }

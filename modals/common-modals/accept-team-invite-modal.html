@@ -1,0 +1,124 @@
+<!-- ============================================
+     ACCEPT TEAM INVITE MODAL
+     Opens when user clicks invitation link from email
+     Shows brand info and allows accepting/declining
+     ============================================ -->
+
+<div class="accept-team-invite-modal-overlay" id="accept-team-invite-modal-overlay">
+    <div class="accept-team-invite-modal">
+        <!-- Loading State -->
+        <div class="team-invite-loading" id="team-invite-loading">
+            <div class="team-invite-spinner"></div>
+            <p>Loading invitation...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="team-invite-error" id="team-invite-error" style="display: none;">
+            <div class="team-invite-error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3>Invalid Invitation</h3>
+            <p id="team-invite-error-message">This invitation link is invalid or has expired.</p>
+            <button class="team-invite-close-btn" onclick="AcceptTeamInviteModal.close()">
+                <i class="fas fa-times"></i>
+                Close
+            </button>
+        </div>
+
+        <!-- Login Required State -->
+        <div class="team-invite-login-required" id="team-invite-login-required" style="display: none;">
+            <div class="team-invite-login-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <h3>Login Required</h3>
+            <p>You need to log in to accept this invitation.</p>
+            <p class="team-invite-email-hint">Make sure to log in with: <strong id="team-invite-expected-email"></strong></p>
+            <div class="team-invite-login-actions">
+                <button class="team-invite-login-btn" onclick="AcceptTeamInviteModal.openLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Log In
+                </button>
+                <button class="team-invite-register-btn" onclick="AcceptTeamInviteModal.openRegister()">
+                    <i class="fas fa-user-plus"></i>
+                    Create Account
+                </button>
+            </div>
+        </div>
+
+        <!-- Invitation Content -->
+        <div class="team-invite-content" id="team-invite-content" style="display: none;">
+            <!-- Header with brand info -->
+            <div class="team-invite-header">
+                <div class="team-invite-brand-badge">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h2>You're Invited!</h2>
+                <p class="team-invite-subtitle">
+                    <span id="team-invite-inviter-name">Someone</span> has invited you to join
+                </p>
+            </div>
+
+            <!-- Brand Card -->
+            <div class="team-invite-brand-card">
+                <div class="team-invite-brand-logo" id="team-invite-brand-logo">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="team-invite-brand-info">
+                    <h3 id="team-invite-brand-name">Brand Name</h3>
+                    <span class="team-invite-role-badge">
+                        <i class="fas fa-briefcase"></i>
+                        Brand Manager
+                    </span>
+                </div>
+            </div>
+
+            <!-- Permissions List -->
+            <div class="team-invite-permissions">
+                <h4>As a Brand Manager, you'll be able to:</h4>
+                <ul>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Create and manage advertising campaigns
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        View campaign analytics and performance
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Manage brand assets and creatives
+                    </li>
+                    <li id="team-invite-price-permission" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        Set campaign pricing
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="team-invite-actions">
+                <button class="team-invite-decline-btn" onclick="AcceptTeamInviteModal.decline()">
+                    <i class="fas fa-times"></i>
+                    Decline
+                </button>
+                <button class="team-invite-accept-btn" id="team-invite-accept-btn" onclick="AcceptTeamInviteModal.accept()">
+                    <i class="fas fa-check"></i>
+                    Accept Invitation
+                </button>
+            </div>
+        </div>
+
+        <!-- Success State -->
+        <div class="team-invite-success" id="team-invite-success" style="display: none;">
+            <div class="team-invite-success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Welcome to the Team!</h3>
+            <p>You've successfully joined <strong id="team-invite-success-brand"></strong></p>
+            <button class="team-invite-go-btn" onclick="AcceptTeamInviteModal.goToAdvertiser()">
+                <i class="fas fa-arrow-right"></i>
+                Go to Advertiser Dashboard
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,9 +1,17 @@
 // Payment Gateway Manager
 // Handles dynamic payment gateway management with modal-based CRUD
 
-// API Configuration
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'https://api.astegni.com';
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // State
@@ -17,7 +25,7 @@ async function loadPaymentGateways() {
     console.log('loadPaymentGateways() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading default gateways');
             paymentGateways = getDefaultPaymentGateways();
@@ -25,8 +33,9 @@ async function loadPaymentGateways() {
             return;
         }
 
-        console.log('Fetching payment gateways from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/pricing/payment-gateways`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching payment gateways from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin/pricing/payment-gateways`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -263,7 +272,7 @@ async function savePaymentGateway(event) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -280,7 +289,8 @@ async function savePaymentGateway(event) {
 
         console.log('Saving payment gateway:', gatewayData);
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/pricing/payment-gateways`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/pricing/payment-gateways`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -319,12 +329,13 @@ async function deletePaymentGateway(gatewayId) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/pricing/payment-gateways/${gatewayId}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/pricing/payment-gateways/${gatewayId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

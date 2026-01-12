@@ -145,6 +145,13 @@ const FindTutorsController = {
                 tutors = tutors.filter(tutor => historyTutorIds.includes(tutor.id));
             }
 
+            // Filter tutors to only show those with complete profiles (first_name, father_name, grandfather_name)
+            if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.filterVisibleTutors === 'function') {
+                const originalCount = tutors.length;
+                tutors = ProfileCompletionGuard.filterVisibleTutors(tutors);
+                console.log(`[ProfileGuard] Filtered tutors: ${originalCount} → ${tutors.length} (hid ${originalCount - tutors.length} incomplete profiles)`);
+            }
+
             FindTutorsState.tutors = tutors;
             FindTutorsState.filteredTutors = tutors; // Store for search history
 

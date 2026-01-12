@@ -3,7 +3,7 @@ Tutor Packages API Endpoints
 Manages tutor packages with pricing calculator integration
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -14,6 +14,14 @@ import os
 import jwt
 from jwt import PyJWTError
 from dotenv import load_dotenv
+
+# Import 2FA protection helper
+try:
+    from tfa_protection import require_2fa
+    HAS_2FA_PROTECTION = True
+except ImportError:
+    HAS_2FA_PROTECTION = False
+    print("Warning: 2FA protection not available in this module")
 
 load_dotenv()
 
@@ -236,8 +244,16 @@ def fetch_course_details(cur, course_ids):
 
 # GET - Get all packages for current tutor
 @router.get("/packages", response_model=List[PackageResponse])
-async def get_tutor_packages(current_user = Depends(get_current_user)):
-    """Get all packages for the authenticated tutor"""
+async def get_tutor_packages(
+    current_user = Depends(get_current_user),
+    verification_token: Optional[str] = Header(default=None, alias="X-2FA-Token")
+):
+    """Get all packages for the authenticated tutor (2FA protected if enabled)"""
+
+    # Check 2FA protection
+    if HAS_2FA_PROTECTION:
+        require_2fa(current_user['id'], verification_token)
+
     print(f"========================================")
     print(f"✅ GET /packages endpoint called!")
     print(f"Current user type: {type(current_user)}")
@@ -324,8 +340,16 @@ async def get_tutor_packages(current_user = Depends(get_current_user)):
 
 # POST - Create new package
 @router.post("/packages", response_model=PackageResponse, status_code=status.HTTP_201_CREATED)
-async def create_package(package: PackageCreate, current_user = Depends(get_current_user)):
-    """Create a new tutoring package"""
+async def create_package(
+    package: PackageCreate,
+    current_user = Depends(get_current_user),
+    verification_token: Optional[str] = Header(default=None, alias="X-2FA-Token")
+):
+    """Create a new tutoring package (2FA protected if enabled)"""
+
+    # Check 2FA protection
+    if HAS_2FA_PROTECTION:
+        require_2fa(current_user['id'], verification_token)
 
     conn = get_db_connection()
     cur = conn.cursor()
@@ -445,9 +469,15 @@ async def create_package(package: PackageCreate, current_user = Depends(get_curr
 async def update_package(
     package_id: int,
     package: PackageUpdate,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    verification_token: Optional[str] = Header(default=None, alias="X-2FA-Token")
 ):
-    """Update an existing package"""
+    """Update an existing package (2FA protected if enabled)"""
+
+    # Check 2FA protection
+    if HAS_2FA_PROTECTION:
+        require_2fa(current_user['id'], verification_token)
+
     print(f"========================================")
     print(f"📝 PUT /packages/{package_id} endpoint called!")
     print(f"📦 Received package data: {package}")
@@ -768,8 +798,16 @@ async def delete_course_request(request_id: int, current_user = Depends(get_curr
 
 # DELETE - Delete package
 @router.delete("/packages/{package_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_package(package_id: int, current_user = Depends(get_current_user)):
-    """Delete a package"""
+async def delete_package(
+    package_id: int,
+    current_user = Depends(get_current_user),
+    verification_token: Optional[str] = Header(default=None, alias="X-2FA-Token")
+):
+    """Delete a package (2FA protected if enabled)"""
+
+    # Check 2FA protection
+    if HAS_2FA_PROTECTION:
+        require_2fa(current_user['id'], verification_token)
 
     conn = get_db_connection()
     cur = conn.cursor()

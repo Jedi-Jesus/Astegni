@@ -458,8 +458,14 @@ function updateProfilePictures() {
         }
     }
     
-    // Update any other profile pictures on the page
+    // Update any other profile pictures on the page (navbar/dropdown only)
+    // IMPORTANT: Skip profile avatars in main content areas (view pages) - those show OTHER users' pictures
     document.querySelectorAll('.user-profile-pic, .profile-avatar').forEach(img => {
+        // Skip if this is the main profile avatar in a view page (shows another user's picture)
+        if (img.id === 'profile-avatar') return;
+        // Skip if inside main content area (profile-header-section, profile-content, etc.)
+        if (img.closest('.profile-header-section, .profile-content, .main-content, .content-area')) return;
+
         if (img && userData.profile_picture) {
             img.src = fixImageUrl(userData.profile_picture);
             img.onerror = function() {
@@ -710,6 +716,9 @@ function updateProfilePictures() {
                 dropdownUserRole.textContent = formatRoleName(activeRole);
             }
 
+            // Also update mobile role switcher
+            updateMobileRoleSwitcher(userFacingRoles, activeRole);
+
         } catch (error) {
             console.error('Error fetching user roles:', error);
             // Still show Add Role option even on error
@@ -732,7 +741,7 @@ function updateProfilePictures() {
     let otpResendSeconds = 60;
     let addRoleData = { role: null, password: null }; // Store data between steps
 
-    // Role icons mapping
+    // Role icons mapping (defined early for use in mobile role switcher)
     const roleIcons = {
         student: '🎓',
         tutor: '👨‍🏫',
@@ -741,6 +750,125 @@ function updateProfilePictures() {
         user: '👤',
         admin: '⚙️'
     };
+
+    // Helper function to update mobile profile section visibility and data
+    function updateMobileProfileSection() {
+        const mobileProfileSection = document.getElementById('mobile-profile-section');
+        const mobileAuthSection = document.getElementById('mobile-auth-section');
+        const mobileNotificationBtn = document.getElementById('mobile-notification-btn');
+
+        const token = getStoredAuthToken();
+        const userData = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+        if (token && userData) {
+            // User is logged in - show profile section, hide auth buttons
+            if (mobileProfileSection) {
+                mobileProfileSection.classList.remove('hidden');
+
+                // Use inline SVG placeholder instead of non-existent image
+                const defaultPicture = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E";
+
+                // Helper to fix image URLs
+                const fixImageUrl = (url) => {
+                    if (!url) return defaultPicture;
+                    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                    if (typeof UrlHelper !== 'undefined') return UrlHelper.getAssetUrl(url);
+                    if (window.location.protocol === 'file:') {
+                        return `${window.API_BASE_URL || 'http://localhost:8000'}${url}`;
+                    }
+                    return url;
+                };
+
+                // Update profile info
+                const profilePic = document.getElementById('mobile-profile-pic');
+                const profileName = document.getElementById('mobile-profile-name');
+                const profileRole = document.getElementById('mobile-profile-role');
+                const dropdownPic = document.getElementById('mobile-dropdown-pic');
+                const dropdownName = document.getElementById('mobile-dropdown-name');
+                const dropdownEmail = document.getElementById('mobile-dropdown-email');
+                const profileLink = document.getElementById('mobile-profile-link');
+
+                const avatarUrl = fixImageUrl(userData.profile_picture_url || userData.profile_picture || userData.profilePicture);
+                const name = userData.name || userData.full_name || `${userData.first_name || ''} ${userData.father_name || ''}`.trim() || 'User';
+                const email = userData.email || '';
+                const role = localStorage.getItem('userRole') || localStorage.getItem('active_role') || userData.role || userData.active_role || 'user';
+
+                if (profilePic) {
+                    profilePic.src = avatarUrl;
+                    profilePic.onerror = function() { this.src = defaultPicture; };
+                }
+                if (profileName) profileName.textContent = name;
+                if (profileRole) profileRole.textContent = formatRoleName(role);
+                if (dropdownPic) {
+                    dropdownPic.src = avatarUrl;
+                    dropdownPic.onerror = function() { this.src = defaultPicture; };
+                }
+                if (dropdownName) dropdownName.textContent = name;
+                if (dropdownEmail) dropdownEmail.textContent = email;
+
+                // Set profile link
+                if (profileLink) {
+                    const profilePage = getProfileUrl(role);
+                    profileLink.href = profilePage;
+                }
+            }
+
+            if (mobileAuthSection) mobileAuthSection.classList.add('hidden');
+            if (mobileNotificationBtn) mobileNotificationBtn.classList.remove('hidden');
+        } else {
+            // User is logged out - hide profile section, show auth buttons
+            if (mobileProfileSection) mobileProfileSection.classList.add('hidden');
+            if (mobileAuthSection) mobileAuthSection.classList.remove('hidden');
+            if (mobileNotificationBtn) mobileNotificationBtn.classList.add('hidden');
+        }
+    }
+
+    // Helper function to update mobile role switcher
+    function updateMobileRoleSwitcher(userFacingRoles, activeRole) {
+        const mobileRoleSwitcherSection = document.getElementById('mobile-role-switcher-section');
+        const mobileRoleOptions = document.getElementById('mobile-role-options');
+
+        if (!mobileRoleSwitcherSection || !mobileRoleOptions) return;
+
+        // Always show section for logged-in users (even with single role, to show Add Role)
+        mobileRoleSwitcherSection.classList.remove('hidden');
+        mobileRoleOptions.innerHTML = '';
+
+        // Add existing roles
+        userFacingRoles.forEach(role => {
+            const isActive = role === activeRole;
+            const roleOption = document.createElement('button');
+            roleOption.className = `mobile-role-option ${isActive ? 'active' : ''}`;
+            roleOption.innerHTML = `
+                <span class="role-icon">${roleIcons[role] || '👤'}</span>
+                <span class="role-name">${formatRoleName(role)}</span>
+                ${isActive ? '<span class="active-badge">Active</span>' : ''}
+            `;
+
+            if (!isActive) {
+                roleOption.onclick = () => switchToRole(role);
+            }
+
+            mobileRoleOptions.appendChild(roleOption);
+        });
+
+        // Always add "Add Role" option
+        const addRoleOption = document.createElement('button');
+        addRoleOption.className = 'mobile-role-option add-role-option';
+        addRoleOption.innerHTML = `
+            <span class="role-icon">+</span>
+            <span class="role-name">Add New Role</span>
+        `;
+        addRoleOption.onclick = () => {
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+            const mobileMenuAlt = document.getElementById('mobileMenu');
+            if (mobileMenuAlt) mobileMenuAlt.classList.add('hidden');
+            openAddRoleModal();
+        };
+        mobileRoleOptions.appendChild(addRoleOption);
+    }
 
     async function openAddRoleModal() {
         // Wait for modal to be loaded if using CommonModalLoader
@@ -1300,26 +1428,29 @@ function updateProfilePictures() {
         // Show profile container
         const profileContainer = document.getElementById('profile-container');
         const notificationBell = document.getElementById('notification-bell');
-        
+
         if (profileContainer) {
             profileContainer.classList.remove('hidden');
             profileContainer.style.display = 'flex';
             profileContainer.style.visibility = 'visible';
         }
-        
+
         if (notificationBell) {
             notificationBell.classList.remove('hidden');
             notificationBell.style.display = 'flex';
         }
-        
+
         // Update profile name
         const profileName = document.getElementById('profile-name');
         if (profileName && currentUser) {
             const userName = currentUser.name || `${currentUser.first_name} ${currentUser.father_name}`;
             profileName.textContent = userName;
         }
-        
+
         updateProfilePictures();
+
+        // Update mobile profile section
+        updateMobileProfileSection();
     }
 
     // Check if current page matches user's active role
@@ -1443,6 +1574,7 @@ function updateProfilePictures() {
         fetchCurrentUserData,
         setupRoleSwitcher,
         updateProfilePictures,
+        updateMobileProfileSection,
         openAddRoleModal,
         closeAddRoleModal,
         goBackToStep1,
@@ -1461,6 +1593,37 @@ if (document.readyState === 'loading') {
     ProfileSystem.initialize();
 }
 
+// Toggle mobile profile dropdown (for mobile menu)
+window.toggleMobileProfileDropdown = function() {
+    const dropdown = document.querySelector('.mobile-profile-dropdown');
+    const toggle = document.getElementById('mobile-profile-toggle');
+
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+    if (toggle) {
+        toggle.classList.toggle('expanded');
+    }
+};
+
+// Open login modal (for mobile menu and other places)
+window.openLoginModal = window.openLoginModal || function() {
+    if (window.openAuthModal) {
+        window.openAuthModal('login');
+    } else if (window.openModal) {
+        window.openModal('login-modal');
+    }
+};
+
+// Open register modal (for mobile menu and other places)
+window.openRegisterModal = window.openRegisterModal || function() {
+    if (window.openAuthModal) {
+        window.openAuthModal('register');
+    } else if (window.openModal) {
+        window.openModal('register-modal');
+    }
+};
+
 // Export functions to window for global access
 window.toggleProfileDropdown = ProfileSystem.toggleProfileDropdown;
 window.openProfileDropdown = ProfileSystem.openProfileDropdown;
@@ -1471,6 +1634,7 @@ window.updateProfileDropdown = ProfileSystem.updateProfileDropdown;
 window.fetchCurrentUserData = ProfileSystem.fetchCurrentUserData;
 window.setupRoleSwitcher = ProfileSystem.setupRoleSwitcher;
 window.updateProfilePictures = ProfileSystem.updateProfilePictures;
+window.updateMobileProfileSection = ProfileSystem.updateMobileProfileSection;
 window.openAddRoleModal = ProfileSystem.openAddRoleModal;
 window.closeAddRoleModal = ProfileSystem.closeAddRoleModal;
 window.goBackToStep1 = ProfileSystem.goBackToStep1;

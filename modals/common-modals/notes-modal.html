@@ -1,0 +1,574 @@
+<!--
+  Modal: notes-modal
+  Purpose: Note Editor with rich text editing, voice/video recording, transcription, and TTS
+  Shared across: tutor-profile, student-profile, parent-profile
+
+  Dependencies:
+  - css/common-modals/advanced-notes.css
+  - js/common-modals/advanced-notes.js
+  - jsPDF library (for PDF export)
+-->
+
+<!-- Notes Editor Modal -->
+<div class="modal" id="notesEditorModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeEditor()"></div>
+  <div class="modal-content notes-editor-modal">
+    <!-- Editor View -->
+    <div class="editor-container active" id="editorContainer">
+      <!-- Main Editor -->
+      <div class="editor-main">
+        <div class="editor-header">
+          <h2 class="editor-title" id="editorTitle">New Note</h2>
+          <div class="editor-actions">
+            <button class="btn btn-icon" onclick="NotesManager.closeEditor()" title="Close">
+              <i class="fas fa-times"></i>
+            </button>
+            <button class="btn btn-secondary" onclick="NotesManager.duplicateNote()">
+              <i class="fas fa-copy"></i> Duplicate
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" onclick="NotesManager.toggleExportMenu()">
+                <i class="fas fa-download"></i> Export
+              </button>
+              <div class="dropdown-menu" id="exportMenu">
+                <button class="dropdown-item" onclick="NotesManager.exportNoteAsPDF()">
+                  <i class="fas fa-file-pdf"></i> Export as PDF
+                </button>
+                <button class="dropdown-item" onclick="NotesManager.exportNoteAsDoc()">
+                  <i class="fas fa-file-word"></i> Export as Word
+                </button>
+                <button class="dropdown-item" onclick="NotesManager.exportNoteAsMarkdown()">
+                  <i class="fas fa-file-alt"></i> Export as Markdown
+                </button>
+                <button class="dropdown-item" onclick="NotesManager.exportNoteAsHTML()">
+                  <i class="fas fa-file-code"></i> Export as HTML
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="NotesManager.toggleFavorite()" id="favoriteBtn">
+              <i class="fas fa-star"></i>
+            </button>
+            <button class="btn btn-danger" onclick="NotesManager.deleteCurrentNote()">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-primary" onclick="NotesManager.saveNote()">
+              <i class="fas fa-save"></i> Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-section">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" id="noteTitle" placeholder="Enter note title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="datetime-local" class="form-input" id="noteDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course</label>
+              <div class="input-with-suggestions">
+                <input type="text" class="form-input" id="noteCourse" placeholder="e.g., Mathematics 101">
+                <div class="suggestions-dropdown" id="courseSuggestions"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tutor</label>
+              <div class="input-with-suggestions">
+                <input type="text" class="form-input" id="noteTutor" placeholder="e.g., Dr. Smith">
+                <div class="suggestions-dropdown" id="tutorSuggestions"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tags</label>
+              <input type="text" class="form-input" id="noteTags" placeholder="e.g., exam, important, review">
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="NotesManager.formatText('bold')" title="Bold (Ctrl+B)">
+              <b>B</b>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('italic')" title="Italic (Ctrl+I)">
+              <i>I</i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('underline')" title="Underline (Ctrl+U)">
+              <u>U</u>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('strikeThrough')" title="Strikethrough">
+              <s>S</s>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="NotesManager.formatText('subscript')" title="Subscript">
+              X<sub>2</sub>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('superscript')" title="Superscript">
+              X<sup>2</sup>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="NotesManager.showHighlightColors()" title="Highlight">
+              <span style="background: yellow; padding: 2px;">H</span>
+            </button>
+            <div class="highlight-colors" id="highlightColors">
+              <button class="color-btn" style="background: #FFEB3B" onclick="NotesManager.formatText('hiliteColor', '#FFEB3B')"></button>
+              <button class="color-btn" style="background: #FFC107" onclick="NotesManager.formatText('hiliteColor', '#FFC107')"></button>
+              <button class="color-btn" style="background: #4CAF50" onclick="NotesManager.formatText('hiliteColor', '#4CAF50')"></button>
+              <button class="color-btn" style="background: #2196F3" onclick="NotesManager.formatText('hiliteColor', '#2196F3')"></button>
+              <button class="color-btn" style="background: #E91E63" onclick="NotesManager.formatText('hiliteColor', '#E91E63')"></button>
+            </div>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="NotesManager.formatText('insertUnorderedList')" title="Bullet List">
+              <i class="fas fa-list-ul"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('insertOrderedList')" title="Numbered List">
+              <i class="fas fa-list-ol"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('indent')" title="Indent">
+              <i class="fas fa-indent"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('outdent')" title="Outdent">
+              <i class="fas fa-outdent"></i>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <select class="toolbar-select" onchange="NotesManager.formatText('fontSize', this.value)">
+              <option value="">Size</option>
+              <option value="1">Small</option>
+              <option value="3">Normal</option>
+              <option value="5">Large</option>
+              <option value="7">Huge</option>
+            </select>
+            <input type="color" class="color-input" id="textColor" onchange="NotesManager.formatText('foreColor', this.value)" title="Text Color">
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn media-btn" onclick="NotesManager.openVoiceRecorder()" title="Voice Note">
+              <i class="fas fa-microphone"></i>
+            </button>
+            <button class="toolbar-btn media-btn" onclick="NotesManager.openVideoRecorder()" title="Video Note">
+              <i class="fas fa-video"></i>
+            </button>
+            <button class="toolbar-btn transcribe-btn" onclick="NotesManager.startTranscription()" title="Transcribe Speech">
+              <i class="fas fa-microphone-alt"></i>
+            </button>
+            <button class="toolbar-btn tts-btn" onclick="NotesManager.openTextToSpeech()" title="Text to Speech">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.openBackgroundModal()" title="Background">
+              <i class="fas fa-image"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.removeNoteBackground()" title="Remove Background">
+              <i class="fas fa-eraser"></i>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="NotesManager.formatText('undo')" title="Undo (Ctrl+Z)">
+              <i class="fas fa-undo"></i>
+            </button>
+            <button class="toolbar-btn" onclick="NotesManager.formatText('redo')" title="Redo (Ctrl+Y)">
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content Editor -->
+        <div class="editor-content-wrapper">
+          <div contenteditable="true" class="form-textarea" id="noteContent" placeholder="Start writing your note..."></div>
+
+          <!-- Media Container -->
+          <div class="media-container" id="mediaContainer">
+            <!-- Media items will be added here dynamically -->
+          </div>
+
+          <div class="editor-footer">
+            <span id="wordCount">0 words</span>
+            <span id="charCount">0 characters</span>
+            <span id="autoSaveIndicator" class="auto-save-indicator">
+              <span class="auto-save-dot"></span>
+              Auto-save enabled
+            </span>
+            <span id="lastSaved">Not saved</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="editor-actions-bottom">
+          <button class="btn btn-secondary" onclick="NotesManager.cancelEdit()">Cancel</button>
+          <button class="btn btn-primary" onclick="NotesManager.saveAndClose()">Save & Close</button>
+        </div>
+      </div>
+
+      <!-- History Sidebar -->
+      <div class="history-sidebar">
+        <div class="history-header">
+          <h3 class="history-title">Notes History</h3>
+          <button class="btn btn-icon-small" onclick="NotesManager.toggleHistorySidebar()" title="Toggle Sidebar">
+            <i class="fas fa-exchange-alt"></i>
+          </button>
+        </div>
+        <div class="history-search">
+          <input type="text" class="history-search-input" id="historySearch" placeholder="Search history...">
+        </div>
+        <div class="history-cards" id="historyCards">
+          <!-- History cards will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Voice Recorder Modal -->
+<div class="modal" id="voiceRecorderModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeVoiceRecorder()"></div>
+  <div class="modal-content recorder-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-microphone"></i> Record Voice Note</h3>
+      <button class="modal-close" onclick="NotesManager.closeVoiceRecorder()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="recorder-interface">
+        <div class="waveform-container">
+          <canvas id="voiceWaveform" width="400" height="100"></canvas>
+        </div>
+        <div class="recorder-timer" id="voiceTimer">00:00</div>
+        <div class="recorder-controls">
+          <button class="recorder-btn record-btn" id="voiceRecordBtn" onclick="NotesManager.toggleVoiceRecording()">
+            <span class="record-icon"></span> Start Recording
+          </button>
+          <button class="recorder-btn pause-btn" id="voicePauseBtn" onclick="NotesManager.pauseVoiceRecording()" disabled>
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="recorder-btn stop-btn" id="voiceStopBtn" onclick="NotesManager.stopVoiceRecording()" disabled>
+            <i class="fas fa-stop"></i> Stop
+          </button>
+        </div>
+        <div class="recording-status" id="voiceStatus">Ready to record</div>
+        <audio id="voicePlayback" controls style="display: none; width: 100%; margin-top: 20px;"></audio>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="NotesManager.closeVoiceRecorder()">Cancel</button>
+      <button class="btn btn-primary" id="saveVoiceBtn" onclick="NotesManager.saveVoiceNote()" disabled>Save Voice Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Recorder Modal -->
+<div class="modal" id="videoRecorderModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeVideoRecorder()"></div>
+  <div class="modal-content recorder-modal large">
+    <div class="modal-header">
+      <h3><i class="fas fa-video"></i> Record Video Note</h3>
+      <button class="modal-close" onclick="NotesManager.closeVideoRecorder()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="recorder-interface">
+        <div class="video-container">
+          <video id="videoPreview" autoplay muted></video>
+          <video id="videoPlayback" controls style="display: none;"></video>
+        </div>
+        <div class="recorder-timer" id="videoTimer">00:00</div>
+        <div class="recorder-controls">
+          <button class="recorder-btn record-btn" id="videoRecordBtn" onclick="NotesManager.toggleVideoRecording()">
+            <span class="record-icon"></span> Start Recording
+          </button>
+          <button class="recorder-btn pause-btn" id="videoPauseBtn" onclick="NotesManager.pauseVideoRecording()" disabled>
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="recorder-btn stop-btn" id="videoStopBtn" onclick="NotesManager.stopVideoRecording()" disabled>
+            <i class="fas fa-stop"></i> Stop
+          </button>
+          <button class="recorder-btn camera-switch" onclick="NotesManager.switchCamera()" title="Switch Camera">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="recording-status" id="videoStatus">Camera ready</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="NotesManager.closeVideoRecorder()">Cancel</button>
+      <button class="btn btn-primary" id="saveVideoBtn" onclick="NotesManager.saveVideoNote()" disabled>Save Video Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transcription Modal -->
+<div class="modal" id="transcriptionModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeTranscription()"></div>
+  <div class="modal-content transcription-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-microphone-alt"></i> Speech to Text Transcription</h3>
+      <button class="modal-close" onclick="NotesManager.closeTranscription()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="transcription-interface">
+        <div class="transcription-visualization">
+          <div class="voice-wave">
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+          </div>
+        </div>
+
+        <div class="language-selector">
+          <label for="transcriptionLang">Language:</label>
+          <select id="transcriptionLang" class="form-select">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="am-ET">Amharic</option>
+            <option value="om-ET">Oromo</option>
+            <option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option>
+            <option value="de-DE">German</option>
+            <option value="it-IT">Italian</option>
+            <option value="pt-BR">Portuguese</option>
+            <option value="ru-RU">Russian</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
+            <option value="ja-JP">Japanese</option>
+            <option value="ko-KR">Korean</option>
+            <option value="ar-SA">Arabic</option>
+          </select>
+        </div>
+
+        <div class="transcription-controls">
+          <button class="transcription-btn" id="startTranscribeBtn" onclick="NotesManager.toggleTranscription()">
+            <i class="fas fa-microphone"></i> Start Listening
+          </button>
+          <button class="transcription-btn secondary" onclick="NotesManager.clearTranscription()">
+            <i class="fas fa-eraser"></i> Clear Text
+          </button>
+        </div>
+
+        <div class="transcription-status" id="transcriptionStatus">Ready to transcribe</div>
+
+        <div class="transcription-result">
+          <label>Transcribed Text:</label>
+          <div class="transcription-text" id="transcriptionText" contenteditable="true"></div>
+          <div class="transcription-confidence" id="transcriptionConfidence"></div>
+        </div>
+
+        <div class="transcription-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="continuousTranscription" checked>
+            Continuous transcription
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="punctuationMode">
+            Auto-punctuation
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="NotesManager.closeTranscription()">Cancel</button>
+      <button class="btn btn-primary" onclick="NotesManager.insertTranscription()">Insert to Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Text to Speech Modal -->
+<div class="modal" id="ttsModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeTextToSpeech()"></div>
+  <div class="modal-content tts-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-volume-up"></i> Convert Text to Speech</h3>
+      <button class="modal-close" onclick="NotesManager.closeTextToSpeech()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tts-interface">
+        <div class="tts-text-input">
+          <label>Text to Convert:</label>
+          <textarea id="ttsText" class="form-textarea" placeholder="Enter or paste text here, or click 'Use Note Content' to convert your entire note..."></textarea>
+          <button class="btn btn-secondary" onclick="NotesManager.useNoteContent()">
+            <i class="fas fa-file-alt"></i> Use Note Content
+          </button>
+        </div>
+
+        <div class="tts-settings">
+          <div class="tts-setting-group">
+            <label for="ttsVoice">Voice:</label>
+            <select id="ttsVoice" class="form-select">
+              <!-- Voices will be populated dynamically -->
+            </select>
+          </div>
+
+          <div class="tts-setting-group">
+            <label for="ttsRate">Speed:</label>
+            <div class="slider-container">
+              <input type="range" id="ttsRate" min="0.5" max="2" value="1" step="0.1">
+              <span id="ttsRateValue">1.0x</span>
+            </div>
+          </div>
+
+          <div class="tts-setting-group">
+            <label for="ttsPitch">Pitch:</label>
+            <div class="slider-container">
+              <input type="range" id="ttsPitch" min="0.5" max="2" value="1" step="0.1">
+              <span id="ttsPitchValue">1.0</span>
+            </div>
+          </div>
+
+          <div class="tts-setting-group">
+            <label for="ttsVolume">Volume:</label>
+            <div class="slider-container">
+              <input type="range" id="ttsVolume" min="0" max="1" value="1" step="0.1">
+              <span id="ttsVolumeValue">100%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tts-controls">
+          <button class="tts-btn play" id="ttsPlayBtn" onclick="NotesManager.playTextToSpeech()">
+            <i class="fas fa-play"></i> Play
+          </button>
+          <button class="tts-btn pause" id="ttsPauseBtn" onclick="NotesManager.pauseTextToSpeech()" disabled>
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="tts-btn stop" id="ttsStopBtn" onclick="NotesManager.stopTextToSpeech()" disabled>
+            <i class="fas fa-stop"></i> Stop
+          </button>
+          <button class="tts-btn download" onclick="NotesManager.downloadAudio()">
+            <i class="fas fa-download"></i> Save as Audio
+          </button>
+        </div>
+
+        <div class="tts-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="ttsProgress"></div>
+          </div>
+          <span id="ttsStatus">Ready</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="NotesManager.closeTextToSpeech()">Close</button>
+      <button class="btn btn-primary" onclick="NotesManager.saveAsAudioNote()">Save as Audio Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Media Transcription Modal -->
+<div class="modal" id="mediaTranscriptionModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeMediaTranscription()"></div>
+  <div class="modal-content media-transcription-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-audio"></i> Transcribe Media</h3>
+      <button class="modal-close" onclick="NotesManager.closeMediaTranscription()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="media-transcription-interface">
+        <div class="media-player" id="mediaPlayer">
+          <!-- Media element will be inserted here -->
+        </div>
+
+        <div class="transcription-settings">
+          <label for="mediaTranscriptionLang">Language:</label>
+          <select id="mediaTranscriptionLang" class="form-select">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="am-ET">Amharic</option>
+            <option value="om-ET">Oromo</option>
+            <option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option>
+            <option value="de-DE">German</option>
+            <option value="it-IT">Italian</option>
+            <option value="pt-BR">Portuguese</option>
+            <option value="ru-RU">Russian</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
+            <option value="ja-JP">Japanese</option>
+            <option value="ko-KR">Korean</option>
+            <option value="ar-SA">Arabic</option>
+          </select>
+        </div>
+
+        <div class="transcription-controls">
+          <button class="btn btn-primary" onclick="NotesManager.startMediaTranscription()">
+            <i class="fas fa-play"></i> Start Transcription
+          </button>
+        </div>
+
+        <div class="transcription-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="mediaTranscriptionProgress"></div>
+          </div>
+          <span id="mediaTranscriptionStatus">Ready to transcribe</span>
+        </div>
+
+        <div class="transcription-result">
+          <label>Transcription Result:</label>
+          <div class="transcription-text" id="mediaTranscriptionResult" contenteditable="true"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="NotesManager.closeMediaTranscription()">Cancel</button>
+      <button class="btn btn-primary" onclick="NotesManager.insertMediaTranscription()">Insert to Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Background Selection Modal -->
+<div class="modal" id="backgroundModal" style="display: none;">
+  <div class="modal-overlay" onclick="NotesManager.closeBackgroundModal()"></div>
+  <div class="modal-content background-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-image"></i> Select Background Pattern</h3>
+      <button class="modal-close" onclick="NotesManager.closeBackgroundModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="background-grid">
+        <div class="background-option" onclick="NotesManager.setNoteBackground('math')">
+          <img src="../../pictures/Math wallpaper 1.jpeg" alt="Math">
+          <span>Mathematics</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('physics')">
+          <img src="../../pictures/Physics wall paper 1.jpeg" alt="Physics">
+          <span>Physics</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('biology')">
+          <img src="../../pictures/Biology wallpaper 1.jpeg" alt="Biology">
+          <span>Biology</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('chemistry')">
+          <img src="../../pictures/chemistry wall paper 2.jpeg" alt="Chemistry">
+          <span>Chemistry</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('geography')">
+          <img src="../../pictures/Geography wallpaper 1.jpeg" alt="Geography">
+          <span>Geography</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('history')">
+          <img src="../../pictures/History wallpaper 1.jpeg" alt="History">
+          <span>History</span>
+        </div>
+        <div class="background-option" onclick="NotesManager.setNoteBackground('music')">
+          <img src="../../pictures/Music.jpeg" alt="Music">
+          <span>Music</span>
+        </div>
+        <div class="background-option upload-option">
+          <input type="file" id="uploadBackground" accept="image/*" onchange="NotesManager.uploadBackgroundImage()">
+          <label for="uploadBackground">
+            <i class="fas fa-upload"></i>
+            <span>Upload Custom</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

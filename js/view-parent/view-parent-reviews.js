@@ -116,7 +116,8 @@ class ViewParentReviews {
      * Render reviews in dashboard section
      */
     renderDashboardReviews(container) {
-        const reviewsGrid = container.querySelector('[style*="display: grid"]') ||
+        const reviewsGrid = document.getElementById('dashboard-reviews-grid') ||
+            container.querySelector('[style*="display: grid"]') ||
             container.querySelector('.reviews-grid');
 
         if (!reviewsGrid) return;
@@ -155,24 +156,32 @@ class ViewParentReviews {
 
         const timeAgo = this.formatTimeAgo(review.created_at);
 
+        // Build reviewer link if reviewer_id is available
+        const reviewerId = review.reviewer_id;
+        const reviewerRole = review.user_role || 'tutor';
+        const reviewerLink = reviewerId ? `../view-profiles/view-${reviewerRole}.html?id=${reviewerId}` : '#';
+        const hasLink = reviewerId ? true : false;
+
         return `
             <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid ${borderColor};">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                     <div style="display: flex; gap: 1rem; align-items: center;">
+                        ${hasLink ? `<a href="${reviewerLink}" style="text-decoration: none;">` : ''}
                         <img src="${reviewerPicture}" alt="${reviewerName}"
-                            style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;"
+                            style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; cursor: ${hasLink ? 'pointer' : 'default'}; transition: all 0.3s;"
                             onerror="this.src='${defaultAvatar}'">
+                        ${hasLink ? '</a>' : ''}
                         <div>
                             <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                ${reviewerName}
+                                ${hasLink ? `<a href="${reviewerLink}" style="color: inherit; text-decoration: none; transition: color 0.3s;">${reviewerName}</a>` : reviewerName}
                             </h4>
                             <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
-                                ${review.user_role || 'Tutor'}
+                                ${reviewerRole.charAt(0).toUpperCase() + reviewerRole.slice(1)}
                             </p>
                         </div>
                     </div>
                     <div class="rating-tooltip-container">
-                        <div style="color: #f59e0b; font-size: 1.25rem;">${stars}</div>
+                        <div class="rating-stars-trigger" style="color: #f59e0b; font-size: 1.25rem;">${stars}</div>
                         ${this.createRatingTooltip(review, reviewerName)}
                     </div>
                 </div>
@@ -253,32 +262,96 @@ class ViewParentReviews {
     updateReviewsStatsOverview(panel) {
         if (!this.reviewStats) return;
 
-        // Update total reviews count
-        const totalReviewsEl = panel.querySelector('[data-stat="total-reviews"]');
+        const stats = this.reviewStats;
+
+        // Update overall rating value
+        const overallRatingEl = document.getElementById('overall-rating-value');
+        if (overallRatingEl) {
+            overallRatingEl.textContent = (stats.average_rating || 0).toFixed(1);
+        }
+
+        // Update overall rating stars
+        const overallStarsEl = document.getElementById('overall-rating-stars');
+        if (overallStarsEl) {
+            overallStarsEl.textContent = this.generateStars(stats.average_rating || 0);
+        }
+
+        // Update total reviews text
+        const totalReviewsEl = document.getElementById('total-reviews-text');
         if (totalReviewsEl) {
-            totalReviewsEl.textContent = this.reviewStats.total_reviews || 0;
+            const count = stats.total_reviews || 0;
+            totalReviewsEl.textContent = `Based on ${count} tutor review${count !== 1 ? 's' : ''}`;
         }
 
-        // Update average rating
-        const avgRatingEl = panel.querySelector('[data-stat="avg-rating"]');
-        if (avgRatingEl) {
-            avgRatingEl.textContent = (this.reviewStats.average_rating || 0).toFixed(1);
+        // Update engagement with tutor
+        const engagementTutorBar = document.getElementById('engagement-tutor-bar');
+        const engagementTutorValue = document.getElementById('engagement-tutor-value');
+        if (engagementTutorBar && engagementTutorValue) {
+            const value = stats.engagement_with_tutor_avg || 0;
+            engagementTutorBar.style.width = `${(value / 5) * 100}%`;
+            engagementTutorValue.textContent = value.toFixed(1);
         }
 
-        // Update individual metrics
-        const metrics = [
-            { key: 'engagement_with_tutor_avg', selector: '[data-stat="engagement-tutor"]' },
-            { key: 'engagement_with_child_avg', selector: '[data-stat="engagement-child"]' },
-            { key: 'responsiveness_avg', selector: '[data-stat="responsiveness"]' },
-            { key: 'payment_consistency_avg', selector: '[data-stat="payment"]' }
-        ];
+        // Update engagement with child
+        const engagementChildBar = document.getElementById('engagement-child-bar');
+        const engagementChildValue = document.getElementById('engagement-child-value');
+        if (engagementChildBar && engagementChildValue) {
+            const value = stats.engagement_with_child_avg || 0;
+            engagementChildBar.style.width = `${(value / 5) * 100}%`;
+            engagementChildValue.textContent = value.toFixed(1);
+        }
 
-        metrics.forEach(metric => {
-            const el = panel.querySelector(metric.selector);
-            if (el) {
-                el.textContent = (this.reviewStats[metric.key] || 0).toFixed(1);
+        // Update responsiveness
+        const responsivenessBar = document.getElementById('responsiveness-bar');
+        const responsivenessValue = document.getElementById('responsiveness-value');
+        if (responsivenessBar && responsivenessValue) {
+            const value = stats.responsiveness_avg || 0;
+            responsivenessBar.style.width = `${(value / 5) * 100}%`;
+            responsivenessValue.textContent = value.toFixed(1);
+        }
+
+        // Update payment consistency
+        const paymentBar = document.getElementById('payment-bar');
+        const paymentValue = document.getElementById('payment-value');
+        if (paymentBar && paymentValue) {
+            const value = stats.payment_consistency_avg || 0;
+            paymentBar.style.width = `${(value / 5) * 100}%`;
+            paymentValue.textContent = value.toFixed(1);
+        }
+
+        // Update filter button counts
+        this.updateFilterCounts();
+    }
+
+    /**
+     * Update filter button counts based on reviews data
+     */
+    updateFilterCounts() {
+        const totalCount = this.reviews.length;
+        const star5Count = this.reviews.filter(r => Math.round(r.rating) === 5).length;
+        const star4Count = this.reviews.filter(r => Math.round(r.rating) === 4).length;
+        const star3Count = this.reviews.filter(r => Math.round(r.rating) === 3).length;
+
+        // Update filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            const filter = btn.getAttribute('data-filter');
+            if (filter === 'all') {
+                btn.textContent = `All (${totalCount})`;
+            } else if (filter === '5') {
+                btn.textContent = `5 Stars (${star5Count})`;
+            } else if (filter === '4') {
+                btn.textContent = `4 Stars (${star4Count})`;
+            } else if (filter === '3') {
+                btn.textContent = `3 Stars (${star3Count})`;
             }
         });
+
+        // Update sidebar badge count
+        const sidebarBadge = document.getElementById('reviews-badge-count');
+        if (sidebarBadge) {
+            sidebarBadge.textContent = totalCount;
+        }
     }
 
     /**
@@ -302,12 +375,33 @@ class ViewParentReviews {
                     </p>
                 </div>
             `;
+            // Hide load more container
+            const loadMoreContainer = document.getElementById('load-more-container');
+            if (loadMoreContainer) {
+                loadMoreContainer.style.display = 'none';
+            }
             return;
         }
 
+        // Render reviews
         reviewsList.innerHTML = this.reviews.map((review, index) =>
             this.createDetailedReviewCard(review, index)
         ).join('');
+
+        // Update load more container
+        const loadMoreContainer = document.getElementById('load-more-container');
+        const reviewsCountText = document.getElementById('reviews-count-text');
+        if (loadMoreContainer && this.reviews.length > 0) {
+            loadMoreContainer.style.display = 'block';
+            if (reviewsCountText) {
+                reviewsCountText.textContent = `Showing ${this.reviews.length} of ${this.totalReviews} reviews`;
+            }
+            // Hide load more button if all reviews are shown
+            const loadMoreBtn = loadMoreContainer.querySelector('button');
+            if (loadMoreBtn && this.reviews.length >= this.totalReviews) {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
     }
 
     /**
@@ -322,24 +416,35 @@ class ViewParentReviews {
         const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(reviewerName)}&background=f59e0b&color=fff&size=128`;
         const reviewerPicture = review.reviewer_profile_picture || defaultAvatar;
 
+        // Build reviewer link if reviewer_id is available
+        const reviewerId = review.reviewer_id;
+        const reviewerRole = review.user_role || 'tutor';
+        const reviewerLink = reviewerId ? `../view-profiles/view-${reviewerRole}.html?id=${reviewerId}` : '#';
+        const hasLink = reviewerId ? true : false;
+
         return `
             <div class="review-card" data-rating="${rating}"
-                style="background: var(--highlight-bg); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; transition: all 0.3s;">
+                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 1rem; transition: all 0.3s;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                     <div style="display: flex; gap: 1rem; align-items: center;">
+                        ${hasLink ? `<a href="${reviewerLink}" style="text-decoration: none;">` : ''}
                         <img src="${reviewerPicture}" alt="${reviewerName}"
-                            style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;"
+                            style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; cursor: ${hasLink ? 'pointer' : 'default'}; transition: all 0.3s;"
                             onerror="this.src='${defaultAvatar}'">
+                        ${hasLink ? '</a>' : ''}
                         <div>
                             <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">
-                                ${reviewerName}
+                                ${hasLink ? `<a href="${reviewerLink}" style="color: inherit; text-decoration: none; transition: color 0.3s;">${reviewerName}</a>` : reviewerName}
                             </h4>
                             <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.5rem 0;">
-                                ${review.user_role || 'Tutor'}
+                                ${reviewerRole.charAt(0).toUpperCase() + reviewerRole.slice(1)}
                             </p>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div style="color: #f59e0b; font-size: 1rem;">${stars}</div>
-                                <span style="font-weight: 600; color: var(--heading);">${(review.rating || 0).toFixed(1)}</span>
+                            <div class="rating-tooltip-container" style="display: inline-block;">
+                                <div class="rating-stars-trigger" style="color: #f59e0b; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>${stars}</span>
+                                    <span style="font-weight: 600; color: var(--heading);">${(review.rating || 0).toFixed(1)}</span>
+                                </div>
+                                ${this.createRatingTooltip(review, reviewerName)}
                             </div>
                         </div>
                     </div>
@@ -356,15 +461,7 @@ class ViewParentReviews {
                     ${review.review_text || 'No review text provided.'}
                 </p>
 
-                <!-- Rating Breakdown -->
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
-                    ${this.createRatingBreakdownItem('Engagement with Tutor', review.engagement_with_tutor_rating)}
-                    ${this.createRatingBreakdownItem('Engagement with Child', review.engagement_with_child_rating)}
-                    ${this.createRatingBreakdownItem('Responsiveness', review.responsiveness_rating)}
-                    ${this.createRatingBreakdownItem('Payment Consistency', review.payment_consistency_rating)}
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
                     <button onclick="markHelpful(this)" style="
                         display: flex; align-items: center; gap: 0.5rem;
                         padding: 0.5rem 1rem; border-radius: 8px;
@@ -373,6 +470,15 @@ class ViewParentReviews {
                         transition: all 0.2s;
                     ">
                         <span>👍</span> Helpful (${review.helpful_count || 0})
+                    </button>
+                    <button onclick="reportReview(this)" style="
+                        display: flex; align-items: center; gap: 0.5rem;
+                        padding: 0.5rem 1rem; border-radius: 8px;
+                        background: transparent; border: 1px solid rgba(var(--border-rgb), 0.3);
+                        color: var(--text-secondary); cursor: pointer; font-size: 0.875rem;
+                        transition: all 0.2s;
+                    ">
+                        <span>🚩</span> Report
                     </button>
                 </div>
             </div>

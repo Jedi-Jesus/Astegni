@@ -1,22 +1,74 @@
 <!--
   Modal: courseworkViewDetailsModal
   Extracted from: tutor-profile.html
-  Purpose: [Auto-extracted modal component]
+  Purpose: View coursework details with sidebar navigation and filtering
 -->
 
 <div id="courseworkViewDetailsModal" class="coursework-modal">
-        <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
-        <div class="coursework-modal-content coursework-modal-large">
-            <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
+    <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
+    <div class="coursework-modal-content coursework-modal-large">
+        <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
 
-            <div class="coursework-modal-body">
-                <h2 class="coursework-content-title">
+        <div class="coursework-modal-body flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar -->
+            <aside class="coursework-sidebar coursework-details-sidebar">
+                <!-- Coursework Info Header (dynamic) -->
+                <div id="courseworkDetailsSidebarHeader" class="coursework-sidebar-info-header">
+                    <!-- Will be populated by JavaScript with student, course, type, time limit, due date, status, posted date -->
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="coursework-filter-tabs">
+                    <button class="coursework-filter-tab active" data-filter="all" onclick="courseworkManager.filterDetailsSidebar('all')">
+                        All
+                    </button>
+                    <button class="coursework-filter-tab" data-filter="draft" onclick="courseworkManager.filterDetailsSidebar('draft')">
+                        Drafts
+                    </button>
+                    <button class="coursework-filter-tab" data-filter="posted" onclick="courseworkManager.filterDetailsSidebar('posted')">
+                        Posted
+                    </button>
+                    <button class="coursework-filter-tab" data-filter="submitted" onclick="courseworkManager.filterDetailsSidebar('submitted')">
+                        Submitted
+                    </button>
+                    <button class="coursework-filter-tab" data-filter="graded" onclick="courseworkManager.filterDetailsSidebar('graded')">
+                        Graded
+                    </button>
+                </div>
+
+                <!-- Search Box -->
+                <div class="coursework-search-box">
+                    <input type="text" id="courseworkDetailsSearch" class="coursework-search-input"
+                        placeholder="Search courseworks..."
+                        oninput="courseworkManager.searchDetailsSidebar(this.value)">
+                    <span class="coursework-search-icon">🔍</span>
+                </div>
+
+                <!-- Coursework List -->
+                <div id="courseworkDetailsSidebarList" class="coursework-details-list mt-4"></div>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="coursework-content-area flex-1">
+                <h2 class="coursework-content-title" id="courseworkDetailsTitle">
                     <span>📋</span> Coursework Details
                 </h2>
 
                 <div id="courseworkDetailsContent"></div>
 
                 <div class="coursework-modal-actions">
+                    <button id="courseworkBackBtn" class="coursework-btn coursework-btn-back" onclick="courseworkManager.goBackFromDetails()">
+                        <span>←</span> Back
+                    </button>
+                    <button id="courseworkSubmitGradeBtn" class="coursework-btn coursework-btn-grade hidden" onclick="courseworkManager.submitGrade()">
+                        <span>✅</span> Submit Grade
+                    </button>
+                    <button id="courseworkGradeBtn" class="coursework-btn coursework-btn-grade hidden" onclick="courseworkManager.openGradingView()">
+                        <span>📝</span> Grade Submission
+                    </button>
+                    <button id="courseworkEditGradeBtn" class="coursework-btn coursework-btn-edit-grade hidden" onclick="courseworkManager.editGrade()">
+                        <span>✏️</span> Edit Grade
+                    </button>
                     <button id="courseworkEditBtn" class="coursework-btn coursework-btn-edit" onclick="courseworkManager.editCurrentCoursework()">
                         <span>✏️</span> Edit Coursework
                     </button>
@@ -35,3 +87,4 @@
             </div>
         </div>
     </div>
+</div>

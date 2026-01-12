@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <link rel="stylesheet" href="../css/admin-profile/admin.css">
     <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
@@ -440,27 +442,196 @@
                         </path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <span class="logo-main">Astegni</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Sponsored</span>
-            <h3 class="ad-title">Premium Advertising Services</h3>
-            <p class="ad-text">Reach your target audience effectively</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+
+        <div class="mobile-menu-content">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-section">
+                <a href="../index.html" class="mobile-menu-link">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a href="../branch/find-tutors.html" class="mobile-menu-link">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a href="../branch/reels.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                <div class="mobile-profile-header" id="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                    <div class="mobile-profile-info">
+                        <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                        <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                    </div>
+                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="mobile-profile-dropdown">
+                    <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                        <div class="mobile-dropdown-divider"></div>
+                        <div class="mobile-dropdown-label">Switch Role</div>
+                        <div id="mobile-role-options"></div>
+                    </div>
+                    <div class="mobile-dropdown-divider"></div>
+                    <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="mobile-theme-section">
+                <button class="mobile-theme-toggle" onclick="toggleTheme()">
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <div class="mobile-notifications-section">
+                <button class="mobile-notifications-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Notifications</span>
+                    <span class="mobile-notification-badge">5</span>
+                </button>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Premium Advertising Services</h3>
+                <p class="ad-text">Reach your target audience effectively</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Campaign Analytics</h3>
+                <p class="ad-text">Track your ad performance</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">View Stats</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Brand Partnerships</h3>
+                <p class="ad-text">Collaborate with educators</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Partner Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Expand Your Reach</h3>
+                <p class="ad-text">Connect with millions</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Started</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -625,15 +796,8 @@
                                                 <span style="color: var(--text); font-size: 0.95rem;">Addis Ababa, Ethiopia | Digital Marketing Agency</span>
                                             </div>
 
-                                            <!-- Contact Information -->
+                                            <!-- Business Information -->
                                             <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📧</span>
-                                                    <div style="flex: 1; overflow: hidden;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
-                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">info@techvision.com</div>
-                                                    </div>
-                                                </div>
                                                 <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;">🌐</span>
                                                     <div style="flex: 1;">
@@ -1731,6 +1895,69 @@
                 <div class="admin-right-widgets"
                     style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
 
+                    <!-- Ad Widget -->
+                    <div class="admin-widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        </div>
+                        <div class="ad-content" id="ad-container" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="ad-message-container" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                </div>
+                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                </div>
+                            </div>
+                            <div id="ad-ticker" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                </div>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+                            #ad-ticker-content { animation: tickerScroll 20s linear infinite; }
+                            .ad-message { visibility: hidden; }
+                            .ad-message.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
+                            .ad-message.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
+                        </style>
+                        <script>
+                            (function() {
+                                const messages = document.querySelectorAll('#ad-message-container .ad-message');
+                                let currentIndex = 0;
+                                function rotateMessages() {
+                                    const prevIndex = currentIndex;
+                                    currentIndex = (currentIndex + 1) % messages.length;
+                                    messages[prevIndex].classList.remove('active');
+                                    messages[prevIndex].classList.add('fade-out');
+                                    messages[currentIndex].classList.add('active');
+                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
+                                }
+                                setInterval(rotateMessages, 10000);
+                            })();
+                        </script>
+                    </div>
+
                     <!-- Campaign Performance Widget -->
                     <div class="admin-widget-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
                         <h3 class="text-lg font-semibold mb-4" style="color: white;">📊 Campaign Performance</h3>
@@ -1912,10 +2139,12 @@
     <!-- Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/nav.js"></script>
     <script src="../js/root/profile-system.js"></script>
     <script src="../js/root/theme.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 
     <script>
         // Initialize on page load
@@ -2065,28 +2294,20 @@
                 ratingStarsElement.innerHTML = generateStars(parseFloat(data.rating));
             }
 
-            // Update contact information
-            const emailElements = document.querySelectorAll('.profile-contact-info > div');
-
-            // Email
-            if (emailElements.length > 0) {
-                const emailValueElement = emailElements[0].querySelector('div:last-child > div:last-child');
-                if (emailValueElement) {
-                    emailValueElement.textContent = displayValue(data.email, 'Not provided');
-                }
-            }
+            // Update business information (Website and Industry)
+            const businessInfoElements = document.querySelectorAll('.profile-contact-info > div');
 
             // Website
-            if (emailElements.length > 1) {
-                const websiteValueElement = emailElements[1].querySelector('div:last-child > div:last-child');
+            if (businessInfoElements.length > 0) {
+                const websiteValueElement = businessInfoElements[0].querySelector('div:last-child > div:last-child');
                 if (websiteValueElement) {
                     websiteValueElement.textContent = displayValue(data.website, 'Not provided');
                 }
             }
 
             // Industry
-            if (emailElements.length > 2) {
-                const industryValueElement = emailElements[2].querySelector('div:last-child > div:last-child');
+            if (businessInfoElements.length > 1) {
+                const industryValueElement = businessInfoElements[1].querySelector('div:last-child > div:last-child');
                 if (industryValueElement) {
                     industryValueElement.textContent = displayValue(data.industry, 'Not specified');
                 }
@@ -2518,6 +2739,9 @@
                 .catch(err => console.log('Chat modal will load on demand:', err.message));
         })();
     </script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 </body>
 
 </html>

@@ -1139,7 +1139,35 @@
     stroke-width: 2.5;
 }
 
-/* Responsive button layout */
+/* ============================================
+   RESPONSIVE TUTOR CARD STYLES
+   ============================================ */
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+    .tutor-card {
+        min-height: auto;
+    }
+
+    .tutor-header {
+        gap: 0.375rem;
+    }
+
+    .tutor-avatar-row {
+        gap: 0.75rem;
+    }
+
+    .tutor-details {
+        margin-top: 1rem;
+    }
+
+    .tutor-card-actions {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+    }
+}
+
+/* Mobile (480px) */
 @media (max-width: 480px) {
     .tutor-card-actions {
         flex-direction: column;
@@ -1154,6 +1182,118 @@
     .accept-btn {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
+        width: 100%;
+    }
+
+    .tutor-actions-top .favorite-btn,
+    .tutor-actions-top .save-btn {
+        padding: 0.625rem;
+    }
+
+    .tutor-quote {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+
+    .tutor-quote em {
+        font-size: 0.85rem;
+    }
+
+    .subjects-section {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .subjects-section .detail-value {
+        font-size: 0.85rem;
+    }
+
+    /* Rating tooltip for mobile */
+    .rating-breakdown-tooltip {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: calc(100vw - 2rem) !important;
+        max-width: 320px !important;
+        z-index: 10000 !important;
+    }
+
+    .rating-stars-container:hover .rating-breakdown-tooltip {
+        transform: translate(-50%, -50%) !important;
+    }
+
+    .rating-item {
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .rating-label {
+        min-width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    .rating-bar {
+        flex: 1;
+        min-width: calc(100% - 40px);
+    }
+}
+
+/* Extra small phones (375px) */
+@media (max-width: 375px) {
+    .tutor-card {
+        padding: 0.875rem;
+    }
+
+    .tutor-avatar {
+        width: 48px;
+        height: 48px;
+        border-width: 2px;
+    }
+
+    .tutor-name {
+        font-size: 0.95rem;
+    }
+
+    .tutor-meta-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .tutor-rating-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.375rem;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.125rem;
+    }
+
+    .detail-label {
+        min-width: auto;
+    }
+
+    .connect-btn,
+    .view-profile-btn,
+    .message-btn,
+    .connected-btn,
+    .pending-btn,
+    .accept-btn {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    .connect-btn svg,
+    .view-profile-btn svg,
+    .message-btn svg,
+    .connected-btn svg,
+    .pending-btn svg,
+    .accept-btn svg {
+        width: 16px;
+        height: 16px;
     }
 }
 

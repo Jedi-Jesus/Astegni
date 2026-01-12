@@ -48,6 +48,7 @@ async function initializeViewTutorCredentials(profileId) {
 
 /**
  * Load credentials for a tutor from the public endpoint
+ * Only displays featured credentials (is_featured = true)
  */
 async function loadViewTutorCredentials(profileId) {
     try {
@@ -63,8 +64,10 @@ async function loadViewTutorCredentials(profileId) {
             return;
         }
 
-        viewCredAllCredentials = await response.json();
-        console.log(`Loaded ${viewCredAllCredentials.length} credentials`);
+        const allCredentials = await response.json();
+        // Only show featured credentials on public view pages
+        viewCredAllCredentials = allCredentials.filter(cred => cred.is_featured === true);
+        console.log(`Loaded ${allCredentials.length} total credentials, ${viewCredAllCredentials.length} featured`);
 
         // Update credential counts
         updateViewCredentialCounts();

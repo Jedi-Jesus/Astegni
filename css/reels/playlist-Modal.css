@@ -68,3 +68,96 @@
     background: rgba(var(--button-bg-rgb), 0.15);
     transform: translateX(5px);
 }
+
+.playlist-item-name {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.playlist-item-count {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.playlist-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--button-bg);
+}
+
+/* Empty state */
+.playlist-empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ============================================
+   PLAYLIST MODAL RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .playlist-modal .modal-container {
+        max-width: 95%;
+        margin: 1rem;
+    }
+
+    .playlist-create-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .playlist-input {
+        padding: 10px 14px;
+    }
+
+    .playlist-create-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 20px;
+    }
+
+    .playlist-item {
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .playlist-modal .modal-container {
+        max-width: 100%;
+        margin: 0.5rem;
+        border-radius: 12px;
+    }
+
+    .playlist-create-section {
+        margin-bottom: 16px;
+    }
+
+    .playlist-input {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .playlist-create-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .playlist-list {
+        gap: 6px;
+    }
+
+    .playlist-item {
+        padding: 10px 12px;
+        border-radius: 8px;
+    }
+
+    .playlist-item-name {
+        font-size: 14px;
+    }
+
+    .playlist-checkbox {
+        width: 18px;
+        height: 18px;
+    }
+}

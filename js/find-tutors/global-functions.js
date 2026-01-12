@@ -373,3 +373,203 @@ window.messageTutor = function(tutorData) {
 window.encodeTutorDataForOnclick = function(tutor) {
     return JSON.stringify(tutor).replace(/"/g, '&quot;');
 };
+
+// ============================================
+// MOBILE MENU FUNCTIONS
+// ============================================
+
+// Toggle mobile menu
+window.toggleMobileMenu = function() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    if (!mobileMenu || !mobileMenuBtn) return;
+
+    const isOpen = !mobileMenu.classList.contains('hidden');
+
+    if (isOpen) {
+        closeMobileMenu();
+    } else {
+        openMobileMenu();
+    }
+};
+
+// Open mobile menu
+window.openMobileMenu = function() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    if (!mobileMenu) return;
+
+    mobileMenu.classList.remove('hidden');
+    if (mobileMenuBtn) mobileMenuBtn.classList.add('active');
+    if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('hidden');
+
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+
+    // Update mobile profile section visibility
+    updateMobileProfileSection();
+};
+
+// Close mobile menu
+window.closeMobileMenu = function() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    if (!mobileMenu) return;
+
+    mobileMenu.classList.add('hidden');
+    if (mobileMenuBtn) mobileMenuBtn.classList.remove('active');
+    if (mobileMenuOverlay) mobileMenuOverlay.classList.add('hidden');
+
+    // Restore body scroll
+    document.body.style.overflow = '';
+};
+
+// Toggle mobile profile dropdown
+window.toggleMobileProfileDropdown = function() {
+    const dropdown = document.querySelector('.mobile-profile-dropdown');
+    const toggle = document.getElementById('mobile-profile-toggle');
+
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+    if (toggle) {
+        toggle.classList.toggle('expanded');
+    }
+};
+
+// Update mobile profile section based on auth state
+window.updateMobileProfileSection = function() {
+    const mobileProfileSection = document.getElementById('mobile-profile-section');
+    const mobileAuthSection = document.getElementById('mobile-auth-section');
+    const mobileNotificationBtn = document.getElementById('mobile-notification-btn');
+
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    if (token && currentUser) {
+        // User is logged in
+        if (mobileProfileSection) {
+            mobileProfileSection.classList.remove('hidden');
+
+            // Update profile info
+            const profilePic = document.getElementById('mobile-profile-pic');
+            const profileName = document.getElementById('mobile-profile-name');
+            const profileRole = document.getElementById('mobile-profile-role');
+            const dropdownPic = document.getElementById('mobile-dropdown-pic');
+            const dropdownName = document.getElementById('mobile-dropdown-name');
+            const dropdownEmail = document.getElementById('mobile-dropdown-email');
+            const profileLink = document.getElementById('mobile-profile-link');
+
+            const avatarUrl = currentUser.profile_picture_url || currentUser.profilePicture ||
+                              '../images/default-avatar.png';
+            const name = currentUser.name || currentUser.full_name || 'User';
+            const email = currentUser.email || '';
+            const role = localStorage.getItem('active_role') || currentUser.role || 'student';
+
+            if (profilePic) profilePic.src = avatarUrl;
+            if (profileName) profileName.textContent = name;
+            if (profileRole) profileRole.textContent = role;
+            if (dropdownPic) dropdownPic.src = avatarUrl;
+            if (dropdownName) dropdownName.textContent = name;
+            if (dropdownEmail) dropdownEmail.textContent = email;
+
+            // Set profile link
+            if (profileLink) {
+                const profilePage = getProfilePageForRole(role);
+                profileLink.href = profilePage;
+            }
+        }
+
+        if (mobileAuthSection) mobileAuthSection.classList.add('hidden');
+        if (mobileNotificationBtn) mobileNotificationBtn.classList.remove('hidden');
+    } else {
+        // User is logged out
+        if (mobileProfileSection) mobileProfileSection.classList.add('hidden');
+        if (mobileAuthSection) mobileAuthSection.classList.remove('hidden');
+        if (mobileNotificationBtn) mobileNotificationBtn.classList.add('hidden');
+    }
+};
+
+// Helper function to get profile page for role
+function getProfilePageForRole(role) {
+    const rolePages = {
+        'tutor': '../profile-pages/tutor-profile.html',
+        'student': '../profile-pages/student-profile.html',
+        'parent': '../profile-pages/parent-profile.html',
+        'advertiser': '../profile-pages/advertiser-profile.html'
+    };
+    return rolePages[role] || '../profile-pages/user-profile.html';
+}
+
+// Open notification modal
+window.openNotificationModal = function() {
+    const notificationModal = document.getElementById('notificationModal');
+    if (notificationModal) {
+        notificationModal.classList.add('open');
+    }
+};
+
+// Open login modal (if available)
+window.openLoginModal = function() {
+    if (window.openAuthModal) {
+        window.openAuthModal('login');
+    } else if (window.openModal) {
+        window.openModal('login-modal');
+    }
+};
+
+// Open register modal (if available)
+window.openRegisterModal = function() {
+    if (window.openAuthModal) {
+        window.openAuthModal('register');
+    } else if (window.openModal) {
+        window.openModal('register-modal');
+    }
+};
+
+// Initialize mobile menu event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu button click
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Mobile menu overlay click to close
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    // Mobile theme toggle
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+    if (mobileThemeToggle) {
+        mobileThemeToggle.addEventListener('click', function() {
+            if (window.toggleTheme) {
+                window.toggleTheme();
+            } else {
+                // Fallback theme toggle
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            }
+        });
+    }
+
+    // Close mobile menu on window resize (if goes to desktop)
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            closeMobileMenu();
+        }
+    });
+
+    // Initial update of mobile profile section
+    updateMobileProfileSection();
+});

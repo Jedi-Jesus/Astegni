@@ -387,6 +387,22 @@ window.packageManagerClean = new PackageManagerClean();
 
 window.openPackageModal = async function() {
     console.log('🎯 Opening package modal...');
+
+    // Guard: Check profile completion and KYC before allowing package management
+    if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.guard === 'function') {
+        const allowed = ProfileCompletionGuard.guard('Manage Packages', async () => {
+            await _openPackageModalInternal();
+        });
+        if (!allowed) {
+            return; // User was shown the appropriate modal to complete profile/KYC
+        }
+    } else {
+        // Guard not available, proceed directly
+        await _openPackageModalInternal();
+    }
+};
+
+async function _openPackageModalInternal() {
     const modal = document.getElementById('package-management-modal');
     console.log('Modal element:', modal);
 
@@ -417,7 +433,7 @@ window.openPackageModal = async function() {
     } else {
         console.error('❌ Modal element not found!');
     }
-};
+}
 
 window.closePackageModal = function() {
     const modal = document.getElementById('package-management-modal');
@@ -2199,10 +2215,13 @@ function renderPackagesGrid() {
                     </div>
                 ` : ''}
 
-                <!-- Edit Button -->
-                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                    <button onclick="openPackageModal(); setTimeout(() => selectPackage(${pkg.id}), 100);" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; width: 100%; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;">
-                        <i class="fas fa-edit"></i> Edit Package
+                <!-- Action Buttons -->
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+                    <button onclick="openPackageModal(); setTimeout(() => selectPackage(${pkg.id}), 100);" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; flex: 1; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="deletePackageFromGrid(${pkg.id})" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; width: 48px; background: var(--hover-bg); color: var(--error); border: 2px solid var(--error); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;" title="Delete Package">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -2210,6 +2229,26 @@ function renderPackagesGrid() {
         `;
     }).join('');
 }
+
+/**
+ * Delete package from the packages-grid panel
+ * Called when clicking the delete button on package cards in packages-panel
+ */
+window.deletePackageFromGrid = async function(packageId) {
+    const pkg = window.packageManagerClean.getPackage(packageId);
+    const packageName = pkg ? pkg.name : 'this package';
+
+    if (confirm(`Are you sure you want to delete "${packageName}"? This action cannot be undone.`)) {
+        try {
+            await window.packageManagerClean.deletePackage(packageId);
+            renderPackagesGrid();  // Refresh the packages grid
+            console.log('✅ Package deleted from grid:', packageId);
+        } catch (error) {
+            console.error('❌ Error deleting package:', error);
+            alert('Failed to delete package. Please try again.');
+        }
+    }
+};
 
 /**
  * ═══════════════════════════════════════════════════════════

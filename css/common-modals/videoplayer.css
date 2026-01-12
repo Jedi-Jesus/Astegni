@@ -943,25 +943,270 @@
     .video-theater-container {
         flex-direction: column;
     }
-    
+
     .video-wrapper-advanced {
         height: 50vh;
+        min-height: 280px;
     }
-    
+
     .video-info-sidebar-enhanced {
         width: 100%;
         height: 50vh;
         border-left: none;
         border-top: 1px solid var(--border-color);
     }
-    
+
     .related-videos-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .engagement-bar-inner {
         grid-template-columns: 1fr;
         gap: 12px;
+    }
+
+    /* Video title adjustments */
+    .video-title-enhanced {
+        font-size: 18px;
+        padding-right: 40px;
+    }
+
+    /* Control buttons smaller on mobile */
+    .control-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .control-btn.play-pause svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .controls-row {
+        gap: 12px;
+    }
+
+    /* Engagement bar mobile */
+    .engagement-btn-enhanced {
+        max-width: none;
+        flex-direction: row;
+        justify-content: center;
+        padding: 8px 12px;
+    }
+
+    .engagement-left {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .engagement-right {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Navigation buttons mobile */
+    .nav-btn-with-title {
+        max-width: none;
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Creator section mobile */
+    .creator-section {
+        padding: 15px;
+    }
+
+    .creator-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    /* Tabs mobile */
+    .tab-btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .tabs-content {
+        padding: 15px;
+    }
+
+    /* Related videos section mobile */
+    .related-videos-section {
+        padding: 15px 15px 30px;
+    }
+
+    .related-section-title {
+        font-size: 16px;
+    }
+
+    /* Close button positioning for mobile */
+    .sidebar-header-enhanced .modal-close-btn-enhanced {
+        width: 32px;
+        height: 32px;
+        top: 15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-wrapper-advanced {
+        height: 40vh;
+        min-height: 220px;
+    }
+
+    .video-info-sidebar-enhanced {
+        height: 60vh;
+    }
+
+    /* Video title even smaller */
+    .video-title-enhanced {
+        font-size: 16px;
+    }
+
+    .video-meta-enhanced {
+        font-size: 12px;
+        gap: 10px;
+    }
+
+    /* Control buttons even smaller */
+    .control-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .control-btn.play-pause svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .control-btn {
+        padding: 6px;
+    }
+
+    .controls-row {
+        gap: 8px;
+    }
+
+    .time-display {
+        font-size: 12px;
+    }
+
+    /* Engagement buttons stacked */
+    .engagement-btn-enhanced {
+        padding: 6px 10px;
+        gap: 4px;
+    }
+
+    .engagement-icon-enhanced {
+        width: 16px;
+        height: 16px;
+    }
+
+    .engagement-count-enhanced {
+        font-size: 10px;
+    }
+
+    /* Video counter smaller */
+    .video-counter-display {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    /* Creator section compact */
+    .creator-section {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .creator-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .creator-name {
+        font-size: 14px;
+    }
+
+    .creator-stats {
+        font-size: 12px;
+    }
+
+    .connect-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        min-width: 100px;
+    }
+
+    /* Tabs compact */
+    .tab-btn {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .tabs-content {
+        padding: 12px;
+    }
+
+    /* Related videos compact */
+    .related-videos-section {
+        padding: 12px 12px 24px;
+    }
+
+    .related-section-title {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .related-videos-grid {
+        gap: 12px;
+    }
+
+    .video-thumbnail-wrapper {
+        height: 120px;
+    }
+
+    .related-video-info {
+        padding: 10px;
+    }
+
+    .related-video-title {
+        font-size: 13px;
+    }
+
+    /* PiP mode smaller on mobile */
+    .ultimate-video-modal.minimized {
+        width: 280px !important;
+        height: 158px !important;
+        bottom: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* Landscape orientation for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .video-theater-container {
+        flex-direction: row;
+    }
+
+    .video-wrapper-advanced {
+        height: 100vh;
+        min-height: auto;
+    }
+
+    .video-info-sidebar-enhanced {
+        width: 280px;
+        height: 100vh;
+    }
+
+    .engagement-bar-enhanced.under-video {
+        padding: 8px 12px;
+    }
+
+    .engagement-btn-enhanced {
+        padding: 6px 8px;
     }
 }
 

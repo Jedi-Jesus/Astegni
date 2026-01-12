@@ -1,0 +1,1243 @@
+<!-- ============================================
+     CAMPAIGN MODAL
+     Opens when clicking on a brand card
+     Shows campaigns with card-dealing animation
+     Create campaign form is inline (not separate modal)
+     ============================================ -->
+
+<div class="campaign-modal-overlay" id="campaign-modal-overlay">
+    <div class="campaign-modal-container">
+        <!-- Header -->
+        <div class="campaign-modal-header">
+            <div class="campaign-modal-header-left">
+                <!-- Hamburger Button to Toggle Sidebar -->
+                <button class="campaign-sidebar-toggle" id="campaign-sidebar-toggle" onclick="BrandsManager.toggleCampaignSidebar()" title="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- Brand Info -->
+                <div class="campaign-modal-brand-info">
+                    <div class="campaign-modal-brand-logo" id="campaign-modal-brand-logo">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div>
+                        <h2 class="campaign-modal-brand-name" id="campaign-modal-brand-name">Brand Name</h2>
+                        <p class="campaign-modal-brand-industry" id="campaign-modal-brand-industry">Industry</p>
+                    </div>
+                </div>
+
+                <!-- Divider (shown when campaign is selected) -->
+                <div class="header-divider" id="header-divider" style="display: none;"></div>
+
+                <!-- Campaign Info (shown when viewing campaign details) -->
+                <div class="header-campaign-info" id="header-campaign-info" style="display: none;">
+                    <div class="header-campaign-name" id="header-campaign-name">Campaign Name</div>
+                    <div class="header-campaign-meta">
+                        <span class="header-campaign-status" id="header-campaign-status">
+                            <i class="fas fa-circle"></i>
+                            Active
+                        </span>
+                        <span class="header-campaign-dates" id="header-campaign-dates">
+                            <i class="fas fa-calendar"></i>
+                            Jan 1 - Dec 31
+                        </span>
+                        <span class="header-campaign-placement" id="header-campaign-placement">
+                            <i class="fas fa-ad"></i>
+                            Main Ads
+                        </span>
+                        <span class="header-campaign-location" id="header-campaign-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Ethiopia
+                        </span>
+                        <span class="header-campaign-audience" id="header-campaign-audience">
+                            <i class="fas fa-users"></i>
+                            Students
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campaign-modal-actions">
+                <button class="campaign-modal-btn" title="Edit Brand" onclick="BrandsManager.editCurrentBrand()">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="campaign-modal-btn" title="Brand Settings" onclick="BrandsManager.openBrandSettings()">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="campaign-modal-btn close-btn" title="Close" onclick="BrandsManager.closeCampaignModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="campaign-modal-body">
+            <!-- Campaign List Section (Left) -->
+            <div class="campaign-list-section" id="campaign-list-section">
+                <!-- Campaign List View (default) -->
+                <div class="campaign-list-view" id="campaign-list-view">
+                    <!-- Campaign List Header with Search -->
+                    <div class="campaign-list-header">
+                        <h3 class="campaign-list-title">
+                            <i class="fas fa-bullhorn"></i>
+                            Campaigns
+                            <span class="campaign-list-count" id="campaign-list-count">0</span>
+                        </h3>
+                        <div class="campaign-search-bar">
+                            <i class="fas fa-search campaign-search-icon"></i>
+                            <input type="text" id="campaign-search-input" placeholder="Search campaigns..." oninput="BrandsManager.filterCampaigns(this.value)">
+                            <button class="campaign-search-clear" id="campaign-search-clear" onclick="BrandsManager.clearCampaignSearch()" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- New Campaign Card -->
+                    <div class="new-campaign-card" onclick="BrandsManager.showCreateCampaignForm()">
+                        <div class="new-campaign-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="new-campaign-text">
+                            <h4>Create New Campaign</h4>
+                            <p>Launch a new advertising campaign</p>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Cards Container -->
+                    <div class="campaign-cards-container" id="campaign-cards-container">
+                        <!-- Campaign cards will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Create Campaign Form (hidden by default) -->
+                <div class="create-campaign-form-section" id="create-campaign-form-section" style="display: none;">
+                    <!-- Form Header -->
+                    <div class="create-campaign-form-header">
+                        <button class="create-campaign-back-btn" onclick="BrandsManager.hideCreateCampaignForm()">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="create-campaign-form-title">
+                            <i class="fas fa-rocket"></i>
+                            <span>New Campaign</span>
+                        </div>
+                        <!-- CPI Rate Badge -->
+                        <div class="cpi-rate-badge" id="cpi-rate-badge">
+                            <i class="fas fa-coins"></i>
+                            <span class="cpi-rate-value" id="cpi-rate-value">Loading...</span>
+                            <span class="cpi-rate-label">CPI</span>
+                        </div>
+                    </div>
+
+                    <!-- Form Content -->
+                    <div class="create-campaign-form-content">
+                        <form id="create-campaign-form" onsubmit="BrandsManager.submitCreateCampaign(event)">
+                            <!-- Campaign Name -->
+                            <div class="campaign-form-group">
+                                <label for="campaign-name-input">
+                                    <i class="fas fa-tag"></i>
+                                    Campaign Name <span class="required">*</span>
+                                </label>
+                                <input type="text" id="campaign-name-input" placeholder="Enter campaign name" required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="campaign-form-group">
+                                <label for="campaign-description-input">
+                                    <i class="fas fa-align-left"></i>
+                                    Description
+                                </label>
+                                <textarea id="campaign-description-input" placeholder="Describe your campaign..." rows="2"></textarea>
+                            </div>
+
+                            <!-- Objective Checkboxes -->
+                            <div class="campaign-form-group">
+                                <label>
+                                    <i class="fas fa-bullseye"></i>
+                                    Campaign Objective
+                                </label>
+                                <div class="campaign-checkbox-section">
+                                    <!-- All Objectives -->
+                                    <div class="campaign-checkbox-item master-checkbox">
+                                        <label class="campaign-checkbox-label">
+                                            <input type="checkbox" id="objective-all" checked onchange="BrandsManager.toggleAllObjectives(this.checked)">
+                                            <span class="campaign-checkbox-custom"></span>
+                                            <span class="campaign-checkbox-text">
+                                                <i class="fas fa-check-double"></i>
+                                                All Objectives
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="campaign-checkboxes-grid">
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="objective-awareness" checked onchange="BrandsManager.updateObjectiveSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-eye"></i>
+                                                    Brand Awareness
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="objective-traffic" checked onchange="BrandsManager.updateObjectiveSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-globe"></i>
+                                                    Website Traffic
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="objective-engagement" checked onchange="BrandsManager.updateObjectiveSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-heart"></i>
+                                                    Engagement
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Target Audience Checkboxes -->
+                            <div class="campaign-form-group">
+                                <label>
+                                    <i class="fas fa-users"></i>
+                                    Target Audience
+                                </label>
+                                <div class="campaign-checkbox-section">
+                                    <!-- All Audiences -->
+                                    <div class="campaign-checkbox-item master-checkbox">
+                                        <label class="campaign-checkbox-label">
+                                            <input type="checkbox" id="audience-all" checked onchange="BrandsManager.toggleAllAudiences(this.checked)">
+                                            <span class="campaign-checkbox-custom"></span>
+                                            <span class="campaign-checkbox-text">
+                                                <i class="fas fa-users"></i>
+                                                All Users
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="campaign-checkboxes-grid">
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="audience-tutor" checked onchange="BrandsManager.updateAudienceSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-chalkboard-teacher"></i>
+                                                    Tutors
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="audience-student" checked onchange="BrandsManager.updateAudienceSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-user-graduate"></i>
+                                                    Students
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="audience-parent" checked onchange="BrandsManager.updateAudienceSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-user-friends"></i>
+                                                    Parents
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="audience-advertiser" checked onchange="BrandsManager.updateAudienceSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-bullhorn"></i>
+                                                    Advertisers
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="audience-user" checked onchange="BrandsManager.updateAudienceSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-user"></i>
+                                                    General Users
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Audience CPI Notice -->
+                                <div class="campaign-cpi-notice" id="audience-cpi-notice" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Excluding audiences increases your CPI by <strong id="audience-premium-amount">+0.00 ETB</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Target Location -->
+                            <div class="campaign-form-group">
+                                <label for="campaign-location-input">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Target Location
+                                </label>
+                                <select id="campaign-location-input" onchange="BrandsManager.onLocationChange()">
+                                    <option value="global">Global (International)</option>
+                                    <option value="national">National (Ethiopia)</option>
+                                    <option value="regional">Regional (Specific regions)</option>
+                                </select>
+
+                                <!-- Regional Selection (Hidden by default) -->
+                                <div class="regional-selection-container" id="regional-selection" style="display: none;">
+                                    <div class="regional-selection-header">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                        <span>Select Regions</span>
+                                    </div>
+
+                                    <!-- Country Selector -->
+                                    <div class="country-selector-wrapper">
+                                        <label>
+                                            <i class="fas fa-globe"></i>
+                                            Country
+                                        </label>
+                                        <select id="campaign-country" onchange="BrandsManager.onCountryChange()">
+                                            <option value="ET">Ethiopia</option>
+                                            <option value="KE">Kenya</option>
+                                            <option value="NG">Nigeria</option>
+                                            <option value="GH">Ghana</option>
+                                            <option value="ZA">South Africa</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="campaign-checkbox-section regional-checkboxes">
+                                        <!-- All Regions -->
+                                        <div class="campaign-checkbox-item master-checkbox">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="region-all" checked onchange="BrandsManager.toggleAllRegions(this.checked)">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-check-double"></i>
+                                                    All Regions
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <!-- Dynamic Regions Container -->
+                                        <div id="dynamic-regions-container" class="campaign-checkboxes-grid regions-grid">
+                                            <div class="loading-regions">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                                Loading regions...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Location CPI Notice -->
+                                <div class="campaign-cpi-notice" id="location-cpi-notice" style="display: none;">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Location targeting adds <strong id="location-premium-amount">+0.00 ETB</strong> to CPI</span>
+                                </div>
+                            </div>
+
+                            <!-- Ad Placement Checkboxes -->
+                            <div class="campaign-form-group">
+                                <label>
+                                    <i class="fas fa-ad"></i>
+                                    Ad Placements
+                                </label>
+                                <div class="campaign-checkbox-section">
+                                    <!-- All Placements -->
+                                    <div class="campaign-checkbox-item master-checkbox">
+                                        <label class="campaign-checkbox-label">
+                                            <input type="checkbox" id="placement-all" checked onchange="BrandsManager.toggleAllPlacements(this.checked)">
+                                            <span class="campaign-checkbox-custom"></span>
+                                            <span class="campaign-checkbox-text">
+                                                <i class="fas fa-check-double"></i>
+                                                All Placements
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="campaign-checkboxes-grid">
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="placement-placeholder" checked onchange="BrandsManager.updatePlacementSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-rectangle-ad"></i>
+                                                    Ad Placeholder
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="placement-widget" checked onchange="BrandsManager.updatePlacementSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-window-maximize"></i>
+                                                    Ad Widget
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="placement-popup" checked onchange="BrandsManager.updatePlacementSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-window-restore"></i>
+                                                    WB Pop-up
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="campaign-checkbox-item">
+                                            <label class="campaign-checkbox-label">
+                                                <input type="checkbox" id="placement-insession" checked onchange="BrandsManager.updatePlacementSelection()">
+                                                <span class="campaign-checkbox-custom"></span>
+                                                <span class="campaign-checkbox-text">
+                                                    <i class="fas fa-chalkboard"></i>
+                                                    WB In-Session
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Placement CPI Notice -->
+                                <div class="campaign-cpi-notice" id="placement-cpi-notice" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Excluding placements increases your CPI by <strong id="placement-premium-amount">+0.00 ETB</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Budget & Date Row -->
+                            <div class="campaign-form-row">
+                                <div class="campaign-form-group">
+                                    <label for="campaign-budget-input">
+                                        <i class="fas fa-coins"></i>
+                                        Total Campaign Budget <span class="required">*</span>
+                                    </label>
+
+                                    <!-- Advertiser Balance Display -->
+                                    <div class="advertiser-balance-display" style="margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; border-left: 3px solid #667eea;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-wallet" style="color: #667eea; font-size: 1.1rem;"></i>
+                                            <span style="font-size: 0.9rem; color: var(--text-secondary);">Your Available Balance:</span>
+                                            <strong id="advertiser-current-balance" style="color: #667eea; font-size: 1.1rem;">0.00 ETB</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="campaign-budget-input-wrapper">
+                                        <span class="budget-currency">ETB</span>
+                                        <input type="number" id="campaign-budget-input" placeholder="10000" min="10000" step="100" required oninput="BrandsManager.calculateEstimatedImpressions(this.value)">
+                                    </div>
+
+                                    <!-- Minimum budget notice -->
+                                    <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                                        <i class="fas fa-info-circle" style="color: #667eea;"></i>
+                                        Minimum campaign budget: <strong style="color: #667eea;">10,000 ETB</strong>
+                                    </div>
+
+                                    <!-- Show estimated impressions -->
+                                    <div class="campaign-budget-estimate" id="budget-estimate" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">
+                                        Estimated: ~0 impressions at 0.00 ETB/impression
+                                    </div>
+                                </div>
+                                <div class="campaign-form-group">
+                                    <label for="campaign-start-date-input">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Start Date <span class="required">*</span>
+                                    </label>
+                                    <input type="date" id="campaign-start-date-input" required>
+                                </div>
+                            </div>
+
+                            <!-- Form Footer (inside form) -->
+                            <div class="campaign-form-footer">
+                                <button type="button" class="campaign-footer-cancel-btn" onclick="BrandsManager.hideCreateCampaignForm()">
+                                    <i class="fas fa-times"></i>
+                                    Cancel
+                                </button>
+                                <button type="submit" class="campaign-footer-create-btn" id="campaign-create-btn">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Review & Create
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaign Details Section (Right) -->
+            <div class="campaign-details-section" id="campaign-details-section">
+                <!-- Back Button (visible when campaign selected on mobile) -->
+                <button class="campaign-back-btn" id="campaign-back-btn" onclick="BrandsManager.backToCampaignList()">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Campaigns
+                </button>
+
+                <!-- Placeholder when no campaign selected -->
+                <div class="campaign-details-placeholder" id="campaign-details-placeholder">
+                    <div class="campaign-details-placeholder-icon">
+                        <i class="fas fa-hand-pointer"></i>
+                    </div>
+                    <h3>Select a Campaign</h3>
+                    <p>Choose a campaign from the left to view details, analytics, and more</p>
+                </div>
+
+                <!-- Campaign Details Content -->
+                <div class="campaign-details-content" id="campaign-details-content">
+                    <!-- Campaign Details Tabs (header simplified - info moved to modal header) -->
+                    <div class="campaign-details-tabs" id="campaign-details-tabs">
+                        <button class="campaign-tab active" data-tab="images" onclick="BrandsManager.switchCampaignTab('images')">
+                            <i class="fas fa-images"></i>
+                            Images
+                        </button>
+                        <button class="campaign-tab" data-tab="videos" onclick="BrandsManager.switchCampaignTab('videos')">
+                            <i class="fas fa-video"></i>
+                            Videos
+                        </button>
+                        <button class="campaign-tab" data-tab="creative" onclick="BrandsManager.switchCampaignTab('creative')">
+                            <i class="fas fa-magic"></i>
+                            Creative Hub
+                        </button>
+                        <button class="campaign-tab" data-tab="templates" onclick="BrandsManager.switchCampaignTab('templates')">
+                            <i class="fas fa-palette"></i>
+                            Templates
+                        </button>
+                        <button class="campaign-tab" data-tab="finances" onclick="BrandsManager.switchCampaignTab('finances')">
+                            <i class="fas fa-wallet"></i>
+                            Finances
+                        </button>
+                        <button class="campaign-tab" data-tab="engagement" onclick="BrandsManager.switchCampaignTab('engagement')">
+                            <i class="fas fa-heart"></i>
+                            Engagement
+                        </button>
+                        <button class="campaign-tab" data-tab="analytics" onclick="BrandsManager.switchCampaignTab('analytics')">
+                            <i class="fas fa-chart-line"></i>
+                            Analytics
+                        </button>
+                        <button class="campaign-tab" data-tab="insights" onclick="BrandsManager.switchCampaignTab('insights')">
+                            <i class="fas fa-brain"></i>
+                            AI Insights
+                        </button>
+                        <button class="campaign-tab" data-tab="activity" onclick="BrandsManager.switchCampaignTab('activity')">
+                            <i class="fas fa-history"></i>
+                            Activity
+                        </button>
+                    </div>
+
+                    <!-- Tab Content Panels -->
+                    <div class="campaign-tab-panels">
+                        <!-- Analytics Tab -->
+                        <div class="campaign-tab-content" id="tab-analytics">
+                            <!-- Filter Dropdowns for Analytics (Audience, Location if regional, Placement, Time) -->
+                            <div class="media-filters-section">
+                                <div class="media-filters-row analytics-filters-row">
+                                    <!-- Audience Filter -->
+                                    <div class="media-filter-group" id="analytics-audience-filter-group">
+                                        <label for="analytics-audience-filter">
+                                            <i class="fas fa-users"></i> Audience
+                                        </label>
+                                        <select id="analytics-audience-filter" onchange="BrandsManager.filterAnalytics()">
+                                            <option value="all">All Audiences</option>
+                                            <!-- Options populated dynamically based on campaign targeting -->
+                                        </select>
+                                    </div>
+                                    <!-- Location Filter (shown only for regional targeting) -->
+                                    <div class="media-filter-group" id="analytics-location-filter-group" style="display: none;">
+                                        <label for="analytics-location-filter">
+                                            <i class="fas fa-map-marker-alt"></i> Location
+                                        </label>
+                                        <select id="analytics-location-filter" onchange="BrandsManager.filterAnalytics()">
+                                            <option value="all">All Locations</option>
+                                            <!-- Options populated dynamically based on campaign targeting -->
+                                        </select>
+                                    </div>
+                                    <!-- Placement Filter -->
+                                    <div class="media-filter-group">
+                                        <label for="analytics-placement-filter">
+                                            <i class="fas fa-ad"></i> Placement
+                                        </label>
+                                        <select id="analytics-placement-filter" onchange="BrandsManager.filterAnalytics()">
+                                            <option value="all">All Placements</option>
+                                            <!-- Options populated dynamically based on campaign targeting -->
+                                        </select>
+                                    </div>
+                                    <!-- Time Period Filter -->
+                                    <div class="media-filter-group">
+                                        <label for="analytics-date-filter">
+                                            <i class="fas fa-calendar"></i> Time Period
+                                        </label>
+                                        <select id="analytics-date-filter" onchange="BrandsManager.filterAnalytics()">
+                                            <option value="7d">Last 7 Days</option>
+                                            <option value="30d" selected>Last 30 Days</option>
+                                            <option value="90d">Last 90 Days</option>
+                                            <option value="all">All Time</option>
+                                        </select>
+                                    </div>
+                                    <button class="media-filter-reset-btn" onclick="BrandsManager.resetAnalyticsFilters()" title="Reset Filters">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Analytics Stats Grid -->
+                            <div class="analytics-grid">
+                                <div class="analytics-card">
+                                    <div class="analytics-card-header">
+                                        <h4 class="analytics-card-title">Impressions</h4>
+                                        <span class="analytics-card-trend up" id="analytics-impressions-trend">
+                                            <i class="fas fa-arrow-up"></i>
+                                            12.5%
+                                        </span>
+                                    </div>
+                                    <div class="analytics-card-value" id="analytics-impressions">245,892</div>
+                                </div>
+                                <div class="analytics-card">
+                                    <div class="analytics-card-header">
+                                        <h4 class="analytics-card-title">Clicks</h4>
+                                        <span class="analytics-card-trend up" id="analytics-clicks-trend">
+                                            <i class="fas fa-arrow-up"></i>
+                                            8.2%
+                                        </span>
+                                    </div>
+                                    <div class="analytics-card-value" id="analytics-clicks">18,456</div>
+                                </div>
+                                <div class="analytics-card">
+                                    <div class="analytics-card-header">
+                                        <h4 class="analytics-card-title">CTR</h4>
+                                        <span class="analytics-card-trend up" id="analytics-ctr-trend">
+                                            <i class="fas fa-arrow-up"></i>
+                                            2.1%
+                                        </span>
+                                    </div>
+                                    <div class="analytics-card-value" id="analytics-ctr">7.5%</div>
+                                </div>
+                                <div class="analytics-card">
+                                    <div class="analytics-card-header">
+                                        <h4 class="analytics-card-title">Conversions</h4>
+                                        <span class="analytics-card-trend down" id="analytics-conversions-trend">
+                                            <i class="fas fa-arrow-down"></i>
+                                            1.5%
+                                        </span>
+                                    </div>
+                                    <div class="analytics-card-value" id="analytics-conversions">1,234</div>
+                                </div>
+                            </div>
+                            <div class="chart-placeholder">
+                                <div style="text-align: center; color: var(--text-muted);">
+                                    <i class="fas fa-chart-area" style="font-size: 3rem; opacity: 0.3; margin-bottom: 16px;"></i>
+                                    <p>Performance chart will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Images Tab -->
+                        <div class="campaign-tab-content active" id="tab-images">
+                            <div class="media-upload-section">
+                                <div class="media-upload-header">
+                                    <div class="media-header-left">
+                                        <h3>Campaign Images</h3>
+                                        <p>Upload images for your ad campaign (banners, thumbnails, etc.)</p>
+                                    </div>
+                                    <button class="media-upload-btn" onclick="BrandsManager.openMediaUploadModal('image')">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        Upload Images
+                                    </button>
+                                    <input type="file" id="campaign-image-upload" accept="image/*" multiple style="display: none;" onchange="BrandsManager.handleImageUpload(event)">
+                                </div>
+
+                                <!-- Placement Filter Buttons for Images (only shows placements set in campaign) -->
+                                <div class="media-filters-section" id="images-filters-section" style="display: none;">
+                                    <div class="placement-filter-buttons" id="images-placement-buttons">
+                                        <!-- Buttons populated dynamically based on campaign target_placements -->
+                                    </div>
+                                </div>
+
+                                <div class="media-gallery" id="campaign-images-gallery">
+                                    <!-- Uploaded images will appear here -->
+                                    <div class="media-empty-state">
+                                        <i class="fas fa-images"></i>
+                                        <p>No images uploaded yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Videos Tab -->
+                        <div class="campaign-tab-content" id="tab-videos">
+                            <div class="media-upload-section">
+                                <div class="media-upload-header">
+                                    <div class="media-header-left">
+                                        <h3>Campaign Videos</h3>
+                                        <p>Upload video ads for your campaign</p>
+                                    </div>
+                                    <button class="media-upload-btn" onclick="BrandsManager.openMediaUploadModal('video')">
+                                        <i class="fas fa-film"></i>
+                                        Upload Videos
+                                    </button>
+                                    <input type="file" id="campaign-video-upload" accept="video/*" multiple style="display: none;" onchange="BrandsManager.handleVideoUpload(event)">
+                                </div>
+
+                                <!-- Placement Filter Buttons for Videos (only shows placements set in campaign) -->
+                                <div class="media-filters-section" id="videos-filters-section" style="display: none;">
+                                    <div class="placement-filter-buttons" id="videos-placement-buttons">
+                                        <!-- Buttons populated dynamically based on campaign target_placements -->
+                                    </div>
+                                </div>
+
+                                <div class="media-gallery" id="campaign-videos-gallery">
+                                    <!-- Uploaded videos will appear here -->
+                                    <div class="media-empty-state">
+                                        <i class="fas fa-video"></i>
+                                        <p>No videos uploaded yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Tab -->
+                        <div class="campaign-tab-content" id="tab-activity">
+                            <div class="activity-timeline" id="campaign-activity-timeline">
+                                <!-- Activity items populated dynamically -->
+                                <div class="activity-empty-state" id="activity-empty-state">
+                                    <i class="fas fa-history"></i>
+                                    <p>No activity recorded yet</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Templates Tab -->
+                        <div class="campaign-tab-content" id="tab-templates">
+                            <div class="chart-placeholder">
+                                <div style="text-align: center; color: var(--text-muted);">
+                                    <i class="fas fa-palette" style="font-size: 3rem; opacity: 0.3; margin-bottom: 16px;"></i>
+                                    <p>Campaign creative templates will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ratings Tab -->
+                        <div class="campaign-tab-content" id="tab-engagement">
+                            <!-- Engagement Stats Grid -->
+                            <div class="engagement-stats-grid">
+                                <div class="engagement-stat-card likes-card">
+                                    <div class="engagement-stat-icon">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    <div class="engagement-stat-info">
+                                        <span class="engagement-stat-value" id="engagement-likes">12,456</span>
+                                        <span class="engagement-stat-label">Likes</span>
+                                    </div>
+                                    <div class="engagement-stat-trend up">
+                                        <i class="fas fa-arrow-up"></i> 15.2%
+                                    </div>
+                                </div>
+                                <div class="engagement-stat-card shares-card">
+                                    <div class="engagement-stat-icon">
+                                        <i class="fas fa-share-alt"></i>
+                                    </div>
+                                    <div class="engagement-stat-info">
+                                        <span class="engagement-stat-value" id="engagement-shares">3,892</span>
+                                        <span class="engagement-stat-label">Shares</span>
+                                    </div>
+                                    <div class="engagement-stat-trend up">
+                                        <i class="fas fa-arrow-up"></i> 8.7%
+                                    </div>
+                                </div>
+                                <div class="engagement-stat-card comments-card">
+                                    <div class="engagement-stat-icon">
+                                        <i class="fas fa-comment-dots"></i>
+                                    </div>
+                                    <div class="engagement-stat-info">
+                                        <span class="engagement-stat-value" id="engagement-comments">1,234</span>
+                                        <span class="engagement-stat-label">Comments</span>
+                                    </div>
+                                    <div class="engagement-stat-trend down">
+                                        <i class="fas fa-arrow-down"></i> 2.1%
+                                    </div>
+                                </div>
+                                <div class="engagement-stat-card ratings-card">
+                                    <div class="engagement-stat-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="engagement-stat-info">
+                                        <span class="engagement-stat-value" id="engagement-rating">4.7</span>
+                                        <span class="engagement-stat-label">Avg. Rating</span>
+                                    </div>
+                                    <div class="engagement-stat-trend neutral">
+                                        <i class="fas fa-minus"></i> 0%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reviews Section -->
+                            <div class="engagement-reviews-section">
+                                <div class="reviews-header">
+                                    <h4><i class="fas fa-comments"></i> Recent Reviews</h4>
+                                    <span class="reviews-count" id="engagement-reviews-count">156 reviews</span>
+                                </div>
+                                <div class="reviews-list" id="engagement-reviews-list">
+                                    <div class="review-item">
+                                        <div class="review-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="review-content">
+                                            <div class="review-header">
+                                                <span class="review-author">Anonymous User</span>
+                                                <div class="review-rating">
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star-half-alt"></i>
+                                                </div>
+                                            </div>
+                                            <p class="review-text">Great ad! Very informative and well-designed.</p>
+                                            <span class="review-date">2 days ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="review-item">
+                                        <div class="review-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="review-content">
+                                            <div class="review-header">
+                                                <span class="review-author">Anonymous User</span>
+                                                <div class="review-rating">
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="far fa-star"></i>
+                                                </div>
+                                            </div>
+                                            <p class="review-text">Helpful content, would recommend to others.</p>
+                                            <span class="review-date">5 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Insights Tab -->
+                        <div class="campaign-tab-content" id="tab-insights">
+                            <div class="chart-placeholder">
+                                <div style="text-align: center; color: var(--text-muted);">
+                                    <i class="fas fa-brain" style="font-size: 3rem; opacity: 0.3; margin-bottom: 16px;"></i>
+                                    <p>AI-powered insights will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Creative Hub Tab -->
+                        <div class="campaign-tab-content" id="tab-creative">
+                            <div class="creative-hub-header">
+                                <div class="creative-hub-info">
+                                    <h3>Creative Hub</h3>
+                                    <p>Design and manage creative assets for your campaign</p>
+                                </div>
+                                <button class="creative-create-btn" onclick="BrandsManager.openCreativeHubComingSoon()">
+                                    <i class="fas fa-plus"></i>
+                                    Create
+                                </button>
+                            </div>
+                            <div class="chart-placeholder">
+                                <div style="text-align: center; color: var(--text-muted);">
+                                    <i class="fas fa-magic" style="font-size: 3rem; opacity: 0.3; margin-bottom: 16px;"></i>
+                                    <p>Creative assets and design tools will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Finances Tab -->
+                        <div class="campaign-tab-content" id="tab-finances">
+                            <!-- Campaign Finance Overview -->
+                            <div class="finance-overview-grid">
+                                <!-- Total Investment Card -->
+                                <div class="finance-card total-investment-card">
+                                    <div class="finance-card-header">
+                                        <div class="finance-card-icon total-investment-icon">
+                                            <i class="fas fa-coins"></i>
+                                        </div>
+                                        <div class="finance-card-title">
+                                            <h4>Total Investment</h4>
+                                            <p>Campaign budget</p>
+                                        </div>
+                                    </div>
+                                    <div class="finance-card-body">
+                                        <div class="finance-amount total-investment-amount" id="finance-total-investment">
+                                            0.00 ETB
+                                        </div>
+                                        <div class="finance-meta">
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-calendar"></i>
+                                                Paid on <span id="finance-paid-date">-</span>
+                                            </span>
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-receipt"></i>
+                                                Transaction #<span id="finance-transaction-id">-</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Amount Used Card -->
+                                <div class="finance-card amount-used-card">
+                                    <div class="finance-card-header">
+                                        <div class="finance-card-icon amount-used-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="finance-card-title">
+                                            <h4>Amount Used</h4>
+                                            <p>Non-refundable</p>
+                                        </div>
+                                    </div>
+                                    <div class="finance-card-body">
+                                        <div class="finance-amount amount-used-amount" id="finance-amount-used">
+                                            0.00 ETB
+                                        </div>
+                                        <div class="finance-progress-bar">
+                                            <div class="finance-progress-fill" id="finance-used-progress" style="width: 0%;"></div>
+                                        </div>
+                                        <div class="finance-meta">
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-eye"></i>
+                                                <span id="finance-impressions-delivered">0</span> impressions
+                                            </span>
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-percentage"></i>
+                                                <span id="finance-used-percentage">0%</span> of budget
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Remaining Balance Card -->
+                                <div class="finance-card remaining-balance-card">
+                                    <div class="finance-card-header">
+                                        <div class="finance-card-icon remaining-balance-icon">
+                                            <i class="fas fa-wallet"></i>
+                                        </div>
+                                        <div class="finance-card-title">
+                                            <h4>Remaining Balance</h4>
+                                            <p>Refundable</p>
+                                        </div>
+                                    </div>
+                                    <div class="finance-card-body">
+                                        <div class="finance-amount remaining-balance-amount" id="finance-remaining-balance">
+                                            0.00 ETB
+                                        </div>
+                                        <div class="finance-progress-bar">
+                                            <div class="finance-progress-fill remaining" id="finance-remaining-progress" style="width: 100%;"></div>
+                                        </div>
+                                        <div class="finance-meta">
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-eye-slash"></i>
+                                                <span id="finance-impressions-remaining">0</span> impressions left
+                                            </span>
+                                            <span class="finance-meta-item">
+                                                <i class="fas fa-percentage"></i>
+                                                <span id="finance-remaining-percentage">100%</span> of budget
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Transaction History -->
+                            <div class="finance-transactions-card">
+                                <div class="finance-transactions-header">
+                                    <h4>
+                                        <i class="fas fa-history"></i>
+                                        Transaction History
+                                    </h4>
+                                </div>
+                                <div class="finance-transactions-list" id="finance-transactions-list">
+                                    <!-- Transactions populated dynamically -->
+                                    <div class="finance-no-transactions">
+                                        <i class="fas fa-receipt"></i>
+                                        <p>No transactions yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Details Footer with all action buttons -->
+                    <div class="campaign-details-footer">
+                        <div class="campaign-footer-left">
+                            <button class="campaign-footer-btn back" onclick="BrandsManager.backToPlacementSelection()">
+                                <i class="fas fa-arrow-left"></i>
+                                Back
+                            </button>
+                        </div>
+                        <div class="campaign-footer-right">
+                            <!-- Pause button (shown when campaign is active/running) -->
+                            <button class="campaign-footer-btn secondary" id="campaign-pause-btn" onclick="BrandsManager.pauseCurrentCampaign()" style="display: none;">
+                                <i class="fas fa-pause"></i>
+                                Pause
+                            </button>
+                            <!-- Edit button -->
+                            <button class="campaign-footer-btn secondary" onclick="BrandsManager.editCurrentCampaign()">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <!-- Primary action button (changes based on campaign status) -->
+                            <button class="campaign-footer-btn primary" id="campaign-primary-action-btn" onclick="BrandsManager.handlePrimaryAction()">
+                                <i class="fas fa-rocket" id="campaign-primary-action-icon"></i>
+                                <span id="campaign-primary-action-text">Launch</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ============================================
+     MEDIA UPLOAD MODAL
+     Opens when clicking Upload Images/Videos
+     Lets user select target audience, location,
+     and ad-placement before uploading
+     ============================================ -->
+
+<div class="media-upload-modal-overlay" id="media-upload-modal-overlay">
+    <div class="media-upload-modal-container">
+        <!-- Header -->
+        <div class="media-upload-modal-header">
+            <div class="media-upload-modal-title">
+                <div class="media-upload-modal-icon" id="media-upload-modal-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <div>
+                    <h3 id="media-upload-modal-heading">Upload Campaign Images</h3>
+                    <p id="media-upload-modal-subheading">Select targeting options and upload your media</p>
+                </div>
+            </div>
+            <button class="media-upload-modal-close" onclick="BrandsManager.closeMediaUploadModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="media-upload-modal-body">
+            <!-- Step 1: Ad Placement Selection (Audience & Location are set at campaign level) -->
+            <div class="media-upload-step" id="media-upload-step-1">
+                <div class="media-upload-step-header">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Select Ad Placement</span>
+                    <span class="step-description">Choose where this media will appear on the platform</span>
+                </div>
+
+                <div class="media-targeting-grid single-card">
+                    <!-- Ad Placement Selection -->
+                    <div class="media-targeting-card full-width">
+                        <div class="targeting-card-header">
+                            <div class="targeting-card-icon placement-icon">
+                                <i class="fas fa-ad"></i>
+                            </div>
+                            <div class="targeting-card-title">
+                                <h4>Ad Placement</h4>
+                                <p>Different placements may require different image/video dimensions</p>
+                            </div>
+                        </div>
+                        <div class="targeting-card-body">
+                            <div class="targeting-checkbox-list" id="upload-placement-checkboxes">
+                                <div class="targeting-checkboxes-grid placement-grid" id="upload-placement-options">
+                                    <!-- Options populated dynamically based on campaign targeting -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: File Upload -->
+            <div class="media-upload-step" id="media-upload-step-2">
+                <div class="media-upload-step-header">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Upload Files</span>
+                    <span class="step-description">Drag & drop or click to upload</span>
+                </div>
+
+                <div class="media-upload-dropzone" id="media-upload-dropzone"
+                     ondragover="BrandsManager.handleDragOver(event)"
+                     ondragleave="BrandsManager.handleDragLeave(event)"
+                     ondrop="BrandsManager.handleDrop(event)"
+                     onclick="BrandsManager.triggerMediaUploadInput()">
+                    <div class="dropzone-content">
+                        <div class="dropzone-icon" id="dropzone-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="dropzone-text">
+                            <h4>Drag & drop your files here</h4>
+                            <p>or <span class="browse-link">browse</span> to select files</p>
+                        </div>
+                        <div class="dropzone-hint" id="dropzone-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Supports: JPG, PNG, GIF, WebP (max 10MB each)
+                        </div>
+                    </div>
+                    <input type="file" id="media-upload-file-input" multiple style="display: none;"
+                           onchange="BrandsManager.handleMediaFileSelect(event)">
+                </div>
+
+                <!-- Upload Preview Area -->
+                <div class="media-upload-preview-area" id="media-upload-preview-area" style="display: none;">
+                    <div class="preview-header">
+                        <h4>
+                            <i class="fas fa-images"></i>
+                            <span id="preview-count">0</span> files selected
+                        </h4>
+                        <button class="preview-clear-btn" onclick="BrandsManager.clearMediaUploadPreviews()">
+                            <i class="fas fa-trash-alt"></i>
+                            Clear All
+                        </button>
+                    </div>
+                    <div class="preview-grid" id="media-upload-preview-grid">
+                        <!-- Previews will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Summary -->
+            <div class="media-upload-summary" id="media-upload-summary">
+                <div class="summary-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Upload Summary</span>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-item">
+                        <span class="summary-label">Placement:</span>
+                        <span class="summary-value" id="summary-placement">All Placements</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Files:</span>
+                        <span class="summary-value" id="summary-files">0 files ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Progress Bar -->
+        <div class="upload-progress-container" id="upload-progress-container" style="display: none;">
+            <div class="upload-progress-wrapper">
+                <div class="upload-progress-bar" id="upload-progress-bar"></div>
+            </div>
+            <span class="upload-progress-text" id="upload-progress-text">Uploading...</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="media-upload-modal-footer">
+            <button class="media-upload-cancel-btn" onclick="BrandsManager.closeMediaUploadModal()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <button class="media-upload-submit-btn" id="media-upload-submit-btn" onclick="BrandsManager.submitMediaUpload()" disabled>
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="upload-btn-text">Upload</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     CANCELLATION CALCULATOR MODAL
+     Opens when user clicks Cancel on a running campaign
+     Shows fee calculation and confirmation
+     ============================================ -->
+
+<div class="cancellation-modal-overlay" id="cancellation-modal-overlay">
+    <div class="cancellation-modal-container">
+        <!-- Header -->
+        <div class="cancellation-modal-header">
+            <div class="cancellation-modal-title">
+                <div class="cancellation-modal-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div>
+                    <h3>Cancel Campaign</h3>
+                    <p>Review cancellation fees before proceeding</p>
+                </div>
+            </div>
+            <button class="cancellation-modal-close" onclick="BrandsManager.closeCancellationModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="cancellation-modal-body">
+            <!-- Grace Period Notice (if within 24 hours) -->
+            <div class="grace-period-notice" id="cancel-grace-period-notice" style="display: none;">
+                <div class="grace-period-content">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Grace Period Active!</strong>
+                        <span>Cancel within <span id="cancel-grace-hours-remaining">24</span> hours for <strong>0% fee</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fee Calculation Section -->
+            <div class="cancellation-calculation">
+                <div class="calculation-row">
+                    <span class="calculation-label">Remaining Balance:</span>
+                    <span class="calculation-value" id="cancel-remaining-balance">0.00 ETB</span>
+                </div>
+                <div class="calculation-row">
+                    <span class="calculation-label">Your Fee Tier:</span>
+                    <span class="calculation-value">
+                        <span class="fee-tier-badge" id="cancel-fee-badge">5%</span>
+                        <span class="fee-tier-reason" id="cancel-fee-reason">New advertiser</span>
+                    </span>
+                </div>
+                <div class="calculation-row">
+                    <span class="calculation-label">Cancellation Fee:</span>
+                    <span class="calculation-value fee-amount" id="cancel-fee-amount">0.00 ETB</span>
+                </div>
+                <div class="calculation-divider"></div>
+                <div class="calculation-row total">
+                    <span class="calculation-label">You Will Receive:</span>
+                    <span class="calculation-value refund-amount" id="cancel-refund-amount">0.00 ETB</span>
+                </div>
+            </div>
+
+            <!-- Fee Tier Info -->
+            <div class="fee-tier-info">
+                <div class="fee-tier-info-header">
+                    <i class="fas fa-star"></i>
+                    <span>Reduce Your Fee</span>
+                </div>
+                <ul class="fee-tier-list">
+                    <li>After 5 campaigns: <strong>3% fee</strong></li>
+                    <li>After 20 campaigns: <strong>1% fee</strong></li>
+                    <li>After 100K ETB spent: <strong>0% fee</strong> (Premium)</li>
+                </ul>
+            </div>
+
+            <!-- Warning -->
+            <div class="cancellation-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>This action cannot be undone. Your campaign will be permanently cancelled.</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cancellation-modal-footer">
+            <button class="cancellation-modal-btn secondary" onclick="BrandsManager.closeCancellationModal()">
+                <i class="fas fa-arrow-left"></i>
+                Keep Campaign
+            </button>
+            <button class="cancellation-modal-btn danger" onclick="BrandsManager.confirmCancelCampaign()">
+                <i class="fas fa-ban"></i>
+                Confirm Cancellation
+            </button>
+        </div>
+    </div>
+</div>

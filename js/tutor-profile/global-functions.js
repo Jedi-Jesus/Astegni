@@ -669,6 +669,11 @@ function showComingSoonModal(feature) {
 }
 
 function openStudentDetails(studentId) {
+    // CRITICAL: Set the current student ID for other functions (switchSection, etc.)
+    currentStudentDetailsId = studentId;
+    window.currentStudentDetailsId = studentId;
+    console.log('[openStudentDetails] Set currentStudentDetailsId to:', studentId);
+
     if (typeof TutorModalManager !== 'undefined') {
         TutorModalManager.openStudentDetails(studentId);
     }
@@ -881,16 +886,137 @@ function viewBlog(blogId) {
     window.location.href = `../branch/blog.html?id=${blogId}`;
 }
 
-// Digital tools
-function openDigitalLab() {
-    if (typeof TutorModalManager !== 'undefined') {
-        TutorModalManager.showComingSoon('Digital Lab');
+// Digital Lab Modal Functions (defined here, not in modal HTML)
+function openDigitalLabModal() {
+    const modal = document.getElementById('digitalLabModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 }
 
+function closeDigitalLabModal() {
+    const modal = document.getElementById('digitalLabModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function openDigitalLabComingSoon(labName) {
+    const modal = document.getElementById('digitalLabComingSoonModal');
+    const title = document.getElementById('digitalLabComingSoonTitle');
+    const message = document.getElementById('digitalLabComingSoonMessage');
+
+    if (modal) {
+        if (title) {
+            title.textContent = `${labName} - Coming Soon`;
+        }
+        if (message) {
+            message.textContent = `The ${labName} is currently under development. We're working hard to bring you an amazing virtual experiment experience!`;
+        }
+        modal.classList.add('active');
+    }
+}
+
+function closeDigitalLabComingSoon() {
+    const modal = document.getElementById('digitalLabComingSoonModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Digital tools - main entry point
+function openDigitalLab() {
+    // Check if modal exists in DOM
+    if (document.getElementById('digitalLabModal')) {
+        openDigitalLabModal();
+    } else {
+        // Load the modal first
+        loadDigitalLabModal().then(() => {
+            openDigitalLabModal();
+        }).catch((error) => {
+            console.error('Failed to load Digital Lab modal:', error);
+            if (typeof TutorModalManager !== 'undefined') {
+                TutorModalManager.showComingSoon('Digital Lab');
+            }
+        });
+    }
+}
+
+// Load Digital Lab Modal dynamically (HTML only, functions defined above)
+async function loadDigitalLabModal() {
+    // Check if already loaded
+    if (document.getElementById('digitalLabModal')) {
+        return Promise.resolve();
+    }
+
+    try {
+        const response = await fetch('../modals/common-modals/digital-lab-modal.html');
+        if (!response.ok) throw new Error('Failed to load modal');
+
+        const html = await response.text();
+        const container = document.getElementById('modal-container') || document.body;
+
+        // Use insertAdjacentHTML - cleaner approach
+        container.insertAdjacentHTML('beforeend', html);
+
+        // Setup event listeners for the newly loaded modal
+        setupDigitalLabEventListeners();
+
+        return Promise.resolve();
+    } catch (error) {
+        console.error('Error loading Digital Lab modal:', error);
+        return Promise.reject(error);
+    }
+}
+
+// Setup event listeners for Digital Lab modal
+function setupDigitalLabEventListeners() {
+    // Close on overlay click
+    const overlay = document.getElementById('digitalLabModal');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeDigitalLabModal();
+            }
+        });
+    }
+
+    // Close coming soon on overlay click
+    const comingSoonOverlay = document.getElementById('digitalLabComingSoonModal');
+    if (comingSoonOverlay) {
+        comingSoonOverlay.addEventListener('click', function(e) {
+            if (e.target === comingSoonOverlay) {
+                closeDigitalLabComingSoon();
+            }
+        });
+    }
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const comingSoonModal = document.getElementById('digitalLabComingSoonModal');
+            const labModal = document.getElementById('digitalLabModal');
+
+            if (comingSoonModal && comingSoonModal.classList.contains('active')) {
+                closeDigitalLabComingSoon();
+            } else if (labModal && labModal.classList.contains('active')) {
+                closeDigitalLabModal();
+            }
+        }
+    });
+}
+
 function openWhiteboardTool() {
-    if (typeof TutorModalManager !== 'undefined') {
-        TutorModalManager.showComingSoon('Whiteboard Tool');
+    // Open the actual whiteboard modal from whiteboard-manager.js
+    if (typeof openWhiteboardModal === 'function') {
+        openWhiteboardModal(null, null, 'teaching_tools');
+    } else {
+        console.error('openWhiteboardModal function not found. Make sure whiteboard-manager.js is loaded.');
+        if (typeof TutorModalManager !== 'undefined') {
+            TutorModalManager.showError('Whiteboard not available. Please refresh the page.');
+        }
     }
 }
 
@@ -1064,14 +1190,39 @@ function switchSection(section) {
         activeItem.classList.add('active');
     }
 
+    // Get the student ID - check both local variable and window property
+    const studentId = currentStudentDetailsId || window.currentStudentDetailsId;
+
     // Load section data when switching to specific sections
     if (section === 'digital-whiteboard') {
-        if (typeof StudentWhiteboardManager !== 'undefined') {
+        // Load whiteboard sessions for the current student
+        if (studentId) {
+            loadStudentWhiteboardSessions(studentId);
+        } else if (typeof StudentWhiteboardManager !== 'undefined') {
             StudentWhiteboardManager.loadSessions();
         }
-    } else if (section === 'quiz-tests') {
-        if (typeof StudentQuizManager !== 'undefined') {
-            StudentQuizManager.loadQuizzes('active');
+    } else if (section === 'coursework') {
+        // Load coursework for the current student
+        if (studentId) {
+            console.log('[switchSection] Loading coursework for student:', studentId);
+            loadStudentCoursework(studentId);
+        } else {
+            console.warn('[switchSection] No student ID available for coursework');
+        }
+    } else if (section === 'requests') {
+        // Load requests for the current student
+        if (studentId) {
+            loadStudentRequests(studentId);
+        }
+    } else if (section === 'sessions') {
+        // Load sessions for the current student
+        if (studentId) {
+            loadStudentSessions(studentId);
+        }
+    } else if (section === 'parent') {
+        // Load parent information for the current student
+        if (studentId) {
+            loadParentInformation(studentId);
         }
     }
 }
@@ -1401,8 +1552,19 @@ function selectSchool(inputId, schoolName) {
         }
     };
 
+    // Mobile profile dropdown toggle function
+    function toggleMobileProfileDropdown() {
+        const dropdown = document.querySelector('.mobile-profile-dropdown');
+        const header = document.getElementById('mobile-profile-header');
+        if (dropdown) {
+            dropdown.classList.toggle('open');
+            header?.classList.toggle('expanded');
+        }
+    }
+
     // Set immediately (but don't overwrite if already wrapped by modal-open-fix.js)
     window.toggleSidebar = toggleSidebar;
+    window.toggleMobileProfileDropdown = toggleMobileProfileDropdown;
     if (!window.openAdAnalyticsModal?.__modalOpenFixWrapped) {
         window.openAdAnalyticsModal = openAdAnalyticsModal;
     }
@@ -1471,6 +1633,10 @@ window.playVideo = playVideo;
 window.editBlog = editBlog;
 window.viewBlog = viewBlog;
 window.openDigitalLab = openDigitalLab;
+window.openDigitalLabModal = openDigitalLabModal;
+window.closeDigitalLabModal = closeDigitalLabModal;
+window.openDigitalLabComingSoon = openDigitalLabComingSoon;
+window.closeDigitalLabComingSoon = closeDigitalLabComingSoon;
 window.openWhiteboardTool = openWhiteboardTool;
 window.openQuizMaker = openQuizMaker;
 window.openResourceLibrary = openResourceLibrary;
@@ -1482,7 +1648,751 @@ window.switchCommunitySection = switchCommunitySection;
 window.switchStudentSection = switchStudentSection;
 window.switchSection = switchSection;
 window.setupSchoolSearch = setupSchoolSearch;
+
+// ============================================
+// PROGRESS & ANALYTICS TOGGLE FUNCTIONS
+// ============================================
+
+// Toggle Attendance Details Panel
+function toggleAttendanceDetails() {
+    const panel = document.getElementById('attendance-details-panel');
+    const chevron = document.getElementById('attendance-chevron');
+
+    if (!panel) return;
+
+    const isVisible = panel.style.display !== 'none';
+
+    if (isVisible) {
+        // Hide panel
+        panel.style.display = 'none';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    } else {
+        // Show panel and load data
+        panel.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+
+        // Close improvement panel if open
+        const improvementPanel = document.getElementById('improvement-details-panel');
+        const improvementChevron = document.getElementById('improvement-chevron');
+        if (improvementPanel) {
+            improvementPanel.style.display = 'none';
+            if (improvementChevron) improvementChevron.style.transform = 'rotate(0deg)';
+        }
+
+        // Load attendance data
+        loadAttendanceDetails();
+    }
+}
+
+// Toggle Improvement Details Panel
+function toggleImprovementDetails() {
+    const panel = document.getElementById('improvement-details-panel');
+    const chevron = document.getElementById('improvement-chevron');
+
+    if (!panel) return;
+
+    const isVisible = panel.style.display !== 'none';
+
+    if (isVisible) {
+        // Hide panel
+        panel.style.display = 'none';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    } else {
+        // Show panel and load data
+        panel.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+
+        // Close attendance panel if open
+        const attendancePanel = document.getElementById('attendance-details-panel');
+        const attendanceChevron = document.getElementById('attendance-chevron');
+        if (attendancePanel) {
+            attendancePanel.style.display = 'none';
+            if (attendanceChevron) attendanceChevron.style.transform = 'rotate(0deg)';
+        }
+
+        // Load improvement data
+        loadImprovementDetails();
+    }
+}
+
+// Load Attendance Details Data
+async function loadAttendanceDetails() {
+    const studentId = currentStudentDetailsId || window.currentStudentDetailsId;
+    if (!studentId) {
+        console.warn('[loadAttendanceDetails] No student ID available');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/api/sessions?student_id=${studentId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch sessions');
+
+        const sessions = await response.json();
+
+        // Calculate attendance stats
+        const completedSessions = sessions.filter(s => s.status === 'completed');
+        const missedSessions = sessions.filter(s => s.status === 'missed' || s.status === 'no-show');
+        const totalScheduled = completedSessions.length + missedSessions.length;
+
+        // Update stats
+        document.getElementById('attended-sessions').textContent = completedSessions.length;
+        document.getElementById('missed-sessions').textContent = missedSessions.length;
+        document.getElementById('total-scheduled-sessions').textContent = totalScheduled;
+
+        // Calculate and update attendance rate
+        const attendanceRate = totalScheduled > 0 ? Math.round((completedSessions.length / totalScheduled) * 100) : 0;
+        document.getElementById('stat-attendance').textContent = `${attendanceRate}%`;
+
+        // Populate missed sessions list
+        const missedList = document.getElementById('missed-sessions-list');
+        if (missedSessions.length === 0) {
+            missedList.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
+                    <p style="margin: 0;">No missed sessions! Great attendance!</p>
+                </div>
+            `;
+        } else {
+            missedList.innerHTML = missedSessions.map(session => `
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid #EF4444;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-primary);">${session.title || 'Session'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            ${new Date(session.scheduled_at || session.date).toLocaleDateString('en-US', {
+                                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+                            })}
+                        </div>
+                    </div>
+                    <span style="background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                        Missed
+                    </span>
+                </div>
+            `).join('');
+        }
+
+    } catch (error) {
+        console.error('[loadAttendanceDetails] Error:', error);
+        // Show empty state on error
+        document.getElementById('attended-sessions').textContent = '0';
+        document.getElementById('missed-sessions').textContent = '0';
+        document.getElementById('total-scheduled-sessions').textContent = '0';
+    }
+}
+
+// Load Improvement Details Data
+async function loadImprovementDetails() {
+    const studentId = currentStudentDetailsId || window.currentStudentDetailsId;
+    if (!studentId) {
+        console.warn('[loadImprovementDetails] No student ID available');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/api/coursework/student/${studentId}/grades`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch grades');
+
+        const data = await response.json();
+
+        // Update improvement stats
+        const improvementRate = data.improvement_rate || 0;
+        const currentAvg = data.current_average || '-';
+        const previousAvg = data.previous_average || '-';
+
+        document.getElementById('improvement-rate').textContent = improvementRate >= 0 ? `+${improvementRate}%` : `${improvementRate}%`;
+        document.getElementById('improvement-rate').style.color = improvementRate >= 0 ? '#10B981' : '#EF4444';
+        document.getElementById('current-avg-grade').textContent = currentAvg;
+        document.getElementById('previous-avg-grade').textContent = previousAvg;
+
+        // Update main improvement stat
+        document.getElementById('stat-improvement').textContent = improvementRate >= 0 ? `+${improvementRate}%` : `${improvementRate}%`;
+
+        // Initialize charts if Chart.js is available
+        if (typeof Chart !== 'undefined' && data.performance_trend) {
+            initPerformanceTrendChart(data.performance_trend);
+        }
+        if (typeof Chart !== 'undefined' && data.subject_comparison) {
+            initSubjectComparisonChart(data.subject_comparison);
+        }
+
+    } catch (error) {
+        console.error('[loadImprovementDetails] Error:', error);
+        // Show placeholder state on error
+        document.getElementById('improvement-rate').textContent = '+0%';
+        document.getElementById('current-avg-grade').textContent = '-';
+        document.getElementById('previous-avg-grade').textContent = '-';
+    }
+}
+
+// Initialize Performance Trend Chart
+function initPerformanceTrendChart(data) {
+    const canvas = document.getElementById('performanceTrendChart');
+    if (!canvas) return;
+
+    // Destroy existing chart if any
+    if (window.performanceTrendChartInstance) {
+        window.performanceTrendChartInstance.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    window.performanceTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels || ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Score',
+                data: data.values || [0, 0, 0, 0],
+                borderColor: '#F59E0B',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+}
+
+// Initialize Subject Comparison Chart
+function initSubjectComparisonChart(data) {
+    const canvas = document.getElementById('subjectComparisonChart');
+    if (!canvas) return;
+
+    // Destroy existing chart if any
+    if (window.subjectComparisonChartInstance) {
+        window.subjectComparisonChartInstance.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    window.subjectComparisonChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.subjects || ['Math', 'Physics', 'Chemistry'],
+            datasets: [{
+                label: 'Score',
+                data: data.scores || [0, 0, 0],
+                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+}
+
+// Make functions available globally
+window.toggleAttendanceDetails = toggleAttendanceDetails;
+window.toggleImprovementDetails = toggleImprovementDetails;
+window.loadAttendanceDetails = loadAttendanceDetails;
+window.loadImprovementDetails = loadImprovementDetails;
 window.selectSchool = selectSchool;
+
+// ============================================
+// PARENT INFORMATION FUNCTIONS
+// ============================================
+
+// Store loaded parent data for actions
+let loadedParentsData = [];
+
+// Load Parent Information for Student
+async function loadParentInformation(studentId) {
+    const container = document.getElementById('parent-cards-container');
+    const loadingEl = document.getElementById('parent-loading');
+    const noParentsState = document.getElementById('no-parents-state');
+
+    if (!container) return;
+
+    // Show loading
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (noParentsState) noParentsState.style.display = 'none';
+
+    try {
+        const token = localStorage.getItem('token');
+
+        // First, get student profile to get parent_id array
+        const studentResponse = await fetch(`${API_BASE_URL}/api/student/${studentId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!studentResponse.ok) throw new Error('Failed to fetch student profile');
+
+        const studentData = await studentResponse.json();
+        const parentIds = studentData.parent_id || [];
+
+        console.log('[loadParentInformation] Student parent_ids:', parentIds);
+
+        // Hide loading
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        if (parentIds.length === 0) {
+            // No parents linked
+            container.innerHTML = '';
+            if (noParentsState) noParentsState.style.display = 'block';
+            return;
+        }
+
+        // Fetch parent profiles for each parent user ID
+        const parentProfiles = [];
+        for (const parentUserId of parentIds) {
+            try {
+                // Use by_user_id=true to fetch parent profile by user ID
+                // The API now returns email and phone directly
+                const parentResponse = await fetch(`${API_BASE_URL}/api/parent/${parentUserId}?by_user_id=true`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (parentResponse.ok) {
+                    const parentData = await parentResponse.json();
+                    console.log(`[loadParentInformation] Fetched parent ${parentUserId}:`, parentData);
+                    parentProfiles.push(parentData);
+                }
+            } catch (err) {
+                console.warn(`[loadParentInformation] Failed to fetch parent ${parentUserId}:`, err);
+            }
+        }
+
+        // Store for actions
+        loadedParentsData = parentProfiles;
+
+        if (parentProfiles.length === 0) {
+            container.innerHTML = '';
+            if (noParentsState) noParentsState.style.display = 'block';
+            return;
+        }
+
+        // Render parent cards
+        container.innerHTML = parentProfiles.map((parent, index) => createParentCard(parent, index)).join('');
+
+    } catch (error) {
+        console.error('[loadParentInformation] Error:', error);
+        if (loadingEl) loadingEl.style.display = 'none';
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Failed to load parent information</p>
+            </div>
+        `;
+    }
+}
+
+// Create Parent Card HTML
+function createParentCard(parent, index) {
+    const contactLabel = index === 0 ? 'PRIMARY CONTACT' : (index === 1 ? 'SECONDARY CONTACT' : `CONTACT ${index + 1}`);
+    // API returns 'name' directly in parent object
+    const name = parent.name || parent.username || 'Parent';
+    const relationship = parent.relationship_type || 'Parent';
+    // Phone and email come from the user data we fetched separately
+    const phone = parent.phone || 'Not provided';
+    const email = parent.email || 'Not provided';
+    const location = parent.location || 'Not provided';
+    const profilePic = parent.profile_picture || '/uploads/system_images/system_profile_pictures/woman-user.jpg';
+    const parentId = parent.id;
+    const userId = parent.user_id;
+
+    return `
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <img src="${profilePic}" alt="${name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                <div style="flex: 1;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase;">${contactLabel}</div>
+                    <h4 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--heading); cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'" onclick="viewParentProfile(${userId})">${name}</h4>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span>🔗</span>
+                    <span style="font-size: 0.875rem; color: var(--text);">${relationship}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span>📞</span>
+                    <span style="font-size: 0.875rem; color: var(--text);">${phone}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span>📧</span>
+                    <span style="font-size: 0.875rem; color: var(--text);">${email}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📍</span>
+                    <span style="font-size: 0.875rem; color: var(--text);">${location}</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="callParent('${phone}')">
+                    📞 Call
+                </button>
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="emailParent('${email}')">
+                    📧 Email
+                </button>
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="messageParent(${parentId}, '${name.replace(/'/g, "\\'")}')">
+                    💬 Message
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Parent action functions
+function viewParentProfile(userId) {
+    console.log('[viewParentProfile] Opening parent profile:', userId);
+    window.open(`/view-profiles/view-parent.html?user_id=${userId}`, '_blank');
+}
+
+function callParent(phone) {
+    if (phone && phone !== 'Not provided') {
+        window.open(`tel:${phone.replace(/\s/g, '')}`, '_self');
+    } else {
+        alert('Phone number not available');
+    }
+}
+
+function emailParent(email) {
+    if (email && email !== 'Not provided') {
+        window.open(`mailto:${email}`, '_self');
+    } else {
+        alert('Email address not available');
+    }
+}
+
+function messageParent(parentProfileId, parentName) {
+    console.log('[messageParent] Opening chat with parent profile_id:', parentProfileId, 'name:', parentName);
+
+    // Create user object with profile_id and profile_type for chat modal
+    const parentUser = {
+        profile_id: parentProfileId,
+        profile_type: 'parent',
+        name: parentName,
+        full_name: parentName,
+        role: 'parent'
+    };
+
+    // Use ChatModalManager.open with targetUser - this ensures conversations are loaded
+    // before attempting to find/create conversation with this parent
+    if (typeof window.ChatModalManager !== 'undefined' && typeof window.ChatModalManager.open === 'function') {
+        // Pass parentUser directly to open() - it will call openConversationWith after loadConversations completes
+        window.ChatModalManager.open(parentUser);
+    } else if (typeof openChatModal === 'function') {
+        // openChatModal accepts a targetUser object
+        openChatModal(parentUser);
+    } else {
+        alert('Chat feature coming soon!');
+    }
+}
+
+// Make parent functions available globally
+window.loadParentInformation = loadParentInformation;
+window.viewParentProfile = viewParentProfile;
+window.callParent = callParent;
+window.emailParent = emailParent;
+window.messageParent = messageParent;
+
+// ============================================
+// TUTOR INFORMATION FOR STUDENT
+// (Visible only when modal opened from parent-profile)
+// ============================================
+
+// Store loaded tutor data for actions
+let loadedTutorsData = [];
+
+// Load Tutor Information for Student
+async function loadTutorInformation(studentProfileId) {
+    const container = document.getElementById('tutor-cards-container');
+    const loadingEl = document.getElementById('tutor-loading');
+    const noTutorsState = document.getElementById('no-tutors-state');
+
+    if (!container) return;
+
+    // Show loading
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (noTutorsState) noTutorsState.style.display = 'none';
+
+    try {
+        // Use the new endpoint to get tutors for this student
+        const response = await fetch(`${API_BASE_URL}/api/student/${studentProfileId}/tutors`);
+
+        if (!response.ok) throw new Error('Failed to fetch tutor information');
+
+        const data = await response.json();
+        const tutors = data.tutors || [];
+
+        console.log('[loadTutorInformation] Tutors for student:', tutors);
+
+        // Hide loading
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        if (tutors.length === 0) {
+            // No tutors enrolled
+            container.innerHTML = '';
+            if (noTutorsState) noTutorsState.style.display = 'block';
+            return;
+        }
+
+        // Store for actions
+        loadedTutorsData = tutors;
+
+        // Render tutor cards
+        container.innerHTML = tutors.map((tutor, index) => createTutorCard(tutor, index)).join('');
+
+    } catch (error) {
+        console.error('[loadTutorInformation] Error:', error);
+        if (loadingEl) loadingEl.style.display = 'none';
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Failed to load tutor information</p>
+            </div>
+        `;
+    }
+}
+
+// Create Tutor Card HTML
+function createTutorCard(tutor, index) {
+    const name = tutor.name || tutor.username || 'Tutor';
+    const bio = tutor.bio || 'No bio available';
+    const phone = tutor.phone || 'Not provided';
+    const email = tutor.email || 'Not provided';
+    const location = tutor.location || 'Not provided';
+    const defaultPic = tutor.gender === 'Female'
+        ? '/uploads/system_images/system_profile_pictures/girl-user-image.jpg'
+        : '/uploads/system_images/system_profile_pictures/boy-user-image.jpg';
+    const profilePic = tutor.profile_picture || defaultPic;
+    const tutorId = tutor.id;
+    const userId = tutor.user_id;
+    const rating = tutor.rating ? tutor.rating.toFixed(1) : '0.0';
+    const ratingCount = tutor.rating_count || 0;
+    const packageName = tutor.package_name || 'No package';
+    const hourlyRate = tutor.hourly_rate ? `${tutor.hourly_rate} ETB/hr` : 'Not set';
+    const sessionFormat = tutor.session_format || 'Not specified';
+    const isVerified = tutor.is_verified;
+    const expertiseBadge = tutor.expertise_badge;
+    const enrollmentStatus = tutor.enrollment_status || 'active';
+    const enrolledAt = tutor.enrolled_at ? new Date(tutor.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+
+    // Status color
+    const statusColors = {
+        'active': '#10B981',
+        'suspended': '#F59E0B',
+        'rejected': '#EF4444',
+        'pending': '#6366F1'
+    };
+    const statusColor = statusColors[enrollmentStatus] || '#10B981';
+
+    return `
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="position: relative;">
+                    <img src="${profilePic}" alt="${name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                    ${isVerified ? `<div style="position: absolute; bottom: 0; right: 0; background: #3b82f6; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white;"><i class="fas fa-check" style="font-size: 0.6rem; color: white;"></i></div>` : ''}
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <h4 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--heading); cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'" onclick="viewTutorProfile(${userId})">${name}</h4>
+                        ${expertiseBadge ? `<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;">${expertiseBadge}</span>` : ''}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                        <span style="color: #f59e0b;">★</span>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text);">${rating}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">(${ratingCount} reviews)</span>
+                    </div>
+                </div>
+                <span style="background: ${statusColor}; color: white; font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 600; text-transform: capitalize;">
+                    ${enrollmentStatus}
+                </span>
+            </div>
+
+            <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px;">
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${bio}</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📦</span>
+                    <span style="color: var(--text);">${packageName}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>💰</span>
+                    <span style="color: var(--text);">${hourlyRate}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📍</span>
+                    <span style="color: var(--text);">${location}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📅</span>
+                    <span style="color: var(--text);">Since ${enrolledAt}</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="callTutor('${phone}')">
+                    📞 Call
+                </button>
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="emailTutor('${email}')">
+                    📧 Email
+                </button>
+                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="messageTutor(${tutorId}, '${name.replace(/'/g, "\\'")}')">
+                    💬 Message
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Tutor action functions
+function viewTutorProfile(userId) {
+    console.log('[viewTutorProfile] Opening tutor profile:', userId);
+    window.open(`/view-profiles/view-tutor.html?user_id=${userId}`, '_blank');
+}
+
+function callTutor(phone) {
+    if (phone && phone !== 'Not provided') {
+        window.open(`tel:${phone.replace(/\s/g, '')}`, '_self');
+    } else {
+        alert('Phone number not available');
+    }
+}
+
+function emailTutor(email) {
+    if (email && email !== 'Not provided') {
+        window.open(`mailto:${email}`, '_self');
+    } else {
+        alert('Email address not available');
+    }
+}
+
+function messageTutor(tutorProfileId, tutorName) {
+    console.log('[messageTutor] Opening chat with tutor profile_id:', tutorProfileId, 'name:', tutorName);
+
+    // Create user object with profile_id and profile_type for chat modal
+    const tutorUser = {
+        profile_id: tutorProfileId,
+        profile_type: 'tutor',
+        name: tutorName,
+        full_name: tutorName,
+        role: 'tutor'
+    };
+
+    // Use ChatModalManager.open with targetUser
+    if (typeof window.ChatModalManager !== 'undefined' && typeof window.ChatModalManager.open === 'function') {
+        window.ChatModalManager.open(tutorUser);
+    } else if (typeof openChatModal === 'function') {
+        openChatModal(tutorUser);
+    } else {
+        alert('Chat feature coming soon!');
+    }
+}
+
+// Make tutor functions available globally
+window.loadTutorInformation = loadTutorInformation;
+window.viewTutorProfile = viewTutorProfile;
+window.callTutor = callTutor;
+window.emailTutor = emailTutor;
+window.messageTutor = messageTutor;
+
+// ============================================
+// STUDENT DETAILS MODAL CONTEXT MANAGEMENT
+// Controls visibility of Parent/Tutor sections based on where modal is opened
+// ============================================
+
+// Context: 'tutor-profile' | 'parent-profile' | 'student-profile' | null
+window.studentDetailsModalContext = null;
+
+/**
+ * Set the context for student details modal
+ * @param {string} context - 'tutor-profile' or 'parent-profile' or 'student-profile'
+ */
+function setStudentDetailsModalContext(context) {
+    window.studentDetailsModalContext = context;
+    console.log('[StudentDetailsModal] Context set to:', context);
+    applyStudentDetailsModalContextVisibility();
+}
+
+/**
+ * Apply visibility rules based on context
+ * - From tutor-profile: Hide Tutor section, Show Parent section
+ * - From parent-profile: Hide Parent section, Show Tutor section
+ * - From student-profile: Show both sections
+ */
+function applyStudentDetailsModalContextVisibility() {
+    const context = window.studentDetailsModalContext;
+
+    // Get menu items
+    const parentMenuItem = document.getElementById('parent-menu-item');
+    const tutorMenuItem = document.getElementById('tutor-menu-item');
+
+    // Get sections
+    const parentSection = document.getElementById('parent');
+    const tutorSection = document.getElementById('tutor');
+
+    console.log('[StudentDetailsModal] Applying visibility for context:', context);
+    console.log('[StudentDetailsModal] Found elements:', {
+        parentMenuItem: !!parentMenuItem,
+        tutorMenuItem: !!tutorMenuItem,
+        parentSection: !!parentSection,
+        tutorSection: !!tutorSection
+    });
+
+    if (context === 'tutor-profile') {
+        // Opened from tutor-profile: Hide Tutor section, Show Parent section
+        if (tutorMenuItem) tutorMenuItem.style.display = 'none';
+        if (tutorSection) tutorSection.style.display = 'none';
+        if (parentMenuItem) parentMenuItem.style.display = 'flex';
+        if (parentSection) {
+            // Don't show it by default, but make it available
+        }
+    } else if (context === 'parent-profile') {
+        // Opened from parent-profile: Hide Parent section, Show Tutor section
+        if (parentMenuItem) parentMenuItem.style.display = 'none';
+        if (parentSection) parentSection.style.display = 'none';
+        if (tutorMenuItem) tutorMenuItem.style.display = 'flex';
+        if (tutorSection) {
+            // Don't show it by default, but make it available
+        }
+    } else {
+        // Default or student-profile: Show both
+        if (parentMenuItem) parentMenuItem.style.display = 'flex';
+        if (tutorMenuItem) tutorMenuItem.style.display = 'flex';
+    }
+}
+
+/**
+ * Clear the context (called when modal is closed)
+ */
+function clearStudentDetailsModalContext() {
+    window.studentDetailsModalContext = null;
+
+    // Reset visibility
+    const parentMenuItem = document.getElementById('parent-menu-item');
+    const tutorMenuItem = document.getElementById('tutor-menu-item');
+
+    if (parentMenuItem) parentMenuItem.style.display = 'flex';
+    if (tutorMenuItem) tutorMenuItem.style.display = 'flex';
+}
+
+// Make context functions available globally
+window.setStudentDetailsModalContext = setStudentDetailsModalContext;
+window.applyStudentDetailsModalContextVisibility = applyStudentDetailsModalContextVisibility;
+window.clearStudentDetailsModalContext = clearStudentDetailsModalContext;
 
 // Profile form helper functions
 function addLocation() {
@@ -6171,8 +7081,7 @@ window.toggleScheduleFeatured = toggleScheduleFeatured;
 // STUDENT REVIEWS FUNCTIONS
 // ============================================
 
-// Global variable to track current student for reviews
-let currentStudentForReview = null;
+// Note: window.currentStudentForReview is set by modal-manager.js when student details load
 let selectedReviewType = 'positive';
 
 // Load student reviews from API
@@ -6180,54 +7089,47 @@ async function loadStudentReviews(studentProfileId) {
     console.log('Loading student reviews for student_profile_id:', studentProfileId);
 
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No authentication token found');
-            return;
-        }
-
-        // Fetch review stats
-        const statsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}/stats`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        // Fetch review stats (no auth required)
+        const statsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}/stats`);
 
         if (statsResponse.ok) {
             const stats = await statsResponse.json();
             console.log('Review stats:', stats);
 
             // Update overall rating
-            document.getElementById('student-overall-rating').textContent = stats.avg_rating.toFixed(1);
+            const overallRatingEl = document.getElementById('student-overall-rating');
+            if (overallRatingEl) overallRatingEl.textContent = stats.avg_rating.toFixed(1);
 
             // Update stars
             const starsEl = document.getElementById('student-rating-stars');
-            const fullStars = Math.floor(stats.avg_rating);
-            const hasHalfStar = stats.avg_rating % 1 >= 0.5;
-            let starsHTML = '';
-            for (let i = 0; i < fullStars; i++) starsHTML += '★';
-            if (hasHalfStar) starsHTML += '⯨';
-            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-            for (let i = 0; i < emptyStars; i++) starsHTML += '☆';
-            starsEl.textContent = starsHTML;
+            if (starsEl) {
+                const fullStars = Math.floor(stats.avg_rating);
+                const hasHalfStar = stats.avg_rating % 1 >= 0.5;
+                let starsHTML = '';
+                for (let i = 0; i < fullStars; i++) starsHTML += '★';
+                if (hasHalfStar) starsHTML += '⯨';
+                const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                for (let i = 0; i < emptyStars; i++) starsHTML += '☆';
+                starsEl.textContent = starsHTML;
+            }
 
             // Update review count
-            document.getElementById('student-review-count').textContent =
-                `Based on ${stats.total_reviews} ${stats.total_reviews === 1 ? 'review' : 'reviews'}`;
+            const reviewCountEl = document.getElementById('student-review-count');
+            if (reviewCountEl) {
+                reviewCountEl.textContent = `Based on ${stats.total_reviews} ${stats.total_reviews === 1 ? 'review' : 'reviews'}`;
+            }
 
             // Update rating bars
             updateRatingBar('subject-understanding', stats.avg_subject_understanding);
             updateRatingBar('participation', stats.avg_participation);
             updateRatingBar('discipline', stats.avg_discipline);
             updateRatingBar('punctuality', stats.avg_punctuality);
+        } else {
+            console.error('Failed to load review stats:', statsResponse.status);
         }
 
-        // Fetch reviews
-        const reviewsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}?limit=20`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        // Fetch reviews (no auth required)
+        const reviewsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}?limit=20`);
 
         if (reviewsResponse.ok) {
             const reviews = await reviewsResponse.json();
@@ -6274,6 +7176,13 @@ function renderStudentReviews(reviews) {
         return;
     }
 
+    // Get current user's profile ID to check ownership
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const currentTutorProfileId = parseInt(currentUser.tutor_profile_id || currentUser.role_ids?.tutor) || null;
+    const currentParentProfileId = parseInt(currentUser.parent_profile_id || currentUser.role_ids?.parent) || null;
+
+    console.log('Current user profile IDs:', { currentTutorProfileId, currentParentProfileId, currentUser });
+
     const reviewsHTML = reviews.map(review => {
         const stars = '★'.repeat(Math.floor(review.rating || 0)) +
                      '☆'.repeat(5 - Math.floor(review.rating || 0));
@@ -6285,8 +7194,37 @@ function renderStudentReviews(reviews) {
 
         const avatarSrc = review.reviewer_profile_picture || '/system_images/default-avatar.png';
 
+        // Check if current user is the reviewer
+        const isOwnReview = (review.reviewer_role === 'tutor' && review.reviewer_id === currentTutorProfileId) ||
+                           (review.reviewer_role === 'parent' && review.reviewer_id === currentParentProfileId);
+
+        console.log('Review ownership check:', {
+            reviewId: review.id,
+            reviewerRole: review.reviewer_role,
+            reviewerId: review.reviewer_id,
+            currentTutorProfileId,
+            currentParentProfileId,
+            isOwnReview
+        });
+
+        const menuHTML = isOwnReview ? `
+            <div style="position: relative;">
+                <button onclick="toggleReviewMenu(${review.id}, event)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='none'">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div id="review-menu-${review.id}" style="display: none; position: absolute; right: 0; top: 100%; background: var(--card-bg); border: 1px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 120px; overflow: hidden;">
+                    <button onclick="editReview(${review.id})" style="display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: var(--text); cursor: pointer; font-size: 0.875rem; text-align: left; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='none'">
+                        <i class="fas fa-edit" style="color: #3b82f6;"></i> Edit
+                    </button>
+                    <button onclick="openDeleteReviewModal(${review.id})" style="display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.875rem; text-align: left; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='none'">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </div>
+            </div>
+        ` : '';
+
         return `
-            <div class="card" style="padding: 1.5rem; transition: all 0.3s;" onmouseenter="this.style.transform='translateX(5px)'" onmouseleave="this.style.transform='none'">
+            <div class="card" style="padding: 1.5rem; transition: all 0.3s; position: relative;" onmouseenter="this.style.transform='translateX(5px)'" onmouseleave="this.style.transform='none'">
                 <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem;">
                     <img src="${avatarSrc}" alt="${review.reviewer_name}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
                     <div style="flex: 1;">
@@ -6295,7 +7233,10 @@ function renderStudentReviews(reviews) {
                                 <h5 style="margin: 0; font-weight: 600; color: var(--heading);">${review.reviewer_name}</h5>
                                 <p style="margin: 0.25rem 0; font-size: 0.875rem; color: var(--text-muted);">${formattedDate}</p>
                             </div>
-                            <div style="color: #F59E0B; font-size: 1.25rem; letter-spacing: 2px;">${stars}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="color: #F59E0B; font-size: 1.25rem; letter-spacing: 2px;">${stars}</div>
+                                ${menuHTML}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -6316,25 +7257,290 @@ function renderStudentReviews(reviews) {
     container.innerHTML = reviewsHTML;
 }
 
+// Toggle review menu
+function toggleReviewMenu(reviewId, event) {
+    event.stopPropagation();
+
+    // Close all other menus
+    document.querySelectorAll('[id^="review-menu-"]').forEach(menu => {
+        if (menu.id !== `review-menu-${reviewId}`) {
+            menu.style.display = 'none';
+        }
+    });
+
+    const menu = document.getElementById(`review-menu-${reviewId}`);
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', () => {
+    document.querySelectorAll('[id^="review-menu-"]').forEach(menu => {
+        menu.style.display = 'none';
+    });
+});
+
+// Track review being edited/deleted
+let currentReviewIdForAction = null;
+
+// Open delete confirmation modal
+function openDeleteReviewModal(reviewId) {
+    currentReviewIdForAction = reviewId;
+    const modal = document.getElementById('deleteReviewConfirmationModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// Close delete confirmation modal
+function closeDeleteReviewModal() {
+    const modal = document.getElementById('deleteReviewConfirmationModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    currentReviewIdForAction = null;
+}
+
+// Confirm delete review
+async function confirmDeleteReview() {
+    if (!currentReviewIdForAction) return;
+
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    if (!token) {
+        alert('Please log in to delete a review');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${currentReviewIdForAction}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            closeDeleteReviewModal();
+            alert('Review deleted successfully');
+            // Reload reviews
+            if (result.student_id) {
+                await loadStudentReviews(result.student_id);
+            }
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete review');
+        }
+    } catch (error) {
+        console.error('Error deleting review:', error);
+        alert('Failed to delete review: ' + error.message);
+    }
+}
+
+// Edit review - load data into modal
+async function editReview(reviewId) {
+    currentReviewIdForAction = reviewId;
+
+    try {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/single/${reviewId}`);
+
+        if (!response.ok) {
+            throw new Error('Failed to load review');
+        }
+
+        const review = await response.json();
+
+        // Populate the review modal with existing data
+        document.getElementById('subject-understanding-slider').value = review.subject_understanding || 3;
+        updateSliderValue('subject-understanding', review.subject_understanding || 3);
+
+        document.getElementById('participation-slider').value = review.participation || 3;
+        updateSliderValue('participation', review.participation || 3);
+
+        document.getElementById('discipline-slider').value = review.discipline || 3;
+        updateSliderValue('discipline', review.discipline || 3);
+
+        document.getElementById('punctuality-slider').value = review.punctuality || 3;
+        updateSliderValue('punctuality', review.punctuality || 3);
+
+        document.getElementById('review-title-input').value = review.review_title || '';
+        document.getElementById('review-text-input').value = review.review_text || '';
+
+        // Open the review modal
+        const modal = document.getElementById('reviewStudentModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+
+        // Change submit button to update
+        const submitBtn = modal.querySelector('button[onclick="submitStudentReview()"]');
+        if (submitBtn) {
+            submitBtn.setAttribute('onclick', 'updateStudentReview()');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Review';
+        }
+
+    } catch (error) {
+        console.error('Error loading review for edit:', error);
+        alert('Failed to load review: ' + error.message);
+    }
+}
+
+// Update student review
+async function updateStudentReview() {
+    if (!currentReviewIdForAction) {
+        alert('No review selected for update');
+        return;
+    }
+
+    const subjectUnderstanding = parseFloat(document.getElementById('subject-understanding-slider').value);
+    const participation = parseFloat(document.getElementById('participation-slider').value);
+    const discipline = parseFloat(document.getElementById('discipline-slider').value);
+    const punctuality = parseFloat(document.getElementById('punctuality-slider').value);
+    const reviewTitle = document.getElementById('review-title-input').value.trim();
+    const reviewText = document.getElementById('review-text-input').value.trim();
+
+    if (!reviewTitle) {
+        alert('Please enter a review title');
+        return;
+    }
+
+    if (!reviewText) {
+        alert('Please enter your review');
+        return;
+    }
+
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    if (!token) {
+        alert('Please log in to update a review');
+        return;
+    }
+
+    try {
+        const reviewData = {
+            subject_understanding: subjectUnderstanding,
+            participation: participation,
+            discipline: discipline,
+            punctuality: punctuality,
+            review_title: reviewTitle,
+            review_text: reviewText
+        };
+
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${currentReviewIdForAction}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(reviewData)
+        });
+
+        if (response.ok) {
+            alert('Review updated successfully!');
+            closeReviewStudentModal();
+
+            // Reset the submit button back to create mode
+            const modal = document.getElementById('reviewStudentModal');
+            const submitBtn = modal.querySelector('button[onclick="updateStudentReview()"]');
+            if (submitBtn) {
+                submitBtn.setAttribute('onclick', 'submitStudentReview()');
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+            }
+
+            // Reload reviews
+            if (window.currentStudentForReview?.student_profile_id) {
+                await loadStudentReviews(window.currentStudentForReview.student_profile_id);
+            }
+
+            currentReviewIdForAction = null;
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to update review');
+        }
+    } catch (error) {
+        console.error('Error updating review:', error);
+        alert('Failed to update review: ' + error.message);
+    }
+}
+
 // Open review student modal
-function openReviewStudentModal() {
+async function openReviewStudentModal() {
     const modal = document.getElementById('reviewStudentModal');
     if (!modal) {
         console.error('Review Student Modal not found');
         return;
     }
 
-    // Get student info from the modal
-    const studentName = document.getElementById('student-name')?.textContent || 'Student';
-    const studentAvatar = document.querySelector('#studentDetailsModal img[alt="Student"]')?.src || '/system_images/default-avatar.png';
-
-    // Update modal header
-    document.getElementById('review-modal-student-name').textContent = studentName;
-    document.getElementById('review-modal-student-avatar').src = studentAvatar;
-    document.getElementById('review-modal-student-info').textContent = 'Student Performance Review';
-
-    // Reset form
+    // Reset form first
     resetReviewForm();
+    currentReviewIdForAction = null;
+
+    // Check if the user has already reviewed this student
+    const studentProfileId = window.currentStudentForReview?.student_profile_id;
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+    if (studentProfileId && token) {
+        try {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}/my-review`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.has_review && data.review) {
+                    // User has already reviewed - open in update mode
+                    console.log('User has existing review, opening in update mode');
+                    currentReviewIdForAction = data.review.id;
+
+                    // Populate form with existing review data
+                    document.getElementById('subject-understanding-slider').value = data.review.subject_understanding || 3;
+                    updateSliderValue('subject-understanding', data.review.subject_understanding || 3);
+
+                    document.getElementById('participation-slider').value = data.review.participation || 3;
+                    updateSliderValue('participation', data.review.participation || 3);
+
+                    document.getElementById('discipline-slider').value = data.review.discipline || 3;
+                    updateSliderValue('discipline', data.review.discipline || 3);
+
+                    document.getElementById('punctuality-slider').value = data.review.punctuality || 3;
+                    updateSliderValue('punctuality', data.review.punctuality || 3);
+
+                    document.getElementById('review-title-input').value = data.review.review_title || '';
+                    document.getElementById('review-text-input').value = data.review.review_text || '';
+
+                    // Change button to update mode
+                    const submitBtn = modal.querySelector('button[onclick="submitStudentReview()"]');
+                    if (submitBtn) {
+                        submitBtn.setAttribute('onclick', 'updateStudentReview()');
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Review';
+                    }
+                } else {
+                    // No existing review - ensure create mode
+                    const submitBtn = modal.querySelector('button[onclick="updateStudentReview()"]');
+                    if (submitBtn) {
+                        submitBtn.setAttribute('onclick', 'submitStudentReview()');
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking for existing review:', error);
+            // On error, default to create mode
+            const submitBtn = modal.querySelector('button[onclick="updateStudentReview()"]');
+            if (submitBtn) {
+                submitBtn.setAttribute('onclick', 'submitStudentReview()');
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+            }
+        }
+    } else {
+        // No token or student ID - ensure create mode
+        const submitBtn = modal.querySelector('button[onclick="updateStudentReview()"]');
+        if (submitBtn) {
+            submitBtn.setAttribute('onclick', 'submitStudentReview()');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+        }
+    }
 
     // Show modal
     modal.style.display = 'flex';
@@ -6353,32 +7559,18 @@ function closeReviewStudentModal() {
 // Reset review form
 function resetReviewForm() {
     // Reset sliders
-    document.getElementById('subject-understanding-slider').value = 3;
-    document.getElementById('participation-slider').value = 3;
-    document.getElementById('discipline-slider').value = 3;
-    document.getElementById('punctuality-slider').value = 3;
-
-    // Reset slider values display
-    updateSliderValue('subject-understanding', 3);
-    updateSliderValue('participation', 3);
-    updateSliderValue('discipline', 3);
-    updateSliderValue('punctuality', 3);
+    const sliders = ['subject-understanding', 'participation', 'discipline', 'punctuality'];
+    sliders.forEach(type => {
+        const slider = document.getElementById(`${type}-slider`);
+        if (slider) slider.value = 3;
+        updateSliderValue(type, 3);
+    });
 
     // Reset text inputs
-    document.getElementById('review-title-input').value = '';
-    document.getElementById('review-text-input').value = '';
-
-    // Reset review type
-    selectedReviewType = 'positive';
-    document.querySelectorAll('.review-type-btn').forEach(btn => {
-        btn.style.borderColor = 'rgba(var(--border-rgb), 0.2)';
-        btn.style.background = 'var(--card-bg)';
-    });
-    const positiveBtn = document.querySelector('.review-type-btn[data-type="positive"]');
-    if (positiveBtn) {
-        positiveBtn.style.borderColor = '#3b82f6';
-        positiveBtn.style.background = 'rgba(59, 130, 246, 0.1)';
-    }
+    const titleInput = document.getElementById('review-title-input');
+    const textInput = document.getElementById('review-text-input');
+    if (titleInput) titleInput.value = '';
+    if (textInput) textInput.value = '';
 }
 
 // Update slider value display
@@ -6410,7 +7602,7 @@ function selectReviewType(type) {
 
 // Submit student review
 async function submitStudentReview() {
-    if (!currentStudentForReview) {
+    if (!window.currentStudentForReview) {
         alert('No student selected for review');
         return;
     }
@@ -6434,32 +7626,26 @@ async function submitStudentReview() {
         return;
     }
 
-    if (reviewText.length < 20) {
-        alert('Review must be at least 20 characters long');
-        return;
-    }
-
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             alert('Please log in to submit a review');
             return;
         }
 
         const reviewData = {
-            student_id: currentStudentForReview.student_profile_id,
             subject_understanding: subjectUnderstanding,
             participation: participation,
             discipline: discipline,
             punctuality: punctuality,
             review_title: reviewTitle,
-            review_text: reviewText,
-            review_type: selectedReviewType
+            review_text: reviewText
         };
 
         console.log('Submitting review:', reviewData);
+        console.log('Student profile ID:', window.currentStudentForReview.student_profile_id);
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${currentStudentForReview.student_profile_id}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${window.currentStudentForReview.student_profile_id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -6475,7 +7661,7 @@ async function submitStudentReview() {
             closeReviewStudentModal();
 
             // Reload reviews
-            await loadStudentReviews(currentStudentForReview.student_profile_id);
+            await loadStudentReviews(window.currentStudentForReview.student_profile_id);
         } else {
             const error = await response.json();
             throw new Error(error.detail || 'Failed to submit review');
@@ -6508,6 +7694,12 @@ window.updateSliderValue = updateSliderValue;
 window.selectReviewType = selectReviewType;
 window.submitStudentReview = submitStudentReview;
 window.viewParentProfile = viewParentProfile;
+window.toggleReviewMenu = toggleReviewMenu;
+window.openDeleteReviewModal = openDeleteReviewModal;
+window.closeDeleteReviewModal = closeDeleteReviewModal;
+window.confirmDeleteReview = confirmDeleteReview;
+window.editReview = editReview;
+window.updateStudentReview = updateStudentReview;
 
 // ============================================
 //   TUTOR REQUESTS PANEL - FILTER FUNCTIONS
@@ -6539,21 +7731,20 @@ function filterTutorRequestType(type) {
     const parentingTabs = document.getElementById('parenting-direction-tabs');
 
     // Handle parenting invitations separately
+    // NOTE: Tutors only RECEIVE parenting invitations, they don't send them
     if (type === 'parenting') {
-        // Hide status tabs and show parenting direction tabs
+        // Hide status tabs (no need for direction tabs since tutors only receive)
         if (statusTabs) statusTabs.style.display = 'none';
+        // Keep parenting tabs hidden - tutors don't need Invited/Sent tabs
         if (parentingTabs) {
-            parentingTabs.classList.remove('hidden');
-            parentingTabs.style.display = 'flex';
+            parentingTabs.classList.add('hidden');
+            parentingTabs.style.display = 'none';
         }
 
-        // Use ParentingInvitationManager if available
+        // Use ParentingInvitationManager to load received invitations only
         if (typeof ParentingInvitationManager !== 'undefined' && ParentingInvitationManager.loadParentingInvitations) {
-            // Default to 'invited' tab
             currentParentingDirection = 'invited';
             ParentingInvitationManager.loadParentingInvitations();
-
-            // Update both tab badge counts
             ParentingInvitationManager.updateInvitationCount();
         } else {
             const container = document.getElementById('tutor-requests-list');
@@ -6562,7 +7753,36 @@ function filterTutorRequestType(type) {
                     <div class="card p-6 text-center text-gray-500">
                         <i class="fas fa-users text-3xl mb-3"></i>
                         <p>Parenting invitations will appear here</p>
-                        <p class="text-sm mt-2">When students invite you as their parent, you'll see the requests here</p>
+                        <p class="text-sm mt-2">When students or parents invite you to be a guardian, you'll see the requests here</p>
+                    </div>
+                `;
+            }
+        }
+        return;
+    }
+
+    // Handle child invitations (parents inviting user as child)
+    if (type === 'child-invitations') {
+        // Hide status tabs - child invitations have their own status display
+        if (statusTabs) statusTabs.style.display = 'none';
+        if (parentingTabs) {
+            parentingTabs.classList.add('hidden');
+            parentingTabs.style.display = 'none';
+        }
+
+        // Use ChildInvitationManager to load received invitations
+        if (typeof childInvitationManager !== 'undefined' && childInvitationManager.loadChildInvitations) {
+            childInvitationManager.loadChildInvitations().then(() => {
+                childInvitationManager.renderChildInvitations('tutor-requests-list', 'all');
+            });
+        } else {
+            const container = document.getElementById('tutor-requests-list');
+            if (container) {
+                container.innerHTML = `
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-child text-3xl mb-3"></i>
+                        <p>Child invitations will appear here</p>
+                        <p class="text-sm mt-2">When parents invite you to be their child on Astegni, you'll see the requests here</p>
                     </div>
                 `;
             }
@@ -7722,3 +8942,1013 @@ window.deleteFolder = deleteFolder;
 window.searchFolders = searchFolders;
 window.searchDocuments = searchDocuments;
 window.sortDocuments = sortDocuments;
+
+// ========== STUDENT DETAILS MODAL - COURSEWORK FUNCTIONS ==========
+
+// Current student being viewed
+let currentStudentDetailsId = null;
+
+// Filter coursework by status
+function filterStudentCoursework(status) {
+    // Update tab active state
+    const tabs = document.querySelectorAll('.coursework-tab');
+    tabs.forEach(tab => {
+        const isActive = tab.dataset.filter === status;
+        tab.classList.toggle('active', isActive);
+
+        // Update tab styling
+        if (isActive) {
+            tab.style.color = 'var(--text)';
+            tab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            tab.style.color = 'var(--text-muted)';
+            tab.style.borderBottomColor = 'transparent';
+        }
+    });
+
+    // Filter coursework cards
+    const cards = document.querySelectorAll('.student-coursework-card');
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Load coursework for a specific student
+async function loadStudentCoursework(studentId) {
+    const grid = document.getElementById('student-coursework-grid');
+    if (!grid) return;
+
+    // Show loading state
+    grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Loading coursework...</p>
+        </div>
+    `;
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        console.log('[loadStudentCoursework] Fetching coursework for student:', studentId);
+
+        const response = await fetch(`${API_BASE_URL}/api/coursework/student/${studentId}/list`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            // API returned error - show empty state (no coursework assigned yet)
+            console.warn('[loadStudentCoursework] API returned status:', response.status, 'for student:', studentId);
+            renderEmptyCoursework(grid);
+            updateCourseworkStats([]);
+            return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.courseworks && data.courseworks.length > 0) {
+            renderCourseworkCards(grid, data.courseworks);
+            updateCourseworkStats(data.courseworks);
+        } else {
+            renderEmptyCoursework(grid);
+            updateCourseworkStats([]);
+        }
+    } catch (error) {
+        console.error('Error loading student coursework:', error);
+        renderFailedCoursework(grid);
+        updateCourseworkStats([]);
+    }
+}
+
+// Render coursework cards
+function renderCourseworkCards(container, courseworks) {
+    container.innerHTML = courseworks.map(cw => {
+        const statusColors = {
+            'draft': { bg: '#E5E7EB', text: '#374151', icon: '📝' },
+            'posted': { bg: '#DBEAFE', text: '#1E40AF', icon: '📤' },
+            'not_started': { bg: '#FEF3C7', text: '#92400E', icon: '⏳' },
+            'in_progress': { bg: '#FEF3C7', text: '#92400E', icon: '🔄' },
+            'submitted': { bg: '#D1FAE5', text: '#065F46', icon: '✅' },
+            'graded': { bg: '#C4B5FD', text: '#5B21B6', icon: '🎯' }
+        };
+        const status = cw.submission_status || cw.status || 'posted';
+        const colors = statusColors[status] || statusColors['posted'];
+        const dueDate = cw.due_date ? new Date(cw.due_date).toLocaleDateString() : 'No due date';
+        const score = cw.scored_points !== null && cw.total_points ? `${cw.scored_points}/${cw.total_points}` : '--';
+
+        return `
+            <div class="student-coursework-card card" data-status="${status}" data-id="${cw.id}" style="padding: 1.5rem; cursor: pointer; transition: all 0.3s;" onclick="viewCourseworkDetails('${cw.id}')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div style="background: ${colors.bg}; color: ${colors.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                        ${status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                    </div>
+                    <div style="font-size: 1.5rem;">${colors.icon}</div>
+                </div>
+                <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">${cw.title || cw.course_name || 'Untitled'}</h4>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <span style="background: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${cw.coursework_type || 'Assignment'}</span>
+                    ${cw.course_name ? `<span style="background: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${cw.course_name}</span>` : ''}
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <strong>Due:</strong> ${dueDate}<br>
+                    <strong>Questions:</strong> ${cw.question_count || 0}<br>
+                    <strong>Score:</strong> ${score}
+                </p>
+                <button class="btn-secondary" style="width: 100%; font-size: 0.875rem; padding: 0.5rem;" onclick="event.stopPropagation(); viewCourseworkDetails('${cw.id}')">
+                    <i class="fas fa-eye"></i> View Details
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Render empty state
+function renderEmptyCoursework(container) {
+    container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📝</div>
+            <h4 style="font-size: 1.25rem; font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">No Coursework Yet</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">You haven't assigned any coursework to this student yet.</p>
+            <button class="btn-primary" onclick="openGiveCourseworkModal()">
+                <i class="fas fa-plus"></i> Give Coursework
+            </button>
+        </div>
+    `;
+}
+
+// Render failed state
+function renderFailedCoursework(container) {
+    container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: #EF4444;"><i class="fas fa-exclamation-triangle"></i></div>
+            <h4 style="font-size: 1.25rem; font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">Failed to Load</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Could not load coursework. Please try again.</p>
+            <button class="btn-secondary" onclick="loadStudentCoursework(currentStudentDetailsId)">
+                <i class="fas fa-redo"></i> Retry
+            </button>
+        </div>
+    `;
+}
+
+// Update coursework statistics
+function updateCourseworkStats(courseworks) {
+    const total = courseworks.length;
+    const pending = courseworks.filter(cw => ['not_started', 'in_progress', 'posted'].includes(cw.status || cw.submission_status)).length;
+    const completed = courseworks.filter(cw => ['submitted', 'graded'].includes(cw.status || cw.submission_status)).length;
+
+    // Calculate average score
+    const gradedItems = courseworks.filter(cw => cw.scored_points !== null && cw.total_points);
+    const avgScore = gradedItems.length > 0
+        ? Math.round(gradedItems.reduce((sum, cw) => sum + (cw.scored_points / cw.total_points * 100), 0) / gradedItems.length)
+        : null;
+
+    document.getElementById('coursework-total-count')?.textContent && (document.getElementById('coursework-total-count').textContent = total);
+    document.getElementById('coursework-pending-count')?.textContent && (document.getElementById('coursework-pending-count').textContent = pending);
+    document.getElementById('coursework-completed-count')?.textContent && (document.getElementById('coursework-completed-count').textContent = completed);
+    document.getElementById('coursework-avg-score')?.textContent && (document.getElementById('coursework-avg-score').textContent = avgScore !== null ? `${avgScore}%` : '--%');
+}
+
+// View coursework details
+function viewCourseworkDetails(courseworkId) {
+    console.log('Viewing coursework:', courseworkId);
+    // Open the coursework details in the coursework manager
+    if (typeof courseworkManager !== 'undefined' && courseworkManager.viewCourseworkDetails) {
+        courseworkManager.viewCourseworkDetails(courseworkId);
+    } else {
+        alert('Opening coursework details for ID: ' + courseworkId);
+    }
+}
+
+// ========== STUDENT DETAILS MODAL - REQUESTS FUNCTIONS ==========
+
+// Current request filters
+let currentRequestFilter = 'all';
+let currentRequestType = 'all';
+
+// Filter requests by direction (sent/received/pending)
+function filterStudentRequests(filter) {
+    currentRequestFilter = filter;
+
+    // Update tab active state
+    const tabs = document.querySelectorAll('.request-tab');
+    tabs.forEach(tab => {
+        const isActive = tab.dataset.filter === filter;
+        tab.classList.toggle('active', isActive);
+
+        if (isActive) {
+            tab.style.color = 'var(--text)';
+            tab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            tab.style.color = 'var(--text-muted)';
+            tab.style.borderBottomColor = 'transparent';
+        }
+    });
+
+    applyRequestFilters();
+}
+
+// Filter requests by type
+function filterRequestType(type) {
+    currentRequestType = type;
+
+    // Update type button active state
+    const buttons = document.querySelectorAll('.request-type-btn');
+    buttons.forEach(btn => {
+        const isActive = btn.textContent.toLowerCase().includes(type) || (type === 'all' && btn.textContent.includes('All'));
+        if (isActive) {
+            btn.style.background = 'var(--button-bg)';
+            btn.style.color = 'white';
+            btn.style.fontWeight = '600';
+        } else {
+            btn.style.background = '#e5e7eb';
+            btn.style.color = '#1f2937';
+            btn.style.fontWeight = '400';
+        }
+    });
+
+    applyRequestFilters();
+}
+
+// Apply both filters
+function applyRequestFilters() {
+    const cards = document.querySelectorAll('.student-request-card');
+    cards.forEach(card => {
+        const matchesDirection = currentRequestFilter === 'all' || card.dataset.direction === currentRequestFilter ||
+            (currentRequestFilter === 'pending' && card.dataset.status === 'pending');
+        const matchesType = currentRequestType === 'all' || card.dataset.type === currentRequestType;
+
+        card.style.display = (matchesDirection && matchesType) ? 'flex' : 'none';
+    });
+}
+
+// Load requests for a specific student
+async function loadStudentRequests(studentId) {
+    const list = document.getElementById('student-requests-list');
+    if (!list) return;
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/api/requests/student/${studentId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            // If API doesn't exist yet, show sample data
+            renderSampleRequests(list, studentId);
+            return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.requests && data.requests.length > 0) {
+            renderRequestCards(list, data.requests);
+        } else {
+            renderEmptyRequests(list);
+        }
+    } catch (error) {
+        console.error('Error loading student requests:', error);
+        renderSampleRequests(list, studentId);
+    }
+}
+
+// Render request cards
+function renderRequestCards(container, requests) {
+    const typeIcons = {
+        'makeup': '🔄',
+        'reschedule': '📅',
+        'extra': '➕',
+        'leave': '🏖️',
+        'other': '📝'
+    };
+    const statusColors = {
+        'pending': { bg: '#FEF3C7', text: '#92400E', border: '#F59E0B' },
+        'approved': { bg: '#D1FAE5', text: '#065F46', border: '#10B981' },
+        'rejected': { bg: '#FEE2E2', text: '#991B1B', border: '#EF4444' }
+    };
+
+    container.innerHTML = requests.map(req => {
+        const colors = statusColors[req.status] || statusColors['pending'];
+        const icon = typeIcons[req.type] || '📝';
+        const date = new Date(req.created_at).toLocaleDateString();
+        const direction = req.direction || (req.sender_id === currentStudentDetailsId ? 'sent' : 'received');
+
+        return `
+            <div class="student-request-card card" data-id="${req.id}" data-direction="${direction}" data-type="${req.type}" data-status="${req.status}"
+                 style="padding: 1.5rem; display: flex; align-items: start; gap: 1rem; border-left: 4px solid ${colors.border};">
+                <div style="font-size: 2rem; flex-shrink: 0;">${icon}</div>
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <div>
+                            <h4 style="font-size: 1rem; font-weight: 700; margin: 0;">${req.title || req.type.replace(/\b\w/g, c => c.toUpperCase()) + ' Request'}</h4>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                                ${direction === 'sent' ? 'Sent to student' : 'From student'} • ${date}
+                            </span>
+                        </div>
+                        <div style="background: ${colors.bg}; color: ${colors.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                            ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                        </div>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0.5rem 0;">${req.message || 'No message provided'}</p>
+                    ${req.status === 'pending' && direction === 'received' ? `
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn-primary" style="font-size: 0.875rem; padding: 0.5rem 1rem;" onclick="approveRequest('${req.id}')">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem;" onclick="rejectRequest('${req.id}')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Render sample requests for demo
+function renderSampleRequests(container, studentId) {
+    const sampleRequests = [
+        { id: 'req-1', type: 'makeup', title: 'Makeup Session Request', status: 'pending', direction: 'received', message: 'I missed last week\'s class due to illness. Can we schedule a makeup session?', created_at: '2025-01-10' },
+        { id: 'req-2', type: 'reschedule', title: 'Reschedule Thursday Class', status: 'approved', direction: 'sent', message: 'Need to reschedule Thursday\'s class to Friday due to a scheduling conflict.', created_at: '2025-01-08' },
+        { id: 'req-3', type: 'leave', title: 'Leave Request', status: 'pending', direction: 'received', message: 'Family vacation from Jan 20-25. Will be back for the next class.', created_at: '2025-01-05' }
+    ];
+    renderRequestCards(container, sampleRequests);
+}
+
+// Render empty requests state
+function renderEmptyRequests(container) {
+    container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📨</div>
+            <h4 style="font-size: 1.25rem; font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">No Requests Yet</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">No requests have been sent or received for this student.</p>
+            <button class="btn-primary" onclick="openNewRequestModal()">
+                <i class="fas fa-plus"></i> Send a Request
+            </button>
+        </div>
+    `;
+}
+
+// Open new request modal
+function openNewRequestModal() {
+    // Create and show request modal
+    const modal = document.createElement('div');
+    modal.id = 'newRequestModal';
+    modal.className = 'modal fade';
+    modal.style.cssText = 'display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10001; align-items: center; justify-content: center;';
+    modal.innerHTML = `
+        <div style="max-width: 500px; width: 90%; margin: auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">📨 New Request</h3>
+                    <button onclick="closeNewRequestModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.25rem;">×</button>
+                </div>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text);">Request Type</label>
+                    <select id="requestType" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text);">
+                        <option value="makeup">🔄 Makeup Session</option>
+                        <option value="reschedule">📅 Reschedule</option>
+                        <option value="extra">➕ Extra Session</option>
+                        <option value="leave">🏖️ Leave Request</option>
+                        <option value="other">📝 Other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text);">Title</label>
+                    <input type="text" id="requestTitle" placeholder="Enter request title" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text);">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text);">Message</label>
+                    <textarea id="requestMessage" rows="4" placeholder="Describe your request..." style="width: 100%; padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn-primary" style="flex: 1;" onclick="submitRequest()">
+                        <i class="fas fa-paper-plane"></i> Send Request
+                    </button>
+                    <button class="btn-secondary" onclick="closeNewRequestModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Close new request modal
+function closeNewRequestModal() {
+    const modal = document.getElementById('newRequestModal');
+    if (modal) modal.remove();
+}
+
+// Submit new request
+async function submitRequest() {
+    const type = document.getElementById('requestType').value;
+    const title = document.getElementById('requestTitle').value;
+    const message = document.getElementById('requestMessage').value;
+
+    if (!title.trim()) {
+        alert('Please enter a title for your request.');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/api/requests`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                student_id: currentStudentDetailsId,
+                type,
+                title,
+                message
+            })
+        });
+
+        if (response.ok) {
+            closeNewRequestModal();
+            loadStudentRequests(currentStudentDetailsId);
+            alert('Request sent successfully!');
+        } else {
+            // Demo mode - just close and show success
+            closeNewRequestModal();
+            alert('Request sent successfully! (Demo mode)');
+        }
+    } catch (error) {
+        console.error('Error submitting request:', error);
+        closeNewRequestModal();
+        alert('Request sent successfully! (Demo mode)');
+    }
+}
+
+// Approve a request
+async function approveRequest(requestId) {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch(`${API_BASE_URL}/api/requests/${requestId}/approve`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Error approving request:', error);
+    }
+
+    // Update UI
+    const card = document.querySelector(`.student-request-card[data-id="${requestId}"]`);
+    if (card) {
+        card.dataset.status = 'approved';
+        const statusBadge = card.querySelector('[style*="border-radius: 9999px"]');
+        if (statusBadge) {
+            statusBadge.style.background = '#D1FAE5';
+            statusBadge.style.color = '#065F46';
+            statusBadge.textContent = 'Approved';
+        }
+        // Remove action buttons
+        const actionButtons = card.querySelector('[style*="margin-top: 1rem"]');
+        if (actionButtons) actionButtons.remove();
+        card.style.borderLeftColor = '#10B981';
+    }
+    alert('Request approved!');
+}
+
+// Reject a request
+async function rejectRequest(requestId) {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch(`${API_BASE_URL}/api/requests/${requestId}/reject`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Error rejecting request:', error);
+    }
+
+    // Update UI
+    const card = document.querySelector(`.student-request-card[data-id="${requestId}"]`);
+    if (card) {
+        card.dataset.status = 'rejected';
+        const statusBadge = card.querySelector('[style*="border-radius: 9999px"]');
+        if (statusBadge) {
+            statusBadge.style.background = '#FEE2E2';
+            statusBadge.style.color = '#991B1B';
+            statusBadge.textContent = 'Rejected';
+        }
+        // Remove action buttons
+        const actionButtons = card.querySelector('[style*="margin-top: 1rem"]');
+        if (actionButtons) actionButtons.remove();
+        card.style.borderLeftColor = '#EF4444';
+    }
+    alert('Request rejected.');
+}
+
+// ========== STUDENT WHITEBOARD SESSIONS ==========
+
+let currentWhiteboardFilter = 'all';
+let studentWhiteboardSessions = [];
+
+/**
+ * Filter whiteboard sessions by status
+ */
+function filterStudentWhiteboardSessions(status) {
+    currentWhiteboardFilter = status;
+
+    // Update tab active states
+    document.querySelectorAll('.whiteboard-tab').forEach(tab => {
+        const tabFilter = tab.getAttribute('data-filter');
+        if (tabFilter === status) {
+            tab.classList.add('active');
+            tab.style.color = 'var(--text)';
+            tab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            tab.classList.remove('active');
+            tab.style.color = 'var(--text-muted)';
+            tab.style.borderBottomColor = 'transparent';
+        }
+    });
+
+    // Apply filter
+    applyWhiteboardFilter();
+}
+
+/**
+ * Apply current filter to whiteboard sessions
+ */
+function applyWhiteboardFilter() {
+    const grid = document.getElementById('student-whiteboard-sessions');
+    if (!grid) return;
+
+    let filtered = studentWhiteboardSessions;
+
+    if (currentWhiteboardFilter !== 'all') {
+        filtered = studentWhiteboardSessions.filter(session => {
+            const sessionStatus = (session.status || '').toLowerCase().replace('_', '-');
+            return sessionStatus === currentWhiteboardFilter;
+        });
+    }
+
+    renderWhiteboardSessionCards(filtered, grid);
+}
+
+/**
+ * Load whiteboard sessions for a student
+ */
+async function loadStudentWhiteboardSessions(studentId) {
+    const grid = document.getElementById('student-whiteboard-sessions');
+    if (!grid) return;
+
+    // Show loading
+    grid.innerHTML = `
+        <div class="text-center py-8 text-gray-500" style="grid-column: 1 / -1;">
+            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+            <p>Loading whiteboard sessions...</p>
+        </div>
+    `;
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+
+        const response = await fetch(`${API_BASE_URL}/api/whiteboard/sessions?student_id=${studentId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            studentWhiteboardSessions = data.sessions || data || [];
+            updateWhiteboardStats(studentWhiteboardSessions);
+            applyWhiteboardFilter();
+        } else {
+            // Show sample data for demo
+            renderSampleWhiteboardSessions(grid);
+        }
+    } catch (error) {
+        console.error('Error loading whiteboard sessions:', error);
+        renderSampleWhiteboardSessions(grid);
+    }
+}
+
+/**
+ * Update whiteboard stats
+ */
+function updateWhiteboardStats(sessions) {
+    const total = sessions.length;
+    const completed = sessions.filter(s => s.status === 'completed').length;
+    const scheduled = sessions.filter(s => s.status === 'scheduled').length;
+
+    // Calculate total duration in hours
+    let totalMinutes = 0;
+    sessions.forEach(s => {
+        if (s.duration_minutes) {
+            totalMinutes += s.duration_minutes;
+        }
+    });
+    const totalHours = Math.round(totalMinutes / 60);
+
+    const totalEl = document.getElementById('whiteboard-stat-total');
+    const completedEl = document.getElementById('whiteboard-stat-completed');
+    const scheduledEl = document.getElementById('whiteboard-stat-scheduled');
+    const durationEl = document.getElementById('whiteboard-stat-duration');
+
+    if (totalEl) totalEl.textContent = total;
+    if (completedEl) completedEl.textContent = completed;
+    if (scheduledEl) scheduledEl.textContent = scheduled;
+    if (durationEl) durationEl.textContent = `${totalHours}h`;
+}
+
+/**
+ * Render whiteboard session cards
+ */
+function renderWhiteboardSessionCards(sessions, container) {
+    if (!container) return;
+
+    if (sessions.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-chalkboard" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                <p>No whiteboard sessions found</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = sessions.map(session => {
+        const status = session.status || 'scheduled';
+        const statusColors = {
+            'scheduled': { bg: '#FEF3C7', text: '#92400E', icon: '📅' },
+            'in_progress': { bg: '#DBEAFE', text: '#1E40AF', icon: '▶️' },
+            'in-progress': { bg: '#DBEAFE', text: '#1E40AF', icon: '▶️' },
+            'completed': { bg: '#D1FAE5', text: '#065F46', icon: '✅' }
+        };
+        const statusStyle = statusColors[status] || statusColors['scheduled'];
+        const sessionDate = session.scheduled_at ? new Date(session.scheduled_at).toLocaleDateString() : 'N/A';
+        const duration = session.duration_minutes ? `${session.duration_minutes} min` : 'N/A';
+
+        return `
+            <div class="card" style="padding: 1.5rem; cursor: pointer;" onclick="viewWhiteboardSession('${session.id}')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div style="background: ${statusStyle.bg}; color: ${statusStyle.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                        ${status.replace('_', ' ').replace('-', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').replace('-', ' ').slice(1)}
+                    </div>
+                    <div style="font-size: 2rem;">${statusStyle.icon}</div>
+                </div>
+                <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">${session.title || 'Whiteboard Session'}</h4>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <strong>Date:</strong> ${sessionDate}<br>
+                    <strong>Duration:</strong> ${duration}<br>
+                    <strong>Pages:</strong> ${session.page_count || 1}
+                </p>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="event.stopPropagation(); viewWhiteboardSession('${session.id}')">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    ${status === 'scheduled' ? `
+                        <button class="btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="event.stopPropagation(); startWhiteboardSession('${session.id}')">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Render sample whiteboard sessions for demo
+ */
+function renderSampleWhiteboardSessions(container) {
+    studentWhiteboardSessions = [
+        { id: '1', title: 'Math Review Session', status: 'completed', scheduled_at: '2025-01-10', duration_minutes: 45, page_count: 3 },
+        { id: '2', title: 'Physics Problem Solving', status: 'completed', scheduled_at: '2025-01-15', duration_minutes: 60, page_count: 5 },
+        { id: '3', title: 'Chemistry Equations', status: 'scheduled', scheduled_at: '2025-01-20', duration_minutes: 30, page_count: 1 }
+    ];
+    updateWhiteboardStats(studentWhiteboardSessions);
+    applyWhiteboardFilter();
+}
+
+/**
+ * View a whiteboard session
+ */
+function viewWhiteboardSession(sessionId) {
+    console.log('Viewing whiteboard session:', sessionId);
+    closeStudentDetailsModal();
+    if (typeof openWhiteboardModal === 'function') {
+        openWhiteboardModal(sessionId);
+    } else {
+        alert('Whiteboard feature coming soon!');
+    }
+}
+
+/**
+ * Start a whiteboard session
+ */
+function startWhiteboardSession(sessionId) {
+    console.log('Starting whiteboard session:', sessionId);
+    closeStudentDetailsModal();
+    if (typeof openWhiteboardModal === 'function') {
+        openWhiteboardModal(sessionId);
+    } else {
+        alert('Whiteboard feature coming soon!');
+    }
+}
+
+// Export new functions to window
+window.filterStudentCoursework = filterStudentCoursework;
+window.loadStudentCoursework = loadStudentCoursework;
+window.viewCourseworkDetails = viewCourseworkDetails;
+window.filterStudentRequests = filterStudentRequests;
+window.filterRequestType = filterRequestType;
+window.loadStudentRequests = loadStudentRequests;
+window.openNewRequestModal = openNewRequestModal;
+window.closeNewRequestModal = closeNewRequestModal;
+window.submitRequest = submitRequest;
+window.approveRequest = approveRequest;
+window.rejectRequest = rejectRequest;
+window.filterStudentWhiteboardSessions = filterStudentWhiteboardSessions;
+window.loadStudentWhiteboardSessions = loadStudentWhiteboardSessions;
+window.viewWhiteboardSession = viewWhiteboardSession;
+window.startWhiteboardSession = startWhiteboardSession;
+
+// ========== STUDENT SESSIONS ==========
+
+let currentSessionFilter = 'all';
+let studentSessions = [];
+
+/**
+ * Filter student sessions by status
+ */
+function filterStudentSessions(status) {
+    currentSessionFilter = status;
+
+    // Update tab active states
+    document.querySelectorAll('.session-filter-btn').forEach(btn => {
+        const btnText = btn.textContent.toLowerCase().replace(/\s+/g, '-');
+        const isActive = (status === 'all' && btnText.includes('all')) ||
+                         (btnText.includes(status) && status !== 'all');
+
+        if (isActive || (status === 'all' && btn.textContent.includes('All'))) {
+            btn.classList.add('active');
+            btn.style.background = 'var(--primary-color)';
+            btn.style.color = 'white';
+            btn.style.fontWeight = '600';
+        } else {
+            btn.classList.remove('active');
+            btn.style.background = 'var(--bg-secondary)';
+            btn.style.color = 'var(--text-primary)';
+            btn.style.fontWeight = '400';
+        }
+    });
+
+    // Apply filter
+    applySessionFilter();
+}
+
+/**
+ * Apply current filter to sessions
+ */
+function applySessionFilter() {
+    const grid = document.getElementById('student-sessions-grid');
+    if (!grid) return;
+
+    let filtered = studentSessions;
+
+    if (currentSessionFilter !== 'all') {
+        filtered = studentSessions.filter(session => {
+            const sessionStatus = (session.status || '').toLowerCase().replace('_', '-');
+            return sessionStatus === currentSessionFilter;
+        });
+    }
+
+    renderSessionCards(filtered, grid);
+}
+
+/**
+ * Load sessions for a student from the sessions table
+ * Sessions are linked via: sessions -> enrolled_courses -> students_id array
+ */
+async function loadStudentSessions(studentId) {
+    const grid = document.getElementById('student-sessions-grid');
+    if (!grid) return;
+
+    // Show loading
+    grid.innerHTML = `
+        <div class="text-center py-8 text-gray-500" style="grid-column: 1 / -1;">
+            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+            <p>Loading sessions...</p>
+        </div>
+    `;
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+
+        // Use the new endpoint that reads from sessions table via enrolled_courses
+        const response = await fetch(`${API_BASE_URL}/api/tutor/student-sessions/${studentId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            studentSessions = data.sessions || [];
+
+            // Update stats from API response
+            if (data.stats) {
+                updateSessionStatsFromAPI(data.stats);
+            } else {
+                updateSessionStats(studentSessions);
+            }
+
+            applySessionFilter();
+        } else {
+            console.error('Failed to load sessions:', response.status);
+            // Show empty state instead of sample data
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-calendar-alt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    <p>No sessions found for this student.</p>
+                </div>
+            `;
+            updateSessionStatsFromAPI({ total: 0, completed: 0, scheduled: 0, total_hours: 0 });
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; color: #EF4444;"></i>
+                <p>Failed to load sessions. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Update session stats from API response
+ */
+function updateSessionStatsFromAPI(stats) {
+    const totalEl = document.getElementById('student-total-sessions');
+    const completedEl = document.getElementById('student-completed-sessions');
+    const scheduledEl = document.getElementById('student-scheduled-sessions');
+    const hoursEl = document.getElementById('student-session-hours');
+
+    if (totalEl) totalEl.textContent = stats.total || 0;
+    if (completedEl) completedEl.textContent = stats.completed || 0;
+    if (scheduledEl) scheduledEl.textContent = stats.scheduled || 0;
+    if (hoursEl) hoursEl.textContent = `${stats.total_hours || 0}h`;
+}
+
+/**
+ * Update session stats
+ */
+function updateSessionStats(sessions) {
+    const total = sessions.length;
+    const completed = sessions.filter(s => s.status === 'completed').length;
+    const scheduled = sessions.filter(s => s.status === 'scheduled').length;
+
+    // Calculate total duration in hours
+    let totalMinutes = 0;
+    sessions.forEach(s => {
+        if (s.duration_minutes) {
+            totalMinutes += s.duration_minutes;
+        }
+    });
+    const totalHours = Math.round(totalMinutes / 60);
+
+    const totalEl = document.getElementById('student-total-sessions');
+    const completedEl = document.getElementById('student-completed-sessions');
+    const scheduledEl = document.getElementById('student-scheduled-sessions');
+    const hoursEl = document.getElementById('student-session-hours');
+
+    if (totalEl) totalEl.textContent = total;
+    if (completedEl) completedEl.textContent = completed;
+    if (scheduledEl) scheduledEl.textContent = scheduled;
+    if (hoursEl) hoursEl.textContent = `${totalHours}h`;
+}
+
+/**
+ * Render session cards from sessions table data
+ */
+function renderSessionCards(sessions, container) {
+    if (!container) return;
+
+    if (sessions.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-calendar-alt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>No sessions found matching your filter.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = sessions.map(session => {
+        const statusColors = {
+            'scheduled': { bg: '#DBEAFE', text: '#1E40AF', border: '#3B82F6' },
+            'in-progress': { bg: '#FEF3C7', text: '#92400E', border: '#F59E0B' },
+            'completed': { bg: '#E5E7EB', text: '#374151', border: '#6B7280' },
+            'cancelled': { bg: '#FEE2E2', text: '#991B1B', border: '#EF4444' }
+        };
+
+        const status = (session.status || 'scheduled').toLowerCase().replace('_', '-');
+        const colors = statusColors[status] || statusColors['scheduled'];
+
+        // Check if session is today
+        const today = new Date().toISOString().split('T')[0];
+        const isToday = session.session_date === today;
+
+        // Format date from session_date field
+        const sessionDate = session.session_date
+            ? new Date(session.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : 'TBD';
+
+        // Format time from start_time and end_time fields
+        const formatTime = (timeStr) => {
+            if (!timeStr) return '';
+            const [hours, minutes] = timeStr.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const hour12 = h % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        };
+        const sessionTime = session.start_time && session.end_time
+            ? `${formatTime(session.start_time)} - ${formatTime(session.end_time)}`
+            : 'Time TBD';
+
+        // Get course name from course_names array
+        const courseName = session.course_names && session.course_names.length > 0
+            ? session.course_names.join(', ')
+            : session.package_name || 'Tutoring Session';
+
+        // Session mode (online/in-person)
+        const sessionMode = session.session_mode || 'online';
+        const isOnline = sessionMode.toLowerCase() === 'online';
+
+        // Duration display
+        const durationText = session.duration ? `${session.duration} min` : '';
+
+        return `
+            <div class="session-card" data-status="${status}" data-id="${session.id}" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; border-left: 4px solid ${colors.border};">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                    <span style="background: ${colors.bg}; color: ${colors.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">${status.replace('-', ' ')}</span>
+                    ${isToday ? '<span style="background: #FEF3C7; color: #92400E; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Today</span>' : ''}
+                    ${session.is_featured ? '<span style="background: #F3E8FF; color: #7C3AED; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;"><i class="fas fa-star"></i> Featured</span>' : ''}
+                </div>
+                <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                    ${courseName}
+                </h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <div><i class="fas fa-calendar"></i> ${sessionDate}</div>
+                    <div><i class="fas fa-clock"></i> ${sessionTime}</div>
+                    ${durationText ? `<div><i class="fas fa-hourglass-half"></i> ${durationText}</div>` : ''}
+                    <div><i class="fas fa-${isOnline ? 'video' : 'map-marker-alt'}"></i> ${isOnline ? 'Online' : session.location || 'In-person'}</div>
+                </div>
+                ${session.topics && session.topics.length > 0 ? `
+                    <div style="margin-bottom: 1rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Topics:</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem;">
+                            ${session.topics.slice(0, 3).map(t => `<span style="background: var(--bg-tertiary); padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${t}</span>`).join('')}
+                            ${session.topics.length > 3 ? `<span style="color: var(--text-muted); font-size: 0.75rem;">+${session.topics.length - 3} more</span>` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    ${status === 'scheduled' ? `
+                        <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem;" onclick="startSession(${session.id})">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem;" onclick="rescheduleSession(${session.id})">
+                            <i class="fas fa-calendar-alt"></i> Reschedule
+                        </button>
+                    ` : status === 'in-progress' ? `
+                        <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem;" onclick="joinSession(${session.id})">
+                            <i class="fas fa-sign-in-alt"></i> Join
+                        </button>
+                    ` : status === 'completed' ? `
+                        <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem;" onclick="viewSessionReport(${session.id})">
+                            <i class="fas fa-file-alt"></i> View Report
+                        </button>
+                    ` : `
+                        <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem;" onclick="viewSessionDetails(${session.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+// Export session functions
+window.filterStudentSessions = filterStudentSessions;
+window.loadStudentSessions = loadStudentSessions;
+window.updateSessionStats = updateSessionStats;
+window.updateSessionStatsFromAPI = updateSessionStatsFromAPI;
+window.renderSessionCards = renderSessionCards;

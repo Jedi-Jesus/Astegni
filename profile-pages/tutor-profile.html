@@ -15,17 +15,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css">
+    <!-- Mobile Menu Styles from find-tutors -->
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <!-- Shared Profile Responsive Styles -->
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <!-- Tutor Profile Specific Right Widgets -->
     <link rel="stylesheet" href="../css/tutor-profile/right-widgets.css">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
     <link rel="stylesheet" href="../css/view-tutor/view-tutor.css">
     <link rel="stylesheet" href="../css/tutor-profile/package-modal-enhanced.css">
-    <link rel="stylesheet" href="../css/tutor-profile/whiteboard-modal-enhanced.css">
-    <link rel="stylesheet" href="../css/tutor-profile/whiteboard-modal-fixes.css">
+    <link rel="stylesheet" href="../css/tutor-profile/whiteboard-modal.css">
     <!-- Quiz Modal Styles -->
     <link rel="stylesheet" href="../css/tutor-profile/coursework-modal.css">
     <!-- Community Modal Styles -->
-    <link rel="stylesheet" href="../css/tutor-profile/community-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/community-modal.css">
     <!-- Reviews Panel Styles -->
     <link rel="stylesheet" href="../css/tutor-profile/reviews-panel.css">
     <!-- Credentials Panel Styles -->
@@ -34,6 +37,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
     <!-- Shared Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/access-restricted-modal.css">
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
@@ -45,6 +49,9 @@
     <!-- Chat Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/digital-lab-modal.css">
+    <!-- Advanced Notes Styles -->
+    <link rel="stylesheet" href="../css/common-modals/advanced-notes.css">
     <!-- Package Modal Fix - MUST be loaded LAST to override all conflicts -->
     <link rel="stylesheet" href="../css/tutor-profile/package-modal-fix.css">
     <!-- Market Trend Styles -->
@@ -52,6 +59,9 @@
 
     <!-- Minimal inline styles - only for profile-specific fixes -->
     <link rel="stylesheet" href="../css/tutor-profile/profile-specific-fix.css">
+
+    <!-- Comprehensive Responsive Styles - MUST be loaded LAST for responsive overrides -->
+    <link rel="stylesheet" href="../css/tutor-profile/tutor-profile-responsive.css">
 
     <!-- Chart.js for Market Trends -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -169,8 +179,8 @@
                     <span class="notification-badge">3</span>
                 </button>
 
-                <!-- Theme Toggle -->
-                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                <!-- Theme Toggle (Desktop) -->
+                <button id="theme-toggle-btn" class="icon-btn desktop-only-lg" aria-label="Toggle theme">
                     <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
@@ -178,26 +188,209 @@
                     </svg>
                 </button>
             </div>
+
+            <!-- Mobile Menu Button (< 1024px) -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                <span class="mobile-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu (< 1024px) -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-content">
+            <!-- Mobile Menu Header with Logo -->
+            <div class="mobile-menu-header">
+                <a href="tutor-profile.html" class="mobile-logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Tutor Profile</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Navigation Links -->
+            <a class="mobile-menu-link" href="../index.html">
+                <span class="nav-icon">🏠</span> Home
+            </a>
+            <a class="mobile-menu-link" href="../branch/find-tutors.html">
+                <span class="nav-icon">👨‍🏫</span> Find Tutors
+            </a>
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'news'); closeMobileMenu();">
+                <span class="nav-icon">📰</span> News
+            </a>
+            <a class="mobile-menu-link" href="../branch/reels.html">
+                <span class="nav-icon">🎬</span> Reels
+            </a>
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'store'); closeMobileMenu();">
+                <span class="nav-icon">📚</span> Bookstore
+            </a>
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs'); closeMobileMenu();">
+                <span class="nav-icon">💼</span> Find a Job
+            </a>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Mobile Profile Section -->
+            <div id="mobile-profile-section" class="mobile-profile-section">
+                <div class="mobile-profile-dropdown">
+                    <button id="mobile-profile-header" class="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                        <img id="mobile-profile-pic" class="mobile-profile-pic" src="" alt="Profile">
+                        <div class="mobile-profile-info">
+                            <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                            <span id="mobile-profile-role" class="mobile-profile-role">Tutor</span>
+                        </div>
+                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div class="mobile-profile-dropdown-content">
+                        <!-- View Profile Link -->
+                        <a href="tutor-profile.html" class="mobile-dropdown-user-info" onclick="closeMobileMenu();">
+                            <img id="mobile-dropdown-pic" class="mobile-dropdown-pic" src="" alt="Profile">
+                            <div class="mobile-dropdown-info">
+                                <span id="mobile-dropdown-name" class="mobile-dropdown-name"></span>
+                                <span id="mobile-dropdown-email" class="mobile-dropdown-email"></span>
+                            </div>
+                        </a>
+
+                        <!-- Role Switcher -->
+                        <div id="mobile-role-switcher-section" class="mobile-role-switcher-section hidden">
+                            <div class="mobile-role-switcher-header">Switch Role</div>
+                            <div id="mobile-role-options" class="mobile-role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Logout Button -->
+                        <button id="mobile-logout-btn" class="mobile-dropdown-logout" onclick="showLogoutModal(); closeMobileMenu();">
+                            <svg class="mobile-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-menu-divider"></div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <button id="mobile-theme-toggle-btn" class="mobile-menu-item" onclick="toggleTheme(); closeMobileMenu();">
+                <svg id="mobile-theme-icon" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                Toggle Theme
+            </button>
+
+            <!-- Notification Button (Mobile) -->
+            <button id="mobile-notification-btn" class="mobile-menu-item" onclick="openNotificationModal(); closeMobileMenu();">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                    </path>
+                </svg>
+                Notifications
+                <span class="notification-badge-mobile">3</span>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Boost Your Reach Today</h3>
-            <p class="ad-text">Premium placement available</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Grow Your Tutoring Business</h3>
+                <p class="ad-text">Reach more students with Astegni</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Upgrade to Premium</h3>
+                <p class="ad-text">Unlock advanced tutor features</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Premium</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Teaching Resources</h3>
+                <p class="ad-text">Access premium learning materials</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space</h3>
+                <p class="ad-text">Reach tutors across Ethiopia</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -250,11 +443,11 @@
                     <span class="sidebar-icon">👥</span>
                     <span>Community</span>
                 </a> 
-                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('documents'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📚</span>
                     <span>Documents</span>
                 </a>
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('blog'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📝</span>
                     <span>Blog Posts</span>
@@ -265,17 +458,9 @@
                     <span class="badge-count"
                         style="background: var(--button-bg); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75rem; margin-left: auto;">12</span>
                 </a>
-                <a href="#" onclick="switchPanel('images'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🖼️</span>
-                    <span>Images</span>
-                </a>
                 <a href="#" onclick="switchPanel('videos'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">🎬</span>
                     <span>My Videos</span>
-                </a>
-                <a href="#" onclick="switchPanel('podcasts'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🎙️</span>
-                    <span>Podcasts</span>
                 </a>
                 <hr class="my-4 border-gray-300">               
                 <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
@@ -514,7 +699,7 @@
                                                     <div style="flex: 1;">
                                                         <div
                                                             style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Teaches At</div>
+                                                            Teaches At</div>b
                                                         <div id="tutor-teaches-at-field"
                                                             style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
                                                             Loading...</div>
@@ -732,6 +917,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="request-type-card card p-4 cursor-pointer border-2 transition"
+                                onclick="filterTutorRequestType('child-invitations')" data-type="child-invitations">
+                                <div class="flex items-center gap-3">
+                                    <div class="text-3xl">👶</div>
+                                    <div>
+                                        <h3 class="font-bold text-lg">Child Invitations</h3>
+                                        <p class="text-sm text-gray-600">Parents inviting you as child</p>
+                                        <span id="tutor-child-invitation-count" class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Request Status Sub-Tabs (for courses, schools, sessions) -->
@@ -758,21 +954,12 @@
                             </button>
                         </div>
 
-                        <!-- Parenting Direction Tabs (only visible for parenting type) -->
-                        <div id="parenting-direction-tabs" class="mb-6 hidden"
-                            style="display: none; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-                            <button class="parenting-tab active"
-                                onclick="filterParentingDirection('invited')" data-direction="invited"
-                                style="padding: 0.5rem 1rem; font-weight: 500; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); background: none; border-left: none; border-right: none; border-top: none; cursor: pointer;">
-                                <i class="fas fa-inbox mr-2"></i>Invited (Received)
-                                <span id="parenting-invited-count" class="ml-2 text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
-                            </button>
-                            <button class="parenting-tab"
-                                onclick="filterParentingDirection('invites')" data-direction="invites"
-                                style="padding: 0.5rem 1rem; font-weight: 400; color: var(--text-secondary); border-bottom: 2px solid transparent; background: none; border-left: none; border-right: none; border-top: none; cursor: pointer;">
-                                <i class="fas fa-paper-plane mr-2"></i>Invites (Sent)
-                                <span id="parenting-invites-count" class="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
-                            </button>
+                        <!-- Parenting Direction Tabs - REMOVED: Tutors only receive invitations, they don't send them -->
+                        <!-- The parenting-direction-tabs div is hidden for tutors since they can't send parent invitations -->
+                        <div id="parenting-direction-tabs" class="mb-6 hidden" style="display: none;">
+                            <!-- Keeping minimal structure for JS compatibility but not rendering tabs -->
+                            <span id="parenting-invited-count" class="hidden">0</span>
+                            <span id="parenting-invites-count" class="hidden">0</span>
                         </div>
 
                         <!-- Requests List Container -->
@@ -982,7 +1169,7 @@
                                 <p class="text-gray-600">Virtual experiments</p>
                             </div>
                             <div class="card p-6 text-center cursor-pointer hover:shadow-lg transition"
-                                onclick="whiteboardManager.openWhiteboard()">
+                                onclick="openWhiteboardFromTeachingTools()">
                                 <div class="text-6xl mb-4">📝</div>
                                 <h4 class="text-xl font-bold mb-2">Digital Whiteboard</h4>
                                 <p class="text-gray-600">Interactive teaching board</p>
@@ -1384,27 +1571,6 @@
                         </div>
                     </div>
 
-                    <!-- Podcasts Panel -->
-                    <div id="podcasts-panel" class="panel-content hidden">
-                        <div class="mb-8">
-                            <h1 class="text-3xl font-bold mb-2">Podcast Library</h1>
-                            <p class="text-gray-600">Create and manage your educational podcasts</p>
-                        </div>
-
-                        <div class="mb-6">
-                            <button class="cta-button" onclick="createPodcast()">
-                                <i class="fas fa-microphone"></i> Create Podcast
-                            </button>
-                        </div>
-
-                        <div class="podcast-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                            id="podcast-grid">
-                            <!-- Podcasts will be loaded dynamically -->
-                            <div class="card p-6 text-center text-gray-500">
-                                <p>No podcasts yet</p>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Stories Panel -->
                     <div id="stories-panel" class="panel-content hidden">
@@ -1994,6 +2160,120 @@
                         </div>
                     </div>
 
+                    <!-- Notes Panel -->
+                    <div id="notes-panel" class="panel-content hidden">
+                        <!-- Notes Panel Header -->
+                        <div class="dashboard-header">
+                            <div class="dashboard-title-section">
+                                <h1 class="dashboard-title">
+                                    <i class="fas fa-sticky-note"></i>
+                                    My Notes
+                                </h1>
+                                <p class="dashboard-subtitle">Organize your thoughts and knowledge</p>
+                            </div>
+                            <div class="dashboard-actions">
+                                <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
+                                    <i class="fas fa-plus"></i> New Note
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Bar -->
+                        <div class="stats-bar">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalNotes">0</span>
+                                    <span class="stat-label">Total Notes</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon words">
+                                    <i class="fas fa-font"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalWords">0</span>
+                                    <span class="stat-label">Total Words</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon courses">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalCourses">0</span>
+                                    <span class="stat-label">Courses</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon recent">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="recentNotes">0</span>
+                                    <span class="stat-label">This Week</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controls Bar: Search, Filter, Sort -->
+                        <div class="controls-bar">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" id="searchInput" placeholder="Search notes..." oninput="NotesManager.searchNotes(this.value)">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all" onclick="NotesManager.filterNotes('all', this)">
+                                    <i class="fas fa-th"></i> All Notes
+                                </button>
+                                <button class="filter-btn" data-filter="recent" onclick="NotesManager.filterNotes('recent', this)">
+                                    <i class="fas fa-clock"></i> Recent
+                                </button>
+                                <button class="filter-btn" data-filter="favorites" onclick="NotesManager.filterNotes('favorites', this)">
+                                    <i class="fas fa-star"></i> Favorites
+                                </button>
+                                <button class="filter-btn" data-filter="media" onclick="NotesManager.filterNotes('media', this)">
+                                    <i class="fas fa-microphone"></i> Media Notes
+                                </button>
+                            </div>
+                            <select class="sort-select" id="sortSelect" onchange="NotesManager.sortNotes()">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="title">Title A-Z</option>
+                                <option value="course">By Course</option>
+                            </select>
+                        </div>
+
+                        <!-- Notes Grid -->
+                        <div class="notes-grid" id="notesGrid">
+                            <!-- New Note Card (always shown first) -->
+                            <div class="note-card new-note" onclick="NotesManager.createNewNote()">
+                                <div class="new-note-content">
+                                    <div class="new-note-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <h3>Create New Note</h3>
+                                    <p>Start writing your next note</p>
+                                </div>
+                            </div>
+                            <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
+                        </div>
+
+                        <!-- Empty State (shown when no notes exist) -->
+                        <div class="notes-empty-state" id="notesEmptyState" style="display: none;">
+                            <div class="empty-icon">
+                                <i class="fas fa-sticky-note"></i>
+                            </div>
+                            <h3>No Notes Yet</h3>
+                            <p>Start taking notes to organize your learning journey</p>
+                            <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
+                                <i class="fas fa-plus"></i> Create Your First Note
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Credentials Panel (Academic Certificates, Achievements, Experience) -->
                     <div id="credentials-panel" class="panel-content hidden">
                         <div class="mb-8 flex justify-between items-center">
@@ -2089,39 +2369,27 @@
 
                         <!-- Earnings Tab Content -->
                         <div id="earnings-tab-content" class="earnings-tab-content">
-                            <!-- Summary Cards (Clickable) -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- Summary Cards (3 Cards: Total, Affiliate, Tutoring) -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                 <div onclick="toggleEarningsSection('total')"
                                     class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 cursor-pointer hover:shadow-lg transition-all duration-200 active-earnings-card">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-green-600 text-2xl">💰</span>
-                                        <span class="text-xs text-green-600 font-semibold">COMPLETED</span>
+                                        <span class="text-xs text-green-600 font-semibold">ALL SOURCES</span>
                                     </div>
                                     <p class="text-sm text-gray-600 mb-1">Total Earnings</p>
                                     <h3 class="text-2xl font-bold text-gray-800" id="total-earnings">0 ETB</h3>
                                     <p class="text-xs text-green-600 mt-2 font-medium">Click to view all</p>
                                 </div>
-                                <div onclick="toggleEarningsSection('direct')"
+                                <div onclick="toggleEarningsSection('affiliate')"
                                     class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-blue-600 text-2xl">👥</span>
-                                        <span class="text-xs text-blue-600 font-semibold">DIRECT</span>
+                                        <span class="text-blue-600 text-2xl">🤝</span>
+                                        <span class="text-xs text-blue-600 font-semibold">AFFILIATE</span>
                                     </div>
-                                    <p class="text-sm text-gray-600 mb-1">Direct Affiliate</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="direct-affiliate-earnings">0 ETB
-                                    </h3>
+                                    <p class="text-sm text-gray-600 mb-1">Affiliate Earnings</p>
+                                    <h3 class="text-2xl font-bold text-gray-800" id="affiliate-earnings">0 ETB</h3>
                                     <p class="text-xs text-blue-600 mt-2 font-medium">Click to view</p>
-                                </div>
-                                <div onclick="toggleEarningsSection('indirect')"
-                                    class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all duration-200">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-purple-600 text-2xl">🔗</span>
-                                        <span class="text-xs text-purple-600 font-semibold">INDIRECT</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-1">Indirect Affiliate</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="indirect-affiliate-earnings">0 ETB
-                                    </h3>
-                                    <p class="text-xs text-purple-600 mt-2 font-medium">Click to view</p>
                                 </div>
                                 <div onclick="toggleEarningsSection('tutoring')"
                                     class="card p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 cursor-pointer hover:shadow-lg transition-all duration-200">
@@ -2167,19 +2435,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Direct Affiliate Section -->
-                                <div id="direct-affiliate-section" class="card p-6 earnings-section hidden">
+                                <!-- Affiliate Earnings Section (with 3 tabs: Advertisement, Subscription, Commission) -->
+                                <div id="affiliate-earnings-section" class="card p-6 earnings-section hidden">
                                     <div class="flex items-center justify-between mb-6">
                                         <div>
                                             <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-blue-600">👥</span>
-                                                Direct Affiliate Earnings
+                                                <span class="text-blue-600">🤝</span>
+                                                Affiliate Earnings
                                             </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Commission from users you directly
-                                                referred</p>
+                                            <p class="text-sm text-gray-600 mt-1">Earnings from ads, referrals, and connections</p>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <select id="direct-period-selector" onchange="loadDirectAffiliateData()"
+                                            <select id="affiliate-period-selector" onchange="loadAffiliateData()"
                                                 class="p-2 border-2 rounded-lg text-sm font-medium">
                                                 <option value="1">Last Month</option>
                                                 <option value="3">Last 3 Months</option>
@@ -2188,44 +2455,78 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <!-- Line Graph -->
-                                    <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
-                                        <canvas id="direct-affiliate-chart"></canvas>
-                                    </div>
-                                    <!-- List of People -->
-                                    <div id="direct-affiliate-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
 
-                                <!-- Indirect Affiliate Section -->
-                                <div id="indirect-affiliate-section" class="card p-6 earnings-section hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-purple-600">🔗</span>
-                                                Indirect Affiliate Earnings
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Commission from second-level referrals
+                                    <!-- Affiliate Sub-Tabs -->
+                                    <div class="flex gap-2 mb-6 border-b border-gray-200">
+                                        <button onclick="switchAffiliateTab('advertisement')" id="advertisement-tab"
+                                            class="affiliate-tab-btn px-4 py-2 font-medium text-blue-600 border-b-2 border-blue-600 transition-all flex items-center gap-2">
+                                            <span>📺</span> Advertisement
+                                        </button>
+                                        <button onclick="switchAffiliateTab('subscription')" id="subscription-tab"
+                                            class="affiliate-tab-btn px-4 py-2 font-medium text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+                                            <span>⭐</span> Subscription
+                                        </button>
+                                        <button onclick="switchAffiliateTab('commission')" id="commission-tab"
+                                            class="affiliate-tab-btn px-4 py-2 font-medium text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+                                            <span>🔗</span> Commission
+                                        </button>
+                                    </div>
+
+                                    <!-- Advertisement Tab Content -->
+                                    <div id="advertisement-tab-content" class="affiliate-tab-content">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <p class="text-sm text-blue-800">
+                                                <strong>Advertisement Earnings:</strong> Revenue from ads displayed to users who signed up through your referral link.
                                             </p>
                                         </div>
-                                        <div class="flex items-center gap-3">
-                                            <select id="indirect-period-selector" onchange="loadIndirectAffiliateData()"
-                                                class="p-2 border-2 rounded-lg text-sm font-medium">
-                                                <option value="1">Last Month</option>
-                                                <option value="3">Last 3 Months</option>
-                                                <option value="6" selected>Last 6 Months</option>
-                                                <option value="12">Last Year</option>
-                                            </select>
+                                        <!-- Affiliate Levels Info (Single Row, Clickable) -->
+                                        <div id="advertisement-affiliate-levels" class="flex flex-wrap gap-3 mb-6">
+                                            <!-- Will be populated by JS with clickable affiliate tier level cards -->
+                                        </div>
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="advertisement-earnings-chart"></canvas>
+                                        </div>
+                                        <div id="advertisement-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                            <!-- Will be populated by JS -->
                                         </div>
                                     </div>
-                                    <!-- Line Graph -->
-                                    <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
-                                        <canvas id="indirect-affiliate-chart"></canvas>
+
+                                    <!-- Subscription Tab Content -->
+                                    <div id="subscription-tab-content" class="affiliate-tab-content hidden">
+                                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                                            <p class="text-sm text-purple-800">
+                                                <strong>Subscription Earnings:</strong> Commission from users you referred who subscribed to premium plans.
+                                            </p>
+                                        </div>
+                                        <!-- Affiliate Levels Info (Single Row, Clickable) -->
+                                        <div id="subscription-affiliate-levels" class="flex flex-wrap gap-3 mb-6">
+                                            <!-- Will be populated by JS with clickable affiliate tier level cards -->
+                                        </div>
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="subscription-earnings-chart"></canvas>
+                                        </div>
+                                        <div id="subscription-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                            <!-- Will be populated by JS -->
+                                        </div>
                                     </div>
-                                    <!-- List of People -->
-                                    <div id="indirect-affiliate-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
-                                        <!-- Will be populated by JS -->
+
+                                    <!-- Commission Tab Content -->
+                                    <div id="commission-tab-content" class="affiliate-tab-content hidden">
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                            <p class="text-sm text-green-800">
+                                                <strong>Commission Earnings:</strong> Your share from tutor-student connections you facilitated.
+                                            </p>
+                                        </div>
+                                        <!-- Affiliate Levels Info (Single Row, Clickable) -->
+                                        <div id="commission-affiliate-levels" class="flex flex-wrap gap-3 mb-6">
+                                            <!-- Will be populated by JS with clickable affiliate tier level cards -->
+                                        </div>
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="commission-earnings-chart"></canvas>
+                                        </div>
+                                        <div id="commission-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                            <!-- Will be populated by JS -->
+                                        </div>
                                     </div>
                                 </div>
 
@@ -3229,109 +3530,208 @@
                             <p class="text-gray-600">Manage your account settings and preferences</p>
                         </div>
 
+                        <!-- Account & Security Section -->
+                        <div class="settings-section mb-8">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Account & Security
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Verify Personal Info Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
+                                    onclick="openVerifyPersonalInfoModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🔐</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Personal Info</h3>
+                                        <p class="text-sm text-gray-600">Personal details and contact verification</p>
+                                    </div>
+                                </div>
+
+                                <!-- Two-Factor Authentication Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-indigo-500"
+                                    onclick="openTwoFactorAuthModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🛡️</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Two-Factor Auth</h3>
+                                        <p class="text-sm text-gray-600">Extra security with 2FA</p>
+                                        <span id="2fa-status-badge" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Not Enabled
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Login Activity Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-cyan-500"
+                                    onclick="openLoginActivityModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">📱</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Login Activity</h3>
+                                        <p class="text-sm text-gray-600">Active sessions and history</p>
+                                    </div>
+                                </div>
+
+                                <!-- Connected Accounts Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-orange-500"
+                                    onclick="openConnectedAccountsModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🔗</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Connected Accounts</h3>
+                                        <p class="text-sm text-gray-600">Manage Google and other links</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payments & Subscription Section -->
+                        <div class="settings-section mb-8">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                                Payments & Subscription
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Payment Method Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500"
+                                    onclick="openPaymentMethodModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">💳</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Payment Method</h3>
+                                        <p class="text-sm text-gray-600">Receive earnings from students</p>
+                                    </div>
+                                </div>
+
+                                <!-- Subscription Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
+                                    onclick="openSubscriptionModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">⭐</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Subscription & Storage</h3>
+                                        <p class="text-sm text-gray-600">Upgrade plan and boost visibility</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personalization Section -->
+                        <div class="settings-section mb-8">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                </svg>
+                                Personalization
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Appearance Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-violet-500"
+                                    onclick="openAppearanceModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🎨</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Appearance</h3>
+                                        <p class="text-sm text-gray-600">Theme, font size, and display</p>
+                                    </div>
+                                </div>
+
+                                <!-- Language Preferences Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
+                                    onclick="openLanguagePreferencesModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🌐</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Language</h3>
+                                        <p class="text-sm text-gray-600">UI language and translation</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data & Privacy Section -->
+                        <div class="settings-section mb-8">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Data & Privacy
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Export Data Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
+                                    onclick="openExportDataModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">📦</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Export Data</h3>
+                                        <p class="text-sm text-gray-600">Download your personal data</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feedback & Support Section -->
+                        <div class="settings-section mb-8">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                Feedback & Support
+                            </h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Review & Rate Astegni Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500"
+                                    onclick="openReviewAstegniModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">⭐</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
+                                        <p class="text-sm text-gray-600">Share your feedback with us</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone Section -->
                         <div class="settings-section">
-                            <!-- Verify Personal Info Card -->
-                            <div class="card p-8 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
-                                onclick="openVerifyPersonalInfoModal()">
-                                <div class="flex items-center gap-6">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                                            <span class="text-4xl">🔐</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-2xl font-bold mb-2 text-gray-800">Verify Personal Information
-                                        </h3>
-                                        <p class="text-gray-600 mb-3">
-                                            Your personal details, contact information, and institutional affiliations
-                                            <strong>require verification</strong>.
-                                        </p>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 class="text-xl font-semibold mb-4 text-red-600 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                                Danger Zone
+                            </h2>
 
-                            <!-- Payment Method Card -->
-                            <div class="card p-8 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500 mt-6"
-                                onclick="openPaymentMethodModal()">
-                                <div class="flex items-center gap-6">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                                            <span class="text-4xl">💳</span>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Leave Astegni Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
+                                    onclick="openLeaveAstegniModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🚪</span>
                                         </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-2xl font-bold mb-2 text-gray-800">Payment Method</h3>
-                                        <p class="text-gray-600 mb-3">
-                                            Set up your payment method to receive earnings from students.
-                                        </p>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Subscription Card -->
-                            <div class="card p-8 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500 mt-6"
-                                onclick="openSubscriptionModal()">
-                                <div class="flex items-center gap-6">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                                            <span class="text-4xl">⭐</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-2xl font-bold mb-2 text-gray-800">Subscription & Storage</h3>
-                                        <p class="text-gray-600 mb-3">
-                                            Upgrade your storage plan and enjoy boosted visibility on search and videos.
-                                        </p>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Leave Astegni Card -->
-                            <div class="card p-8 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500 mt-6"
-                                onclick="openLeaveAstegniModal()">
-                                <div class="flex items-center gap-6">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg">
-                                            <span class="text-4xl">🚪</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-2xl font-bold mb-2 text-gray-800">Leave Astegni</h3>
-                                        <p class="text-gray-600 mb-3">
-                                            Delete your account and all associated data permanently.
-                                        </p>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7"></path>
-                                        </svg>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
+                                        <p class="text-sm text-gray-600">Delete account permanently</p>
                                     </div>
                                 </div>
                             </div>
@@ -3343,43 +3743,108 @@
                 <!-- Right Sidebar Widgets (Persistent across all panels) -->
                 <div class="right-widgets">
 
-                    <!-- Recent Activity Widget -->
-                    <div class="widget-card">
-                        <h3 class="text-lg font-semibold mb-4">🔔 Recent Activity</h3>
-                        <div class="activity-ticker-container">
-                            <div class="activity-ticker">
-                                <div class="activity-item">
-                                    <span class="text-blue-500">📖</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="text-gray-700">New student enrolled in Math</p>
-                                        <p class="text-xs text-gray-500">2 hours ago</p>
-                                    </div>
+                    <!-- Ad Widget -->
+                    <div class="widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        </div>
+                        <div class="ad-content" id="ad-container-tutor" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="ad-message-container-tutor" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message-tutor active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
                                 </div>
-                                <div class="activity-item">
-                                    <span class="text-yellow-500">⭐</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="text-gray-700">5-star review received</p>
-                                        <p class="text-xs text-gray-500">5 hours ago</p>
-                                    </div>
+                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
                                 </div>
-                                <div class="activity-item">
-                                    <span class="text-green-500">💰</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="text-gray-700">Payment received: ETB 2,500</p>
-                                        <p class="text-xs text-gray-500">1 day ago</p>
-                                    </div>
+                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
                                 </div>
-                                <div class="activity-item">
-                                    <span class="text-purple-500">📝</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="text-gray-700">New session request</p>
-                                        <p class="text-xs text-gray-500">2 days ago</p>
-                                    </div>
+                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                </div>
+                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                </div>
+                            </div>
+                            <div id="ad-ticker-tutor" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content-tutor" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
                                 </div>
                             </div>
                         </div>
+                        <style>
+                            @keyframes tickerScrollTutor { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+                            #ad-ticker-content-tutor { animation: tickerScrollTutor 20s linear infinite; }
+                            .ad-message-tutor { visibility: hidden; }
+                            .ad-message-tutor.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
+                            .ad-message-tutor.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
+                        </style>
+                        <script>
+                            (function() {
+                                const messages = document.querySelectorAll('#ad-message-container-tutor .ad-message-tutor');
+                                let currentIndex = 0;
+                                function rotateMessages() {
+                                    const prevIndex = currentIndex;
+                                    currentIndex = (currentIndex + 1) % messages.length;
+                                    messages[prevIndex].classList.remove('active');
+                                    messages[prevIndex].classList.add('fade-out');
+                                    messages[currentIndex].classList.add('active');
+                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
+                                }
+                                setInterval(rotateMessages, 10000);
+                            })();
+                        </script>
                     </div>
 
+
+                    <!-- Monthly Earnings Widget with Line Graph -->
+                    <div class="widget-card"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 id="widget-title" class="text-lg font-semibold">💰 Monthly Earnings</h3>
+                            <select id="earnings-period-select"
+                                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer;">
+                                <option value="earnings" style="color: #333;">Earnings</option>
+                                <option value="investments" style="color: #333;">Investments</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="text-3xl font-bold mb-1">ETB <span id="current-month-earnings">0</span></div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <span id="earnings-change" class="text-green-300">+0%</span>
+                                <span id="change-label" style="opacity: 0.8;">vs last month</span>
+                            </div>
+                        </div>
+
+                        <!-- Line Graph Canvas -->
+                        <div style="position: relative; height: 120px; margin: 0 -1rem;">
+                            <canvas id="earnings-line-chart"></canvas>
+                        </div>
+
+                        <!-- Month Labels -->
+                        <div id="earnings-months-labels" class="flex justify-between text-xs mt-2"
+                            style="opacity: 0.8;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+
+                        <!-- View Details Button -->
+                        <button onclick="switchPanel('earnings-investments'); return false;"
+                            class="mt-4 w-full py-2 px-4 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors shadow-md">
+                            View Details →
+                        </button>
+                    </div>
+                    
                     <!-- Quick Stats Widget -->
                     <div class="widget-card">
                         <h3 class="text-lg font-semibold mb-4">📊 This Week</h3>
@@ -3480,44 +3945,6 @@
                                 View Full Schedule
                             </button>
                         </div>
-                    </div>
-
-                    <!-- Monthly Earnings Widget with Line Graph -->
-                    <div class="widget-card"
-                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 id="widget-title" class="text-lg font-semibold">💰 Monthly Earnings</h3>
-                            <select id="earnings-period-select"
-                                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer;">
-                                <option value="earnings" style="color: #333;">Earnings</option>
-                                <option value="investments" style="color: #333;">Investments</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <div class="text-3xl font-bold mb-1">ETB <span id="current-month-earnings">0</span></div>
-                            <div class="flex items-center gap-2 text-sm">
-                                <span id="earnings-change" class="text-green-300">+0%</span>
-                                <span id="change-label" style="opacity: 0.8;">vs last month</span>
-                            </div>
-                        </div>
-
-                        <!-- Line Graph Canvas -->
-                        <div style="position: relative; height: 120px; margin: 0 -1rem;">
-                            <canvas id="earnings-line-chart"></canvas>
-                        </div>
-
-                        <!-- Month Labels -->
-                        <div id="earnings-months-labels" class="flex justify-between text-xs mt-2"
-                            style="opacity: 0.8;">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-
-                        <!-- View Details Button -->
-                        <button onclick="switchPanel('earnings-investments'); return false;"
-                            class="mt-4 w-full py-2 px-4 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors shadow-md">
-                            View Details →
-                        </button>
                     </div>
                 </div>
                 <!-- End of right-widgets -->
@@ -3934,7 +4361,10 @@
     <!-- Scripts -->
     <script src="../js/root/default-avatar.js"></script>
     <script src="../js/root/app.js"></script>
+    <script src="../js/root/nav.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/common-modals/access-restricted-modal.js?v=20251229"></script>
+    <script src="../js/root/profile-completion-guard.js?v=20251224"></script>
     <script src="../js/root/theme-toggle.js"></script>
 
     <!-- ============================================ -->
@@ -3975,6 +4405,7 @@
     <script src="../js/index/init-modals.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 
     <!-- Stats Counter for Hero Section -->
     <script src="../js/find-tutors/stats-counter.js"></script>
@@ -4009,7 +4440,13 @@
     <script src="../js/tutor-profile/profile-controller.js"></script>
 
     <!-- 6.25. Session Request Manager (MUST load before panel-manager.js) -->
-    <script src="../js/tutor-profile/session-request-manager.js?v=20251218"></script>
+    <script src="../js/tutor-profile/session-request-manager.js?v=20251230"></script>
+
+    <!-- 6.26. Parenting Invitation Manager (for parenting invitations in requests panel) -->
+    <script src="../js/tutor-profile/parenting-invitation-manager.js?v=20251230b"></script>
+
+    <!-- 6.3. Protected API Wrapper (2FA protection for settings, packages, requests panels) -->
+    <script src="../js/common-modals/protected-api-wrapper.js"></script>
 
     <!-- 6.5. Panel Manager (for sidebar panel switching) -->
     <script src="../js/tutor-profile/panel-manager.js"></script>
@@ -4017,8 +4454,11 @@
     <!-- 6.75. Modal Loader (MUST load before global-functions.js) -->
     <script src="../modals/tutor-profile/modal-loader.js"></script>
 
+    <!-- 6.8. Child Invitation Manager (MUST load before global-functions.js) -->
+    <script src="../js/common-modals/child-invitation-manager.js"></script>
+
     <!-- 7. Global Functions (for HTML onclick handlers) -->
-    <script src="../js/tutor-profile/global-functions.js?v=20251218"></script>
+    <script src="../js/tutor-profile/global-functions.js?v=20251230"></script>
 
     <!-- 7.5 Schedule Tab Manager (3-tab interface for schedule panel) -->
     <script src="../js/tutor-profile/schedule-tab-manager.js?v=20251218"></script>
@@ -4048,7 +4488,7 @@
     </script>
 
     <!-- Whiteboard System -->
-    <script src="../js/tutor-profile/whiteboard-manager.js?v=20251218"></script>
+    <script src="../js/tutor-profile/whiteboard-manager.js?v=20260109"></script>
 
     <!-- Quill.js Rich Text Editor -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -4080,7 +4520,7 @@
     <script src="../js/tutor-profile/community-panel-integration.js"></script> -->
 
     <!-- Community Manager (Database Integration - Class Definition) -->
-    <script src="../js/page-structure/communityManager.js"></script>
+    <script src="../js/common-modals/communityManager.js"></script>
 
     <!-- Tutor Community Panel Manager (NEW: Handles Community panel with database integration) -->
     <script src="../js/tutor-profile/community-panel-manager.js?v=20251122"></script>
@@ -4091,12 +4531,16 @@
     <!-- Community Panel Debug Console (DEVELOPMENT ONLY - Remove in production) -->
     <script src="../js/tutor-profile/community-panel-debug.js"></script>
 
-    <script src="../js/tutor-profile/community-modal-manager.js"></script>
+    <script src="../js/common-modals/community-modal-manager.js"></script>
 
     <script src="../js/tutor-profile/init.js"></script>
 
     <!-- Settings Panel & Verify Personal Info Modal JavaScript -->
     <script src="../js/tutor-profile/settings-panel-personal-verification.js?v=20251218"></script>
+    <!-- Extended Settings Manager (2FA, Login Activity, Connected Accounts, etc.) -->
+    <script src="../js/common-modals/settings-manager.js?v=20251225"></script>
+    <!-- Two-Factor Authentication Manager -->
+    <script src="../js/common-modals/tfa-manager.js?v=20251227"></script>
 
     <!-- Edit Profile Modal JavaScript (Grade Levels, Languages, Locations, Courses) -->
     <script src="../js/tutor-profile/edit-profile-modal.js?v=20251218"></script>
@@ -4117,6 +4561,19 @@
             if (typeof initializeFolderManager === 'function') {
                 initializeFolderManager('tutor');
             }
+
+            // AUTO-LOAD PARENTING INVITATIONS: Load parenting invitations automatically on page load
+            // This ensures pending invitations are fetched even if user doesn't click the "Parenting" card
+            console.log('[Tutor Profile Init] Auto-loading parenting invitations...');
+            if (typeof ParentingInvitationManager !== 'undefined') {
+                // Load received invitations (students inviting tutor as parent)
+                ParentingInvitationManager.loadParentingInvitations();
+                // Update badge counts
+                ParentingInvitationManager.updateInvitationCount();
+                console.log('[Tutor Profile Init] ✅ Parenting invitations auto-load initiated');
+            } else {
+                console.warn('[Tutor Profile Init] ⚠️ ParentingInvitationManager not found - invitations will not auto-load');
+            }
         });
     </script>
     
@@ -4126,11 +4583,14 @@
     <!-- Payment Method Modal JavaScript -->
     <script src="../js/tutor-profile/payment-method-modal.js"></script>
 
-    <!-- Subscription Modal JavaScript -->
-    <script src="../js/tutor-profile/subscription-modal.js"></script>
+    <!-- Subscription Modal JavaScript (Dynamic - fetches plans based on role) -->
+    <script src="../js/common-modals/subscription-modal.js"></script>
 
     <!-- Leave Astegni Modal JavaScript -->
     <script src="../js/tutor-profile/leave-astegni-modal.js"></script>
+
+    <!-- Review Astegni Modal JavaScript -->
+    <script src="../js/common-modals/review-astegni-manager.js"></script>
 
     <!-- Logout Modal JavaScript -->
     <script src="../js/common-modals/logout-modal.js"></script>
@@ -4162,8 +4622,15 @@
     <!-- Chat Modal Container (loaded dynamically) -->
     <div id="chat-modal-container"></div>
 
+    <!-- View Request Modal Container (loaded dynamically) -->
+    <div id="view-request-modal-container"></div>
+
+    <!-- Notes Modal Container (loaded dynamically) -->
+    <div id="notes-modal-container"></div>
+
     <!-- Chat Modal JavaScript -->
     <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
     <script>
         // Load chat modal HTML dynamically
@@ -4172,14 +4639,48 @@
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('chat-modal-container').innerHTML = html;
+                    console.log('✅ Chat Modal HTML loaded for tutor-profile');
                     // Re-initialize chat modal after HTML is loaded
                     if (typeof ChatModalManager !== 'undefined') {
                         ChatModalManager.init();
+                        console.log('✅ ChatModalManager initialized for tutor-profile');
                     }
                 })
-                .catch(err => console.log('Chat modal will load on demand:', err.message));
+                .catch(err => console.error('Failed to load chat-modal:', err));
+        })();
+
+        // Load view-request-modal HTML dynamically
+        (function loadViewRequestModal() {
+            fetch('../modals/common-modals/view-request-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('view-request-modal-container').innerHTML = html;
+                    console.log('✅ View Request Modal loaded for tutor-profile');
+                })
+                .catch(err => console.log('View request modal will load on demand:', err.message));
+        })();
+
+        // Load notes-modal HTML dynamically
+        (function loadNotesModal() {
+            fetch('../modals/common-modals/notes-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('notes-modal-container').innerHTML = html;
+                    console.log('✅ Notes Modal loaded for tutor-profile');
+                })
+                .catch(err => console.log('Notes modal will load on demand:', err.message));
         })();
     </script>
+
+    <!-- Advanced Notes Manager -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../js/common-modals/advanced-notes.js"></script>
+
+    <!-- Deletion Countdown Banner (shows when user has pending role deletion) -->
+    <script src="../js/common-modals/deletion-countdown-banner.js"></script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 
 </body>
 </html>

@@ -4468,6 +4468,31 @@ body {
     scrollbar-color: rgba(var(--button-bg-rgb), 0.3) rgba(var(--border-rgb), 0.05);
 }
 
+/* Progress & Analytics Panel Animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.student-details-modal .analytics-card {
+    transition: all 0.3s ease;
+}
+
+.student-details-modal .analytics-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#attendance-details-panel,
+#improvement-details-panel {
+    animation: slideDown 0.3s ease;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .student-details-modal .modal-wrapper {

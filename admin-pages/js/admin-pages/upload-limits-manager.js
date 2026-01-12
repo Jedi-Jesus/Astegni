@@ -1,9 +1,18 @@
 // Storage Settings Manager
 // Handles storage limits per subscription plan with live search
 
-// API Configuration
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'http://localhost:8000';
+// API Configuration - use global config set by api-config.js
+// Don't override if already set by api-config.js (which handles port detection)
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // State
@@ -19,7 +28,7 @@ async function loadStorageSettings() {
     console.log('loadStorageSettings() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading defaults');
             storageSettings = getDefaultStorageSettings();
@@ -27,8 +36,9 @@ async function loadStorageSettings() {
             return;
         }
 
-        console.log('Fetching storage settings from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/system/upload-limits`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching storage settings from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin/system/upload-limits`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -208,10 +218,12 @@ function getPlanColor(planName) {
 
 async function searchSubscriptionPlans(query) {
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return [];
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/system/subscription-plans-search?q=${encodeURIComponent(query)}`, {
+        const apiUrl = getApiBaseUrl();
+        // Use the same endpoint as subscription-plan-manager.js for consistency
+        const response = await fetch(`${apiUrl}/api/admin-db/subscription-plans`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -221,7 +233,27 @@ async function searchSubscriptionPlans(query) {
         if (!response.ok) return [];
 
         const data = await response.json();
-        return data.success ? data.plans : [];
+
+        if (!data.success || !data.plans) return [];
+
+        // Map to consistent format and filter by query
+        let plans = data.plans.map(plan => ({
+            id: plan.id,
+            plan_name: plan.package_title || plan.plan_name || plan.name,
+            price: plan.package_price || plan.monthly_price || plan.price || 0,
+            subscription_type: plan.subscription_type || 'tutor'
+        }));
+
+        // Filter by search query if provided
+        if (query && query.trim()) {
+            const searchLower = query.toLowerCase().trim();
+            plans = plans.filter(plan =>
+                plan.plan_name.toLowerCase().includes(searchLower) ||
+                plan.subscription_type.toLowerCase().includes(searchLower)
+            );
+        }
+
+        return plans;
     } catch (error) {
         console.error('Error searching plans:', error);
         return [];
@@ -242,34 +274,54 @@ function renderPlanSearchResults(plans) {
         return;
     }
 
-    // Filter out plans that already have storage settings
-    const existingPlanIds = storageSettings.map(s => s.subscription_plan_id);
-    const availablePlans = plans.filter(p => !existingPlanIds.includes(p.id));
+    // Map existing storage settings by subscription_plan_id for quick lookup
+    const existingSettingsMap = {};
+    storageSettings.forEach(s => {
+        existingSettingsMap[s.subscription_plan_id] = s;
+    });
 
-    if (availablePlans.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="p-3 text-gray-500 text-sm text-center">
-                All plans already have storage settings
+    // Show ALL plans, with "configured" indicator if storage already set
+    resultsContainer.innerHTML = plans.map(plan => {
+        const existingSetting = existingSettingsMap[plan.id];
+        const isConfigured = !!existingSetting;
+
+        // Build storage info display if configured
+        let storageInfo = '';
+        if (isConfigured) {
+            storageInfo = `<span class="text-xs text-green-600 ml-2">
+                <i class="fas fa-check-circle"></i> ${existingSetting.storage_limit_gb}GB configured
+            </span>`;
+        }
+
+        // Subscription type badge
+        const typeColors = {
+            'tutor': 'bg-blue-100 text-blue-700',
+            'student': 'bg-green-100 text-green-700',
+            'parent': 'bg-purple-100 text-purple-700',
+            'advertiser': 'bg-orange-100 text-orange-700'
+        };
+        const typeColor = typeColors[plan.subscription_type] || 'bg-gray-100 text-gray-700';
+        const typeBadge = `<span class="text-xs px-2 py-0.5 rounded ${typeColor} capitalize">${plan.subscription_type}</span>`;
+
+        return `
+            <div class="p-3 hover:bg-purple-50 cursor-pointer border-b last:border-b-0 ${isConfigured ? 'bg-green-50' : ''}"
+                onclick="selectPlan(${plan.id}, '${plan.plan_name.replace(/'/g, "\\'")}', ${plan.price}, ${isConfigured ? existingSetting.id : 'null'})">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">${plan.plan_name}</span>
+                        ${typeBadge}
+                        ${storageInfo}
+                    </div>
+                    <span class="text-sm text-gray-500">${plan.price > 0 ? plan.price + ' ETB' : 'Free'}</span>
+                </div>
             </div>
         `;
-        resultsContainer.classList.remove('hidden');
-        return;
-    }
-
-    resultsContainer.innerHTML = availablePlans.map(plan => `
-        <div class="p-3 hover:bg-purple-50 cursor-pointer border-b last:border-b-0"
-            onclick="selectPlan(${plan.id}, '${plan.plan_name}', ${plan.price})">
-            <div class="flex items-center justify-between">
-                <span class="font-medium">${plan.plan_name}</span>
-                <span class="text-sm text-gray-500">${plan.price > 0 ? plan.price + ' ETB' : 'Free'}</span>
-            </div>
-        </div>
-    `).join('');
+    }).join('');
 
     resultsContainer.classList.remove('hidden');
 }
 
-function selectPlan(planId, planName, price) {
+function selectPlan(planId, planName, price, existingSettingId = null) {
     selectedPlanId = planId;
     document.getElementById('storage-subscription-plan-id').value = planId;
 
@@ -281,6 +333,56 @@ function selectPlan(planId, planName, price) {
     // Hide search input and results
     document.getElementById('plan-search-input').value = '';
     document.getElementById('plan-search-results').classList.add('hidden');
+
+    // If this plan already has storage configured, populate the form with existing values
+    if (existingSettingId) {
+        const existingSetting = storageSettings.find(s => s.id === existingSettingId);
+        if (existingSetting) {
+            // Set the setting ID so it updates instead of creates
+            document.getElementById('storage-setting-id').value = existingSetting.id;
+
+            // Populate form with existing values
+            document.getElementById('storage-max-image-size').value = existingSetting.max_image_size_mb || 5;
+            document.getElementById('storage-max-video-size').value = existingSetting.max_video_size_mb || 50;
+            document.getElementById('storage-max-document-size').value = existingSetting.max_document_size_mb || 10;
+            document.getElementById('storage-max-audio-size').value = existingSetting.max_audio_size_mb || 10;
+            document.getElementById('storage-limit-gb').value = existingSetting.storage_limit_gb || 5;
+
+            // Update modal title to indicate editing
+            document.getElementById('upload-limit-modal-title').innerHTML =
+                `<i class="fas fa-edit mr-2 text-purple-600"></i>Edit Storage Settings - ${planName}`;
+
+            // Show "configured" indicator on selected plan display
+            const selectedPlanDisplay = document.getElementById('selected-plan-display');
+            if (selectedPlanDisplay) {
+                const configuredBadge = selectedPlanDisplay.querySelector('.configured-badge');
+                if (!configuredBadge) {
+                    const badge = document.createElement('span');
+                    badge.className = 'configured-badge text-xs text-green-600 ml-2';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> Already configured (editing)';
+                    selectedPlanDisplay.querySelector('.flex')?.appendChild(badge);
+                }
+            }
+
+            console.log(`Loaded existing storage settings for plan: ${planName}`, existingSetting);
+        }
+    } else {
+        // New plan - reset to defaults
+        document.getElementById('storage-setting-id').value = '';
+        document.getElementById('storage-max-image-size').value = 5;
+        document.getElementById('storage-max-video-size').value = 50;
+        document.getElementById('storage-max-document-size').value = 10;
+        document.getElementById('storage-max-audio-size').value = 10;
+        document.getElementById('storage-limit-gb').value = 5;
+
+        // Update modal title for new settings
+        document.getElementById('upload-limit-modal-title').innerHTML =
+            '<i class="fas fa-hdd mr-2 text-purple-600"></i>Configure Storage Settings';
+
+        // Remove configured badge if exists
+        const configuredBadge = document.querySelector('.configured-badge');
+        if (configuredBadge) configuredBadge.remove();
+    }
 }
 
 function clearSelectedPlan() {
@@ -437,15 +539,16 @@ async function saveStorageSettings(event) {
     };
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
+        const apiUrl = getApiBaseUrl();
         const isEdit = !!settingId;
         const url = isEdit
-            ? `${window.API_BASE_URL}/api/admin/system/upload-limits/${settingId}`
-            : `${window.API_BASE_URL}/api/admin/system/upload-limits`;
+            ? `${apiUrl}/api/admin/system/upload-limits/${settingId}`
+            : `${apiUrl}/api/admin/system/upload-limits`;
 
         console.log(`${isEdit ? 'Updating' : 'Creating'} storage settings:`, settingsData);
 
@@ -493,12 +596,13 @@ async function deleteStorageSettings(settingId) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/system/upload-limits/${settingId}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/system/upload-limits/${settingId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

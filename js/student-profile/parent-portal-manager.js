@@ -243,24 +243,13 @@ class ParentPortalManager {
         console.log('Target user for chat:', targetUser);
 
         // Open chat modal with the parent
-        if (typeof openChatModal === 'function') {
-            openChatModal(targetUser);
+        // Pass targetUser directly to open() - it will call openConversationWith after loadConversations completes
+        if (typeof ChatModalManager !== 'undefined' && typeof ChatModalManager.open === 'function') {
+            ChatModalManager.open(targetUser);
             console.log('Chat modal opened for parent:', targetUser.full_name);
-        } else if (typeof ChatModalManager !== 'undefined') {
-            if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
-                ChatModalManager.init();
-            }
-            if (typeof ChatModalManager.openChatWithUser === 'function') {
-                ChatModalManager.openChatWithUser(targetUser);
-                console.log('Chat modal opened via ChatModalManager');
-            } else if (typeof ChatModalManager.open === 'function') {
-                ChatModalManager.open();
-                setTimeout(() => {
-                    if (ChatModalManager.selectDirectMessageTarget) {
-                        ChatModalManager.selectDirectMessageTarget(targetUser);
-                    }
-                }, 300);
-            }
+        } else if (typeof openChatModal === 'function') {
+            openChatModal(targetUser);
+            console.log('Chat modal opened via openChatModal for parent:', targetUser.full_name);
         } else {
             console.error('Chat modal not available');
             alert('Chat feature is not available. Please refresh the page.');
@@ -289,7 +278,13 @@ class ParentPortalManager {
      */
     async loadPendingInvitations() {
         const token = this.getToken();
-        if (!token) return;
+        if (!token) {
+            console.warn('[ParentPortalManager] ⚠️ No auth token found - cannot load pending invitations');
+            return;
+        }
+
+        console.log('[ParentPortalManager] 🔄 Loading pending invitations...');
+        console.log('[ParentPortalManager] API URL:', `${PARENT_PORTAL_API_URL}/api/student/parent-invitations`);
 
         try {
             const response = await fetch(`${PARENT_PORTAL_API_URL}/api/student/parent-invitations`, {
@@ -298,13 +293,26 @@ class ParentPortalManager {
                 }
             });
 
+            console.log('[ParentPortalManager] API response status:', response.status, response.statusText);
+
             if (response.ok) {
                 const data = await response.json();
+                console.log('[ParentPortalManager] ✅ API response data:', data);
+                console.log('[ParentPortalManager] Total invitations received:', (data.invitations || []).length);
+
                 this.pendingInvitations = (data.invitations || []).filter(inv => inv.status === 'pending');
+                console.log('[ParentPortalManager] Pending invitations (status=pending):', this.pendingInvitations.length);
+                console.log('[ParentPortalManager] Pending invitations details:', this.pendingInvitations);
+
                 this.renderPendingInvitations();
+            } else {
+                const errorText = await response.text();
+                console.error('[ParentPortalManager] ❌ API error response:', errorText);
+                console.error('[ParentPortalManager] Status:', response.status, response.statusText);
             }
         } catch (error) {
-            console.error('Error loading pending invitations:', error);
+            console.error('[ParentPortalManager] ❌ Error loading pending invitations:', error);
+            console.error('[ParentPortalManager] Error details:', error.message, error.stack);
         }
     }
 
@@ -602,6 +610,9 @@ class ParentPortalManager {
      * Show a specific step
      */
     showStep(stepNumber) {
+        // Clear any error messages when switching steps
+        this.clearInvitationError();
+
         // Hide all steps
         document.querySelectorAll('.invite-step').forEach(step => {
             step.classList.add('hidden');
@@ -630,10 +641,9 @@ class ParentPortalManager {
 
         const userId = document.getElementById('selected-user-id').value;
         const relationshipType = document.getElementById('invite-relationship-type').value;
-        const securityFatherName = document.getElementById('security-father-name').value;
-        const securityGrandfatherName = document.getElementById('security-grandfather-name').value;
+        const securityDob = document.getElementById('security-dob').value;
 
-        if (!userId || !relationshipType || !securityFatherName || !securityGrandfatherName) {
+        if (!userId || !relationshipType || !securityDob) {
             this.showToast('Please fill in all required fields including security verification', 'error');
             return;
         }
@@ -648,8 +658,8 @@ class ParentPortalManager {
                 body: JSON.stringify({
                     target_user_id: parseInt(userId),
                     relationship_type: relationshipType,
-                    security_father_name: securityFatherName,
-                    security_grandfather_name: securityGrandfatherName
+                    security_dob: securityDob,
+                    requested_as: 'parent'  // Student inviting parent
                 })
             });
 
@@ -660,7 +670,10 @@ class ParentPortalManager {
                 closeInviteParentModal();
                 await this.loadPendingInvitations();
             } else {
-                this.showToast(data.detail || 'Failed to send invitation', 'error');
+                // Display error message in modal instead of just toast
+                const errorMessage = data.detail || 'Failed to send invitation';
+                this.showInvitationError(errorMessage);
+                this.showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Error sending invitation:', error);
@@ -712,7 +725,8 @@ class ParentPortalManager {
                     gender: gender || null,
                     email: email || null,
                     phone: phone || null,
-                    relationship_type: relationshipType
+                    relationship_type: relationshipType,
+                    requested_as: 'parent'  // Student inviting parent
                 })
             });
 
@@ -728,7 +742,10 @@ class ParentPortalManager {
                 closeInviteParentModal();
                 await this.loadPendingInvitations();
             } else {
-                this.showToast(data.detail || 'Failed to create account', 'error');
+                // Display error message in modal instead of just toast
+                const errorMessage = data.detail || 'Failed to create account';
+                this.showInvitationError(errorMessage);
+                this.showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Error creating account:', error);
@@ -798,6 +815,62 @@ class ParentPortalManager {
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
+
+    /**
+     * Show error message in the invite parent modal
+     * @param {string} message - Error message to display
+     */
+    showInvitationError(message) {
+        // Remove any existing error message
+        this.clearInvitationError();
+
+        // Find the current visible step
+        const visibleStep = document.querySelector('.invite-step:not(.hidden)');
+        if (!visibleStep) return;
+
+        // Find the modal body within the visible step
+        const modalBody = visibleStep.querySelector('.modal-body');
+        if (!modalBody) return;
+
+        // Create error alert element
+        const errorAlert = document.createElement('div');
+        errorAlert.id = 'invitation-error-alert';
+        errorAlert.className = 'mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50';
+        errorAlert.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-red-700 dark:text-red-400 mb-1">Unable to Send Invitation</h4>
+                    <p class="text-sm text-red-600 dark:text-red-500">${message}</p>
+                </div>
+                <button onclick="parentPortalManager.clearInvitationError()" class="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        // Insert at the top of modal body
+        modalBody.insertBefore(errorAlert, modalBody.firstChild);
+
+        // Scroll to top of modal body to show error
+        modalBody.scrollTop = 0;
+    }
+
+    /**
+     * Clear error message from invite parent modal
+     */
+    clearInvitationError() {
+        const existingError = document.getElementById('invitation-error-alert');
+        if (existingError) {
+            existingError.remove();
+        }
+    }
 }
 
 // Create global instance - overwrite the stub from HTML
@@ -805,6 +878,21 @@ window.parentPortalManager = new ParentPortalManager();
 
 // Overwrite global functions from HTML stubs
 window.openInviteParentModal = function() {
+    // Guard: Check profile completion and KYC before allowing parent invitation
+    if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.guard === 'function') {
+        const allowed = ProfileCompletionGuard.guard('Invite Parent', () => {
+            _openInviteParentModalInternal();
+        });
+        if (!allowed) {
+            return; // User was shown the appropriate modal to complete profile/KYC
+        }
+    } else {
+        // Guard not available, proceed directly
+        _openInviteParentModalInternal();
+    }
+};
+
+function _openInviteParentModalInternal() {
     const modal = document.getElementById('inviteParentModal');
     if (modal) {
         modal.style.display = 'flex';
@@ -820,7 +908,7 @@ window.openInviteParentModal = function() {
     } else {
         console.error('Invite Parent Modal not found!');
     }
-};
+}
 
 window.closeInviteParentModal = function() {
     const modal = document.getElementById('inviteParentModal');

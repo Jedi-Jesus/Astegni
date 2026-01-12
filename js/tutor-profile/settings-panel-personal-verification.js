@@ -108,50 +108,353 @@
          */
         function switchVerifyTab(tab) {
             const personalInfoTab = document.getElementById('personalInfoTab');
+            const identityVerifyTab = document.getElementById('identityVerifyTab');
             const changePasswordTab = document.getElementById('changePasswordTab');
             const personalInfoContent = document.getElementById('personalInfoContent');
+            const identityVerifyContent = document.getElementById('identityVerifyContent');
             const changePasswordContent = document.getElementById('changePasswordContent');
+
+            // Footer buttons
             const savePersonalInfoBtn = document.getElementById('savePersonalInfoBtn');
             const changePasswordBtn = document.getElementById('changePasswordBtn');
+            const startVerificationBtn = document.getElementById('startVerificationBtn');
+            const continueVerificationBtn = document.getElementById('continueVerificationBtn');
+            const retryVerificationBtn = document.getElementById('retryVerificationBtn');
+
+            // Reset all tabs
+            const allTabs = [personalInfoTab, identityVerifyTab, changePasswordTab];
+            const allContents = [personalInfoContent, identityVerifyContent, changePasswordContent];
+
+            allTabs.forEach(t => {
+                if (t) {
+                    t.classList.remove('active');
+                    t.style.fontWeight = '500';
+                    t.style.color = 'var(--text-secondary, #6b7280)';
+                    t.style.borderBottom = '2px solid transparent';
+                }
+            });
+
+            allContents.forEach(c => {
+                if (c) c.style.display = 'none';
+            });
+
+            // Hide all footer buttons by default
+            if (savePersonalInfoBtn) savePersonalInfoBtn.style.display = 'none';
+            if (changePasswordBtn) changePasswordBtn.style.display = 'none';
+            if (startVerificationBtn) startVerificationBtn.style.display = 'none';
+            if (continueVerificationBtn) continueVerificationBtn.style.display = 'none';
+            if (retryVerificationBtn) retryVerificationBtn.style.display = 'none';
 
             if (tab === 'personal') {
                 // Activate personal info tab
-                personalInfoTab.classList.add('active');
-                personalInfoTab.style.fontWeight = '600';
-                personalInfoTab.style.color = 'var(--primary-color, #3b82f6)';
-                personalInfoTab.style.borderBottom = '2px solid var(--primary-color, #3b82f6)';
+                if (personalInfoTab) {
+                    personalInfoTab.classList.add('active');
+                    personalInfoTab.style.fontWeight = '600';
+                    personalInfoTab.style.color = 'var(--primary-color, #3b82f6)';
+                    personalInfoTab.style.borderBottom = '2px solid var(--primary-color, #3b82f6)';
+                }
+                if (personalInfoContent) personalInfoContent.style.display = 'block';
+                if (savePersonalInfoBtn) savePersonalInfoBtn.style.display = 'inline-flex';
 
-                changePasswordTab.classList.remove('active');
-                changePasswordTab.style.fontWeight = '500';
-                changePasswordTab.style.color = 'var(--text-secondary, #6b7280)';
-                changePasswordTab.style.borderBottom = '2px solid transparent';
+            } else if (tab === 'identity') {
+                // Activate identity verification tab
+                if (identityVerifyTab) {
+                    identityVerifyTab.classList.add('active');
+                    identityVerifyTab.style.fontWeight = '600';
+                    identityVerifyTab.style.color = 'var(--primary-color, #3b82f6)';
+                    identityVerifyTab.style.borderBottom = '2px solid var(--primary-color, #3b82f6)';
+                }
+                if (identityVerifyContent) identityVerifyContent.style.display = 'block';
 
-                personalInfoContent.style.display = 'block';
-                changePasswordContent.style.display = 'none';
+                // Load KYC status (this will also show the appropriate footer button)
+                loadKYCStatus();
 
-                savePersonalInfoBtn.style.display = 'inline-flex';
-                changePasswordBtn.style.display = 'none';
             } else if (tab === 'password') {
                 // Activate change password tab
-                changePasswordTab.classList.add('active');
-                changePasswordTab.style.fontWeight = '600';
-                changePasswordTab.style.color = 'var(--primary-color, #3b82f6)';
-                changePasswordTab.style.borderBottom = '2px solid var(--primary-color, #3b82f6)';
-
-                personalInfoTab.classList.remove('active');
-                personalInfoTab.style.fontWeight = '500';
-                personalInfoTab.style.color = 'var(--text-secondary, #6b7280)';
-                personalInfoTab.style.borderBottom = '2px solid transparent';
-
-                changePasswordContent.style.display = 'block';
-                personalInfoContent.style.display = 'none';
-
-                changePasswordBtn.style.display = 'inline-flex';
-                savePersonalInfoBtn.style.display = 'none';
+                if (changePasswordTab) {
+                    changePasswordTab.classList.add('active');
+                    changePasswordTab.style.fontWeight = '600';
+                    changePasswordTab.style.color = 'var(--primary-color, #3b82f6)';
+                    changePasswordTab.style.borderBottom = '2px solid var(--primary-color, #3b82f6)';
+                }
+                if (changePasswordContent) changePasswordContent.style.display = 'block';
+                if (changePasswordBtn) changePasswordBtn.style.display = 'inline-flex';
 
                 // Add password validation listeners
                 setupPasswordValidation();
             }
+        }
+
+        /**
+         * Load KYC verification status
+         */
+        async function loadKYCStatus() {
+            console.log('[KYC] Loading KYC status...');
+
+            // Get footer buttons
+            const startVerificationBtn = document.getElementById('startVerificationBtn');
+            const continueVerificationBtn = document.getElementById('continueVerificationBtn');
+            const retryVerificationBtn = document.getElementById('retryVerificationBtn');
+
+            console.log('[KYC] Footer buttons found:', {
+                start: !!startVerificationBtn,
+                continue: !!continueVerificationBtn,
+                retry: !!retryVerificationBtn
+            });
+
+            // Hide all KYC footer buttons first
+            if (startVerificationBtn) startVerificationBtn.style.display = 'none';
+            if (continueVerificationBtn) continueVerificationBtn.style.display = 'none';
+            if (retryVerificationBtn) retryVerificationBtn.style.display = 'none';
+
+            // Helper function to show verified status from localStorage
+            const showVerifiedFromLocalStorage = () => {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const loadingStatus = document.getElementById('kycLoadingStatus');
+                const verifiedStatus = document.getElementById('kycVerifiedStatus');
+
+                if (loadingStatus) loadingStatus.style.display = 'none';
+                if (verifiedStatus) {
+                    verifiedStatus.style.display = 'block';
+
+                    // Show Document Image if available in localStorage
+                    const docImageContainer = document.getElementById('kycDocumentImageContainer');
+                    const docImageEl = document.getElementById('kycVerifiedDocumentImage');
+                    const savedDocImage = localStorage.getItem('kyc_document_image_url');
+                    if (savedDocImage && docImageContainer && docImageEl) {
+                        docImageEl.src = savedDocImage;
+                        docImageContainer.style.display = 'block';
+                    }
+
+                    // Show Digital ID
+                    const digitalIdEl = document.getElementById('kycVerifiedDigitalId');
+                    if (digitalIdEl) {
+                        digitalIdEl.textContent = user.digital_id_no || 'Not available';
+                    }
+
+                    // Show verification date
+                    const dateEl = document.getElementById('kycVerifiedDate');
+                    if (dateEl) {
+                        const verifiedAt = user.kyc_verified_at;
+                        dateEl.textContent = verifiedAt
+                            ? new Date(verifiedAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })
+                            : 'Recently';
+                    }
+                }
+                console.log('[KYC] Showing verified status from localStorage');
+            };
+
+            // Check localStorage first for kyc_verified status
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const isVerifiedInLocalStorage = user.kyc_verified === true;
+            console.log('[KYC] localStorage kyc_verified:', isVerifiedInLocalStorage);
+
+            try {
+                // Check both token keys (app uses both 'token' and 'access_token')
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                if (!token) {
+                    console.log('[KYC] No token found');
+                    const loadingStatus = document.getElementById('kycLoadingStatus');
+                    const notVerifiedStatus = document.getElementById('kycNotVerifiedStatus');
+                    if (loadingStatus) loadingStatus.style.display = 'none';
+
+                    // If verified in localStorage, show verified status
+                    if (isVerifiedInLocalStorage) {
+                        showVerifiedFromLocalStorage();
+                    } else {
+                        if (notVerifiedStatus) notVerifiedStatus.style.display = 'block';
+                        if (startVerificationBtn) startVerificationBtn.style.display = 'inline-flex';
+                    }
+                    return;
+                }
+
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/check`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.log('[KYC] Status check failed, checking localStorage');
+                    const loadingStatus = document.getElementById('kycLoadingStatus');
+                    const notVerifiedStatus = document.getElementById('kycNotVerifiedStatus');
+                    if (loadingStatus) loadingStatus.style.display = 'none';
+
+                    // If verified in localStorage, show verified status instead of start button
+                    if (isVerifiedInLocalStorage) {
+                        showVerifiedFromLocalStorage();
+                    } else {
+                        if (notVerifiedStatus) notVerifiedStatus.style.display = 'block';
+                        if (startVerificationBtn) startVerificationBtn.style.display = 'inline-flex';
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('[KYC] API Response:', JSON.stringify(data, null, 2));
+
+                // Update UI based on status
+                const loadingStatus = document.getElementById('kycLoadingStatus');
+                const verifiedStatus = document.getElementById('kycVerifiedStatus');
+                const notVerifiedStatus = document.getElementById('kycNotVerifiedStatus');
+                const inProgressStatus = document.getElementById('kycInProgressStatus');
+                const failedStatus = document.getElementById('kycFailedStatus');
+
+                console.log('[KYC] Status elements found:', {
+                    loading: !!loadingStatus,
+                    verified: !!verifiedStatus,
+                    notVerified: !!notVerifiedStatus,
+                    inProgress: !!inProgressStatus,
+                    failed: !!failedStatus
+                });
+
+                // Hide loading and all statuses first
+                [loadingStatus, verifiedStatus, notVerifiedStatus, inProgressStatus, failedStatus].forEach(el => {
+                    if (el) el.style.display = 'none';
+                });
+
+                if (data.kyc_verified) {
+                    console.log('[KYC] User is VERIFIED - showing verified status, no button needed');
+                    // Show verified status - NO footer button needed (already verified)
+                    if (verifiedStatus) {
+                        verifiedStatus.style.display = 'block';
+
+                        // Get user data for Digital ID and verification date
+                        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+                        // Show Document Image if available
+                        const docImageContainer = document.getElementById('kycDocumentImageContainer');
+                        const docImageEl = document.getElementById('kycVerifiedDocumentImage');
+                        if (data.document_image_url && docImageContainer && docImageEl) {
+                            // Prepend API_BASE_URL for images served by backend
+                            const imageUrl = data.document_image_url.startsWith('http')
+                                ? data.document_image_url
+                                : `${API_BASE_URL}${data.document_image_url}`;
+                            docImageEl.src = imageUrl;
+                            docImageContainer.style.display = 'block';
+                            // Save to localStorage for future use (when API might fail)
+                            localStorage.setItem('kyc_document_image_url', imageUrl);
+                            console.log('[KYC] Document image loaded:', imageUrl);
+                        }
+
+                        // Show Digital ID
+                        const digitalIdEl = document.getElementById('kycVerifiedDigitalId');
+                        if (digitalIdEl) {
+                            digitalIdEl.textContent = user.digital_id_no || data.digital_id_no || 'Not available';
+                        }
+
+                        // Show verification date
+                        const dateEl = document.getElementById('kycVerifiedDate');
+                        if (dateEl) {
+                            const verifiedAt = user.kyc_verified_at || data.verified_at;
+                            dateEl.textContent = verifiedAt
+                                ? new Date(verifiedAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })
+                                : 'Recently';
+                        }
+                    }
+                    // No footer button for verified status
+                } else if (data.status === 'pending' || data.status === 'in_progress') {
+                    console.log('[KYC] Verification IN PROGRESS - showing continue button');
+                    // Show in progress status
+                    if (inProgressStatus) inProgressStatus.style.display = 'block';
+                    // Show "Continue Verification" button
+                    if (continueVerificationBtn) continueVerificationBtn.style.display = 'inline-flex';
+                } else if (data.status === 'failed') {
+                    console.log('[KYC] Verification FAILED - can_retry:', data.can_retry, 'time_until_reset:', data.time_until_reset);
+                    // Show failed status
+                    if (failedStatus) {
+                        failedStatus.style.display = 'block';
+                        const reasonEl = document.getElementById('kycFailureReason');
+                        const attemptsEl = document.getElementById('kycAttemptsInfo');
+                        const retryBtn = document.getElementById('btnRetryKYC');
+
+                        if (reasonEl) reasonEl.textContent = data.rejection_reason || 'Verification failed';
+                        if (attemptsEl) {
+                            if (data.can_retry) {
+                                attemptsEl.textContent = `Attempts remaining: ${data.attempts_remaining}`;
+                            } else if (data.time_until_reset) {
+                                attemptsEl.textContent = `Maximum attempts exceeded. Try again in ${data.time_until_reset}`;
+                            } else {
+                                attemptsEl.textContent = 'Maximum attempts exceeded. Please contact support.';
+                            }
+                        }
+                        if (retryBtn) retryBtn.style.display = data.can_retry ? 'inline-flex' : 'none';
+                    }
+                    // Show "Try Again" button in footer if can retry
+                    if (data.can_retry && retryVerificationBtn) {
+                        retryVerificationBtn.style.display = 'inline-flex';
+                    }
+                } else {
+                    console.log('[KYC] User NOT verified - showing start verification button');
+                    // Show not verified status
+                    if (notVerifiedStatus) notVerifiedStatus.style.display = 'block';
+                    // Show "Start Verification" button
+                    if (startVerificationBtn) startVerificationBtn.style.display = 'inline-flex';
+                }
+
+            } catch (error) {
+                console.error('[KYC] Error loading status:', error);
+                const loadingStatus = document.getElementById('kycLoadingStatus');
+                const notVerifiedStatus = document.getElementById('kycNotVerifiedStatus');
+                const startVerificationBtn = document.getElementById('startVerificationBtn');
+                if (loadingStatus) loadingStatus.style.display = 'none';
+
+                // If verified in localStorage, show verified status instead of start button
+                if (isVerifiedInLocalStorage) {
+                    showVerifiedFromLocalStorage();
+                } else {
+                    if (notVerifiedStatus) notVerifiedStatus.style.display = 'block';
+                    if (startVerificationBtn) startVerificationBtn.style.display = 'inline-flex';
+                }
+            }
+        }
+
+        /**
+         * Start KYC verification process
+         */
+        function startKYCVerification() {
+            // Close this modal first
+            closeVerifyPersonalInfoModal();
+
+            // Load KYC manager script if not already loaded
+            if (typeof kycManager === 'undefined') {
+                const script = document.createElement('script');
+                script.src = '../js/common-modals/kyc-verification-manager.js';
+                script.onload = () => {
+                    console.log('[KYC] Manager loaded, opening modal');
+                    if (typeof openKYCModal === 'function') {
+                        openKYCModal();
+                    }
+                };
+                document.body.appendChild(script);
+            } else {
+                // Manager already loaded
+                if (typeof openKYCModal === 'function') {
+                    openKYCModal();
+                }
+            }
+        }
+
+        /**
+         * Continue in-progress KYC verification
+         */
+        function continueKYCVerification() {
+            startKYCVerification();
+        }
+
+        /**
+         * Retry failed KYC verification
+         */
+        function retryKYCVerification() {
+            startKYCVerification();
         }
 
         /**
@@ -292,7 +595,14 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
+                // Check both token keys (app uses both 'token' and 'access_token')
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+                if (!token) {
+                    alert('⚠️ Session expired. Please log in again.');
+                    return;
+                }
+
                 const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/change-password`, {
                     method: 'POST',
                     headers: {
@@ -443,7 +753,8 @@
 
                 // Try to get fresh user data from API first
                 let user = null;
-                const token = localStorage.getItem('token');
+                // Check both token keys (app uses both 'token' and 'access_token')
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
                 if (token) {
                     try {
@@ -511,11 +822,36 @@
                 loadModalPhones(phones);
                 console.log('✅ Loaded emails and phones');
 
+                // Load date of birth
+                const modalDateOfBirth = document.getElementById('modalDateOfBirth');
+                if (modalDateOfBirth) {
+                    // Set max date to today (users can't select future dates)
+                    const today = new Date().toISOString().split('T')[0];
+                    modalDateOfBirth.max = today;
+
+                    // Load existing DOB if available
+                    if (user.date_of_birth) {
+                        // Handle both ISO date string and date object
+                        const dobValue = typeof user.date_of_birth === 'string'
+                            ? user.date_of_birth.split('T')[0]
+                            : user.date_of_birth;
+                        modalDateOfBirth.value = dobValue;
+                        console.log('✅ Loaded date of birth:', dobValue);
+                    }
+                }
+
                 // Load gender
                 const modalGender = document.getElementById('modalGender');
                 if (modalGender) {
                     modalGender.value = user.gender || '';
                     console.log('✅ Loaded gender:', user.gender);
+                }
+
+                // Load digital ID number
+                const modalDigitalIdNo = document.getElementById('modalDigitalIdNo');
+                if (modalDigitalIdNo) {
+                    modalDigitalIdNo.value = user.digital_id_no || '';
+                    console.log('✅ Loaded digital ID:', user.digital_id_no);
                 }
 
                 console.log('✅ loadModalData completed successfully');
@@ -546,6 +882,8 @@
             const fatherName = modalFatherName.value.trim();
             const grandfatherName = modalGrandfatherName.value.trim();
             const gender = document.getElementById('modalGender') ? document.getElementById('modalGender').value : '';
+            const dateOfBirth = document.getElementById('modalDateOfBirth') ? document.getElementById('modalDateOfBirth').value : '';
+            const digitalIdNo = document.getElementById('modalDigitalIdNo') ? document.getElementById('modalDigitalIdNo').value.trim() : '';
 
             // Collect email values
             const emailInputs = modalEmailContainer ? modalEmailContainer.querySelectorAll('input[name="email[]"]') : [];
@@ -561,9 +899,29 @@
 
             // Validate required fields
             if (!firstName || !fatherName || !grandfatherName) {
-                alert('⚠️ All name fields are required');
+                alert('Please fill in all name fields');
                 return;
             }
+
+            // Validate DOB and gender are required for profile completion
+            if (!dateOfBirth) {
+                alert('Date of Birth is required');
+                document.getElementById('modalDateOfBirth')?.focus();
+                return;
+            }
+
+            if (!gender) {
+                alert('Gender is required');
+                document.getElementById('modalGender')?.focus();
+                return;
+            }
+
+            // Digital ID is optional for now
+            // if (!digitalIdNo) {
+            //     alert('Digital ID Number is required');
+            //     document.getElementById('modalDigitalIdNo')?.focus();
+            //     return;
+            // }
 
             const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
@@ -573,19 +931,23 @@
             const currentPhones = user.phones && Array.isArray(user.phones) ? user.phones : (user.phone ? [user.phone] : []);
             const emailsChanged = JSON.stringify(emailsArray.sort()) !== JSON.stringify(currentEmails.sort());
             const phonesChanged = JSON.stringify(phonesArray.sort()) !== JSON.stringify(currentPhones.sort());
-            const genderChanged = gender && gender !== user.gender;
+            const genderChanged = gender !== user.gender;
+            const dobChanged = dateOfBirth !== (user.date_of_birth ? user.date_of_birth.split('T')[0] : '');
+            const digitalIdChanged = digitalIdNo !== (user.digital_id_no || '');
 
-            if (!nameChanged && !emailsChanged && !phonesChanged && !genderChanged) {
-                alert('ℹ️ No changes detected');
+            if (!nameChanged && !emailsChanged && !phonesChanged && !genderChanged && !dobChanged && !digitalIdChanged) {
+                alert('No changes detected');
                 return;
             }
 
             // Build confirmation message
-            let confirmMessage = '⚠️ You are about to update:\n\n';
-            if (nameChanged) confirmMessage += `📝 Names: ${firstName} ${fatherName} ${grandfatherName}\n`;
-            if (emailsChanged) confirmMessage += `📧 Emails: ${emailsArray.length} email(s)\n`;
-            if (phonesChanged) confirmMessage += `📱 Phones: ${phonesArray.length} phone(s)\n`;
-            if (genderChanged) confirmMessage += `👤 Gender: ${gender}\n`;
+            let confirmMessage = 'You are about to update:\n\n';
+            if (nameChanged) confirmMessage += `Names: ${firstName} ${fatherName} ${grandfatherName}\n`;
+            if (dobChanged) confirmMessage += `Date of Birth: ${dateOfBirth}\n`;
+            if (genderChanged) confirmMessage += `Gender: ${gender}\n`;
+            if (digitalIdChanged) confirmMessage += `Digital ID: ${digitalIdNo}\n`;
+            if (emailsChanged) confirmMessage += `Emails: ${emailsArray.length} email(s)\n`;
+            if (phonesChanged) confirmMessage += `Phones: ${phonesArray.length} phone(s)\n`;
             confirmMessage += '\nAre you sure you want to proceed?';
 
             const confirmed = confirm(confirmMessage);
@@ -594,7 +956,13 @@
             console.log('Saving all personal info:', { firstName, fatherName, grandfatherName, emailsArray, phonesArray, gender });
 
             try {
-                const token = localStorage.getItem('token');
+                // Check both token keys (app uses both 'token' and 'access_token')
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+                if (!token) {
+                    alert('⚠️ Session expired. Please log in again.');
+                    return;
+                }
 
                 // Prepare update data for users table
                 const updateData = {};
@@ -603,8 +971,14 @@
                     updateData.father_name = fatherName;
                     updateData.grandfather_name = grandfatherName;
                 }
+                if (dobChanged) {
+                    updateData.date_of_birth = dateOfBirth;
+                }
                 if (genderChanged) {
                     updateData.gender = gender;
+                }
+                if (digitalIdChanged) {
+                    updateData.digital_id_no = digitalIdNo;
                 }
 
                 // Save names and gender (immediate update to users table)
@@ -638,9 +1012,17 @@
                             el.textContent = fullName;
                         });
                     }
+                    if (dobChanged) {
+                        user.date_of_birth = dateOfBirth;
+                    }
                     if (genderChanged) {
                         user.gender = gender;
                     }
+                    if (digitalIdChanged) {
+                        user.digital_id_no = digitalIdNo;
+                    }
+                    // Update profile_complete status (requires DOB, gender, and digital ID)
+                    user.profile_complete = !!(user.date_of_birth && user.gender && user.digital_id_no);
                     localStorage.setItem('user', JSON.stringify(user));
                 }
 
@@ -690,6 +1072,10 @@
         window.addModalEmail = addModalEmail;
         window.addModalPhone = addModalPhone;
         window.saveAllPersonalInfo = saveAllPersonalInfo;
+        window.loadKYCStatus = loadKYCStatus;
+        window.startKYCVerification = startKYCVerification;
+        window.continueKYCVerification = continueKYCVerification;
+        window.retryKYCVerification = retryKYCVerification;
 
-        console.log('✅ Verify Personal Info Modal: JavaScript loaded');
-        console.log('✅ openVerifyPersonalInfoModal function available:', typeof openVerifyPersonalInfoModal);
+        console.log('[OK] Verify Personal Info Modal: JavaScript loaded');
+        console.log('[OK] openVerifyPersonalInfoModal function available:', typeof openVerifyPersonalInfoModal);

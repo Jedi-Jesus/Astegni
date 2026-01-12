@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/find-tutors/navbar.css">
+    <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <link rel="stylesheet" href="../css/admin-profile/admin.css">
     <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
@@ -1064,27 +1066,196 @@
                         </path>
                     </svg>
                 </button>
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Top Advertisement Placeholder -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <span class="logo-main">Astegni</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Discover Quality Tutors</h3>
-            <p class="ad-text">Connect with expert tutors today</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+
+        <div class="mobile-menu-content">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-section">
+                <a href="../index.html" class="mobile-menu-link">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a href="../branch/find-tutors.html" class="mobile-menu-link">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a href="../branch/reels.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                <div class="mobile-profile-header" id="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                    <div class="mobile-profile-info">
+                        <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                        <span id="mobile-profile-role" class="mobile-profile-role">User</span>
+                    </div>
+                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="mobile-profile-dropdown">
+                    <a href="../profile-pages/user-profile.html" class="mobile-dropdown-item">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        My Profile
+                    </a>
+                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                        <div class="mobile-dropdown-divider"></div>
+                        <div class="mobile-dropdown-label">Switch Role</div>
+                        <div id="mobile-role-options"></div>
+                    </div>
+                    <div class="mobile-dropdown-divider"></div>
+                    <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="mobile-theme-section">
+                <button class="mobile-theme-toggle" onclick="toggleTheme()">
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <div class="mobile-notifications-section">
+                <button class="mobile-notifications-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Notifications</span>
+                    <span class="mobile-notification-badge">2</span>
+                </button>
+            </div>
         </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Discover Quality Tutors</h3>
+                <p class="ad-text">Connect with expert tutors today</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Explore Astegni Features</h3>
+                <p class="ad-text">Discover what you can do</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Explore Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Complete Your Profile</h3>
+                <p class="ad-text">Get personalized recommendations</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Update Profile</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space Here</h3>
+                <p class="ad-text">Reach users on Astegni</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -2009,10 +2180,214 @@
                         <div id="settings-panel" class="panel-content hidden">
                             <div class="mb-8">
                                 <h1 class="text-3xl font-bold mb-2">Settings</h1>
-                                <p class="text-gray-600">Manage your account preferences</p>
+                                <p class="text-gray-600">Manage your account settings and preferences</p>
                             </div>
-                            <div class="card p-6">
-                                <p class="text-gray-500">Settings options will be displayed here...</p>
+
+                            <!-- Account & Security Section -->
+                            <div class="settings-section mb-8">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Account & Security
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Verify Personal Info Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
+                                        onclick="openVerifyPersonalInfoModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🔐</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Personal Info</h3>
+                                            <p class="text-sm text-gray-600">Personal details and contact verification</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Two-Factor Authentication Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-indigo-500"
+                                        onclick="openTwoFactorAuthModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🛡️</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Two-Factor Auth</h3>
+                                            <p class="text-sm text-gray-600">Extra security with 2FA</p>
+                                            <span id="2fa-status-badge" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Not Enabled
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Login Activity Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-cyan-500"
+                                        onclick="openLoginActivityModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">📱</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Login Activity</h3>
+                                            <p class="text-sm text-gray-600">Active sessions and history</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Connected Accounts Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-orange-500"
+                                        onclick="openConnectedAccountsModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🔗</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Connected Accounts</h3>
+                                            <p class="text-sm text-gray-600">Manage Google and other links</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payments & Subscription Section -->
+                            <div class="settings-section mb-8">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                    </svg>
+                                    Payments & Subscription
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Payment Method Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500"
+                                        onclick="openPaymentMethodModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">💳</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Payment Method</h3>
+                                            <p class="text-sm text-gray-600">Manage your payment options</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Subscription Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
+                                        onclick="openSubscriptionModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">⭐</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Subscription & Storage</h3>
+                                            <p class="text-sm text-gray-600">Upgrade plan and unlock features</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Personalization Section -->
+                            <div class="settings-section mb-8">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                    </svg>
+                                    Personalization
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Appearance Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-violet-500"
+                                        onclick="openAppearanceModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🎨</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Appearance</h3>
+                                            <p class="text-sm text-gray-600">Theme, font size, and display</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Language Preferences Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
+                                        onclick="openLanguagePreferencesModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🌐</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Language</h3>
+                                            <p class="text-sm text-gray-600">UI language and translation</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Data & Privacy Section -->
+                            <div class="settings-section mb-8">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Data & Privacy
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Export Data Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
+                                        onclick="openExportDataModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">📦</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Export Data</h3>
+                                            <p class="text-sm text-gray-600">Download your personal data</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Feedback & Support Section -->
+                            <div class="settings-section mb-8">
+                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                    Feedback & Support
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Review & Rate Astegni Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500"
+                                        onclick="openReviewAstegniModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">⭐</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
+                                            <p class="text-sm text-gray-600">Share your feedback with us</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Danger Zone Section -->
+                            <div class="settings-section">
+                                <h2 class="text-xl font-semibold mb-4 text-red-600 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    Danger Zone
+                                </h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Leave Astegni Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
+                                        onclick="openLeaveAstegniModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🚪</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
+                                            <p class="text-sm text-gray-600">Delete account permanently</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2021,8 +2396,70 @@
                 <!-- Right Sidebar Widgets (Persistent across all panels) -->
                 <div class="admin-right-widgets"
                     style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
-                    
-                                        
+
+                    <!-- Ad Widget -->
+                    <div class="admin-widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        </div>
+                        <div class="ad-content" id="ad-container-user" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="ad-message-container-user" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message-user active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                </div>
+                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                </div>
+                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                </div>
+                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                </div>
+                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                </div>
+                            </div>
+                            <div id="ad-ticker-user" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content-user" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                </div>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes tickerScrollUser { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+                            #ad-ticker-content-user { animation: tickerScrollUser 20s linear infinite; }
+                            .ad-message-user { visibility: hidden; }
+                            .ad-message-user.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
+                            .ad-message-user.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
+                        </style>
+                        <script>
+                            (function() {
+                                const messages = document.querySelectorAll('#ad-message-container-user .ad-message-user');
+                                let currentIndex = 0;
+                                function rotateMessages() {
+                                    const prevIndex = currentIndex;
+                                    currentIndex = (currentIndex + 1) % messages.length;
+                                    messages[prevIndex].classList.remove('active');
+                                    messages[prevIndex].classList.add('fade-out');
+                                    messages[currentIndex].classList.add('active');
+                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
+                                }
+                                setInterval(rotateMessages, 10000);
+                            })();
+                        </script>
+                    </div>
+
                     <!-- Recommended Topics Widget -->
                     <div class="admin-widget-card">
                         <h3 class="text-lg font-semibold mb-4">💡 Recommended Topics</h3>
@@ -2815,6 +3252,7 @@
     <!-- Root/Shared Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251218"></script>
+    <script src="../js/root/nav.js"></script>
     <script src="../js/root/theme-toggle.js"></script>
 
     <!-- Common Modals -->
@@ -2822,6 +3260,7 @@
     <script src="../js/index/init-modals.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
 
     <!-- Stats Counter -->
@@ -2888,6 +3327,82 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Settings Panel Modal Scripts -->
+    <script src="../js/tutor-profile/settings-panel-personal-verification.js"></script>
+    <script src="../js/tutor-profile/payment-method-modal.js"></script>
+    <script src="../js/tutor-profile/leave-astegni-modal.js"></script>
+    <script src="../js/common-modals/settings-manager.js"></script>
+    <script src="../js/common-modals/review-astegni-manager.js"></script>
+
+    <!-- Load Settings Modals HTML -->
+    <script>
+        // Load verify-personal-info-modal
+        fetch('../modals/common-modals/verify-personal-info-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                let container = document.getElementById('modal-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'modal-container';
+                    document.body.appendChild(container);
+                }
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[OK] Verify Personal Info Modal loaded');
+            })
+            .catch(error => console.error('Failed to load verify-personal-info-modal:', error));
+
+        // Load payment-method-modal
+        fetch('../modals/common-modals/payment-method-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                let container = document.getElementById('modal-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'modal-container';
+                    document.body.appendChild(container);
+                }
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[OK] Payment Method Modal loaded');
+            })
+            .catch(error => console.error('Failed to load payment-method-modal:', error));
+
+        // Load leave-astegni-modal
+        fetch('../modals/common-modals/leave-astegni-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                let container = document.getElementById('modal-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'modal-container';
+                    document.body.appendChild(container);
+                }
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[OK] Leave Astegni Modal loaded');
+            })
+            .catch(error => console.error('Failed to load leave-astegni-modal:', error));
+
+        // Load review-astegni-modal
+        fetch('../modals/common-modals/review-astegni-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                let container = document.getElementById('modal-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'modal-container';
+                    document.body.appendChild(container);
+                }
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[OK] Review Astegni Modal loaded');
+            })
+            .catch(error => console.error('Failed to load review-astegni-modal:', error));
+    </script>
+
+    <!-- Deletion Countdown Banner (shows when user has pending role deletion) -->
+    <script src="../js/common-modals/deletion-countdown-banner.js"></script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 
 </body>
 </html>

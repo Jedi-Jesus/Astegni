@@ -87,6 +87,11 @@
     color: #991b1b;
 }
 
+.request-status-badge.deleted {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
 /* Body */
 .view-request-body {
     padding: 1rem 1.25rem;
@@ -151,12 +156,28 @@
     gap: 10px;
 }
 
+.avatar-container {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
 .tutor-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #f59e0b;
+}
+
+.initials-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: white;
 }
 
 .tutor-info span {
@@ -412,4 +433,241 @@
 [data-theme="dark"] .view-request-footer {
     background: var(--bg-secondary, #374151);
     border-color: var(--border-color, #374151);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+    .view-request-content {
+        max-width: 95%;
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .view-request-header {
+        padding: 1.25rem;
+    }
+
+    .view-request-header .modal-title {
+        font-size: 1.1rem;
+    }
+
+    .view-request-body {
+        padding: 0.875rem 1rem;
+    }
+
+    .request-section .section-content {
+        padding-left: 20px;
+    }
+
+    .pricing-section .section-content,
+    .schedule-section .section-content {
+        margin-left: 20px;
+    }
+}
+
+/* Mobile (480px) */
+@media (max-width: 480px) {
+    #view-request-modal {
+        padding: 0.5rem;
+    }
+
+    .view-request-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 12px;
+        margin: 0.5rem;
+    }
+
+    .view-request-header {
+        padding: 1rem;
+    }
+
+    .view-request-header .request-icon {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0.5rem;
+    }
+
+    .view-request-header .request-icon i {
+        font-size: 1rem;
+    }
+
+    .view-request-header .modal-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .request-status-badge {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.7rem;
+    }
+
+    .view-request-body {
+        padding: 0.75rem;
+    }
+
+    .request-section {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .request-section .section-header {
+        margin-bottom: 0.375rem;
+    }
+
+    .request-section .section-header span {
+        font-size: 0.65rem;
+    }
+
+    .request-section .section-content {
+        padding-left: 0;
+    }
+
+    .request-section .section-content h4 {
+        font-size: 0.9rem;
+    }
+
+    .tutor-info {
+        gap: 8px;
+    }
+
+    .avatar-container,
+    .tutor-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .tutor-info span {
+        font-size: 0.85rem;
+    }
+
+    .courses-list .course-tag,
+    .format-badges .format-tag {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.65rem;
+    }
+
+    .schedule-section .section-content {
+        padding: 0.5rem 0.6rem;
+        margin-left: 0;
+    }
+
+    .schedule-info {
+        font-size: 0.75rem;
+    }
+
+    .pricing-section .section-content {
+        padding: 0.6rem 0.75rem;
+        margin-left: 0;
+    }
+
+    .price-amount {
+        font-size: 1.25rem;
+    }
+
+    .price-unit {
+        font-size: 0.7rem;
+    }
+
+    .discounts-row .discount-tag {
+        font-size: 0.6rem;
+    }
+
+    .user-message {
+        font-size: 0.8rem;
+        padding: 0.6rem;
+    }
+
+    .request-meta {
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    .request-meta .meta-item {
+        font-size: 0.7rem;
+    }
+
+    .view-request-footer {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0.75rem;
+    }
+
+    .view-request-footer button {
+        padding: 0.65rem 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    .view-request-content .modal-close-enhanced {
+        width: 28px;
+        height: 28px;
+        top: 8px;
+        right: 8px;
+    }
+
+    .view-request-content .modal-close-enhanced svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Extra small phones (375px) */
+@media (max-width: 375px) {
+    .view-request-content {
+        border-radius: 8px;
+        margin: 0.25rem;
+    }
+
+    .view-request-header {
+        padding: 0.875rem;
+    }
+
+    .view-request-header .modal-title {
+        font-size: 0.95rem;
+    }
+
+    .view-request-body {
+        padding: 0.625rem;
+    }
+
+    .request-section .section-content h4 {
+        font-size: 0.85rem;
+    }
+
+    .price-amount {
+        font-size: 1.1rem;
+    }
+
+    .view-request-footer button {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .view-request-content {
+        max-height: 95vh;
+    }
+
+    .view-request-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .view-request-header .request-icon {
+        display: none;
+    }
+
+    .view-request-body {
+        padding: 0.5rem 1rem;
+    }
+
+    .request-section {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
 }

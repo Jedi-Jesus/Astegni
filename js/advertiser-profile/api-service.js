@@ -298,8 +298,8 @@ const AdvertiserProfileAPI = {
         }
     },
 
-    // Upload campaign media (image or video)
-    async uploadCampaignMedia(file) {
+    // Upload campaign media (image or video) with organized folder structure
+    async uploadCampaignMedia(file, brandName, campaignName, adPlacement) {
         try {
             const token = this.getAuthToken();
             if (!token) {
@@ -308,6 +308,9 @@ const AdvertiserProfileAPI = {
 
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('brand_name', brandName);
+            formData.append('campaign_name', campaignName);
+            formData.append('ad_placement', adPlacement);
 
             const response = await fetch(`${this.baseURL}/api/upload/campaign-media`, {
                 method: 'POST',
@@ -326,6 +329,33 @@ const AdvertiserProfileAPI = {
         } catch (error) {
             console.error('Error uploading campaign media:', error);
             throw error;
+        }
+    },
+
+    // Get connections count
+    async getConnectionsCount() {
+        try {
+            const token = this.getAuthToken();
+            if (!token) {
+                throw new Error('No auth token found');
+            }
+
+            const response = await fetch(`${this.baseURL}/api/connections?role=advertiser`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                console.warn('Connections API returned error, using fallback count of 0');
+                return { count: 0 };
+            }
+
+            const data = await response.json();
+            return { count: Array.isArray(data) ? data.length : 0 };
+        } catch (error) {
+            console.error('Error getting connections count:', error);
+            return { count: 0 }; // Fallback
         }
     }
 };

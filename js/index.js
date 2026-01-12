@@ -256,45 +256,120 @@ function createToastContainer() {
     return container;
 }
 
-// Mobile profile options
+// Toggle mobile profile dropdown
+function toggleMobileProfileDropdown() {
+    const dropdown = document.querySelector('.mobile-profile-dropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+}
+
+// Make it globally available
+window.toggleMobileProfileDropdown = toggleMobileProfileDropdown;
+
+// Mobile profile options - populates the mobile profile section in the hamburger menu
 function addMobileProfileOptions() {
-    const mobileMenu = document.getElementById("mobile-menu");
-    if (!mobileMenu || !APP_STATE.isLoggedIn) return;
+    if (!APP_STATE.isLoggedIn || !APP_STATE.currentUser) {
+        // Hide mobile profile section, show login/register buttons
+        const mobileProfileSection = document.getElementById("mobile-profile-section");
+        const mobileLoginBtn = document.getElementById("mobile-login-btn");
+        const mobileRegisterBtn = document.getElementById("mobile-register-btn");
 
-    const existingSection = document.getElementById("mobile-profile-section");
-    if (existingSection) existingSection.remove();
+        if (mobileProfileSection) {
+            mobileProfileSection.classList.add("hidden");
+        }
+        if (mobileLoginBtn) {
+            mobileLoginBtn.style.display = "";
+            mobileLoginBtn.classList.remove("hidden");
+        }
+        if (mobileRegisterBtn) {
+            mobileRegisterBtn.style.display = "";
+            mobileRegisterBtn.classList.remove("hidden");
+        }
+        return;
+    }
 
-    const profileUrl = PROFILE_URLS[APP_STATE.userRole] || "myProfile/student-profile.html";
+    // Get profile URL based on role
+    const profileUrl = PROFILE_URLS[APP_STATE.userRole] || PROFILE_URLS[APP_STATE.currentUser.active_role] || "profile-pages/student-profile.html";
 
-    const profileSection = document.createElement("div");
-    profileSection.id = "mobile-profile-section";
-    profileSection.innerHTML = `
-        <div class="mobile-menu-divider"></div>
-        <div class="mobile-profile-header">
-            <img src="${APP_STATE.currentUser?.avatar || "https://picsum.photos/32"}" alt="Profile" class="mobile-profile-pic">
-            <div class="mobile-profile-info">
-                <span class="mobile-profile-name">${APP_STATE.currentUser?.name || "User"}</span>
-                <span class="mobile-profile-role">${APP_STATE.userRole || "Member"}</span>
-            </div>
-        </div>
-        <a class="mobile-menu-item" href="${profileUrl}">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-            My Profile
-        </a>
-        <div class="mobile-menu-divider"></div>
-        <button class="mobile-menu-item text-red-500" onclick="logout()">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            Logout
-        </button>
-    `;
+    // Get user info
+    const defaultAvatar = 'uploads/system_images/system_profile_pictures/man-user.png';
+    const profilePicUrl = APP_STATE.currentUser.profile_picture || APP_STATE.currentUser.avatar || defaultAvatar;
+    const userName = APP_STATE.currentUser.name ||
+        `${APP_STATE.currentUser.first_name || ''} ${APP_STATE.currentUser.father_name || ''}`.trim() ||
+        "User";
+    const userEmail = APP_STATE.currentUser.email || APP_STATE.currentUser.phone || "";
+    const userRole = APP_STATE.currentUser.active_role || APP_STATE.userRole || "user";
 
-    const menuContent = mobileMenu.querySelector(".mobile-menu-content");
-    if (menuContent) {
-        menuContent.appendChild(profileSection);
+    // Update mobile profile header elements
+    const mobileProfileSection = document.getElementById("mobile-profile-section");
+    const mobileProfilePic = document.getElementById("mobile-profile-pic");
+    const mobileProfileName = document.getElementById("mobile-profile-name");
+    const mobileProfileRole = document.getElementById("mobile-profile-role");
+
+    // Update mobile dropdown elements
+    const mobileProfileLink = document.getElementById("mobile-profile-link");
+    const mobileDropdownPic = document.getElementById("mobile-dropdown-pic");
+    const mobileDropdownName = document.getElementById("mobile-dropdown-name");
+    const mobileDropdownEmail = document.getElementById("mobile-dropdown-email");
+
+    // Update header profile picture
+    if (mobileProfilePic) {
+        mobileProfilePic.src = profilePicUrl;
+        mobileProfilePic.alt = userName;
+    }
+
+    // Update header profile name
+    if (mobileProfileName) {
+        mobileProfileName.textContent = userName;
+    }
+
+    // Update header profile role
+    if (mobileProfileRole) {
+        mobileProfileRole.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+    }
+
+    // Update dropdown profile picture
+    if (mobileDropdownPic) {
+        mobileDropdownPic.src = profilePicUrl;
+        mobileDropdownPic.alt = userName;
+    }
+
+    // Update dropdown name
+    if (mobileDropdownName) {
+        mobileDropdownName.textContent = userName;
+    }
+
+    // Update dropdown email
+    if (mobileDropdownEmail) {
+        mobileDropdownEmail.textContent = userEmail;
+    }
+
+    // Update profile link
+    if (mobileProfileLink) {
+        mobileProfileLink.href = profileUrl;
+    }
+
+    // Show mobile profile section, hide login/register buttons
+    if (mobileProfileSection) {
+        mobileProfileSection.classList.remove("hidden");
+    }
+
+    const mobileLoginBtn = document.getElementById("mobile-login-btn");
+    const mobileRegisterBtn = document.getElementById("mobile-register-btn");
+
+    if (mobileLoginBtn) {
+        mobileLoginBtn.style.display = "none";
+        mobileLoginBtn.classList.add("hidden");
+    }
+    if (mobileRegisterBtn) {
+        mobileRegisterBtn.style.display = "none";
+        mobileRegisterBtn.classList.add("hidden");
+    }
+
+    // Update mobile role switcher after showing mobile profile section
+    if (typeof updateRoleSwitcher === 'function') {
+        updateRoleSwitcher();
     }
 }
 

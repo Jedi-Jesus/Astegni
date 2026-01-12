@@ -145,8 +145,10 @@ const CoparentsManager = {
         const createdDate = coparent.created_at ? new Date(coparent.created_at) : new Date();
         const daysOnPlatform = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
 
-        // Profile URL for Family co-parents
-        const profileUrl = `../view-profiles/view-parent.html?user_id=${coparent.user_id}`;
+        // Profile URL for Family co-parents (use parent_id if available, otherwise user_id with by_user_id flag)
+        const profileUrl = coparent.parent_id
+            ? `../view-profiles/view-parent.html?id=${coparent.parent_id}`
+            : `../view-profiles/view-parent.html?id=${coparent.user_id}&by_user_id=true`;
 
         // Card border style based on status
         const borderStyle = isPending
@@ -291,10 +293,16 @@ const CoparentsManager = {
 
     /**
      * View coparent profile
+     * @param {number} userId - The user ID of the co-parent
+     * @param {number} parentId - Optional parent profile ID (if available)
      */
-    viewCoparentProfile(userId) {
+    viewCoparentProfile(userId, parentId = null) {
         this.closeAllDropdowns();
-        window.location.href = `../view-profiles/view-parent.html?user_id=${userId}`;
+        // Use parent_id if available, otherwise use user_id with by_user_id flag
+        const url = parentId
+            ? `../view-profiles/view-parent.html?id=${parentId}`
+            : `../view-profiles/view-parent.html?id=${userId}&by_user_id=true`;
+        window.location.href = url;
     },
 
     /**

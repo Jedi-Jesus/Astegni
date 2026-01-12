@@ -1,9 +1,17 @@
 // Verification Fee Manager
 // Handles dynamic verification fee management
 
-// API Configuration (check if already defined globally)
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'https://api.astegni.com';
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // Verification Fees State
@@ -14,7 +22,7 @@ async function loadVerificationFees() {
     console.log('loadVerificationFees() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading default fees');
             verificationFees = getDefaultVerificationFees();
@@ -22,8 +30,9 @@ async function loadVerificationFees() {
             return;
         }
 
-        console.log('Fetching verification fees from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/verification-fee`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching verification fees from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin-db/verification-fee`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -280,7 +289,7 @@ async function saveVerificationFee(event) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -295,7 +304,8 @@ async function saveVerificationFee(event) {
 
         console.log('Saving verification fee:', feeData);
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/verification-fee`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/verification-fee`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -336,12 +346,13 @@ async function deleteVerificationFee(type) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin-db/verification-fee/${type}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin-db/verification-fee/${type}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

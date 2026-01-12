@@ -39,11 +39,14 @@ const IndexModalLoader = (function() {
         'reset-password-modal.html',
         'notification-modal.html',
         'partner-modal.html',
-        'partner-success-modal.html'
+        'partner-success-modal.html',
+        'social-login-modal.html',
+        'login-coming-soon-modal.html'
     ];
 
     // Modals in common-modals folder (shared across pages)
     const COMMON_MODALS = [
+        'access-restricted-modal.html',
         'add-role-modal.html',
         'otp-verification-modal.html',
         'coming-soon-modal.html',
@@ -61,8 +64,12 @@ const IndexModalLoader = (function() {
         'notification-modal': { file: 'notification-modal.html', path: 'index' },
         'partner-modal': { file: 'partner-modal.html', path: 'index' },
         'partner-success-modal': { file: 'partner-success-modal.html', path: 'index' },
+        'social-login-modal': { file: 'social-login-modal.html', path: 'index' },
+        'login-coming-soon-modal': { file: 'login-coming-soon-modal.html', path: 'index' },
 
         // Common modals (shared across pages)
+        'access-restricted-modal': { file: 'access-restricted-modal.html', path: 'common-modals' },
+        'accessRestrictedModal': { file: 'access-restricted-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },
         'otp-verification-modal': { file: 'otp-verification-modal.html', path: 'common-modals' },
         'coming-soon-modal': { file: 'coming-soon-modal.html', path: 'common-modals' },

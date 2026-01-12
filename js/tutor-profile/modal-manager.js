@@ -171,37 +171,7 @@ const TutorModalManager = {
 
             // Handle 404 - student details not found
             if (response.status === 404) {
-                if (studentNameEl) {
-                    studentNameEl.textContent = 'No student details yet';
-                }
-
-                // Show empty state message
-                const modalHeaderDiv = studentNameEl?.parentElement;
-                if (modalHeaderDiv) {
-                    const subtitleP = modalHeaderDiv.querySelector('p');
-                    if (subtitleP) {
-                        subtitleP.textContent = 'This student has not been added to the database yet';
-                    }
-                }
-
-                // Reset stats to show N/A
-                document.getElementById('stat-overall-progress').textContent = 'N/A';
-                document.getElementById('stat-attendance').textContent = 'N/A';
-                document.getElementById('stat-improvement').textContent = 'N/A';
-                document.getElementById('stat-grade').textContent = 'N/A';
-
-                // Show empty package message
-                const packagesListEl = document.getElementById('student-packages-list');
-                if (packagesListEl) {
-                    packagesListEl.innerHTML = `
-                        <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 12px; border: 2px dashed var(--border-color);">
-                            <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">No package yet</h4>
-                            <p style="color: var(--text-secondary); font-size: 0.875rem;">This student hasn't enrolled in any package</p>
-                        </div>
-                    `;
-                }
-
+                this.showStudentDetailsEmptyState();
                 console.log('Student details not found (404), showing empty state');
                 return;
             }
@@ -217,35 +187,120 @@ const TutorModalManager = {
                 studentNameEl.textContent = student.student_name || 'Unknown Student';
             }
 
-            // Update the subtitle in modal header
-            const modalHeaderDiv = studentNameEl?.parentElement;
-            if (modalHeaderDiv) {
-                const subtitleP = modalHeaderDiv.querySelector('p');
-                if (subtitleP) {
-                    const packageInfo = student.package_name || 'No package';
-                    subtitleP.textContent = `${student.student_grade || 'N/A'} • ${packageInfo}`;
-                }
+            // Update profile picture
+            const profilePicEl = document.getElementById('studentProfilePicture');
+            if (profilePicEl) {
+                const defaultPic = student.gender === 'Female'
+                    ? '/uploads/system_images/system_profile_pictures/girl-user-image.jpg'
+                    : '/uploads/system_images/system_profile_pictures/boy-user-image.jpg';
+                profilePicEl.src = student.profile_picture || defaultPic;
+            }
+
+            // Update the subtitle
+            const subtitleEl = document.getElementById('studentSubtitle');
+            if (subtitleEl) {
+                const packageInfo = student.package_name || 'No package';
+                const studyingAt = student.studying_at ? ` • ${student.studying_at}` : '';
+                subtitleEl.textContent = `${student.student_grade || 'N/A'} • ${packageInfo}${studyingAt}`;
+            }
+
+            // Update contact info
+            const emailEl = document.getElementById('studentEmail');
+            if (emailEl && student.email) {
+                emailEl.innerHTML = `<i class="fas fa-envelope"></i> ${student.email}`;
+                emailEl.style.display = 'inline-flex';
+                emailEl.style.alignItems = 'center';
+                emailEl.style.gap = '0.25rem';
+            }
+
+            const phoneEl = document.getElementById('studentPhone');
+            if (phoneEl && student.phone) {
+                phoneEl.innerHTML = `<i class="fas fa-phone"></i> ${student.phone}`;
+                phoneEl.style.display = 'inline-flex';
+                phoneEl.style.alignItems = 'center';
+                phoneEl.style.gap = '0.25rem';
+            }
+
+            const locationEl = document.getElementById('studentLocation');
+            if (locationEl && student.location) {
+                locationEl.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${student.location}`;
+                locationEl.style.display = 'inline-flex';
+                locationEl.style.alignItems = 'center';
+                locationEl.style.gap = '0.25rem';
+            }
+
+            // Update enrollment status
+            const statusEl = document.getElementById('studentEnrollmentStatus');
+            if (statusEl) {
+                const status = student.enrollment_status || 'active';
+                const statusColors = {
+                    'active': '#10B981',
+                    'suspended': '#F59E0B',
+                    'rejected': '#EF4444',
+                    'pending': '#6366F1'
+                };
+                statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                statusEl.style.background = statusColors[status] || '#10B981';
+            }
+
+            // Update enrolled date
+            const enrolledDateEl = document.getElementById('studentEnrolledDate');
+            if (enrolledDateEl && student.enrolled_at) {
+                const enrolledDate = new Date(student.enrolled_at);
+                enrolledDateEl.textContent = `Enrolled: ${enrolledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
             }
 
             // Update quick stats
-            document.getElementById('stat-overall-progress').textContent = `${student.overall_progress || 0}%`;
-            document.getElementById('stat-attendance').textContent = `${student.attendance_rate || 0}%`;
-            document.getElementById('stat-improvement').textContent = `+${student.improvement_rate || 0}%`;
-            document.getElementById('stat-grade').textContent = student.grade_letter || 'N/A';
+            const overallProgressEl = document.getElementById('stat-overall-progress');
+            if (overallProgressEl) overallProgressEl.textContent = `${student.overall_progress || 0}%`;
+
+            const attendanceEl = document.getElementById('stat-attendance');
+            if (attendanceEl) attendanceEl.textContent = `${student.attendance_rate || 0}%`;
+
+            const improvementEl = document.getElementById('stat-improvement');
+            if (improvementEl) improvementEl.textContent = `+${student.improvement_rate || 0}%`;
+
+            const gradeEl = document.getElementById('stat-grade');
+            if (gradeEl) gradeEl.textContent = student.grade_letter || 'N/A';
 
             // Store student data globally for sections to use
             window.currentStudentDetails = student;
             window.currentStudentForReview = {
-                student_profile_id: student.id,
+                student_profile_id: student.student_profile_id,
                 student_name: student.student_name || 'Student'
             };
+
+            // Set context to tutor-profile (hide Tutor section, show Parent section)
+            if (typeof window.setStudentDetailsModalContext === 'function') {
+                window.setStudentDetailsModalContext('tutor-profile');
+            }
 
             // Load package information
             this.loadStudentPackages(student);
 
-            // Load student reviews
+            // Load student reviews - use student_profile_id (not enrollment id)
+            const studentProfileId = student.student_profile_id || student.id;
+            console.log('[openStudentDetails] Loading reviews for student_profile_id:', studentProfileId);
             if (typeof window.loadStudentReviews === 'function') {
-                window.loadStudentReviews(student.id);
+                window.loadStudentReviews(studentProfileId);
+            } else {
+                console.error('[openStudentDetails] loadStudentReviews function not found on window');
+                // Show "no reviews" state instead of loading forever
+                const container = document.getElementById('student-reviews-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 12px; border: 2px dashed var(--border-color);">
+                            <i class="fas fa-star" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">No Reviews Yet</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">This student hasn't received any reviews yet</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Load parent information (visible since we're from tutor-profile)
+            if (typeof window.loadParentInformation === 'function') {
+                window.loadParentInformation(studentProfileId);
             }
 
             console.log('Student details loaded successfully:', student);
@@ -265,6 +320,18 @@ const TutorModalManager = {
         const packagesListEl = document.getElementById('student-packages-list');
         if (!packagesListEl) return;
 
+        // Format schedule info
+        const scheduleInfo = [];
+        if (student.days_per_week) scheduleInfo.push(`${student.days_per_week} days/week`);
+        if (student.hours_per_day) scheduleInfo.push(`${student.hours_per_day} hrs/day`);
+        if (student.session_duration) scheduleInfo.push(`${student.session_duration} hr sessions`);
+        if (student.session_format) scheduleInfo.push(student.session_format);
+
+        // Format time range if available
+        const timeRange = student.start_time && student.end_time
+            ? `${student.start_time} - ${student.end_time}`
+            : null;
+
         // Create package card
         packagesListEl.innerHTML = `
             <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--primary-color);">
@@ -274,19 +341,34 @@ const TutorModalManager = {
                             ${student.package_name || 'No Package'}
                         </h4>
                         <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">
-                            Enrolled: ${new Date(student.enrolled_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                            })}
+                            ${student.package_description || (student.enrolled_at ? `Enrolled: ${new Date(student.enrolled_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : '')}
                         </p>
+                        ${student.course_names && student.course_names.length > 0 ? `
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                                ${student.course_names.map(course => `
+                                    <span style="background: var(--bg-tertiary); color: var(--text-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${course}</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
                     </div>
                     <span style="background: var(--primary-color); color: white; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 600; font-size: 0.875rem;">
-                        Active
+                        ${(student.enrollment_status || 'active').charAt(0).toUpperCase() + (student.enrollment_status || 'active').slice(1)}
                     </span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <!-- Schedule Info -->
+                ${scheduleInfo.length > 0 || timeRange ? `
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+                            ${scheduleInfo.map(info => `
+                                <span style="color: var(--text-secondary); font-size: 0.875rem;"><i class="fas fa-calendar-alt" style="margin-right: 0.25rem;"></i> ${info}</span>
+                            `).join('')}
+                            ${timeRange ? `<span style="color: var(--text-secondary); font-size: 0.875rem;"><i class="fas fa-clock" style="margin-right: 0.25rem;"></i> ${timeRange}</span>` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
                     <div>
                         <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0;">Sessions</p>
                         <p style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">
@@ -294,9 +376,15 @@ const TutorModalManager = {
                         </p>
                     </div>
                     <div>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0;">Assignments</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0;">Coursework</p>
                         <p style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">
                             ${student.completed_assignments || 0}/${student.total_assignments || 0}
+                        </p>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0;">Hours Taught</p>
+                        <p style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                            ${student.total_session_hours || 0}
                         </p>
                     </div>
                     <div>
@@ -307,13 +395,13 @@ const TutorModalManager = {
                     </div>
                 </div>
 
-                ${student.monthly_tuition ? `
+                ${student.hourly_rate ? `
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Monthly Tuition</p>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Hourly Rate (${student.payment_frequency || 'monthly'})</p>
                                 <p style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-                                    ${student.monthly_tuition.toLocaleString()} ETB
+                                    ${student.hourly_rate.toLocaleString()} ETB/hr
                                 </p>
                             </div>
                             ${student.outstanding_balance > 0 ? `
@@ -330,6 +418,154 @@ const TutorModalManager = {
                 ` : ''}
             </div>
         `;
+    },
+
+    // Show empty state for student details modal
+    showStudentDetailsEmptyState() {
+        // Update header
+        const studentNameEl = document.getElementById('studentName');
+        if (studentNameEl) {
+            studentNameEl.textContent = 'No Student Data';
+        }
+
+        // Update subtitle
+        const subtitleEl = document.getElementById('studentSubtitle');
+        if (subtitleEl) {
+            subtitleEl.textContent = 'This student has not been added to the system yet';
+        }
+
+        // Reset profile picture to default
+        const profilePicEl = document.getElementById('studentProfilePicture');
+        if (profilePicEl) {
+            profilePicEl.src = '/uploads/system_images/system_profile_pictures/boy-user-image.jpg';
+        }
+
+        // Hide contact info
+        const emailEl = document.getElementById('studentEmail');
+        if (emailEl) emailEl.style.display = 'none';
+
+        const phoneEl = document.getElementById('studentPhone');
+        if (phoneEl) phoneEl.style.display = 'none';
+
+        const locationEl = document.getElementById('studentLocation');
+        if (locationEl) locationEl.style.display = 'none';
+
+        // Update enrollment status
+        const statusEl = document.getElementById('studentEnrollmentStatus');
+        if (statusEl) {
+            statusEl.textContent = 'N/A';
+            statusEl.style.background = '#9CA3AF';
+        }
+
+        // Clear enrolled date
+        const enrolledDateEl = document.getElementById('studentEnrolledDate');
+        if (enrolledDateEl) enrolledDateEl.textContent = '';
+
+        // Reset stats to show N/A
+        const statElements = ['stat-overall-progress', 'stat-attendance', 'stat-improvement', 'stat-grade'];
+        statElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'N/A';
+        });
+
+        // Empty state HTML template
+        const emptyStateHTML = (icon, title, message) => `
+            <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 12px; border: 2px dashed var(--border-color);">
+                <i class="${icon}" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                <h4 style="color: var(--text-primary); margin: 0 0 0.5rem 0;">${title}</h4>
+                <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">${message}</p>
+            </div>
+        `;
+
+        // Show empty package message
+        const packagesListEl = document.getElementById('student-packages-list');
+        if (packagesListEl) {
+            packagesListEl.innerHTML = emptyStateHTML('fas fa-box-open', 'No Package', 'No package information available');
+        }
+
+        // Show empty sessions message
+        const sessionsGridEl = document.getElementById('student-sessions-grid');
+        if (sessionsGridEl) {
+            sessionsGridEl.innerHTML = emptyStateHTML('fas fa-calendar-times', 'No Sessions', 'No session history available');
+        }
+
+        // Reset session stats
+        const sessionStatElements = ['student-total-sessions', 'student-completed-sessions', 'student-scheduled-sessions', 'student-session-hours'];
+        sessionStatElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('hours') ? '0h' : '0';
+        });
+
+        // Show empty whiteboard sessions message
+        const whiteboardSessionsEl = document.getElementById('student-whiteboard-sessions');
+        if (whiteboardSessionsEl) {
+            whiteboardSessionsEl.innerHTML = emptyStateHTML('fas fa-chalkboard', 'No Whiteboard Sessions', 'No whiteboard sessions available');
+        }
+
+        // Reset whiteboard stats
+        const whiteboardStatElements = ['whiteboard-stat-total', 'whiteboard-stat-completed', 'whiteboard-stat-scheduled', 'whiteboard-stat-duration'];
+        whiteboardStatElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('duration') ? '0h' : '0';
+        });
+
+        // Show empty coursework message
+        const courseworkGridEl = document.getElementById('student-coursework-grid');
+        if (courseworkGridEl) {
+            courseworkGridEl.innerHTML = emptyStateHTML('fas fa-tasks', 'No Coursework', 'No coursework assigned yet');
+        }
+
+        // Reset coursework stats
+        const courseworkStatElements = ['coursework-stat-total', 'coursework-stat-pending', 'coursework-stat-completed', 'coursework-stat-avg'];
+        courseworkStatElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('avg') ? '-' : '0';
+        });
+
+        // Show empty requests message
+        const requestsListEl = document.getElementById('student-requests-list');
+        if (requestsListEl) {
+            requestsListEl.innerHTML = emptyStateHTML('fas fa-inbox', 'No Requests', 'No requests to display');
+        }
+
+        // Show empty reviews message
+        const reviewsContainerEl = document.getElementById('student-reviews-container');
+        if (reviewsContainerEl) {
+            reviewsContainerEl.innerHTML = emptyStateHTML('fas fa-star', 'No Reviews', 'No reviews available for this student');
+        }
+
+        // Reset review stats
+        const reviewStatEl = document.getElementById('student-overall-rating');
+        if (reviewStatEl) reviewStatEl.textContent = '0.0';
+
+        const reviewCountEl = document.getElementById('student-review-count');
+        if (reviewCountEl) reviewCountEl.textContent = 'Based on 0 reviews';
+
+        const starsEl = document.getElementById('student-rating-stars');
+        if (starsEl) starsEl.textContent = String.fromCharCode(9734).repeat(5); // 5 empty stars
+
+        // Reset rating bars
+        const ratingBars = ['bar-subject-understanding', 'bar-participation', 'bar-discipline', 'bar-punctuality'];
+        ratingBars.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.width = '0%';
+        });
+
+        const ratingVals = ['val-subject-understanding', 'val-participation', 'val-discipline', 'val-punctuality'];
+        ratingVals.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0.0';
+        });
+
+        // Reset achievements list
+        const achievementsList = document.getElementById('achievements-list');
+        if (achievementsList) {
+            achievementsList.innerHTML = '<li style="color: var(--text-muted);">No achievements recorded</li>';
+        }
+
+        // Clear global student data
+        window.currentStudentDetails = null;
+        window.currentStudentForReview = null;
     },
 
     closeStudentDetails() {

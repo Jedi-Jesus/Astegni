@@ -1,9 +1,17 @@
 // System Media Manager
 // Handles system media upload, display, and separate image/video galleries with category sidebar
 
-// API Configuration
-if (typeof window.API_BASE_URL === 'undefined') {
-    window.API_BASE_URL = 'https://api.astegni.com';
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 }
 
 // State
@@ -43,7 +51,7 @@ async function loadSystemMedia() {
     console.log('loadSystemMedia() called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('No auth token found, loading defaults');
             systemMedia = getDefaultSystemMedia();
@@ -52,8 +60,9 @@ async function loadSystemMedia() {
             return;
         }
 
-        console.log('Fetching system media from API...');
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/media/system-media`, {
+        const apiUrl = getApiBaseUrl();
+        console.log('Fetching system media from API...', apiUrl);
+        const response = await fetch(`${apiUrl}/api/admin/media/system-media`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -599,7 +608,7 @@ async function saveSystemMedia(event) {
     const mediaCategory = document.getElementById('media-category').value;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
@@ -612,7 +621,8 @@ async function saveSystemMedia(event) {
 
         console.log('Uploading system media:', { mediaType, mediaName, mediaCategory });
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/media/upload`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/media/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -650,12 +660,13 @@ async function deleteSystemMedia(mediaType, mediaId) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/media/${mediaType}/${mediaId}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/media/${mediaType}/${mediaId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

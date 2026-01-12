@@ -1,10 +1,742 @@
 // ============================================
 // PRICING & FEATURES MANAGEMENT
-// Handles brand packages, subscription pricing, and affiliate settings
+// Handles CPI pricing, subscription pricing, and affiliate settings
 // ============================================
 
+// API Configuration - use global config set by api-config.js
+function getApiBaseUrl() {
+    return window.API_BASE_URL || window.ADMIN_API_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+}
+
+// Get auth token - check all possible keys used in admin pages
+function getAuthToken() {
+    return localStorage.getItem('adminToken') ||
+           localStorage.getItem('admin_access_token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
+}
+
 // ============================================
-// BRAND PACKAGE MANAGEMENT
+// CPI (COST PER IMPRESSION) PRICING MANAGEMENT
+// ============================================
+
+// Global CPI settings object
+// Note: "All" audience and "International" location use the baseRate (no premium)
+// Region exclusion premiums now use JSONB format: {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}}
+let cpiSettings = {
+    baseRate: 0,
+    audiencePremiums: {
+        tutor: 0,
+        student: 0,
+        parent: 0,
+        advertiser: 0,
+        user: 0
+    },
+    locationPremiums: {
+        national: 0
+    },
+    regionExclusionPremiums: {},  // JSONB format by country code
+    placementPremiums: {
+        placeholder: 0,
+        widget: 0,
+        popup: 0,
+        insession: 0
+    }
+};
+
+// Country regions configuration (loaded from backend)
+let countryRegions = {};
+
+// Currently selected country for region exclusion premiums
+let currentSelectedCountry = 'ET';
+
+// Open CPI Settings Modal
+function openCpiSettingsModal() {
+    const modal = document.getElementById('cpi-settings-modal');
+    if (modal) {
+        // Load current settings into form
+        loadCpiSettingsToForm();
+        modal.classList.remove('hidden');
+        // Calculate initial preview
+        calculateCpiPreview();
+    }
+}
+
+// Close CPI Settings Modal
+function closeCpiSettingsModal() {
+    const modal = document.getElementById('cpi-settings-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Load CPI Settings from database into form
+async function loadCpiSettings() {
+    console.log('Loading CPI settings from database...');
+
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            console.warn('No auth token found');
+            return;
+        }
+
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/cpi-settings`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                cpiSettings = data.settings;
+                console.log('CPI settings loaded:', cpiSettings);
+            }
+            // Store country regions configuration
+            if (data.countryRegions) {
+                countryRegions = data.countryRegions;
+                console.log('Country regions loaded:', Object.keys(countryRegions));
+            }
+            renderCpiRatesGrid();
+        } else {
+            console.log('No CPI settings found, using defaults');
+            renderCpiRatesGrid();
+        }
+    } catch (error) {
+        console.error('Error loading CPI settings:', error);
+        renderCpiRatesGrid();
+    }
+}
+
+// Load CPI settings into form fields
+function loadCpiSettingsToForm() {
+    // Base rate (applies to "All" audience and "International" location)
+    const baseRateEl = document.getElementById('cpi-base-rate');
+    if (baseRateEl) baseRateEl.value = cpiSettings.baseRate || '';
+
+    // Audience premiums (Tutor, Student, Parent, Advertiser, User - "All" uses base rate)
+    const tutorEl = document.getElementById('cpi-tutor-premium');
+    const studentEl = document.getElementById('cpi-student-premium');
+    const parentEl = document.getElementById('cpi-parent-premium');
+    const advertiserEl = document.getElementById('cpi-advertiser-premium');
+    const userEl = document.getElementById('cpi-user-premium');
+    if (tutorEl) tutorEl.value = cpiSettings.audiencePremiums?.tutor || '';
+    if (studentEl) studentEl.value = cpiSettings.audiencePremiums?.student || '';
+    if (parentEl) parentEl.value = cpiSettings.audiencePremiums?.parent || '';
+    if (advertiserEl) advertiserEl.value = cpiSettings.audiencePremiums?.advertiser || '';
+    if (userEl) userEl.value = cpiSettings.audiencePremiums?.user || '';
+
+    // Location premiums (National only - "International" uses base rate)
+    const nationalEl = document.getElementById('cpi-national-premium');
+    if (nationalEl) nationalEl.value = cpiSettings.locationPremiums?.national || '';
+
+    // Determine which location type to show based on existing settings
+    const locationTypeEl = document.getElementById('cpi-location-type');
+    const hasRegionPremiums = cpiSettings.regionExclusionPremiums &&
+                              Object.keys(cpiSettings.regionExclusionPremiums).length > 0 &&
+                              Object.values(cpiSettings.regionExclusionPremiums).some(regions =>
+                                  Object.values(regions).some(val => val > 0)
+                              );
+    const hasNationalPremium = cpiSettings.locationPremiums?.national > 0;
+
+    if (locationTypeEl) {
+        if (hasRegionPremiums) {
+            locationTypeEl.value = 'regional';
+        } else if (hasNationalPremium) {
+            locationTypeEl.value = 'national';
+        } else {
+            locationTypeEl.value = 'global';
+        }
+        // Trigger the change handler to show/hide sections
+        onCpiLocationTypeChange();
+    }
+
+    // Region exclusion premiums (dynamic, country-agnostic)
+    // Render regions for the current country (only visible when regional is selected)
+    renderRegionsForCountry(currentSelectedCountry);
+
+    // Placement premiums (Ad Placeholder, Widget, Whiteboard Pop-up, Whiteboard In-Session)
+    const placeholderEl = document.getElementById('cpi-placeholder-premium');
+    const widgetEl = document.getElementById('cpi-widget-premium');
+    const popupEl = document.getElementById('cpi-popup-premium');
+    const insessionEl = document.getElementById('cpi-insession-premium');
+    if (placeholderEl) placeholderEl.value = cpiSettings.placementPremiums?.placeholder || '';
+    if (widgetEl) widgetEl.value = cpiSettings.placementPremiums?.widget || '';
+    if (popupEl) popupEl.value = cpiSettings.placementPremiums?.popup || '';
+    if (insessionEl) insessionEl.value = cpiSettings.placementPremiums?.insession || '';
+}
+
+// Render regions for a specific country (dynamic UI generation)
+function renderRegionsForCountry(countryCode) {
+    const container = document.getElementById('cpi-regions-container');
+    if (!container) return;
+
+    // Get regions for this country
+    const countryData = countryRegions[countryCode];
+    if (!countryData || !countryData.regions) {
+        container.innerHTML = `
+            <div class="col-span-2 text-center py-4 text-gray-500">
+                <i class="fas fa-exclamation-triangle mr-2 text-amber-500"></i>
+                No regions configured for this country
+            </div>
+        `;
+        return;
+    }
+
+    // Get premiums for this country
+    const countryPremiums = cpiSettings.regionExclusionPremiums?.[countryCode] || {};
+
+    // Generate HTML for each region
+    let html = '';
+    countryData.regions.forEach(region => {
+        const premium = countryPremiums[region.id] || 0;
+        html += `
+            <div class="p-3 bg-white rounded-lg border">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="flex items-center gap-2">
+                        <i class="fas ${region.icon} text-orange-500"></i>
+                        <span class="font-semibold text-sm">${region.name}</span>
+                    </label>
+                </div>
+                <input type="number"
+                       id="cpi-region-${region.id}-premium"
+                       data-country="${countryCode}"
+                       data-region="${region.id}"
+                       class="w-full px-3 py-2 border rounded-lg text-sm cpi-region-input"
+                       placeholder="e.g., 1.00"
+                       min="0"
+                       step="0.01"
+                       value="${premium || ''}"
+                       oninput="calculateCpiPreview()">
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    console.log(`Rendered ${countryData.regions.length} regions for ${countryCode}`);
+}
+
+// Handle country selector change
+function onCpiCountryChange() {
+    const selector = document.getElementById('cpi-region-country-selector');
+    if (!selector) return;
+
+    // Save current country's premiums before switching
+    saveCurrentCountryPremiums();
+
+    // Switch to new country
+    currentSelectedCountry = selector.value;
+    console.log('Switched to country:', currentSelectedCountry);
+
+    // Render new country's regions
+    renderRegionsForCountry(currentSelectedCountry);
+}
+
+// Handle location type change (Global/National/Regional)
+function onCpiLocationTypeChange() {
+    const selector = document.getElementById('cpi-location-type');
+    if (!selector) return;
+
+    const locationType = selector.value;
+    console.log('Location type changed to:', locationType);
+
+    // Get section elements
+    const globalInfo = document.getElementById('cpi-global-info');
+    const nationalSection = document.getElementById('cpi-national-section');
+    const regionalSection = document.getElementById('cpi-regional-section');
+
+    // Hide all sections first
+    if (globalInfo) globalInfo.classList.add('hidden');
+    if (nationalSection) nationalSection.classList.add('hidden');
+    if (regionalSection) regionalSection.classList.add('hidden');
+
+    // Show appropriate section based on selection
+    if (locationType === 'global') {
+        if (globalInfo) globalInfo.classList.remove('hidden');
+    } else if (locationType === 'national') {
+        if (nationalSection) nationalSection.classList.remove('hidden');
+    } else if (locationType === 'regional') {
+        if (regionalSection) regionalSection.classList.remove('hidden');
+        // Render regions for the current country when regional is selected
+        renderRegionsForCountry(currentSelectedCountry);
+    }
+
+    // Recalculate CPI preview
+    calculateCpiPreview();
+}
+
+// Save current country's region premiums to cpiSettings
+function saveCurrentCountryPremiums() {
+    const inputs = document.querySelectorAll('.cpi-region-input');
+    if (!inputs.length) return;
+
+    inputs.forEach(input => {
+        const countryCode = input.dataset.country;
+        const regionId = input.dataset.region;
+        const value = parseFloat(input.value) || 0;
+
+        if (!cpiSettings.regionExclusionPremiums[countryCode]) {
+            cpiSettings.regionExclusionPremiums[countryCode] = {};
+        }
+        cpiSettings.regionExclusionPremiums[countryCode][regionId] = value;
+    });
+}
+
+// Calculate CPI Preview based on selected scenario
+function calculateCpiPreview() {
+    // Get values from form
+    // Base rate applies to "All" audience and "International" location (no targeting)
+    const baseRate = parseFloat(document.getElementById('cpi-base-rate')?.value) || 0;
+    const tutorPremium = parseFloat(document.getElementById('cpi-tutor-premium')?.value) || 0;
+    const studentPremium = parseFloat(document.getElementById('cpi-student-premium')?.value) || 0;
+    const parentPremium = parseFloat(document.getElementById('cpi-parent-premium')?.value) || 0;
+    const advertiserPremium = parseFloat(document.getElementById('cpi-advertiser-premium')?.value) || 0;
+    const userPremium = parseFloat(document.getElementById('cpi-user-premium')?.value) || 0;
+    const nationalPremium = parseFloat(document.getElementById('cpi-national-premium')?.value) || 0;
+    const placeholderPremium = parseFloat(document.getElementById('cpi-placeholder-premium')?.value) || 0;
+    const widgetPremium = parseFloat(document.getElementById('cpi-widget-premium')?.value) || 0;
+    const popupPremium = parseFloat(document.getElementById('cpi-popup-premium')?.value) || 0;
+    const insessionPremium = parseFloat(document.getElementById('cpi-insession-premium')?.value) || 0;
+
+    // Get selected scenario
+    const selectedAudience = document.getElementById('cpi-preview-audience')?.value || 'none';
+    const selectedLocation = document.getElementById('cpi-preview-location')?.value || 'none';
+    const selectedPlacement = document.getElementById('cpi-preview-placement')?.value || 'none';
+
+    // Calculate audience exclusion premium (excluding audiences = more specific = higher cost)
+    let audiencePremium = 0;
+    let audienceLabel = '';
+    if (selectedAudience === 'tutor') {
+        audiencePremium = tutorPremium;
+        audienceLabel = 'Exclude Tutor';
+    } else if (selectedAudience === 'student') {
+        audiencePremium = studentPremium;
+        audienceLabel = 'Exclude Student';
+    } else if (selectedAudience === 'parent') {
+        audiencePremium = parentPremium;
+        audienceLabel = 'Exclude Parent';
+    } else if (selectedAudience === 'advertiser') {
+        audiencePremium = advertiserPremium;
+        audienceLabel = 'Exclude Advertiser';
+    } else if (selectedAudience === 'user') {
+        audiencePremium = userPremium;
+        audienceLabel = 'Exclude User';
+    }
+
+    // Calculate location premium
+    // - Global/none: No premium (base rate only)
+    // - National: Add national premium
+    // - Regional: Add national premium + region exclusion premiums
+    let locationPremium = 0;
+    let locationLabel = '';
+    let regionExclusionPremium = 0;
+    let regionLabel = '';
+
+    if (selectedLocation === 'national') {
+        locationPremium = nationalPremium;
+        locationLabel = 'National Premium';
+    } else if (selectedLocation === 'regional') {
+        // Regional = National Premium + Region Exclusion Premiums
+        locationPremium = nationalPremium;
+        locationLabel = 'National Premium (included in Regional)';
+
+        // Calculate sample region exclusion (use first region from current country as sample)
+        const countryPremiums = cpiSettings.regionExclusionPremiums?.[currentSelectedCountry] || {};
+        const regionValues = Object.values(countryPremiums);
+        if (regionValues.length > 0) {
+            // Use the first non-zero region premium as a sample
+            regionExclusionPremium = regionValues.find(v => v > 0) || regionValues[0] || 0;
+            regionLabel = `Sample Region Exclusion (${currentSelectedCountry})`;
+        }
+    }
+
+    // Calculate placement exclusion premium (excluding placements = more specific = higher cost)
+    let placementPremium = 0;
+    let placementLabel = '';
+    if (selectedPlacement === 'placeholder') {
+        placementPremium = placeholderPremium;
+        placementLabel = 'Exclude Placeholder';
+    } else if (selectedPlacement === 'widget') {
+        placementPremium = widgetPremium;
+        placementLabel = 'Exclude Widget';
+    } else if (selectedPlacement === 'popup') {
+        placementPremium = popupPremium;
+        placementLabel = 'Exclude WB Pop-up';
+    } else if (selectedPlacement === 'insession') {
+        placementPremium = insessionPremium;
+        placementLabel = 'Exclude WB In-Session';
+    }
+
+    // Calculate total CPI
+    // Formula for Regional: Base + National + Region Exclusion
+    const totalCpi = baseRate + audiencePremium + locationPremium + regionExclusionPremium + placementPremium;
+
+    // Update preview display
+    const formatPrice = (price) => price.toFixed(3);
+
+    // Base rate
+    const baseEl = document.getElementById('cpi-preview-base');
+    if (baseEl) baseEl.textContent = `${formatPrice(baseRate)} ETB`;
+
+    // Audience row
+    const audienceRow = document.getElementById('cpi-preview-audience-row');
+    const audienceLabelEl = document.getElementById('cpi-preview-audience-label');
+    const audienceValueEl = document.getElementById('cpi-preview-audience-value');
+    if (audienceRow) {
+        if (selectedAudience !== 'none' && audiencePremium > 0) {
+            audienceRow.classList.remove('hidden');
+            if (audienceLabelEl) audienceLabelEl.textContent = audienceLabel;
+            if (audienceValueEl) audienceValueEl.textContent = `+${formatPrice(audiencePremium)} ETB`;
+        } else {
+            audienceRow.classList.add('hidden');
+        }
+    }
+
+    // Location row (shows National premium - also included in Regional)
+    const locationRow = document.getElementById('cpi-preview-location-row');
+    const locationLabelEl = document.getElementById('cpi-preview-location-label');
+    const locationValueEl = document.getElementById('cpi-preview-location-value');
+    if (locationRow) {
+        if ((selectedLocation === 'national' || selectedLocation === 'regional') && locationPremium > 0) {
+            locationRow.classList.remove('hidden');
+            if (locationLabelEl) locationLabelEl.textContent = locationLabel;
+            if (locationValueEl) locationValueEl.textContent = `+${formatPrice(locationPremium)} ETB`;
+        } else {
+            locationRow.classList.add('hidden');
+        }
+    }
+
+    // Region Exclusion row (only shows for regional targeting)
+    const regionRow = document.getElementById('cpi-preview-region-row');
+    const regionLabelEl = document.getElementById('cpi-preview-region-label');
+    const regionValueEl = document.getElementById('cpi-preview-region-value');
+    if (regionRow) {
+        if (selectedLocation === 'regional' && regionExclusionPremium > 0) {
+            regionRow.classList.remove('hidden');
+            if (regionLabelEl) regionLabelEl.textContent = regionLabel;
+            if (regionValueEl) regionValueEl.textContent = `+${formatPrice(regionExclusionPremium)} ETB`;
+        } else {
+            regionRow.classList.add('hidden');
+        }
+    }
+
+    // Placement row
+    const placementRow = document.getElementById('cpi-preview-placement-row');
+    const placementLabelEl = document.getElementById('cpi-preview-placement-label');
+    const placementValueEl = document.getElementById('cpi-preview-placement-value');
+    if (placementRow) {
+        if (selectedPlacement !== 'none' && placementPremium > 0) {
+            placementRow.classList.remove('hidden');
+            if (placementLabelEl) placementLabelEl.textContent = placementLabel;
+            if (placementValueEl) placementValueEl.textContent = `+${formatPrice(placementPremium)} ETB`;
+        } else {
+            placementRow.classList.add('hidden');
+        }
+    }
+
+    // Total CPI
+    const totalEl = document.getElementById('cpi-preview-total');
+    if (totalEl) totalEl.textContent = `${formatPrice(totalCpi)} ETB`;
+
+    // Example calculations
+    const example1k = document.getElementById('cpi-example-1k');
+    const example10k = document.getElementById('cpi-example-10k');
+    const example100k = document.getElementById('cpi-example-100k');
+    if (example1k) example1k.textContent = `${(totalCpi * 1000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
+    if (example10k) example10k.textContent = `${(totalCpi * 10000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
+    if (example100k) example100k.textContent = `${(totalCpi * 100000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
+
+    return { baseRate, audiencePremium, locationPremium, regionExclusionPremium, totalCpi };
+}
+
+// Save CPI Settings
+async function saveCpiSettings(event) {
+    event.preventDefault();
+
+    // Get values from form
+    // Base rate covers "All" audience and "International" location (no targeting)
+    const baseRate = parseFloat(document.getElementById('cpi-base-rate')?.value) || 0;
+    const tutorPremium = parseFloat(document.getElementById('cpi-tutor-premium')?.value) || 0;
+    const studentPremium = parseFloat(document.getElementById('cpi-student-premium')?.value) || 0;
+    const parentPremium = parseFloat(document.getElementById('cpi-parent-premium')?.value) || 0;
+    const advertiserPremium = parseFloat(document.getElementById('cpi-advertiser-premium')?.value) || 0;
+    const userPremium = parseFloat(document.getElementById('cpi-user-premium')?.value) || 0;
+    const nationalPremium = parseFloat(document.getElementById('cpi-national-premium')?.value) || 0;
+
+    // Save current country's region premiums before collecting all
+    saveCurrentCountryPremiums();
+
+    const placeholderPremium = parseFloat(document.getElementById('cpi-placeholder-premium')?.value) || 0;
+    const widgetPremium = parseFloat(document.getElementById('cpi-widget-premium')?.value) || 0;
+    const popupPremium = parseFloat(document.getElementById('cpi-popup-premium')?.value) || 0;
+    const insessionPremium = parseFloat(document.getElementById('cpi-insession-premium')?.value) || 0;
+
+    if (baseRate <= 0) {
+        alert('Please enter a valid base CPI rate');
+        return;
+    }
+
+    // Update local settings object with JSONB region premiums format
+    cpiSettings = {
+        baseRate,
+        audiencePremiums: {
+            tutor: tutorPremium,
+            student: studentPremium,
+            parent: parentPremium,
+            advertiser: advertiserPremium,
+            user: userPremium
+        },
+        locationPremiums: {
+            national: nationalPremium
+        },
+        regionExclusionPremiums: cpiSettings.regionExclusionPremiums || {},  // Keep JSONB format
+        placementPremiums: {
+            placeholder: placeholderPremium,
+            widget: widgetPremium,
+            popup: popupPremium,
+            insession: insessionPremium
+        }
+    };
+
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/cpi-settings`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(cpiSettings)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save CPI settings');
+        }
+
+        const result = await response.json();
+        console.log('CPI settings saved:', result);
+
+        // Update the grid display
+        renderCpiRatesGrid();
+
+        // Close modal
+        closeCpiSettingsModal();
+
+        alert('CPI settings saved successfully!');
+
+    } catch (error) {
+        console.error('Error saving CPI settings:', error);
+        // Still update local display even if API fails
+        renderCpiRatesGrid();
+        closeCpiSettingsModal();
+        alert('CPI settings saved locally. (API save may have failed)');
+    }
+}
+
+// Render CPI Rates Grid
+function renderCpiRatesGrid() {
+    const grid = document.getElementById('cpi-rates-grid');
+    if (!grid) return;
+
+    const formatPrice = (price) => price.toFixed(3);
+
+    grid.innerHTML = `
+        <!-- Base CPI Card -->
+        <div class="border-2 border-orange-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-coins text-orange-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800">Base CPI</h4>
+                    <p class="text-xs text-gray-500">All + International</p>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-orange-600 mb-2">
+                ${formatPrice(cpiSettings.baseRate || 0)} <span class="text-sm font-normal text-gray-500">ETB</span>
+            </div>
+            <p class="text-xs text-gray-500">Per impression (no targeting)</p>
+        </div>
+
+        <!-- Audience Exclusion Card -->
+        <div class="border-2 border-blue-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800">Audience Exclusion</h4>
+                    <p class="text-xs text-gray-500">Added when excluded</p>
+                </div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-chalkboard-teacher text-blue-500"></i> Tutor
+                    </span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.audiencePremiums?.tutor || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-user-graduate text-green-500"></i> Student
+                    </span>
+                    <span class="font-semibold text-green-600">+${formatPrice(cpiSettings.audiencePremiums?.student || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-user-friends text-yellow-500"></i> Parent
+                    </span>
+                    <span class="font-semibold text-yellow-600">+${formatPrice(cpiSettings.audiencePremiums?.parent || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-bullhorn text-purple-500"></i> Advertiser
+                    </span>
+                    <span class="font-semibold text-purple-600">+${formatPrice(cpiSettings.audiencePremiums?.advertiser || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-user text-gray-500"></i> User
+                    </span>
+                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.audiencePremiums?.user || 0)} ETB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Targeting Card -->
+        <div class="border-2 border-green-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-map-marker-alt text-green-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800">Location Premium</h4>
+                    <p class="text-xs text-gray-500">Added to base CPI</p>
+                </div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-flag text-blue-500"></i> National
+                    </span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.locationPremiums?.national || 0)} ETB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Region Exclusion Premiums Card (Dynamic) -->
+        <div class="border-2 border-orange-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-map-marked-alt text-orange-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800">Region Exclusion</h4>
+                    <p class="text-xs text-gray-500">${Object.keys(cpiSettings.regionExclusionPremiums || {}).length} countries configured</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+                ${renderRegionPremiumsPreview()}
+            </div>
+        </div>
+
+        <!-- Placement Exclusion Premiums Card -->
+        <div class="border-2 border-purple-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-ad text-purple-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800">Placement Exclusion</h4>
+                    <p class="text-xs text-gray-500">Charged when unchecked</p>
+                </div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-minus-circle text-gray-400 text-xs"></i> Placeholder
+                    </span>
+                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.placementPremiums?.placeholder || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-minus-circle text-blue-400 text-xs"></i> Widget
+                    </span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.placementPremiums?.widget || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-minus-circle text-orange-400 text-xs"></i> WB Pop-up
+                    </span>
+                    <span class="font-semibold text-orange-600">+${formatPrice(cpiSettings.placementPremiums?.popup || 0)} ETB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-minus-circle text-red-400 text-xs"></i> WB In-Session
+                    </span>
+                    <span class="font-semibold text-red-600">+${formatPrice(cpiSettings.placementPremiums?.insession || 0)} ETB</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Helper function to render region premiums preview in the grid
+function renderRegionPremiumsPreview() {
+    const formatPrice = (price) => price.toFixed(2);
+    const regionPremiums = cpiSettings.regionExclusionPremiums || {};
+    let html = '';
+    let count = 0;
+    const maxDisplay = 6; // Show first 6 regions across all countries
+
+    // Iterate through countries
+    for (const [countryCode, regions] of Object.entries(regionPremiums)) {
+        const countryData = countryRegions[countryCode];
+        if (!countryData) continue;
+
+        // Get region names from countryRegions config
+        for (const [regionId, premium] of Object.entries(regions)) {
+            if (count >= maxDisplay) break;
+
+            const regionInfo = countryData.regions?.find(r => r.id === regionId);
+            const regionName = regionInfo?.name || regionId;
+            const shortName = regionName.length > 10 ? regionName.substring(0, 8) + '...' : regionName;
+
+            html += `
+                <div class="flex justify-between items-center">
+                    <span title="${regionName} (${countryCode})">${shortName}</span>
+                    <span class="font-semibold text-orange-600">+${formatPrice(premium || 0)}</span>
+                </div>
+            `;
+            count++;
+        }
+        if (count >= maxDisplay) break;
+    }
+
+    // If no regions configured yet
+    if (count === 0) {
+        html = `
+            <div class="col-span-2 text-center text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                No regions configured
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+// ============================================
+// LEGACY BRAND PACKAGE MANAGEMENT (DEPRECATED)
+// Kept for backward compatibility
 // ============================================
 
 // Global array to track brand packages
@@ -149,13 +881,14 @@ async function loadBrandPackages() {
     console.log('📦 Loading brand packages from database...');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             console.warn('⚠ No auth token found');
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/brand-packages`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/brand-packages`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -363,15 +1096,16 @@ async function saveBrandPackage(event) {
     };
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
+        const apiUrl = getApiBaseUrl();
         let response;
         if (packageId) {
             // Update existing package
-            response = await fetch(`${window.API_BASE_URL}/api/admin/brand-packages/${packageId}`, {
+            response = await fetch(`${apiUrl}/api/admin/brand-packages/${packageId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -381,7 +1115,7 @@ async function saveBrandPackage(event) {
             });
         } else {
             // Create new package
-            response = await fetch(`${window.API_BASE_URL}/api/admin/brand-packages`, {
+            response = await fetch(`${apiUrl}/api/admin/brand-packages`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -646,12 +1380,13 @@ async function deleteBrandPackage(packageId) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${window.API_BASE_URL}/api/admin/brand-packages/${packageId}`, {
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/admin/brand-packages/${packageId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1244,7 +1979,18 @@ function removeGateway(gatewayId) {
 // EXPOSE FUNCTIONS TO WINDOW OBJECT
 // ============================================
 
-// Brand Package Functions (new names)
+// CPI Pricing Functions (NEW!)
+window.openCpiSettingsModal = openCpiSettingsModal;
+window.closeCpiSettingsModal = closeCpiSettingsModal;
+window.loadCpiSettings = loadCpiSettings;
+window.saveCpiSettings = saveCpiSettings;
+window.calculateCpiPreview = calculateCpiPreview;
+window.renderCpiRatesGrid = renderCpiRatesGrid;
+window.onCpiLocationTypeChange = onCpiLocationTypeChange;
+window.onCpiCountryChange = onCpiCountryChange;
+window.renderRegionsForCountry = renderRegionsForCountry;
+
+// Brand Package Functions (legacy - kept for backward compatibility)
 window.loadBrandPackages = loadBrandPackages;
 window.openAddBrandPackageModal = openAddBrandPackageModal;
 window.closeBrandPackageModal = closeBrandPackageModal;
@@ -1261,7 +2007,6 @@ window.findBrandBasePackage = findBrandBasePackage;
 
 // Backward compatibility aliases (old Campaign names -> new Brand functions)
 window.loadCampaignPackagesFromDB = loadBrandPackages;
-window.openAddBrandPackageModal = openAddBrandPackageModal;
 window.closeCampaignPackageModal = closeBrandPackageModal;
 window.saveCampaignPackage = saveBrandPackage;
 window.editCampaignPackage = editBrandPackage;
@@ -1297,7 +2042,12 @@ window.removeGateway = removeGateway;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Pricing & Features Manager loaded');
 
-    // Load brand packages from database if grid exists
+    // Load CPI settings and render grid if section exists
+    if (document.getElementById('cpi-rates-grid')) {
+        loadCpiSettings();
+    }
+
+    // Legacy: Load brand packages from database if grid exists
     if (document.getElementById('brand-packages-grid')) {
         loadBrandPackages();
     }
@@ -1338,4 +2088,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
 });
 
-console.log('✅ pricing-features-manager.js loaded successfully (Brand Packages)');
+console.log('✅ pricing-features-manager.js loaded successfully (CPI Pricing)');

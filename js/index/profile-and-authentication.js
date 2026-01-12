@@ -2,44 +2,93 @@
 //   PROFILE AND AUTHENTICATION MANAGEMENT
 // ============================================
 
-// Helper function to update role switcher display
+// Helper function to update role switcher display (desktop and mobile)
 function updateRoleSwitcher() {
-    if (!APP_STATE.currentUser || !APP_STATE.currentUser.roles) return;
+    if (!APP_STATE.currentUser || !APP_STATE.currentUser.roles) {
+        console.log('[updateRoleSwitcher] No user or roles available');
+        return;
+    }
 
+    // Desktop role switcher
     const roleSwitcherSection = document.getElementById('role-switcher-section');
     const roleOptions = document.getElementById('role-options');
 
-    if (!roleSwitcherSection || !roleOptions) return;
+    // Mobile role switcher
+    const mobileRoleSwitcherSection = document.getElementById('mobile-role-switcher-section');
+    const mobileRoleOptions = document.getElementById('mobile-role-options');
+
+    console.log('[updateRoleSwitcher] Mobile elements found:', {
+        section: !!mobileRoleSwitcherSection,
+        options: !!mobileRoleOptions
+    });
 
     // Filter out admin roles - admins should only access through admin-index.html
     const userFacingRoles = APP_STATE.currentUser.roles.filter(role => role !== 'admin');
 
+    console.log('[updateRoleSwitcher] User roles:', APP_STATE.currentUser.roles);
+    console.log('[updateRoleSwitcher] User-facing roles:', userFacingRoles);
+
     // Only show if user has multiple roles
     if (userFacingRoles.length > 1) {
-        roleSwitcherSection.classList.remove('hidden');
+        // Update desktop role switcher
+        if (roleSwitcherSection && roleOptions) {
+            roleSwitcherSection.classList.remove('hidden');
 
-        // Clear existing options
-        roleOptions.innerHTML = '';
+            // Clear existing options
+            roleOptions.innerHTML = '';
 
-        // Add role options
-        userFacingRoles.forEach(role => {
-            const isActive = role === APP_STATE.currentUser.active_role;
-            const roleOption = document.createElement('button');
-            roleOption.className = `role-option ${isActive ? 'active disabled' : ''}`;
-            roleOption.innerHTML = `
-                <span class="role-icon">${getRoleIcon(role)}</span>
-                <span class="role-name">${role.charAt(0).toUpperCase() + role.slice(1)}</span>
-                ${isActive ? '<span class="active-badge">Active</span>' : ''}
-            `;
+            // Add role options
+            userFacingRoles.forEach(role => {
+                const isActive = role === APP_STATE.currentUser.active_role;
+                const roleOption = document.createElement('button');
+                roleOption.className = `role-option ${isActive ? 'active disabled' : ''}`;
+                roleOption.innerHTML = `
+                    <span class="role-icon">${getRoleIcon(role)}</span>
+                    <span class="role-name">${role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                    ${isActive ? '<span class="active-badge">Active</span>' : ''}
+                `;
 
-            if (!isActive) {
-                roleOption.onclick = () => switchRole(role);
-            }
+                if (!isActive) {
+                    roleOption.onclick = () => switchRole(role);
+                }
 
-            roleOptions.appendChild(roleOption);
-        });
+                roleOptions.appendChild(roleOption);
+            });
+        }
+
+        // Update mobile role switcher
+        if (mobileRoleSwitcherSection && mobileRoleOptions) {
+            mobileRoleSwitcherSection.classList.remove('hidden');
+
+            // Clear existing options
+            mobileRoleOptions.innerHTML = '';
+
+            // Add role options for mobile
+            userFacingRoles.forEach(role => {
+                const isActive = role === APP_STATE.currentUser.active_role;
+                const roleOption = document.createElement('button');
+                roleOption.className = `mobile-role-option ${isActive ? 'active' : ''}`;
+                roleOption.innerHTML = `
+                    <span class="role-icon">${getRoleIcon(role)}</span>
+                    <span class="role-name">${role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                    ${isActive ? '<span class="active-badge">Active</span>' : ''}
+                `;
+
+                if (!isActive) {
+                    roleOption.onclick = () => switchRole(role);
+                }
+
+                mobileRoleOptions.appendChild(roleOption);
+            });
+        }
     } else {
-        roleSwitcherSection.classList.add('hidden');
+        // Hide both role switchers if user has only one role
+        if (roleSwitcherSection) {
+            roleSwitcherSection.classList.add('hidden');
+        }
+        if (mobileRoleSwitcherSection) {
+            mobileRoleSwitcherSection.classList.add('hidden');
+        }
     }
 }
 
@@ -419,13 +468,11 @@ async function handleRegister(e) {
         return;
     }
 
-    // Validate either phone OR email is provided
-    const phone = document.getElementById("register-phone")?.value;
+    // Validate email is provided
     const email = formData.get("register-email");
-    const countryCode = document.getElementById("country-code")?.value;
 
-    if ((!phone || phone.trim() === '') && (!email || email.trim() === '')) {
-        showToast('Please provide either a phone number or email address!', 'error');
+    if (!email || email.trim() === '') {
+        showToast('Please provide an email address!', 'error');
         return;
     }
 
@@ -434,8 +481,8 @@ async function handleRegister(e) {
         first_name: formData.get("register-firstname"),
         father_name: formData.get("register-fathername"),
         grandfather_name: formData.get("register-grandfathername"),
-        email: email || '',
-        phone: phone ? countryCode + phone : '',
+        email: email,
+        phone: '',
         password: password,
         role: document.getElementById("register-as")?.value,
     };
@@ -449,15 +496,10 @@ function showOTPConfirmation() {
     if (!tempRegistrationData) return;
 
     // Update modal with user's information
-    const phoneDisplay = document.getElementById('confirm-phone-display');
     const emailDisplay = document.getElementById('confirm-email-display');
 
-    if (phoneDisplay) {
-        phoneDisplay.textContent = tempRegistrationData.phone;
-    }
-
     if (emailDisplay) {
-        emailDisplay.textContent = tempRegistrationData.email || 'Not provided';
+        emailDisplay.textContent = tempRegistrationData.email;
     }
 
     // Close register modal and open confirmation modal
@@ -478,9 +520,6 @@ window.editRegistrationInfo = function() {
             document.getElementById('register-fathername').value = tempRegistrationData.father_name;
             document.getElementById('register-grandfathername').value = tempRegistrationData.grandfather_name;
             document.getElementById('register-email').value = tempRegistrationData.email;
-            // Phone number without country code
-            const phoneWithoutCode = tempRegistrationData.phone.replace(/^\+\d+/, '');
-            document.getElementById('register-phone').value = phoneWithoutCode;
         }
     }, 300);
 };
@@ -523,10 +562,9 @@ window.sendOTP = async function() {
         if (response.ok) {
             showToast(data.message || 'OTP sent! Please check your email/phone.', 'success');
 
-            // If OTP is included in response (development mode), show it
+            // If OTP is included in response (development mode), log it to console
             if (data.otp) {
                 console.log('Development Mode - OTP:', data.otp);
-                showToast(`Development Mode - OTP: ${data.otp}`, 'info');
             }
 
             // Switch to OTP verification modal
@@ -702,10 +740,9 @@ window.resendRegistrationOTP = async function() {
         if (response.ok) {
             showToast('New OTP sent!', 'success');
 
-            // If OTP is included in response (development mode), show it
+            // If OTP is included in response (development mode), log it to console
             if (data.otp) {
                 console.log('Development Mode - OTP:', data.otp);
-                showToast(`Development Mode - OTP: ${data.otp}`, 'info');
             }
         } else {
             showToast(data.detail || 'Failed to resend OTP', 'error');
@@ -874,10 +911,9 @@ async function handleForgotPassword(e) {
                 openModal('reset-password-modal');
             }, 300);
 
-            // If OTP is included in response (development mode), log it
+            // If OTP is included in response (development mode), log it to console
             if (data.otp) {
                 console.log('Development Mode - OTP:', data.otp);
-                showToast(`Development Mode - OTP: ${data.otp}`, 'info');
             }
         } else {
             showToast(data.detail || 'Failed to send OTP', 'error');
@@ -1027,10 +1063,9 @@ async function resendPasswordResetOTP(event) {
         if (response.ok) {
             showToast('New OTP sent to your email!', 'success');
 
-            // If OTP is included in response (development mode), log it
+            // If OTP is included in response (development mode), log it to console
             if (data.otp) {
                 console.log('Development Mode - OTP:', data.otp);
-                showToast(`Development Mode - OTP: ${data.otp}`, 'info');
             }
         } else {
             showToast(data.detail || 'Failed to resend OTP', 'error');
@@ -1126,9 +1161,11 @@ function validateResetPasswordMatch() {
 
 function improveNavbarResponsiveness() {
     const navbar = document.querySelector('.navbar');
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    
+    // Support both old and new element IDs
+    const menuBtn = document.getElementById('mobileMenuBtn') || document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobileMenu') || document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
     // Add resize listener for better responsiveness
     let resizeTimer;
     window.addEventListener('resize', () => {
@@ -1139,6 +1176,7 @@ function improveNavbarResponsiveness() {
                 if (menuBtn?.classList.contains('active')) {
                     menuBtn.classList.remove('active');
                     mobileMenu?.classList.add('hidden');
+                    mobileMenuOverlay?.classList.add('hidden');
                     document.body.style.overflow = '';
                 }
             }

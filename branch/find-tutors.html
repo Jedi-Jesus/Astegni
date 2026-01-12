@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../css/find-tutors.css">
 
     <!-- Import shared modals and components -->
+    <link rel="stylesheet" href="../css/common-modals/access-restricted-modal.css">
     <link rel="stylesheet" href="../css/common-modals/auth-modal.css">
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
@@ -30,14 +31,16 @@
     <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container" style="max-width: 100%; padding: 0 1rem;">
             <div class="nav-brand">
-                <button class="sidebar-toggle" id="hamburger" aria-label="Toggle sidebar">
+                <!-- Sidebar Toggle (Filter) - Always visible -->
+                <button class="sidebar-toggle" id="hamburger" aria-label="Toggle sidebar filters">
                     <span class="hamburger">
                         <span></span>
                         <span></span>
                         <span></span>
                     </span>
                 </button>
-                <a href="find-tutors.html" class="logo-container">
+                <!-- Logo - Hidden on mobile (<768px) -->
+                <a href="find-tutors.html" class="logo-container desktop-only">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">Find Tutors</span>
@@ -46,11 +49,11 @@
                 </a>
             </div>
 
-            <!-- Center Section: Search Bar -->
-            <div class="flex-1 mx-4 max-w-2xl">
+            <!-- Center Section: Search Bar - Always visible -->
+            <div class="nav-search-wrapper flex-1 mx-2 md:mx-4 max-w-2xl">
                 <div class="relative">
                     <input type="text" id="searchBar" class="tutor-search-input w-full pl-10 pr-4 py-2"
-                        placeholder="Search by name, subject, school, language, or location...">
+                        placeholder="Search tutors...">
                     <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -59,10 +62,10 @@
                 </div>
             </div>
 
-            <!-- Right Section: Nav Menu + Actions -->
-            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
-                <!-- Navigation Links -->
-                <div class="nav-items" style="display: flex; gap: 0.25rem;">
+            <!-- Right Section: Nav Menu + Actions (Desktop only) -->
+            <div class="nav-actions desktop-nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
+                <!-- Navigation Links - Hidden on < 1024px -->
+                <div class="nav-items desktop-nav-items" style="display: flex; gap: 0.25rem;">
                     <a class="nav-link" href="../index.html">
                         <span class="nav-icon">🏠</span> Home
                     </a>
@@ -142,8 +145,8 @@
                     <span class="notification-badge">3</span>
                 </button>
 
-                <!-- Theme Toggle -->
-                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                <!-- Theme Toggle (Desktop) -->
+                <button id="theme-toggle-btn" class="icon-btn desktop-only-lg" aria-label="Toggle theme">
                     <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
@@ -151,28 +154,118 @@
                     </svg>
                 </button>
             </div>
+
+            <!-- Mobile Menu Button (< 1024px) -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                <span class="mobile-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
+    <!-- Mobile Menu (< 1024px) -->
     <div id="mobileMenu" class="mobile-menu hidden">
         <div class="mobile-menu-content">
-            <a class="nav-link" href="../index.html">
+            <!-- Mobile Menu Header with Logo -->
+            <div class="mobile-menu-header">
+                <a href="find-tutors.html" class="mobile-logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Find Tutors</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Navigation Links -->
+            <a class="mobile-menu-link" href="../index.html">
                 <span class="nav-icon">🏠</span> Home
             </a>
-            <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'news'); closeMobileMenu();">
                 <span class="nav-icon">📰</span> News
             </a>
-            <a class="nav-link" href="reels.html">
+            <a class="mobile-menu-link" href="reels.html">
                 <span class="nav-icon">🎬</span> Reels
             </a>
-            <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'store'); closeMobileMenu();">
                 <span class="nav-icon">📚</span> Bookstore
             </a>
-            <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs'); closeMobileMenu();">
                 <span class="nav-icon">💼</span> Find a Job
             </a>
+
             <div class="mobile-menu-divider"></div>
+
+            <!-- Mobile Profile Section (shown when logged in) -->
+            <div id="mobile-profile-section" class="mobile-profile-section hidden">
+                <div class="mobile-profile-dropdown">
+                    <!-- Clickable Header (toggles dropdown) -->
+                    <button id="mobile-profile-toggle" class="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                        <img id="mobile-profile-pic" class="mobile-profile-pic" alt="Profile">
+                        <div class="mobile-profile-info">
+                            <span id="mobile-profile-name" class="mobile-profile-name"></span>
+                            <span id="mobile-profile-role" class="mobile-profile-role"></span>
+                        </div>
+                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Expandable Dropdown Content -->
+                    <div id="mobile-profile-dropdown-content" class="mobile-profile-dropdown-content">
+                        <!-- User Info -->
+                        <a href="#" id="mobile-profile-link" class="mobile-dropdown-user-info">
+                            <img id="mobile-dropdown-pic" class="mobile-dropdown-pic" alt="Profile">
+                            <div class="mobile-dropdown-info">
+                                <span id="mobile-dropdown-name" class="mobile-dropdown-name"></span>
+                                <span id="mobile-dropdown-email" class="mobile-dropdown-email"></span>
+                            </div>
+                        </a>
+
+                        <!-- Role Switcher (shown only if user has multiple roles) -->
+                        <div id="mobile-role-switcher-section" class="mobile-role-switcher-section hidden">
+                            <div class="mobile-role-switcher-header">Switch Role</div>
+                            <div id="mobile-role-options" class="mobile-role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Logout Button -->
+                        <button id="mobile-logout-btn" class="mobile-dropdown-logout" onclick="showLogoutModal(); closeMobileMenu();">
+                            <svg class="mobile-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-menu-divider"></div>
+            </div>
+
+            <!-- Auth buttons (shown when logged out) -->
+            <div id="mobile-auth-section" class="mobile-auth-section">
+                <button id="mobile-login-btn" class="mobile-menu-item mobile-auth-btn" onclick="openLoginModal(); closeMobileMenu();">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    Login
+                </button>
+                <button id="mobile-register-btn" class="mobile-menu-item mobile-auth-btn" onclick="openRegisterModal(); closeMobileMenu();">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                    Register
+                </button>
+            </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <!-- Theme Toggle -->
             <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
                 <svg id="mobile-theme-icon" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -181,8 +274,22 @@
                 </svg>
                 Toggle Theme
             </button>
+
+            <!-- Notification Button (Mobile) -->
+            <button id="mobile-notification-btn" class="mobile-menu-item hidden" onclick="openNotificationModal(); closeMobileMenu();">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                    </path>
+                </svg>
+                Notifications
+                <span id="mobile-notification-badge" class="mobile-notification-badge">3</span>
+            </button>
         </div>
     </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Notification Modal -->
     <div id="notificationModal" class="notification-modal">
@@ -481,34 +588,107 @@
                         <span class="stat-number" id="stat-courses" data-target="0" data-suffix="+">0</span>
                         <span class="stat-label">Courses</span>
                     </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.35s">
+                        <span class="stat-number" id="stat-schools" data-target="0" data-suffix="+">0</span>
+                        <span class="stat-label">Schools</span>
+                    </div>
                     <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
                         <span class="stat-number" id="stat-rating" data-target="0" data-suffix="★" data-decimal="1">0</span>
                         <span class="stat-label">Average Rating</span>
                     </div>
+                    <div class="stat-item animate__animated animate__fadeInUp coming-soon-stat" style="animation-delay: 0.45s">
+                        <span class="stat-number coming-soon-text">Coming Soon</span>
+                        <span class="stat-label">Countries</span>
+                    </div>
                 </div>
             </section>
 
-            <!-- Advertisement Placeholder -->
-                <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
-                    <div class="ad-animation">
-                        <div class="pulse-ring"></div>
-                        <div class="pulse-ring"></div>
-                    </div>
-                    <div class="ad-content">
-                        <span class="ad-label">Advertisement</span>
-                        <h3 class="ad-title">Boost Your Reach Today</h3>
-                        <p class="ad-text">Premium placement available</p>
-                        <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
-                    </div>
-                    <div class="ad-visual">
-                        <div class="ad-circles">
-                            <div class="circle circle-1"></div>
-                            <div class="circle circle-2"></div>
-                            <div class="circle circle-3"></div>
-                        </div>
-                    </div>
+    <!-- Rotating Ad Section - 4 Placeholder Ads -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+        <!-- Ad Slide 1 -->
+        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 1</span>
+                <h3 class="ad-title">Find Your Perfect Tutor</h3>
+                <p class="ad-text">Expert educators matching your learning style</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Now</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
                 </div>
+            </div>
+        </div>
 
+        <!-- Ad Slide 2 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 2</span>
+                <h3 class="ad-title">Online Learning Made Easy</h3>
+                <p class="ad-text">Study from anywhere with Astegni</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Started</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 3 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 3</span>
+                <h3 class="ad-title">Become a Verified Tutor</h3>
+                <p class="ad-text">Join Ethiopia's top educators network</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Apply Today</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Slide 4 -->
+        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Ad 4</span>
+                <h3 class="ad-title">Your Ad Space Available</h3>
+                <p class="ad-text">Reach thousands of students daily</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise Here</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
             <!-- Search Results Header -->
             <div class="search-results-header">
@@ -994,6 +1174,10 @@
     <!-- Authentication Scripts -->
     <script src="../js/config.js?v=20251217b"></script>
     <script src="../js/root/auth.js?v=20251217b"></script>
+    <!-- Access Restricted Modal - MUST load before ProfileCompletionGuard -->
+    <script src="../js/common-modals/access-restricted-modal.js?v=20251229"></script>
+    <!-- Profile Completion Guard - checks profile and KYC before protected features -->
+    <script src="../js/root/profile-completion-guard.js?v=20251224"></script>
     <!-- Common Modal Loader for add-role, logout, coming-soon modals -->
     <script src="../modals/common-modals/common-modal-loader.js"></script>
     <script src="../js/root/app.js"></script>
@@ -1025,6 +1209,7 @@
     <!-- Shared Modal Scripts -->
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
 
     <!-- Chat Modal Scripts -->
@@ -1162,5 +1347,8 @@
             }
         });
     </script>
+
+    <!-- Ad Rotation Manager -->
+    <script src="../js/common-modals/ad-rotation-manager.js"></script>
 </body>
 </html>

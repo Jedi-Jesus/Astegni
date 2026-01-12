@@ -84,6 +84,41 @@ def get_role_specific_username(user: User, db: Session) -> Optional[str]:
     # No username found - user needs to set it in their profile
     return None
 
+def check_and_auto_verify_tutor(user: User, db: Session) -> bool:
+    """
+    Auto-verify a tutor if all profile requirements are met.
+    Requirements: first_name, father_name, grandfather_name, date_of_birth, gender, kyc_verified
+
+    Returns True if tutor was auto-verified, False otherwise.
+    """
+    # Check if user has tutor role
+    if "tutor" not in (user.roles or []):
+        return False
+
+    # Check all profile requirements
+    profile_complete = (
+        user.first_name and user.first_name.strip() != '' and
+        user.father_name and user.father_name.strip() != '' and
+        user.grandfather_name and user.grandfather_name.strip() != '' and
+        user.date_of_birth is not None and
+        user.gender and user.gender.strip() != '' and
+        user.kyc_verified == True
+    )
+
+    if not profile_complete:
+        return False
+
+    # Get tutor profile and auto-verify if not already verified
+    tutor_profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if tutor_profile and not tutor_profile.is_verified:
+        tutor_profile.is_verified = True
+        tutor_profile.verification_status = "verified"
+        tutor_profile.verified_at = datetime.utcnow()
+        db.commit()
+        return True
+
+    return False
+
 # ============================================
 # PLATFORM STATS ENDPOINT (Public - No Auth Required)
 # ============================================
@@ -93,27 +128,69 @@ def get_platform_stats(db: Session = Depends(get_db)):
     """
     Get platform statistics for the hero section.
     Returns: tutor count, courses count, and average tutor rating.
+    Only counts tutors with complete profiles and KYC verification.
     This endpoint is public and does not require authentication.
     """
     try:
-        # Get total tutor count from tutor_profiles table
-        tutor_count = db.execute(text("SELECT COUNT(*) FROM tutor_profiles")).scalar() or 0
+        # Get tutor count - only verified tutors
+        # is_verified=True means: profile complete + KYC verified (auto-set by system)
+        tutor_count = db.execute(text("""
+            SELECT COUNT(*) FROM tutor_profiles tp
+            JOIN users u ON tp.user_id = u.id
+            WHERE tp.is_active = true
+            AND tp.is_verified = true
+            AND u.is_active = true
+        """)).scalar() or 0
 
         # Get total courses count from courses table (only verified/active courses)
         courses_count = db.execute(text(
             "SELECT COUNT(*) FROM courses WHERE status = 'verified' OR status IS NULL"
         )).scalar() or 0
 
-        # Get average rating from tutor_reviews table
-        avg_rating_result = db.execute(text(
-            "SELECT COALESCE(AVG(rating), 0) as avg_rating FROM tutor_reviews"
-        )).fetchone()
+        # Get average rating from tutor_reviews table (only for verified tutors)
+        avg_rating_result = db.execute(text("""
+            SELECT COALESCE(AVG(tr.rating), 0) as avg_rating
+            FROM tutor_reviews tr
+            JOIN tutor_profiles tp ON tr.tutor_id = tp.id
+            JOIN users u ON tp.user_id = u.id
+            WHERE tp.is_active = true
+            AND tp.is_verified = true
+            AND u.is_active = true
+        """)).fetchone()
         avg_rating = float(avg_rating_result[0]) if avg_rating_result else 0.0
+
+        # Get total verified schools count from schools table
+        schools_count = db.execute(text(
+            "SELECT COUNT(*) FROM schools WHERE status = 'verified'"
+        )).scalar() or 0
+
+        # Get tutor subscription tier breakdown
+        tier_breakdown = db.execute(text("""
+            SELECT
+                subscription_plan_id,
+                COUNT(*) as count
+            FROM tutor_profiles tp
+            JOIN users u ON tp.user_id = u.id
+            WHERE tp.is_active = true
+            AND tp.is_verified = true
+            AND u.is_active = true
+            GROUP BY subscription_plan_id
+            ORDER BY subscription_plan_id
+        """)).fetchall()
+
+        # Map subscription plan IDs to tier names
+        tier_names = {9: "premium", 8: "standard_plus", 7: "standard", 6: "basic_plus", 5: "basic", 16: "free"}
+        subscription_tiers = {name: 0 for name in tier_names.values()}
+        for plan_id, count in tier_breakdown:
+            tier_name = tier_names.get(plan_id, "free")
+            subscription_tiers[tier_name] = count
 
         return {
             "tutors_count": tutor_count,
             "courses_count": courses_count,
-            "average_rating": round(avg_rating, 1)
+            "average_rating": round(avg_rating, 1),
+            "schools_count": schools_count,
+            "subscription_tiers": subscription_tiers
         }
     except Exception as e:
         # Return default values if database error occurs
@@ -121,6 +198,7 @@ def get_platform_stats(db: Session = Depends(get_db)):
             "tutors_count": 0,
             "courses_count": 0,
             "average_rating": 0.0,
+            "schools_count": 0,
             "error": str(e)
         }
 
@@ -215,6 +293,9 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 username=username,
                 email=existing_user.email,
                 phone=existing_user.phone,
+                date_of_birth=existing_user.date_of_birth,
+                gender=existing_user.gender,
+                profile_complete=existing_user.profile_complete,
                 roles=existing_user.roles,
                 active_role=existing_user.active_role,
                 profile_picture=profile_picture,
@@ -232,6 +313,8 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         email=user_data.email,
         phone=user_data.phone,
         password_hash=hash_password(user_data.password),
+        date_of_birth=user_data.date_of_birth,
+        gender=user_data.gender,
         roles=[user_data.role],
         active_role=user_data.role
     )
@@ -299,6 +382,9 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
             username=username,
             email=new_user.email,
             phone=new_user.phone,
+            date_of_birth=new_user.date_of_birth,
+            gender=new_user.gender,
+            profile_complete=new_user.profile_complete,
             roles=new_user.roles,
             active_role=new_user.active_role,
             profile_picture=profile_picture,
@@ -381,14 +467,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             if student_profile:
                 if not student_profile.parent_id:
                     student_profile.parent_id = []
-                if new_user.id not in student_profile.parent_id:
-                    student_profile.parent_id = student_profile.parent_id + [new_user.id]
+                # Use parent_profile.id (NOT user.id) - student_profiles.parent_id stores parent_profile IDs
+                if parent_profile.id not in student_profile.parent_id:
+                    student_profile.parent_id = student_profile.parent_id + [parent_profile.id]
 
-            # Link student to parent
+            # Link student to parent (use student_profile.id, NOT user_id)
             if not parent_profile.children_ids:
                 parent_profile.children_ids = []
-            if invitation.student_user_id not in parent_profile.children_ids:
-                parent_profile.children_ids = parent_profile.children_ids + [invitation.student_user_id]
+            if student_profile.id not in parent_profile.children_ids:
+                parent_profile.children_ids = parent_profile.children_ids + [student_profile.id]
                 parent_profile.total_children = len(parent_profile.children_ids)
 
             # Update invitation
@@ -417,6 +504,20 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
         )
+
+    # NOTE: We do NOT auto-restore accounts on login anymore.
+    # Role-based deletion means:
+    # - If user deletes their tutor role, they can still log in to use student/parent roles
+    # - Restoration only happens when user explicitly tries to add back the deleted role
+    # - Or when user clicks "Restore" from the account settings
+    #
+    # The account_status = 'pending_deletion' only applies when delete_user=True
+    # (i.e., when the user is deleting their ONLY role)
+    if user.account_status == 'pending_deletion':
+        # User's entire account is pending deletion (they had only one role)
+        # They can still log in but will see a banner about pending deletion
+        # They can cancel deletion from account settings
+        print(f"[Login] User {user.id} has pending account deletion - allowing login with warning")
 
     # Update last login
     user.last_login = datetime.utcnow()
@@ -467,13 +568,16 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             username=username,
             email=user.email,
             phone=user.phone,
+            date_of_birth=user.date_of_birth,
+            gender=user.gender,
+            profile_complete=user.profile_complete,
             roles=user.roles,
             active_role=user.active_role,
             profile_picture=profile_picture,
             created_at=user.created_at,
             is_active=user.is_active,
             email_verified=user.email_verified,
-            role_ids=role_ids  # NEW: Include role-specific profile IDs
+            role_ids=role_ids  # Include role-specific profile IDs
         )
     )
 
@@ -549,6 +653,8 @@ def refresh_token_endpoint(
                 username=username,
                 email=user.email,
                 phone=user.phone,
+                date_of_birth=user.date_of_birth,
+                gender=user.gender,
                 roles=user.roles,
                 active_role=user.active_role,
                 profile_picture=profile_picture,
@@ -575,6 +681,9 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
     # Get role-specific IDs for all roles the user has
     role_ids = get_role_ids_from_user(current_user, db)
 
+    # Calculate profile_complete status
+    profile_complete = bool(current_user.date_of_birth and current_user.gender and current_user.digital_id_no)
+
     return UserResponse(
         id=current_user.id,
         first_name=current_user.first_name,
@@ -583,13 +692,19 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         username=username,
         email=current_user.email,
         phone=current_user.phone,
+        date_of_birth=current_user.date_of_birth,
+        gender=current_user.gender,
+        digital_id_no=current_user.digital_id_no,
+        profile_complete=profile_complete,
+        kyc_verified=current_user.kyc_verified if hasattr(current_user, 'kyc_verified') else False,
         roles=current_user.roles,
         active_role=current_user.active_role,
         profile_picture=profile_picture,
         created_at=current_user.created_at,
         is_active=current_user.is_active,
         email_verified=current_user.email_verified,
-        role_ids=role_ids  # FIXED: Include role-specific profile IDs
+        role_ids=role_ids,  # FIXED: Include role-specific profile IDs
+        account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0
     )
 
 @router.get("/api/verify-token")
@@ -603,6 +718,9 @@ def verify_token(current_user: User = Depends(get_current_user), db: Session = D
     # Get role-specific IDs for all roles the user has
     role_ids = get_role_ids_from_user(current_user, db)
 
+    # Calculate profile_complete status
+    profile_complete = bool(current_user.date_of_birth and current_user.gender and current_user.digital_id_no)
+
     return {
         "valid": True,
         "user": {
@@ -613,6 +731,11 @@ def verify_token(current_user: User = Depends(get_current_user), db: Session = D
             "username": username,
             "email": current_user.email,
             "phone": current_user.phone,
+            "date_of_birth": str(current_user.date_of_birth) if current_user.date_of_birth else None,
+            "gender": current_user.gender,
+            "digital_id_no": current_user.digital_id_no,
+            "profile_complete": profile_complete,
+            "kyc_verified": current_user.kyc_verified if hasattr(current_user, 'kyc_verified') else False,
             "roles": current_user.roles,
             "active_role": current_user.active_role,
             "role": current_user.active_role,  # For backward compatibility
@@ -715,25 +838,45 @@ def update_user_profile(
 ):
     """
     Update user's basic profile information from users table.
-    Fields: first_name, father_name, grandfather_name, gender
+    Fields: first_name, father_name, grandfather_name, gender, date_of_birth, digital_id_no
     """
-    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'gender']
+    from datetime import datetime as dt
+
+    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'gender', 'date_of_birth', 'digital_id_no']
 
     for field, value in profile_data.items():
         if field in allowed_fields and value is not None:
+            # Handle date_of_birth conversion from string to date
+            if field == 'date_of_birth' and isinstance(value, str):
+                try:
+                    value = dt.strptime(value, '%Y-%m-%d').date()
+                except ValueError:
+                    continue  # Skip invalid date format
+            # Handle digital_id_no - strip whitespace
+            if field == 'digital_id_no' and isinstance(value, str):
+                value = value.strip()
             setattr(current_user, field, value)
 
     db.commit()
     db.refresh(current_user)
 
+    # Auto-verify all profiles (tutor, student, parent, advertiser) if all requirements are met
+    from kyc_endpoints import check_and_auto_verify_profiles
+    verification_results = check_and_auto_verify_profiles(current_user, db)
+
     return {
         "message": "Profile updated successfully",
+        "verification_results": verification_results,
         "user": {
             "id": current_user.id,
             "first_name": current_user.first_name,
             "father_name": current_user.father_name,
             "grandfather_name": current_user.grandfather_name,
             "gender": current_user.gender,
+            "date_of_birth": current_user.date_of_birth.isoformat() if current_user.date_of_birth else None,
+            "digital_id_no": current_user.digital_id_no,
+            "profile_complete": current_user.profile_complete,
+            "kyc_verified": current_user.kyc_verified,
             "email": current_user.email,
             "phone": current_user.phone
         }
@@ -775,8 +918,10 @@ def get_tutors(
 
     With 80% chance of shuffling on initial page load for variety
     """
+    # Only show verified tutors (is_verified=True means profile complete + KYC verified)
     query = db.query(TutorProfile).join(User).filter(
         TutorProfile.is_active == True,
+        TutorProfile.is_verified == True,
         User.is_active == True
     )
 
@@ -859,12 +1004,47 @@ def get_tutors(
         import random
         from datetime import datetime, timedelta
 
+        # Subscription Plan Visibility Tiers (higher = more visibility)
+        # Based on subscription_plans in admin_db:
+        # - Premium (id=9): 5000 ETB - "Premium visibility" → 500 points
+        # - Standard+ (id=8): 2800 ETB - "Standard plus visibility" → 400 points
+        # - Standard (id=7): 1500 ETB - "Boosted visibility" → 300 points
+        # - Basic+ (id=6): 700 ETB - "Better visibility" → 200 points
+        # - Basic (id=5): 500 ETB - "Better visibility" → 200 points
+        # - Free (id=16): 0 ETB - "visibility" → 0 points (baseline)
+        SUBSCRIPTION_VISIBILITY_SCORES = {
+            9: 500,   # Premium - highest visibility
+            8: 400,   # Standard+
+            7: 300,   # Standard - boosted visibility
+            6: 200,   # Basic+ - better visibility
+            5: 200,   # Basic - better visibility
+            16: 0,    # Free - baseline visibility
+            None: 0   # No plan - baseline
+        }
+
         def calculate_tutor_score(tutor):
             """
             Calculate ranking score for each tutor based on multiple factors
             Higher score = Higher priority in results
+
+            SUBSCRIPTION TIERS provide the primary visibility boost:
+            - Premium: +500 points (appears first)
+            - Standard+: +400 points
+            - Standard: +300 points
+            - Basic/Basic+: +200 points
+            - Free: +0 points (baseline)
             """
             score = 0
+
+            # SUBSCRIPTION PLAN VISIBILITY SCORE (0-500 points) - PRIMARY FACTOR
+            subscription_plan_id = tutor.subscription_plan_id
+            subscription_score = SUBSCRIPTION_VISIBILITY_SCORES.get(subscription_plan_id, 0)
+            score += subscription_score
+
+            # Check if subscription is expired (reduce score if expired)
+            if tutor.subscription_expires_at and tutor.subscription_expires_at < datetime.utcnow():
+                # Expired subscription - treat as Free tier
+                score -= subscription_score  # Remove the subscription bonus
 
             # Base rating score (0-50 points based on 0-5 rating)
             # Rating column doesn't exist - skip rating score
@@ -875,7 +1055,7 @@ def get_tutors(
             if in_search_history:
                 score += 50
 
-            # Check if tutor is basic (100 points)
+            # Check if tutor is basic (100 points) - legacy field, may be deprecated
             is_basic = tutor.is_basic or False
             if is_basic:
                 score += 100
@@ -920,15 +1100,20 @@ def get_tutors(
         # Sort by score (descending)
         tutors_with_scores.sort(key=lambda x: x[1], reverse=True)
 
+        # Subscription tier names for logging
+        SUBSCRIPTION_TIER_NAMES = {
+            9: "PREMIUM", 8: "STD+", 7: "STD", 6: "BASIC+", 5: "BASIC", 16: "FREE", None: "NONE"
+        }
+
         # Log top 5 tutors with scores for debugging
         print(f"\n📊 Smart Ranking Results (Total: {len(tutors_with_scores)} tutors)")
         print("   Top 5 tutors:")
         for i, (tutor, score) in enumerate(tutors_with_scores[:5], 1):
-            basic_label = "BASIC" if (tutor.is_basic or False) else "REG"
+            tier_label = SUBSCRIPTION_TIER_NAMES.get(tutor.subscription_plan_id, "NONE")
+            basic_label = "BASIC" if (tutor.is_basic or False) else ""
             new_label = "NEW" if tutor.created_at and (datetime.utcnow() - tutor.created_at).days <= 30 else ""
             history_label = "HIST" if tutor.id in search_history_tutor_ids else ""
-            labels = f"[{basic_label}] {new_label} {history_label}".strip()
-            # Note: rating field doesn't exist in tutor_profiles table yet
+            labels = f"[{tier_label}] {basic_label} {new_label} {history_label}".strip()
             print(f"   {i}. {labels} Score: {score:.0f} - {tutor.user.first_name} {tutor.user.father_name}")
 
         # Apply shuffling with 80% probability on first page
@@ -1152,6 +1337,7 @@ def get_tutors(
             "user_id": tutor.user_id,
             "first_name": tutor.user.first_name,
             "father_name": tutor.user.father_name,
+            "grandfather_name": tutor.user.grandfather_name,
             "email": tutor.user.email,
             "profile_picture": tutor.user.profile_picture,
             "bio": tutor.bio,
@@ -1180,6 +1366,12 @@ def get_tutors(
             "is_basic": getattr(tutor, 'is_basic', False),
             "cover_image": tutor.cover_image,
             "intro_video_url": getattr(tutor, 'intro_video_url', None),
+            # Subscription plan info
+            "subscription_plan_id": tutor.subscription_plan_id,
+            "subscription_tier": {
+                9: "Premium", 8: "Standard+", 7: "Standard",
+                6: "Basic+", 5: "Basic", 16: "Free"
+            }.get(tutor.subscription_plan_id, "Free"),
         }
         tutor_list.append(tutor_data)
 
@@ -2568,6 +2760,114 @@ def send_otp(
         "otp": otp_code if include_otp else None
     }
 
+@router.post("/api/send-otp-to-email")
+def send_otp_to_custom_email(
+    otp_data: dict = Body(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Send OTP to a custom email address (e.g., for company email verification).
+    This allows sending OTP to an email different from the user's registered email.
+    """
+    import random
+    from datetime import timedelta
+
+    email = otp_data.get("email")
+    purpose = otp_data.get("purpose", "company_verification")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email address is required")
+
+    # Validate email format
+    import re
+    email_regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+    if not re.match(email_regex, email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+
+    # Generate 6-digit OTP
+    otp_code = str(random.randint(100000, 999999))
+
+    # Set expiration (5 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(minutes=5)
+
+    # Invalidate any existing unused OTPs for this user and purpose
+    db.query(OTP).filter(
+        OTP.user_id == current_user.id,
+        OTP.purpose == purpose,
+        OTP.is_used == False
+    ).update({"is_used": True})
+    db.commit()
+
+    # Create new OTP - store the target email in the OTP record
+    new_otp = OTP(
+        user_id=current_user.id,
+        otp_code=otp_code,
+        purpose=purpose,
+        expires_at=expires_at
+    )
+    db.add(new_otp)
+    db.commit()
+
+    # Send OTP to the custom email
+    from email_service import email_service
+
+    sent_successfully = email_service.send_otp_email(
+        to_email=email,
+        otp_code=otp_code,
+        purpose=purpose
+    )
+
+    # In development mode, include OTP for testing
+    include_otp = not sent_successfully or os.getenv("ENVIRONMENT", "development") == "development"
+
+    return {
+        "message": f"OTP sent successfully to {email[:3]}***{email.split('@')[1] if '@' in email else ''}",
+        "destination": "email",
+        "destination_value": f"{email[:3]}***@{email.split('@')[1]}" if '@' in email else "***",
+        "expires_in": 300,  # 5 minutes in seconds
+        "otp": otp_code if include_otp else None,
+        "target_email": email  # Store the email we sent to for verification
+    }
+
+@router.post("/api/verify-otp-email")
+def verify_otp_for_custom_email(
+    otp_data: dict = Body(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Verify OTP for custom email verification (e.g., company email).
+    """
+    otp_code = otp_data.get("otp")
+    purpose = otp_data.get("purpose", "company_verification")
+    email = otp_data.get("email")  # The email that was verified
+
+    if not otp_code:
+        raise HTTPException(status_code=400, detail="OTP code is required")
+
+    # Find valid OTP
+    otp_record = db.query(OTP).filter(
+        OTP.user_id == current_user.id,
+        OTP.otp_code == otp_code,
+        OTP.purpose == purpose,
+        OTP.is_used == False,
+        OTP.expires_at > datetime.utcnow()
+    ).first()
+
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+
+    # Mark OTP as used
+    otp_record.is_used = True
+    db.commit()
+
+    return {
+        "message": "Email verified successfully",
+        "verified": True,
+        "email": email
+    }
+
 @router.post("/api/forgot-password")
 def forgot_password(
     email_data: dict = Body(...),
@@ -2738,7 +3038,12 @@ def add_user_role(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Add a new role to user's account with OTP verification"""
+    """Add a new role to user's account with OTP verification
+
+    RESTORATION LOGIC:
+    - If user previously deleted this role and it's pending deletion, restore it
+    - If user never had this role or it was fully deleted, create new profile
+    """
     import bcrypt
 
     otp_code = role_data.get("otp")
@@ -2778,12 +3083,52 @@ def add_user_role(
     otp_record.is_used = True
     db.commit()
 
+    # Check if user has a pending deletion request for this role
+    # If so, restore the role instead of creating a new profile
+    pending_deletion = db.execute(
+        text("""
+            SELECT id, profile_id, delete_user
+            FROM account_deletion_requests
+            WHERE user_id = :user_id AND role = :role AND status = 'pending'
+            ORDER BY requested_at DESC LIMIT 1
+        """),
+        {"user_id": current_user.id, "role": new_role}
+    ).fetchone()
+
+    role_restored = False
+    if pending_deletion:
+        # User is restoring a previously deleted role
+        deletion_id, profile_id, delete_user = pending_deletion
+
+        # Cancel the deletion request
+        db.execute(
+            text("""
+                UPDATE account_deletion_requests
+                SET status = 'cancelled',
+                    cancelled_at = :now,
+                    cancelled_by_login = FALSE,
+                    cancellation_reason = 'User restored role by adding it back'
+                WHERE id = :deletion_id
+            """),
+            {"deletion_id": deletion_id, "now": datetime.utcnow()}
+        )
+
+        # If the entire user account was pending deletion, restore it too
+        if delete_user:
+            current_user.account_status = 'active'
+            current_user.deactivated_at = None
+            current_user.scheduled_deletion_at = None
+            current_user.is_active = True
+
+        role_restored = True
+        print(f"[Add Role] Restored {new_role} role for user {current_user.id} (cancelled deletion request {deletion_id})")
+
     # Add new role - MUST create a NEW list for SQLAlchemy to detect the change
     # If you modify the existing list, SQLAlchemy won't track it as changed
     current_roles = current_user.roles if isinstance(current_user.roles, list) else []
     current_user.roles = current_roles + [new_role]  # Create NEW list instead of append
 
-    # Create corresponding profile based on role
+    # Create corresponding profile based on role (only if not restoring or profile doesn't exist)
     if new_role == "tutor" and not current_user.tutor_profile:
         tutor_profile = TutorProfile(user_id=current_user.id)
         db.add(tutor_profile)
@@ -2799,10 +3144,13 @@ def add_user_role(
     # Close the session to ensure no stale data remains
     db.close()
 
+    message = f"{new_role.capitalize()} role restored successfully" if role_restored else f"{new_role.capitalize()} role added successfully"
+
     return {
-        "message": f"{new_role.capitalize()} role added successfully",
+        "message": message,
         "user_roles": current_user.roles,
-        "active_role": current_user.active_role
+        "active_role": current_user.active_role,
+        "role_restored": role_restored
     }
 
 # ============================================
@@ -3136,6 +3484,8 @@ def verify_registration_otp(
             username=username,
             email=new_user.email,
             phone=new_user.phone,
+            date_of_birth=new_user.date_of_birth,
+            gender=new_user.gender,
             roles=new_user.roles,
             active_role=new_user.active_role,
             profile_picture=profile_picture,
@@ -3891,16 +4241,47 @@ def get_news(limit: int = Query(10, ge=1, le=50)):
 
 @router.get("/api/statistics")
 def get_statistics(db: Session = Depends(get_db)):
-    """Get platform statistics - counts from profile tables"""
+    """Get platform statistics - counts only users with complete profiles and KYC verification"""
     try:
-        # Count from actual profile tables (not users table)
-        result_parents = db.execute(text("SELECT COUNT(*) FROM parent_profiles"))
+        # Count parents with complete profiles and KYC verified
+        # Complete profile = first_name, father_name, grandfather_name, date_of_birth, gender all filled
+        # KYC verified = kyc_verified = true in users table
+        result_parents = db.execute(text("""
+            SELECT COUNT(*) FROM parent_profiles pp
+            JOIN users u ON pp.user_id = u.id
+            WHERE u.first_name IS NOT NULL AND u.first_name != ''
+            AND u.father_name IS NOT NULL AND u.father_name != ''
+            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
+            AND u.date_of_birth IS NOT NULL
+            AND u.gender IS NOT NULL AND u.gender != ''
+            AND u.kyc_verified = true
+        """))
         total_parents = result_parents.scalar() or 0
 
-        result_students = db.execute(text("SELECT COUNT(*) FROM student_profiles"))
+        # Count students with complete profiles and KYC verified
+        result_students = db.execute(text("""
+            SELECT COUNT(*) FROM student_profiles sp
+            JOIN users u ON sp.user_id = u.id
+            WHERE u.first_name IS NOT NULL AND u.first_name != ''
+            AND u.father_name IS NOT NULL AND u.father_name != ''
+            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
+            AND u.date_of_birth IS NOT NULL
+            AND u.gender IS NOT NULL AND u.gender != ''
+            AND u.kyc_verified = true
+        """))
         total_students = result_students.scalar() or 0
 
-        result_tutors = db.execute(text("SELECT COUNT(*) FROM tutor_profiles"))
+        # Count tutors with complete profiles and KYC verified
+        result_tutors = db.execute(text("""
+            SELECT COUNT(*) FROM tutor_profiles tp
+            JOIN users u ON tp.user_id = u.id
+            WHERE u.first_name IS NOT NULL AND u.first_name != ''
+            AND u.father_name IS NOT NULL AND u.father_name != ''
+            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
+            AND u.date_of_birth IS NOT NULL
+            AND u.gender IS NOT NULL AND u.gender != ''
+            AND u.kyc_verified = true
+        """))
         total_tutors = result_tutors.scalar() or 0
 
         # Try to count videos (fallback to 0 if table doesn't exist)
@@ -3909,17 +4290,35 @@ def get_statistics(db: Session = Depends(get_db)):
             total_videos = result_videos.scalar() or 0
         except:
             total_videos = 0
+
+        # Count verified schools
+        try:
+            result_schools = db.execute(text("SELECT COUNT(*) FROM schools WHERE status = 'verified'"))
+            total_schools = result_schools.scalar() or 0
+        except:
+            total_schools = 0
+
+        # Count verified courses
+        try:
+            result_courses = db.execute(text("SELECT COUNT(*) FROM courses WHERE status = 'verified'"))
+            total_courses = result_courses.scalar() or 0
+        except:
+            total_courses = 0
     except Exception as e:
         print(f"Error fetching statistics: {e}")
         total_parents = 0
         total_students = 0
         total_tutors = 0
         total_videos = 0
+        total_schools = 0
+        total_courses = 0
 
     return {
         "registered_parents": total_parents,
         "students": total_students,
         "expert_tutors": total_tutors,
+        "schools": total_schools,
+        "courses": total_courses,
         "total_videos": total_videos,
         "training_centers": 0,  # Hidden in frontend
         "books_available": 0,   # Hidden in frontend
@@ -4755,6 +5154,7 @@ def get_student_by_id(student_id: int, by_user_id: bool = Query(False), db: Sess
         "learning_method": student.learning_method if student.learning_method else [],
         "hero_title": student.hero_title if student.hero_title else [],
         "hero_subtitle": student.hero_subtitle if student.hero_subtitle else [],
+        "parent_id": student.parent_id if student.parent_id else [],  # Array of parent user IDs
         "joined": user.created_at.strftime("%B %Y") if user and user.created_at else None
     }
 
@@ -4843,33 +5243,50 @@ async def get_student_reviews(
     """
     Get all reviews for a specific student with calculated rating
     Rating = average of (subject_understanding + communication_skills + discipline + punctuality + class_activity) / 5
+
+    IMPORTANT: reviewer_id references profile tables (tutor_profiles.id or parent_profiles.id),
+    NOT users.id directly. We need to join through the profile table to get user info.
     """
     try:
-        # Query to get all reviews for the student with reviewer information
-        reviews_query = db.query(
-            StudentReview.id,
-            StudentReview.student_id,
-            StudentReview.reviewer_id,
-            User.first_name.label('reviewer_first_name'),
-            User.father_name.label('reviewer_father_name'),
-            User.profile_picture.label('reviewer_picture'),
-            StudentReview.subject_understanding,
-            StudentReview.communication_skills,
-            StudentReview.discipline,
-            StudentReview.punctuality,
-            StudentReview.class_activity,
-            StudentReview.rating,
-            StudentReview.review_text,
-            StudentReview.created_at
-        ).join(
-            User, StudentReview.reviewer_id == User.id
-        ).filter(
-            StudentReview.student_id == student_id
-        ).order_by(
-            desc(StudentReview.created_at)
-        )
+        # Use raw SQL to properly join through profile tables
+        # reviewer_id = tutor_profiles.id (when reviewer_role='tutor')
+        # reviewer_id = parent_profiles.id (when reviewer_role='parent')
+        result = db.execute(text("""
+            SELECT
+                sr.id,
+                sr.student_id,
+                sr.reviewer_id,
+                sr.reviewer_role,
+                sr.subject_understanding,
+                sr.communication_skills,
+                sr.discipline,
+                sr.punctuality,
+                sr.class_activity,
+                sr.rating,
+                sr.review_text,
+                sr.created_at,
+                CASE
+                    WHEN sr.reviewer_role = 'tutor' THEN
+                        COALESCE(tu.first_name || ' ' || tu.father_name, tu.email)
+                    WHEN sr.reviewer_role = 'parent' THEN
+                        COALESCE(pu.first_name || ' ' || pu.father_name, pu.email)
+                    ELSE 'Unknown'
+                END as reviewer_name,
+                CASE
+                    WHEN sr.reviewer_role = 'tutor' THEN tp.profile_picture
+                    WHEN sr.reviewer_role = 'parent' THEN pp.profile_picture
+                    ELSE NULL
+                END as reviewer_picture
+            FROM student_reviews sr
+            LEFT JOIN tutor_profiles tp ON sr.reviewer_role = 'tutor' AND sr.reviewer_id = tp.id
+            LEFT JOIN users tu ON tp.user_id = tu.id
+            LEFT JOIN parent_profiles pp ON sr.reviewer_role = 'parent' AND sr.reviewer_id = pp.id
+            LEFT JOIN users pu ON pp.user_id = pu.id
+            WHERE sr.student_id = :student_id
+            ORDER BY sr.created_at DESC
+        """), {"student_id": student_id})
 
-        reviews_data = reviews_query.all()
+        reviews_data = result.fetchall()
 
         # Build reviews list
         reviews = []
@@ -4882,23 +5299,22 @@ async def get_student_reviews(
             'class_activity': 0
         }
 
-        for review in reviews_data:
-            reviewer_name = f"{review.reviewer_first_name} {review.reviewer_father_name}"
-
+        for row in reviews_data:
             review_dict = {
-                "id": review.id,
-                "student_id": review.student_id,
-                "reviewer_id": review.reviewer_id,
-                "reviewer_name": reviewer_name,
-                "reviewer_picture": review.reviewer_picture or '../uploads/system_images/system_profile_pictures/default-avatar.png',
-                "subject_understanding": float(review.subject_understanding) if review.subject_understanding else 0.0,
-                "communication_skills": float(review.communication_skills) if review.communication_skills else 0.0,
-                "discipline": float(review.discipline) if review.discipline else 0.0,
-                "punctuality": float(review.punctuality) if review.punctuality else 0.0,
-                "class_activity": float(review.class_activity) if review.class_activity else 0.0,
-                "comment": review.review_text or "",
-                "created_at": review.created_at.isoformat() if review.created_at else None,
-                "rating": float(review.rating) if review.rating else 0.0
+                "id": row[0],
+                "student_id": row[1],
+                "reviewer_id": row[2],
+                "reviewer_role": row[3],
+                "subject_understanding": float(row[4]) if row[4] else 0.0,
+                "communication_skills": float(row[5]) if row[5] else 0.0,
+                "discipline": float(row[6]) if row[6] else 0.0,
+                "punctuality": float(row[7]) if row[7] else 0.0,
+                "class_activity": float(row[8]) if row[8] else 0.0,
+                "rating": float(row[9]) if row[9] else 0.0,
+                "comment": row[10] or "",
+                "created_at": row[11].isoformat() if row[11] else None,
+                "reviewer_name": row[12] or "Unknown",
+                "reviewer_picture": row[13] or '../uploads/system_images/system_profile_pictures/default-avatar.png'
             }
             reviews.append(review_dict)
 
@@ -4913,7 +5329,7 @@ async def get_student_reviews(
         review_count = len(reviews)
 
         # Calculate averages
-        overall_rating = round(total_rating / review_count, 1) if review_count > 0 else 0.0
+        avg_rating = round(total_rating / review_count, 1) if review_count > 0 else 0.0
         category_averages = {
             key: round(value / review_count, 1) if review_count > 0 else 0.0
             for key, value in category_sums.items()
@@ -4923,12 +5339,14 @@ async def get_student_reviews(
             "success": True,
             "reviews": reviews,
             "total": review_count,
-            "overall_rating": overall_rating,
+            "avg_rating": avg_rating,
             "category_averages": category_averages
         }
 
     except Exception as e:
         print(f"Error fetching student reviews: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch student reviews: {str(e)}"
@@ -5087,57 +5505,10 @@ async def update_parent_profile(
 
     return {"message": "Profile updated successfully", "id": parent_profile.id}
 
-@router.get("/api/parent/{parent_id}")
-async def get_parent_by_id(
-    parent_id: int,
-    by_user_id: bool = Query(False),
-    db: Session = Depends(get_db)
-):
-    """
-    Get specific parent profile (public view)
-
-    Args:
-        parent_id: Can be either parent_profile.id or user.id (depending on by_user_id parameter)
-        by_user_id: If True, treats parent_id as user.id instead of parent_profile.id
-    """
-    if by_user_id:
-        # Lookup by user.id
-        parent_profile = db.query(ParentProfile).filter(
-            ParentProfile.user_id == parent_id
-        ).first()
-    else:
-        # Lookup by parent_profile.id
-        parent_profile = db.query(ParentProfile).filter(
-            ParentProfile.id == parent_id
-        ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    user = db.query(User).filter(User.id == parent_profile.user_id).first()
-
-    response = {
-        "id": parent_profile.id,
-        "username": parent_profile.username,
-        "name": f"{user.first_name} {user.father_name}" if user else None,
-        "bio": parent_profile.bio,
-        "quote": parent_profile.quote,
-        "relationship_type": parent_profile.relationship_type,
-        "location": parent_profile.location,
-        "rating": parent_profile.rating,
-        "rating_count": parent_profile.rating_count,
-        "is_verified": parent_profile.is_verified,
-        "profile_picture": parent_profile.profile_picture,
-        "cover_image": parent_profile.cover_image,
-        "total_children": parent_profile.total_children,
-        # Include user contact info
-        "email": user.email if user else None,
-        "phone": user.phone if user else None,
-        # Occupation not in schema - will always be None unless added to ParentProfile table
-        "occupation": None
-    }
-
-    return response
+# ============================================
+# NOTE: /api/parent/{parent_id} wildcard route moved to parent_endpoints.py
+# to avoid route ordering conflicts with /api/parent/my-courses, /api/parent/my-schools
+# ============================================
 
 # ============================================
 # CHILD MANAGEMENT ENDPOINTS - REMOVED
@@ -5185,9 +5556,33 @@ async def get_advertiser_profile(
         db.commit()
         db.refresh(advertiser_profile)
 
-    # Build response
+    # Build response with user data
     response = AdvertiserProfileResponse.from_orm(advertiser_profile)
-    return response
+    response_dict = response.dict()
+
+    # Construct full_name from Ethiopian name parts (first_name + father_name + grandfather_name)
+    name_parts = []
+    if hasattr(current_user, 'first_name') and current_user.first_name:
+        name_parts.append(current_user.first_name)
+    if hasattr(current_user, 'father_name') and current_user.father_name:
+        name_parts.append(current_user.father_name)
+    if hasattr(current_user, 'grandfather_name') and current_user.grandfather_name:
+        name_parts.append(current_user.grandfather_name)
+
+    full_name = ' '.join(name_parts) if name_parts else (current_user.email.split('@')[0] if current_user.email else 'Advertiser')
+
+    # Add user data (email, phone, full_name)
+    response_dict['email'] = current_user.email
+    response_dict['phone'] = getattr(current_user, 'phone', None)
+    response_dict['full_name'] = full_name
+
+    # Use joined_in instead of created_at (AdvertiserProfile model has joined_in, not created_at)
+    if hasattr(advertiser_profile, 'joined_in') and advertiser_profile.joined_in:
+        response_dict['created_at'] = advertiser_profile.joined_in.isoformat()
+    else:
+        response_dict['created_at'] = None
+
+    return response_dict
 
 @router.put("/api/advertiser/profile")
 async def update_advertiser_profile(
@@ -5245,14 +5640,25 @@ async def get_advertiser_by_id(
 @router.post("/api/upload/campaign-media")
 async def upload_campaign_media(
     file: UploadFile = File(...),
+    brand_name: str = Form(...),
+    campaign_name: str = Form(...),
+    ad_placement: str = Form(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload campaign media (image or video) to Backblaze B2"""
+    """Upload campaign media (image or video) to Backblaze B2 with organized folder structure"""
     try:
         # Check if user has advertiser role
         if "advertiser" not in current_user.roles:
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
+
+        # Get advertiser profile to use profile_id instead of user_id
+        advertiser_profile = db.query(AdvertiserProfile).filter(
+            AdvertiserProfile.user_id == current_user.id
+        ).first()
+
+        if not advertiser_profile:
+            raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
         # Validate file
         if not file.content_type:
@@ -5278,15 +5684,22 @@ async def upload_campaign_media(
         # Get Backblaze service
         b2_service = get_backblaze_service()
 
-        # Determine file type for B2 organization
-        file_type = 'campaign_image' if is_image else 'campaign_video'
+        # Clean folder names (remove special characters, replace spaces with underscores)
+        import re
+        clean_brand = re.sub(r'[^\w\s-]', '', brand_name).strip().replace(' ', '_')
+        clean_campaign = re.sub(r'[^\w\s-]', '', campaign_name).strip().replace(' ', '_')
+        clean_placement = re.sub(r'[^\w\s-]', '', ad_placement).strip().replace(' ', '_')
 
-        # Upload to Backblaze with user separation
-        result = b2_service.upload_file(
+        # Build organized folder path: images/profile_{id}/{brand}/{campaign}/{placement}/ or videos/profile_{id}/{brand}/{campaign}/{placement}/
+        media_type = 'images' if is_image else 'videos'
+        custom_folder = f"{media_type}/profile_{advertiser_profile.id}/{clean_brand}/{clean_campaign}/{clean_placement}/"
+
+        # Upload to Backblaze with custom folder path
+        result = b2_service.upload_file_to_folder(
             file_data=file_contents,
             file_name=file.filename,
-            file_type=file_type,
-            user_id=current_user.id
+            folder_path=custom_folder,
+            content_type=file.content_type
         )
 
         if not result:
@@ -5298,6 +5711,7 @@ async def upload_campaign_media(
             "url": result['url'],
             "file_name": result['fileName'],
             "file_type": 'image' if is_image else 'video',
+            "folder": custom_folder,
             "details": result
         }
 
@@ -5305,6 +5719,233 @@ async def upload_campaign_media(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload error: {str(e)}")
+
+
+# ============================================
+# COMPANY VERIFICATION DOCUMENT UPLOADS
+# ============================================
+
+@router.post("/api/upload/company-document")
+async def upload_company_document(
+    file: UploadFile = File(...),
+    document_type: str = Form(...),  # business_license, tin_certificate, company_logo, additional_doc
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload company verification document to Backblaze B2.
+
+    Document types:
+    - business_license: Business license/registration document
+    - tin_certificate: TIN (Tax Identification Number) certificate
+    - company_logo: Company logo image
+    - additional_doc: Additional supporting documents
+    """
+    try:
+        # Check if user has advertiser role
+        if "advertiser" not in current_user.roles:
+            raise HTTPException(status_code=403, detail="User does not have advertiser role")
+
+        # Get advertiser profile
+        advertiser_profile = db.query(AdvertiserProfile).filter(
+            AdvertiserProfile.user_id == current_user.id
+        ).first()
+
+        if not advertiser_profile:
+            raise HTTPException(status_code=404, detail="Advertiser profile not found")
+
+        # Validate document type
+        valid_types = ['business_license', 'tin_certificate', 'company_logo', 'additional_doc']
+        if document_type not in valid_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid document type. Must be one of: {', '.join(valid_types)}"
+            )
+
+        # Read file contents
+        contents = await file.read()
+
+        # Validate file size based on type
+        if document_type == 'company_logo':
+            # Logo: 5MB max, images only
+            if len(contents) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="Logo file size exceeds 5MB limit")
+            if not file.content_type or not file.content_type.startswith('image/'):
+                raise HTTPException(status_code=400, detail="Logo must be an image file (PNG, JPG)")
+        else:
+            # Documents: 10MB max, PDF or images
+            if len(contents) > 10 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="Document file size exceeds 10MB limit")
+            allowed_types = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+            if file.content_type not in allowed_types:
+                raise HTTPException(status_code=400, detail="Document must be PDF, JPG, or PNG")
+
+        # Get Backblaze service
+        b2_service = get_backblaze_service()
+
+        # Upload file using the document type mapping
+        result = b2_service.upload_file(
+            file_data=contents,
+            file_name=file.filename,
+            file_type=document_type,
+            user_id=f"advertiser_{advertiser_profile.id}"
+        )
+
+        if not result:
+            raise HTTPException(status_code=500, detail="File upload failed")
+
+        # Update the corresponding field in advertiser_profile
+        if document_type == 'business_license':
+            advertiser_profile.business_license_url = result['url']
+        elif document_type == 'tin_certificate':
+            advertiser_profile.tin_certificate_url = result['url']
+        elif document_type == 'company_logo':
+            advertiser_profile.company_logo = result['url']
+        elif document_type == 'additional_doc':
+            # Add to additional_docs_urls JSON array
+            if not advertiser_profile.additional_docs_urls:
+                advertiser_profile.additional_docs_urls = []
+            advertiser_profile.additional_docs_urls = advertiser_profile.additional_docs_urls + [result['url']]
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"{document_type.replace('_', ' ').title()} uploaded successfully",
+            "url": result['url'],
+            "document_type": document_type,
+            "file_name": result.get('fileName', file.filename),
+            "details": result
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload error: {str(e)}")
+
+
+@router.post("/api/advertiser/submit-verification")
+async def submit_company_verification(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Submit company for verification after all required documents are uploaded.
+    Changes verification_status from 'pending' to 'in_review'.
+    """
+    try:
+        # Check if user has advertiser role
+        if "advertiser" not in current_user.roles:
+            raise HTTPException(status_code=403, detail="User does not have advertiser role")
+
+        # Get advertiser profile
+        advertiser_profile = db.query(AdvertiserProfile).filter(
+            AdvertiserProfile.user_id == current_user.id
+        ).first()
+
+        if not advertiser_profile:
+            raise HTTPException(status_code=404, detail="Advertiser profile not found")
+
+        # Check required fields
+        missing_fields = []
+
+        if not advertiser_profile.company_name:
+            missing_fields.append("Company Name")
+        if not advertiser_profile.business_reg_no:
+            missing_fields.append("Business Registration Number")
+        if not advertiser_profile.tin_number:
+            missing_fields.append("TIN Number")
+        if not advertiser_profile.company_email or len(advertiser_profile.company_email) == 0:
+            missing_fields.append("Business Email")
+        if not advertiser_profile.tin_certificate_url:
+            missing_fields.append("TIN Certificate Document")
+        if not advertiser_profile.company_logo:
+            missing_fields.append("Company Logo")
+
+        if missing_fields:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Missing required fields: {', '.join(missing_fields)}"
+            )
+
+        # Update verification status
+        advertiser_profile.verification_status = 'in_review'
+        advertiser_profile.verification_submitted_at = datetime.utcnow()
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Company verification submitted successfully. You will be notified once the review is complete.",
+            "verification_status": "in_review",
+            "submitted_at": advertiser_profile.verification_submitted_at.isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Submission error: {str(e)}")
+
+
+@router.get("/api/advertiser/verification-status")
+async def get_company_verification_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get the current company verification status and uploaded documents."""
+    try:
+        # Check if user has advertiser role
+        if "advertiser" not in current_user.roles:
+            raise HTTPException(status_code=403, detail="User does not have advertiser role")
+
+        # Get advertiser profile
+        advertiser_profile = db.query(AdvertiserProfile).filter(
+            AdvertiserProfile.user_id == current_user.id
+        ).first()
+
+        if not advertiser_profile:
+            raise HTTPException(status_code=404, detail="Advertiser profile not found")
+
+        return {
+            "verification_status": advertiser_profile.verification_status or "pending",
+            "verification_submitted_at": advertiser_profile.verification_submitted_at.isoformat() if advertiser_profile.verification_submitted_at else None,
+            "verification_reviewed_at": advertiser_profile.verification_reviewed_at.isoformat() if advertiser_profile.verification_reviewed_at else None,
+            "verification_notes": advertiser_profile.verification_notes,
+            "documents": {
+                "business_license": {
+                    "uploaded": bool(advertiser_profile.business_license_url),
+                    "url": advertiser_profile.business_license_url
+                },
+                "tin_certificate": {
+                    "uploaded": bool(advertiser_profile.tin_certificate_url),
+                    "url": advertiser_profile.tin_certificate_url
+                },
+                "company_logo": {
+                    "uploaded": bool(advertiser_profile.company_logo),
+                    "url": advertiser_profile.company_logo
+                },
+                "additional_docs": {
+                    "uploaded": bool(advertiser_profile.additional_docs_urls),
+                    "urls": advertiser_profile.additional_docs_urls or []
+                }
+            },
+            "company_info": {
+                "company_name": advertiser_profile.company_name,
+                "industry": advertiser_profile.industry,
+                "business_reg_no": advertiser_profile.business_reg_no,
+                "tin_number": advertiser_profile.tin_number,
+                "company_email": advertiser_profile.company_email or [],
+                "company_phone": advertiser_profile.company_phone or [],
+                "website": advertiser_profile.website,
+                "address": advertiser_profile.address,
+                "company_description": advertiser_profile.company_description
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
 @router.post("/api/advertiser/campaigns")

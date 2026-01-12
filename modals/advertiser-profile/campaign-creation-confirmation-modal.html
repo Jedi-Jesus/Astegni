@@ -1,0 +1,904 @@
+<!-- ============================================
+     CAMPAIGN CREATION CONFIRMATION MODAL
+     Beautiful confirmation modal before creating campaign
+     Shows: Billing terms, cancellation policy, targeting summary
+     ============================================ -->
+
+<div id="campaign-creation-confirmation-overlay">
+    <div class="campaign-creation-confirmation-modal">
+        <!-- Header with Icon -->
+        <div class="confirmation-header">
+            <div class="confirmation-icon-wrapper">
+                <i class="fas fa-plus-circle confirmation-icon"></i>
+            </div>
+            <h2 class="confirmation-title">Create Campaign</h2>
+            <button class="modal-close-btn" onclick="CampaignCreationConfirmation.close()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Campaign Summary -->
+        <div class="confirmation-body">
+            <!-- Campaign Name -->
+            <div class="campaign-summary-section">
+                <h3 class="section-title">
+                    <i class="fas fa-bullhorn"></i>
+                    Campaign Details
+                </h3>
+                <div class="campaign-name-display" id="confirm-campaign-name">
+                    Campaign Name
+                </div>
+            </div>
+
+            <!-- Targeting Summary -->
+            <div class="targeting-summary-section">
+                <h3 class="section-title">
+                    <i class="fas fa-crosshairs"></i>
+                    Your Targeting
+                </h3>
+                <div class="targeting-cards">
+                    <!-- Audience Targets -->
+                    <div class="targeting-card">
+                        <div class="targeting-card-header">
+                            <i class="fas fa-users"></i>
+                            <span>Audience</span>
+                        </div>
+                        <div class="targeting-card-content" id="confirm-audience-targets">
+                            All Users
+                        </div>
+                    </div>
+
+                    <!-- Location Targets -->
+                    <div class="targeting-card">
+                        <div class="targeting-card-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Location</span>
+                        </div>
+                        <div class="targeting-card-content" id="confirm-location-targets">
+                            Global
+                        </div>
+                    </div>
+
+                    <!-- Placement Targets -->
+                    <div class="targeting-card">
+                        <div class="targeting-card-header">
+                            <i class="fas fa-ad"></i>
+                            <span>Placements</span>
+                        </div>
+                        <div class="targeting-card-content" id="confirm-placement-targets">
+                            All Placements
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Information -->
+            <div class="billing-info-section">
+                <h3 class="section-title">
+                    <i class="fas fa-coins"></i>
+                    Billing Information
+                </h3>
+
+                <!-- CPI Rate Breakdown -->
+                <div class="billing-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">
+                            <i class="fas fa-tag"></i>
+                            Base CPI Rate
+                        </span>
+                        <span class="breakdown-value" id="confirm-base-cpi">0.05 ETB</span>
+                    </div>
+                    <div class="breakdown-item premium-item">
+                        <span class="breakdown-label">
+                            <i class="fas fa-plus"></i>
+                            Audience Premium
+                        </span>
+                        <span class="breakdown-value" id="confirm-audience-premium">+0.02 ETB</span>
+                    </div>
+                    <div class="breakdown-item premium-item">
+                        <span class="breakdown-label">
+                            <i class="fas fa-plus"></i>
+                            Location Premium
+                        </span>
+                        <span class="breakdown-value" id="confirm-location-premium">+0.01 ETB</span>
+                    </div>
+                    <div class="breakdown-item premium-item">
+                        <span class="breakdown-label">
+                            <i class="fas fa-plus"></i>
+                            Placement Premium
+                        </span>
+                        <span class="breakdown-value" id="confirm-placement-premium">+0.02 ETB</span>
+                    </div>
+                    <div class="breakdown-divider"></div>
+                    <div class="breakdown-item total-item">
+                        <span class="breakdown-label">
+                            <i class="fas fa-calculator"></i>
+                            Total CPI Rate
+                        </span>
+                        <span class="breakdown-value total-value" id="confirm-total-cpi">0.10 ETB</span>
+                    </div>
+                </div>
+
+                <!-- Campaign Budget Summary -->
+                <div class="estimated-impressions-card">
+                    <div class="estimate-row">
+                        <span class="estimate-label">Campaign Budget:</span>
+                        <span class="estimate-value" id="confirm-deposit-amount">10,000 ETB</span>
+                    </div>
+                    <div class="estimate-row">
+                        <span class="estimate-label">Total Impressions:</span>
+                        <span class="estimate-value highlight" id="confirm-estimated-impressions">100,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Terms -->
+            <div class="important-terms-section">
+                <h3 class="section-title warning-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Important Terms & Conditions
+                </h3>
+
+                <div class="terms-cards">
+                    <!-- Upfront Payment -->
+                    <div class="term-card">
+                        <div class="term-icon orange">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="term-content">
+                            <h4>Upfront Payment Required</h4>
+                            <p>The full campaign budget (<strong id="confirm-upfront-amount">10,000 ETB</strong>) will be deducted from your account immediately upon creation. This amount is transferred directly to Astegni and allocated to your campaign.</p>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation Policy -->
+                    <div class="term-card">
+                        <div class="term-icon blue">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="term-content">
+                            <h4>Cancel Anytime</h4>
+                            <p>You can cancel your campaign at any time. Campaigns that have spent less than <strong>100,000 ETB</strong> will incur a <strong>5% cancellation fee</strong> on the remaining budget. Campaigns that spent 100,000 ETB or more can cancel with no fee.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pause Campaign Option -->
+                    <div class="term-card">
+                        <div class="term-icon green">
+                            <i class="fas fa-pause-circle"></i>
+                        </div>
+                        <div class="term-content">
+                            <h4>Pause Campaign Anytime (No Fee)</h4>
+                            <p>You can pause your campaign at any time without any fee. Pausing temporarily stops ad delivery while preserving your remaining budget. Resume anytime to continue your campaign. <strong>Note:</strong> Minimum campaign budget is 10,000 ETB.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fair Billing -->
+                    <div class="term-card">
+                        <div class="term-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="term-content">
+                            <h4>Fair & Transparent Billing</h4>
+                            <p>You'll receive a detailed transaction for every 1,000 impressions charged. View your complete billing history in your account transactions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Data & Analytics -->
+                    <div class="term-card">
+                        <div class="term-icon purple">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="term-content">
+                            <h4>Real-Time Analytics</h4>
+                            <p>Track impressions, clicks, conversions, and spending in real-time. Access detailed performance reports anytime from your campaign dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agreement Checkbox -->
+            <div class="agreement-section">
+                <label class="agreement-checkbox">
+                    <input type="checkbox" id="confirm-agreement-checkbox">
+                    <span class="checkbox-custom"></span>
+                    <span class="agreement-text">
+                        I understand and agree to the billing terms, cancellation policy, and
+                        <a href="/terms" target="_blank">Terms of Service</a>.
+                        I authorize Astegni to charge my account every 1,000 impressions at the CPI rate of
+                        <strong id="confirm-agreement-cpi">0.10 ETB</strong> per impression.
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="confirmation-footer">
+            <div class="footer-left">
+                <button class="btn-secondary" onclick="CampaignCreationConfirmation.close()">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+            <div class="footer-right">
+                <button class="btn-primary" id="confirm-create-btn" onclick="CampaignCreationConfirmation.confirmCreate()" disabled>
+                    <i class="fas fa-plus-circle"></i>
+                    Create Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Campaign Creation Confirmation Modal Styles */
+
+/* CSS Variables Fallbacks - Define all required variables */
+#campaign-creation-confirmation-overlay {
+    --primary-color: #667eea;
+    --primary-dark: #5568d3;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f9fc;
+    --bg-tertiary: #e8ecf3;
+    --bg-hover: #d9dfe8;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-color: #e5e7eb;
+}
+
+/* Dark mode variables */
+@media (prefers-color-scheme: dark) {
+    #campaign-creation-confirmation-overlay {
+        --primary-color: #818cf8;
+        --primary-dark: #6366f1;
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #3d3d3d;
+        --bg-hover: #4d4d4d;
+        --text-primary: #ffffff;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #374151;
+    }
+}
+
+/* Modal Overlay */
+#campaign-creation-confirmation-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(5px);
+    z-index: 100000 !important;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.campaign-creation-confirmation-modal {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.confirmation-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+}
+
+.confirmation-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    backdrop-filter: blur(10px);
+}
+
+.confirmation-icon {
+    font-size: 2.5rem;
+}
+
+.confirmation-title {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.confirmation-body {
+    padding: 24px;
+}
+
+.campaign-summary-section,
+.targeting-summary-section,
+.billing-info-section,
+.important-terms-section {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title i {
+    color: var(--primary-color);
+}
+
+.warning-title i {
+    color: #ff9800;
+}
+
+.campaign-name-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Targeting Cards */
+.targeting-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.targeting-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 16px;
+    border: 2px solid var(--border-color);
+}
+
+.targeting-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.targeting-card-header i {
+    color: var(--primary-color);
+}
+
+.targeting-card-content {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Billing Breakdown */
+.billing-breakdown {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    color: var(--text-primary);
+}
+
+.breakdown-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.breakdown-label i {
+    color: var(--text-muted);
+}
+
+.breakdown-value {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.premium-item .breakdown-label i {
+    color: #4caf50;
+}
+
+.breakdown-divider {
+    height: 2px;
+    background: var(--border-color);
+    margin: 8px 0;
+}
+
+.total-item {
+    padding: 16px 0 0;
+}
+
+.total-item .breakdown-label {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.total-value {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Billing Frequency Card */
+.billing-frequency-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+.frequency-icon {
+    font-size: 2.5rem;
+    opacity: 0.9;
+}
+
+.frequency-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.frequency-description {
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+/* Estimated Impressions Card */
+.estimated-impressions-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    border: 2px solid var(--primary-color);
+}
+
+.estimate-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.estimate-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.estimate-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.estimate-value.highlight {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+/* Terms Cards */
+.terms-cards {
+    display: grid;
+    gap: 16px;
+}
+
+.term-card {
+    display: flex;
+    gap: 16px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.term-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.term-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.term-icon.green { background: #4caf50; }
+.term-icon.orange { background: #ff9800; }
+.term-icon.red { background: #f44336; }
+.term-icon.blue { background: #2196f3; }
+.term-icon.purple { background: #9c27b0; }
+
+.term-content h4 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.term-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.cancellation-example {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #f44336;
+    font-size: 0.85rem;
+    line-height: 1.8;
+}
+
+.refund-amount {
+    display: block;
+    margin-top: 8px;
+    font-weight: 700;
+    color: #4caf50;
+    font-size: 1rem;
+}
+
+/* Agreement Section */
+.agreement-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--primary-color);
+}
+
+.agreement-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.agreement-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.agreement-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+    background: var(--primary-color);
+}
+
+.agreement-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.agreement-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.agreement-text a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.agreement-text a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.confirmation-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-top: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .campaign-creation-confirmation-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .targeting-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .confirmation-footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-secondary,
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Campaign Creation Confirmation Manager
+window.CampaignCreationConfirmation = {
+    campaignData: null,
+
+    open(campaignData) {
+        console.log('[CampaignCreationConfirmation] open() called with data:', campaignData);
+        this.campaignData = campaignData;
+
+        try {
+            this.populateData();
+            console.log('[CampaignCreationConfirmation] populateData() completed');
+        } catch (error) {
+            console.error('[CampaignCreationConfirmation] Error in populateData():', error);
+            throw error;
+        }
+
+        const overlay = document.getElementById('campaign-creation-confirmation-overlay');
+        console.log('[CampaignCreationConfirmation] overlay element:', overlay);
+
+        if (overlay) {
+            // Force all display and positioning properties
+            overlay.style.display = 'flex';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.zIndex = '999999';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            overlay.style.justifyContent = 'center';
+            overlay.style.alignItems = 'center';
+
+            console.log('[CampaignCreationConfirmation] Modal display set to flex');
+            console.log('[CampaignCreationConfirmation] Computed styles:', window.getComputedStyle(overlay));
+            console.log('[CampaignCreationConfirmation] Parent element:', overlay.parentElement);
+            console.log('[CampaignCreationConfirmation] Offset parent:', overlay.offsetParent);
+            console.log('[CampaignCreationConfirmation] Bounding rect:', overlay.getBoundingClientRect());
+        } else {
+            console.error('[CampaignCreationConfirmation] Overlay element not found!');
+        }
+    },
+
+    close() {
+        document.getElementById('campaign-creation-confirmation-overlay').style.display = 'none';
+        document.getElementById('confirm-agreement-checkbox').checked = false;
+        document.getElementById('confirm-create-btn').disabled = true;
+    },
+
+    populateData() {
+        const {
+            campaign_name,
+            start_date,
+            audiences,
+            location,
+            placements,
+            base_cpi,
+            audience_premium,
+            location_premium,
+            placement_premium,
+            total_cpi,
+            deposit_amount,
+            estimated_impressions,
+            cancellation_fee_percent = 5,
+            min_threshold = 100,
+            currency = 'ETB'
+        } = this.campaignData;
+
+        // Campaign name
+        document.getElementById('confirm-campaign-name').textContent = campaign_name || 'Unnamed Campaign';
+
+        // Targeting
+        document.getElementById('confirm-audience-targets').textContent =
+            (audiences && audiences.length > 0) ? audiences.join(', ') : 'All Users';
+
+        // Location (handle both string and object format)
+        let locationText = 'Global (International)';
+        if (typeof location === 'object') {
+            if (location.type === 'Regional' && location.regions && location.regions.length > 0) {
+                locationText = `${location.regions.join(', ')}`;
+            } else if (location.type === 'National (Ethiopia)') {
+                locationText = 'National (Ethiopia)';
+            } else {
+                locationText = location.type || 'Global (International)';
+            }
+        } else if (location === 'regional') {
+            locationText = 'Regional';
+        } else if (location === 'national') {
+            locationText = 'National (Ethiopia)';
+        }
+        document.getElementById('confirm-location-targets').textContent = locationText;
+
+        document.getElementById('confirm-placement-targets').textContent =
+            (placements && placements.length > 0) ? placements.join(', ') : 'All Placements';
+
+        // Billing breakdown
+        document.getElementById('confirm-base-cpi').textContent = `${(base_cpi || 0).toFixed(3)} ${currency}`;
+        document.getElementById('confirm-audience-premium').textContent = `+${(audience_premium || 0).toFixed(3)} ${currency}`;
+        document.getElementById('confirm-location-premium').textContent = `+${(location_premium || 0).toFixed(3)} ${currency}`;
+        document.getElementById('confirm-placement-premium').textContent = `+${(placement_premium || 0).toFixed(3)} ${currency}`;
+        document.getElementById('confirm-total-cpi').textContent = `${(total_cpi || 0).toFixed(3)} ${currency}`;
+
+        // Campaign budget and impressions (exact calculation: budget / CPI)
+        document.getElementById('confirm-deposit-amount').textContent = `${(deposit_amount || 0).toLocaleString()} ${currency}`;
+        document.getElementById('confirm-estimated-impressions').textContent =
+            `${(estimated_impressions || 0).toLocaleString()}`;
+
+        // Upfront payment amount
+        document.getElementById('confirm-upfront-amount').textContent = `${(deposit_amount || 0).toLocaleString()} ${currency}`;
+
+        // Agreement CPI
+        document.getElementById('confirm-agreement-cpi').textContent = `${(total_cpi || 0).toFixed(3)} ${currency}`;
+    },
+
+    confirmCreate() {
+        if (!document.getElementById('confirm-agreement-checkbox').checked) {
+            return;
+        }
+
+        // Call parent function to actually create campaign
+        if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.executeCreate === 'function') {
+            BrandsManager.executeCreate(this.campaignData);
+        }
+
+        this.close();
+    }
+};
+
+// Enable create button when agreement is checked
+// NOTE: Don't use DOMContentLoaded since this modal is loaded dynamically
+(function initCheckboxListener() {
+    const checkbox = document.getElementById('confirm-agreement-checkbox');
+    const createBtn = document.getElementById('confirm-create-btn');
+
+    if (checkbox && createBtn) {
+        checkbox.addEventListener('change', (e) => {
+            createBtn.disabled = !e.target.checked;
+        });
+        console.log('[CampaignCreationConfirmation] Checkbox listener attached successfully');
+    } else {
+        console.warn('[CampaignCreationConfirmation] Checkbox or button not found:', {checkbox, createBtn});
+    }
+})();
+</script>

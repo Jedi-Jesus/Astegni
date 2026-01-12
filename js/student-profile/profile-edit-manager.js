@@ -221,6 +221,7 @@ function populateEditForm(data) {
     if (data.studying_at) document.getElementById('edit-studying-at').value = data.studying_at;
     if (data.grade_level) document.getElementById('edit-grade-level').value = data.grade_level;
     if (data.about) document.getElementById('edit-about').value = data.about;
+    if (data.career_aspirations) document.getElementById('edit-career-aspirations').value = data.career_aspirations;
 
     // Hero subtitle (single value from array - take first element)
     if (data.hero_subtitle && Array.isArray(data.hero_subtitle) && data.hero_subtitle.length > 0) {
@@ -328,69 +329,92 @@ function collectArrayValues(className) {
  * Save student profile to database
  */
 async function saveStudentProfile() {
+    console.log('🔵 [DEBUG] saveStudentProfile() called');
+
+    const saveBtn = document.querySelector('#editProfileModal .btn-primary');
+    console.log('🔵 [DEBUG] saveBtn found:', saveBtn);
+
+    const originalText = saveBtn?.textContent || '💾 Save Changes';
+
     try {
         // Show loading state
-        const saveBtn = event.target;
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = '💾 Saving...';
-        saveBtn.disabled = true;
+        if (saveBtn) {
+            saveBtn.textContent = '💾 Saving...';
+            saveBtn.disabled = true;
+        }
 
         // Collect form data
-        const heroSubtitle = document.getElementById('edit-hero-subtitle').value.trim();
-        const quote = document.getElementById('edit-quote').value.trim();
+        console.log('🔵 [DEBUG] Collecting form data...');
+
+        const heroSubtitleEl = document.getElementById('edit-hero-subtitle');
+        const quoteEl = document.getElementById('edit-quote');
+        const usernameEl = document.getElementById('edit-username');
+        const locationEl = document.getElementById('edit-location');
+        const studyingAtEl = document.getElementById('edit-studying-at');
+        const gradeLevelEl = document.getElementById('edit-grade-level');
+        const aboutEl = document.getElementById('edit-about');
+        const careerAspirationsEl = document.getElementById('edit-career-aspirations');
+        const learningOnlineEl = document.getElementById('learning-online');
+        const learningInPersonEl = document.getElementById('learning-in-person');
+
+        console.log('🔵 [DEBUG] Form elements found:', {
+            heroSubtitleEl: !!heroSubtitleEl,
+            quoteEl: !!quoteEl,
+            usernameEl: !!usernameEl,
+            locationEl: !!locationEl,
+            studyingAtEl: !!studyingAtEl,
+            gradeLevelEl: !!gradeLevelEl,
+            aboutEl: !!aboutEl,
+            careerAspirationsEl: !!careerAspirationsEl,
+            learningOnlineEl: !!learningOnlineEl,
+            learningInPersonEl: !!learningInPersonEl
+        });
+
+        const heroSubtitle = heroSubtitleEl?.value?.trim() || '';
+        const quote = quoteEl?.value?.trim() || '';
 
         const profileData = {
             hero_title: collectArrayValues('hero-title-input'),
-            hero_subtitle: heroSubtitle ? [heroSubtitle] : [], // Store as single-element array
-            username: document.getElementById('edit-username').value.trim(),
-            location: document.getElementById('edit-location').value.trim(),
-            studying_at: document.getElementById('edit-studying-at').value.trim(),
-            grade_level: document.getElementById('edit-grade-level').value,
+            hero_subtitle: heroSubtitle ? [heroSubtitle] : [],
+            username: usernameEl?.value?.trim() || null,
+            location: locationEl?.value?.trim() || null,
+            studying_at: studyingAtEl?.value?.trim() || null,
+            grade_level: gradeLevelEl?.value || null,
             interested_in: collectArrayValues('interested-in-input'),
             learning_method: [],
             languages: collectArrayValues('language-input'),
             hobbies: collectArrayValues('hobby-input'),
-            quote: quote ? [quote] : [], // Store as single-element array
-            about: document.getElementById('edit-about').value.trim()
+            quote: quote ? [quote] : [],
+            about: aboutEl?.value?.trim() || null,
+            career_aspirations: careerAspirationsEl?.value?.trim() || null
         };
 
+        console.log('🔵 [DEBUG] Profile data collected:', profileData);
+
         // Collect learning method checkboxes
-        if (document.getElementById('learning-online').checked) {
+        if (learningOnlineEl?.checked) {
             profileData.learning_method.push('Online');
         }
-        if (document.getElementById('learning-in-person').checked) {
+        if (learningInPersonEl?.checked) {
             profileData.learning_method.push('In-person');
         }
 
-        // Validate required fields
-        if (!profileData.username) {
-            showNotification('Username is required', 'warning');
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-            return;
-        }
+        console.log('🔵 [DEBUG] Learning methods:', profileData.learning_method);
 
-        if (!profileData.grade_level) {
-            showNotification('Grade level is required', 'warning');
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-            return;
-        }
-
-        if (profileData.learning_method.length === 0) {
-            showNotification('Please select at least one learning method', 'warning');
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-            return;
-        }
+        // Note: No required field validation - all fields are optional in the database
+        console.log('🔵 [DEBUG] Skipping strict validation - fields are optional in DB');
 
         // Get authentication token
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        console.log('🔵 [DEBUG] Token found:', !!token, token ? `(${token.substring(0, 20)}...)` : '');
+
         if (!token) {
             throw new Error('Not authenticated');
         }
 
-        console.log('Saving student profile:', profileData);
+        console.log('🔵 [DEBUG] API_BASE_URL:', API_BASE_URL);
+        console.log('🔵 [DEBUG] Sending PUT request to:', `${API_BASE_URL}/api/student/profile`);
+        console.log('🔵 [DEBUG] Request body:', JSON.stringify(profileData, null, 2));
 
         // Send to backend with Authorization header
         const response = await fetch(`${API_BASE_URL}/api/student/profile`, {
@@ -402,15 +426,19 @@ async function saveStudentProfile() {
             body: JSON.stringify(profileData)
         });
 
+        console.log('🔵 [DEBUG] Response status:', response.status);
+        console.log('🔵 [DEBUG] Response ok:', response.ok);
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: 'Failed to save profile' }));
-            console.error('❌ Profile save failed:', response.status, errorData);
+            console.error('🔴 [DEBUG] Profile save failed:', response.status, errorData);
             throw new Error(errorData.detail || `Failed to save profile (${response.status})`);
         }
 
-        console.log('✅ Profile saved successfully!');
+        console.log('🟢 [DEBUG] Profile saved successfully!');
 
         const result = await response.json();
+        console.log('🟢 [DEBUG] Response data:', result);
 
         // Show success notification
         showNotification('✅ Profile updated successfully!', 'success');
@@ -421,18 +449,17 @@ async function saveStudentProfile() {
         // Reload profile header without page reload
         await reloadProfileHeader();
 
-        // Reset button
-        saveBtn.textContent = originalText;
-        saveBtn.disabled = false;
-
     } catch (error) {
-        console.error('Error saving profile:', error);
+        console.error('🔴 [DEBUG] Error in saveStudentProfile:', error);
+        console.error('🔴 [DEBUG] Error stack:', error.stack);
         showNotification(`❌ Failed to save profile: ${error.message}`, 'error');
-
+    } finally {
+        console.log('🔵 [DEBUG] Finally block - resetting button');
         // Reset button
-        const saveBtn = event.target;
-        saveBtn.textContent = '💾 Save Changes';
-        saveBtn.disabled = false;
+        if (saveBtn) {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+        }
     }
 }
 
@@ -594,6 +621,7 @@ function updateProfileHeaderUI(data) {
  * Show notification to user
  */
 function showNotification(message, type = 'info') {
+    console.log('[showNotification]', type, message);
     // Check if notification system exists from student-profile.js
     if (window.app && window.app.notificationSystem) {
         window.app.notificationSystem.show(message, type);
@@ -646,6 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export functions for global access
+window.showNotification = showNotification;
 window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
 window.saveStudentProfile = saveStudentProfile;

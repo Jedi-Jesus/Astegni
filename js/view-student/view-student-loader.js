@@ -162,9 +162,6 @@ class ViewStudentLoader {
         // Update location
         this.updateLocation(data.location);
 
-        // Update contact information
-        this.updateContactInfo(data);
-
         // Update badges
         this.updateBadges(data);
 
@@ -316,23 +313,6 @@ class ViewStudentLoader {
         const locationEl = document.getElementById('student-location');
         if (locationEl) {
             locationEl.textContent = location || 'Not specified';
-        }
-    }
-
-    /**
-     * Update contact information (email and phone)
-     */
-    updateContactInfo(data) {
-        // Update email
-        const emailEl = document.getElementById('student-email');
-        if (emailEl) {
-            emailEl.textContent = data.email || 'Not provided';
-        }
-
-        // Update phone
-        const phoneEl = document.getElementById('student-phone');
-        if (phoneEl) {
-            phoneEl.textContent = data.phone || 'Not provided';
         }
     }
 

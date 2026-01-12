@@ -85,6 +85,19 @@ document.addEventListener('DOMContentLoaded', function() {
         ChildrenManager.init();
         loadUpcomingSessions();
         checkNotifications();
+
+        // AUTO-LOAD PARENTING INVITATIONS: Load parenting invitations automatically on page load
+        // This ensures pending invitations are fetched when parent profile loads
+        console.log('[ParentProfile] Auto-loading parenting invitations...');
+        if (typeof loadParentingInvitations === 'function') {
+            loadParentingInvitations();
+            console.log('[ParentProfile] ✅ Parenting invitations auto-load initiated (global function)');
+        } else if (typeof ParentRequestsManager !== 'undefined' && ParentRequestsManager.loadParentingInvitations) {
+            ParentRequestsManager.loadParentingInvitations();
+            console.log('[ParentProfile] ✅ Parenting invitations auto-load initiated (ParentRequestsManager)');
+        } else {
+            console.warn('[ParentProfile] ⚠️ No parenting invitation loader found - invitations will not auto-load');
+        }
     } catch (error) {
         console.error('[ParentProfile] Initialization error:', error);
     } finally {
@@ -1076,6 +1089,7 @@ function openNotificationModal() {
 }
 
 function showNotification(message, type = 'info') {
+    console.log('[showNotification]', type, message);
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -1261,11 +1275,15 @@ document.head.appendChild(style);
 
 let currentParentRequestType = 'courses';
 let currentParentRequestStatus = 'all';
+let currentParentParentingDirection = 'received'; // 'received' or 'sent'
+let parentParentingReceivedInvitations = [];
+let parentParentingSentInvitations = [];
 
 /**
  * Filter parent requests by type (courses, schools, tutors, parenting, coparenting)
  */
 function filterParentRequestType(type) {
+    console.log('[filterParentRequestType] Called with type:', type);
     currentParentRequestType = type;
 
     // Update active state on cards
@@ -1282,22 +1300,44 @@ function filterParentRequestType(type) {
         }
     });
 
-    // Load the appropriate content
-    if (type === 'parenting') {
-        // Hide status tabs for parenting
-        const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
-        if (statusTabs) statusTabs.style.display = 'none';
+    // Show/hide parenting direction tabs
+    const parentingDirectionTabs = document.getElementById('parent-parenting-direction-tabs');
+    console.log('[filterParentRequestType] parentingDirectionTabs element:', parentingDirectionTabs);
 
+    // Get status tabs element
+    const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
+    console.log('[filterParentRequestType] statusTabs element:', statusTabs);
+
+    if (type === 'parenting') {
+        // Show parenting direction tabs
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.remove('hidden');
+            parentingDirectionTabs.style.display = 'block';
+            console.log('[filterParentRequestType] Showing parenting direction tabs');
+        }
+        // Hide status tabs for parenting
+        if (statusTabs) {
+            statusTabs.style.display = 'none';
+            console.log('[filterParentRequestType] Hiding status tabs');
+        }
         loadParentParentingInvitations();
     } else if (type === 'coparenting') {
+        // Hide parenting direction tabs
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
         // Hide status tabs for co-parenting
-        const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
         if (statusTabs) statusTabs.style.display = 'none';
 
         loadCoParentingInvitations();
     } else {
+        // Hide parenting direction tabs for other types
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
         // Show status tabs for other types
-        const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
         if (statusTabs) statusTabs.style.display = 'flex';
 
         // Load placeholder content for other types
@@ -1356,7 +1396,8 @@ function filterParentRequestStatus(status) {
 }
 
 /**
- * Load parenting invitations for this parent (invitations RECEIVED from students)
+ * Load parenting invitations for this parent - Both received and sent invitations
+ * Shows tabs for switching between received (students inviting you) and sent (you inviting others)
  */
 async function loadParentParentingInvitations() {
     const container = document.getElementById('parent-requests-list');
@@ -1381,57 +1422,35 @@ async function loadParentParentingInvitations() {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        // Fetch received invitations (students inviting you as parent)
+        const receivedResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => ({ ok: false }));
 
-        if (!response.ok) {
-            if (response.status === 403) {
-                container.innerHTML = `
-                    <div class="card p-6 text-center text-gray-500">
-                        <i class="fas fa-info-circle text-3xl mb-3"></i>
-                        <p>No parenting invitations</p>
-                        <p class="text-sm mt-2">You'll see invitations here when students invite you to be their parent</p>
-                    </div>
-                `;
-                return;
-            }
-            throw new Error('Failed to load parenting invitations');
+        // Fetch sent invitations (you inviting others as your child's parent - co-parent invitations you sent)
+        // Parents can send invitations to students to add them as children
+        const sentResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/sent-invitations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => ({ ok: false }));
+
+        parentParentingReceivedInvitations = [];
+        parentParentingSentInvitations = [];
+
+        if (receivedResponse.ok) {
+            const data = await receivedResponse.json();
+            parentParentingReceivedInvitations = data.invitations || [];
         }
 
-        const data = await response.json();
-        const invitations = data.invitations || [];
-
-        // Update count badge
-        const countBadge = document.getElementById('parent-parenting-invitation-count');
-        if (countBadge) {
-            if (invitations.length > 0) {
-                countBadge.textContent = invitations.length;
-                countBadge.classList.remove('hidden');
-            } else {
-                countBadge.classList.add('hidden');
-            }
+        if (sentResponse.ok) {
+            const data = await sentResponse.json();
+            parentParentingSentInvitations = data.invitations || [];
         }
 
-        if (invitations.length === 0) {
-            container.innerHTML = `
-                <div class="card p-6 text-center text-gray-500">
-                    <i class="fas fa-user-friends text-3xl mb-3"></i>
-                    <p>No pending parenting invitations</p>
-                    <p class="text-sm mt-2">You'll see invitations here when students invite you to be their parent</p>
-                </div>
-            `;
-            return;
-        }
+        // Update count badges
+        updateParentParentingCountBadges();
 
-        // Render invitations as cards
-        container.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                ${invitations.map(inv => renderParentInvitationCard(inv)).join('')}
-            </div>
-        `;
+        // Render based on current direction
+        renderParentParentingInvitationsContent();
 
     } catch (error) {
         console.error('Error loading parenting invitations:', error);
@@ -1446,30 +1465,295 @@ async function loadParentParentingInvitations() {
 }
 
 /**
- * Render a parenting invitation card (parent view - shows invitations they received from students)
+ * Update count badges for received and sent parenting invitations
  */
-function renderParentInvitationCard(invitation) {
-    const studentUrl = `../view-profiles/view-student.html?id=${invitation.student_user_id}`;
+function updateParentParentingCountBadges() {
+    // Update received count badge
+    const receivedCountBadge = document.getElementById('parent-parenting-received-count');
+    const pendingReceivedCount = parentParentingReceivedInvitations.filter(inv => inv.status === 'pending').length;
+    if (receivedCountBadge) {
+        if (pendingReceivedCount > 0) {
+            receivedCountBadge.textContent = pendingReceivedCount;
+            receivedCountBadge.classList.remove('hidden');
+        } else {
+            receivedCountBadge.classList.add('hidden');
+        }
+    }
+
+    // Update sent count badge
+    const sentCountBadge = document.getElementById('parent-parenting-sent-count');
+    const pendingSentCount = parentParentingSentInvitations.filter(inv => inv.status === 'pending').length;
+    if (sentCountBadge) {
+        if (pendingSentCount > 0) {
+            sentCountBadge.textContent = pendingSentCount;
+            sentCountBadge.classList.remove('hidden');
+        } else {
+            sentCountBadge.classList.add('hidden');
+        }
+    }
+
+    // Update main parenting card badge (total pending)
+    const mainBadge = document.getElementById('parent-parenting-invitation-count');
+    const totalPending = pendingReceivedCount + pendingSentCount;
+    if (mainBadge) {
+        if (totalPending > 0) {
+            mainBadge.textContent = totalPending;
+            mainBadge.classList.remove('hidden');
+        } else {
+            mainBadge.classList.add('hidden');
+        }
+    }
+}
+
+/**
+ * Switch between received and sent parenting invitations
+ */
+function switchParentParentingDirection(direction) {
+    currentParentParentingDirection = direction;
+
+    // Update tab active states
+    const receivedTab = document.getElementById('parent-parenting-received-tab');
+    const sentTab = document.getElementById('parent-parenting-sent-tab');
+
+    if (receivedTab) {
+        if (direction === 'received') {
+            receivedTab.style.color = 'var(--button-bg)';
+            receivedTab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            receivedTab.style.color = 'var(--text-muted)';
+            receivedTab.style.borderBottomColor = 'transparent';
+        }
+    }
+
+    if (sentTab) {
+        if (direction === 'sent') {
+            sentTab.style.color = 'var(--button-bg)';
+            sentTab.style.borderBottomColor = 'var(--button-bg)';
+        } else {
+            sentTab.style.color = 'var(--text-muted)';
+            sentTab.style.borderBottomColor = 'transparent';
+        }
+    }
+
+    // Render content for selected direction
+    renderParentParentingInvitationsContent();
+}
+
+/**
+ * Render parenting invitations content based on current direction
+ */
+function renderParentParentingInvitationsContent() {
+    const container = document.getElementById('parent-requests-list');
+    if (!container) return;
+
+    if (currentParentParentingDirection === 'received') {
+        // Show received invitations
+        if (parentParentingReceivedInvitations.length === 0) {
+            container.innerHTML = `
+                <div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
+                    <p class="font-semibold">No invitations received</p>
+                    <p class="text-sm mt-2">You'll see invitations here when students invite you to be their parent</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-4">Students inviting you to be their parent/guardian</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${parentParentingReceivedInvitations.map(inv => renderParentInvitationCard(inv)).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        // Show sent invitations
+        if (parentParentingSentInvitations.length === 0) {
+            container.innerHTML = `
+                <div class="card p-6 text-center text-gray-500">
+                    <i class="fas fa-paper-plane text-4xl mb-3 opacity-50"></i>
+                    <p class="font-semibold">No invitations sent</p>
+                    <p class="text-sm mt-2">Go to <strong>My Children</strong> panel to invite students to link with you</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-4">Invitations you've sent to students to link with you</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${parentParentingSentInvitations.map(inv => renderParentSentInvitationCard(inv)).join('')}
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Render a sent parenting invitation card (parent view - invitations they sent to students)
+ */
+function renderParentSentInvitationCard(invitation) {
+    // Use invitee_* fields from API (backend naming) or fallback to invited_* (frontend naming)
+    const studentName = invitation.invitee_name || invitation.invited_name || invitation.student_name || 'Unknown Student';
+    const studentUsername = invitation.invitee_username || invitation.invited_username || null;
+    const profilePic = invitation.invitee_profile_picture || invitation.invited_profile_picture || null;
+    const studentInitial = (studentName || 'S').charAt(0).toUpperCase();
+
     const createdDate = new Date(invitation.created_at);
     const timeAgo = getParentTimeAgo(createdDate);
-    const studentInitial = (invitation.student_name || 'S').charAt(0).toUpperCase();
+
+    // Status badge
+    let statusBadge = '';
+    let statusColor = '';
+    if (invitation.status === 'pending') {
+        statusBadge = '<span style="background: #FFA500; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem;">Pending</span>';
+        statusColor = '#FFA500';
+    } else if (invitation.status === 'accepted') {
+        statusBadge = '<span style="background: #10B981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem;">Accepted</span>';
+        statusColor = '#10B981';
+    } else {
+        statusBadge = '<span style="background: #EF4444; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem;">Rejected</span>';
+        statusColor = '#EF4444';
+    }
+
+    // Profile picture HTML
+    const profilePicHtml = profilePic
+        ? `<img src="${profilePic}" alt="${studentName}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #8B5CF6;" onerror="this.outerHTML='<div style=\\'width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;\\'>${studentInitial}</div>'">`
+        : `<div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;">${studentInitial}</div>`;
+
+    return `
+        <div class="card p-4" style="border: 2px solid ${statusColor}; border-radius: 12px;">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    ${profilePicHtml}
+                    <div>
+                        <h4 class="font-bold text-lg" style="color: var(--heading);">
+                            ${studentName}
+                        </h4>
+                        ${studentUsername ? `<p class="text-xs text-gray-500 mb-1">@${studentUsername}</p>` : ''}
+                        <p class="text-xs" style="color: var(--text-secondary);">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </p>
+                    </div>
+                </div>
+                ${statusBadge}
+            </div>
+
+            <div class="mb-3 p-3 rounded-lg" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 1px solid rgba(139, 92, 246, 0.2);">
+                <p class="text-sm" style="color: var(--text-secondary);">Invited as your</p>
+                <p class="font-semibold" style="color: #8B5CF6;">${invitation.relationship_type || 'Child'}</p>
+            </div>
+
+            <div class="flex items-center justify-between text-xs" style="color: var(--text-secondary);">
+                <span><i class="fas fa-clock"></i> Sent ${timeAgo}</span>
+            </div>
+
+            ${invitation.status === 'pending' ? `
+                <div class="mt-3 pt-3" style="border-top: 1px solid var(--border-color);">
+                    <button onclick="cancelParentSentInvitation(${invitation.id})" class="w-full py-2 px-4 rounded-lg text-white font-medium" style="background: linear-gradient(135deg, #EF4444, #DC2626);">
+                        <i class="fas fa-times mr-1"></i> Cancel Invitation
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Cancel a sent parenting invitation
+ */
+async function cancelParentSentInvitation(invitationId) {
+    if (!confirm('Are you sure you want to cancel this invitation?')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showNotification('Please log in to cancel invitations', 'error');
+            return;
+        }
+
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/invitation/${invitationId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to cancel invitation');
+        }
+
+        showNotification('Invitation cancelled.', 'info');
+        loadParentParentingInvitations();
+
+    } catch (error) {
+        console.error('Error cancelling invitation:', error);
+        showNotification('Failed to cancel invitation: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Render a parenting invitation card (parent view - shows invitations they received from students/others)
+ * UPDATED: Now uses inviter_name, inviter_username, inviter_profile_picture from API
+ */
+function renderParentInvitationCard(invitation) {
+    // Use inviter fields (new API) with fallback to student fields (old API)
+    const inviterName = invitation.inviter_name || invitation.student_name || 'Unknown User';
+    const inviterUsername = invitation.inviter_username || null;
+    const inviterType = invitation.inviter_type || 'student';
+    const profilePic = invitation.inviter_profile_picture || invitation.student_profile_picture || null;
+
+    // Determine profile URL based on inviter type
+    const profileUrl = inviterType === 'student'
+        ? `../view-profiles/view-student.html?id=${invitation.inviter_user_id}`
+        : inviterType === 'parent'
+        ? `../view-profiles/view-parent.html?id=${invitation.inviter_user_id}`
+        : `../view-profiles/view-tutor.html?id=${invitation.inviter_user_id}`;
+
+    const createdDate = new Date(invitation.created_at);
+    const timeAgo = getParentTimeAgo(createdDate);
+    const inviterInitial = (inviterName || 'U').charAt(0).toUpperCase();
+
+    // Inviter type badge
+    const inviterTypeBadge = inviterType === 'student' ? 'Student' :
+                             inviterType === 'parent' ? 'Parent' :
+                             inviterType === 'tutor' ? 'Tutor' : inviterType;
 
     return `
         <div class="card p-4" style="border: 2px solid var(--border-color); border-radius: 12px;">
             <div class="flex items-start gap-3 mb-4">
-                <!-- Student Avatar (Initial) -->
-                <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;">
-                    ${studentInitial}
-                </div>
+                <!-- Inviter Avatar -->
+                ${profilePic ? `
+                    <img src="${profilePic}" alt="${inviterName}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #8B5CF6;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;">
+                        ${inviterInitial}
+                    </div>
+                ` : `
+                    <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;">
+                        ${inviterInitial}
+                    </div>
+                `}
                 <div class="flex-1">
                     <h4 class="font-bold text-lg">
-                        <a href="${studentUrl}" class="hover:text-purple-600 hover:underline" style="color: var(--heading);">
-                            ${invitation.student_name || 'Unknown Student'}
+                        <a href="${profileUrl}" class="hover:text-purple-600 hover:underline" style="color: var(--heading);">
+                            ${inviterName}
                         </a>
                     </h4>
+                    ${inviterUsername ? `<p class="text-xs" style="color: var(--text-secondary);">@${inviterUsername}</p>` : ''}
                     <p class="text-sm" style="color: var(--text-secondary);">
                         ${invitation.grade_level || ''} ${invitation.studying_at ? '@ ' + invitation.studying_at : ''}
                     </p>
+                    <span style="display: inline-block; background: #E0E7FF; color: #4F46E5; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 600; margin-top: 4px;">
+                        ${inviterTypeBadge}
+                    </span>
                 </div>
             </div>
 
@@ -1616,28 +1900,22 @@ async function loadCoParentingInvitations() {
             return;
         }
 
-        // Fetch BOTH sent and received co-parent invitations
-        const [sentResponse, receivedResponse] = await Promise.all([
-            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitations-sent`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitations-received`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-        ]);
+        // Fetch co-parent invitations using the universal pending-invitations endpoint
+        // This endpoint returns ALL invitations where the user is invited (regardless of type)
+        const receivedResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
         let sentInvitations = [];
         let receivedInvitations = [];
-
-        if (sentResponse.ok) {
-            const sentData = await sentResponse.json();
-            sentInvitations = sentData.invitations || [];
-        }
 
         if (receivedResponse.ok) {
             const receivedData = await receivedResponse.json();
             receivedInvitations = receivedData.invitations || [];
         }
+
+        // Note: Sent invitations would need a separate endpoint (not currently available in backend)
+        // For now, we only show received co-parent invitations
 
         // Update count badge
         const pendingSentCount = sentInvitations.filter(inv => inv.status === 'pending').length;
@@ -1943,9 +2221,15 @@ async function resendCoParentInvitation(invitationId) {
 }
 
 // Export functions to window
+window.showNotification = showNotification;
 window.filterParentRequestType = filterParentRequestType;
 window.filterParentRequestStatus = filterParentRequestStatus;
 window.loadParentParentingInvitations = loadParentParentingInvitations;
+window.switchParentParentingDirection = switchParentParentingDirection;
+window.updateParentParentingCountBadges = updateParentParentingCountBadges;
+window.renderParentParentingInvitationsContent = renderParentParentingInvitationsContent;
+window.renderParentSentInvitationCard = renderParentSentInvitationCard;
+window.cancelParentSentInvitation = cancelParentSentInvitation;
 window.acceptParentInvitation = acceptParentInvitation;
 window.rejectParentInvitation = rejectParentInvitation;
 window.loadCoParentingInvitations = loadCoParentingInvitations;
@@ -2498,7 +2782,7 @@ const ChildrenManager = {
             return 'var(--error)';
         };
 
-        const studentUrl = `../view-profiles/view-student.html?id=${child.user_id}`;
+        const studentUrl = `../view-profiles/view-student.html?id=${child.id}`;
 
         return `
             <div class="card" style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--border-color); transition: var(--transition); box-shadow: var(--shadow-sm);" data-child-id="${child.id}" data-user-id="${child.user_id}">
@@ -2743,10 +3027,31 @@ const ChildrenManager = {
      * Populate the student details modal with child data
      */
     populateStudentDetailsModal(child) {
+        // Set context to parent-profile (hide Parent section, show Tutor section)
+        if (typeof window.setStudentDetailsModalContext === 'function') {
+            window.setStudentDetailsModalContext('parent-profile');
+        }
+
+        // Store current student for review system
+        window.currentStudentForReview = {
+            student_profile_id: child.id,  // child.id is student_profile.id
+            student_name: child.name || 'Student'
+        };
+        window.currentStudentDetails = child;
+
         // Update header
         const studentNameEl = document.getElementById('studentName');
         if (studentNameEl) {
             studentNameEl.textContent = child.name || 'Unknown Student';
+        }
+
+        // Update profile picture
+        const profilePicEl = document.getElementById('studentProfilePicture');
+        if (profilePicEl) {
+            const defaultPic = child.gender === 'Female'
+                ? '/uploads/system_images/system_profile_pictures/girl-user-image.jpg'
+                : '/uploads/system_images/system_profile_pictures/boy-user-image.jpg';
+            profilePicEl.src = child.profile_picture || defaultPic;
         }
 
         // Update subtitle (grade level and stream)
@@ -2778,6 +3083,43 @@ const ChildrenManager = {
                 <li><i class="fas fa-star text-blue-500"></i> Improved math score by 15%</li>
                 <li><i class="fas fa-medal text-green-500"></i> Perfect attendance for 2 weeks</li>
             `;
+        }
+
+        // Load tutor information (visible since we're from parent-profile)
+        const studentProfileId = child.id;  // child.id is student_profile.id
+        if (typeof window.loadTutorInformation === 'function') {
+            console.log('[ChildrenManager] Loading tutor info for student_profile_id:', studentProfileId);
+            window.loadTutorInformation(studentProfileId);
+        }
+
+        // Load student reviews
+        if (typeof window.loadStudentReviews === 'function') {
+            console.log('[ChildrenManager] Loading reviews for student_profile_id:', studentProfileId);
+            window.loadStudentReviews(studentProfileId);
+        }
+
+        // Load packages for this student
+        if (typeof window.loadStudentPackages === 'function') {
+            console.log('[ChildrenManager] Loading packages for student_profile_id:', studentProfileId);
+            window.loadStudentPackages(studentProfileId);
+        }
+
+        // Load whiteboard sessions for this student
+        if (typeof window.loadStudentWhiteboardSessions === 'function') {
+            console.log('[ChildrenManager] Loading whiteboard sessions for student_profile_id:', studentProfileId);
+            window.loadStudentWhiteboardSessions(studentProfileId);
+        }
+
+        // Load tutoring sessions for this student
+        if (typeof window.loadStudentSessions === 'function') {
+            console.log('[ChildrenManager] Loading sessions for student_profile_id:', studentProfileId);
+            window.loadStudentSessions(studentProfileId);
+        }
+
+        // Load coursework for this student
+        if (typeof window.loadStudentCoursework === 'function') {
+            console.log('[ChildrenManager] Loading coursework for student_profile_id:', studentProfileId);
+            window.loadStudentCoursework(studentProfileId);
         }
 
         // Initialize section switching and sidebar toggle

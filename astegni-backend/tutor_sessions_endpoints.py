@@ -19,6 +19,7 @@ from datetime import datetime, date, time
 import psycopg
 import os
 import jwt
+import json
 from jwt import PyJWTError
 from dotenv import load_dotenv
 
@@ -134,9 +135,358 @@ class TutoringSessionResponse(BaseModel):
         from_attributes = True
 
 
+class SessionCreate(BaseModel):
+    """Request model for creating a new session"""
+    enrolled_courses_id: int  # Required - links to enrolled_courses
+    session_date: date
+    start_time: time
+    end_time: time
+    topics: Optional[List[str]] = []
+    session_mode: Optional[str] = "online"  # online, in-person, hybrid
+    location: Optional[str] = None
+    priority_level: Optional[str] = "medium"
+    notification_enabled: Optional[bool] = False
+    alarm_enabled: Optional[bool] = False
+    alarm_before_minutes: Optional[int] = 15
+
+
+class SessionUpdate(BaseModel):
+    """Request model for updating a session"""
+    session_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    topics: Optional[List[str]] = None
+    topics_covered: Optional[List[str]] = None
+    session_mode: Optional[str] = None
+    location: Optional[str] = None
+    status: Optional[str] = None  # scheduled, in-progress, completed, cancelled
+    tutor_attendance_status: Optional[str] = None
+    student_attendance_status: Optional[str] = None
+    priority_level: Optional[str] = None
+
+
 # ============================================
 # ENDPOINTS
 # ============================================
+
+@router.post("/api/tutor/sessions")
+async def create_session(
+    session_data: SessionCreate,
+    current_user = Depends(get_current_user)
+):
+    """
+    Create a new tutoring session.
+
+    Requires enrolled_courses_id to link the session to a tutor-student enrollment.
+    Sessions are the actual teaching events (whiteboard, coursework review, etc.)
+    """
+    if 'tutor' not in current_user.get('roles', []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only tutors can create sessions"
+        )
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # Get tutor profile ID
+            cur.execute("""
+                SELECT id FROM tutor_profiles WHERE user_id = %s
+            """, (current_user['id'],))
+            tutor_row = cur.fetchone()
+            if not tutor_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Tutor profile not found"
+                )
+            tutor_profile_id = tutor_row[0]
+
+            # Verify the enrolled_courses belongs to this tutor
+            cur.execute("""
+                SELECT id, tutor_id FROM enrolled_courses WHERE id = %s
+            """, (session_data.enrolled_courses_id,))
+            enrolled_row = cur.fetchone()
+
+            if not enrolled_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Enrolled course not found"
+                )
+
+            if enrolled_row[1] != tutor_profile_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only create sessions for your own enrolled courses"
+                )
+
+            # Calculate duration in minutes
+            start_dt = datetime.combine(session_data.session_date, session_data.start_time)
+            end_dt = datetime.combine(session_data.session_date, session_data.end_time)
+            duration = int((end_dt - start_dt).total_seconds() / 60)
+
+            # Insert the session
+            cur.execute("""
+                INSERT INTO sessions (
+                    enrolled_courses_id, session_date, start_time, end_time, duration,
+                    topics, session_mode, location, priority_level,
+                    notification_enabled, alarm_enabled, alarm_before_minutes,
+                    status, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'scheduled', NOW(), NOW())
+                RETURNING id
+            """, (
+                session_data.enrolled_courses_id,
+                session_data.session_date,
+                session_data.start_time,
+                session_data.end_time,
+                duration,
+                json.dumps(session_data.topics) if session_data.topics else '[]',
+                session_data.session_mode,
+                session_data.location,
+                session_data.priority_level,
+                session_data.notification_enabled,
+                session_data.alarm_enabled,
+                session_data.alarm_before_minutes
+            ))
+
+            session_id = cur.fetchone()[0]
+            conn.commit()
+
+            return {
+                "success": True,
+                "message": "Session created successfully",
+                "session_id": session_id,
+                "enrolled_courses_id": session_data.enrolled_courses_id,
+                "session_date": session_data.session_date.isoformat(),
+                "duration": duration
+            }
+
+    except HTTPException:
+        raise
+    except psycopg.Error as e:
+        conn.rollback()
+        print(f"Database error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+    finally:
+        conn.close()
+
+
+@router.put("/api/tutor/sessions/{session_id}")
+async def update_session(
+    session_id: int,
+    session_data: SessionUpdate,
+    current_user = Depends(get_current_user)
+):
+    """
+    Update an existing session.
+    Can update date/time, topics, status, attendance, etc.
+    """
+    if 'tutor' not in current_user.get('roles', []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only tutors can update sessions"
+        )
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # Get tutor profile ID
+            cur.execute("""
+                SELECT id FROM tutor_profiles WHERE user_id = %s
+            """, (current_user['id'],))
+            tutor_row = cur.fetchone()
+            if not tutor_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Tutor profile not found"
+                )
+            tutor_profile_id = tutor_row[0]
+
+            # Verify the session belongs to this tutor via enrolled_courses
+            cur.execute("""
+                SELECT s.id, ec.tutor_id
+                FROM sessions s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE s.id = %s
+            """, (session_id,))
+            session_row = cur.fetchone()
+
+            if not session_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Session not found"
+                )
+
+            if session_row[1] != tutor_profile_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only update your own sessions"
+                )
+
+            # Build dynamic update query
+            update_fields = []
+            update_values = []
+
+            if session_data.session_date is not None:
+                update_fields.append("session_date = %s")
+                update_values.append(session_data.session_date)
+
+            if session_data.start_time is not None:
+                update_fields.append("start_time = %s")
+                update_values.append(session_data.start_time)
+
+            if session_data.end_time is not None:
+                update_fields.append("end_time = %s")
+                update_values.append(session_data.end_time)
+
+            if session_data.topics is not None:
+                update_fields.append("topics = %s")
+                update_values.append(json.dumps(session_data.topics))
+
+            if session_data.topics_covered is not None:
+                update_fields.append("topics_covered = %s")
+                update_values.append(json.dumps(session_data.topics_covered))
+
+            if session_data.session_mode is not None:
+                update_fields.append("session_mode = %s")
+                update_values.append(session_data.session_mode)
+
+            if session_data.location is not None:
+                update_fields.append("location = %s")
+                update_values.append(session_data.location)
+
+            if session_data.status is not None:
+                update_fields.append("status = %s")
+                update_values.append(session_data.status)
+
+            if session_data.tutor_attendance_status is not None:
+                update_fields.append("tutor_attendance_status = %s")
+                update_values.append(session_data.tutor_attendance_status)
+
+            if session_data.student_attendance_status is not None:
+                update_fields.append("student_attendance_status = %s")
+                update_values.append(session_data.student_attendance_status)
+
+            if session_data.priority_level is not None:
+                update_fields.append("priority_level = %s")
+                update_values.append(session_data.priority_level)
+
+            if not update_fields:
+                return {"success": True, "message": "No fields to update"}
+
+            update_fields.append("updated_at = NOW()")
+            update_values.append(session_id)
+
+            query = f"""
+                UPDATE sessions SET {', '.join(update_fields)}
+                WHERE id = %s
+                RETURNING id, status
+            """
+
+            cur.execute(query, update_values)
+            result = cur.fetchone()
+            conn.commit()
+
+            return {
+                "success": True,
+                "message": "Session updated successfully",
+                "session_id": result[0],
+                "status": result[1]
+            }
+
+    except HTTPException:
+        raise
+    except psycopg.Error as e:
+        conn.rollback()
+        print(f"Database error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+    finally:
+        conn.close()
+
+
+@router.delete("/api/tutor/sessions/{session_id}")
+async def delete_session(
+    session_id: int,
+    current_user = Depends(get_current_user)
+):
+    """
+    Delete a session. Only allows deleting scheduled sessions (not completed ones).
+    """
+    if 'tutor' not in current_user.get('roles', []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only tutors can delete sessions"
+        )
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # Get tutor profile ID
+            cur.execute("""
+                SELECT id FROM tutor_profiles WHERE user_id = %s
+            """, (current_user['id'],))
+            tutor_row = cur.fetchone()
+            if not tutor_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Tutor profile not found"
+                )
+            tutor_profile_id = tutor_row[0]
+
+            # Verify the session belongs to this tutor and is not completed
+            cur.execute("""
+                SELECT s.id, s.status, ec.tutor_id
+                FROM sessions s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE s.id = %s
+            """, (session_id,))
+            session_row = cur.fetchone()
+
+            if not session_row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Session not found"
+                )
+
+            if session_row[2] != tutor_profile_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only delete your own sessions"
+                )
+
+            if session_row[1] == 'completed':
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot delete completed sessions"
+                )
+
+            # Delete the session
+            cur.execute("DELETE FROM sessions WHERE id = %s", (session_id,))
+            conn.commit()
+
+            return {
+                "success": True,
+                "message": "Session deleted successfully",
+                "session_id": session_id
+            }
+
+    except HTTPException:
+        raise
+    except psycopg.Error as e:
+        conn.rollback()
+        print(f"Database error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+    finally:
+        conn.close()
+
 
 @router.get("/api/tutor/sessions", response_model=List[TutoringSessionResponse])
 async def get_tutor_sessions(

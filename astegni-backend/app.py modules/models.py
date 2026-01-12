@@ -6,7 +6,7 @@ from datetime import datetime, date
 from typing import Optional, List, Dict, Any
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, Boolean, Text, JSON,
-    ForeignKey, Date, Time, create_engine, func
+    ForeignKey, Date, Time, Numeric, create_engine, func
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -42,8 +42,10 @@ class User(Base):
     roles = Column(JSON, default=["user"])
     active_role = Column(String, default="user")
 
-    # Shared Profile Fields
-    gender = Column(String)  # Shared across all roles
+    # Shared Profile Fields - Required for full platform access
+    gender = Column(String)  # Required for full access
+    date_of_birth = Column(Date, nullable=True)  # Required for full access
+    digital_id_no = Column(String(50), nullable=True)  # Ethiopian Digital ID, required for full access
 
     # DEPRECATED - Keep for backward compatibility but don't use in new code
     # Use profile_picture and bio from tutor_profiles/student_profiles instead
@@ -54,6 +56,28 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     email_verified = Column(Boolean, default=False)
     phone_verified = Column(Boolean, default=False)
+
+    # KYC (Know Your Customer) Verification
+    kyc_verified = Column(Boolean, default=False)
+    kyc_verified_at = Column(DateTime, nullable=True)
+    kyc_verification_id = Column(Integer, nullable=True)  # FK to kyc_verifications
+
+    # Note: Two-Factor Authentication (2FA) is ROLE-BASED
+    # TFA columns are on profile tables (tutor_profiles, student_profiles, parent_profiles, advertiser_profiles)
+    # Each role can have independent 2FA settings
+
+    # Account Settings
+    has_password = Column(Boolean, default=True)  # False for OAuth-only users
+    export_verification_code = Column(String, nullable=True)
+    export_verification_expiry = Column(DateTime, nullable=True)
+
+    # Account Deletion
+    account_status = Column(String, default='active')  # 'active', 'pending_deletion', 'deleted'
+    deactivated_at = Column(DateTime, nullable=True)
+    scheduled_deletion_at = Column(DateTime, nullable=True)
+
+    # Account Balance (for payments)
+    account_balance = Column(Numeric(10, 2), default=0.00)  # User's account balance in ETB
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -66,6 +90,16 @@ class User(Base):
     parent_profile = relationship("ParentProfile", back_populates="user", uselist=False)
     refresh_tokens = relationship("RefreshToken", back_populates="user")
     playlists = relationship("Playlist", back_populates="user")
+
+    @property
+    def profile_complete(self) -> bool:
+        """Check if user has completed required profile fields (DOB, gender, and digital ID)"""
+        return (
+            self.date_of_birth is not None and
+            self.gender is not None and
+            self.digital_id_no is not None and
+            len(self.digital_id_no.strip()) > 0
+        )
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
@@ -123,6 +157,11 @@ class TutorProfile(Base):
     is_active = Column(Boolean, default=True)
     is_basic = Column(Boolean, default=False)  # Basic tutor status
 
+    # Subscription Plan (references subscription_plans in admin_db)
+    subscription_plan_id = Column(Integer, nullable=True)  # ID from subscription_plans table
+    subscription_started_at = Column(DateTime, nullable=True)
+    subscription_expires_at = Column(DateTime, nullable=True)
+
     # Suspension fields
     is_suspended = Column(Boolean, default=False)
     suspension_reason = Column(Text)  # Reason for suspension
@@ -135,6 +174,22 @@ class TutorProfile(Base):
 
     # Social Media Links
     social_links = Column(JSON, default={})  # {"facebook": "url", "twitter": "url", etc.}
+
+    # Two-Factor Authentication (2FA) - Role-specific
+    two_factor_enabled = Column(Boolean, default=False)
+    two_factor_method = Column(String, nullable=True)  # 'email', 'authenticator', 'inapp'
+    two_factor_secret = Column(String, nullable=True)  # TOTP secret for authenticator
+    two_factor_backup_codes = Column(Text, nullable=True)  # Comma-separated backup codes
+    two_factor_temp_code = Column(String, nullable=True)  # Temporary OTP code
+    two_factor_temp_expiry = Column(DateTime, nullable=True)  # OTP expiry time
+    two_factor_inapp_password = Column(String, nullable=True)  # Separate password hash for in-app 2FA
+    two_factor_verification_token = Column(String, nullable=True)  # Temporary token for protected actions
+    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Verification token expiry
+    two_factor_protected_panels = Column(JSON, nullable=True)  # List of panel IDs that require 2FA
+
+    # Online Status (for whiteboard video calls)
+    is_online = Column(Boolean, default=False)  # Whether tutor is currently online
+    last_seen = Column(DateTime, nullable=True)  # Last time tutor was seen online
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -184,8 +239,27 @@ class StudentProfile(Base):
     quote = Column(ARRAY(String), default=[])  # Now supports multiple quotes
     about = Column(Text)  # Renamed from bio
 
-    # Parent Relationships (NEW)
-    parent_id = Column(ARRAY(Integer), default=[])  # Array of parent user IDs who can manage this student
+    # Parent Relationships
+    parent_id = Column(ARRAY(Integer), default=[])  # Array of parent_profiles.id (NOT user.id) who can manage this student
+
+    # Status
+    is_active = Column(Boolean, default=True)
+
+    # Two-Factor Authentication (2FA) - Role-specific
+    two_factor_enabled = Column(Boolean, default=False)
+    two_factor_method = Column(String, nullable=True)  # 'email', 'authenticator', 'inapp'
+    two_factor_secret = Column(String, nullable=True)  # TOTP secret for authenticator
+    two_factor_backup_codes = Column(Text, nullable=True)  # Comma-separated backup codes
+    two_factor_temp_code = Column(String, nullable=True)  # Temporary OTP code
+    two_factor_temp_expiry = Column(DateTime, nullable=True)  # OTP expiry time
+    two_factor_inapp_password = Column(String, nullable=True)  # Separate password hash for in-app 2FA
+    two_factor_verification_token = Column(String, nullable=True)  # Temporary token for protected actions
+    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Verification token expiry
+    two_factor_protected_panels = Column(JSON, nullable=True)  # List of panel IDs that require 2FA
+
+    # Online Status (for whiteboard video calls)
+    is_online = Column(Boolean, default=False)  # Whether student is currently online
+    last_seen = Column(DateTime, nullable=True)  # Last time student was seen online
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -241,6 +315,22 @@ class ParentProfile(Base):
     hero_title = Column(ARRAY(String), default=[])  # Array of hero title lines
     hero_subtitle = Column(Text)  # Single hero subtitle
 
+    # Two-Factor Authentication (2FA) - Role-specific
+    two_factor_enabled = Column(Boolean, default=False)
+    two_factor_method = Column(String, nullable=True)  # 'email', 'authenticator', 'inapp'
+    two_factor_secret = Column(String, nullable=True)  # TOTP secret for authenticator
+    two_factor_backup_codes = Column(Text, nullable=True)  # Comma-separated backup codes
+    two_factor_temp_code = Column(String, nullable=True)  # Temporary OTP code
+    two_factor_temp_expiry = Column(DateTime, nullable=True)  # OTP expiry time
+    two_factor_inapp_password = Column(String, nullable=True)  # Separate password hash for in-app 2FA
+    two_factor_verification_token = Column(String, nullable=True)  # Temporary token for protected actions
+    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Verification token expiry
+    two_factor_protected_panels = Column(JSON, nullable=True)  # List of panel IDs that require 2FA
+
+    # Online Status (for whiteboard video calls)
+    is_online = Column(Boolean, default=False)  # Whether parent is currently online
+    last_seen = Column(DateTime, nullable=True)  # Last time parent was seen online
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -280,6 +370,47 @@ class AdvertiserProfile(Base):
 
     # Membership date
     joined_in = Column(Date)
+
+    # Two-Factor Authentication (2FA) - Role-specific
+    two_factor_enabled = Column(Boolean, default=False)
+    two_factor_method = Column(String, nullable=True)  # 'email', 'authenticator', 'inapp'
+    two_factor_secret = Column(String, nullable=True)  # TOTP secret for authenticator
+    two_factor_backup_codes = Column(Text, nullable=True)  # Comma-separated backup codes
+    two_factor_temp_code = Column(String, nullable=True)  # Temporary OTP code
+    two_factor_temp_expiry = Column(DateTime, nullable=True)  # OTP expiry time
+    two_factor_inapp_password = Column(String, nullable=True)  # Separate password hash for in-app 2FA
+    two_factor_verification_token = Column(String, nullable=True)  # Temporary token for protected actions
+    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Verification token expiry
+    two_factor_protected_panels = Column(JSON, nullable=True)  # List of panel IDs that require 2FA
+
+    # Company Verification Fields
+    company_name = Column(String(255), nullable=True)
+    industry = Column(String(100), nullable=True)
+    company_size = Column(String(50), nullable=True)
+    business_reg_no = Column(String(100), nullable=True)
+    tin_number = Column(String(50), nullable=True)
+    website = Column(String(500), nullable=True)
+    company_email = Column(JSON, default=[])  # JSON array of company emails
+    company_phone = Column(JSON, default=[])  # JSON array of company phones
+    address = Column(Text, nullable=True)
+    city = Column(String(100), nullable=True)
+    company_description = Column(Text, nullable=True)
+    company_logo = Column(String(500), nullable=True)
+    business_license_url = Column(String(500), nullable=True)
+    tin_certificate_url = Column(String(500), nullable=True)
+    additional_docs_urls = Column(JSON, default=[])
+    verification_status = Column(String(20), default='pending')  # pending, in_review, verified, rejected
+    verification_submitted_at = Column(DateTime, nullable=True)
+    verification_reviewed_at = Column(DateTime, nullable=True)
+    verification_notes = Column(Text, nullable=True)
+
+    # Online Status (for whiteboard video calls)
+    is_online = Column(Boolean, default=False)  # Whether advertiser is currently online
+    last_seen = Column(DateTime, nullable=True)  # Last time advertiser was seen online
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     user = relationship("User", backref="advertiser_profile")
@@ -581,6 +712,113 @@ class Schedule(Base):
     # Relationships
     scheduler = relationship("User", foreign_keys=[scheduler_id])
 
+
+# ============================================
+# KYC (KNOW YOUR CUSTOMER) VERIFICATION MODELS
+# ============================================
+
+class KYCVerification(Base):
+    """Main KYC verification record for a user"""
+    __tablename__ = "kyc_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Verification Status
+    status = Column(String(50), nullable=False, default='pending')
+    # Status values: pending, in_progress, passed, failed, expired, manual_review
+
+    # Document Information
+    document_type = Column(String(50), default='digital_id')
+    document_number = Column(String(100))
+    document_image_url = Column(Text)
+    document_verified = Column(Boolean, default=False)
+
+    # Face Verification
+    selfie_image_url = Column(Text)
+    face_match_score = Column(Float)
+    face_match_passed = Column(Boolean, default=False)
+    face_match_threshold = Column(Float, default=0.85)
+
+    # Liveliness Check Results
+    liveliness_passed = Column(Boolean, default=False)
+    liveliness_score = Column(Float)
+    blink_detected = Column(Boolean, default=False)
+    smile_detected = Column(Boolean, default=False)
+    head_turn_detected = Column(Boolean, default=False)
+
+    # Challenge-Response
+    challenge_type = Column(String(50))
+    challenge_completed = Column(Boolean, default=False)
+
+    # Verification Details
+    verification_method = Column(String(50), default='automated')
+    verified_by = Column(Integer)
+    rejection_reason = Column(Text)
+    notes = Column(Text)
+
+    # Risk Assessment
+    risk_score = Column(Float)
+    risk_flags = Column(JSON, default=[])
+
+    # Device/Session Info
+    device_fingerprint = Column(String(255))
+    ip_address = Column(String(45))
+    user_agent = Column(Text)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    expires_at = Column(DateTime)
+    verified_at = Column(DateTime)
+
+    # Retry tracking
+    attempt_count = Column(Integer, default=0)
+    max_attempts = Column(Integer, default=3)
+    last_attempt_at = Column(DateTime)
+
+    # Relationships
+    user = relationship("User", backref="kyc_verifications")
+    attempts = relationship("KYCVerificationAttempt", back_populates="verification")
+
+
+class KYCVerificationAttempt(Base):
+    """Individual verification attempt/step"""
+    __tablename__ = "kyc_verification_attempts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    verification_id = Column(Integer, ForeignKey("kyc_verifications.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Attempt Info
+    attempt_number = Column(Integer, nullable=False)
+    step = Column(String(50), nullable=False)
+    # Steps: document_capture, selfie_capture, liveliness_blink, liveliness_smile, liveliness_turn, face_comparison
+
+    # Captured Data
+    image_url = Column(Text)
+    image_type = Column(String(50))
+    # Types: document_front, document_back, selfie, liveliness_frame
+
+    # Analysis Results
+    analysis_result = Column(JSON)
+
+    # Step Status
+    status = Column(String(50), nullable=False, default='pending')
+    error_message = Column(Text)
+
+    # Timing
+    started_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime)
+    processing_time_ms = Column(Integer)
+
+    # Device Info
+    device_info = Column(JSON)
+
+    # Relationships
+    verification = relationship("KYCVerification", back_populates="attempts")
+
+
 # ============================================
 # PYDANTIC MODELS
 # ============================================
@@ -592,6 +830,8 @@ class UserRegister(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     password: str
+    date_of_birth: Optional[date] = None  # Optional at registration, required for full access
+    gender: Optional[str] = None  # Optional at registration, required for full access
     role: str = "student"
     department: Optional[str] = None  # For admin role: manage-campaigns, manage-schools, etc.
 
@@ -601,6 +841,22 @@ class UserRegister(BaseModel):
         email = values.get('email')
         if not email and not v:
             raise ValueError('Either email or phone must be provided')
+        return v
+
+    @validator('date_of_birth')
+    def validate_dob(cls, v):
+        if v is None:
+            return v
+        # Ensure date is not in the future and user is at least 3 years old
+        from datetime import date as date_type
+        today = date_type.today()
+        if v > today:
+            raise ValueError('Date of birth cannot be in the future')
+        age = today.year - v.year - ((today.month, today.day) < (v.month, v.day))
+        if age < 3:
+            raise ValueError('User must be at least 3 years old')
+        if age > 120:
+            raise ValueError('Invalid date of birth')
         return v
 
 class UserLogin(BaseModel):
@@ -616,13 +872,19 @@ class UserResponse(BaseModel):
     username: Optional[str]
     email: str
     phone: Optional[str]
+    date_of_birth: Optional[date] = None  # Required for full access
+    gender: Optional[str] = None  # Required for full access
+    digital_id_no: Optional[str] = None  # Ethiopian Digital ID, required for full access
+    profile_complete: bool = False  # True if DOB, gender, and digital_id_no are set
+    kyc_verified: bool = False  # True if identity verified via liveliness check
     roles: List[str]
     active_role: str
     profile_picture: Optional[str]
     created_at: datetime
     is_active: bool
     email_verified: bool
-    role_ids: Optional[dict] = None  # NEW: Include role-specific profile IDs
+    role_ids: Optional[dict] = None  # Include role-specific profile IDs
+    account_balance: float = 0.0  # User's account balance for payments
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -1090,6 +1352,22 @@ class AdvertiserProfileUpdate(BaseModel):
     cover_image: Optional[str] = None
     hero_title: Optional[List[str]] = None  # Array for multi-line hero title
     hero_subtitle: Optional[List[str]] = None  # Array for multi-line hero subtitle
+    # Company verification fields
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    business_reg_no: Optional[str] = None
+    tin_number: Optional[str] = None
+    website: Optional[str] = None
+    company_email: Optional[List[str]] = None  # JSON array of company emails
+    company_phone: Optional[List[str]] = None  # JSON array of company phones
+    address: Optional[str] = None
+    city: Optional[str] = None
+    company_description: Optional[str] = None
+    company_logo: Optional[str] = None
+    business_license_url: Optional[str] = None
+    tin_certificate_url: Optional[str] = None
+    additional_docs_urls: Optional[List[str]] = None
 
 class AdvertiserProfileResponse(BaseModel):
     id: int
@@ -1106,6 +1384,26 @@ class AdvertiserProfileResponse(BaseModel):
     is_verified: bool = False
     is_active: bool = True
     joined_in: Optional[date] = None
+    # Company verification fields
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    business_reg_no: Optional[str] = None
+    tin_number: Optional[str] = None
+    website: Optional[str] = None
+    company_email: Optional[List[str]] = []  # JSON array of company emails
+    company_phone: Optional[List[str]] = []  # JSON array of company phones
+    address: Optional[str] = None
+    city: Optional[str] = None
+    company_description: Optional[str] = None
+    company_logo: Optional[str] = None
+    business_license_url: Optional[str] = None
+    tin_certificate_url: Optional[str] = None
+    additional_docs_urls: Optional[List[str]] = []
+    verification_status: Optional[str] = "pending"
+    verification_submitted_at: Optional[datetime] = None
+    verification_reviewed_at: Optional[datetime] = None
+    verification_notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -1131,7 +1429,7 @@ class AdCampaignUpdate(BaseModel):
     verification_status: Optional[str] = None  # For admin updates: pending, verified, rejected, suspended
     is_verified: Optional[bool] = None
     budget: Optional[float] = None
-    daily_budget: Optional[float] = None
+    campaign_budget: Optional[float] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     target_audience: Optional[List[str]] = None
@@ -1160,7 +1458,7 @@ class AdCampaignResponse(BaseModel):
     verification_status: str = "pending"
     budget: float = 0.0
     spent: float = 0.0
-    daily_budget: Optional[float] = None
+    campaign_budget: Optional[float] = None
     currency: str = "ETB"
     start_date: date
     end_date: date
@@ -2070,6 +2368,210 @@ class ParentReview(Base):
 
     # Relationships
     parent = relationship("ParentProfile", back_populates="reviews")
+
+
+# ============================================
+# USER SETTINGS MODELS (New - Dec 2024)
+# ============================================
+
+class UserSession(Base):
+    """Tracks active login sessions for security"""
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    token_jti = Column(String(100), unique=True, index=True)  # JWT ID for token tracking
+    device_type = Column(String(20))  # desktop, mobile, tablet
+    device_name = Column(String(100))
+    os = Column(String(50))
+    browser = Column(String(50))
+    ip_address = Column(String(50))
+    location = Column(String(100))
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_active = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime)
+
+
+class LoginHistory(Base):
+    """Stores login attempt history for security monitoring"""
+    __tablename__ = "login_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    success = Column(Boolean, default=True)
+    device = Column(String(100))
+    os = Column(String(50))
+    browser = Column(String(50))
+    ip_address = Column(String(50))
+    location = Column(String(100))
+    failure_reason = Column(String(200))
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+
+class UserSettings(Base):
+    """Stores user preferences: appearance, language, notifications, privacy"""
+    __tablename__ = "user_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    appearance = Column(Text)  # JSON: theme, fontSize, density, accentColor, etc.
+    language = Column(Text)  # JSON: ui_language, auto_translate, etc.
+    notifications = Column(Text)  # JSON: email, push, in-app preferences
+    privacy = Column(Text)  # JSON: profile visibility, search settings, etc.
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class PlatformReview(Base):
+    """Stores user reviews of the Astegni platform"""
+    __tablename__ = "platform_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    overall_rating = Column(Integer, nullable=False)  # 1-5 stars
+    category_ratings = Column(Text)  # JSON: ease, features, support, value
+    text = Column(Text)  # Written review
+    feature_suggestions = Column(Text)  # JSON array of requested features
+    recommends = Column(Boolean)  # Would recommend to others
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime)
+
+
+
+
+# ============================================
+# PAYMENT METHODS MODELS (Jan 2026)
+# ============================================
+
+class PaymentMethod(Base):
+    """
+    Stores user payment methods for receiving earnings.
+    Supports: Bank Transfer, Mobile Money (TeleBirr, M-Pesa, M-Birr, HelloCash)
+    """
+    __tablename__ = "payment_methods"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Payment Method Type
+    method_type = Column(String(50), nullable=False)  # 'bank', 'mobile_money'
+
+    # Bank Transfer Fields
+    bank_name = Column(String(100))
+    bank_code = Column(String(20))  # Bank identifier code (e.g., 'cbe', 'dashen', 'awash')
+    account_number = Column(String(50))
+    account_holder_name = Column(String(200))
+    swift_code = Column(String(20))
+
+    # Mobile Money Fields
+    phone_number = Column(String(20))
+    provider = Column(String(50))  # 'telebirr', 'm-pesa', 'm-birr', 'hello-cash'
+    registered_name = Column(String(200))
+
+    # Status & Verification
+    is_primary = Column(Boolean, default=False)
+    is_verified = Column(Boolean, default=False)
+    verification_status = Column(String(20), default='pending')  # 'pending', 'verified', 'rejected'
+    verification_date = Column(DateTime)
+    verification_notes = Column(Text)
+
+    # Metadata
+    nickname = Column(String(100))  # User-friendly name like "My CBE Account"
+    is_active = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================
+# PAYMENT METHODS PYDANTIC SCHEMAS
+# ============================================
+
+class PaymentMethodCreate(BaseModel):
+    """Schema for creating a payment method"""
+    method_type: str  # 'bank', 'mobile_money'
+
+    # Bank fields (optional, required if method_type == 'bank')
+    bank_name: Optional[str] = None
+    bank_code: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder_name: Optional[str] = None
+    swift_code: Optional[str] = None
+
+    # Mobile Money fields (optional, required for mobile methods)
+    phone_number: Optional[str] = None
+    provider: Optional[str] = None
+    registered_name: Optional[str] = None
+
+    # Optional metadata
+    nickname: Optional[str] = None
+    is_primary: bool = False
+
+    @validator('method_type')
+    def validate_method_type(cls, v):
+        allowed = ['bank', 'mobile_money']
+        if v not in allowed:
+            raise ValueError(f'method_type must be one of: {", ".join(allowed)}')
+        return v
+
+
+class PaymentMethodUpdate(BaseModel):
+    """Schema for updating a payment method"""
+    # Bank fields
+    bank_name: Optional[str] = None
+    bank_code: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder_name: Optional[str] = None
+    swift_code: Optional[str] = None
+
+    # Mobile Money fields
+    phone_number: Optional[str] = None
+    provider: Optional[str] = None
+    registered_name: Optional[str] = None
+
+    # Metadata
+    nickname: Optional[str] = None
+    is_primary: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class PaymentMethodResponse(BaseModel):
+    """Schema for payment method response"""
+    id: int
+    user_id: int
+    method_type: str
+
+    # Bank fields
+    bank_name: Optional[str] = None
+    bank_code: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder_name: Optional[str] = None
+    swift_code: Optional[str] = None
+
+    # Mobile Money fields
+    phone_number: Optional[str] = None
+    provider: Optional[str] = None
+    registered_name: Optional[str] = None
+
+    # Status
+    is_primary: bool
+    is_verified: bool
+    verification_status: str
+    verification_date: Optional[datetime] = None
+    verification_notes: Optional[str] = None
+
+    # Metadata
+    nickname: Optional[str] = None
+    is_active: bool
+
+    # Timestamps
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 # Create all tables
 Base.metadata.create_all(bind=engine)

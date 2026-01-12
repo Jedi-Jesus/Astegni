@@ -1,29 +1,68 @@
+/* ============================================
+   FIND-TUTORS RESPONSIVE STYLES
+   Comprehensive mobile-first responsive design
+   ============================================ */
 
-/* Ensure nav links are visible on desktop */
+/* ============================================
+   EXTRA LARGE SCREENS (1600px+)
+   ============================================ */
+@media (min-width: 1600px) {
+    .content-wrapper {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 2.5rem 3rem;
+    }
 
-/* Responsive grid */
-@media (max-width: 1200px) {
-    #tutorCards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+    .hero-section {
+        padding: 4rem 3rem;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+    }
+
+    .hero-stats {
+        gap: 4rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
     }
 }
 
+/* ============================================
+   LARGE SCREENS (1200px - 1599px)
+   ============================================ */
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .content-wrapper {
+        max-width: 1400px;
+        padding: 2rem 2.5rem;
+    }
+}
 
-/* Responsive sidebar shift for large screens */
+/* ============================================
+   DESKTOP SIDEBAR SHIFT (1024px+)
+   ============================================ */
 @media (min-width: 1024px) {
     .main-content-container.shifted {
         margin-left: 280px;
     }
 }
 
+/* ============================================
+   DESKTOP NAVIGATION (768px+)
+   ============================================ */
 @media (min-width: 768px) {
     .nav-links {
         display: flex !important;
         align-items: center;
         gap: 1rem;
     }
-    
+
     .nav-link {
         display: inline-block !important;
         color: var(--nav-link);
@@ -33,11 +72,12 @@
         transition: var(--transition);
         white-space: nowrap;
     }
-    
+
     .nav-link:hover {
         color: var(--nav-link-hover);
         background: rgba(245, 158, 11, 0.08);
     }
+
     .nav-links.hidden {
         display: flex !important;
     }
@@ -46,113 +86,661 @@
         padding: 40px 20px;
         margin: 20px 0;
     }
-    
+
     .ad-title {
         font-size: 28px;
     }
-    
+
     .ad-subtitle {
         font-size: 16px;
     }
-    
+
     .rating-tooltip {
         width: 240px;
         left: 0;
         transform: translateX(0);
     }
-    
+
     .rating-tooltip::before {
         left: 30px;
     }
-    
+
     .tutor-teaches-at {
         font-size: 12px;
     }
-    
+
     .price-amount {
         font-size: 18px;
     }
-
-    #tutorCards {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        padding: 16px;
-    }
 }
 
-
-@media (max-width: 480px) {
-    .ad-placeholder-section {
-        padding: 30px 15px;
-    }
-    
-    .ad-title {
-        font-size: 24px;
-    }
-    
-    .ad-subtitle {
-        font-size: 14px;
-    }
-    
-    .ad-cta {
-        padding: 12px 28px;
-        font-size: 14px;
-    }
-    
-    .rating-tooltip {
-        width: 220px;
-    }
+/* ============================================
+   TABLET LANDSCAPE (769px - 1199px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1199px) {
     .content-wrapper {
-        padding: 2.5rem 2rem;
+        padding: 1.5rem;
     }
 
-    .sidebar-container {
-        width: 260px;
+    .hero-section {
+        padding: 2.5rem 1.5rem;
+        margin-bottom: 2rem;
     }
-    
+
     .hero-title {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
-    
-    .content-wrapper {
-        padding: 1.5rem 1rem;
-    }
-    
-    .tutor-card {
-        padding: 1.25rem;
-    }
-    
-    .tutor-avatar {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .ad-text {
-        font-size: 1.25rem;
-    }
-    
+
     .hero-stats {
         gap: 2rem;
     }
-    
+
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
-    
-    .rating-breakdown-tooltip {
-        min-width: 240px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-10px);
-    }
-    
-    .rating-stars-container:hover .rating-breakdown-tooltip {
-        transform: translateX(-50%) translateY(0);
-    }
-    
-    .tooltip-arrow {
-        left: 50%;
-        transform: translateX(-50%) rotate(45deg);
+
+    .stat-label {
+        font-size: 0.8rem;
     }
 }
 
+/* ============================================
+   TABLET PORTRAIT (768px)
+   ============================================ */
+@media (max-width: 768px) {
+    /* Content wrapper adjustments */
+    .content-wrapper {
+        padding: 1rem;
+    }
+
+    /* Hero section mobile */
+    .hero-section {
+        padding: 2rem 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 1rem;
+    }
+
+    .hero-title {
+        font-size: 1.75rem;
+        min-height: auto;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.4;
+    }
+
+    .hero-stats {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stat-item {
+        flex: 0 0 calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+        padding: 0.75rem;
+        background: rgba(245, 158, 11, 0.05);
+        border-radius: 0.75rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        text-align: center;
+    }
+
+    /* Navigation mobile */
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-center {
+        display: none;
+    }
+
+    .hamburger-menu {
+        display: flex !important;
+    }
+
+    /* Search bar mobile */
+    .tutor-search-container {
+        width: 100%;
+        margin: 0.75rem 0;
+    }
+
+    .tutor-search-input {
+        padding: 0.625rem 2.5rem 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Sidebar mobile overlay */
+    .sidebar-container {
+        width: 100%;
+        max-width: 320px;
+        z-index: 1000;
+    }
+
+    .sidebar-overlay {
+        display: block;
+    }
+
+    /* Ad section mobile */
+    .ad-placeholder-section {
+        padding: 25px 15px;
+        margin: 15px 0;
+        border-radius: 0.75rem;
+    }
+
+    .ad-title {
+        font-size: 20px;
+    }
+
+    .ad-subtitle {
+        font-size: 13px;
+    }
+
+    .ad-cta {
+        padding: 10px 24px;
+        font-size: 13px;
+    }
+
+    /* Rating tooltip mobile */
+    .rating-breakdown-tooltip {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) !important;
+        min-width: 280px;
+        max-width: 90vw;
+        z-index: 1001;
+    }
+
+    .rating-stars-container:hover .rating-breakdown-tooltip {
+        transform: translate(-50%, -50%) !important;
+    }
+
+    .tooltip-arrow {
+        display: none;
+    }
+
+    /* No results section */
+    .no-results-section {
+        padding: 2rem 1rem;
+    }
+
+    .no-results-title {
+        font-size: 1.25rem;
+    }
+
+    .no-results-text {
+        font-size: 0.9rem;
+    }
+
+    /* Results header */
+    .results-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .results-count {
+        font-size: 0.9rem;
+    }
+
+    .sort-dropdown {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   SMALL TABLETS / LARGE PHONES (640px)
+   ============================================ */
+@media (max-width: 640px) {
+    /* Hero stats 2x2 grid */
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .stat-item {
+        flex: none;
+        max-width: none;
+    }
+
+    /* Fifth stat full width */
+    .stat-item:nth-child(5) {
+        grid-column: 1 / -1;
+    }
+
+    /* Sidebar narrower */
+    .sidebar-container {
+        max-width: 280px;
+    }
+
+    .sidebar-content {
+        padding: 1rem;
+    }
+
+    .sidebar-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .clear-filters-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Filter inputs stack */
+    .rating-inputs,
+    .price-inputs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .rating-input,
+    .price-input {
+        width: 100%;
+    }
+
+    /* Back to top button */
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* ============================================
+   MOBILE PHONES (480px)
+   ============================================ */
+@media (max-width: 480px) {
+    /* Content wrapper tight padding */
+    .content-wrapper {
+        padding: 0.75rem;
+    }
+
+    /* Hero section compact */
+    .hero-section {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-stats {
+        gap: 0.5rem;
+    }
+
+    .stat-item {
+        padding: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+    }
+
+    /* Tutor card compact */
+    .tutor-card {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .tutor-avatar {
+        width: 56px;
+        height: 56px;
+    }
+
+    .tutor-name {
+        font-size: 1rem;
+    }
+
+    .tutor-name .tutor-education {
+        font-size: 0.7rem;
+    }
+
+    .tutor-meta-row {
+        gap: 0.5rem;
+    }
+
+    .tutor-gender,
+    .tutor-location {
+        font-size: 0.75rem;
+    }
+
+    .tutor-rating .stars {
+        font-size: 0.8rem;
+    }
+
+    .rating-number {
+        font-size: 0.8rem;
+    }
+
+    .verified-badge {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.4rem;
+    }
+
+    .detail-item {
+        font-size: 0.85rem;
+    }
+
+    .detail-label {
+        min-width: 80px;
+        font-size: 0.8rem;
+    }
+
+    /* Price section compact */
+    .price-section {
+        padding: 0.75rem;
+    }
+
+    .price-amount {
+        font-size: 1.5rem;
+    }
+
+    .price-period {
+        font-size: 0.75rem;
+    }
+
+    /* Ad section compact */
+    .ad-placeholder-section {
+        padding: 20px 12px;
+    }
+
+    .ad-title {
+        font-size: 18px;
+    }
+
+    .ad-subtitle {
+        font-size: 12px;
+    }
+
+    .ad-cta {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+
+    /* Sidebar compact */
+    .sidebar-container {
+        max-width: 260px;
+    }
+
+    .filter-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+
+    .filter-title {
+        font-size: 0.85rem;
+    }
+
+    .filter-checkbox {
+        padding: 0.5rem;
+    }
+
+    .filter-checkbox span {
+        font-size: 0.85rem;
+    }
+
+    /* Rating tooltip full screen on mobile */
+    .rating-breakdown-tooltip {
+        min-width: calc(100vw - 2rem);
+        max-width: calc(100vw - 2rem);
+        padding: 1.25rem;
+    }
+
+    .rating-item {
+        gap: 0.5rem;
+    }
+
+    .rating-label {
+        min-width: 85px;
+        font-size: 0.8rem;
+    }
+
+    .rating-value {
+        font-size: 0.8rem;
+    }
+
+    /* Footer compact */
+    .footer {
+        padding: 2rem 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .footer-section {
+        text-align: center;
+    }
+
+    .footer-links {
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL PHONES (375px)
+   ============================================ */
+@media (max-width: 375px) {
+    .content-wrapper {
+        padding: 0.5rem;
+    }
+
+    .hero-section {
+        padding: 1.25rem 0.75rem;
+    }
+
+    .hero-title {
+        font-size: 1.35rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+    }
+
+    .stat-label {
+        font-size: 0.6rem;
+    }
+
+    .tutor-card {
+        padding: 0.875rem;
+    }
+
+    .tutor-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .tutor-name {
+        font-size: 0.95rem;
+    }
+
+    .tutor-card-actions {
+        gap: 0.5rem;
+    }
+
+    .connect-btn,
+    .view-profile-btn,
+    .message-btn {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .sidebar-container {
+        max-width: 100%;
+    }
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION MOBILE
+   ============================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .hero-subtitle {
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-stats {
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        padding: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    /* Make modal scrollable in landscape */
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* Sidebar scroll */
+    .sidebar-container {
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+/* ============================================
+   TOUCH-FRIENDLY ADJUSTMENTS
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .filter-checkbox {
+        min-height: 44px;
+    }
+
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+
+    .view-tutor-btn,
+    .connect-btn,
+    .view-profile-btn,
+    .message-btn {
+        min-height: 48px;
+    }
+
+    /* Remove hover effects for touch */
+    .tutor-card:hover {
+        transform: none;
+    }
+
+    .tutor-card:active {
+        transform: scale(0.98);
+    }
+
+    /* Make tooltips tap-to-show on touch devices */
+    .rating-breakdown-tooltip {
+        pointer-events: auto;
+    }
+}
+
+/* ============================================
+   HIGH CONTRAST / ACCESSIBILITY
+   ============================================ */
+@media (prefers-contrast: high) {
+    .tutor-card {
+        border-width: 2px;
+    }
+
+    .filter-checkbox input[type="checkbox"] {
+        border-width: 2px;
+    }
+
+    .nav-link:focus,
+    .view-tutor-btn:focus,
+    .connect-btn:focus {
+        outline: 3px solid var(--button-bg);
+        outline-offset: 2px;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .tutor-card,
+    .tutor-card *,
+    .sidebar-container,
+    .modal-content {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .cursor-blink,
+    .typing-cursor {
+        animation: none !important;
+    }
+
+    .status-dot {
+        animation: none !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .sidebar-container,
+    .navbar,
+    .footer,
+    .back-to-top,
+    .ad-placeholder-section {
+        display: none !important;
+    }
+
+    .main-content-container {
+        margin-left: 0 !important;
+    }
+
+    .tutor-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
 

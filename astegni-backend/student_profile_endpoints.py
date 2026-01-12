@@ -42,8 +42,8 @@ class StudentProfileUpdate(BaseModel):
     hobbies: Optional[List[str]] = Field(default_factory=list)
     quote: Optional[List[str]] = Field(default_factory=list)
     about: Optional[str] = None
-    profile_picture: Optional[str] = None
-    cover_image: Optional[str] = None
+    career_aspirations: Optional[str] = None
+    # Note: profile_picture and cover_image are handled by separate upload endpoints
 
 class StudentProfileResponse(BaseModel):
     """Model for student profile response"""
@@ -193,8 +193,7 @@ async def update_student_profile(
                     studying_at_val = profile_data.studying_at if profile_data.studying_at else None
                     grade_level_val = profile_data.grade_level if profile_data.grade_level else None
                     about_val = profile_data.about if profile_data.about else None
-                    profile_picture_val = profile_data.profile_picture if profile_data.profile_picture else None
-                    cover_image_val = profile_data.cover_image if profile_data.cover_image else None
+                    career_aspirations_val = profile_data.career_aspirations if profile_data.career_aspirations else None
 
                     # DEBUG: Print converted values
                     print("🔧 CONVERTED VALUES:")
@@ -203,8 +202,11 @@ async def update_student_profile(
                     print(f"studying_at_val: {studying_at_val}")
                     print(f"grade_level_val: {grade_level_val}")
                     print(f"about_val: {about_val}")
+                    print(f"career_aspirations_val: {career_aspirations_val}")
                     print("="*80 + "\n")
 
+                    # Note: profile_picture and cover_image are NOT updated here
+                    # They are handled by separate upload endpoints
                     cur.execute("""
                         UPDATE student_profiles
                         SET
@@ -220,8 +222,7 @@ async def update_student_profile(
                             hobbies = %s,
                             quote = %s,
                             about = COALESCE(%s, about),
-                            profile_picture = COALESCE(%s, profile_picture),
-                            cover_image = COALESCE(%s, cover_image),
+                            career_aspirations = COALESCE(%s, career_aspirations),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE user_id = %s
                         RETURNING *
@@ -238,20 +239,20 @@ async def update_student_profile(
                         profile_data.hobbies or [],
                         profile_data.quote or [],
                         about_val,
-                        profile_picture_val,
-                        cover_image_val,
+                        career_aspirations_val,
                         current_user_id
                     ))
                 else:
                     # Create new profile
+                    # Note: profile_picture and cover_image are handled by separate upload endpoints
                     cur.execute("""
                         INSERT INTO student_profiles (
                             user_id, hero_title, hero_subtitle, username, location,
                             studying_at, grade_level, interested_in,
                             learning_method, languages, hobbies, quote, about,
-                            profile_picture, cover_image
+                            career_aspirations
                         ) VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                         )
                         RETURNING *
                     """, (
@@ -268,8 +269,7 @@ async def update_student_profile(
                         profile_data.hobbies or [],
                         profile_data.quote or [],
                         profile_data.about,
-                        profile_data.profile_picture,
-                        profile_data.cover_image
+                        profile_data.career_aspirations
                     ))
 
                 updated_profile = cur.fetchone()

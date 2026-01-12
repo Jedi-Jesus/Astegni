@@ -1,0 +1,528 @@
+/* ============================================================================
+   DIGITAL LAB MODAL STYLES
+   Matches teaching-tools panel design and uses theme.css variables
+   ============================================================================ */
+
+/* Modal Overlay */
+.digital-lab-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.digital-lab-modal-overlay.active {
+    display: flex;
+}
+
+/* Main Modal */
+.digital-lab-modal {
+    background-color: var(--card-bg, #ffffff);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-2xl);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Modal Header - Uses primary color gradient */
+.digital-lab-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: var(--button-text);
+}
+
+.digital-lab-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.digital-lab-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.digital-lab-icon i {
+    font-size: 1.5rem;
+    color: var(--button-text);
+}
+
+.digital-lab-header-text h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: var(--button-text) !important;
+}
+
+.digital-lab-header-text p {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.digital-lab-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--button-text);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+}
+
+.digital-lab-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Modal Body */
+.digital-lab-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background: var(--background);
+}
+
+/* Category Labels */
+.digital-lab-category-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0 10px 0;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.digital-lab-category-label:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.digital-lab-category-emoji {
+    font-size: 1.2rem;
+}
+
+/* Courses Grid - 3 cards per row to fill modal width */
+.digital-lab-courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Course Card - Square design matching teaching-tools */
+.digital-lab-course-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+    background-color: var(--card-bg);
+    border: 2px solid rgba(var(--button-bg-rgb), 0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    aspect-ratio: 1;
+    min-height: 180px;
+}
+
+.digital-lab-course-card:hover {
+    border-color: var(--button-bg);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Course Icon - Large centered icon */
+.digital-lab-course-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.digital-lab-course-card:hover .digital-lab-course-icon {
+    transform: scale(1.1);
+}
+
+.digital-lab-course-icon i {
+    font-size: 1.8rem;
+    color: white;
+}
+
+/* Course-specific icon colors using theme accent */
+.digital-lab-course-icon.chemistry {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.digital-lab-course-icon.physics {
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+}
+
+.digital-lab-course-icon.biology {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.digital-lab-course-icon.mathematics {
+    background: linear-gradient(135deg, var(--accent), #6d28d9);
+}
+
+.digital-lab-course-icon.computer {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.digital-lab-course-icon.music {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.digital-lab-course-icon.visualart {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+/* Course Info */
+.digital-lab-course-info {
+    width: 100%;
+}
+
+.digital-lab-course-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.digital-lab-course-info p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Hide the arrow in new design */
+.digital-lab-course-arrow {
+    display: none;
+}
+
+/* Modal Footer */
+.digital-lab-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    text-align: center;
+}
+
+.digital-lab-modal-footer p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.digital-lab-modal-footer i {
+    color: var(--button-bg);
+}
+
+/* ============================================================================
+   COMING SOON MODAL STYLES
+   ============================================================================ */
+
+.digital-lab-coming-soon-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10001;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.digital-lab-coming-soon-overlay.active {
+    display: flex;
+}
+
+.digital-lab-coming-soon-modal {
+    background-color: var(--card-bg);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: var(--shadow-2xl);
+    animation: scaleIn 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.digital-lab-coming-soon-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.digital-lab-coming-soon-icon i {
+    font-size: 2rem;
+    color: var(--button-text);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(var(--button-bg-rgb), 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 20px rgba(var(--button-bg-rgb), 0);
+    }
+}
+
+.digital-lab-coming-soon-modal h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 0 0 12px 0;
+}
+
+.digital-lab-coming-soon-modal > p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.digital-lab-coming-soon-features {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.digital-lab-coming-soon-features .feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.digital-lab-coming-soon-features .feature-item i {
+    width: 44px;
+    height: 44px;
+    background: rgba(var(--button-bg-rgb), 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--button-bg);
+    font-size: 1.1rem;
+}
+
+.digital-lab-coming-soon-features .feature-item span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.digital-lab-coming-soon-btn {
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: var(--button-text);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.digital-lab-coming-soon-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(var(--button-bg-rgb), 0.35);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .digital-lab-modal {
+        width: 95%;
+        max-height: 90vh;
+        border-radius: 16px;
+    }
+
+    .digital-lab-modal-header {
+        padding: 16px 20px;
+    }
+
+    .digital-lab-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .digital-lab-header-text h2 {
+        font-size: 1.2rem;
+    }
+
+    .digital-lab-modal-body {
+        padding: 20px;
+    }
+
+    .digital-lab-courses-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .digital-lab-course-card {
+        padding: 20px 12px;
+        min-height: 140px;
+    }
+
+    .digital-lab-course-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .digital-lab-course-icon i {
+        font-size: 1.5rem;
+    }
+
+    .digital-lab-course-info h4 {
+        font-size: 0.9rem;
+    }
+
+    .digital-lab-course-info p {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .digital-lab-courses-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .digital-lab-course-card {
+        padding: 16px 10px;
+        min-height: 120px;
+    }
+
+    .digital-lab-course-icon {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 8px;
+    }
+
+    .digital-lab-course-icon i {
+        font-size: 1.3rem;
+    }
+
+    .digital-lab-course-info h4 {
+        font-size: 0.85rem;
+    }
+
+    .digital-lab-course-info p {
+        display: none;
+    }
+
+    .digital-lab-coming-soon-modal {
+        padding: 30px 24px;
+    }
+
+    .digital-lab-coming-soon-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .digital-lab-coming-soon-icon i {
+        font-size: 1.6rem;
+    }
+
+    .digital-lab-coming-soon-features {
+        gap: 16px;
+    }
+}
+
+/* ============================================================================
+   LARGE SCREENS - Keep 3 columns for consistent layout
+   ============================================================================ */
+
+@media (min-width: 900px) {
+    .digital-lab-courses-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

@@ -1,0 +1,856 @@
+<!-- Two-Factor Authentication Modal -->
+<div id="two-factor-auth-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeTwoFactorAuthModal()"></div>
+    <div class="modal-content tfa-modal-content" style="max-width: 550px; max-height: 90vh; overflow: hidden; position: relative;">
+
+        <!-- Main Content Container -->
+        <div id="tfa-main-content">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Two-Factor Authentication</h2>
+                        <p class="text-sm text-gray-500">Add extra security to your account</p>
+                    </div>
+                </div>
+                <button onclick="closeTwoFactorAuthModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 2FA Status Section -->
+            <div id="tfa-status-section" class="overflow-y-auto" style="max-height: calc(90vh - 120px);">
+                <!-- Loading State -->
+                <div id="tfa-loading" class="flex items-center justify-center py-8">
+                    <div class="w-8 h-8 border-3 border-gray-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <span class="ml-3 text-gray-600">Loading 2FA status...</span>
+                </div>
+
+                <!-- Enabled State -->
+                <div id="tfa-enabled-state" class="hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-green-800">2FA is Enabled</h3>
+                                <p class="text-sm text-green-600">Your account is protected with two-factor authentication</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                        <h4 class="font-medium text-gray-700 mb-3">Current 2FA Method</h4>
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                            <div id="tfa-method-icon" class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p id="tfa-method-name" class="font-medium text-gray-800">Email Verification</p>
+                                <p id="tfa-method-detail" class="text-sm text-gray-500">Codes sent to j***@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Configure Protected Panels Button -->
+                        <button onclick="TFAManager.openMethodPanel('protected-panels')" class="w-full py-3 px-4 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-colors font-medium flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            Configure Protected Panels
+                        </button>
+                        <button onclick="TFAManager.showChangeMethod()" class="w-full py-3 px-4 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition-colors font-medium flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Change 2FA Method
+                        </button>
+                        <button onclick="TFAManager.showDisable()" class="w-full py-3 px-4 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-medium flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            </svg>
+                            Disable 2FA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Disabled State - Method Selection -->
+                <div id="tfa-disabled-state" class="hidden">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-yellow-800">2FA is Not Enabled</h3>
+                                <p class="text-sm text-yellow-700 mt-1">Your account is more vulnerable without two-factor authentication. Enable 2FA to add an extra layer of security.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="font-medium text-gray-700 mb-4">Choose your 2FA method:</h4>
+                    <div class="space-y-3">
+                        <!-- In-App Verification Option -->
+                        <div class="tfa-method-option p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-all" onclick="TFAManager.openMethodPanel('inapp')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">In-App Verification</h5>
+                                    <p class="text-sm text-gray-500">Use your login password for verification</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Email Option -->
+                        <div class="tfa-method-option p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-all" onclick="TFAManager.openMethodPanel('email')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">Email Verification</h5>
+                                    <p class="text-sm text-gray-500">Receive codes via email</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Authenticator App Option -->
+                        <div class="tfa-method-option p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-all" onclick="TFAManager.openMethodPanel('authenticator')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">Authenticator App</h5>
+                                    <p class="text-sm text-gray-500">Use Google Authenticator, Authy, etc.</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- SMS Option (Coming Soon) -->
+                        <div class="tfa-method-option p-4 border-2 border-gray-200 rounded-xl cursor-not-allowed opacity-60">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">SMS Verification</h5>
+                                    <p class="text-sm text-gray-500">Receive codes via text message</p>
+                                </div>
+                                <span class="px-2 py-1 bg-gray-200 text-gray-600 text-xs font-medium rounded-full">Coming Soon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SLIDING PANELS ========== -->
+
+        <!-- In-App Verification Panel -->
+        <div id="tfa-panel-inapp" class="tfa-sliding-panel">
+            <div class="tfa-panel-header bg-gradient-to-r from-amber-500 to-orange-500">
+                <button class="tfa-panel-back" onclick="TFAManager.closeMethodPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">In-App Verification</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="tfa-panel-content">
+                <!-- Step 1: Choose Password Option -->
+                <div id="tfa-inapp-step1">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">In-App Verification</h4>
+                        <p class="text-gray-500">Choose how you want to verify your identity</p>
+                    </div>
+
+                    <!-- Password Option Cards -->
+                    <div class="space-y-3 mb-6">
+                        <!-- Option 1: Use Login Password -->
+                        <button onclick="TFAManager.selectInAppOption('login')" class="w-full text-left p-4 border-2 border-gray-200 rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all group">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-amber-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
+                                    <svg class="w-5 h-5 text-amber-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800 mb-1">Use Login Password</h5>
+                                    <p class="text-sm text-gray-500">Verify with your account password when logging in</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <!-- Option 2: Use Different Password -->
+                        <button onclick="TFAManager.selectInAppOption('different')" class="w-full text-left p-4 border-2 border-gray-200 rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all group">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-indigo-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
+                                    <svg class="w-5 h-5 text-indigo-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800 mb-1">Use Different Password</h5>
+                                    <p class="text-sm text-gray-500">Create a separate password for 2FA verification</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Verify Login Password -->
+                <div id="tfa-inapp-step2-login" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Verify Login Password</h4>
+                        <p class="text-gray-500">Enter your account password to enable In-App verification</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Login Password</label>
+                        <input type="password" id="tfa-inapp-login-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all" placeholder="Enter your login password">
+                    </div>
+
+                    <button onclick="TFAManager.setupInAppLogin()" id="tfa-inapp-login-btn" class="w-full py-3 px-4 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium">
+                        Enable Verification
+                    </button>
+
+                    <button onclick="TFAManager.backToInAppOptions()" class="w-full mt-3 py-2 text-sm text-gray-600 hover:text-gray-800">
+                        Back to options
+                    </button>
+                </div>
+
+                <!-- Step 2: Set Different Password -->
+                <div id="tfa-inapp-step2-different" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Create 2FA Password</h4>
+                        <p class="text-gray-500">Set a separate password for In-App verification</p>
+                    </div>
+
+                    <!-- Security: Verify current password first -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Login Password</label>
+                        <input type="password" id="tfa-inapp-current-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your current password">
+                        <p class="text-xs text-gray-500 mt-1">Confirm your identity before setting a new 2FA password</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">New 2FA Password</label>
+                        <input type="password" id="tfa-inapp-new-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="At least 8 characters">
+                        <p class="text-xs text-gray-500 mt-1">This password is separate from your login password</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm 2FA Password</label>
+                        <input type="password" id="tfa-inapp-confirm-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Re-enter 2FA password">
+                    </div>
+
+                    <button onclick="TFAManager.setupInAppDifferent()" id="tfa-inapp-different-btn" class="w-full py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium">
+                        Enable Verification
+                    </button>
+
+                    <button onclick="TFAManager.backToInAppOptions()" class="w-full mt-3 py-2 text-sm text-gray-600 hover:text-gray-800">
+                        Back to options
+                    </button>
+                </div>
+
+                <!-- Step 3: Success -->
+                <div id="tfa-inapp-step3-success" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">In-App Verification Enabled!</h4>
+                        <p class="text-gray-500">Save your backup codes below</p>
+                    </div>
+
+                    <!-- Backup Codes Display -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                        <h5 class="font-semibold text-gray-800 mb-3">Backup Codes</h5>
+                        <div id="tfa-inapp-backup-codes" class="grid grid-cols-2 gap-2 text-sm font-mono text-gray-700">
+                            <!-- Backup codes will be inserted here -->
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3">Save these codes in a safe place. You can use them if you lose access to your verification method.</p>
+                    </div>
+
+                    <button onclick="TFAManager.closeMethodPanel()" class="w-full py-3 px-4 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Verification Panel -->
+        <div id="tfa-panel-email" class="tfa-sliding-panel">
+            <div class="tfa-panel-header bg-gradient-to-r from-purple-500 to-indigo-600">
+                <button class="tfa-panel-back" onclick="TFAManager.closeMethodPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Email Verification</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="tfa-panel-content">
+                <!-- Step 1: Email Selection -->
+                <div id="tfa-email-step1">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Email Verification</h4>
+                        <p class="text-gray-500">We'll send a verification code to your email each time you log in.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="tfa-email-address" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" placeholder="your@email.com" readonly>
+                        <p class="text-xs text-gray-500 mt-1">This is your registered email address</p>
+                    </div>
+
+                    <button onclick="TFAManager.sendEmailOTP()" id="tfa-email-send-btn" class="w-full py-3 px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <span id="tfa-email-send-btn-text">Send Verification Code</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="tfa-email-step2" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Enter Verification Code</h4>
+                        <p class="text-gray-500">We sent a 6-digit code to <span id="tfa-email-display" class="font-medium text-purple-600"></span></p>
+                    </div>
+
+                    <!-- OTP Input -->
+                    <div class="mb-4">
+                        <div class="flex justify-center gap-2" id="tfa-email-otp-inputs">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="0">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="1">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="2">
+                            <span class="flex items-center text-gray-400 text-xl">-</span>
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="3">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="4">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" data-index="5">
+                        </div>
+                        <p id="tfa-email-otp-error" class="text-center text-red-500 text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <!-- Resend -->
+                    <p class="text-center text-sm text-gray-500 mb-4">
+                        Didn't receive the code?
+                        <button onclick="TFAManager.resendEmailOTP()" id="tfa-email-resend-btn" class="text-purple-600 hover:text-purple-800 font-medium">Resend</button>
+                        <span id="tfa-email-resend-timer" class="hidden text-gray-400"></span>
+                    </p>
+
+                    <div class="flex gap-3">
+                        <button onclick="TFAManager.emailBackToStep1()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Back</button>
+                        <button onclick="TFAManager.verifyEmailOTP()" id="tfa-email-verify-btn" class="flex-1 py-3 px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium">
+                            <span id="tfa-email-verify-btn-text">Verify & Enable</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Success -->
+                <div id="tfa-email-step3" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Email 2FA Enabled!</h4>
+                        <p class="text-gray-500">Your account is now protected with email verification.</p>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-green-800">From now on, you'll receive a verification code at <span id="tfa-email-success-display" class="font-medium"></span> each time you log in.</p>
+                    </div>
+
+                    <button onclick="TFAManager.closeMethodPanel()" class="w-full py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">Done</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authenticator App Panel -->
+        <div id="tfa-panel-authenticator" class="tfa-sliding-panel">
+            <div class="tfa-panel-header bg-gradient-to-r from-green-500 to-teal-600">
+                <button class="tfa-panel-back" onclick="TFAManager.closeMethodPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Authenticator App</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="tfa-panel-content">
+                <!-- Step 1: QR Code Setup -->
+                <div id="tfa-auth-step1">
+                    <div class="text-center mb-6">
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Set Up Authenticator App</h4>
+                        <p class="text-gray-500">Scan this QR code with your authenticator app</p>
+                    </div>
+
+                    <!-- QR Code Container -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 mb-4">
+                        <div id="tfa-auth-qr-container" class="w-48 h-48 mx-auto flex items-center justify-center bg-gray-50 rounded-lg mb-4">
+                            <!-- QR Code will be rendered here -->
+                            <div id="tfa-auth-qr-loading" class="flex flex-col items-center">
+                                <div class="w-8 h-8 border-3 border-gray-200 border-t-green-600 rounded-full animate-spin mb-2"></div>
+                                <span class="text-sm text-gray-500">Generating...</span>
+                            </div>
+                            <div id="tfa-auth-qr-code" class="hidden"></div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500 mb-2">Or enter this code manually:</p>
+                            <div class="flex items-center justify-center gap-2">
+                                <code id="tfa-auth-secret" class="bg-gray-100 px-4 py-2 rounded-lg font-mono text-sm text-gray-800 select-all">XXXX-XXXX-XXXX-XXXX</code>
+                                <button onclick="TFAManager.copySecret()" class="p-2 text-gray-500 hover:text-gray-700 transition-colors" title="Copy">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supported Apps -->
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                        <p class="text-sm text-gray-600 mb-2">Supported apps:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-white rounded-full text-xs text-gray-700 border">Google Authenticator</span>
+                            <span class="px-3 py-1 bg-white rounded-full text-xs text-gray-700 border">Microsoft Authenticator</span>
+                            <span class="px-3 py-1 bg-white rounded-full text-xs text-gray-700 border">Authy</span>
+                            <span class="px-3 py-1 bg-white rounded-full text-xs text-gray-700 border">1Password</span>
+                        </div>
+                    </div>
+
+                    <button onclick="TFAManager.authGoToStep2()" class="w-full py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">
+                        I've Scanned the Code
+                    </button>
+                </div>
+
+                <!-- Step 2: Verify TOTP -->
+                <div id="tfa-auth-step2" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Verify Authenticator</h4>
+                        <p class="text-gray-500">Enter the 6-digit code from your authenticator app</p>
+                    </div>
+
+                    <!-- TOTP Input -->
+                    <div class="mb-4">
+                        <div class="flex justify-center gap-2" id="tfa-auth-totp-inputs">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="0">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="1">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="2">
+                            <span class="flex items-center text-gray-400 text-xl">-</span>
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="3">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="4">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500" data-index="5">
+                        </div>
+                        <p id="tfa-auth-totp-error" class="text-center text-red-500 text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="TFAManager.authBackToStep1()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Back</button>
+                        <button onclick="TFAManager.verifyTOTP()" id="tfa-auth-verify-btn" class="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">
+                            <span id="tfa-auth-verify-btn-text">Verify & Enable</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Backup Codes -->
+                <div id="tfa-auth-step3" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Authenticator 2FA Enabled!</h4>
+                        <p class="text-gray-500">Save these backup codes in a safe place</p>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <p class="text-sm text-yellow-800">These codes can be used to access your account if you lose access to your authenticator app. Each code can only be used once.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                        <div id="tfa-auth-backup-codes" class="grid grid-cols-2 gap-2 font-mono text-sm">
+                            <!-- Backup codes will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mb-4">
+                        <button onclick="TFAManager.downloadBackupCodes()" class="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download
+                        </button>
+                        <button onclick="TFAManager.copyBackupCodes()" class="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+
+                    <button onclick="TFAManager.closeMethodPanel()" class="w-full py-3 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">Done</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protected Panels Configuration Panel -->
+        <div id="tfa-panel-protected-panels" class="tfa-sliding-panel">
+            <div class="tfa-panel-header bg-gradient-to-r from-purple-500 to-indigo-600">
+                <button class="tfa-panel-back" onclick="TFAManager.closeMethodPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Protected Panels</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="tfa-panel-content">
+                <!-- Step 1: Password Verification -->
+                <div id="tfa-protected-panels-verify">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Verify Your Identity</h4>
+                        <p class="text-gray-500">Enter your password to configure protected panels</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <input type="password" id="tfa-protected-panels-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all pr-12" placeholder="Enter your password">
+                            <button type="button" onclick="TFAManager.togglePasswordVisibility('tfa-protected-panels-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p id="tfa-protected-panels-verify-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <button onclick="TFAManager.verifyForProtectedPanels()" id="tfa-protected-panels-verify-btn" class="w-full py-3 px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium">
+                        Continue
+                    </button>
+                </div>
+
+                <!-- Step 2: Panel Toggles (shown after verification) -->
+                <div id="tfa-protected-panels-config" class="hidden">
+                    <div class="text-center mb-4">
+                        <h4 class="text-lg font-bold text-gray-800 mb-1">Configure Protected Panels</h4>
+                        <p class="text-sm text-gray-500">Toggle which panels require 2FA verification</p>
+                    </div>
+
+                    <!-- Loading -->
+                    <div id="tfa-protected-panels-loading" class="flex items-center justify-center py-6 hidden">
+                        <div class="w-6 h-6 border-2 border-gray-200 border-t-purple-600 rounded-full animate-spin"></div>
+                        <span class="ml-2 text-gray-600">Loading...</span>
+                    </div>
+
+                    <!-- Panels List -->
+                    <div id="tfa-protected-panels-list" class="space-y-1 max-h-[300px] overflow-y-auto mb-4">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="TFAManager.resetProtectedPanels()" class="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Reset
+                        </button>
+                        <button onclick="TFAManager.saveAndCloseProtectedPanels()" id="tfa-protected-panels-save-btn" class="flex-1 py-2.5 px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save & Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disable 2FA Panel -->
+        <div id="tfa-panel-disable" class="tfa-sliding-panel">
+            <div class="tfa-panel-header bg-gradient-to-r from-red-500 to-rose-600">
+                <button class="tfa-panel-back" onclick="TFAManager.closeMethodPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Disable 2FA</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="tfa-panel-content">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Disable Two-Factor Authentication?</h4>
+                    <p class="text-gray-500">This will make your account less secure</p>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                    <p class="text-sm text-red-800">Without 2FA, anyone with your password can access your account. We strongly recommend keeping 2FA enabled.</p>
+                </div>
+
+                <!-- In-App Password Verification -->
+                <div id="tfa-disable-inapp" class="mb-4 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Enter your 2FA password to confirm</label>
+                    <div class="relative">
+                        <input type="password" id="tfa-disable-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all pr-12" placeholder="Your 2FA password">
+                        <button type="button" onclick="TFAManager.togglePasswordVisibility('tfa-disable-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="tfa-disable-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                </div>
+
+                <!-- Email OTP Verification -->
+                <div id="tfa-disable-email" class="mb-4 hidden">
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-3">A verification code will be sent to your email</p>
+                        <button onclick="TFAManager.sendDisableOTP()" id="tfa-send-disable-otp-btn" class="w-full py-3 px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                            <span id="tfa-send-disable-otp-text">Send Verification Code</span>
+                        </button>
+                    </div>
+
+                    <div id="tfa-disable-otp-input-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Enter 6-digit code</label>
+                        <div class="flex gap-2 justify-center mb-3">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <span class="flex items-center text-gray-400 font-bold">-</span>
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <input type="text" maxlength="1" class="tfa-otp-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        </div>
+                        <p class="text-xs text-gray-500 text-center">Code expires in <span id="tfa-disable-otp-timer">5:00</span></p>
+                    </div>
+                    <p id="tfa-disable-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                </div>
+
+                <!-- Authenticator Code Verification -->
+                <div id="tfa-disable-authenticator" class="mb-4 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Enter code from your authenticator app</label>
+                    <div class="flex gap-2 justify-center mb-3">
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <span class="flex items-center text-gray-400 font-bold">-</span>
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <input type="text" maxlength="1" class="tfa-auth-code-input w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                    </div>
+                    <p id="tfa-disable-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="TFAManager.closeMethodPanel()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                    <button onclick="TFAManager.confirmDisable()" id="tfa-disable-btn" class="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium">
+                        <span id="tfa-disable-btn-text">Disable 2FA</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* TFA Modal Styles */
+.tfa-modal-content {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sliding Panel Styles */
+.tfa-sliding-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.tfa-sliding-panel.active {
+    transform: translateX(0);
+}
+
+.tfa-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.tfa-panel-header h3 {
+    margin: 0;
+}
+
+.tfa-panel-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tfa-panel-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.tfa-panel-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* OTP Input Styles */
+.tfa-otp-input {
+    transition: all 0.2s ease;
+}
+
+.tfa-otp-input:focus {
+    transform: scale(1.05);
+}
+
+.tfa-otp-input.error {
+    border-color: #ef4444 !important;
+    animation: shake 0.5s ease;
+}
+
+.tfa-otp-input.success {
+    border-color: #22c55e !important;
+    background-color: #f0fdf4;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Method Option Hover */
+.tfa-method-option {
+    transition: all 0.2s ease;
+}
+
+.tfa-method-option:hover:not(.cursor-not-allowed) {
+    transform: translateX(4px);
+    border-color: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+</style>

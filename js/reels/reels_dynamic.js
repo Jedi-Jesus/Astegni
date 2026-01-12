@@ -499,17 +499,8 @@ function showErrorState() {
 }
 
 function renderEmptyState() {
-    return `
-        <div class="col-span-full empty-state">
-            <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M7 4v16M17 4v16M3 8h4m10 0h4M5 12h14M3 16h4m10 0h4M8 4h8a1 1 0 011 1v14a1 1 0 01-1 1H8a1 1 0 01-1-1V5a1 1 0 011-1z">
-                </path>
-            </svg>
-            <p class="text-center text-lg opacity-70">No videos found</p>
-            <p class="text-center text-sm opacity-50 mt-2">Try adjusting your filters or search query</p>
-        </div>
-    `;
+    // Return empty string since the Coming Soon card is already displayed in the HTML
+    return '';
 }
 
 function applyTheme() {

@@ -1,0 +1,581 @@
+<!--
+  Modal: verify-company-info-modal
+  Purpose: Verify and update advertiser company/business information
+  Features: Company Info tab + Business Documents tab + Verification Status tab
+-->
+
+<div id="verify-company-info-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeVerifyCompanyInfoModal()"></div>
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Company Verification</h2>
+                    <p class="text-sm text-gray-500">Verify your business information</p>
+                </div>
+            </div>
+            <button onclick="closeVerifyCompanyInfoModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Verification Status Banner -->
+        <div id="companyVerificationBanner" class="mb-6 p-4 rounded-xl bg-yellow-50 border border-yellow-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-yellow-800">Verification Pending</p>
+                    <p class="text-sm text-yellow-600">Complete all required fields and upload documents to verify your company</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-semibold text-emerald-600 border-b-2 border-emerald-600 transition-all" id="companyInfoTab" onclick="switchCompanyVerifyTab('company')">
+                Company Info
+            </button>
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-all" id="businessDocsTab" onclick="switchCompanyVerifyTab('documents')">
+                Business Documents
+            </button>
+            <button class="modal-tab flex-1 py-3 px-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-all" id="verificationStatusTab" onclick="switchCompanyVerifyTab('status')">
+                Verification Status
+            </button>
+        </div>
+
+        <!-- Company Info Tab Content -->
+        <div id="companyInfoContent" class="tab-content">
+            <form id="verifyCompanyInfoForm" class="space-y-4">
+                <!-- Company Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company/Business Name *</label>
+                    <input type="text" id="modalCompanyName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Enter your company name" required>
+                </div>
+
+                <!-- Industry -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Industry *</label>
+                    <select id="modalCompanyIndustry" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" required>
+                        <option value="">Select Industry</option>
+                        <option value="Education">Education</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance & Banking</option>
+                        <option value="Retail">Retail & E-commerce</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Food & Beverage">Food & Beverage</option>
+                        <option value="Transportation">Transportation & Logistics</option>
+                        <option value="Hospitality">Hospitality & Tourism</option>
+                        <option value="Media">Media & Entertainment</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Telecommunications">Telecommunications</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Business Registration Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Business Registration Number *</label>
+                    <input type="text" id="modalBusinessRegNo" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Enter your business registration number" required>
+                    <p class="text-xs text-gray-500 mt-1">Ethiopian business license number</p>
+                </div>
+
+                <!-- TIN Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">TIN (Tax Identification Number) *</label>
+                    <input type="text" id="modalCompanyTIN" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Enter your TIN number" required>
+                </div>
+
+                <!-- Website -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Website</label>
+                    <input type="url" id="modalCompanyWebsite" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="https://www.yourcompany.com">
+                </div>
+
+                <!-- Contact Emails with OTP Verification -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Business Contact Emails *</label>
+
+                    <!-- Verified Emails List -->
+                    <div id="verifiedEmailsList" class="space-y-2 mb-3">
+                        <!-- Verified emails will be added here dynamically -->
+                    </div>
+
+                    <!-- Primary Email Input -->
+                    <div id="primaryEmailContainer">
+                        <div class="flex gap-2">
+                            <input type="email" id="modalCompanyEmail" class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="contact@yourcompany.com" required>
+                            <button type="button" id="sendEmailOtpBtn" class="px-4 py-3 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all whitespace-nowrap">
+                                Send OTP
+                            </button>
+                        </div>
+                        <!-- OTP Input (hidden by default) -->
+                        <div id="emailOtpSection" class="mt-3 hidden">
+                            <div class="flex gap-2">
+                                <input type="text" id="modalEmailOtp" maxlength="6" class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-center tracking-widest font-mono text-lg" placeholder="Enter 6-digit OTP">
+                                <button type="button" id="verifyEmailOtpBtn" class="px-4 py-3 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all">
+                                    Verify
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Check your email for the verification code</p>
+                        </div>
+                        <!-- Verified Badge (hidden by default) -->
+                        <div id="emailVerifiedBadge" class="mt-2 hidden">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Email Verified
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Add Another Email Button -->
+                    <button type="button" id="addAnotherEmailBtn" onclick="addAnotherEmail()" class="mt-3 flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Another Email
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">You can add multiple business emails. Each must be verified.</p>
+                </div>
+
+                <!-- Location Access -->
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Allow Location Access</h4>
+                                <p class="text-xs text-gray-500">Share your business location for verification</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="modalLocationToggle" class="sr-only peer" onchange="handleLocationToggle(this)">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+                    <!-- Location Display (shown when enabled) -->
+                    <div id="locationDisplay" class="mt-3 hidden">
+                        <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            </svg>
+                            <span id="locationText" class="text-sm text-gray-600">Fetching location...</span>
+                        </div>
+                        <input type="hidden" id="modalCompanyLatitude">
+                        <input type="hidden" id="modalCompanyLongitude">
+                        <input type="hidden" id="modalCompanyAddress">
+                    </div>
+                </div>
+
+                <!-- Company Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Description</label>
+                    <textarea id="modalCompanyDescription" rows="3" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Briefly describe your company and its services..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">This helps us understand your business better</p>
+                </div>
+
+                <!-- Save Button -->
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl">
+                        Save Company Information
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Business Documents Tab Content -->
+        <div id="businessDocsContent" class="tab-content hidden">
+            <div class="space-y-6">
+                <p class="text-gray-600 text-sm mb-4">Upload the following documents to verify your business. All documents will be reviewed by our team.</p>
+
+                <!-- Business License -->
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Business License</h4>
+                                <p class="text-xs text-gray-500">Official business registration document</p>
+                            </div>
+                        </div>
+                        <span id="businessLicenseStatus" class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Not Uploaded</span>
+                    </div>
+                    <!-- Uploaded Document Preview -->
+                    <div id="businessLicensePreview" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="businessLicenseThumb" class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="businessLicenseFileName" class="text-sm font-medium text-gray-800 truncate">document.pdf</p>
+                                <p class="text-xs text-green-600">Uploaded</p>
+                            </div>
+                            <button type="button" id="viewBusinessLicense" class="py-1.5 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-xs font-medium">
+                                View
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="businessLicenseFile" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="showDocumentPreview('businessLicense', this)">
+                        <button type="button" onclick="document.getElementById('businessLicenseFile').click()" class="py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TIN Certificate -->
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">TIN Certificate <span class="text-red-500">*</span></h4>
+                                <p class="text-xs text-gray-500">Tax Identification Number certificate (Required)</p>
+                            </div>
+                        </div>
+                        <span id="tinCertificateStatus" class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Required</span>
+                    </div>
+                    <!-- Uploaded Document Preview -->
+                    <div id="tinCertificatePreview" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="tinCertificateThumb" class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="tinCertificateFileName" class="text-sm font-medium text-gray-800 truncate">document.pdf</p>
+                                <p class="text-xs text-green-600">Uploaded</p>
+                            </div>
+                            <button type="button" id="viewTinCertificate" class="py-1.5 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-xs font-medium">
+                                View
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="tinCertificateFile" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="showDocumentPreview('tinCertificate', this)">
+                        <button type="button" onclick="document.getElementById('tinCertificateFile').click()" class="py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Company Logo -->
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Company Logo <span class="text-red-500">*</span></h4>
+                                <p class="text-xs text-gray-500">High-resolution company logo (PNG, JPG) (Required)</p>
+                            </div>
+                        </div>
+                        <span id="companyLogoStatus" class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Required</span>
+                    </div>
+                    <!-- Uploaded Document Preview -->
+                    <div id="companyLogoPreview" class="hidden mb-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="companyLogoThumb" class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img id="companyLogoThumbImg" src="" alt="Logo" class="w-full h-full object-cover hidden">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="companyLogoFileName" class="text-sm font-medium text-gray-800 truncate">logo.png</p>
+                                <p class="text-xs text-green-600">Uploaded</p>
+                            </div>
+                            <button type="button" id="viewCompanyLogo" class="py-1.5 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-xs font-medium">
+                                View
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="companyLogoFile" accept=".jpg,.jpeg,.png" class="hidden" onchange="showDocumentPreview('companyLogo', this)">
+                        <button type="button" onclick="document.getElementById('companyLogoFile').click()" class="py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Additional Documents -->
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Additional Documents</h4>
+                                <p class="text-xs text-gray-500">Any other relevant business documents</p>
+                            </div>
+                        </div>
+                        <span id="additionalDocsStatus" class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Optional</span>
+                    </div>
+                    <div id="additionalDocsList" class="mb-3 space-y-2 hidden">
+                        <!-- Uploaded files will be listed here dynamically -->
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="additionalDocsFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden" onchange="showDocumentPreview('additionalDocs', this)">
+                        <button type="button" onclick="document.getElementById('additionalDocsFile').click()" class="py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit for Verification -->
+                <div class="pt-4">
+                    <button type="button" onclick="submitCompanyForVerification()" class="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl">
+                        Submit for Verification
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-2">Verification usually takes 1-3 business days</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Status Tab Content -->
+        <div id="verificationStatusContent" class="tab-content hidden">
+            <div class="space-y-6">
+                <!-- Overall Status -->
+                <div class="bg-gray-50 rounded-xl p-6 text-center">
+                    <div id="overallVerificationIcon" class="w-20 h-20 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 id="overallVerificationTitle" class="text-xl font-bold text-gray-800 mb-2">Verification Pending</h3>
+                    <p id="overallVerificationDesc" class="text-gray-600">Your company verification is being processed</p>
+                </div>
+
+                <!-- Verification Checklist -->
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-gray-800 mb-3">Verification Checklist</h4>
+
+                    <!-- Company Info Status -->
+                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="companyInfoCheckIcon" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700">Company Information</span>
+                        </div>
+                        <span id="companyInfoCheckStatus" class="text-sm text-gray-500">Incomplete</span>
+                    </div>
+
+                    <!-- Business License Status -->
+                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="businessLicenseCheckIcon" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700">Business License</span>
+                        </div>
+                        <span id="businessLicenseCheckStatus" class="text-sm text-gray-500">Not Uploaded</span>
+                    </div>
+
+                    <!-- TIN Certificate Status -->
+                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="tinCertificateCheckIcon" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700">TIN Certificate</span>
+                        </div>
+                        <span id="tinCertificateCheckStatus" class="text-sm text-gray-500">Not Uploaded</span>
+                    </div>
+
+                    <!-- Admin Review Status -->
+                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div id="adminReviewCheckIcon" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700">Admin Review</span>
+                        </div>
+                        <span id="adminReviewCheckStatus" class="text-sm text-gray-500">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Verification History -->
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-3">Verification History</h4>
+                    <div id="verificationHistoryList" class="space-y-2">
+                        <div class="p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                            No verification history yet
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="bg-blue-50 rounded-xl p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-blue-800">Need help with verification?</p>
+                            <p class="text-sm text-blue-600 mt-1">Contact our support team at <a href="mailto:support@astegni.com" class="underline">support@astegni.com</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Document Preview Modal (nested within verify-company-info-modal) -->
+<div id="documentPreviewModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeDocumentPreview()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden" style="max-height: 90vh;">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center gap-3">
+                <div id="previewDocIcon" class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="previewDocTitle" class="font-semibold text-gray-800">Document Preview</h3>
+                    <p id="previewDocSubtitle" class="text-xs text-gray-500">Review before uploading</p>
+                </div>
+            </div>
+            <button onclick="closeDocumentPreview()" class="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Preview Content -->
+        <div class="p-4">
+            <!-- Image Preview -->
+            <div id="imagePreviewContainer" class="hidden">
+                <div class="relative rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center" style="min-height: 200px; max-height: 350px;">
+                    <img id="previewImage" src="" alt="Document Preview" class="max-w-full max-h-[350px] object-contain">
+                </div>
+            </div>
+
+            <!-- PDF Preview -->
+            <div id="pdfPreviewContainer" class="hidden">
+                <div class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="font-medium text-gray-800">PDF Document</p>
+                    <p id="pdfFileName" class="text-sm text-gray-500 mt-1">document.pdf</p>
+                </div>
+            </div>
+
+            <!-- File Info -->
+            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">File Name:</span>
+                    <span id="previewFileName" class="font-medium text-gray-800 truncate max-w-[200px]">filename.jpg</span>
+                </div>
+                <div class="flex items-center justify-between text-sm mt-2">
+                    <span class="text-gray-600">File Size:</span>
+                    <span id="previewFileSize" class="font-medium text-gray-800">2.5 MB</span>
+                </div>
+                <div class="flex items-center justify-between text-sm mt-2">
+                    <span class="text-gray-600">File Type:</span>
+                    <span id="previewFileType" class="font-medium text-gray-800">image/jpeg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 p-4 border-t border-gray-200 bg-gray-50">
+            <button type="button" onclick="changeDocumentFile()" class="flex-1 py-2.5 px-4 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Change
+            </button>
+            <button type="button" id="confirmUploadBtn" onclick="confirmDocumentUpload()" class="flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                Upload
+            </button>
+        </div>
+
+        <!-- Upload Progress (hidden by default) -->
+        <div id="uploadProgressSection" class="hidden p-4 border-t border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700">Uploading...</span>
+                        <span id="uploadProgressPercent" class="text-sm text-gray-500">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="uploadProgressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS functionality is in js/common-modals/verify-company-info-modal.js -->

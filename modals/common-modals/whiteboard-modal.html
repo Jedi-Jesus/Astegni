@@ -1,0 +1,1041 @@
+<!--
+  Modal: whiteboardModal
+  Purpose: Digital Whiteboard - Collaborative teaching platform
+  Shared across: tutor-profile, student-profile, view-tutor
+-->
+
+<!-- Whiteboard Modal -->
+<div class="whiteboard-modal-overlay" id="whiteboardModal">
+    <!-- Mobile sidebar backdrop -->
+    <div class="mobile-sidebar-backdrop" id="mobileSidebarBackdrop"></div>
+
+    <div class="whiteboard-modal" id="whiteboardModalContainer">
+        <!-- Header -->
+        <div class="whiteboard-header">
+            <div class="whiteboard-header-left">
+                <button class="header-icon-btn mobile-toggle-history" id="mobileToggleHistory" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="whiteboard-title">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span id="whiteboardSessionTitle">Digital Whiteboard</span>
+                </div>
+            </div>
+            <div class="whiteboard-session-info">
+                <div class="session-status">
+                    <span class="status-indicator"></span>
+                    <span id="sessionStatusText">Live Session</span>
+                </div>
+                <div class="session-timer">
+                    <i class="far fa-clock"></i>
+                    <span id="sessionTimer">00:00:00</span>
+                </div>
+            </div>
+            <div class="whiteboard-header-right">
+                <button class="header-icon-btn" id="rightSidebarToggle" title="Toggle right Sidebar">
+                    <i class="fas fa-bars mobile-icon"></i>
+                </button>
+                <button class="header-icon-btn" id="minimizeWhiteboard" title="Minimize">
+                    <i class="fas fa-window-minimize"></i>
+                </button>
+                <button class="header-icon-btn" id="maximizeWhiteboard" title="Maximize">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="header-icon-btn close-btn" id="closeWhiteboard" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Body: 3-Column Layout -->
+        <div class="whiteboard-body">
+            <!-- LEFT SIDEBAR: VS Code Style with Icon Bar -->
+            <div class="whiteboard-sidebar">
+                <!-- Icon Bar -->
+                <div class="sidebar-icon-bar">
+                    <!-- Toggle button for expanding/collapsing sidebar content -->
+                    <button class="sidebar-toggle-btn" id="leftSidebarToggle" title="Toggle Panel">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="sidebar-icon-bar-divider"></div>
+                    <button class="sidebar-icon-btn" data-panel="students" title="Students">
+                        <i class="fas fa-user-graduate"></i>
+                    </button>
+                    <button class="sidebar-icon-btn" data-panel="files" title="Files">
+                        <i class="fas fa-folder"></i>
+                    </button>
+                    <button class="sidebar-icon-btn" data-panel="coursework" title="Coursework">
+                        <i class="fas fa-clipboard-list"></i>
+                    </button>
+                    <button class="sidebar-icon-btn" data-panel="lab" title="Digital Lab">
+                        <i class="fas fa-flask"></i>
+                    </button>
+                    <button class="sidebar-icon-btn active" data-panel="history" title="Session History">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button class="sidebar-icon-btn" data-panel="settings" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+
+                <!-- Collapsible Content Area -->
+                <div class="sidebar-content" id="sidebarContent">
+                    <!-- Students Panel -->
+                    <div class="sidebar-panel" id="studentsPanel">
+                        <div class="sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-user-graduate"></i>
+                                Students
+                            </h3>
+                        </div>
+                        <div class="sidebar-search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="studentsSearch" placeholder="Search students...">
+                        </div>
+                        <div class="students-list" id="studentsList">
+                            <!-- Students will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- History Panel -->
+                    <div class="sidebar-panel active" id="historyPanel">
+                        <div class="sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-history"></i>
+                                Session History
+                            </h3>
+                            <button class="new-session-btn" id="newSessionBtn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar-search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="historySearch" placeholder="Search sessions...">
+                        </div>
+                        <div class="session-history-list" id="sessionHistoryList">
+                            <!-- Session cards will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- Files Panel -->
+                    <div class="sidebar-panel" id="filesPanel">
+                        <div class="sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-folder"></i>
+                                Files
+                            </h3>
+                            <button class="new-session-btn" id="uploadFileBtn">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar-search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="filesSearch" placeholder="Search files...">
+                        </div>
+                        <div class="files-list" id="filesList">
+                            <!-- Files will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- Coursework Panel -->
+                    <div class="sidebar-panel" id="courseworkPanel">
+                        <div class="sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-clipboard-list"></i>
+                                Coursework
+                            </h3>
+                            <button class="new-session-btn" id="createCourseworkBtn" title="Create Coursework">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar-search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="courseworkSearch" placeholder="Search coursework...">
+                        </div>
+                        <div class="coursework-list" id="courseworkList">
+                            <!-- Coursework will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- Digital Lab Panel -->
+                    <div class="sidebar-panel" id="labPanel">
+                        <!-- Header with back button (hidden initially) -->
+                        <div class="sidebar-panel-header" id="labPanelHeader">
+                            <button class="lab-back-btn" id="labBackBtn" onclick="whiteboardManager.showLabCourseList()" style="display: none;">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h3>
+                                <i class="fas fa-flask"></i>
+                                <span id="labPanelTitle">Digital Lab</span>
+                            </h3>
+                            <button class="new-session-btn" id="newLabBtn" title="New Experiment">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Course List View (Initial State) -->
+                        <div class="lab-course-list" id="labCourseList">
+                            <!-- Science Labs Category -->
+                            <div class="lab-category-label">
+                                <span class="lab-category-emoji">🔬</span>
+                                <span>Science Labs</span>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('biology')">
+                                <div class="lab-course-icon biology">
+                                    <i class="fas fa-dna"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Biology</h4>
+                                    <p>Cells, DNA, ecosystems, anatomy</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('physics')">
+                                <div class="lab-course-icon physics">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Physics</h4>
+                                    <p>Circuits, mechanics, waves, optics</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('chemistry')">
+                                <div class="lab-course-icon chemistry">
+                                    <i class="fas fa-atom"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Chemistry</h4>
+                                    <p>Periodic table, molecules, reactions</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+
+                            <!-- Mathematics Lab Category -->
+                            <div class="lab-category-label">
+                                <span class="lab-category-emoji">📐</span>
+                                <span>Mathematics Lab</span>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('mathematics')">
+                                <div class="lab-course-icon mathematics">
+                                    <i class="fas fa-square-root-variable"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Mathematics</h4>
+                                    <p>3D graphing, geometry, calculus</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+
+                            <!-- Technology Lab Category -->
+                            <div class="lab-category-label">
+                                <span class="lab-category-emoji">💻</span>
+                                <span>Technology Lab</span>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('computer')">
+                                <div class="lab-course-icon computer">
+                                    <i class="fas fa-laptop-code"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Computer / ICT</h4>
+                                    <p>Programming, algorithms, data structures</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+
+                            <!-- Creative / Studio Labs Category -->
+                            <div class="lab-category-label">
+                                <span class="lab-category-emoji">🎭</span>
+                                <span>Creative / Studio Labs</span>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('music')">
+                                <div class="lab-course-icon music">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Music</h4>
+                                    <p>Instruments, composition, audio mixing</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+                            <div class="lab-course-card" onclick="whiteboardManager.selectLabCourse('visualart')">
+                                <div class="lab-course-icon visualart">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div class="lab-course-info">
+                                    <h4>Visual Art</h4>
+                                    <p>Drawing, painting, digital art</p>
+                                </div>
+                                <i class="fas fa-chevron-right lab-course-arrow"></i>
+                            </div>
+                        </div>
+
+                        <!-- Tools View (Shown after selecting a course) -->
+                        <div class="lab-tools-view" id="labToolsView" style="display: none;">
+                            <!-- Chemistry Tools -->
+                            <div class="lab-tools-grid" id="chemistryTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('periodic-table', 'Periodic Table')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-table"></i>
+                                    </div>
+                                    <span>Periodic Table</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('molecular-builder', 'Molecular Builder')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-project-diagram"></i>
+                                    </div>
+                                    <span>Molecular Builder</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('reactions', 'Chemical Reactions')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-vial"></i>
+                                    </div>
+                                    <span>Chemical Reactions</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('titration', 'Titration Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <span>Titration Lab</span>
+                                    <span class="lab-badge new">New</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('beaker', 'Beaker Experiments')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-prescription-bottle"></i>
+                                    </div>
+                                    <span>Beaker Experiments</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('bunsen', 'Bunsen Burner')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-fire"></i>
+                                    </div>
+                                    <span>Bunsen Burner</span>
+                                </div>
+                            </div>
+
+                            <!-- Physics Tools -->
+                            <div class="lab-tools-grid" id="physicsTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('circuit-builder', 'Circuit Builder')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                    <span>Circuit Builder</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('mechanics', 'Mechanics Simulator')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-cogs"></i>
+                                    </div>
+                                    <span>Mechanics Simulator</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('waves', 'Wave Simulator')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-wave-square"></i>
+                                    </div>
+                                    <span>Wave Simulator</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('optics', 'Optics Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <span>Optics Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('pendulum', 'Pendulum Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-weight-hanging"></i>
+                                    </div>
+                                    <span>Pendulum Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('magnet', 'Magnetism Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-magnet"></i>
+                                    </div>
+                                    <span>Magnetism Lab</span>
+                                </div>
+                            </div>
+
+                            <!-- Biology Tools -->
+                            <div class="lab-tools-grid" id="biologyTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('cell-explorer', 'Cell Explorer')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                    <span>Cell Explorer</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('dna-lab', 'DNA Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-dna"></i>
+                                    </div>
+                                    <span>DNA Lab</span>
+                                    <span class="lab-badge new">New</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('ecosystem', 'Ecosystem Simulator')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-leaf"></i>
+                                    </div>
+                                    <span>Ecosystem Simulator</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('anatomy', 'Human Anatomy')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span>Human Anatomy</span>
+                                    <span class="lab-badge advanced">Advanced</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('microscope', 'Microscope')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-microscope"></i>
+                                    </div>
+                                    <span>Microscope</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('dissection', 'Virtual Dissection')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-cut"></i>
+                                    </div>
+                                    <span>Virtual Dissection</span>
+                                </div>
+                            </div>
+
+                            <!-- Mathematics Tools -->
+                            <div class="lab-tools-grid" id="mathematicsTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('3d-graphing', '3D Graphing')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <span>3D Graphing</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('geometry', 'Geometry Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-shapes"></i>
+                                    </div>
+                                    <span>Geometry Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('probability', 'Probability Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-dice"></i>
+                                    </div>
+                                    <span>Probability Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('calculus', 'Calculus Visualizer')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-infinity"></i>
+                                    </div>
+                                    <span>Calculus Visualizer</span>
+                                    <span class="lab-badge advanced">Advanced</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('calculator', 'Scientific Calculator')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                    <span>Scientific Calculator</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('algebra', 'Algebra Solver')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-superscript"></i>
+                                    </div>
+                                    <span>Algebra Solver</span>
+                                </div>
+                            </div>
+
+                            <!-- Computer / ICT Tools -->
+                            <div class="lab-tools-grid" id="computerTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('code-editor', 'Code Editor')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-code"></i>
+                                    </div>
+                                    <span>Code Editor</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('algorithm-viz', 'Algorithm Visualizer')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-project-diagram"></i>
+                                    </div>
+                                    <span>Algorithm Visualizer</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('data-structures', 'Data Structures')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-sitemap"></i>
+                                    </div>
+                                    <span>Data Structures</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('database-lab', 'Database Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-database"></i>
+                                    </div>
+                                    <span>Database Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('network-sim', 'Network Simulator')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-network-wired"></i>
+                                    </div>
+                                    <span>Network Simulator</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('binary-tools', 'Binary Tools')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                    <span>Binary Tools</span>
+                                </div>
+                            </div>
+
+                            <!-- Music Tools -->
+                            <div class="lab-tools-grid" id="musicTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('piano', 'Virtual Piano')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-piano-keyboard"></i>
+                                    </div>
+                                    <span>Virtual Piano</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('drum-machine', 'Drum Machine')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-drum"></i>
+                                    </div>
+                                    <span>Drum Machine</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('sheet-music', 'Sheet Music Editor')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-music"></i>
+                                    </div>
+                                    <span>Sheet Music Editor</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('audio-mixer', 'Audio Mixer')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-sliders-h"></i>
+                                    </div>
+                                    <span>Audio Mixer</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('metronome', 'Metronome')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <span>Metronome</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('tuner', 'Instrument Tuner')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-guitar"></i>
+                                    </div>
+                                    <span>Instrument Tuner</span>
+                                </div>
+                            </div>
+
+                            <!-- Visual Art Tools -->
+                            <div class="lab-tools-grid" id="visualartTools" style="display: none;">
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('drawing-canvas', 'Drawing Canvas')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </div>
+                                    <span>Drawing Canvas</span>
+                                    <span class="lab-badge popular">Popular</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('color-theory', 'Color Theory')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                    <span>Color Theory</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('pixel-art', 'Pixel Art Studio')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-th"></i>
+                                    </div>
+                                    <span>Pixel Art Studio</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('perspective', 'Perspective Guide')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <span>Perspective Guide</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('typography', 'Typography Lab')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-font"></i>
+                                    </div>
+                                    <span>Typography Lab</span>
+                                </div>
+                                <div class="lab-tool-card" onclick="whiteboardManager.openLabExperiment('image-filters', 'Image Filters')">
+                                    <div class="lab-tool-icon">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <span>Image Filters</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="sidebar-panel" id="settingsPanel">
+                        <div class="sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </h3>
+                        </div>
+                        <div class="sidebar-search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="settingsSearch" placeholder="Search settings...">
+                        </div>
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <label>Grid</label>
+                                <input type="checkbox" checked>
+                            </div>
+                            <div class="setting-item">
+                                <label>Snap to Grid</label>
+                                <input type="checkbox">
+                            </div>
+                            <div class="setting-item">
+                                <label>Auto-save</label>
+                                <input type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: Canvas Area -->
+            <div class="whiteboard-canvas-area">
+                <!-- Toolbar -->
+                <div class="whiteboard-toolbar">
+                    <!-- PRIMARY TOOLS (Always Visible) -->
+                    <div class="toolbar-section primary-tools">
+                        <button class="tool-button active" data-tool="pen" title="Pen (P)">
+                            <i class="fas fa-pen tool-icon"></i>
+                        </button>
+                        <button class="tool-button" data-tool="text" title="Text (T)">
+                            <i class="fas fa-font tool-icon"></i>
+                        </button>
+                    </div>
+
+                    <span class="toolbar-divider"></span>
+
+                    <!-- PEN MODE TOOLS (Shapes + Eraser) - Shown when pen is selected -->
+                    <div class="toolbar-section pen-tools" id="penTools" style="display: flex;">
+                        <button class="tool-button" data-tool="line" title="Line (L)">
+                            <i class="fas fa-minus tool-icon"></i>
+                        </button>
+                        <button class="tool-button" data-tool="rectangle" title="Rectangle (R)">
+                            <i class="far fa-square tool-icon"></i>
+                        </button>
+                        <button class="tool-button" data-tool="circle" title="Circle (C)">
+                            <i class="far fa-circle tool-icon"></i>
+                        </button>
+                        <button class="tool-button" data-tool="triangle" title="Triangle (T)">
+                            <i class="fas fa-play tool-icon" style="transform: rotate(-30deg);"></i>
+                        </button>
+                        <button class="tool-button" data-tool="arrow" title="Arrow (A)">
+                            <i class="fas fa-long-arrow-alt-right tool-icon"></i>
+                        </button>
+
+                        <span class="toolbar-divider"></span>
+
+                        <button class="tool-button" data-tool="eraser" title="Eraser (E)">
+                            <i class="fas fa-eraser tool-icon"></i>
+                        </button>
+                    </div>
+
+                    <!-- TEXT MODE TOOLS (Formatting) - Shown when text is selected -->
+                    <div class="toolbar-section text-tools" id="textTools" style="display: none;">
+                        <button class="format-button" data-format="bold" title="Bold (Ctrl+B)">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="format-button" data-format="italic" title="Italic (Ctrl+I)">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="format-button" data-format="underline" title="Underline (Ctrl+U)">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                        <button class="format-button" data-format="strikethrough" title="Strikethrough">
+                            <i class="fas fa-strikethrough"></i>
+                        </button>
+
+                        <span class="toolbar-divider"></span>
+
+                        <button class="format-button" data-format="subscript" title="Subscript">
+                            <i class="fas fa-subscript"></i>
+                        </button>
+                        <button class="format-button" data-format="superscript" title="Superscript">
+                            <i class="fas fa-superscript"></i>
+                        </button>
+
+                        <span class="toolbar-divider"></span>
+
+                        <button class="format-button" data-format="bulletList" title="Bullet List">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="format-button" data-format="numberedList" title="Numbered List">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-section">
+                        <!-- Color Picker -->
+                        <div class="color-picker-wrapper">
+                            <div class="color-display" id="colorDisplay" style="background-color: #000000;"></div>
+                            <input type="color" id="strokeColor" value="#000000">
+                        </div>
+
+                        <!-- Stroke Width -->
+                        <div class="stroke-width-selector">
+                            <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
+                            <input type="range" id="strokeWidth" min="1" max="20" value="3">
+                            <i class="fas fa-minus" style="font-size: 1.2rem;"></i>
+                            <span class="width-display" id="widthDisplay">3px</span>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-section">
+                        <!-- Actions -->
+                        <button class="tool-button" id="undoBtn" title="Undo (Ctrl+Z)">
+                            <i class="fas fa-undo tool-icon"></i>
+                            Undo
+                        </button>
+                        <button class="tool-button" id="clearBtn" title="Clear Page">
+                            <i class="fas fa-trash tool-icon"></i>
+                            Clear
+                        </button>
+                        <div class="allow-interaction-wrapper" id="allowInteractionWrapper">
+                            <!-- HOST VIEW: Allow Interaction button with dropdown -->
+                            <div class="host-interaction-view" id="hostInteractionView">
+                                <button class="tool-button has-badge" id="allowInteractionBtn" title="Allow students to draw/write on the whiteboard">
+                                    <i class="fas fa-hand-pointer tool-icon"></i>
+                                    <span class="btn-text">Allow Interaction</span>
+                                    <span class="request-badge" id="interactionRequestBadge">0</span>
+                                    <i class="fas fa-caret-down dropdown-arrow"></i>
+                                </button>
+                                <!-- Interaction Requests Dropdown -->
+                                <div class="interaction-requests-dropdown" id="interactionRequestsDropdown">
+                                    <div class="dropdown-header">
+                                        <span class="dropdown-title">Interaction Requests</span>
+                                        <div class="dropdown-actions">
+                                            <button class="dropdown-action-btn approve-all" id="approveAllRequestsBtn" title="Approve all">
+                                                <i class="fas fa-check-double"></i>
+                                            </button>
+                                            <button class="dropdown-action-btn deny-all" id="denyAllRequestsBtn" title="Deny all">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-requests-list" id="dropdownRequestsList">
+                                        <!-- Requests will be dynamically populated -->
+                                        <div class="no-requests-message">
+                                            <i class="fas fa-inbox"></i>
+                                            <span>No pending requests</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-footer">
+                                        <label class="toggle-all-interaction">
+                                            <input type="checkbox" id="toggleAllInteraction">
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label">Allow all participants</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PARTICIPANT VIEW: Request Interaction button -->
+                            <div class="participant-interaction-view" id="participantInteractionView" style="display: none;">
+                                <button class="tool-button request-interaction-btn" id="requestInteractionBtn" title="Request permission to draw on the whiteboard">
+                                    <i class="fas fa-hand-paper tool-icon"></i>
+                                    <span class="btn-text">Request Interaction</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="tool-button" id="saveBtn" title="Save Session">
+                            <i class="fas fa-save tool-icon"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="canvas-container" id="canvasContainer">
+                    <!-- Page flip container for animation -->
+                    <div class="canvas-page-flipper" id="canvasPageFlipper">
+                        <div class="canvas-page current-page" id="currentCanvasPage">
+                            <canvas id="whiteboardCanvas" width="1200" height="800"></canvas>
+                        </div>
+                        <div class="canvas-page next-page" id="nextCanvasPage">
+                            <canvas id="whiteboardCanvasNext" width="1200" height="800"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Inline Text Editor (appears when text tool is used) -->
+                    <div class="canvas-text-editor" id="canvasTextEditor" style="display: none;">
+                        <textarea id="canvasTextInput" placeholder="Type your text..." rows="1"></textarea>
+                        <div class="text-editor-controls">
+                            <button class="text-editor-btn confirm" id="confirmTextBtn" title="Add text">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="text-editor-btn cancel" id="cancelTextBtn" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Viewer Overlay (for PDF/Word/PPT) -->
+                    <div class="document-viewer-overlay" id="documentViewerOverlay" style="display: none;">
+                        <div class="document-viewer-header">
+                            <span class="document-title" id="documentViewerTitle">Document</span>
+                            <div class="document-viewer-controls">
+                                <button class="doc-viewer-btn" id="docPrevPage" title="Previous page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="doc-page-info" id="docPageInfo">1 / 1</span>
+                                <button class="doc-viewer-btn" id="docNextPage" title="Next page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button class="doc-viewer-btn zoom-btn" id="docZoomOut" title="Zoom out">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <button class="doc-viewer-btn zoom-btn" id="docZoomIn" title="Zoom in">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button class="doc-viewer-btn close-btn" id="closeDocViewer" title="Close document">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="document-viewer-content" id="documentViewerContent">
+                            <!-- Document pages rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Sync indicator removed - real-time sync is always active -->
+
+                </div>
+
+                <!-- Page Navigation with enhanced controls -->
+                <div class="page-navigation">
+                    <div class="page-info">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="pageInfo">Page 1 of 1</span>
+                    </div>
+                    <div class="page-controls">
+                        <button class="page-nav-btn" id="prevPageBtn" title="Previous Page (Left Arrow)">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="page-nav-btn add-page-btn" id="addPageBtn" title="Add New Page">
+                            <i class="fas fa-plus"></i> Add Page
+                        </button>
+                        <button class="page-nav-btn" id="nextPageBtn" title="Next Page (Right Arrow)">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="page-thumbnails-toggle">
+                        <button class="thumbnail-toggle-btn" id="toggleThumbnailsBtn" title="Show page thumbnails">
+                            <i class="fas fa-th"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ad Panel (slides in from right at 28 minutes) -->
+                <div class="whiteboard-ad-panel" id="whiteboardAdPanel">
+                    <div class="ad-panel-header">
+                        <span class="ad-label">Sponsored</span>
+                        <button class="ad-close-btn" id="closeAdPanelBtn" title="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="ad-panel-content" id="adPanelContent">
+                        <!-- Ad content loaded dynamically -->
+                        <div class="ad-placeholder">
+                            <i class="fas fa-ad"></i>
+                            <p>Advertisement</p>
+                        </div>
+                    </div>
+                    <div class="ad-panel-footer">
+                        <span class="ad-timer" id="adPanelTimer">Closes in 5:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pop-up Notifications (bottom right, timed) -->
+            <div class="whiteboard-popup-container" id="whiteboardPopupContainer">
+                <!-- Pop-ups will be dynamically inserted here -->
+            </div>
+
+            <!-- RIGHT SIDEBAR: VS Code Style with Icon Bar -->
+            <div class="whiteboard-right-sidebar">
+                <!-- Right Icon Bar (always visible) -->
+                <div class="right-sidebar-icon-bar">
+                    <button class="right-sidebar-icon-btn active" data-panel="live" title="Live Video">
+                        <i class="fas fa-broadcast-tower"></i>
+                    </button>
+                    <button class="right-sidebar-icon-btn" data-panel="chat" title="Chat">
+                        <i class="fas fa-comments"></i>
+                    </button>
+                    <button class="right-sidebar-icon-btn" data-panel="ai" title="AI Assistant">
+                        <span class="emoji-icon">✨</span>
+                    </button>
+                </div>
+
+                <!-- Collapsible Content Area -->
+                <div class="right-sidebar-content" id="rightSidebarContent">
+                    <!-- Live Panel (Video) -->
+                    <div class="right-sidebar-panel active" id="livePanel">
+                        <div class="right-sidebar-panel-header live-video-header">
+                            <h3>
+                                <i class="fas fa-broadcast-tower"></i>
+                                Live Video
+                            </h3>
+                            <div class="live-video-controls">
+                                <button class="start-session-btn" id="startVideoSessionBtn" title="Start live video call with selected student">
+                                    <i class="fas fa-video"></i>
+                                    Start Session
+                                </button>
+                                <button class="rejoin-session-btn" id="rejoinSessionBtn" style="display: none;" title="Rejoin the active session">
+                                    <i class="fas fa-redo"></i>
+                                    Rejoin
+                                </button>
+                                <button class="add-participant-btn" id="addParticipantBtn" style="display: none;" title="Add participant to ongoing session">
+                                    <i class="fas fa-user-plus"></i>
+                                    Add
+                                </button>
+                                <button class="record-btn" id="recordBtn">
+                                    <i class="fas fa-circle"></i>
+                                    Record
+                                </button>
+                            </div>
+                        </div>
+                        <div class="video-section">
+                            <!-- Video Grid Container -->
+                            <div class="video-grid-container">
+                                <!-- Host Video Row (You): Full Width -->
+                                <div class="tutor-video-row">
+                                    <div class="video-placeholder tutor-video" id="tutorVideoPlaceholder">
+                                        <!-- Initial placeholder with initials - will be replaced dynamically -->
+                                        <div class="video-avatar initials-avatar" id="tutorVideoAvatar" style="
+                                            width: 80px;
+                                            height: 80px;
+                                            border-radius: 50%;
+                                            background: linear-gradient(135deg, var(--primary-color, #6366f1), #4f46e5);
+                                            color: white;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-weight: 600;
+                                            font-size: 1.5rem;
+                                        ">...</div>
+                                        <div class="video-participant-name" id="tutorVideoParticipantName">
+                                            Loading...
+                                        </div>
+                                        <div class="video-status-badge host-badge">
+                                            <i class="fas fa-star"></i>
+                                            You
+                                        </div>
+                                        <!-- Video Controls (visible during call) -->
+                                        <div class="video-controls host-controls" id="hostVideoControls" style="display: none;">
+                                            <button class="video-control-btn" id="toggleMicBtn" title="Mute Microphone">
+                                                <i class="fas fa-microphone"></i>
+                                            </button>
+                                            <button class="video-control-btn" id="toggleCameraBtn" title="Hide Camera">
+                                                <i class="fas fa-video"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Student Video Grid: 2 per row - dynamically loaded -->
+                                <div class="student-video-grid" id="studentVideoGrid">
+                                    <!-- Student video placeholders will be dynamically loaded -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Panel -->
+                    <div class="right-sidebar-panel" id="chatPanel">
+                        <div class="right-sidebar-panel-header">
+                            <h3>
+                                <i class="fas fa-comments"></i>
+                                Live Chat
+                            </h3>
+                            <div class="chat-recipient-selector">
+                                <select id="chatRecipient" class="chat-recipient-dropdown">
+                                    <option value="group">Everyone</option>
+                                    <option value="tutor">Tutor</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chat-section">
+                            <div class="chat-messages" id="whiteboardChatMessages">
+                                <!-- Chat messages will be dynamically loaded -->
+                            </div>
+                            <div class="chat-input-area">
+                                <div class="chat-input-wrapper">
+                                    <input type="text"
+                                           id="whiteboardChatInput"
+                                           placeholder="Type a message..."
+                                           maxlength="500">
+                                    <button class="send-message-btn" id="whiteboardSendBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Assistant Panel -->
+                    <div class="right-sidebar-panel" id="aiPanel">
+                        <div class="right-sidebar-panel-header">
+                            <h3>
+                                <span class="emoji-icon">✨</span>
+                                AI Assistant
+                            </h3>
+                            <div class="ai-model-selector">
+                                <select id="aiModel" class="ai-model-dropdown">
+                                    <option value="tutor-ai">Tutor AI</option>
+                                    <option value="math-helper">Math Helper</option>
+                                    <option value="writing-coach">Writing Coach</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ai-section">
+                            <div class="ai-messages" id="aiMessages">
+                                <!-- AI conversation will be loaded here -->
+                                <div class="ai-welcome-message">
+                                    <div class="ai-avatar">
+                                        <span class="emoji-icon">✨</span>
+                                    </div>
+                                    <div class="ai-bubble">
+                                        <p>Hello! I'm your AI teaching assistant. I can help you with:</p>
+                                        <ul>
+                                            <li>Explaining concepts</li>
+                                            <li>Solving problems step-by-step</li>
+                                            <li>Generating practice questions</li>
+                                            <li>Providing feedback on work</li>
+                                        </ul>
+                                        <p>How can I assist you today?</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-input-area">
+                                <div class="ai-quick-actions">
+                                    <button class="ai-quick-btn" onclick="whiteboardManager.askAI('explain')">
+                                        <i class="fas fa-lightbulb"></i> Explain
+                                    </button>
+                                    <button class="ai-quick-btn" onclick="whiteboardManager.askAI('solve')">
+                                        <i class="fas fa-calculator"></i> Solve
+                                    </button>
+                                    <button class="ai-quick-btn" onclick="whiteboardManager.askAI('quiz')">
+                                        <i class="fas fa-question-circle"></i> Quiz Me
+                                    </button>
+                                </div>
+                                <div class="ai-input-wrapper">
+                                    <input type="text"
+                                           id="aiMessageInput"
+                                           placeholder="Ask AI anything..."
+                                           maxlength="1000">
+                                    <button class="send-message-btn" id="sendAiMessageBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

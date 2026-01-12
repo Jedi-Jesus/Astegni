@@ -1,0 +1,222 @@
+<!-- Connected Accounts Modal -->
+<div id="connected-accounts-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeConnectedAccountsModal()"></div>
+    <div class="modal-content" style="max-width: 550px; max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">&#128279;</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Connected Accounts</h2>
+                    <p class="text-sm text-gray-500">Manage your linked sign-in options</p>
+                </div>
+            </div>
+            <button onclick="closeConnectedAccountsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm text-blue-800">Connect your accounts for faster sign-in. You can use any connected account to log in to Astegni.</p>
+            </div>
+        </div>
+
+        <!-- Connected Accounts List -->
+        <div class="space-y-4">
+            <!-- Google Account -->
+            <div id="google-account-card" class="border-2 border-gray-200 rounded-xl p-4 transition-all">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Google</h4>
+                            <p id="google-account-email" class="text-sm text-gray-500">Not connected</p>
+                        </div>
+                    </div>
+                    <div id="google-account-actions">
+                        <!-- Connected state -->
+                        <div id="google-connected-actions" class="hidden flex items-center gap-2">
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Connected</span>
+                            <button onclick="unlinkGoogleAccount()" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Unlink account">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Not connected state -->
+                        <button id="google-connect-btn" onclick="linkGoogleAccount()" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apple Account (Coming Soon) -->
+            <div class="border-2 border-gray-200 rounded-xl p-4 opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Apple</h4>
+                            <p class="text-sm text-gray-500">Sign in with Apple</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full">Coming Soon</span>
+                </div>
+            </div>
+
+            <!-- Facebook Account (Coming Soon) -->
+            <div class="border-2 border-gray-200 rounded-xl p-4 opacity-60">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-[#1877F2] rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Facebook</h4>
+                            <p class="text-sm text-gray-500">Sign in with Facebook</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Account Status -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Password Sign-In</h4>
+            <div id="password-account-status" class="border-2 border-gray-200 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Email & Password</h4>
+                            <p id="password-status-text" class="text-sm text-gray-500">Password set</p>
+                        </div>
+                    </div>
+                    <div id="password-actions">
+                        <button onclick="openChangePasswordModal()" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                            Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning for Google-only users -->
+            <div id="google-only-warning" class="hidden mt-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm text-yellow-800 font-medium">Google is your only sign-in method</p>
+                        <p class="text-sm text-yellow-700 mt-1">Consider setting up a password as a backup sign-in option.</p>
+                        <button onclick="openSetPasswordModal()" class="mt-2 text-sm text-yellow-800 font-medium underline hover:no-underline">Set up password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unlink Confirmation Modal -->
+<div id="unlink-confirm-modal" class="modal-overlay hidden" style="z-index: 10001;">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Unlink Google Account?</h3>
+            <p class="text-gray-500 mt-2">You won't be able to sign in with Google anymore.</p>
+        </div>
+
+        <div id="unlink-warning" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <p class="text-sm text-red-800">You must have a password set before unlinking your Google account.</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="closeUnlinkConfirmModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+            <button onclick="confirmUnlinkGoogle()" id="confirm-unlink-btn" class="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium">Unlink</button>
+        </div>
+    </div>
+</div>
+
+<!-- Set Password Modal (for Google-only users) -->
+<div id="set-password-modal" class="modal-overlay hidden" style="z-index: 10001;">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Set Up Password</h2>
+            <button onclick="closeSetPasswordModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <p class="text-gray-600 mb-4">Create a password to use as an alternative sign-in method.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <div class="relative">
+                    <input type="password" id="new-password-input" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter new password">
+                    <button type="button" onclick="togglePasswordVisibility('new-password-input')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="password-strength-indicator" class="mt-2 hidden">
+                    <div class="flex gap-1">
+                        <div class="h-1 flex-1 rounded bg-gray-200" id="strength-bar-1"></div>
+                        <div class="h-1 flex-1 rounded bg-gray-200" id="strength-bar-2"></div>
+                        <div class="h-1 flex-1 rounded bg-gray-200" id="strength-bar-3"></div>
+                        <div class="h-1 flex-1 rounded bg-gray-200" id="strength-bar-4"></div>
+                    </div>
+                    <p id="password-strength-text" class="text-xs mt-1 text-gray-500">Password strength</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <input type="password" id="confirm-password-input" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Confirm new password">
+                <p id="password-match-text" class="text-xs mt-1 hidden"></p>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button onclick="closeSetPasswordModal()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+            <button onclick="saveNewPassword()" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium">Set Password</button>
+        </div>
+    </div>
+</div>

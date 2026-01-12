@@ -6,7 +6,7 @@
 
 <div id="coming-soon-modal" class="modal hidden">
     <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+        <button class="modal-close-enhanced" onclick="closeComingSoonModal()">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                 </path>
@@ -41,6 +41,7 @@
             </div>
         </div>
 
+        <!-- Guest User: Email signup form -->
         <form id="coming-soon-form" class="auth-form">
             <div class="form-group">
                 <label>Get notified when this feature launches</label>
@@ -49,5 +50,108 @@
 
             <button type="submit" class="submit-btn">Notify Me</button>
         </form>
+
+        <!-- Logged-in User: You're all set message -->
+        <div id="coming-soon-logged-in" class="logged-in-message" style="display: none;">
+            <div class="success-check">
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h4 class="logged-in-title">You're all set, <span id="coming-soon-user-name">there</span>!</h4>
+            <p class="logged-in-text">We'll notify you automatically when this feature launches. No action needed!</p>
+            <div class="logged-in-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">📧</span>
+                    <span>Auto-notified</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎯</span>
+                    <span>Priority Access</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">✨</span>
+                    <span>Early Adopter</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+/**
+ * Open the coming soon modal
+ * Shows different content based on login state
+ */
+function openComingSoonModal(featureName) {
+    const modal = document.getElementById('coming-soon-modal');
+    if (!modal) return;
+
+    // Update message if feature name provided
+    if (featureName) {
+        const messageEl = document.getElementById('coming-soon-message');
+        if (messageEl) {
+            messageEl.textContent = `The ${featureName} feature is coming soon! We're working hard to bring it to you.`;
+        }
+    }
+
+    // Check if user is logged in
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isLoggedIn = user && (user.id || user.email || user.first_name);
+
+    const formEl = document.getElementById('coming-soon-form');
+    const loggedInEl = document.getElementById('coming-soon-logged-in');
+    const userNameEl = document.getElementById('coming-soon-user-name');
+
+    if (isLoggedIn) {
+        // Show logged-in message
+        if (formEl) formEl.style.display = 'none';
+        if (loggedInEl) loggedInEl.style.display = 'block';
+        if (userNameEl) {
+            const displayName = user.first_name || user.full_name || user.email?.split('@')[0] || 'there';
+            userNameEl.textContent = displayName;
+        }
+    } else {
+        // Show email signup form
+        if (formEl) formEl.style.display = 'block';
+        if (loggedInEl) loggedInEl.style.display = 'none';
+    }
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+/**
+ * Close the coming soon modal
+ */
+function closeComingSoonModal() {
+    const modal = document.getElementById('coming-soon-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+}
+
+// Expose functions globally
+window.openComingSoonModal = openComingSoonModal;
+window.closeComingSoonModal = closeComingSoonModal;
+
+// Close on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('coming-soon-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeComingSoonModal();
+        }
+    }
+});
+
+// Close on clicking overlay (but not content)
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('coming-soon-modal');
+    if (e.target === modal) {
+        closeComingSoonModal();
+    }
+});
+</script>

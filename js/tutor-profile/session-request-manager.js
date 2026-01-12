@@ -4,6 +4,7 @@
 
 const SessionRequestManager = {
     currentRequestId: null,
+    currentRequest: null, // Store full request data for messaging
     allStudents: [], // Store all students for search filtering
 
     /**
@@ -192,7 +193,10 @@ const SessionRequestManager = {
 
             modal.classList.remove('hidden');
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('Not authenticated. Please log in.');
+            }
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${requestId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -200,10 +204,21 @@ const SessionRequestManager = {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to load request details');
+                const errorData = await response.json().catch(() => ({}));
+                if (response.status === 401) {
+                    throw new Error('Session expired. Please log in again.');
+                } else if (response.status === 403) {
+                    throw new Error('Access denied. Only tutors can view these details.');
+                } else if (response.status === 404) {
+                    throw new Error('Session request not found.');
+                }
+                throw new Error(errorData.detail || 'Failed to load request details');
             }
 
             const request = await response.json();
+
+            // Store the full request for messaging
+            this.currentRequest = request;
 
             // Render request details
             content.innerHTML = this.renderRequestDetails(request);
@@ -359,6 +374,33 @@ const SessionRequestManager = {
                     </div>
                 ` : ''}
 
+                <!-- Counter-Offer (shown only if student/parent proposed a different price) -->
+                ${request.counter_offer_price ? `
+                    <div>
+                        <h4 class="font-semibold mb-2" style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-hand-holding-usd" style="color: #f59e0b;"></i>
+                            Counter-Offer
+                        </h4>
+                        <div class="card p-4" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.8); margin-bottom: 2px;">Student's Proposed Price</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: white;">
+                                        ETB ${Math.round(request.counter_offer_price)}
+                                        <span style="font-size: 0.875rem; font-weight: 400; opacity: 0.9;">/session</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.7);">Your Listed Price</div>
+                                    <div style="font-size: 1rem; color: rgba(255,255,255,0.9); text-decoration: line-through;">
+                                        ETB ${request.package_price ? Math.round(request.package_price) : '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
                 <!-- Message -->
                 ${request.message ? `
                     <div>
@@ -419,11 +461,9 @@ const SessionRequestManager = {
                             <i class="fas fa-times"></i> Reject Request
                         </button>
                         <button
-                            onclick="SessionRequestManager.messageRequester(${request.requester_id})"
+                            onclick="SessionRequestManager.messageRequester()"
                             class="btn-secondary"
-                            style="padding: 12px; border-radius: 8px;"
-                            disabled
-                            title="Messaging feature coming in Phase 2">
+                            style="padding: 12px; border-radius: 8px;">
                             <i class="fas fa-envelope"></i> Message
                         </button>
                     ` : `
@@ -445,16 +485,38 @@ const SessionRequestManager = {
 
     /**
      * Accept a session request
+     * Guards feature access - requires complete profile and KYC verification
      */
     async acceptRequest() {
         if (!this.currentRequestId) return;
 
+        // Guard: Check profile completion and KYC before allowing accept
+        if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.guard === 'function') {
+            const allowed = ProfileCompletionGuard.guard('Accept Session Request', () => {
+                this._acceptRequestInternal();
+            });
+            if (!allowed) {
+                return; // User was shown the appropriate modal to complete profile/KYC
+            }
+        } else {
+            // Guard not available, proceed directly
+            await this._acceptRequestInternal();
+        }
+    },
+
+    /**
+     * Internal accept request (called after guard check passes)
+     */
+    async _acceptRequestInternal() {
         if (!confirm('Are you sure you want to accept this session request?')) {
             return;
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('Not authenticated. Please log in.');
+            }
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
@@ -465,7 +527,8 @@ const SessionRequestManager = {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to accept request');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to accept request');
             }
 
             // Show success message
@@ -488,10 +551,29 @@ const SessionRequestManager = {
 
     /**
      * Reject a session request
+     * Guards feature access - requires complete profile and KYC verification
      */
     async rejectRequest() {
         if (!this.currentRequestId) return;
 
+        // Guard: Check profile completion and KYC before allowing reject
+        if (window.ProfileCompletionGuard && typeof ProfileCompletionGuard.guard === 'function') {
+            const allowed = ProfileCompletionGuard.guard('Reject Session Request', () => {
+                this._rejectRequestInternal();
+            });
+            if (!allowed) {
+                return; // User was shown the appropriate modal to complete profile/KYC
+            }
+        } else {
+            // Guard not available, proceed directly
+            await this._rejectRequestInternal();
+        }
+    },
+
+    /**
+     * Internal reject request (called after guard check passes)
+     */
+    async _rejectRequestInternal() {
         // Prompt for rejection reason
         const rejectedReason = prompt('Please provide a reason for rejecting this request (optional):');
 
@@ -505,7 +587,10 @@ const SessionRequestManager = {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('Not authenticated. Please log in.');
+            }
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
@@ -519,7 +604,8 @@ const SessionRequestManager = {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to reject request');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to reject request');
             }
 
             // Show success message
@@ -536,10 +622,58 @@ const SessionRequestManager = {
     },
 
     /**
-     * Message requester (Phase 2)
+     * Message requester - opens chat modal with the requester
      */
-    messageRequester(requesterId) {
-        alert('📧 Messaging feature coming in Phase 2!\n\nFor now, please use the provided contact information (phone/email) to communicate with the requester.');
+    messageRequester() {
+        if (!this.currentRequest) {
+            console.error('[SessionRequestManager] No current request data available');
+            alert('Unable to open chat. Please try again.');
+            return;
+        }
+
+        const request = this.currentRequest;
+        console.log('[SessionRequestManager] Opening chat with requester:', request);
+
+        // Check if user is authenticated
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            if (window.openAuthModal) {
+                window.openAuthModal('login');
+            } else {
+                alert('Please log in to send messages');
+            }
+            return;
+        }
+
+        // Build target user object for chat modal
+        const targetUser = {
+            id: request.requester_id,
+            profile_id: request.requester_id,
+            full_name: request.requester_name || 'Unknown User',
+            name: request.requester_name || 'Unknown User',
+            profile_picture: request.requester_profile_picture,
+            avatar: request.requester_profile_picture,
+            role: request.requester_type,
+            profile_type: request.requester_type,
+            is_online: false
+        };
+
+        console.log('[SessionRequestManager] Target user for chat:', targetUser);
+
+        // Close the view request modal first
+        this.closeModal();
+
+        // Open chat modal with the requester
+        if (typeof openChatModal === 'function') {
+            openChatModal(targetUser);
+            console.log('[SessionRequestManager] Chat modal opened for:', targetUser.full_name);
+        } else if (typeof ChatModalManager !== 'undefined' && typeof ChatModalManager.open === 'function') {
+            ChatModalManager.open(targetUser);
+            console.log('[SessionRequestManager] Chat modal opened via ChatModalManager for:', targetUser.full_name);
+        } else {
+            console.error('[SessionRequestManager] Chat modal not available');
+            alert('Chat feature is not available. Please refresh the page and try again.');
+        }
     },
 
     /**
@@ -551,6 +685,7 @@ const SessionRequestManager = {
             modal.classList.add('hidden');
         }
         this.currentRequestId = null;
+        this.currentRequest = null;
     },
 
     /**
@@ -1057,12 +1192,29 @@ const ParentingInvitationManager = {
 
     /**
      * Render a parenting invitation card with full profile info
+     * UPDATED: Now uses inviter_name, inviter_username, inviter_profile_picture from API
      */
     renderInvitationCard(invitation) {
-        const studentUrl = `../view-profiles/view-student.html?id=${invitation.student_user_id}`;
+        // Use inviter fields (new API) with fallback to student fields (old API)
+        const inviterName = invitation.inviter_name || invitation.student_name || 'Unknown User';
+        const inviterUsername = invitation.inviter_username || null;
+        const inviterType = invitation.inviter_type || 'student';
+        const profilePic = invitation.inviter_profile_picture || invitation.student_profile_picture || '/uploads/system_images/system_profile_pictures/woman-user.jpg';
+
+        // Determine profile URL based on inviter type
+        const profileUrl = inviterType === 'student'
+            ? `../view-profiles/view-student.html?id=${invitation.inviter_user_id}`
+            : inviterType === 'parent'
+            ? `../view-profiles/view-parent.html?id=${invitation.inviter_user_id}`
+            : `../view-profiles/view-tutor.html?id=${invitation.inviter_user_id}`;
+
         const createdDate = new Date(invitation.created_at);
         const timeAgo = SessionRequestManager.getTimeAgo(createdDate);
-        const profilePic = invitation.student_profile_picture || '/uploads/system_images/system_profile_pictures/woman-user.jpg';
+
+        // Inviter type badge
+        const inviterTypeBadge = inviterType === 'student' ? 'Student' :
+                                 inviterType === 'parent' ? 'Parent' :
+                                 inviterType === 'tutor' ? 'Tutor' : inviterType;
 
         // Mask email for privacy (show first 3 chars and domain)
         const maskEmail = (email) => {
@@ -1082,42 +1234,49 @@ const ParentingInvitationManager = {
                  onmouseover="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 8px 24px rgba(139, 92, 246, 0.15)'"
                  onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
 
-                <!-- Student Header with Profile Pic -->
+                <!-- Inviter Header with Profile Pic -->
                 <div class="flex items-start gap-4 mb-4 pb-4" style="border-bottom: 1px solid var(--border-color);">
                     <img src="${profilePic}"
-                         alt="${invitation.student_name}"
+                         alt="${inviterName}"
+                         onerror="this.src='/uploads/system_images/system_profile_pictures/woman-user.jpg'"
                          style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #8B5CF6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">
                     <div class="flex-1">
                         <h4 class="font-bold text-lg mb-1">
-                            <a href="${studentUrl}" class="hover:text-purple-600 hover:underline" style="color: var(--heading);">
-                                ${invitation.student_name || 'Unknown Student'}
+                            <a href="${profileUrl}" class="hover:text-purple-600 hover:underline" style="color: var(--heading);">
+                                ${inviterName}
                             </a>
                         </h4>
+                        ${inviterUsername ? `<p class="text-sm" style="color: var(--text-secondary);">@${inviterUsername}</p>` : ''}
                         <p class="text-sm" style="color: var(--text-secondary);">
                             ${invitation.grade_level || ''} ${invitation.studying_at ? '@ ' + invitation.studying_at : ''}
                         </p>
-                        <span style="display: inline-block; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-top: 4px;">
-                            ${invitation.relationship_type || 'Parent'}
-                        </span>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="display: inline-block; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                ${invitation.relationship_type || 'Parent'}
+                            </span>
+                            <span style="display: inline-block; background: #E0E7FF; color: #4F46E5; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                ${inviterTypeBadge}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Contact Info -->
                 <div class="mb-4 space-y-2">
-                    ${invitation.student_email ? `
+                    ${invitation.inviter_email || invitation.student_email ? `
                         <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
-                            <span>${maskEmail(invitation.student_email)}</span>
+                            <span>${maskEmail(invitation.inviter_email || invitation.student_email)}</span>
                         </div>
                     ` : ''}
-                    ${invitation.student_phone ? `
+                    ${invitation.inviter_phone || invitation.student_phone ? `
                         <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
-                            <span>${maskPhone(invitation.student_phone)}</span>
+                            <span>${maskPhone(invitation.inviter_phone || invitation.student_phone)}</span>
                         </div>
                     ` : ''}
                 </div>
@@ -1133,7 +1292,7 @@ const ParentingInvitationManager = {
                 <!-- Action Buttons -->
                 <div class="flex gap-2">
                     <button
-                        onclick="ParentingInvitationManager.openAcceptModal(${invitation.id}, '${invitation.student_name}', '${profilePic}', '${invitation.relationship_type || 'Parent'}')"
+                        onclick="ParentingInvitationManager.openAcceptModal(${invitation.id}, '${inviterName.replace(/'/g, "\\'")}', '${profilePic}', '${invitation.relationship_type || 'Parent'}')"
                         class="flex-1 btn-primary"
                         style="padding: 10px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1731,6 +1890,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 async function openStudentDetails(studentId) {
     console.log('[SessionRequestManager] Opening student details for ID:', studentId);
+
+    // Set the current student ID for other functions to use
+    // Update both the local variable (in global-functions.js) and window property
+    window.currentStudentDetailsId = studentId;
+    // Also update the local variable if it exists in global scope
+    if (typeof currentStudentDetailsId !== 'undefined') {
+        currentStudentDetailsId = studentId;
+    }
 
     // Ensure modal is loaded first
     if (!document.getElementById('studentDetailsModal')) {
