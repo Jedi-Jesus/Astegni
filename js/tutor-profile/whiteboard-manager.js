@@ -219,14 +219,12 @@ class WhiteboardManager {
     async initialize() {
         console.log('🎨 Initializing Whiteboard Manager...');
 
-        // Wait for modal to be loaded by ModalLoader (if available)
-        // The modal is now in modals/common-modals/whiteboard-modal.html
-        await this.ensureModalLoaded();
-
         // Detect user role from JWT token or localStorage
         this.detectUserRole();
 
-        this.setupEventListeners();
+        // CRITICAL FIX: Load modal lazily (non-blocking) to prevent page freeze
+        // Modal will be loaded when user first opens whiteboard, not on page load
+        console.log('🎨 Whiteboard modal will be loaded lazily when first opened');
 
         // Load all context-aware data based on user role
         // NOTE: Profile info must load BEFORE WebSocket so we have the profile ID
@@ -629,7 +627,7 @@ class WhiteboardManager {
         // Check if modal already exists in DOM
         if (document.getElementById('whiteboardModal')) {
             console.log('🎨 Whiteboard modal already in DOM');
-            return;
+            return true;
         }
 
         // Try to load via ModalLoader if available
@@ -637,40 +635,58 @@ class WhiteboardManager {
             try {
                 await ModalLoader.load('whiteboard-modal.html');
                 console.log('🎨 Whiteboard modal loaded via ModalLoader');
-                return;
+                // After loading modal, setup event listeners
+                this.setupEventListeners();
+                return true;
             } catch (error) {
-                console.warn('🎨 ModalLoader failed, will wait for modal:', error);
+                console.error('🎨 ModalLoader failed to load whiteboard modal:', error);
+                return false;
             }
         }
 
         // Wait for modal to be loaded (with timeout)
-        await new Promise((resolve, reject) => {
-            let attempts = 0;
-            const maxAttempts = 50; // 5 seconds max
+        try {
+            await new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max
 
-            const checkModal = setInterval(() => {
-                attempts++;
-                if (document.getElementById('whiteboardModal')) {
-                    clearInterval(checkModal);
-                    console.log('🎨 Whiteboard modal found in DOM');
-                    resolve();
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkModal);
-                    console.error('🎨 Whiteboard modal not found after timeout');
-                    reject(new Error('Whiteboard modal not loaded'));
-                }
-            }, 100);
-        });
+                const checkModal = setInterval(() => {
+                    attempts++;
+                    if (document.getElementById('whiteboardModal')) {
+                        clearInterval(checkModal);
+                        console.log('🎨 Whiteboard modal found in DOM');
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkModal);
+                        console.error('🎨 Whiteboard modal not found after timeout');
+                        reject(new Error('Whiteboard modal not loaded'));
+                    }
+                }, 100);
+            });
+            // After loading modal, setup event listeners
+            this.setupEventListeners();
+            return true;
+        } catch (error) {
+            console.error('🎨 Failed to load whiteboard modal:', error);
+            return false;
+        }
     }
 
     /**
      * Setup all event listeners
+     * Safe to call even if modal is not loaded yet
      */
     setupEventListeners() {
+        // Check if modal exists before setting up listeners
+        if (!document.getElementById('whiteboardModal')) {
+            console.log('🎨 Whiteboard modal not in DOM yet, skipping event listener setup');
+            return;
+        }
+
         // Modal controls
-        document.getElementById('closeWhiteboard').addEventListener('click', () => this.closeModal());
-        document.getElementById('minimizeWhiteboard').addEventListener('click', () => this.minimizeModal());
-        document.getElementById('maximizeWhiteboard').addEventListener('click', () => this.maximizeModal());
+        document.getElementById('closeWhiteboard')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('minimizeWhiteboard')?.addEventListener('click', () => this.minimizeModal());
+        document.getElementById('maximizeWhiteboard')?.addEventListener('click', () => this.maximizeModal());
 
         // Mobile toggle button for left sidebar in header
         document.getElementById('mobileToggleHistory')?.addEventListener('click', () => this.toggleMobileSidebar('history'));
@@ -953,6 +969,13 @@ class WhiteboardManager {
      */
     async openWhiteboard(sessionId = null, studentId = null, context = 'teaching_tools') {
         try {
+            // CRITICAL: Ensure modal is loaded before opening
+            const modalLoaded = await this.ensureModalLoaded();
+            if (!modalLoaded) {
+                alert('Failed to load whiteboard. Please refresh the page and try again.');
+                return;
+            }
+
             // Set context for data loading based on user role
             if (this.userRole === 'student') {
                 // Student perspective: load tutors
