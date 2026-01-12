@@ -253,8 +253,8 @@ class AuthenticationManager {
                 console.log('[AuthManager.authenticatedFetch] Token found in localStorage, restoring...');
                 this.token = storedToken;
             } else {
-                console.warn('[AuthManager.authenticatedFetch] No token available, redirecting to login');
-                this.logout(true);
+                console.warn('[AuthManager.authenticatedFetch] No token available');
+                // DON'T auto-redirect - just throw error and let the calling code handle it
                 throw new Error('Not authenticated');
             }
         }
@@ -285,14 +285,13 @@ class AuthenticationManager {
                     response = await fetch(url, { ...options, headers });
                     console.log('[AuthManager.authenticatedFetch] Retry response status:', response.status);
 
-                    // If still 401 after refresh, logout
+                    // If still 401 after refresh, DON'T auto-logout
+                    // Let the calling code decide what to do
                     if (response.status === 401) {
-                        console.error('[AuthManager.authenticatedFetch] Still 401 after refresh, logging out');
-                        this.logout(true);
+                        console.error('[AuthManager.authenticatedFetch] Still 401 after refresh');
                     }
                 } else {
                     // Don't auto-logout on refresh failure - might be a network error
-                    // The refreshAccessToken method already handles 401 logout internally
                     console.warn('[AuthManager.authenticatedFetch] Token refresh failed, but keeping token for retry');
                 }
             }
@@ -573,8 +572,10 @@ async login(email, password) {
                 console.error('[AuthManager] Failed to refresh token:', response.status);
                 // If refresh fails with 401, the refresh token is also expired
                 if (response.status === 401) {
-                    // Clear all tokens and redirect to login
-                    this.logout(true);
+                    // Clear tokens but DON'T auto-redirect
+                    // Let the page-level init code handle the redirect
+                    console.error('[AuthManager] Refresh token expired - clearing auth state');
+                    this.logout(false);
                 }
                 return false;
             }
