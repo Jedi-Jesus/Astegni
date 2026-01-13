@@ -846,8 +846,8 @@ async def check_kyc_required(
             user.kyc_verification_id = verification.id
             db.commit()
             db.refresh(user)
-            # Auto-verify tutor if all requirements are now met
-            check_and_auto_verify_tutor(user, db)
+            # Auto-verify all profiles (tutor, student, parent, advertiser) if all requirements are now met
+            check_and_auto_verify_profiles(user, db)
 
             return {
                 "kyc_required": False,
