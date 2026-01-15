@@ -851,13 +851,46 @@
                 text-align: center;
             }
 
+            .profile-avatar-container {
+                margin-bottom: 1.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .profile-avatar-container .story-ring-wrapper {
+                width: 120px !important;
+                height: 120px !important;
+            }
+
             .profile-avatar {
                 width: 120px;
                 height: 120px;
             }
 
+            .profile-details-section {
+                width: 100%;
+                padding-top: 0 !important;
+                position: relative;
+                z-index: 2;
+            }
+
             .profile-name {
                 font-size: 1.75rem;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            #tutorName {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            #tutorUsername {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
 
             .badges-row {

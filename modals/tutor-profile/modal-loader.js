@@ -258,6 +258,20 @@ const ModalLoader = (function() {
 
             const html = await response.text();
 
+            // CRITICAL FIX: Detect if we got index.html instead of the modal
+            // This happens when Nginx returns index.html as 404 fallback
+            if (html.includes('<!DOCTYPE html>') && html.includes('<html')) {
+                // We got a full HTML document instead of a modal fragment
+                const hasModalMarker = html.includes('Modal:') || html.includes('class="modal');
+                const hasIndexMarker = html.includes('Hero Section') || html.includes('Astegni - Ethiopia');
+
+                if (hasIndexMarker && !hasModalMarker) {
+                    console.error(`[ModalLoader] ❌ Received index.html instead of ${filename} (404 fallback detected)`);
+                    console.error(`[ModalLoader] This indicates the modal file is missing on the server`);
+                    throw new Error(`Modal not found: ${filename} - Got index.html fallback (check server deployment)`);
+                }
+            }
+
             // Cache the modal
             if (CONFIG.cache) {
                 cache[cacheKey] = html;
