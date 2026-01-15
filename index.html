@@ -344,31 +344,38 @@
 
                 <!-- Animated Counter Cards -->
                 <div class="counter-grid-wrapper">
-                    <!-- Single row: 3 flip cards -->
+                    <!-- Single row: 4 cards (1 static + 3 flip cards) -->
                     <div class="counter-grid">
-                        <!-- Card 1: Community (Parents + Students) -->
+                        <!-- Card 1: Total Users (Static - No Flip) -->
+                        <div class="counter-static-card">
+                            <div class="counter-icon">👥</div>
+                            <h3 id="counter-total-users" class="counter-number">0</h3>
+                            <p class="counter-label">Total Users</p>
+                        </div>
+
+                        <!-- Card 2: Community (Parents + Students) -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
                                     <div class="counter-icon">👨‍👩‍👧‍👦</div>
                                     <h3 id="counter-parents" class="counter-number">0</h3>
-                                    <p class="counter-label">Registered Parents</p>
+                                    <p class="counter-label">Verified Parents</p>
                                 </div>
                                 <div class="counter-flip-back">
-                                    <div class="counter-icon">🎓</div>
-                                    <h3 id="counter-students" class="counter-number-back">0</h3>
-                                    <p class="counter-label">Students</p>
+                                    <div class="counter-icon">📚</div>
+                                    <h3 id="counter-courses" class="counter-number">0</h3>
+                                    <p class="counter-label">Available Courses</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Card 2: Courses (Middle) -->
+                        <!-- Card 3: Courses (Middle) -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
-                                    <div class="counter-icon">📚</div>
-                                    <h3 id="counter-courses" class="counter-number">0</h3>
-                                    <p class="counter-label">Available Courses</p>
+                                    <div class="counter-icon">🎓</div>
+                                    <h3 id="counter-students" class="counter-number-back">0</h3>
+                                    <p class="counter-label">Verified Students</p>
                                 </div>
                                 <div class="counter-flip-back coming-soon-card">
                                     <div class="counter-icon">🌍</div>
@@ -378,13 +385,13 @@
                             </div>
                         </div>
 
-                        <!-- Card 3: Resources (Tutors + Schools) -->
+                        <!-- Card 4: Resources (Tutors + Schools) -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
                                     <div class="counter-icon">👨‍🏫</div>
                                     <h3 id="counter-tutors" class="counter-number">0</h3>
-                                    <p class="counter-label">Expert Tutors</p>
+                                    <p class="counter-label">Verified Tutors</p>
                                 </div>
                                 <div class="counter-flip-back">
                                     <div class="counter-icon">🏫</div>

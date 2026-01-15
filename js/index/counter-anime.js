@@ -12,6 +12,7 @@ async function fetchStatistics() {
         if (response.ok) {
             const stats = await response.json();
             return [
+                { id: "counter-total-users", target: stats.total_users ?? 0, current: 0, suffix: "+" },
                 { id: "counter-parents", target: stats.registered_parents ?? 0, current: 0, suffix: "+" },
                 { id: "counter-students", target: stats.students ?? 0, current: 0, suffix: "+" },
                 { id: "counter-courses", target: stats.courses ?? 0, current: 0, suffix: "+" },
@@ -22,8 +23,9 @@ async function fetchStatistics() {
     } catch (error) {
         console.log('Using fallback statistics');
     }
-    // Return fallback data for 3 flip cards (front and back)
+    // Return fallback data for 4 cards (1 static + 3 flip cards with front and back)
     return [
+        { id: "counter-total-users", target: 8500, current: 0, suffix: "+" },
         { id: "counter-parents", target: 1273, current: 0, suffix: "+" },
         { id: "counter-students", target: 5670, current: 0, suffix: "+" },
         { id: "counter-courses", target: 156, current: 0, suffix: "+" },

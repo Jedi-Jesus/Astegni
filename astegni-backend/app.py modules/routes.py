@@ -4241,48 +4241,35 @@ def get_news(limit: int = Query(10, ge=1, le=50)):
 
 @router.get("/api/statistics")
 def get_statistics(db: Session = Depends(get_db)):
-    """Get platform statistics - counts only users with complete profiles and KYC verification"""
+    """Get platform statistics - counts verified users from users.is_verified and total users"""
     try:
-        # Count parents with complete profiles and KYC verified
-        # Complete profile = first_name, father_name, grandfather_name, date_of_birth, gender all filled
-        # KYC verified = kyc_verified = true in users table
+        # Count total users (all registered users regardless of verification)
+        result_total_users = db.execute(text("SELECT COUNT(*) FROM users"))
+        total_users = result_total_users.scalar() or 0
+
+        # Count verified parents (uses users.is_verified from consolidated verification)
         result_parents = db.execute(text("""
             SELECT COUNT(*) FROM parent_profiles pp
             JOIN users u ON pp.user_id = u.id
-            WHERE u.first_name IS NOT NULL AND u.first_name != ''
-            AND u.father_name IS NOT NULL AND u.father_name != ''
-            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
-            AND u.date_of_birth IS NOT NULL
-            AND u.gender IS NOT NULL AND u.gender != ''
-            AND u.kyc_verified = true
+            WHERE u.is_verified = true
         """))
-        total_parents = result_parents.scalar() or 0
+        verified_parents = result_parents.scalar() or 0
 
-        # Count students with complete profiles and KYC verified
+        # Count verified students (uses users.is_verified)
         result_students = db.execute(text("""
             SELECT COUNT(*) FROM student_profiles sp
             JOIN users u ON sp.user_id = u.id
-            WHERE u.first_name IS NOT NULL AND u.first_name != ''
-            AND u.father_name IS NOT NULL AND u.father_name != ''
-            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
-            AND u.date_of_birth IS NOT NULL
-            AND u.gender IS NOT NULL AND u.gender != ''
-            AND u.kyc_verified = true
+            WHERE u.is_verified = true
         """))
-        total_students = result_students.scalar() or 0
+        verified_students = result_students.scalar() or 0
 
-        # Count tutors with complete profiles and KYC verified
+        # Count verified tutors (uses users.is_verified)
         result_tutors = db.execute(text("""
             SELECT COUNT(*) FROM tutor_profiles tp
             JOIN users u ON tp.user_id = u.id
-            WHERE u.first_name IS NOT NULL AND u.first_name != ''
-            AND u.father_name IS NOT NULL AND u.father_name != ''
-            AND u.grandfather_name IS NOT NULL AND u.grandfather_name != ''
-            AND u.date_of_birth IS NOT NULL
-            AND u.gender IS NOT NULL AND u.gender != ''
-            AND u.kyc_verified = true
+            WHERE u.is_verified = true
         """))
-        total_tutors = result_tutors.scalar() or 0
+        verified_tutors = result_tutors.scalar() or 0
 
         # Try to count videos (fallback to 0 if table doesn't exist)
         try:
@@ -4306,17 +4293,19 @@ def get_statistics(db: Session = Depends(get_db)):
             total_courses = 0
     except Exception as e:
         print(f"Error fetching statistics: {e}")
-        total_parents = 0
-        total_students = 0
-        total_tutors = 0
+        total_users = 0
+        verified_parents = 0
+        verified_students = 0
+        verified_tutors = 0
         total_videos = 0
         total_schools = 0
         total_courses = 0
 
     return {
-        "registered_parents": total_parents,
-        "students": total_students,
-        "expert_tutors": total_tutors,
+        "total_users": total_users,
+        "registered_parents": verified_parents,
+        "students": verified_students,
+        "expert_tutors": verified_tutors,
         "schools": total_schools,
         "courses": total_courses,
         "total_videos": total_videos,

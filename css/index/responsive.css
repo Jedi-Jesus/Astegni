@@ -50,9 +50,9 @@
         font-size: 3rem;
     }
 
-    /* Counter grid: 3 columns on large screens */
+    /* Counter grid: 4 columns on large screens (1 static + 3 flip) */
     .counter-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 2rem;
     }
 
@@ -123,11 +123,12 @@
     }
 
     .counter-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
 
-    .counter-flip-card {
+    .counter-flip-card,
+    .counter-static-card {
         height: 240px;
     }
 
@@ -557,7 +558,8 @@
         gap: 1rem;
     }
 
-    .counter-flip-card {
+    .counter-flip-card,
+    .counter-static-card {
         height: 200px;
     }
 

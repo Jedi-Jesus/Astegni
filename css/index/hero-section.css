@@ -91,10 +91,32 @@
 
 .counter-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+}
+
+/* Static Card (Total Users - No Flip) */
+.counter-static-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(248, 250, 252, 0.15));
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    height: 280px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.counter-static-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
 }
 
 /* Flip Card Structure */

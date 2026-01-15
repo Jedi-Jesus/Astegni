@@ -171,21 +171,23 @@ If issues arise, rollback by:
 ## Files Modified
 
 - ✅ `migrate_consolidate_verification_to_users.py` - Migration script
-- ⏳ `app.py modules/models.py` - Need to update models
-- ⏳ Backend endpoints - Need to update verification checks
+- ✅ `app.py modules/models.py` - Updated all profile models (removed verification columns)
+- ✅ `app.py modules/routes.py` - Updated all verification checks to use users table
+- ✅ `kyc_endpoints.py` - Updated KYC auto-verification to use users table
+- ✅ `admin_tutor_endpoints_enhanced.py` - Updated admin endpoints to use users table
 - ⏳ Frontend JS - Need to update verification checks
 
 ## Next Steps
 
 1. ✅ Run migration on local database - DONE
 2. ✅ Run migration on production database - DONE
-3. ⏳ Update User model in models.py
-4. ⏳ Update all profile models (remove verification columns)
-5. ⏳ Search and replace verification checks in backend
+3. ✅ Update User model in models.py - DONE (9 columns added)
+4. ✅ Update all profile models (remove verification columns) - DONE
+5. ✅ Search and replace verification checks in backend - DONE (3 files updated)
 6. ⏳ Search and replace verification checks in frontend
-7. ⏳ Test all verification flows
-8. ⏳ Commit changes to git
-9. ⏳ Deploy to production
+7. ⏳ Test all verification flows (KYC, admin approval, suspension)
+8. ✅ Commit changes to git - DONE (commit fd9c486)
+9. ✅ Deploy to production - DONE (auto-deployed)
 
 ## Migration Files
 
