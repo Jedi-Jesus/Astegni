@@ -26,7 +26,8 @@ const ModalLoader = (function() {
         modalPath: '../modals/tutor-profile/',
         containerId: 'modal-container',
         cache: true, // Cache loaded modals
-        preloadOnInit: true // CHANGED: Preload all modals on page load for instant access
+        preloadOnInit: true, // CHANGED: Preload all modals on page load for instant access
+        cacheBusting: true // Add timestamp to force fresh fetches when needed
     };
 
     // Modal file registry
@@ -246,11 +247,19 @@ const ModalLoader = (function() {
         }
 
         // Fetch modal HTML
-        const url = modalPath + filename;
+        let url = modalPath + filename;
+
+        // Add cache-busting timestamp to force fresh fetch
+        if (CONFIG.cacheBusting) {
+            const separator = url.includes('?') ? '&' : '?';
+            url = `${url}${separator}v=${Date.now()}`;
+        }
 
         try {
             console.log(`[ModalLoader] Fetching: ${filename} from ${modalPath}`);
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                cache: 'no-store' // Force no browser cache
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
