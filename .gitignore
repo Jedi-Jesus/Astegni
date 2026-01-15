@@ -82,3 +82,13 @@ htmlcov/
 
 # Local settings
 .claude/settings.local.json
+
+# Claude Code temporary files
+tmpclaude-*
+**/tmpclaude-*
+
+# Backup files
+*.backup
+
+# Debug/test files
+test-whiteboard-debug.html

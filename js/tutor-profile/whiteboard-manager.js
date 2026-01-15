@@ -701,12 +701,20 @@ class WhiteboardManager {
      * Safe to call even if modal is not loaded yet
      */
     setupEventListeners() {
+        // Prevent duplicate setup
+        if (this._eventListenersSetup) {
+            console.log('🎨 Event listeners already set up, skipping duplicate setup');
+            return;
+        }
+
         // Check if modal exists before setting up listeners
         const modal = document.getElementById('whiteboardModal');
         if (!modal) {
             console.log('🎨 Whiteboard modal not in DOM yet, skipping event listener setup');
             return;
         }
+
+        console.log('🎨 Setting up whiteboard event listeners...');
 
         // Modal controls
         document.getElementById('closeWhiteboard')?.addEventListener('click', () => this.closeModal());
@@ -984,6 +992,10 @@ class WhiteboardManager {
         document.getElementById('closeDocViewer')?.addEventListener('click', () => {
             this.closeDocumentViewer();
         });
+
+        // Mark as setup to prevent duplicate calls
+        this._eventListenersSetup = true;
+        console.log('✅ Whiteboard event listeners setup complete');
     }
 
     /**
