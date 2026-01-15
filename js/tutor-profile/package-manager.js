@@ -833,3 +833,129 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+/**
+ * Toggle Package Sidebar
+ * Shows/hides the left sidebar with package list
+ */
+window.togglePackageSidebar = function() {
+    const sidebar = document.getElementById('packageSidebar');
+    const layout = document.querySelector('#package-management-modal .package-layout');
+    const toggleBtn = document.querySelector('#package-management-modal .modal-header .package-sidebar-toggle');
+
+    if (sidebar && layout) {
+        sidebar.classList.toggle('collapsed');
+        layout.classList.toggle('sidebar-collapsed');
+
+        // Update toggle button active state
+        if (toggleBtn) {
+            toggleBtn.classList.toggle('active');
+        }
+    }
+};
+
+/**
+ * Toggle Calculator Widget
+ * Shows/hides the fee calculator widget with responsive behavior
+ */
+window.toggleCalculatorWidget = function() {
+    const calculator = document.querySelector('#package-management-modal .calculator-widget');
+    const toggleBtn = document.querySelector('#package-management-modal .calculator-toggle-btn');
+    const backdrop = document.querySelector('#package-management-modal .calculator-widget-backdrop');
+
+    if (!calculator) {
+        console.warn('Calculator widget not found');
+        return;
+    }
+
+    // Toggle visibility
+    const isHidden = calculator.classList.contains('hidden');
+
+    if (isHidden) {
+        // Show calculator
+        calculator.classList.remove('hidden');
+        if (toggleBtn) {
+            toggleBtn.classList.add('active');
+        }
+
+        // Show backdrop on mobile/tablet
+        if (window.innerWidth <= 1024 && backdrop) {
+            backdrop.classList.add('active');
+        }
+    } else {
+        // Hide calculator
+        calculator.classList.add('hidden');
+        if (toggleBtn) {
+            toggleBtn.classList.remove('active');
+        }
+
+        // Hide backdrop
+        if (backdrop) {
+            backdrop.classList.remove('active');
+        }
+    }
+}
+
+/**
+ * Close Calculator Widget (for mobile close button)
+ */
+window.closeCalculatorWidget = function() {
+    const calculator = document.querySelector('#package-management-modal .calculator-widget');
+    const toggleBtn = document.querySelector('#package-management-modal .calculator-toggle-btn');
+    const backdrop = document.querySelector('#package-management-modal .calculator-widget-backdrop');
+
+    if (calculator) {
+        calculator.classList.add('hidden');
+    }
+    if (toggleBtn) {
+        toggleBtn.classList.remove('active');
+    }
+    if (backdrop) {
+        backdrop.classList.remove('active');
+    }
+}
+
+// Add click handler for calculator close button on mobile (using event delegation)
+document.addEventListener('click', (e) => {
+    // Check if clicked element is the close button in calculator header
+    const calculatorHeader = e.target.closest('#package-management-modal .calculator-widget-header');
+    if (calculatorHeader && window.innerWidth <= 768) {
+        const rect = calculatorHeader.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        // Check if click is in the top-right area (where ::after close button is)
+        const headerWidth = rect.width;
+        const headerHeight = rect.height;
+
+        if (clickX > headerWidth - 60 && clickY < headerHeight && clickY > 0) {
+            closeCalculatorWidget();
+        }
+    }
+
+    // Close calculator when clicking backdrop
+    if (e.target.classList.contains('calculator-widget-backdrop')) {
+        closeCalculatorWidget();
+    }
+});
+
+// Handle window resize to adjust calculator behavior
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        const calculator = document.querySelector('#package-management-modal .calculator-widget');
+        const backdrop = document.querySelector('#package-management-modal .calculator-widget-backdrop');
+
+        // On desktop, ensure calculator is visible and backdrop is hidden
+        if (window.innerWidth > 1024) {
+            if (calculator && calculator.classList.contains('hidden')) {
+                // Keep it hidden if user explicitly hid it
+                // but remove backdrop if it exists
+                if (backdrop) {
+                    backdrop.classList.remove('active');
+                }
+            }
+        }
+    }, 250);
+});

@@ -25,7 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 0;
     animation: fadeIn 0.3s ease;
 }
 
@@ -107,6 +107,76 @@
     flex-shrink: 0;
 }
 
+/* Sidebar Toggle Button (Left Side) */
+#package-management-modal .modal-header .package-sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+#package-management-modal .modal-header .package-sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Title Container */
+#package-management-modal .modal-header .modal-title-container {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Right Actions Group (Calculator + Close) */
+#package-management-modal .modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Calculator Toggle Button */
+#package-management-modal .calculator-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .calculator-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#package-management-modal .calculator-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+#package-management-modal .calculator-toggle-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
 #package-management-modal .modal-header::before {
     content: '';
     position: absolute;
@@ -118,33 +188,7 @@
     animation: shimmer 3s ease-in-out infinite;
 }
 
-/* Hamburger Toggle Button */
-#package-management-modal .package-sidebar-toggle {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 1.125rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 10;
-}
-
-#package-management-modal .package-sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-#package-management-modal .package-sidebar-toggle:active {
-    transform: scale(0.95);
-}
+/* Sidebar Toggle Button is now in modal header - see package-modal-responsive.css */
 
 #package-management-modal .modal-title {
     font-size: 1.375rem;
@@ -159,9 +203,10 @@
     flex: 1;
 }
 
+/* Close Button (matches calculator toggle button size) */
 #package-management-modal .modal-close {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
@@ -191,6 +236,7 @@
     min-height: 0;
     overflow: hidden;
     background: linear-gradient(180deg, transparent 0%, rgba(245, 158, 11, 0.02) 100%);
+    position: relative; /* For absolute positioning of collapsed sidebar */
 }
 
 [data-theme="dark"] #package-management-modal .package-layout {
@@ -277,24 +323,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Toggle button styling in icon bar */
-#package-management-modal .package-sidebar-toggle {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-#package-management-modal .package-sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-}
-
-[data-theme="dark"] #package-management-modal .package-sidebar-toggle {
-    color: rgba(0, 0, 0, 0.7) !important;
-}
-
-[data-theme="dark"] #package-management-modal .package-sidebar-toggle:hover {
-    background: rgba(0, 0, 0, 0.1) !important;
-    color: rgba(0, 0, 0, 0.9) !important;
-}
+/* Toggle button is now in modal header - styling in package-modal-responsive.css */
 
 /* Active indicator line */
 #package-management-modal .sidebar-icon-btn.active::before {
@@ -340,15 +369,22 @@
     display: flex;
 }
 
-/* Collapsed state - Show only icon bar */
+/* Collapsed state - Hide icon bar entirely and remove from layout */
 #package-management-modal .package-sidebar.collapsed {
-    width: 50px; /* Only icon bar visible */
-    min-width: 50px;
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    border-right: none;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hide content area when collapsed */
-#package-management-modal .package-sidebar.collapsed .sidebar-content {
+/* Sidebar content is shown/hidden by clicking icon buttons */
+#package-management-modal .sidebar-content {
     display: none;
+}
+
+#package-management-modal .sidebar-content.active {
+    display: flex;
 }
 
 [data-theme="dark"] #package-management-modal .package-sidebar {
@@ -358,11 +394,14 @@
 
 /* Adjust layout when sidebar is collapsed */
 #package-management-modal .package-layout.sidebar-collapsed {
-    grid-template-columns: 0 1fr;
+    /* Sidebar is absolutely positioned, doesn't affect layout */
 }
 
+/* When sidebar is collapsed, package-main starts from left edge */
 #package-management-modal .package-layout.sidebar-collapsed .package-main {
     margin-left: 0;
+    flex: 1;
+    width: 100%; /* Take full width since sidebar is out of flow */
 }
 
 #package-management-modal .sidebar-header {
@@ -450,24 +489,14 @@
    MAIN CONTENT AREA
    ═══════════════════════════════════════════════════════════ */
 
-#package-management-modal .package-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
-}
+/* NOTE: Main layout is ROW (editor + calculator side-by-side)
+   See "CALCULATOR WIDGET" section below for the actual .package-main definition */
 
-[data-theme="dark"] #package-management-modal .package-main {
-    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-}
+/* This section only contains scrollbar styles */
 
-#package-management-modal .package-editor {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.75rem 2rem;
-    scroll-behavior: smooth;
-}
+/* MOVED: .package-main definition is now in "CALCULATOR WIDGET" section below */
+
+/* MOVED: .package-editor definition is now in "CALCULATOR WIDGET" section below */
 
 /* Custom scrollbar */
 #package-management-modal .package-editor::-webkit-scrollbar {
@@ -760,6 +789,78 @@
    CALCULATOR WIDGET - RIGHT SIDE PANEL
    ═══════════════════════════════════════════════════════════ */
 
+/* Make package-main a flex container for editor + calculator side-by-side */
+#package-management-modal .package-main {
+    flex: 1;
+    display: flex;
+    flex-direction: row;  /* Editor + calculator side-by-side */
+    gap: 1.5rem;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+    transition: gap 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] #package-management-modal .package-main {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Package editor takes remaining space */
+#package-management-modal .package-editor {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    min-width: 0;  /* Allow flex item to shrink below content size */
+    scroll-behavior: smooth;
+    transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Package editor takes full width when calculator is hidden */
+#package-management-modal .package-main:has(.calculator-widget.hidden) .package-editor {
+    flex: 1;
+    max-width: 100%;
+}
+
+/* Package Editor Container expands when sidebar is collapsed */
+#package-management-modal .package-layout.sidebar-collapsed #packageEditorContainer,
+#package-management-modal .package-layout.sidebar-collapsed #marketTrendView {
+    margin-left: 0;
+    flex: 1;
+    width: 100%;
+}
+
+/* ISSUE #1 FIX: Smooth transitions for main containers when sidebar toggles */
+#package-management-modal #packageEditorContainer,
+#package-management-modal #marketTrendView {
+    margin-left: 0; /* Sidebar takes its own space in flexbox - no extra margin needed */
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When calculator is hidden, remove gap from package-main */
+#package-management-modal .package-main:has(.calculator-widget.hidden) {
+    gap: 0;
+}
+
+/* Package Editor takes FULL width when BOTH sidebar AND calculator are hidden */
+#package-management-modal .package-layout.sidebar-collapsed #packageEditorContainer:has(.calculator-widget.hidden) {
+    width: 100%;
+    max-width: 100%;
+}
+
+#package-management-modal .package-layout.sidebar-collapsed #packageEditorContainer:has(.calculator-widget.hidden) .package-editor {
+    max-width: 100%;
+    width: 100%;
+    flex: 1;
+}
+
+/* Ensure package-main takes full width when sidebar collapsed */
+#package-management-modal .package-layout.sidebar-collapsed .package-main {
+    width: 100%;
+    flex: 1;
+}
+
+/* Legacy support for JS-generated layout */
 #package-management-modal .package-editor-layout {
     display: flex;
     gap: 1.5rem;
@@ -772,6 +873,7 @@
     overflow-y: auto;
 }
 
+/* Calculator widget (fixed on right side) - Smooth width transition */
 #package-management-modal .calculator-widget {
     width: 350px;
     max-width: 350px;
@@ -789,6 +891,22 @@
     top: 0;
     height: fit-content;
     max-height: calc(100vh - 280px);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                min-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hidden state - collapse width to 0 (same as sidebar) */
+#package-management-modal .calculator-widget.hidden {
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    overflow: hidden;
 }
 
 [data-theme="dark"] #package-management-modal .calculator-widget {
@@ -797,6 +915,51 @@
     box-shadow:
         0 8px 32px rgba(255, 213, 79, 0.15),
         0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Calculator Widget Backdrop - ONLY for Mobile/Tablet (< 1024px) */
+.calculator-widget-backdrop {
+    display: none; /* Hidden on desktop by default */
+}
+
+/* Backdrop only appears on smaller screens */
+@media (max-width: 1024px) {
+    .calculator-widget-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .calculator-widget-backdrop.active {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Calculator appears above backdrop on mobile */
+    #package-management-modal .calculator-widget {
+        z-index: 1000;
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        max-height: 100vh;
+        border-radius: 0;
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+
+    #package-management-modal .calculator-widget.hidden {
+        transform: translateX(100%);
+    }
 }
 
 #package-management-modal .calculator-widget-header {
@@ -991,13 +1154,32 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MARKET TREND VIEW (MAIN AREA)
+   MARKET TREND VIEW (SEPARATE FULL-WIDTH CONTAINER)
    ═══════════════════════════════════════════════════════════ */
 
+/* Market Trend View - Sibling to package-main, takes full width */
 #package-management-modal .market-trend-view {
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
+    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+    display: none; /* Hidden by default, shown via JS */
+    transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] #package-management-modal .market-trend-view {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Hide package editor container when showing market trends */
+#package-management-modal #packageEditorContainer.hidden {
+    display: none !important;
+}
+
+/* Show market trend view when active */
+#package-management-modal .market-trend-view.active {
+    display: flex !important;
+    flex-direction: column;
 }
 
 #package-management-modal .market-trend-header {
@@ -1031,11 +1213,181 @@
     border-radius: 16px;
     border: 2px solid var(--border-color);
     min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 [data-theme="dark"] #package-management-modal .market-trend-content {
     background: rgba(30, 41, 59, 0.5);
     border-color: rgba(255, 213, 79, 0.2);
+}
+
+/* View Selection Cards */
+#package-management-modal .market-view-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    padding: 2rem;
+    padding-bottom: 0;
+}
+
+#package-management-modal .market-view-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid rgba(245, 158, 11, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+#package-management-modal .market-view-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(245, 158, 11, 0.5) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+#package-management-modal .market-view-card:hover::before {
+    transform: scaleX(1);
+}
+
+#package-management-modal .market-view-card.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #D97706 100%);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+    transform: translateY(-2px);
+}
+
+#package-management-modal .market-view-card.active::before {
+    transform: scaleX(1);
+    background: white;
+}
+
+#package-management-modal .market-view-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card.active .market-view-card-icon {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+#package-management-modal .market-view-card-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card.active .market-view-card-icon i {
+    color: white;
+    transform: scale(1.1);
+}
+
+#package-management-modal .market-view-card-content {
+    flex: 1;
+}
+
+#package-management-modal .market-view-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    transition: color 0.3s;
+}
+
+#package-management-modal .market-view-card.active .market-view-card-title {
+    color: white;
+}
+
+#package-management-modal .market-view-card-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+    transition: color 0.3s;
+}
+
+#package-management-modal .market-view-card.active .market-view-card-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] #package-management-modal .market-view-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card:hover {
+    border-color: rgba(255, 213, 79, 0.4);
+    box-shadow: 0 8px 24px rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active {
+    background: linear-gradient(135deg, #FFD54F 0%, #FFA726 100%);
+    border-color: #FFD54F;
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-title,
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-description {
+    color: #0f172a;
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-icon {
+    background: rgba(15, 23, 42, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-icon i {
+    color: #0f172a;
+}
+
+/* Responsive grid */
+@media (max-width: 1200px) {
+    #package-management-modal .market-view-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    #package-management-modal .market-view-cards {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+    }
+}
+
+/* Market main container (holds the actual data views) */
+#package-management-modal .market-main-container {
+    padding: 0 2rem 2rem 2rem;
+}
+
+@media (max-width: 768px) {
+    #package-management-modal .market-main-container {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════

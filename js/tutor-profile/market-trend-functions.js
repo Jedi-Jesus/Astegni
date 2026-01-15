@@ -81,65 +81,44 @@ function aggregateDataByRating(tutorData) {
 }
 
 /**
- * Switch between sidebar views (pricing or price)
- * Called from market trend cards in packageSidebar
+ * DEPRECATED: Show price suggestion modal/container
+ * Now handled by changeGraphType('price')
+ */
+window.showPriceSuggestion = function() {
+    console.log('⚠️ showPriceSuggestion is deprecated, using changeGraphType instead');
+    changeGraphType('price');
+};
+
+/**
+ * DEPRECATED: Go back to pricing trends
+ * Now handled by changeGraphType('line')
+ */
+window.backToTrends = function() {
+    console.log('⚠️ backToTrends is deprecated, using changeGraphType instead');
+    changeGraphType('line');
+};
+
+/**
+ * DEPRECATED: Old function for main view switching
+ */
+window.switchMarketView = function(view) {
+    console.log('⚠️ switchMarketView is deprecated, using new functions');
+    if (view === 'price') {
+        showPriceSuggestion();
+    } else {
+        backToTrends();
+    }
+};
+
+/**
+ * DEPRECATED: Old function for sidebar card switching (no longer used)
+ * Keeping for backward compatibility
  */
 window.switchMarketTrendView = function(view) {
-    console.log('🔄 Switching market trend view to:', view);
-
-    // Update card states (in Market Trend Panel)
-    const marketPanel = document.getElementById('marketTrendPanel');
-    if (marketPanel) {
-        const cards = marketPanel.querySelectorAll('.market-trend-card');
-        cards.forEach(card => {
-            if (card.getAttribute('data-view') === view) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-        });
-    }
-
-    // Get containers
-    const graphContainer = document.getElementById('marketGraphContainer');
-    const tableContainer = document.getElementById('marketTableContainer');
-    const priceContainer = document.getElementById('marketPriceContainer');
-    const graphTypeButtons = document.getElementById('marketGraphTypeButtons');
-
-    // Hide all containers
-    if (graphContainer) graphContainer.classList.add('hidden');
-    if (tableContainer) tableContainer.classList.add('hidden');
-    if (priceContainer) priceContainer.classList.add('hidden');
-
-    if (view === 'pricing') {
-        // Show graph type buttons
-        if (graphTypeButtons) graphTypeButtons.style.display = 'flex';
-
-        // Show graph container (user clicks Update Graph button to load data)
-        if (graphContainer) {
-            graphContainer.classList.remove('hidden');
-            // Only auto-load if chart doesn't exist (first time)
-            if (!marketChartInstance) {
-                updateMarketGraph();
-            }
-        }
-    } else if (view === 'price') {
-        // Hide graph type buttons
-        if (graphTypeButtons) graphTypeButtons.style.display = 'none';
-
-        // Show price container (user clicks Calculate button to get price)
-        if (priceContainer) {
-            priceContainer.classList.remove('hidden');
-            // Clear previous results
-            const priceResult = document.getElementById('marketPriceResult');
-            if (priceResult) {
-                priceResult.innerHTML = '';
-                priceResult.style.display = 'none';
-            }
-        }
-    }
-
-    console.log('✅ Market trend view switched to:', view);
+    console.log('⚠️ switchMarketTrendView is deprecated, calling switchMarketView instead');
+    // Map old 'pricing' view to new 'trends' view
+    const newView = view === 'pricing' ? 'trends' : 'price';
+    window.switchMarketView(newView);
 };
 
 /**
@@ -188,7 +167,17 @@ window.toggleMarketView = function(view) {
 window.changeGraphType = function(type) {
     console.log('📊 Changing graph type to:', type);
 
-    // Update button states
+    // Update card states (new card-based UI)
+    const cards = document.querySelectorAll('.market-view-card');
+    cards.forEach(card => {
+        if (card.getAttribute('data-type') === type) {
+            card.classList.add('active');
+        } else {
+            card.classList.remove('active');
+        }
+    });
+
+    // Update button states (legacy support for old button-based UI if still present)
     const buttons = document.querySelectorAll('.graph-type-btn');
     buttons.forEach(btn => {
         if (btn.getAttribute('data-type') === type) {
@@ -200,7 +189,7 @@ window.changeGraphType = function(type) {
             btn.classList.remove('active');
             btn.style.background = 'var(--hover-bg)';
             btn.style.color = 'var(--text-primary)';
-            btn.style.border = '1px solid var(--border-color)';
+            btn.style.border = '2px solid var(--border-color)';
         }
     });
 
@@ -211,6 +200,8 @@ window.changeGraphType = function(type) {
         toggleMarketView('bar-graph');
     } else if (type === 'table') {
         toggleMarketView('table');
+    } else if (type === 'price') {
+        toggleMarketView('price');
     }
 };
 

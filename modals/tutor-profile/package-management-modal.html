@@ -8,28 +8,37 @@
         <div class="modal-overlay" onclick="closePackageModal()"></div>
         <div class="modal-content package-modal-redesigned">
             <div class="modal-header">
+                <button class="package-sidebar-toggle" onclick="togglePackageSidebar()"
+                    aria-label="Toggle package sidebar"
+                    title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="modal-title-container">
                     <h2 class="modal-title" id="modalTitle">📦 Package Management</h2>
                     <p class="modal-subtitle" id="modalSubtitle" style="display: none; margin: 0.5rem 0 0 0; font-size: 0.9rem; font-weight: 400; opacity: 0.9;"></p>
                 </div>
-                <button class="modal-close" onclick="closePackageModal()">×</button>
+                <div class="modal-header-actions">
+                    <button class="calculator-toggle-btn" onclick="toggleCalculatorWidget()"
+                        aria-label="Toggle Fee Calculator"
+                        title="Toggle Fee Calculator">
+                        <i class="fas fa-calculator"></i>
+                    </button>
+                    <button class="modal-close" onclick="closePackageModal()">×</button>
+                </div>
             </div>
 
             <div class="package-layout">
+                <!-- Sidebar Backdrop (for mobile overlay) -->
+                <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="togglePackageSidebar()"></div>
+
                 <!-- LEFT SIDEBAR: VS Code Style with Icon Bar + Content -->
                 <div class="package-sidebar" id="packageSidebar">
-                    <!-- Icon Bar with Toggle -->
+                    <!-- Icon Bar -->
                     <div class="sidebar-icon-bar">
-                        <button class="package-sidebar-toggle" onclick="togglePackageSidebar()"
-                            aria-label="Toggle package sidebar"
-                            title="Toggle Sidebar"
-                            style="width: 40px; height: 40px; border-radius: 8px; background: transparent; border: none; color: rgba(255, 255, 255, 0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-bottom: 0.5rem;">
-                            <i class="fas fa-bars" style="font-size: 1rem;"></i>
-                        </button>
-                        <div style="width: 100%; height: 1px; background: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem;"></div>
                         <button class="sidebar-icon-btn active" data-panel="packages" title="My Packages" onclick="switchPackagePanel('packages')">
                             <i class="fas fa-box"></i>
                         </button>
+                        <div style="width: 100%; height: 1px; background: rgba(255, 255, 255, 0.1); margin: 0.5rem 0;"></div>
                         <button class="sidebar-icon-btn" data-panel="market-trend" title="Market Trends" onclick="switchPackagePanel('market-trend')">
                             <i class="fas fa-chart-line"></i>
                         </button>
@@ -50,42 +59,15 @@
                             </div>
                         </div>
 
-                        <!-- Market Trend Panel -->
-                        <div class="sidebar-panel" id="marketTrendPanel">
-                            <div class="sidebar-header">
-                                <h3>Market Trends</h3>
-                            </div>
-                            <div class="market-trend-cards" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem;">
-                                <!-- Pricing Trends Card -->
-                                <div class="market-trend-card active" data-view="pricing" onclick="switchMarketTrendView('pricing')">
-                                    <div class="market-trend-card-icon">
-                                        <i class="fas fa-chart-line"></i>
-                                    </div>
-                                    <div class="market-trend-card-content">
-                                        <h4>Pricing Trends</h4>
-                                        <p>Compare rates over time</p>
-                                    </div>
-                                </div>
-                                <!-- Suggest Price Card -->
-                                <div class="market-trend-card" data-view="price" onclick="switchMarketTrendView('price')">
-                                    <div class="market-trend-card-icon">
-                                        <i class="fas fa-tag"></i>
-                                    </div>
-                                    <div class="market-trend-card-content">
-                                        <h4>Suggest Price</h4>
-                                        <p>Calculate your rate</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Market Trend Panel - Removed, now handled by view toggle in main area -->
                     </div>
                 </div>
 
-                <!-- MAIN AREA: Package Details & Calculator OR Market Trends -->
-                <div class="package-main">
+                <!-- MAIN AREA: Package Details & Calculator -->
+                <div class="package-main" id="packageEditorContainer">
                     <!-- Package Editor (default view) -->
                     <div id="packageEditor" class="package-editor">
-                        <!-- Empty state or selected package details -->
+                        <!-- Empty state or selected package details (JS will replace this) -->
                         <div class="empty-state">
                             <i class="fas fa-box-open"></i>
                             <h3>No Package Selected</h3>
@@ -96,32 +78,91 @@
                         </div>
                     </div>
 
-                    <!-- Market Trend Visualization (hidden by default) -->
-                    <div id="marketTrendView" class="market-trend-view" style="display: none;">
-                        <!-- Market Insights Section (at top) -->
-                        <div class="market-insights" style="margin-bottom: 1.5rem;">
-                            <h3><i class="fas fa-lightbulb"></i> Market Insights for Tutors</h3>
-                            <p>Building a consistent track record with high ratings is key to commanding higher prices.</p>
+                    <!-- Fee Calculator Widget (fixed position, available for package editor) -->
+                    <div class="calculator-widget hidden" id="feeCalculatorWidget">
+                        <div class="calculator-widget-header">
+                            <i class="fas fa-calculator"></i>
+                            <h4>Fee Calculator</h4>
                         </div>
 
-                        <!-- Graph Type Toggle Buttons (for Pricing Trends view) -->
-                        <div class="market-graph-type-buttons" id="marketGraphTypeButtons" style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem;">
-                            <button class="graph-type-btn active" data-type="line" onclick="changeGraphType('line')" style="padding: 0.6rem 1.25rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-chart-line"></i> Line Graph
-                            </button>
-                            <button class="graph-type-btn" data-type="bar" onclick="changeGraphType('bar')" style="padding: 0.6rem 1.25rem; background: var(--hover-bg); color: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-chart-bar"></i> Bar Graph
-                            </button>
-                            <button class="graph-type-btn" data-type="table" onclick="changeGraphType('table')" style="padding: 0.6rem 1.25rem; background: var(--hover-bg); color: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-table"></i> Data Table
-                            </button>
+                        <div class="calculator-widget-body">
+                            <div class="calculator-inputs-row">
+                                <div class="form-field">
+                                    <label><i class="fas fa-calendar-week"></i> Days per Week</label>
+                                    <input type="number" id="calcDays" value="3" min="1" max="7" oninput="updateCalculator()">
+                                </div>
+                                <div class="form-field">
+                                    <label><i class="fas fa-clock"></i> Hours per Day</label>
+                                    <input type="number" id="calcHours" value="1" min="1" max="24" oninput="updateCalculator()">
+                                </div>
+                            </div>
+
+                            <div class="calculator-results" id="calculatorResults">
+                                <!-- Results will be dynamically inserted here -->
+                                <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                    <p>Select or create a package to see fee calculations</p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                <!-- End of .package-main (Package Editor Container) -->
+
+                <!-- MARKET TRENDS AREA: Full-width visualization (hidden by default) -->
+                <div id="marketTrendView" class="market-trend-view" style="display: none;">
 
                         <div class="market-trend-content">
 
-                            <!-- Graph View -->
-                            <div id="marketGraphContainer" class="market-view-container">
-                                <div class="market-controls">
+                            <!-- View Selection Cards -->
+                            <div class="market-view-cards" id="marketViewCards">
+                                <div class="market-view-card active" data-type="line" onclick="changeGraphType('line')">
+                                    <div class="market-view-card-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="market-view-card-content">
+                                        <h4 class="market-view-card-title">Line Graph</h4>
+                                        <p class="market-view-card-description">Visualize pricing trends over time</p>
+                                    </div>
+                                </div>
+
+                                <div class="market-view-card" data-type="bar" onclick="changeGraphType('bar')">
+                                    <div class="market-view-card-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="market-view-card-content">
+                                        <h4 class="market-view-card-title">Bar Graph</h4>
+                                        <p class="market-view-card-description">Compare metrics side-by-side</p>
+                                    </div>
+                                </div>
+
+                                <div class="market-view-card" data-type="table" onclick="changeGraphType('table')">
+                                    <div class="market-view-card-icon">
+                                        <i class="fas fa-table"></i>
+                                    </div>
+                                    <div class="market-view-card-content">
+                                        <h4 class="market-view-card-title">Data Table</h4>
+                                        <p class="market-view-card-description">View detailed numerical data</p>
+                                    </div>
+                                </div>
+
+                                <div class="market-view-card" data-type="price" onclick="changeGraphType('price')">
+                                    <div class="market-view-card-icon">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <div class="market-view-card-content">
+                                        <h4 class="market-view-card-title">Suggest My Price</h4>
+                                        <p class="market-view-card-description">Get AI-powered price recommendations</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Trends Container (Graph + Table) -->
+                            <div id="pricingTrendsContainer" class="market-main-container">
+
+                                <!-- Graph View -->
+                                <div id="marketGraphContainer" class="market-view-container">
+                                    <div class="market-controls">
                                     <div class="market-control-group" style="flex: 1; max-width: 100%;">
                                         <label class="market-control-label">
                                             Time Period (Months): <span id="graphTimeValue" class="market-time-value">3</span>
@@ -214,7 +255,7 @@
                             </div>
 
                             <!-- Price Suggestion View -->
-                            <div id="marketPriceContainer" class="market-view-container hidden market-price-green-bg">
+                            <div id="marketPriceContainer" class="market-view-container market-price-green-bg hidden">
                                 <div class="market-controls">
                                     <div class="market-control-group">
                                         <label class="market-control-label">
@@ -229,8 +270,16 @@
                                 </div>
                                 <div id="marketPriceResult" class="market-price-result-direct"></div>
                             </div>
+
+                            </div>
+                            <!-- End of #pricingTrendsContainer -->
+
                         </div>
-                    </div>
+                        <!-- End of .market-trend-content -->
+                </div>
+                <!-- End of #marketTrendView -->
+            </div>
+            <!-- End of .package-layout -->
 
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="closePackageModal()">Close</button>
@@ -240,4 +289,8 @@
                 </button>
             </div>
         </div>
+        <!-- End of .modal-content -->
+
+        <!-- Calculator Widget Backdrop (for mobile/tablet overlay) -->
+        <div class="calculator-widget-backdrop"></div>
     </div>

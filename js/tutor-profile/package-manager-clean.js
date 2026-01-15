@@ -412,6 +412,20 @@ async function _openPackageModalInternal() {
         document.body.style.overflow = 'hidden';
         console.log('✅ Modal display set to flex');
 
+        // Initialize sidebar state based on screen size
+        const isDesktop = window.innerWidth >= 1024;
+        const sidebarContent = document.getElementById('sidebarContent');
+        const sidebar = document.getElementById('packageSidebar');
+
+        if (isDesktop && sidebarContent) {
+            // Show sidebar content by default on desktop
+            sidebarContent.classList.add('active');
+            if (sidebar) {
+                sidebar.classList.remove('collapsed');
+            }
+            console.log('🖥️ Desktop mode: Sidebar content visible by default');
+        }
+
         // Reload packages from database
         console.log('📡 Loading packages from database/localStorage...');
         await window.packageManagerClean.loadPackages();
@@ -558,19 +572,116 @@ window.createNewPackage = async function() {
 
 /**
  * ═══════════════════════════════════════════════════════════
- * HAMBURGER TOGGLE FOR PACKAGE SIDEBAR
+ * TOGGLE PACKAGE SIDEBAR (CLEAN REBUILD)
  * ═══════════════════════════════════════════════════════════
+ *
+ * DESKTOP (>1024px):
+ * - Collapses sidebar (icon bar + content)
+ * - Both packageEditorContainer and marketTrendView transition smoothly
+ * - Transitions handled by CSS
+ *
+ * MOBILE/TABLET (≤1024px):
+ * - Shows sidebar as overlay with packages panel visible
+ * - Sidebar appears on top of everything (z-index: 1003)
+ * - Backdrop dims background (z-index: 1002)
+ * - Main content doesn't shift (overlay behavior)
  */
 
 window.togglePackageSidebar = function() {
     const sidebar = document.getElementById('packageSidebar');
     const layout = document.querySelector('.package-layout');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const sidebarContent = document.getElementById('sidebarContent');
+    const isMobile = window.innerWidth <= 1024;
 
-    if (sidebar && layout) {
-        sidebar.classList.toggle('collapsed');
+    if (!sidebar || !layout) {
+        console.warn('⚠️ Sidebar or layout not found');
+        return;
+    }
+
+    if (isMobile) {
+        // ═══════════════════════════════════════════════════════════
+        // MOBILE/TABLET (≤1024px): Overlay behavior
+        // ═══════════════════════════════════════════════════════════
+
+        const isVisible = sidebar.classList.toggle('visible');
+
+        // Toggle backdrop
+        if (backdrop) {
+            backdrop.classList.toggle('active', isVisible);
+        }
+
+        // Always show sidebar content when sidebar is visible
+        if (sidebarContent) {
+            if (isVisible) {
+                sidebarContent.classList.add('active');
+            } else {
+                sidebarContent.classList.remove('active');
+            }
+        }
+
+        console.log(`📱 Mobile: Sidebar ${isVisible ? 'opened' : 'closed'} (overlay)`);
+    } else {
+        // ═══════════════════════════════════════════════════════════
+        // DESKTOP (>1024px): Collapse/expand behavior
+        // ═══════════════════════════════════════════════════════════
+
+        const isCollapsed = sidebar.classList.toggle('collapsed');
         layout.classList.toggle('sidebar-collapsed');
+
+        // FIX A: Toggle sidebar content on desktop (not just close)
+        if (sidebarContent) {
+            if (isCollapsed) {
+                sidebarContent.classList.remove('active');
+            } else {
+                sidebarContent.classList.add('active');
+                // Also ensure packages panel is active
+                const packagesPanel = document.getElementById('packagesPanel');
+                if (packagesPanel) {
+                    packagesPanel.classList.add('active');
+                }
+            }
+        }
+
+        console.log(`🖥️ Desktop: Sidebar ${isCollapsed ? 'collapsed' : 'expanded'} (content + packages panel)`);
     }
 };
+
+/**
+ * ═══════════════════════════════════════════════════════════
+ * CALCULATOR TOGGLE FUNCTION
+ * ═══════════════════════════════════════════════════════════
+ */
+
+window.toggleCalculatorWidget = function() {
+    const calculator = document.getElementById('feeCalculatorWidget');
+    const toggleBtn = document.querySelector('.calculator-toggle-btn');
+    const backdrop = document.querySelector('.calculator-widget-backdrop');
+    const isMobile = window.innerWidth <= 1024;
+
+    if (calculator) {
+        const isHidden = calculator.classList.contains('hidden');
+
+        if (isHidden) {
+            // Show calculator
+            calculator.classList.remove('hidden');
+            if (toggleBtn) toggleBtn.classList.add('active');
+            // FIX C: Never show backdrop - calculator should not blur the page
+            // Backdrop removed completely
+            console.log('✅ Calculator widget opened (no backdrop)');
+        } else {
+            // Hide calculator
+            calculator.classList.add('hidden');
+            if (toggleBtn) toggleBtn.classList.remove('active');
+            // Ensure backdrop is removed (if it exists)
+            if (backdrop) backdrop.classList.remove('active');
+            console.log('✅ Calculator widget closed');
+        }
+    }
+};
+
+// FIX C: Calculator backdrop removed - no longer needed
+// Calculator no longer blurs/blocks the page
 
 window.switchPackagePanel = function(panelName) {
     console.log('🔄 Switching to panel:', panelName);
@@ -585,56 +696,106 @@ window.switchPackagePanel = function(panelName) {
         }
     });
 
-    // Get main area elements
-    const packageEditor = document.getElementById('packageEditor');
+    // Get main area containers (new structure)
+    const packageEditorContainer = document.getElementById('packageEditorContainer');
     const marketTrendView = document.getElementById('marketTrendView');
+    const sidebarContent = document.getElementById('sidebarContent');
 
     // Get modal header elements
     const modalTitle = document.getElementById('modalTitle');
     const modalSubtitle = document.getElementById('modalSubtitle');
 
     if (panelName === 'market-trend') {
-        // Hide package editor, show market trend in main area
-        if (packageEditor) packageEditor.style.display = 'none';
-        if (marketTrendView) marketTrendView.style.display = 'block';
+        // Hide package editor container, show market trend view (full width)
+        if (packageEditorContainer) {
+            packageEditorContainer.classList.add('hidden');
+        }
+        if (marketTrendView) {
+            marketTrendView.classList.add('active');
+            marketTrendView.style.display = 'flex';
+        }
 
-        // Show Market Trend Panel in sidebar, hide Packages Panel
+        // FIX 1: ALWAYS hide sidebar content when market trends is clicked
+        if (sidebarContent) {
+            sidebarContent.classList.remove('active');
+        }
+
+        // FIX 1: Also hide packages panel explicitly
         const packagesPanel = document.getElementById('packagesPanel');
-        const marketTrendPanel = document.getElementById('marketTrendPanel');
-        if (packagesPanel) packagesPanel.classList.remove('active');
-        if (marketTrendPanel) marketTrendPanel.classList.add('active');
+        if (packagesPanel) {
+            packagesPanel.classList.remove('active');
+        }
+
+        // FIX 1: On mobile, also close the sidebar overlay completely
+        const sidebar = document.getElementById('packageSidebar');
+        const packageLayout = document.querySelector('#package-management-modal .package-layout');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const isMobile = window.innerWidth <= 1024;
+
+        if (isMobile) {
+            // Mobile: Close sidebar overlay
+            if (sidebar) {
+                sidebar.classList.remove('visible');
+            }
+            if (backdrop) {
+                backdrop.classList.remove('active');
+            }
+        } else {
+            // Desktop: Keep sidebar open, just hide content
+            if (sidebar) {
+                sidebar.classList.remove('collapsed');
+            }
+            if (packageLayout) {
+                packageLayout.classList.remove('sidebar-collapsed');
+            }
+        }
 
         // Hide Save Package button (not relevant for market trends)
         const savePackageBtn = document.getElementById('savePackageBtn');
         if (savePackageBtn) savePackageBtn.style.display = 'none';
 
-        // Update modal header
+        // Update modal header with Market Insights
         if (modalTitle) {
-            modalTitle.innerHTML = '<i class="fas fa-chart-line"></i> Market Trends & Insights';
+            modalTitle.innerHTML = '<i class="fas fa-lightbulb"></i> Market Insights for Tutors';
         }
         if (modalSubtitle) {
-            modalSubtitle.textContent = 'Analyze pricing trends, popular packages, and competitive insights';
+            modalSubtitle.textContent = 'Building a consistent track record with high ratings is key to commanding higher prices.';
             modalSubtitle.style.display = 'block';
         }
 
-        // Initialize the default view (Pricing Trends with line graph)
+        // Initialize the default view (Pricing Trends) - container is visible by default
         setTimeout(() => {
-            if (typeof switchMarketTrendView === 'function') {
-                switchMarketTrendView('pricing');
+            // Auto-load graph if not already loaded
+            if (!marketChartInstance && typeof updateMarketGraph === 'function') {
+                updateMarketGraph();
             }
         }, 100);
 
-        console.log('✅ Market trend view displayed in main area, Market Trend Panel shown in sidebar');
+        console.log('✅ Market trend view displayed (full width), sidebar content hidden');
     } else {
-        // Show package editor, hide market trend
-        if (packageEditor) packageEditor.style.display = 'block';
-        if (marketTrendView) marketTrendView.style.display = 'none';
+        // Show package editor container (editor + calculator), hide market trend view
+        if (packageEditorContainer) {
+            packageEditorContainer.classList.remove('hidden');
+        }
+        if (marketTrendView) {
+            marketTrendView.classList.remove('active');
+            marketTrendView.style.display = 'none';
+        }
 
-        // Show Packages Panel in sidebar, hide Market Trend Panel
-        const packagesPanel = document.getElementById('packagesPanel');
-        const marketTrendPanel = document.getElementById('marketTrendPanel');
-        if (packagesPanel) packagesPanel.classList.add('active');
-        if (marketTrendPanel) marketTrendPanel.classList.remove('active');
+        // Show sidebar content with packages panel
+        if (sidebarContent) {
+            sidebarContent.classList.add('active');
+        }
+
+        // Ensure sidebar is not collapsed
+        const sidebar = document.getElementById('packageSidebar');
+        const packageLayout = document.querySelector('#package-management-modal .package-layout');
+        if (sidebar) {
+            sidebar.classList.remove('collapsed');
+        }
+        if (packageLayout) {
+            packageLayout.classList.remove('sidebar-collapsed');
+        }
 
         // Reset modal header
         if (modalTitle) {
@@ -644,14 +805,14 @@ window.switchPackagePanel = function(panelName) {
             modalSubtitle.style.display = 'none';
         }
 
-        console.log('✅ Package editor displayed, Packages Panel shown in sidebar');
+        console.log('✅ Package editor container displayed (editor + calculator), sidebar expanded with packages panel');
     }
 };
 
 window.selectPackage = function(packageId) {
     // If in market trend view, switch back to packages view first
     const marketTrendView = document.getElementById('marketTrendView');
-    if (marketTrendView && marketTrendView.style.display === 'block') {
+    if (marketTrendView && (marketTrendView.classList.contains('active') || marketTrendView.style.display === 'flex')) {
         switchPackagePanel('packages');
     }
 
@@ -1051,30 +1212,7 @@ function renderPackageEditor() {
                 </div>
             </div>
 
-            <!-- RIGHT: Calculator Widget -->
-            <div class="calculator-widget">
-                <div class="calculator-widget-header">
-                    <i class="fas fa-calculator"></i>
-                    <h4>Fee Calculator</h4>
-                </div>
-
-                <div class="calculator-widget-body">
-                    <div class="calculator-inputs-row">
-                        <div class="form-field">
-                            <label><i class="fas fa-calendar-week"></i> Days per Week</label>
-                            <input type="number" id="calcDays" value="3" min="1" max="7" oninput="updateCalculator()">
-                        </div>
-                        <div class="form-field">
-                            <label><i class="fas fa-clock"></i> Hours per Day</label>
-                            <input type="number" id="calcHours" value="1" min="1" max="24" oninput="updateCalculator()">
-                        </div>
-                    </div>
-
-                    <div class="calculator-results" id="calculatorResults">
-                        <!-- Results will be inserted here -->
-                    </div>
-                </div>
-            </div>
+            <!-- Calculator Widget is now in the HTML, not generated by JS -->
         </div>
     `;
 
