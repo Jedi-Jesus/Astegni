@@ -108,12 +108,12 @@ def check_and_auto_verify_tutor(user: User, db: Session) -> bool:
     if not profile_complete:
         return False
 
-    # Get tutor profile and auto-verify if not already verified
-    tutor_profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
-    if tutor_profile and not tutor_profile.is_verified:
-        tutor_profile.is_verified = True
-        tutor_profile.verification_status = "verified"
-        tutor_profile.verified_at = datetime.utcnow()
+    # Auto-verify user if not already verified
+    if not user.is_verified:
+        user.is_verified = True
+        user.verification_status = "approved"
+        user.verified_at = datetime.utcnow()
+        user.verification_method = "kyc"
         db.commit()
         return True
 
@@ -1543,8 +1543,8 @@ def get_current_tutor_profile(
             "punctuality": round(avg_metrics.punctuality, 1) if avg_metrics and avg_metrics.punctuality else 0.0
         },
         "expertise_badge": tutor_profile.expertise_badge or "Tutor",  # REQUIRED: Expertise badge from tutor_profiles
-        "verification_status": tutor_profile.verification_status or "pending",  # REQUIRED: Verification status from tutor_profiles
-        "is_verified": tutor_profile.is_verified,
+        "verification_status": current_user.verification_status or "pending",  # From users table
+        "is_verified": current_user.is_verified,  # From users table
         "is_active": tutor_profile.is_active,
         "is_basic": tutor_profile.is_basic,
         "social_links": tutor_profile.social_links,
@@ -4797,7 +4797,7 @@ def get_student_tutors(
             "sessionFormat": None,  # Column removed
             "session_format": None,  # Column removed
             "availability_status": "Available",  # Column doesn't exist, default to Available
-            "is_verified": tutor_profile.is_verified,
+            "is_verified": tutor_user.is_verified,  # From users table
             "is_premium": False,  # Column doesn't exist
             # Enrollment info
             "package_name": package_name,
@@ -4924,7 +4924,7 @@ def get_student_tutor_detail(
         "sessionFormat": None,  # Column removed
         "session_format": None,  # Column removed
         "availability_status": tutor_profile.availability_status or "Available",
-        "is_verified": tutor_profile.is_verified,
+        "is_verified": tutor_user.is_verified,  # From users table
         "is_premium": tutor_profile.is_premium,
         # Enrollment info
         "package_name": package_name,
@@ -6351,9 +6351,9 @@ def get_pending_tutors(
     """Get all pending tutor registration requests (admin only)"""
     # Admin authentication already handled by get_current_admin dependency
 
-    # Query tutors with pending verification
+    # Query tutors with pending verification (from users table)
     query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.verification_status == "pending"
+        User.verification_status == "pending"
     ).order_by(TutorProfile.created_at.desc())
 
     total_count = query.count()
@@ -6376,7 +6376,7 @@ def get_pending_tutors(
             "experience": None,  # Column removed
             "education_level": getattr(tutor_profile, 'education_level', None),
             "created_at": tutor_profile.created_at.isoformat() if tutor_profile.created_at else None,
-            "verification_status": tutor_profile.verification_status
+            "verification_status": user.verification_status  # From users table
         })
 
     return {
@@ -6422,7 +6422,7 @@ def get_tutor_review_details(
         "sessionFormat": None,  # Column removed
         "price": tutor_profile.price,
         "currency": tutor_profile.currency,
-        "verification_status": tutor_profile.verification_status,
+        "verification_status": user.verification_status,  # From users table
         "rejection_reason": tutor_profile.rejection_reason,
         "created_at": tutor_profile.created_at.isoformat() if tutor_profile.created_at else None
     }
@@ -6440,11 +6440,16 @@ def verify_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
-    # Update verification status
-    tutor_profile.is_verified = True
-    tutor_profile.verification_status = "verified"
-    tutor_profile.verified_at = datetime.utcnow()
-    tutor_profile.verified_by = current_admin["id"]  # Use admin_id from token
+    # Get user to update verification status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update verification status in users table
+    user.is_verified = True
+    user.verification_status = "approved"
+    user.verified_at = datetime.utcnow()
+    user.verification_method = "admin"
     tutor_profile.rejection_reason = None  # Clear any previous rejection reason
 
     db.commit()
@@ -6470,16 +6475,20 @@ def reject_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
+    # Get user to update verification status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     rejection_reason = rejection_data.get("reason", "").strip()
     if not rejection_reason:
         raise HTTPException(status_code=400, detail="Rejection reason is required")
 
-    # Update verification status
-    tutor_profile.is_verified = False
-    tutor_profile.verification_status = "rejected"
+    # Update verification status in users table
+    user.is_verified = False
+    user.verification_status = "rejected"
+    user.rejected_at = datetime.utcnow()
     tutor_profile.rejection_reason = rejection_reason
-    tutor_profile.verified_at = None
-    tutor_profile.verified_by = current_admin["id"]  # Use admin_id from token
 
     db.commit()
 
@@ -6505,16 +6514,21 @@ def suspend_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
+    # Get user to update suspension status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     suspension_reason = suspension_data.get("reason", "").strip()
     if not suspension_reason:
         raise HTTPException(status_code=400, detail="Suspension reason is required")
 
-    # Update suspension status
-    tutor_profile.is_suspended = True
-    tutor_profile.verification_status = "suspended"  # CRITICAL: Update verification_status
-    tutor_profile.suspension_reason = suspension_reason
-    tutor_profile.suspended_at = datetime.utcnow()
-    tutor_profile.suspended_by = current_admin["id"]  # Use admin_id from token
+    # Update suspension status in users table
+    user.is_suspended = True
+    user.verification_status = "suspended"
+    user.suspension_reason = suspension_reason
+    user.suspended_at = datetime.utcnow()
+    user.suspended_by = current_admin["id"]  # Admin ID from token
 
     db.commit()
 
@@ -6538,17 +6552,22 @@ def reinstate_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
-    # Check if tutor is suspended (check both fields for robustness)
-    if not tutor_profile.is_suspended and tutor_profile.verification_status != "suspended":
+    # Get user to update suspension status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if user is suspended
+    if not user.is_suspended and user.verification_status != "suspended":
         raise HTTPException(status_code=400, detail="Tutor is not suspended")
 
-    # Clear suspension and restore to verified status
-    tutor_profile.is_suspended = False
-    tutor_profile.is_verified = True
-    tutor_profile.verification_status = "verified"  # CRITICAL: Restore verification_status
-    tutor_profile.suspension_reason = None
-    tutor_profile.suspended_at = None
-    tutor_profile.suspended_by = None
+    # Clear suspension and restore to verified status in users table
+    user.is_suspended = False
+    user.is_verified = True
+    user.verification_status = "approved"
+    user.suspension_reason = None
+    user.suspended_at = None
+    user.suspended_by = None
 
     db.commit()
 
@@ -6572,15 +6591,19 @@ def reconsider_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
-    if tutor_profile.verification_status != "rejected":
+    # Get user to update verification status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.verification_status != "rejected":
         raise HTTPException(status_code=400, detail="Tutor is not in rejected status")
 
-    # Clear rejection and move back to pending status
-    tutor_profile.is_verified = False
-    tutor_profile.verification_status = "pending"
+    # Clear rejection and move back to pending status in users table
+    user.is_verified = False
+    user.verification_status = "pending"
+    user.rejected_at = None
     tutor_profile.rejection_reason = None
-    tutor_profile.verified_at = None
-    tutor_profile.verified_by = None
 
     db.commit()
 
@@ -6638,7 +6661,7 @@ def get_verified_tutors(
             "rating": tutor_profile.rating,
             "total_students": tutor_profile.total_students,
             "total_sessions": tutor_profile.total_sessions,
-            "verified_at": tutor_profile.verified_at.isoformat() if tutor_profile.verified_at else None
+            "verified_at": user.verified_at.isoformat() if user and user.verified_at else None  # From users table
         })
 
     return {
@@ -6702,9 +6725,9 @@ def get_suspended_tutors(
     """Get all suspended tutors (admin only)"""
     # Admin authentication already handled by get_current_admin dependency
 
-    # Query suspended tutors
+    # Query suspended tutors (from users table)
     query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.verification_status == "suspended"
+        User.verification_status == "suspended"
     ).order_by(TutorProfile.updated_at.desc())
 
     total_count = query.count()
@@ -6723,9 +6746,9 @@ def get_suspended_tutors(
             "teaches_at": None,  # Column removed
             "location": tutor_profile.location,
             "courses": [],  # Column removed
-            "suspension_reason": tutor_profile.suspension_reason,
-            "suspended_at": tutor_profile.suspended_at.isoformat() if tutor_profile.suspended_at else None,
-            "verified_at": tutor_profile.verified_at.isoformat() if tutor_profile.verified_at else None,
+            "suspension_reason": user.suspension_reason if user else None,  # From users table
+            "suspended_at": user.suspended_at.isoformat() if user and user.suspended_at else None,  # From users table
+            "verified_at": user.verified_at.isoformat() if user and user.verified_at else None,  # From users table
             "updated_at": tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None
         })
 

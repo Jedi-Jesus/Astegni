@@ -40,11 +40,17 @@ def suspend_tutor(
     if not suspension_reason:
         raise HTTPException(status_code=400, detail="Suspension reason is required")
 
-    # Update to suspended status
-    tutor_profile.verification_status = "suspended"
-    tutor_profile.suspension_reason = suspension_reason
-    tutor_profile.suspended_at = datetime.utcnow()
-    tutor_profile.suspended_by = current_user.id
+    # Get user to update suspension status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update suspension status in users table
+    user.verification_status = "suspended"
+    user.suspension_reason = suspension_reason
+    user.suspended_at = datetime.utcnow()
+    user.suspended_by = current_user.id
+    user.is_suspended = True
     tutor_profile.is_active = False
 
     db.commit()
@@ -72,14 +78,21 @@ def reinstate_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
-    if tutor_profile.verification_status != "suspended":
+    # Get user to update suspension status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.verification_status != "suspended":
         raise HTTPException(status_code=400, detail="Tutor is not suspended")
 
-    # Reinstate tutor
-    tutor_profile.verification_status = "verified"
-    tutor_profile.suspension_reason = None
-    tutor_profile.suspended_at = None
-    tutor_profile.suspended_by = None
+    # Reinstate user in users table
+    user.verification_status = "approved"
+    user.suspension_reason = None
+    user.suspended_at = None
+    user.suspended_by = None
+    user.is_suspended = False
+    user.is_verified = True
     tutor_profile.is_active = True
 
     db.commit()
@@ -106,13 +119,18 @@ def reconsider_tutor(
     if not tutor_profile:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
-    if tutor_profile.verification_status != "rejected":
+    # Get user to update verification status
+    user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.verification_status != "rejected":
         raise HTTPException(status_code=400, detail="Tutor is not rejected")
 
-    # Move back to pending for review
-    tutor_profile.verification_status = "pending"
+    # Move back to pending for review in users table
+    user.verification_status = "pending"
+    user.rejected_at = None
     tutor_profile.rejection_reason = None
-    tutor_profile.verified_at = None
     tutor_profile.verified_by = None
 
     db.commit()
@@ -140,9 +158,9 @@ def get_suspended_tutors_corrected(
     if "admin" not in current_user.roles:
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    # Query suspended tutors correctly
+    # Query suspended tutors from users table
     query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.verification_status == "suspended"
+        User.verification_status == "suspended"
     ).order_by(TutorProfile.updated_at.desc())
 
     total_count = query.count()
@@ -161,8 +179,8 @@ def get_suspended_tutors_corrected(
             "teaches_at": None,  # Column removed
             "location": tutor_profile.location,
             "courses": [],  # Column removed
-            "suspension_reason": tutor_profile.suspension_reason or tutor_profile.rejection_reason,
-            "suspended_at": tutor_profile.suspended_at.isoformat() if hasattr(tutor_profile, 'suspended_at') and tutor_profile.suspended_at else tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None,
+            "suspension_reason": user.suspension_reason if user else tutor_profile.rejection_reason,  # From users table
+            "suspended_at": user.suspended_at.isoformat() if user and user.suspended_at else tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None,  # From users table
             "updated_at": tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None
         })
 

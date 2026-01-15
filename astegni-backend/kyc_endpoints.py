@@ -61,41 +61,18 @@ def check_and_auto_verify_profiles(user: User, db: Session) -> dict:
     if not profile_complete:
         return results
 
-    # Auto-verify Tutor Profile
-    if "tutor" in (user.roles or []):
-        tutor_profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
-        if tutor_profile and not tutor_profile.is_verified:
-            tutor_profile.is_verified = True
-            tutor_profile.verification_status = "verified"
-            tutor_profile.verified_at = datetime.utcnow()
-            results["verified_profiles"].append("tutor")
+    # Auto-verify user after KYC completion (applies to all roles)
+    if not user.is_verified:
+        user.is_verified = True
+        user.verification_status = "approved"
+        user.verified_at = datetime.utcnow()
+        user.verification_method = "kyc"
 
-    # Auto-verify Student Profile
-    if "student" in (user.roles or []):
-        student_profile = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
-        if student_profile and not student_profile.is_verified:
-            student_profile.is_verified = True
-            student_profile.verified_at = datetime.utcnow()
-            results["verified_profiles"].append("student")
+        # Add all user roles to verified profiles list
+        if user.roles:
+            results["verified_profiles"].extend(user.roles)
 
-    # Auto-verify Parent Profile
-    if "parent" in (user.roles or []):
-        parent_profile = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
-        if parent_profile and not parent_profile.is_verified:
-            parent_profile.is_verified = True
-            parent_profile.verified_at = datetime.utcnow()
-            results["verified_profiles"].append("parent")
-
-    # Auto-verify Advertiser Profile
-    if "advertiser" in (user.roles or []):
-        advertiser_profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-        if advertiser_profile and not advertiser_profile.is_verified:
-            advertiser_profile.is_verified = True
-            advertiser_profile.verified_at = datetime.utcnow()
-            results["verified_profiles"].append("advertiser")
-
-    # Commit all changes at once
-    if results["verified_profiles"]:
+        # Commit user verification
         db.commit()
 
     return results
