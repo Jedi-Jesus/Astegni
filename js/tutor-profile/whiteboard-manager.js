@@ -226,35 +226,59 @@ class WhiteboardManager {
         // Modal will be loaded when user first opens whiteboard, not on page load
         console.log('🎨 Whiteboard modal will be loaded lazily when first opened');
 
-        // Load all context-aware data based on user role
-        // NOTE: Profile info must load BEFORE WebSocket so we have the profile ID
-        if (this.userRole === 'student') {
-            // Student perspective: load tutors instead of students
-            // Load student info first for WebSocket connection
-            await this.loadStudentInfo();
-            await Promise.all([
-                this.loadSessionHistory(),
-                this.loadTutorsList(),
-                this.loadStudentCourseworkList(),
-                this.loadFilesList()
-            ]);
-            console.log('🎨 Whiteboard Manager initialized for STUDENT with context:', this.context);
-        } else {
-            // Tutor perspective (default): load students
-            // Load tutor info first for WebSocket connection
-            await this.loadTutorInfo();
-            await Promise.all([
-                this.loadSessionHistory(),
-                this.loadStudentsList(),
-                this.loadCourseworkList(),
-                this.loadFilesList()
-            ]);
-            console.log('🎨 Whiteboard Manager initialized for TUTOR with context:', this.context);
+        // Check if modal was already preloaded by ModalLoader
+        // If it exists, set up event listeners immediately
+        const modalExists = document.getElementById('whiteboardModal');
+        if (modalExists) {
+            this.setupEventListeners();
         }
 
-        // Initialize WebSocket connection AFTER profile info is loaded
-        // This ensures we have the profile ID for the connection
-        this.initializeWebSocket();
+        // Load all context-aware data based on user role
+        // NOTE: Profile info must load BEFORE WebSocket so we have the profile ID
+        try {
+            if (this.userRole === 'student') {
+                // Student perspective: load tutors instead of students
+                // Load student info first for WebSocket connection
+                await this.loadStudentInfo();
+                await Promise.all([
+                    this.loadSessionHistory(),
+                    this.loadTutorsList(),
+                    this.loadStudentCourseworkList(),
+                    this.loadFilesList()
+                ].map(p => p.catch(e => {
+                    console.warn('Failed to load some whiteboard data:', e);
+                    return null; // Don't fail entire initialization
+                })));
+                console.log('🎨 Whiteboard Manager initialized for STUDENT with context:', this.context);
+            } else {
+                // Tutor perspective (default): load students
+                // Load tutor info first for WebSocket connection
+                await this.loadTutorInfo();
+                await Promise.all([
+                    this.loadSessionHistory(),
+                    this.loadStudentsList(),
+                    this.loadCourseworkList(),
+                    this.loadFilesList()
+                ].map(p => p.catch(e => {
+                    console.warn('Failed to load some whiteboard data:', e);
+                    return null; // Don't fail entire initialization
+                })));
+                console.log('🎨 Whiteboard Manager initialized for TUTOR with context:', this.context);
+            }
+
+            // Initialize WebSocket connection AFTER profile info is loaded
+            // This ensures we have the profile ID for the connection
+            // Don't let WebSocket errors block the modal functionality
+            try {
+                this.initializeWebSocket();
+            } catch (error) {
+                console.error('WebSocket initialization failed (non-blocking):', error);
+            }
+        } catch (error) {
+            console.error('Whiteboard initialization error (continuing anyway):', error);
+        }
+
+        console.log('🎨 Whiteboard Manager initialization complete');
     }
 
     /**
@@ -678,7 +702,8 @@ class WhiteboardManager {
      */
     setupEventListeners() {
         // Check if modal exists before setting up listeners
-        if (!document.getElementById('whiteboardModal')) {
+        const modal = document.getElementById('whiteboardModal');
+        if (!modal) {
             console.log('🎨 Whiteboard modal not in DOM yet, skipping event listener setup');
             return;
         }
@@ -969,7 +994,7 @@ class WhiteboardManager {
      */
     async openWhiteboard(sessionId = null, studentId = null, context = 'teaching_tools') {
         try {
-            // CRITICAL: Ensure modal is loaded before opening
+            // Ensure modal is loaded before opening
             const modalLoaded = await this.ensureModalLoaded();
             if (!modalLoaded) {
                 alert('Failed to load whiteboard. Please refresh the page and try again.');
@@ -12461,6 +12486,15 @@ const whiteboardManager = new WhiteboardManager();
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     whiteboardManager.initialize();
+});
+
+// Also listen for modalsLoaded event
+// ModalLoader might finish loading after DOMContentLoaded
+document.addEventListener('modalsLoaded', () => {
+    // If modal now exists and event listeners weren't set up yet, do it now
+    if (document.getElementById('whiteboardModal')) {
+        whiteboardManager.setupEventListeners();
+    }
 });
 
 // Global function to open whiteboard modal (for onclick handlers)
