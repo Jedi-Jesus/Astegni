@@ -7,7 +7,7 @@ The `whiteboard-modal.html` file exists locally and is tracked by git, but might
 
 **Diagnostic:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Check if file exists on server
@@ -39,7 +39,7 @@ The file exists but isn't readable by the web server.
 
 **Diagnostic:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Check file permissions
@@ -71,7 +71,7 @@ Nginx might have a configuration that blocks direct access to .html files in the
 
 **Diagnostic:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 
 # Check Nginx configuration
 cat /etc/nginx/sites-enabled/astegni
@@ -130,7 +130,7 @@ Your auto-deployment might have a filter that excludes modal files.
 
 **Check deployment configuration:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Check if there's a deployment script
@@ -149,7 +149,7 @@ The server or CDN cached a 404 response from when the file was missing.
 **Fix:**
 ```bash
 # Clear all caches
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 
 # Nginx cache
 sudo rm -rf /var/cache/nginx/*
@@ -266,7 +266,7 @@ Based on the symptoms (works locally, fails in production, affects multiple prof
 
 Try these in order:
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # 1. Update code

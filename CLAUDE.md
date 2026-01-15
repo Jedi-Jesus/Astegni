@@ -270,8 +270,8 @@ settings = admin_db.query(SystemSettings).all()
 Git push → GitHub webhook → Production server auto-pulls + restarts
 
 **Production Server (Hetzner):**
-- IP: `218.140.122.215`
-- SSH: `ssh root@218.140.122.215` (Password: `UVgkFmAsh4N4`)
+- IP: `128.140.122.215`
+- SSH: `ssh root@128.140.122.215` (Password: `UVgkFmAsh4N4`)
 - Location: `/var/www/astegni/`
 - URLs: https://astegni.com, https://api.astegni.com
 
@@ -284,7 +284,7 @@ python dev-server.py && cd astegni-backend && python app.py
 git add . && git commit -m "Description" && git push origin main
 
 # 3. Verify (via SSH)
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 systemctl status astegni-backend
 curl https://api.astegni.com/health
 ```
@@ -310,7 +310,7 @@ const API_BASE_URL = isProduction ? 'https://api.astegni.com' : 'http://localhos
 
 ### Database Migration on Production
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni/astegni-backend
 source venv/bin/activate
 
@@ -326,7 +326,7 @@ journalctl -u astegni-backend -f
 
 ### Rollback
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 git revert HEAD
 systemctl restart astegni-backend
@@ -365,7 +365,7 @@ wscat -c ws://localhost:8000/ws
 - Email: `jediael.s.abebe@gmail.com`, Password: `@JesusJediael1234`
 
 **Production Server:**
-- SSH: `root@218.140.122.215`, Password: `UVgkFmAsh4N4`
+- SSH: `root@128.140.122.215`, Password: `UVgkFmAsh4N4`
 
 **⚠️ NEVER use these in production! Generate new credentials.**
 

@@ -315,7 +315,7 @@ GOOGLE_REDIRECT_URI=https://astegni.com
 **Step 3: Deploy to Hetzner**
 ```bash
 # SSH into production server
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 
 # Update .env
 nano /var/www/astegni/astegni-backend/.env

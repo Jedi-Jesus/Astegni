@@ -23,7 +23,7 @@ When the modal loader tries to fetch modal files (like `whiteboard-modal.html`) 
 **Solution:** Update Nginx config to only fallback to index.html for actual page routes, not for `.html` files in subdirectories.
 
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /etc/nginx/sites-available
 sudo nano astegni  # or your site config file
 ```
@@ -110,7 +110,7 @@ Then apply the same fix to **student profile modal loader** if it has one.
 
 2. **Verify modal files exist on production:**
    ```bash
-   ssh root@218.140.122.215
+   ssh root@128.140.122.215
    cd /var/www/astegni
 
    # Check if modals directory exists and has files
@@ -141,7 +141,7 @@ git commit -m "Fix: Prevent index.html fallback injection in modal loader"
 git push origin main
 
 # 3. Auto-deployment will handle it, or manually:
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 git pull
 sudo systemctl reload nginx

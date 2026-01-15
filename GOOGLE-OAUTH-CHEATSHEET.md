@@ -167,7 +167,7 @@ In Google Console → OAuth Client:
 
 ### Deploy
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 nano /var/www/astegni/astegni-backend/.env
 systemctl restart astegni-backend
 ```

@@ -38,7 +38,7 @@ The modal loader has **cached** a version of the whiteboard modal that includes 
 ### 2. Clear Nginx Server Cache
 
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 sudo rm -rf /var/cache/nginx/*
 sudo systemctl reload nginx
 ```
@@ -143,7 +143,7 @@ async function load(modalIdentifier) {
 Then the issue is the modal file on the server is actually corrupted. Check:
 
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Check if modal has index.html content

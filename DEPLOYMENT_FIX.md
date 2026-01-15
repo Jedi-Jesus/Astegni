@@ -10,7 +10,7 @@ The production server might be serving a cached or corrupted version.
 
 **Fix:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Clear Nginx cache
@@ -34,7 +34,7 @@ Nginx might have `ssi` (Server Side Includes) or `concat` module enabled that's 
 
 **Check:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cat /etc/nginx/sites-available/astegni
 # Look for: ssi on; or concat;
 ```
@@ -59,7 +59,7 @@ The deployment might have corrupted or incompletely uploaded the file.
 
 **Fix:**
 ```bash
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 cd /var/www/astegni
 
 # Check file size matches local
@@ -68,7 +68,7 @@ ls -lh profile-pages/tutor-profile.html
 
 # If different, manually upload
 # From your local machine:
-scp "c:\Users\zenna\Downloads\Astegni\profile-pages\tutor-profile.html" root@218.140.122.215:/var/www/astegni/profile-pages/
+scp "c:\Users\zenna\Downloads\Astegni\profile-pages\tutor-profile.html" root@128.140.122.215:/var/www/astegni/profile-pages/
 
 # Then reload Nginx
 sudo systemctl reload nginx
@@ -84,7 +84,7 @@ curl -s https://astegni.com/profile-pages/tutor-profile.html | grep -i "</html>"
 # Should show: </html> at the end
 
 # Check file ending
-ssh root@218.140.122.215
+ssh root@128.140.122.215
 tail -5 /var/www/astegni/profile-pages/tutor-profile.html
 # Should end with </html>
 ```
@@ -93,7 +93,7 @@ tail -5 /var/www/astegni/profile-pages/tutor-profile.html
 
 1. **SSH into production server:**
    ```bash
-   ssh root@218.140.122.215
+   ssh root@128.140.122.215
    # Password: UVgkFmAsh4N4
    ```
 
