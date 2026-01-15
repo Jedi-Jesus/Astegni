@@ -57,9 +57,16 @@ class User(Base):
     email_verified = Column(Boolean, default=False)
     phone_verified = Column(Boolean, default=False)
 
-    # KYC (Know Your Customer) Verification
-    kyc_verified = Column(Boolean, default=False)
-    kyc_verified_at = Column(DateTime, nullable=True)
+    # Identity Verification (CANONICAL)
+    # This is the single source of truth for user verification status
+    is_verified = Column(Boolean, default=False)  # User's identity has been verified
+    verified_at = Column(DateTime, nullable=True)  # When user was verified
+    verification_method = Column(String(20), nullable=True)  # 'kyc', 'manual', 'admin', 'profile_tutor', etc.
+
+    # KYC (Know Your Customer) Verification - DEPRECATED in favor of is_verified
+    # Kept for backward compatibility - use is_verified instead in new code
+    kyc_verified = Column(Boolean, default=False)  # DEPRECATED: Use is_verified
+    kyc_verified_at = Column(DateTime, nullable=True)  # DEPRECATED: Use verified_at
     kyc_verification_id = Column(Integer, nullable=True)  # FK to kyc_verifications
 
     # Note: Two-Factor Authentication (2FA) is ROLE-BASED

@@ -248,10 +248,11 @@
                 console.log('[KYC] Showing verified status from localStorage');
             };
 
-            // Check localStorage first for kyc_verified status
+            // Check localStorage first for is_verified status (NEW: canonical field)
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const isVerifiedInLocalStorage = user.kyc_verified === true;
-            console.log('[KYC] localStorage kyc_verified:', isVerifiedInLocalStorage);
+            // NEW: Check is_verified first, fallback to kyc_verified for backward compatibility
+            const isVerifiedInLocalStorage = user.is_verified === true || user.kyc_verified === true;
+            console.log('[KYC] localStorage is_verified:', user.is_verified, 'kyc_verified:', user.kyc_verified);
 
             try {
                 // Check both token keys (app uses both 'token' and 'access_token')
@@ -317,7 +318,8 @@
                     if (el) el.style.display = 'none';
                 });
 
-                if (data.kyc_verified) {
+                // NEW: Check is_verified first, fallback to kyc_verified for backward compatibility
+                if (data.is_verified || data.kyc_verified) {
                     console.log('[KYC] User is VERIFIED - showing verified status, no button needed');
                     // Show verified status - NO footer button needed (already verified)
                     if (verifiedStatus) {
