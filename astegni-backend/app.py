@@ -75,12 +75,11 @@ limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS middleware - DEVELOPMENT ONLY: Allow all origins including file:// protocol
-# For production, restrict allow_origins to specific domains
+# CORS middleware - Allow production domains and localhost for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
-    allow_credentials=False,  # Must be False when using allow_origins=["*"]
+    allow_origins=["https://astegni.com", "https://www.astegni.com", "http://localhost:8080", "http://localhost:8081"],
+    allow_credentials=True,  # Allow cookies and auth headers
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"]

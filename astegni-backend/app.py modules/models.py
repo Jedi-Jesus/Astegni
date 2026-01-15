@@ -156,11 +156,8 @@ class TutorProfile(Base):
     hero_subtitle = Column(Text, default="Empowering students through personalized learning and expert guidance")
 
     # Status
-    is_verified = Column(Boolean, default=False)
-    verification_status = Column(String, default="pending")  # pending, verified, rejected, suspended
-    rejection_reason = Column(Text)  # Reason for rejection if status is rejected
-    verified_at = Column(DateTime)  # Timestamp when verified
-    # verified_by = Column(Integer)  # Admin user ID who verified - Column not in DB yet
+    # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
+    # NOTE: Suspension columns moved to users table (users.is_suspended, users.suspension_reason, etc.)
     is_active = Column(Boolean, default=True)
     is_basic = Column(Boolean, default=False)  # Basic tutor status
 
@@ -168,12 +165,6 @@ class TutorProfile(Base):
     subscription_plan_id = Column(Integer, nullable=True)  # ID from subscription_plans table
     subscription_started_at = Column(DateTime, nullable=True)
     subscription_expires_at = Column(DateTime, nullable=True)
-
-    # Suspension fields
-    is_suspended = Column(Boolean, default=False)
-    suspension_reason = Column(Text)  # Reason for suspension
-    suspended_at = Column(DateTime)  # Timestamp when suspended
-    suspended_by = Column(Integer)  # Admin ID who suspended
 
     # Media
     profile_picture = Column(String)
@@ -309,7 +300,7 @@ class ParentProfile(Base):
     rating_count = Column(Integer, default=0)
 
     # Status & Verification
-    is_verified = Column(Boolean, default=False)
+    # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
     is_active = Column(Boolean, default=True)
     profile_complete = Column(Boolean, default=False)
     profile_completion = Column(Float, default=0.0)
@@ -372,7 +363,7 @@ class AdvertiserProfile(Base):
     hero_subtitle = Column(ARRAY(String), default=[])  # ["Subtitle Line 1", "Subtitle Line 2"]
 
     # Status & Verification
-    is_verified = Column(Boolean, default=False)
+    # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
     is_active = Column(Boolean, default=True)
 
     # Membership date
@@ -406,7 +397,7 @@ class AdvertiserProfile(Base):
     business_license_url = Column(String(500), nullable=True)
     tin_certificate_url = Column(String(500), nullable=True)
     additional_docs_urls = Column(JSON, default=[])
-    verification_status = Column(String(20), default='pending')  # pending, in_review, verified, rejected
+    # NOTE: verification_status moved to users table (users.verification_status)
     verification_submitted_at = Column(DateTime, nullable=True)
     verification_reviewed_at = Column(DateTime, nullable=True)
     verification_notes = Column(Text, nullable=True)
