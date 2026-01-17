@@ -3,7 +3,7 @@ Google OAuth 2.0 Authentication Endpoints
 Handles Google Sign-In for login and registration
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -28,9 +28,45 @@ router = APIRouter(prefix="/api/oauth", tags=["Google OAuth"])
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8081")
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+# Environment detection
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+def get_redirect_uri(request: Request = None) -> str:
+    """
+    Dynamically determine the redirect URI based on environment or request origin
+
+    Priority:
+    1. GOOGLE_REDIRECT_URI from .env (if set)
+    2. Request origin (if available)
+    3. Environment-based default
+    """
+    # Check if explicitly set in .env
+    env_redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
+    if env_redirect_uri:
+        return env_redirect_uri
+
+    # Try to detect from request origin
+    if request:
+        origin = request.headers.get("origin", "")
+        referer = request.headers.get("referer", "")
+
+        # Extract base URL from origin or referer
+        if origin:
+            return origin
+        elif referer:
+            # Extract protocol and domain from referer
+            from urllib.parse import urlparse
+            parsed = urlparse(referer)
+            return f"{parsed.scheme}://{parsed.netloc}"
+
+    # Default based on environment
+    if ENVIRONMENT == "production":
+        return "https://astegni.com"
+    else:
+        return "http://localhost:8081"
 
 # ============================================
 # REQUEST/RESPONSE MODELS
@@ -320,11 +356,12 @@ async def google_oauth_login(
 
 
 @router.get("/google/config")
-async def get_google_oauth_config():
+async def get_google_oauth_config(request: Request):
     """
     Get Google OAuth configuration for frontend
 
     Returns client ID and redirect URI needed for Google Sign-In button
+    Dynamically determines redirect URI based on request origin
     """
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(
@@ -332,9 +369,11 @@ async def get_google_oauth_config():
             detail="Google OAuth not configured on server"
         )
 
+    redirect_uri = get_redirect_uri(request)
+
     return {
         "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": GOOGLE_REDIRECT_URI
+        "redirect_uri": redirect_uri
     }
 
 
@@ -343,11 +382,14 @@ async def get_google_oauth_config():
 # ============================================
 
 @router.get("/google/status")
-async def google_oauth_status():
+async def google_oauth_status(request: Request):
     """Check if Google OAuth is properly configured"""
+    redirect_uri = get_redirect_uri(request)
+
     return {
         "configured": bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET),
         "client_id_set": bool(GOOGLE_CLIENT_ID),
         "client_secret_set": bool(GOOGLE_CLIENT_SECRET),
-        "redirect_uri": GOOGLE_REDIRECT_URI
+        "redirect_uri": redirect_uri,
+        "environment": ENVIRONMENT
     }
