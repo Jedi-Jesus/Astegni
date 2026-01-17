@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    background: var(--background);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     z-index: 1;
 }
 
@@ -99,10 +99,10 @@
 
 /* Static Card (Total Users - No Flip) */
 .counter-static-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(248, 250, 252, 0.15));
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(248, 250, 252, 0.2));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
     height: 280px;
     padding: 2rem;
@@ -110,8 +110,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glossy highlight effect */
+.counter-static-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), transparent);
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
 }
 
 .counter-static-card:hover {
