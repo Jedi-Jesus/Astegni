@@ -39,6 +39,17 @@
 }
 
 /* ============================================
+   DESKTOP SCREENS (1024px+) - Ensure 4 columns
+   ============================================ */
+@media (min-width: 1024px) {
+    /* Counter grid: 4 columns on desktop screens (1 static + 3 flip) */
+    .counter-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 2rem;
+    }
+}
+
+/* ============================================
    MEDIUM-LARGE SCREENS (1025px - 1199px) - Keep 4 columns
    ============================================ */
 @media (max-width: 1200px) and (min-width: 1025px) {
