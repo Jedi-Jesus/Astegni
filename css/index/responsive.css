@@ -70,9 +70,9 @@
 }
 
 /* ============================================
-   TABLET SCREENS (768px - 1024px) - 2 columns for grids
+   TABLET SCREENS (768px - 1023px) - 2 columns for grids
    ============================================ */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
     /* Navigation - Responsive mobile menu enabled */
     .nav-menu {
         display: none !important;

@@ -5,12 +5,15 @@
 
 // Use global API base URL
 const counterApiUrl = window.API_BASE_URL || 'http://localhost:8000';
+console.log('[Counter Cards] Using API URL:', counterApiUrl);
 
 async function fetchStatistics() {
     try {
+        console.log('[Counter Cards] Fetching statistics from:', `${counterApiUrl}/api/statistics`);
         const response = await fetch(`${counterApiUrl}/api/statistics`);
         if (response.ok) {
             const stats = await response.json();
+            console.log('[Counter Cards] Successfully fetched statistics:', stats);
             return [
                 { id: "counter-total-users", target: stats.total_users ?? 0, current: 0, suffix: "+" },
                 { id: "counter-parents", target: stats.registered_parents ?? 0, current: 0, suffix: "+" },
@@ -19,9 +22,12 @@ async function fetchStatistics() {
                 { id: "counter-tutors", target: stats.expert_tutors ?? 0, current: 0, suffix: "+" },
                 { id: "counter-schools", target: stats.schools ?? 0, current: 0, suffix: "+" },
             ];
+        } else {
+            console.error('[Counter Cards] API response not OK:', response.status, response.statusText);
         }
     } catch (error) {
-        console.log('Using fallback statistics');
+        console.error('[Counter Cards] Failed to fetch statistics:', error);
+        console.log('[Counter Cards] Using fallback statistics');
     }
     // Return fallback data for 4 cards (1 static + 3 flip cards with front and back)
     return [
