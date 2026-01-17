@@ -251,7 +251,7 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         similarity = 1 - distance  # Convert distance to similarity (0-1)
 
         return {
-            "match": similarity >= 0.85,
+            "match": bool(similarity >= 0.85),
             "score": float(similarity),
             "method": "face_recognition"
         }
