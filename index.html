@@ -46,6 +46,8 @@
     <!-- Styles -->
     <link href="css/root.css?v=2.1.4" rel="stylesheet" />
     <link href="css/index.css?v=2.1.4" rel="stylesheet" />
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="css/common-modals/chat-call-modal.css">
 
     <!-- Index-specific component styles (loaded directly to avoid @import issues) -->
     <link href="css/index/hero-section.css?v=2.1.4" rel="stylesheet" />
@@ -353,13 +355,13 @@
                             <p class="counter-label">Total Users</p>
                         </div>
 
-                        <!-- Card 2: Community (Parents + Students) -->
+                        <!-- Card 2: Resources (Tutors + Schools) -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
-                                    <div class="counter-icon">👨‍👩‍👧‍👦</div>
-                                    <h3 id="counter-parents" class="counter-number">0</h3>
-                                    <p class="counter-label">Verified Parents</p>
+                                    <div class="counter-icon">👨‍🏫</div>
+                                    <h3 id="counter-tutors" class="counter-number">0</h3>
+                                    <p class="counter-label">Verified Tutors</p>
                                 </div>
                                 <div class="counter-flip-back">
                                     <div class="counter-icon">📚</div>
@@ -385,13 +387,13 @@
                             </div>
                         </div>
 
-                        <!-- Card 4: Resources (Tutors + Schools) -->
+                        <!-- Card 4: Community (Parents + Students) -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
-                                    <div class="counter-icon">👨‍🏫</div>
-                                    <h3 id="counter-tutors" class="counter-number">0</h3>
-                                    <p class="counter-label">Verified Tutors</p>
+                                    <div class="counter-icon">👨‍👩‍👧‍👦</div>
+                                    <h3 id="counter-parents" class="counter-number">0</h3>
+                                    <p class="counter-label">Verified Parents</p>
                                 </div>
                                 <div class="counter-flip-back">
                                     <div class="counter-icon">🏫</div>
@@ -400,6 +402,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
 
@@ -1114,6 +1117,22 @@
     <script src="js/common-modals/coming-soon-modal.js"></script>
     <script src="js/common-modals/logout-modal.js"></script>
     <script src="js/common-modals/accept-team-invite-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="js/common-modals/chat-call-modal.js"></script>
+
+    <!-- Load Standalone Chat Call Modal HTML -->
+    <script>
+        // Load standalone chat call modal HTML dynamically (for logged-in users)
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('modals/common-modals/chat-call-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Standalone Chat Call Modal loaded for index');
+                })
+                .catch(err => console.error('Failed to load chat-call-modal:', err));
+        });
+    </script>
 
     <!-- Add Role Modal functionality is in js/root/profile-system.js -->
 </body>

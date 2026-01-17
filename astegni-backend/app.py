@@ -186,9 +186,13 @@ app.include_router(parent_router)
 from advertiser_brands_endpoints import router as advertiser_brands_router
 from campaign_cancellation_endpoints import router as campaign_cancellation_router
 from campaign_cancellation_endpoints_enhanced import router as campaign_cancellation_enhanced_router
+from campaign_deposit_endpoints import router as campaign_deposit_router
+from campaign_stop_endpoints import router as campaign_stop_router
 app.include_router(advertiser_brands_router)
 app.include_router(campaign_cancellation_router)
 app.include_router(campaign_cancellation_enhanced_router)
+app.include_router(campaign_deposit_router)
+app.include_router(campaign_stop_router)
 
 # Include advertiser team management routes
 from advertiser_team_endpoints import router as advertiser_team_router
@@ -371,6 +375,10 @@ app.include_router(admin_leave_router)
 from chat_endpoints import router as chat_router
 app.include_router(chat_router)
 
+# Include call log routes
+from call_log_endpoints import router as call_log_router
+app.include_router(call_log_router)
+
 # Include poll routes
 from poll_endpoints import router as poll_router
 app.include_router(poll_router)
@@ -398,6 +406,10 @@ app.include_router(account_deletion_router)
 # Include Payment Methods routes (Bank, TeleBirr, Mobile Money, CBE Birr)
 from payment_methods_endpoints import router as payment_methods_router
 app.include_router(payment_methods_router)
+
+# Include Notes routes (rich text notes with voice/video recording support)
+from notes_endpoints import router as notes_router
+app.include_router(notes_router)
 
 # Student documents routes already included above (before student reviews to avoid route conflicts)
 
@@ -480,7 +492,9 @@ async def websocket_endpoint(websocket: WebSocket, profile_id: int, role: str):
 
                 elif message_type in ["video_call_invitation", "video_offer", "video_answer",
                                       "ice_candidate", "video_call_declined", "video_call_ended",
-                                      "video_call_cancelled", "video_call_participant_left"]:
+                                      "video_call_cancelled", "video_call_participant_left",
+                                      "call_invitation", "call_answer", "call_declined", "call_ended", "call_cancelled",
+                                      "call_mode_switched", "webrtc_offer"]:
                     await handle_video_call_message(message, connection_key, db)
 
                 elif message_type == "get_online_users":

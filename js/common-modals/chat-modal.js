@@ -91,7 +91,31 @@ const ChatModalManager = {
         forwardMessage: null,  // The message object being forwarded
         forwardSelectedContacts: [],  // Array of conversation objects selected for forwarding
         // Pending request recipient (for messaging before connection is accepted)
-        pendingRequestRecipient: null
+        pendingRequestRecipient: null,
+        // WebRTC Call State
+        isCallActive: false,
+        isVideoCall: false,
+        isIncomingCall: false,
+        localStream: null,
+        remoteStream: null,
+        peerConnection: null,
+        pendingOffer: null,
+        pendingCallInvitation: null,
+        callStartTime: null,
+        callDurationInterval: null,
+        isAudioMuted: false,
+        isVideoOff: false,
+        iceCandidateQueue: [],
+        currentCallLogId: null,  // Store call log ID for database updates
+
+        // Multi-party call support (mesh topology)
+        peerConnections: new Map(),  // Map of participantId -> RTCPeerConnection
+        remoteStreams: new Map(),  // Map of participantId -> MediaStream
+        callParticipants: [],  // Array of participant objects in current call
+        pendingParticipantInvites: new Map(),  // Map of participantId -> pending invitation
+
+        // Call timeout
+        callInvitationTimeout: null  // Timer for unanswered calls (20 seconds)
     },
 
     // API Configuration - ensure no duplicate /api prefix
@@ -688,8 +712,13 @@ const ChatModalManager = {
                             }
                         });
 
-                        // Update state with fresh data
-                        this.state.messages[conversationId] = updatedMessages;
+                        // Preserve call logs (both database and local) during refresh
+                        const existingCallLogs = currentMessages.filter(msg =>
+                            msg.message_type === 'call' || msg.type === 'call'
+                        );
+
+                        // Update state with fresh data + preserved call logs
+                        this.state.messages[conversationId] = [...updatedMessages, ...existingCallLogs];
 
                         // Sort by timestamp
                         this.state.messages[conversationId].sort((a, b) => {
@@ -699,7 +728,9 @@ const ChatModalManager = {
                         });
 
                         // Only re-render if status changed or new messages arrived
-                        if (statusChanged || updatedMessages.length !== currentMessages.length) {
+                        // Compare only non-call messages since call logs are preserved
+                        const previousNonCallCount = currentMessages.filter(m => m.message_type !== 'call' && m.type !== 'call').length;
+                        if (statusChanged || updatedMessages.length !== previousNonCallCount) {
                             this.renderMessages(conversationId);
                         }
                     }
@@ -1493,6 +1524,9 @@ const ChatModalManager = {
             console.error('Chat: Error loading conversations:', err);
         });
 
+        // Connect to WebSocket for real-time chat and call signaling
+        this.connectWebSocket();
+
         // Start polling for real-time updates (unread counts, new messages)
         this.startMessagePolling();
 
@@ -1989,6 +2023,9 @@ const ChatModalManager = {
 
         // Stop last seen polling
         this.stopLastSeenPolling();
+
+        // Disconnect WebSocket
+        this.disconnectWebSocket();
 
         // Restore body scrolling
         document.body.style.overflow = '';
@@ -3474,6 +3511,11 @@ const ChatModalManager = {
 
                 if (response.ok) {
                     const data = await response.json();
+
+                    // Preserve local call cards before replacing messages
+                    const existingMessages = this.state.messages[conversationId] || [];
+                    const localCallCards = existingMessages.filter(msg => msg.isLocalCallCard);
+
                     // Transform API messages to expected format
                     this.state.messages[conversationId] = (data.messages || []).map(msg => ({
                         id: msg.id,
@@ -3509,6 +3551,60 @@ const ChatModalManager = {
                         forwarded_from_profile_id: msg.forwarded_from_profile_id,
                         forwarded_from_profile_type: msg.forwarded_from_profile_type
                     }));
+
+                    // Fetch call logs from database
+                    try {
+                        const callLogsResponse = await fetch(
+                            `${this.API_BASE_URL}/api/call-logs/${conversationId}?${profileParams}`,
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            }
+                        );
+
+                        if (callLogsResponse.ok) {
+                            const callLogsData = await callLogsResponse.json();
+
+                            // Transform call logs to call card format
+                            const callCards = (callLogsData.call_logs || []).map(log => ({
+                                id: `call-log-${log.id}`,
+                                message_type: 'call',
+                                type: 'call',
+                                sent: log.is_caller,
+                                is_mine: log.is_caller,
+                                time: log.started_at,
+                                isLocalCallCard: false,  // From database, not local
+                                media_metadata: {
+                                    call_type: log.call_type,
+                                    status: log.status,
+                                    duration_seconds: log.duration_seconds
+                                }
+                            }));
+
+                            // Add call cards to messages
+                            if (callCards.length > 0) {
+                                this.state.messages[conversationId].push(...callCards);
+                                console.log('Chat: Loaded', callCards.length, 'call logs from database');
+                            }
+                        }
+                    } catch (callLogsError) {
+                        console.log('Chat: Could not load call logs:', callLogsError.message);
+                    }
+
+                    // Re-add local call cards that haven't been persisted yet
+                    if (localCallCards.length > 0) {
+                        this.state.messages[conversationId].push(...localCallCards);
+                        console.log('Chat: Restored', localCallCards.length, 'local call cards');
+                    }
+
+                    // Sort all messages by time (messages, call logs, local cards)
+                    this.state.messages[conversationId].sort((a, b) => {
+                        const timeA = new Date(a.time).getTime();
+                        const timeB = new Date(b.time).getTime();
+                        return timeA - timeB;
+                    });
+
                     console.log('Chat: Loaded messages:', this.state.messages[conversationId].length);
                 } else {
                     // Use sample messages
@@ -3947,6 +4043,11 @@ const ChatModalManager = {
         // Handle session_request message type with package card - NO bubble wrapper
         if (msg.message_type === 'session_request' || msg.type === 'session_request') {
             html += this.renderSessionRequestCard(msg);
+            html += `<span class="message-time-inline">${this.formatTime(msg.time)}</span>`;
+            html += '</div>';
+        } else if (msg.message_type === 'call' || msg.type === 'call') {
+            // Handle call message type with call card - NO bubble wrapper
+            html += this.renderCallCard(msg);
             html += `<span class="message-time-inline">${this.formatTime(msg.time)}</span>`;
             html += '</div>';
         } else {
@@ -4419,6 +4520,162 @@ const ChatModalManager = {
                 }
             </style>
         `;
+    },
+
+    // Render Call Card - Beautiful call history display
+    renderCallCard(msg) {
+        const callData = msg.media_metadata || {};
+        const callType = callData.call_type || 'voice';  // 'voice' or 'video'
+        const status = callData.status || 'missed';  // 'answered', 'missed', 'declined', 'ended'
+        const duration = callData.duration_seconds || 0;
+        const isCaller = msg.sent || msg.is_mine;
+
+        // Status styling
+        const statusConfig = {
+            answered: { icon: 'fa-phone', color: '#10b981', label: 'Call ended', bgColor: '#d1fae5' },
+            missed: { icon: 'fa-phone-slash', color: '#ef4444', label: 'Missed call', bgColor: '#fee2e2' },
+            declined: { icon: 'fa-phone-slash', color: '#ef4444', label: 'Call declined', bgColor: '#fee2e2' },
+            cancelled: { icon: 'fa-phone-slash', color: '#ef4444', label: 'Call cancelled', bgColor: '#fee2e2' },
+            no_answer: { icon: 'fa-phone-slash', color: '#f59e0b', label: 'No answer', bgColor: '#fef3c7' },
+            ended: { icon: 'fa-phone', color: '#10b981', label: 'Call ended', bgColor: '#d1fae5' }
+        };
+
+        const config = statusConfig[status] || statusConfig.missed;
+
+        // Format duration
+        let durationText = '';
+        if (duration > 0) {
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        }
+
+        // Call type icon
+        const callTypeIcon = callType === 'video' ? 'fa-video' : 'fa-phone';
+        const callTypeLabel = callType === 'video' ? 'Video Call' : 'Voice Call';
+
+        // Direction arrow
+        const directionIcon = isCaller ? 'fa-arrow-up' : 'fa-arrow-down';
+        const directionColor = isCaller ? '#10b981' : '#3b82f6';
+
+        return `
+            <div class="call-card" style="max-width: 280px; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, ${config.color}, ${config.color}dd); padding: 0.75rem 1rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas ${callTypeIcon}" style="font-size: 1.1rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.65rem; opacity: 0.9; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                            ${callTypeLabel}
+                        </div>
+                        <div style="font-size: 0.9rem; font-weight: 700;">
+                            ${config.label}
+                        </div>
+                    </div>
+                    <i class="fas ${directionIcon}" style="font-size: 0.9rem; color: rgba(255,255,255,0.8);"></i>
+                </div>
+
+                <!-- Body -->
+                <div style="padding: 0.875rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+                    ${duration > 0 ? `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-clock" style="color: #6b7280; font-size: 0.75rem;"></i>
+                            <span style="color: #374151; font-size: 0.8rem; font-weight: 600;">${durationText}</span>
+                        </div>
+                    ` : `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-info-circle" style="color: #6b7280; font-size: 0.75rem;"></i>
+                            <span style="color: #6b7280; font-size: 0.75rem;">No answer</span>
+                        </div>
+                    `}
+
+                    <button onclick="ChatModalManager.initiateCallFromCard('${callType}')" style="background: ${config.color}; color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <i class="fas ${callTypeIcon}" style="font-size: 0.7rem;"></i>
+                        Call Back
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // Initiate call from call card
+    initiateCallFromCard(callType) {
+        if (callType === 'video') {
+            this.startChatVideoCall();
+        } else {
+            this.startChatVoiceCall();
+        }
+    },
+
+    // Add call card to chat area
+    addCallCard(callType, status, duration = 0) {
+        if (!this.state.selectedConversation) return;
+
+        const callMessage = {
+            id: `call-${Date.now()}`,
+            message_type: 'call',
+            type: 'call',
+            sent: true,
+            is_mine: true,
+            time: new Date(),
+            isLocalCallCard: true,  // Mark as local so it persists during reloads
+            media_metadata: {
+                call_type: callType,
+                status: status,
+                duration_seconds: duration
+            }
+        };
+
+        // Add to messages array
+        const conversationId = this.state.selectedConversation.id;
+        if (!this.state.messages[conversationId]) {
+            this.state.messages[conversationId] = [];
+        }
+        this.state.messages[conversationId].push(callMessage);
+
+        // Display the message
+        this.displayMessage(callMessage);
+
+        // Scroll to bottom
+        this.scrollToBottom();
+
+        console.log(`📞 Call card added: ${callType} - ${status} - ${duration}s`);
+    },
+
+    // Add incoming call card (when you receive a call)
+    addIncomingCallCard(callType, status, duration = 0) {
+        if (!this.state.selectedConversation) return;
+
+        const callMessage = {
+            id: `call-${Date.now()}`,
+            message_type: 'call',
+            type: 'call',
+            sent: false,
+            is_mine: false,
+            time: new Date(),
+            isLocalCallCard: true,  // Mark as local so it persists during reloads
+            media_metadata: {
+                call_type: callType,
+                status: status,
+                duration_seconds: duration
+            }
+        };
+
+        // Add to messages array
+        const conversationId = this.state.selectedConversation.id;
+        if (!this.state.messages[conversationId]) {
+            this.state.messages[conversationId] = [];
+        }
+        this.state.messages[conversationId].push(callMessage);
+
+        // Display the message
+        this.displayMessage(callMessage);
+
+        // Scroll to bottom
+        this.scrollToBottom();
+
+        console.log(`📞 Incoming call card added: ${callType} - ${status} - ${duration}s`);
     },
 
     // Send Message
@@ -6396,23 +6653,18 @@ const ChatModalManager = {
             document.getElementById('chatRemoteVideo').style.display = 'none';
             document.getElementById('chatCallStatus').textContent = 'Connecting...';
 
-            // Log call to API
+            // Log call to API (using correct query params format)
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('access_token');
                 const profileParams = this.getProfileParams();
 
                 const response = await fetch(
-                    `${this.API_BASE_URL}/api/chat/calls?${profileParams}`,
+                    `${this.API_BASE_URL}/api/chat/calls?${profileParams}&conversation_id=${this.state.selectedChat}&call_type=voice`,
                     {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            conversation_id: this.state.selectedChat,
-                            call_type: 'voice'
-                        })
+                            'Authorization': `Bearer ${token}`
+                        }
                     }
                 );
 
@@ -6482,23 +6734,18 @@ const ChatModalManager = {
                 document.getElementById('chatVoiceCallAnimation').style.display = 'none';
                 document.getElementById('chatRemoteVideo').style.display = 'block';
 
-                // Log call to API
+                // Log call to API (using correct query params format)
                 try {
                     const token = localStorage.getItem('token') || localStorage.getItem('access_token');
                     const profileParams = this.getProfileParams();
 
                     const response = await fetch(
-                        `${this.API_BASE_URL}/api/chat/calls?${profileParams}`,
+                        `${this.API_BASE_URL}/api/chat/calls?${profileParams}&conversation_id=${this.state.selectedChat}&call_type=video`,
                         {
                             method: 'POST',
                             headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                conversation_id: this.state.selectedChat,
-                                call_type: 'video'
-                            })
+                                'Authorization': `Bearer ${token}`
+                            }
                         }
                     );
 
@@ -13740,6 +13987,1854 @@ const ChatModalManager = {
 
         // TODO: Implement video upload and send
         // this.uploadAndSendVideo(videoBlob);
+    },
+
+    // =============================================
+    // WEBSOCKET CONNECTION FOR CALLS
+    // =============================================
+
+    // Connect to WebSocket for real-time signaling
+    connectWebSocket() {
+        console.log('🔍 ========== WEBSOCKET CONNECTION DEBUG ==========');
+
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            console.log('📡 WebSocket already connected');
+            console.log('🔍 ================================================');
+            return;
+        }
+
+        if (!this.state.currentProfile || !this.state.currentUser) {
+            console.log('📡 Cannot connect WebSocket: No profile loaded yet');
+            console.log('🔍 Current Profile:', this.state.currentProfile);
+            console.log('🔍 Current User:', this.state.currentUser);
+            console.log('🔍 ================================================');
+            return;
+        }
+
+        const profileId = this.state.currentProfile.profile_id;
+        const profileType = this.state.currentProfile.profile_type;
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const apiHost = (this.API_BASE_URL || 'http://localhost:8000').replace(/^https?:\/\//, '');
+        const wsUrl = `${wsProtocol}//${apiHost}/ws/${profileId}/${profileType}`;
+
+        console.log('📡 Connecting to WebSocket for calls');
+        console.log('📡 Profile ID:', profileId);
+        console.log('📡 Profile Type:', profileType);
+        console.log('📡 WebSocket URL:', wsUrl);
+        console.log('📡 Connection key will be:', `${profileType}_${profileId}`);
+        console.log('🔍 ================================================');
+
+        try {
+            this.websocket = new WebSocket(wsUrl);
+
+            // Expose WebSocket globally for StandaloneChatCallManager
+            window.chatWebSocket = this.websocket;
+
+            this.websocket.onopen = () => {
+                console.log('🔍 ========== WEBSOCKET CONNECTED ==========');
+                console.log(`✅ Chat WebSocket connected as ${profileType} profile ${profileId}`);
+                console.log('✅ Connection key:', `${profileType}_${profileId}`);
+                console.log('🔍 ==========================================');
+
+                // Dispatch websocket-ready event for StandaloneChatCallManager
+                document.dispatchEvent(new CustomEvent('websocket-ready'));
+                console.log('📡 Dispatched websocket-ready event');
+            };
+
+            this.websocket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('🔍 ========== WEBSOCKET MESSAGE RECEIVED ==========');
+                    console.log('📨 Message type:', data.type);
+                    console.log('📨 Full message:', JSON.stringify(data, null, 2));
+
+                    // Route WebRTC call signaling messages
+                    switch (data.type) {
+                        case 'call_invitation':
+                            console.log('✅ Routing to handleIncomingCallInvitation');
+                            this.handleIncomingCallInvitation(data);
+                            break;
+
+                        case 'call_answer':
+                            console.log('✅ Routing to handleCallAnswer');
+                            this.handleCallAnswer(data);
+                            break;
+
+                        case 'ice_candidate':
+                            console.log('✅ Routing to handleIceCandidate');
+                            this.handleIceCandidate(data);
+                            break;
+
+                        case 'call_declined':
+                            console.log('✅ Call declined, showing toast');
+                            // Scenario A: They declined your call - show red "declined" card
+                            const declinedCallType = this.state.isVideoCall ? 'video' : 'voice';
+                            if (this.state.selectedConversation) {
+                                this.addCallCard(declinedCallType, 'declined', 0);
+                            }
+                            this.showToast('Call declined', 'info');
+                            // Update call log to declined status
+                            this.updateCallLog('declined', 0);
+                            this.cleanupCall();
+                            const callModal = document.getElementById('chatCallModal');
+                            if (callModal) callModal.classList.remove('active');
+                            break;
+
+                        case 'call_cancelled':
+                            console.log('✅ Call cancelled by caller');
+                            // Scenario B: They cancelled the call before you answered - show red "missed" card
+                            const cancelledCallType = data.call_type || 'voice';
+                            if (this.state.selectedConversation) {
+                                this.addIncomingCallCard(cancelledCallType, 'missed', 0);
+                            }
+                            this.showToast('Missed call', 'info');
+                            // Update receiver's call log to missed status
+                            this.updateCallLog('missed', 0);
+                            this.cleanupCall();
+                            const cancelledCallModal = document.getElementById('chatCallModal');
+                            if (cancelledCallModal) cancelledCallModal.classList.remove('active');
+                            break;
+
+                        case 'call_ended':
+                            console.log('✅ Call ended by other person');
+                            // Scenario C: Call was answered and ended - show green card with duration
+                            const endedDuration = this.state.callStartTime
+                                ? Math.floor((Date.now() - this.state.callStartTime) / 1000)
+                                : 0;
+                            const endedCallType = this.state.isVideoCall ? 'video' : 'voice';
+                            if (endedDuration > 0 && this.state.selectedConversation) {
+                                // If incoming call, add as incoming card, otherwise outgoing
+                                if (this.state.isIncomingCall) {
+                                    this.addIncomingCallCard(endedCallType, 'ended', endedDuration);
+                                } else {
+                                    this.addCallCard(endedCallType, 'ended', endedDuration);
+                                }
+                            }
+                            this.showToast('Call ended', 'info');
+                            this.cleanupCall();
+                            const endedCallModal = document.getElementById('chatCallModal');
+                            if (endedCallModal) endedCallModal.classList.remove('active');
+                            break;
+
+                        case 'call_mode_switched':
+                            console.log('🔄 Other user switched call mode to:', data.new_mode);
+                            this.handleRemoteModeSwitched(data.new_mode);
+                            break;
+
+                        default:
+                            console.log('⚠️ Unhandled message type:', data.type);
+                    }
+                    console.log('🔍 ================================================');
+                } catch (error) {
+                    console.error('❌ Error handling WebSocket message:', error);
+                    console.error('❌ Error stack:', error.stack);
+                }
+            };
+
+            this.websocket.onerror = (error) => {
+                console.error('📡 WebSocket error:', error);
+            };
+
+            this.websocket.onclose = () => {
+                console.log('📡 WebSocket disconnected');
+                this.websocket = null;
+
+                // Reconnect after 5 seconds if chat modal is still open
+                if (this.state.isOpen) {
+                    console.log('📡 Reconnecting in 5 seconds...');
+                    setTimeout(() => {
+                        if (this.state.isOpen) {
+                            this.connectWebSocket();
+                        }
+                    }, 5000);
+                }
+            };
+        } catch (error) {
+            console.error('📡 Failed to create WebSocket:', error);
+        }
+    },
+
+    // Disconnect WebSocket
+    disconnectWebSocket() {
+        if (this.websocket) {
+            console.log('📡 Disconnecting WebSocket');
+            this.websocket.close();
+            this.websocket = null;
+        }
+    },
+
+    // =============================================
+    // WEBRTC VOICE & VIDEO CALL FUNCTIONS
+    // =============================================
+
+    // WebRTC Configuration
+    getWebRTCConfiguration() {
+        return {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
+            ]
+        };
+    },
+
+    // Call Logging Functions
+    async createCallLog(callType, isIncoming = false) {
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const profileParams = this.getProfileParams();
+
+            // For incoming calls, get conversation_id from pending invitation
+            const conversationId = isIncoming
+                ? this.state.pendingCallInvitation?.conversation_id
+                : this.state.selectedConversation?.id;
+
+            if (!conversationId) {
+                console.error('No conversation ID available for call log');
+                return;
+            }
+
+            const response = await fetch(`${this.API_BASE_URL}/api/call-logs?${profileParams}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    caller_profile_id: this.state.currentProfile.profile_id,
+                    caller_profile_type: this.state.currentProfile.profile_type,
+                    call_type: callType,
+                    status: 'initiated',
+                    started_at: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                console.error('Failed to create call log:', response.statusText);
+                return;
+            }
+
+            const data = await response.json();
+            // Store the call log ID for later updates
+            const previousId = this.state.currentCallLogId;
+            this.state.currentCallLogId = data.call_log_id;
+            console.log(`📝 Call log created (${isIncoming ? 'incoming' : 'outgoing'}): ${data.call_log_id}${previousId ? ` (previous: ${previousId})` : ''}`);
+        } catch (error) {
+            console.error('Error creating call log:', error);
+        }
+    },
+
+    async updateCallLog(status, duration = null) {
+        if (!this.state.currentCallLogId) {
+            console.log('📝 No call log ID to update');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const profileParams = this.getProfileParams();
+
+            const updateData = { status };
+
+            // Set answered_at for answered status
+            if (status === 'answered') {
+                updateData.answered_at = new Date().toISOString();
+            }
+
+            // Set ended_at for terminal statuses
+            if (['ended', 'cancelled', 'declined', 'missed'].includes(status)) {
+                updateData.ended_at = new Date().toISOString();
+                if (duration !== null) {
+                    updateData.duration_seconds = duration;
+                }
+            }
+
+            const response = await fetch(`${this.API_BASE_URL}/api/call-logs/${this.state.currentCallLogId}?${profileParams}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Failed to update call log (${response.status}):`, errorText);
+                console.error(`Attempted to update call log ID: ${this.state.currentCallLogId}`);
+                return;
+            }
+
+            console.log(`📝 Call log updated: ${status}${duration ? ` (${duration}s)` : ''}`);
+        } catch (error) {
+            console.error('Error updating call log:', error);
+        }
+    },
+
+    // Start Voice Call (called from header button)
+    async startChatVoiceCall() {
+        if (!this.state.selectedChat) {
+            this.showToast('Please select a contact first', 'error');
+            return;
+        }
+
+        console.log('📞 Starting voice call...');
+        this.state.isVideoCall = false;
+        this.state.isIncomingCall = false;
+
+        try {
+            // Get microphone access only
+            this.state.localStream = await navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            // Show call modal in active state
+            this.showCallModal(false);
+
+            // Set up peer connection
+            await this.setupPeerConnection();
+
+            // Create and send offer
+            const offer = await this.state.peerConnection.createOffer();
+            await this.state.peerConnection.setLocalDescription(offer);
+
+            // Send call invitation via WebSocket
+            this.sendCallInvitation('voice', offer);
+
+        } catch (error) {
+            console.error('Failed to start voice call:', error);
+            if (error.name === 'NotAllowedError') {
+                this.showToast('Microphone permission denied', 'error');
+            } else if (error.name === 'NotFoundError') {
+                this.showToast('No microphone found', 'error');
+            } else {
+                this.showToast('Failed to start call: ' + error.message, 'error');
+            }
+            this.cleanupCall();
+        }
+    },
+
+    // Start Video Call (called from header button)
+    async startChatVideoCall() {
+        if (!this.state.selectedChat) {
+            this.showToast('Please select a contact first', 'error');
+            return;
+        }
+
+        console.log('📹 Starting video call...');
+        this.state.isVideoCall = true;
+        this.state.isIncomingCall = false;
+
+        try {
+            // Get camera and microphone access
+            this.state.localStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                },
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            // Show call modal in active state
+            this.showCallModal(true);
+
+            // Display local video
+            const localVideo = document.getElementById('chatLocalVideo');
+            if (localVideo) {
+                localVideo.srcObject = this.state.localStream;
+            }
+
+            // Set up peer connection
+            await this.setupPeerConnection();
+
+            // Create and send offer
+            const offer = await this.state.peerConnection.createOffer();
+            await this.state.peerConnection.setLocalDescription(offer);
+
+            // Send call invitation via WebSocket
+            this.sendCallInvitation('video', offer);
+
+        } catch (error) {
+            console.error('Failed to start video call:', error);
+            if (error.name === 'NotAllowedError') {
+                this.showToast('Camera/microphone permission denied', 'error');
+            } else if (error.name === 'NotFoundError') {
+                this.showToast('No camera/microphone found', 'error');
+            } else {
+                this.showToast('Failed to start call: ' + error.message, 'error');
+            }
+            this.cleanupCall();
+        }
+    },
+
+    // Set up WebRTC Peer Connection
+    async setupPeerConnection() {
+        const config = this.getWebRTCConfiguration();
+        this.state.peerConnection = new RTCPeerConnection(config);
+
+        // Add local stream tracks
+        if (this.state.localStream) {
+            this.state.localStream.getTracks().forEach(track => {
+                this.state.peerConnection.addTrack(track, this.state.localStream);
+            });
+        }
+
+        // Handle remote stream
+        this.state.peerConnection.ontrack = (event) => {
+            console.log('📹 Received remote track:', event.track.kind);
+            this.state.remoteStream = event.streams[0];
+
+            const remoteVideo = document.getElementById('chatRemoteVideo');
+            if (remoteVideo) {
+                remoteVideo.srcObject = this.state.remoteStream;
+            }
+
+            // Update status
+            const statusEl = document.getElementById('chatCallStatus');
+            if (statusEl) {
+                statusEl.textContent = 'Connected';
+            }
+
+            // Start call timer
+            this.startCallTimer();
+
+            // Update call log to answered status
+            this.updateCallLog('answered');
+        };
+
+        // Handle ICE candidates
+        this.state.peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log('🧊 Sending ICE candidate');
+                this.sendIceCandidate(event.candidate);
+            }
+        };
+
+        // Handle connection state changes
+        this.state.peerConnection.onconnectionstatechange = () => {
+            console.log('📡 Connection state:', this.state.peerConnection.connectionState);
+            switch (this.state.peerConnection.connectionState) {
+                case 'connected':
+                    console.log('✅ Call connected');
+                    break;
+                case 'disconnected':
+                    this.showToast('Call disconnected', 'warning');
+                    break;
+                case 'failed':
+                    this.showToast('Call failed', 'error');
+                    this.endChatCall();
+                    break;
+            }
+        };
+    },
+
+    // Send call invitation via WebSocket
+    sendCallInvitation(callType, offer) {
+        console.log('🔍 ========== CALL INVITATION DEBUG ==========');
+        console.log('📤 sendCallInvitation called with type:', callType);
+        console.log('📡 WebSocket status:', this.websocket ? `Ready state: ${this.websocket.readyState}` : 'WebSocket is null');
+        console.log('📡 WebSocket.OPEN constant:', WebSocket.OPEN);
+        console.log('🔍 Current Profile:', this.state.currentProfile);
+        console.log('🔍 Current User:', this.state.currentUser);
+        console.log('🔍 Selected Chat:', this.state.selectedChat);
+        console.log('🔍 Selected Conversation:', this.state.selectedConversation);
+
+        if (!this.websocket) {
+            console.error('❌ WebSocket is null!');
+            this.showToast('WebSocket not connected (null)', 'error');
+            this.cleanupCall();
+            return;
+        }
+
+        if (this.websocket.readyState !== WebSocket.OPEN) {
+            console.error(`❌ WebSocket not open! Ready state: ${this.websocket.readyState} (CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3)`);
+            this.showToast(`WebSocket not connected (state: ${this.websocket.readyState})`, 'error');
+            this.cleanupCall();
+            return;
+        }
+
+        const conversation = this.state.selectedConversation;
+
+        if (!conversation) {
+            console.error('❌ No conversation selected!');
+            this.showToast('No conversation selected', 'error');
+            this.cleanupCall();
+            return;
+        }
+
+        console.log('🔍 Conversation object:', JSON.stringify(conversation, null, 2));
+
+        // Get recipient info from conversation (uses other_profile_id instead of participants array)
+        if (!conversation.other_profile_id || !conversation.other_profile_type) {
+            console.error('❌ No recipient found in conversation!');
+            console.error('❌ other_profile_id:', conversation.other_profile_id);
+            console.error('❌ other_profile_type:', conversation.other_profile_type);
+            console.error('❌ Full conversation:', conversation);
+            this.showToast('Could not find call recipient', 'error');
+            this.cleanupCall();
+            return;
+        }
+
+        const invitation = {
+            type: 'call_invitation',
+            call_type: callType,  // 'voice' or 'video'
+            conversation_id: conversation.id,
+            from_profile_id: this.state.currentProfile.profile_id,
+            from_profile_type: this.state.currentProfile.profile_type,
+            from_name: this.state.currentUser.full_name || this.state.currentUser.first_name || this.state.currentUser.email,
+            from_avatar: this.state.currentUser.profile_picture,
+            to_profile_id: conversation.other_profile_id,
+            to_profile_type: conversation.other_profile_type,
+            to_user_id: conversation.other_user_id,
+            offer: offer
+        };
+
+        console.log('📤 Sending call invitation:', JSON.stringify(invitation, null, 2));
+        console.log('📤 Recipient key will be:', `${conversation.other_profile_type}_${conversation.other_profile_id}`);
+        this.websocket.send(JSON.stringify(invitation));
+        console.log('✅ Call invitation sent via WebSocket');
+        console.log('🔍 ========================================');
+
+        // Log call initiation to database
+        this.createCallLog(callType);
+
+        // Update UI to show calling
+        const statusEl = document.getElementById('chatCallStatus');
+        if (statusEl) {
+            statusEl.textContent = 'Calling...';
+        }
+
+        // Start 20-second timeout for unanswered calls
+        this.startCallInvitationTimeout(callType);
+    },
+
+    // Start timeout for unanswered calls (caller side)
+    startCallInvitationTimeout(callType) {
+        // Clear any existing timeout
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+        }
+
+        // Set 20-second timeout
+        this.state.callInvitationTimeout = setTimeout(() => {
+            console.log('⏰ Call invitation timeout - no answer after 20 seconds');
+
+            // Check if call is still pending (not answered)
+            if (!this.state.isCallActive && this.state.peerConnection) {
+                this.showToast('No answer', 'info');
+
+                // Add "no answer" call card
+                if (this.state.selectedConversation) {
+                    this.addCallCard(callType, 'no_answer', 0);
+                }
+
+                // Update call log to no_answer status
+                this.updateCallLog('no_answer', 0);
+
+                // Send cancellation to recipient
+                const conversation = this.state.selectedConversation;
+                if (conversation && this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                    const otherProfileId = conversation.other_profile_id;
+                    const otherProfileType = conversation.other_profile_type;
+
+                    const message = {
+                        type: 'call_cancelled',
+                        conversation_id: conversation.id,
+                        from_profile_id: this.state.currentProfile.profile_id,
+                        to_profile_id: otherProfileId,
+                        to_profile_type: otherProfileType,
+                        call_type: callType
+                    };
+                    this.websocket.send(JSON.stringify(message));
+                }
+
+                // Cleanup call
+                this.cleanupCall();
+
+                // Hide call modal
+                const callModal = document.getElementById('chatCallModal');
+                if (callModal) {
+                    callModal.classList.remove('active');
+                }
+            }
+        }, 20000); // 20 seconds
+    },
+
+    // Handle incoming call invitation
+    handleIncomingCallInvitation(data) {
+        console.log('📞 Incoming call invitation:', data);
+
+        // Check if this is a group call invitation (someone adding us to active call)
+        const isGroupCallInvite = data.group_call === true;
+
+        // If already in an active call, add as participant instead of showing incoming screen
+        if (this.state.isCallActive && isGroupCallInvite) {
+            console.log('📞 Adding to existing call as group participant');
+            this.acceptGroupCallInvitation(data);
+            return;
+        }
+
+        // If already in active call but NOT a group invite, show notification
+        if (this.state.isCallActive && !isGroupCallInvite) {
+            console.log('📞 Already in call, showing notification for new call');
+            this.showIncomingCallNotification(data);
+            return;
+        }
+
+        // If chat modal is not open, delegate to standalone call modal
+        if (!this.state.isOpen && typeof StandaloneChatCallManager !== 'undefined') {
+            console.log('📞 Chat modal not open, delegating to standalone call modal');
+            StandaloneChatCallManager.handleIncomingCall(data);
+            return;
+        }
+
+        this.state.pendingCallInvitation = data;
+        this.state.pendingOffer = data.offer;
+        this.state.isVideoCall = data.call_type === 'video';
+        this.state.isIncomingCall = true;
+
+        // Create call log for receiver
+        this.createCallLog(data.call_type, true);  // true = incoming call
+
+        // Show incoming call screen
+        const callModal = document.getElementById('chatCallModal');
+        const incomingScreen = document.getElementById('chatIncomingCallScreen');
+        const activeScreen = document.getElementById('chatActiveCallScreen');
+
+        if (callModal && incomingScreen && activeScreen) {
+            callModal.classList.add('active');
+            incomingScreen.style.display = 'flex';
+            activeScreen.style.display = 'none';
+
+            // Set caller info
+            document.getElementById('chatIncomingCallerName').textContent = data.from_name || 'Unknown';
+            document.getElementById('chatIncomingCallType').textContent =
+                data.call_type === 'video' ? 'Video Call' : 'Voice Call';
+
+            // Set avatar
+            const avatarEl = document.getElementById('chatIncomingCallAvatar');
+            if (avatarEl) {
+                avatarEl.src = data.from_avatar || getChatDefaultAvatar(data.from_name);
+            }
+
+            // Play ringtone
+            this.playRingtone();
+
+            // Start 20-second timeout for incoming call (receiver side)
+            this.startIncomingCallTimeout(data);
+        }
+    },
+
+    // Start timeout for incoming calls (receiver side)
+    startIncomingCallTimeout(callData) {
+        // Clear any existing timeout
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+        }
+
+        // Set 20-second timeout
+        this.state.callInvitationTimeout = setTimeout(() => {
+            console.log('⏰ Incoming call timeout - not answered after 20 seconds');
+
+            // Check if call is still pending (not answered)
+            if (this.state.isIncomingCall && this.state.pendingCallInvitation) {
+                this.showToast('Missed call', 'info');
+
+                // Stop ringtone
+                this.stopRingtone();
+
+                // Add "missed" call card
+                if (this.state.selectedConversation) {
+                    this.addIncomingCallCard(callData.call_type, 'missed', 0);
+                }
+
+                // Update call log to missed status
+                this.updateCallLog('missed', 0);
+
+                // Cleanup call
+                this.cleanupCall();
+
+                // Hide call modal
+                const callModal = document.getElementById('chatCallModal');
+                if (callModal) {
+                    callModal.classList.remove('active');
+                }
+            }
+        }, 20000); // 20 seconds
+    },
+
+    // Accept group call invitation (when already in call)
+    async acceptGroupCallInvitation(data) {
+        console.log('✅ Accepting group call invitation from', data.from_name);
+
+        const participantId = `${data.from_profile_type}_${data.from_profile_id}`;
+
+        // Add to participants list
+        if (!this.state.callParticipants.some(p => p.id === participantId)) {
+            this.state.callParticipants.push({
+                id: participantId,
+                profile_type: data.from_profile_type,
+                profile_id: data.from_profile_id,
+                name: data.from_name,
+                avatar: data.from_avatar
+            });
+        }
+
+        // Store pending invitation
+        this.state.pendingParticipantInvites.set(participantId, data);
+
+        // Show toast
+        this.showToast(`${data.from_name} is joining the call...`, 'info');
+
+        // Setup peer connection for this participant
+        await this.setupPeerConnectionForGroupParticipant(participantId, data);
+    },
+
+    // Setup peer connection for group participant (answering their offer)
+    async setupPeerConnectionForGroupParticipant(participantId, inviteData) {
+        console.log(`🔗 Setting up peer connection for group participant: ${participantId}`);
+
+        // Create new RTCPeerConnection
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+
+        // Add local stream tracks to peer connection
+        if (this.state.localStream) {
+            this.state.localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, this.state.localStream);
+            });
+        }
+
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate && this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'ice_candidate',
+                    candidate: event.candidate,
+                    from_profile_id: this.state.currentProfile.profile_id,
+                    from_profile_type: this.state.currentProfile.profile_type,
+                    to_profile_id: inviteData.from_profile_id,
+                    to_profile_type: inviteData.from_profile_type
+                };
+                this.websocket.send(JSON.stringify(message));
+            }
+        };
+
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log(`📹 Received track from group participant: ${participantId}`);
+            const remoteStream = event.streams[0];
+            this.state.remoteStreams.set(participantId, remoteStream);
+            this.displayParticipantVideo(participantId, remoteStream);
+        };
+
+        // Store peer connection
+        this.state.peerConnections.set(participantId, peerConnection);
+
+        // Set remote description (offer from caller)
+        try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(inviteData.offer));
+
+            // Create answer
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+
+            // Send answer via WebSocket
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'call_answer',
+                    answer: answer,
+                    from_profile_id: this.state.currentProfile.profile_id,
+                    from_profile_type: this.state.currentProfile.profile_type,
+                    to_profile_id: inviteData.from_profile_id,
+                    to_profile_type: inviteData.from_profile_type
+                };
+                this.websocket.send(JSON.stringify(message));
+            }
+
+        } catch (error) {
+            console.error('Error accepting group call invitation:', error);
+            this.showToast('Failed to join group call', 'error');
+        }
+    },
+
+    // Show incoming call notification when already in call
+    showIncomingCallNotification(data) {
+        const callerName = data.from_name || 'Someone';
+        const callType = data.call_type === 'video' ? 'video' : 'voice';
+
+        // Show persistent notification with accept/decline options
+        this.showToast(
+            `${callerName} is calling (${callType}).\nYou're already in a call.`,
+            'info',
+            10000  // Show for 10 seconds
+        );
+
+        // Store the pending invitation
+        this.state.pendingParticipantInvites.set(`${data.from_profile_type}_${data.from_profile_id}`, data);
+
+        // TODO: Could show an in-call notification UI with accept/decline buttons
+    },
+
+    // Accept incoming call
+    async acceptIncomingCall() {
+        console.log('✅ Accepting incoming call');
+
+        // Clear call invitation timeout
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+            this.state.callInvitationTimeout = null;
+        }
+
+        try {
+            // Stop ringtone
+            this.stopRingtone();
+
+            // Get media stream
+            this.state.localStream = await navigator.mediaDevices.getUserMedia({
+                video: this.state.isVideoCall ? {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } : false,
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            // Show active call screen
+            this.showCallModal(this.state.isVideoCall);
+
+            // Display local video if video call
+            if (this.state.isVideoCall) {
+                const localVideo = document.getElementById('chatLocalVideo');
+                if (localVideo) {
+                    localVideo.srcObject = this.state.localStream;
+                }
+            }
+
+            // Set up peer connection
+            await this.setupPeerConnection();
+
+            // Set remote description (the offer)
+            if (this.state.pendingOffer) {
+                await this.state.peerConnection.setRemoteDescription(
+                    new RTCSessionDescription(this.state.pendingOffer)
+                );
+
+                // Process queued ICE candidates
+                while (this.state.iceCandidateQueue.length > 0) {
+                    const candidate = this.state.iceCandidateQueue.shift();
+                    await this.state.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+            }
+
+            // Create and send answer
+            const answer = await this.state.peerConnection.createAnswer();
+            await this.state.peerConnection.setLocalDescription(answer);
+
+            // Send answer via WebSocket
+            this.sendCallAnswer(answer);
+
+        } catch (error) {
+            console.error('Failed to accept call:', error);
+            this.showToast('Failed to accept call: ' + error.message, 'error');
+            this.declineIncomingCall();
+        }
+    },
+
+    // Decline incoming call
+    declineIncomingCall() {
+        console.log('❌ Declining incoming call');
+
+        // Clear call invitation timeout
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+            this.state.callInvitationTimeout = null;
+        }
+
+        this.stopRingtone();
+
+        // Add declined call card (you declined it)
+        if (this.state.pendingCallInvitation && this.state.selectedConversation) {
+            const callType = this.state.pendingCallInvitation.call_type || 'voice';
+            this.addIncomingCallCard(callType, 'declined', 0);
+        }
+
+        // Update receiver's call log to declined status
+        this.updateCallLog('declined', 0);
+
+        // Send decline message
+        if (this.state.pendingCallInvitation && this.websocket) {
+            const message = {
+                type: 'call_declined',
+                conversation_id: this.state.pendingCallInvitation.conversation_id,
+                from_profile_id: this.state.currentProfile.profile_id,
+                to_profile_id: this.state.pendingCallInvitation.from_profile_id,
+                to_profile_type: this.state.pendingCallInvitation.from_profile_type
+            };
+            this.websocket.send(JSON.stringify(message));
+        }
+
+        // Close call modal
+        const callModal = document.getElementById('chatCallModal');
+        if (callModal) {
+            callModal.classList.remove('active');
+        }
+
+        // Reset state
+        this.state.pendingCallInvitation = null;
+        this.state.pendingOffer = null;
+        this.state.isIncomingCall = false;
+    },
+
+    // Send call answer via WebSocket
+    sendCallAnswer(answer) {
+        if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+            console.error('WebSocket not connected');
+            return;
+        }
+
+        const message = {
+            type: 'call_answer',
+            conversation_id: this.state.pendingCallInvitation.conversation_id,
+            from_profile_id: this.state.currentProfile.profile_id,
+            to_profile_id: this.state.pendingCallInvitation.from_profile_id,
+            to_profile_type: this.state.pendingCallInvitation.from_profile_type,
+            answer: answer
+        };
+
+        console.log('📤 Sending call answer');
+        this.websocket.send(JSON.stringify(message));
+    },
+
+    // Handle call answer (received by caller)
+    async handleCallAnswer(data) {
+        console.log('📞 Received call answer');
+
+        // Clear call invitation timeout (call was answered)
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+            this.state.callInvitationTimeout = null;
+        }
+
+        try {
+            if (this.state.peerConnection && data.answer) {
+                await this.state.peerConnection.setRemoteDescription(
+                    new RTCSessionDescription(data.answer)
+                );
+
+                // Process queued ICE candidates
+                while (this.state.iceCandidateQueue.length > 0) {
+                    const candidate = this.state.iceCandidateQueue.shift();
+                    await this.state.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+
+                console.log('✅ Remote description set');
+            }
+        } catch (error) {
+            console.error('Error handling call answer:', error);
+        }
+    },
+
+    // Send ICE candidate
+    sendIceCandidate(candidate) {
+        if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        const conversation = this.state.selectedConversation ||
+                            { id: this.state.pendingCallInvitation?.conversation_id };
+
+        const otherProfileId = this.state.isIncomingCall
+            ? this.state.pendingCallInvitation?.from_profile_id
+            : this.state.selectedConversation?.other_profile_id;
+
+        const otherProfileType = this.state.isIncomingCall
+            ? this.state.pendingCallInvitation?.from_profile_type
+            : this.state.selectedConversation?.other_profile_type;
+
+        const message = {
+            type: 'ice_candidate',
+            conversation_id: conversation.id,
+            from_profile_id: this.state.currentProfile.profile_id,
+            to_profile_id: otherProfileId,
+            to_profile_type: otherProfileType,
+            candidate: candidate
+        };
+
+        this.websocket.send(JSON.stringify(message));
+    },
+
+    // Handle incoming ICE candidate
+    async handleIceCandidate(data) {
+        console.log('🧊 Received ICE candidate');
+
+        try {
+            if (this.state.peerConnection) {
+                // If remote description is not set yet, queue the candidate
+                if (!this.state.peerConnection.remoteDescription) {
+                    console.log('Queueing ICE candidate (no remote description yet)');
+                    this.state.iceCandidateQueue.push(data.candidate);
+                    return;
+                }
+
+                await this.state.peerConnection.addIceCandidate(
+                    new RTCIceCandidate(data.candidate)
+                );
+                console.log('✅ ICE candidate added');
+            }
+        } catch (error) {
+            console.error('Error adding ICE candidate:', error);
+        }
+    },
+
+    // Toggle mute
+    toggleChatMute() {
+        if (!this.state.localStream) return;
+
+        const audioTrack = this.state.localStream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            this.state.isAudioMuted = !audioTrack.enabled;
+
+            // Update button UI
+            const muteBtn = document.getElementById('chatMuteBtn');
+            if (muteBtn) {
+                muteBtn.classList.toggle('muted', this.state.isAudioMuted);
+                muteBtn.title = this.state.isAudioMuted ? 'Unmute' : 'Mute';
+            }
+
+            console.log('🎤 Audio', this.state.isAudioMuted ? 'muted' : 'unmuted');
+        }
+    },
+
+    // Toggle video
+    toggleChatCallVideo() {
+        if (!this.state.localStream || !this.state.isVideoCall) return;
+
+        const videoTrack = this.state.localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            this.state.isVideoOff = !videoTrack.enabled;
+
+            // Update button UI
+            const videoBtn = document.getElementById('chatSwitchVideoModeBtn');
+            if (videoBtn) {
+                videoBtn.classList.toggle('video-off', this.state.isVideoOff);
+                videoBtn.title = this.state.isVideoOff ? 'Turn on camera' : 'Turn off camera';
+            }
+
+            console.log('📹 Video', this.state.isVideoOff ? 'off' : 'on');
+        }
+    },
+
+    // Handle remote user switching call mode
+    handleRemoteModeSwitched(newMode) {
+        console.log(`🔄 Remote user switched to ${newMode} mode`);
+
+        // Update UI to show the new mode
+        this.showToast(`Other user switched to ${newMode} call`, 'info');
+
+        // Update local state to match (will be updated via renegotiation)
+        if (newMode === 'video') {
+            console.log('📹 Remote user enabled video');
+        } else {
+            console.log('🎤 Remote user switched to voice only');
+        }
+    },
+
+    // Switch between voice and video call
+    async switchCallMode() {
+        if (!this.state.localStream || !this.state.peerConnection) {
+            console.log('❌ Cannot switch mode: No active call');
+            return;
+        }
+
+        const targetMode = this.state.isVideoCall ? 'voice' : 'video';
+        console.log(`🔄 Switching call mode from ${this.state.isVideoCall ? 'video' : 'voice'} to ${targetMode}`);
+
+        try {
+            // Get current audio track
+            const currentAudioTrack = this.state.localStream.getAudioTracks()[0];
+
+            if (this.state.isVideoCall) {
+                // Switching from VIDEO to VOICE
+
+                // 1. Remove video track from local stream
+                const videoTrack = this.state.localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.stop();
+                    this.state.localStream.removeTrack(videoTrack);
+                }
+
+                // 2. Remove video track from peer connection
+                const videoSender = this.state.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (videoSender) {
+                    this.state.peerConnection.removeTrack(videoSender);
+                }
+
+                // 3. Update UI
+                this.state.isVideoCall = false;
+                this.showCallModal(false);
+
+                // 4. Hide local video
+                const localVideo = document.getElementById('chatLocalVideo');
+                if (localVideo) {
+                    localVideo.srcObject = null;
+                    localVideo.style.display = 'none';
+                }
+
+                // 5. Update switch button - always visible
+                const switchBtn = document.getElementById('chatSwitchCallModeBtn');
+                if (switchBtn) {
+                    switchBtn.title = 'Switch to Video';
+                    switchBtn.innerHTML = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                        </svg>
+                    `;
+                    switchBtn.style.display = 'inline-flex';
+                }
+
+                // 6. Hide video toggle button (not needed in voice mode)
+                const videoToggleBtn = document.getElementById('chatSwitchVideoModeBtn');
+                if (videoToggleBtn) {
+                    videoToggleBtn.style.display = 'none';
+                }
+
+                console.log('✅ Switched to voice call');
+
+            } else {
+                // Switching from VOICE to VIDEO
+
+                // 1. Get video stream
+                const videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    }
+                });
+
+                const videoTrack = videoStream.getVideoTracks()[0];
+
+                // 2. Add video track to local stream
+                this.state.localStream.addTrack(videoTrack);
+
+                // 3. Add video track to peer connection
+                this.state.peerConnection.addTrack(videoTrack, this.state.localStream);
+
+                // 4. Update UI
+                this.state.isVideoCall = true;
+                this.showCallModal(true);
+
+                // 5. Show local video
+                const localVideo = document.getElementById('chatLocalVideo');
+                if (localVideo) {
+                    localVideo.srcObject = this.state.localStream;
+                    localVideo.style.display = 'block';
+                }
+
+                // 6. Update switch button - always visible (phone icon to switch to voice)
+                const switchBtn = document.getElementById('chatSwitchCallModeBtn');
+                if (switchBtn) {
+                    switchBtn.title = 'Switch to Voice Call';
+                    switchBtn.innerHTML = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                    `;
+                    switchBtn.style.display = 'inline-flex';
+                }
+
+                // 7. Show video toggle button (needed in video mode)
+                const videoToggleBtn = document.getElementById('chatSwitchVideoModeBtn');
+                if (videoToggleBtn) {
+                    videoToggleBtn.style.display = 'inline-flex';
+                }
+
+                console.log('✅ Switched to video call');
+            }
+
+            // Send mode switch notification to other user via WebSocket
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const otherProfileId = this.state.isIncomingCall
+                    ? this.state.pendingCallInvitation?.from_profile_id
+                    : this.state.selectedConversation?.other_profile_id;
+
+                const otherProfileType = this.state.isIncomingCall
+                    ? this.state.pendingCallInvitation?.from_profile_type
+                    : this.state.selectedConversation?.other_profile_type;
+
+                const conversationId = this.state.selectedConversation?.id ||
+                                     this.state.pendingCallInvitation?.conversation_id;
+
+                const message = {
+                    type: 'call_mode_switched',
+                    conversation_id: conversationId,
+                    from_profile_id: this.state.currentProfile.profile_id,
+                    to_profile_id: otherProfileId,
+                    to_profile_type: otherProfileType,
+                    new_mode: targetMode
+                };
+
+                this.websocket.send(JSON.stringify(message));
+            }
+
+            // Trigger renegotiation
+            if (this.state.peerConnection.signalingState === 'stable') {
+                const offer = await this.state.peerConnection.createOffer();
+                await this.state.peerConnection.setLocalDescription(offer);
+
+                // Send new offer to peer via WebSocket
+                if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                    const otherProfileId = this.state.isIncomingCall
+                        ? this.state.pendingCallInvitation?.from_profile_id
+                        : this.state.selectedConversation?.other_profile_id;
+
+                    const otherProfileType = this.state.isIncomingCall
+                        ? this.state.pendingCallInvitation?.from_profile_type
+                        : this.state.selectedConversation?.other_profile_type;
+
+                    const conversationId = this.state.selectedConversation?.id ||
+                                         this.state.pendingCallInvitation?.conversation_id;
+
+                    const message = {
+                        type: 'webrtc_offer',
+                        conversation_id: conversationId,
+                        from_profile_id: this.state.currentProfile.profile_id,
+                        to_profile_id: otherProfileId,
+                        to_profile_type: otherProfileType,
+                        offer: offer
+                    };
+
+                    this.websocket.send(JSON.stringify(message));
+                }
+            }
+
+        } catch (error) {
+            console.error('❌ Error switching call mode:', error);
+            this.showToast(`Failed to switch to ${targetMode}: ${error.message}`, 'error');
+        }
+    },
+
+    // End call
+    endChatCall() {
+        console.log('📞 Ending call');
+
+        // Calculate call duration
+        const duration = this.state.callStartTime
+            ? Math.floor((Date.now() - this.state.callStartTime) / 1000)
+            : 0;
+
+        // Determine call type
+        const callType = this.state.isVideoCall ? 'video' : 'voice';
+
+        // Check if call was answered (call started)
+        const wasAnswered = duration > 0;
+
+        // Add call card to chat
+        if (this.state.selectedConversation) {
+            if (wasAnswered) {
+                // Scenario C: Call was answered and ended - show green card with duration
+                if (this.state.isIncomingCall) {
+                    this.addIncomingCallCard(callType, 'ended', duration);
+                } else {
+                    this.addCallCard(callType, 'ended', duration);
+                }
+            } else if (!this.state.isIncomingCall) {
+                // Scenario B: Caller cancelled their own call - show red "cancelled" card
+                this.addCallCard(callType, 'cancelled', 0);
+            }
+        }
+
+        // Send end/cancelled call message
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            const conversation = this.state.selectedConversation ||
+                                { id: this.state.pendingCallInvitation?.conversation_id };
+
+            // Get recipient profile ID
+            const otherProfileId = this.state.isIncomingCall
+                ? this.state.pendingCallInvitation?.from_profile_id
+                : this.state.selectedConversation?.other_profile_id;
+
+            const otherProfileType = this.state.isIncomingCall
+                ? this.state.pendingCallInvitation?.from_profile_type
+                : this.state.selectedConversation?.other_profile_type;
+
+            // Determine message type based on whether call was answered
+            const messageType = wasAnswered ? 'call_ended' : 'call_cancelled';
+
+            // Update call log with final status and duration
+            const finalStatus = wasAnswered ? 'ended' : 'cancelled';
+            this.updateCallLog(finalStatus, duration);
+
+            const message = {
+                type: messageType,
+                conversation_id: conversation.id,
+                from_profile_id: this.state.currentProfile.profile_id,
+                to_profile_id: otherProfileId,
+                to_profile_type: otherProfileType,
+                call_type: callType  // Include call type for cancelled calls
+            };
+            this.websocket.send(JSON.stringify(message));
+        }
+
+        // Cleanup
+        this.cleanupCall();
+
+        // Hide call modal
+        const callModal = document.getElementById('chatCallModal');
+        if (callModal) {
+            callModal.classList.remove('active');
+        }
+    },
+
+    // Add participant to call
+    async addParticipantToCall() {
+        console.log('➕ Adding participant to call');
+
+        // Check if there's an active call
+        if (!this.state.isCallActive) {
+            this.showToast('No active call', 'error');
+            return;
+        }
+
+        // Show add participant modal
+        const modal = document.getElementById('chatAddParticipantModal');
+        if (!modal) return;
+
+        modal.style.display = 'flex';
+
+        // Load contacts list
+        await this.loadParticipantList();
+    },
+
+    // Load available contacts for adding to call
+    async loadParticipantList() {
+        const listContainer = document.getElementById('addParticipantList');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading contacts...</div>';
+
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const profileParams = this.getProfileParams();
+
+            // Fetch conversations (contacts)
+            const response = await fetch(`${this.API_BASE_URL}/api/chat/conversations?${profileParams}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load contacts');
+            }
+
+            const data = await response.json();
+            const conversations = data.conversations || [];
+
+            // Filter out current call participants and current chat
+            const availableContacts = conversations.filter(conv => {
+                // Skip current conversation
+                if (conv.id === this.state.selectedChat) return false;
+
+                // Skip if already in call
+                const participantId = `${conv.other_profile_type}_${conv.other_profile_id}`;
+                return !this.state.callParticipants.some(p => p.id === participantId);
+            });
+
+            if (availableContacts.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No contacts available</div>';
+                return;
+            }
+
+            // Render contact list
+            listContainer.innerHTML = availableContacts.map(contact => `
+                <div class="participant-item" onclick="ChatModalManager.inviteParticipantToCall('${contact.other_profile_type}', ${contact.other_profile_id}, '${contact.other_name}', '${contact.other_avatar || ''}')">
+                    <img src="${contact.other_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.other_name)}&background=8B5CF6&color=fff&size=80`}"
+                         alt="${contact.other_name}"
+                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(contact.other_name)}&background=8B5CF6&color=fff&size=80'">
+                    <div class="participant-item-info">
+                        <div class="participant-item-name">${contact.other_name}</div>
+                        <div class="participant-item-role">${this.capitalizeFirst(contact.other_profile_type)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error('Error loading participants:', error);
+            listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Error loading contacts</div>';
+        }
+    },
+
+    // Filter participant list
+    filterParticipantList(searchTerm) {
+        const items = document.querySelectorAll('.participant-item');
+        const term = searchTerm.toLowerCase();
+
+        items.forEach(item => {
+            const name = item.querySelector('.participant-item-name')?.textContent.toLowerCase() || '';
+            item.style.display = name.includes(term) ? 'flex' : 'none';
+        });
+    },
+
+    // Close add participant modal
+    closeAddParticipantModal() {
+        const modal = document.getElementById('chatAddParticipantModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+
+    // Invite participant to ongoing call
+    async inviteParticipantToCall(profileType, profileId, name, avatar) {
+        console.log(`📞 Inviting ${name} to call`);
+
+        const participantId = `${profileType}_${profileId}`;
+
+        // Add to participants list
+        this.state.callParticipants.push({
+            id: participantId,
+            profile_type: profileType,
+            profile_id: profileId,
+            name: name,
+            avatar: avatar
+        });
+
+        // Close modal
+        this.closeAddParticipantModal();
+
+        // Show toast
+        this.showToast(`Calling ${name}...`, 'info');
+
+        // Setup peer connection for new participant
+        await this.setupPeerConnectionForParticipant(participantId, profileType, profileId);
+
+        // Send call invitation via WebSocket
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            const message = {
+                type: 'call_invite',
+                from_profile_id: this.state.currentProfile.profile_id,
+                from_profile_type: this.state.currentProfile.profile_type,
+                to_profile_id: profileId,
+                to_profile_type: profileType,
+                call_type: this.state.isVideoCall ? 'video' : 'voice',
+                group_call: true
+            };
+            this.websocket.send(JSON.stringify(message));
+        }
+    },
+
+    // Setup peer connection for a new participant (mesh topology)
+    async setupPeerConnectionForParticipant(participantId, profileType, profileId) {
+        console.log(`🔗 Setting up peer connection for participant: ${participantId}`);
+
+        // Create new RTCPeerConnection
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+
+        // Add local stream tracks to peer connection
+        if (this.state.localStream) {
+            this.state.localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, this.state.localStream);
+            });
+        }
+
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate && this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'ice_candidate',
+                    candidate: event.candidate,
+                    from_profile_id: this.state.currentProfile.profile_id,
+                    from_profile_type: this.state.currentProfile.profile_type,
+                    to_profile_id: profileId,
+                    to_profile_type: profileType
+                };
+                this.websocket.send(JSON.stringify(message));
+            }
+        };
+
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log(`📹 Received track from participant: ${participantId}`);
+            const remoteStream = event.streams[0];
+            this.state.remoteStreams.set(participantId, remoteStream);
+            this.displayParticipantVideo(participantId, remoteStream);
+        };
+
+        // Store peer connection
+        this.state.peerConnections.set(participantId, peerConnection);
+
+        // Create and send offer
+        try {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'call_offer',
+                    offer: offer,
+                    from_profile_id: this.state.currentProfile.profile_id,
+                    from_profile_type: this.state.currentProfile.profile_type,
+                    to_profile_id: profileId,
+                    to_profile_type: profileType,
+                    call_type: this.state.isVideoCall ? 'video' : 'voice'
+                };
+                this.websocket.send(JSON.stringify(message));
+            }
+        } catch (error) {
+            console.error('Error creating offer:', error);
+            this.showToast('Failed to invite participant', 'error');
+        }
+    },
+
+    // Display participant video in UI
+    displayParticipantVideo(participantId, stream) {
+        console.log(`🎥 Displaying video for participant: ${participantId}`);
+
+        const participant = this.state.callParticipants.find(p => p.id === participantId);
+        if (!participant) {
+            console.error('Participant not found:', participantId);
+            return;
+        }
+
+        // Switch to grid view if multiple participants
+        this.updateCallLayout();
+
+        // Create video element for participant
+        const grid = document.getElementById('chatParticipantsGrid');
+        if (!grid) return;
+
+        // Check if video container already exists
+        let container = document.getElementById(`participant-${participantId}`);
+        if (!container) {
+            container = document.createElement('div');
+            container.id = `participant-${participantId}`;
+            container.className = 'participant-video-container';
+
+            const video = document.createElement('video');
+            video.autoplay = true;
+            video.playsInline = true;
+            video.srcObject = stream;
+
+            const label = document.createElement('div');
+            label.className = 'participant-video-label';
+            label.textContent = participant.name;
+
+            container.appendChild(video);
+            container.appendChild(label);
+            grid.appendChild(container);
+        } else {
+            // Update existing video
+            const video = container.querySelector('video');
+            if (video) {
+                video.srcObject = stream;
+            }
+        }
+
+        // Update participant list
+        this.updateParticipantsList();
+
+        this.showToast(`${participant.name} joined!`, 'success');
+    },
+
+    // Update call layout based on number of participants
+    updateCallLayout() {
+        const totalParticipants = this.state.callParticipants.length + 1; // +1 for self
+        const grid = document.getElementById('chatParticipantsGrid');
+        const remoteVideo = document.getElementById('chatRemoteVideo');
+        const localVideo = document.getElementById('chatLocalVideo');
+
+        if (!grid) return;
+
+        if (totalParticipants > 2) {
+            // Group call - show grid
+            grid.style.display = 'grid';
+            remoteVideo.style.display = 'none';
+            localVideo.style.display = 'none';
+
+            // Apply grid class based on participant count
+            grid.className = 'call-participants-grid';
+            if (totalParticipants === 2) {
+                grid.classList.add('grid-2');
+            } else if (totalParticipants === 3 || totalParticipants === 4) {
+                grid.classList.add('grid-4');
+            } else {
+                grid.classList.add('grid-5-plus');
+            }
+
+            // Add local video to grid if not already there
+            let localContainer = document.getElementById('participant-local');
+            if (!localContainer && this.state.localStream) {
+                localContainer = document.createElement('div');
+                localContainer.id = 'participant-local';
+                localContainer.className = 'participant-video-container';
+
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.srcObject = this.state.localStream;
+
+                const label = document.createElement('div');
+                label.className = 'participant-video-label';
+                label.textContent = 'You';
+
+                localContainer.appendChild(video);
+                localContainer.appendChild(label);
+                grid.insertBefore(localContainer, grid.firstChild);
+            }
+
+            // Add original remote participant to grid if exists
+            if (this.state.remoteStream && !document.getElementById('participant-original')) {
+                const originalContainer = document.createElement('div');
+                originalContainer.id = 'participant-original';
+                originalContainer.className = 'participant-video-container';
+
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.playsInline = true;
+                video.srcObject = this.state.remoteStream;
+
+                const label = document.createElement('div');
+                label.className = 'participant-video-label';
+                const conv = this.state.conversations?.find(c => c.id === this.state.selectedChat);
+                label.textContent = conv?.other_name || 'Participant';
+
+                originalContainer.appendChild(video);
+                originalContainer.appendChild(label);
+                grid.appendChild(originalContainer);
+            }
+        } else {
+            // 1-on-1 call - use traditional layout
+            grid.style.display = 'none';
+            remoteVideo.style.display = 'block';
+            localVideo.style.display = 'block';
+        }
+    },
+
+    // Update participants list overlay
+    updateParticipantsList() {
+        const count = document.getElementById('chatParticipantsCount');
+        const items = document.getElementById('chatParticipantsItems');
+
+        if (!count || !items) return;
+
+        const totalParticipants = this.state.callParticipants.length + 1; // +1 for self
+        count.textContent = totalParticipants;
+
+        // Build participant list
+        const participantHTML = [
+            // Add self first
+            `<div class="participant-list-item you">
+                <img src="${this.state.currentProfile.avatar || 'https://ui-avatars.com/api/?name=You&background=10b981&color=fff&size=24'}"
+                     alt="You"
+                     onerror="this.src='https://ui-avatars.com/api/?name=You&background=10b981&color=fff&size=24'">
+                <span class="participant-name">You</span>
+            </div>`,
+            // Add original participant
+            ...(() => {
+                const conv = this.state.conversations?.find(c => c.id === this.state.selectedChat);
+                if (conv) {
+                    return [`<div class="participant-list-item">
+                        <img src="${conv.other_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(conv.other_name)}&background=8B5CF6&color=fff&size=24`}"
+                             alt="${conv.other_name}"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(conv.other_name)}&background=8B5CF6&color=fff&size=24'">
+                        <span class="participant-name">${conv.other_name}</span>
+                    </div>`];
+                }
+                return [];
+            })(),
+            // Add other participants
+            ...this.state.callParticipants.map(p => `
+                <div class="participant-list-item">
+                    <img src="${p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=8B5CF6&color=fff&size=24`}"
+                         alt="${p.name}"
+                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=8B5CF6&color=fff&size=24'">
+                    <span class="participant-name">${p.name}</span>
+                </div>
+            `)
+        ];
+
+        items.innerHTML = participantHTML.join('');
+    },
+
+    // Show call modal
+    showCallModal(isVideo) {
+        const callModal = document.getElementById('chatCallModal');
+        const incomingScreen = document.getElementById('chatIncomingCallScreen');
+        const activeScreen = document.getElementById('chatActiveCallScreen');
+        const voiceAnimation = document.getElementById('chatVoiceCallAnimation');
+        const videoToggleBtn = document.getElementById('chatSwitchVideoModeBtn');
+        const switchModeBtn = document.getElementById('chatSwitchCallModeBtn');
+
+        if (!callModal || !activeScreen) return;
+
+        callModal.classList.add('active');
+        if (incomingScreen) incomingScreen.style.display = 'none';
+        activeScreen.style.display = 'block';
+
+        // Show/hide voice animation
+        if (voiceAnimation) {
+            voiceAnimation.style.display = isVideo ? 'none' : 'flex';
+        }
+
+        // Show/hide buttons based on call mode
+        // Video mode: Show BOTH video toggle and call mode switch
+        // Voice mode: Hide video toggle, show call mode switch
+        if (videoToggleBtn) {
+            videoToggleBtn.style.display = isVideo ? 'inline-flex' : 'none';
+        }
+
+        // Update switch mode button - always visible, changes icon based on mode
+        if (switchModeBtn) {
+            switchModeBtn.style.display = 'inline-flex';
+            if (isVideo) {
+                // Currently video - show phone icon to switch back to voice
+                switchModeBtn.title = 'Switch to Voice Call';
+                switchModeBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                `;
+            } else {
+                // Currently voice - show video camera icon to switch to video
+                switchModeBtn.title = 'Switch to Video Call';
+                switchModeBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                `;
+            }
+        }
+
+        // Set user info
+        if (this.state.selectedChat) {
+            document.getElementById('chatCallUserName').textContent =
+                this.state.selectedChat.name || 'Unknown';
+            document.getElementById('chatCallUserRole').textContent =
+                this.state.selectedChat.role || '';
+
+            const avatarEl = document.getElementById('chatCallUserAvatar');
+            if (avatarEl) {
+                avatarEl.src = this.state.selectedChat.avatar ||
+                              getChatDefaultAvatar(this.state.selectedChat.name);
+            }
+        }
+
+        this.state.isCallActive = true;
+    },
+
+    // Start call timer
+    startCallTimer() {
+        this.state.callStartTime = Date.now();
+        this.state.callDurationInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - this.state.callStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            const timerEl = document.getElementById('chatCallTimer');
+            if (timerEl) {
+                timerEl.textContent = formatted;
+            }
+        }, 1000);
+    },
+
+    // Cleanup call
+    cleanupCall() {
+        // Clear call invitation timeout
+        if (this.state.callInvitationTimeout) {
+            clearTimeout(this.state.callInvitationTimeout);
+            this.state.callInvitationTimeout = null;
+        }
+
+        // Stop all tracks
+        if (this.state.localStream) {
+            this.state.localStream.getTracks().forEach(track => track.stop());
+            this.state.localStream = null;
+        }
+
+        if (this.state.remoteStream) {
+            this.state.remoteStream.getTracks().forEach(track => track.stop());
+            this.state.remoteStream = null;
+        }
+
+        // Close peer connection
+        if (this.state.peerConnection) {
+            this.state.peerConnection.close();
+            this.state.peerConnection = null;
+        }
+
+        // Stop timer
+        if (this.state.callDurationInterval) {
+            clearInterval(this.state.callDurationInterval);
+            this.state.callDurationInterval = null;
+        }
+
+        // Reset state
+        this.state.isCallActive = false;
+        this.state.isVideoCall = false;
+        this.state.isIncomingCall = false;
+        this.state.isAudioMuted = false;
+        this.state.isVideoOff = false;
+        this.state.pendingOffer = null;
+        this.state.pendingCallInvitation = null;
+        this.state.iceCandidateQueue = [];
+        this.state.callStartTime = null;
+        this.state.currentCallLogId = null;  // Clear call log ID
+
+        // Stop ringtone (ensures incoming call sounds stop)
+        this.stopRingtone();
+    },
+
+    // Ringtone functions
+    playRingtone() {
+        // Create audio element for ringtone
+        if (!this.ringtoneAudio) {
+            this.ringtoneAudio = new Audio();
+            this.ringtoneAudio.loop = true;
+            // Use default browser notification sound or custom ringtone
+            this.ringtoneAudio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAoUXrTp66hVFApGn+DyvmwhBjSM1/LMeS0FJHfH8N2RQAo=';
+        }
+        this.ringtoneAudio.play().catch(e => console.log('Could not play ringtone:', e));
+    },
+
+    stopRingtone() {
+        if (this.ringtoneAudio) {
+            this.ringtoneAudio.pause();
+            this.ringtoneAudio.currentTime = 0;
+        }
     }
 };
 
@@ -13789,6 +15884,15 @@ function toggleReadMessages() {
 
 function showComingSoonReadMessages() {
     ChatModalManager.showToast('Read Messages Aloud - Coming Soon!', 'info');
+}
+
+// WebRTC Call Functions
+function startChatVoiceCall() {
+    ChatModalManager.startChatVoiceCall();
+}
+
+function startChatVideoCall() {
+    ChatModalManager.startChatVideoCall();
 }
 
 // VTT (Voice-to-Text) Functions
@@ -14060,25 +16164,10 @@ function cancelVoicePreview() {
     ChatModalManager.cancelVoicePreview();
 }
 
-// Calls
-function startChatVoiceCall() {
-    ChatModalManager.startVoiceCall();
-}
-
-function startChatVideoCall() {
-    ChatModalManager.startVideoCall();
-}
-
-function toggleChatCallVideo() {
-    ChatModalManager.toggleCallVideo();
-}
-
-function toggleChatMute() {
-    ChatModalManager.toggleMute();
-}
+// Duplicate call functions removed - using correct versions at line 14656-14661
 
 function endChatCall() {
-    ChatModalManager.endCall();
+    ChatModalManager.endChatCall();
 }
 
 // Emoji/GIF

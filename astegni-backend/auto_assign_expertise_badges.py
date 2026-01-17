@@ -116,7 +116,7 @@ def calculate_and_assign_badges(dry_run=True):
                 tp.username,
                 tp.experience,
                 tp.courses_created,
-                tp.is_verified,
+                u.is_verified,
                 tp.expertise_badge as current_badge,
                 COALESCE(AVG(tr.rating), 0) as rating,
                 COUNT(tr.id) as review_count
@@ -124,7 +124,7 @@ def calculate_and_assign_badges(dry_run=True):
             JOIN users u ON tp.user_id = u.id
             LEFT JOIN tutor_reviews tr ON tp.id = tr.tutor_id
             GROUP BY tp.id, tp.user_id, u.email, tp.username, tp.experience,
-                     tp.courses_created, tp.is_verified, tp.expertise_badge
+                     tp.courses_created, u.is_verified, tp.expertise_badge
             ORDER BY tp.id
         """)
 

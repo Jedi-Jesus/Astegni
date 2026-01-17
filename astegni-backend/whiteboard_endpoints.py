@@ -2066,7 +2066,7 @@ async def get_tutor_info_for_whiteboard(current_user = Depends(get_current_user)
                 tp.bio,
                 tp.location,
                 tp.expertise_badge,
-                tp.is_verified,
+                u.is_verified,
                 tp.hero_subtitle
             FROM users u
             LEFT JOIN tutor_profiles tp ON u.id = tp.user_id
@@ -2178,7 +2178,7 @@ async def get_enrolled_tutors_for_whiteboard(
                     tp.hero_subtitle,
                     tp.location,
                     tp.expertise_badge,
-                    tp.is_verified,
+                    u.is_verified,
                     es.status as enrollment_status,
                     es.enrolled_at,
                     pkg.name as package_name,
@@ -2208,7 +2208,7 @@ async def get_enrolled_tutors_for_whiteboard(
                     tp.hero_subtitle,
                     tp.location,
                     tp.expertise_badge,
-                    tp.is_verified,
+                    u.is_verified,
                     es.status as enrollment_status,
                     es.enrolled_at,
                     pkg.name as package_name,

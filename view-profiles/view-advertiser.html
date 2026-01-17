@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -2721,6 +2723,8 @@
 
     <!-- Chat Modal Script -->
     <script src="../js/common-modals/chat-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
 
     <!-- Load Chat Modal HTML and Initialize -->
@@ -2737,6 +2741,17 @@
                     }
                 })
                 .catch(err => console.log('Chat modal will load on demand:', err.message));
+        })();
+
+        // Load standalone chat call modal HTML dynamically
+        (function loadChatCallModal() {
+            fetch('../modals/common-modals/chat-call-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Standalone Chat Call Modal loaded for view-advertiser');
+                })
+                .catch(err => console.error('Failed to load chat-call-modal:', err));
         })();
     </script>
 

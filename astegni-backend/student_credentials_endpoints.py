@@ -751,7 +751,7 @@ async def get_view_student_parents(student_profile_id: int):
                         p.relationship_type,
                         p.location,
                         p.total_children,
-                        p.is_verified,
+                        u.is_verified,
                         p.is_active,
                         p.profile_picture,
                         p.cover_image,

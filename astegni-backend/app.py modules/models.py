@@ -62,6 +62,14 @@ class User(Base):
     is_verified = Column(Boolean, default=False)  # User's identity has been verified
     verified_at = Column(DateTime, nullable=True)  # When user was verified
     verification_method = Column(String(20), nullable=True)  # 'kyc', 'manual', 'admin', 'profile_tutor', etc.
+    verification_status = Column(String(20), nullable=True)  # 'pending', 'approved', 'rejected'
+    rejected_at = Column(DateTime, nullable=True)  # When verification was rejected
+
+    # Account Suspension (CANONICAL)
+    is_suspended = Column(Boolean, default=False)  # Account is suspended
+    suspended_at = Column(DateTime, nullable=True)  # When account was suspended
+    suspension_reason = Column(Text, nullable=True)  # Reason for suspension
+    suspended_by = Column(Integer, nullable=True)  # Admin user ID who suspended
 
     # KYC (Know Your Customer) Verification - DEPRECATED in favor of is_verified
     # Kept for backward compatibility - use is_verified instead in new code
@@ -2570,6 +2578,289 @@ class PaymentMethodResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ============================================
+# NOTES MODELS
+# ============================================
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    profile_id = Column(Integer, nullable=False, index=True)
+    profile_type = Column(String(20), nullable=False, index=True)  # 'student', 'tutor', 'parent', 'advertiser'
+
+    # Core note fields
+    title = Column(String(500), nullable=False)
+    content = Column(Text)  # Rich HTML content
+    date = Column(DateTime(timezone=True))  # User-specified note date
+
+    # Metadata
+    course = Column(String(200), index=True)
+    tutor = Column(String(200))
+    tags = Column(Text)  # Comma-separated tags
+
+    # Visual customization
+    background = Column(String(50))  # Background theme (math, physics, etc) or 'custom'
+    background_url = Column(Text)  # Custom background image URL
+
+    # Status
+    is_favorite = Column(Boolean, default=False, index=True)
+    word_count = Column(Integer, default=0)
+    has_media = Column(Boolean, default=False)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_modified = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships
+    media = relationship("NoteMedia", back_populates="note", cascade="all, delete-orphan")
+    exports = relationship("NoteExport", back_populates="note", cascade="all, delete-orphan")
+
+class NoteMedia(Base):
+    __tablename__ = "note_media"
+
+    id = Column(Integer, primary_key=True, index=True)
+    note_id = Column(Integer, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Media details
+    media_type = Column(String(20), nullable=False)  # 'audio' or 'video'
+    file_url = Column(Text, nullable=False)  # URL to media file in storage
+    file_size = Column(Integer)  # File size in bytes
+    duration = Column(Integer)  # Duration in seconds
+    mime_type = Column(String(100))  # e.g., 'audio/webm', 'video/webm'
+
+    # Metadata
+    recorded_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Optional transcription
+    transcription = Column(Text)
+    transcription_language = Column(String(10))  # e.g., 'en-US', 'am-ET'
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships
+    note = relationship("Note", back_populates="media")
+
+class NoteExport(Base):
+    __tablename__ = "note_exports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    note_id = Column(Integer, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False, index=True)
+    profile_id = Column(Integer, nullable=False, index=True)
+    profile_type = Column(String(20), nullable=False)  # 'student', 'tutor', 'parent', 'advertiser'
+
+    # Export details
+    export_format = Column(String(20), nullable=False)  # 'pdf', 'word', 'markdown', 'html'
+    file_url = Column(Text)  # Optional: store exported file
+
+    # Timestamps
+    exported_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships
+    note = relationship("Note", back_populates="exports")
+
+# ============================================
+# NOTES PYDANTIC MODELS
+# ============================================
+
+class NoteMediaBase(BaseModel):
+    media_type: str
+    file_url: str
+    file_size: Optional[int] = None
+    duration: Optional[int] = None
+    mime_type: Optional[str] = None
+    transcription: Optional[str] = None
+    transcription_language: Optional[str] = None
+
+class NoteMediaCreate(NoteMediaBase):
+    pass
+
+class NoteMediaResponse(NoteMediaBase):
+    id: int
+    note_id: int
+    recorded_at: datetime
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class NoteBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    date: Optional[datetime] = None
+    course: Optional[str] = None
+    tutor: Optional[str] = None
+    tags: Optional[str] = None
+    background: Optional[str] = None
+    background_url: Optional[str] = None
+    is_favorite: bool = False
+    word_count: int = 0
+
+class NoteCreate(NoteBase):
+    pass
+
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    date: Optional[datetime] = None
+    course: Optional[str] = None
+    tutor: Optional[str] = None
+    tags: Optional[str] = None
+    background: Optional[str] = None
+    background_url: Optional[str] = None
+    is_favorite: Optional[bool] = None
+    word_count: Optional[int] = None
+
+class NoteResponse(NoteBase):
+    id: int
+    profile_id: int
+    profile_type: str
+    has_media: bool
+    created_at: datetime
+    updated_at: datetime
+    last_modified: datetime
+    media: List[NoteMediaResponse] = []
+
+    class Config:
+        from_attributes = True
+
+class NoteListResponse(BaseModel):
+    id: int
+    profile_id: int
+    profile_type: str
+    title: str
+    date: Optional[datetime] = None
+    course: Optional[str] = None
+    tutor: Optional[str] = None
+    tags: Optional[str] = None
+    is_favorite: bool
+    word_count: int
+    has_media: bool
+    created_at: datetime
+    last_modified: datetime
+
+    class Config:
+        from_attributes = True
+
+class NoteExportBase(BaseModel):
+    export_format: str
+
+class NoteExportCreate(NoteExportBase):
+    file_url: Optional[str] = None
+
+class NoteExportResponse(NoteExportBase):
+    id: int
+    note_id: int
+    profile_id: int
+    profile_type: str
+    file_url: Optional[str] = None
+    exported_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class NotesStatsResponse(BaseModel):
+    total_notes: int
+    total_words: int
+    total_courses: int
+    recent_notes: int
+    favorite_notes: int
+    notes_with_media: int
+
+
+# ============================================
+# CHAT & CALLS MODELS
+# ============================================
+
+class Conversation(Base):
+    """Conversation model for chat"""
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String(20), default="direct")  # 'direct' or 'group'
+    name = Column(String(255), nullable=True)  # For group chats
+    description = Column(Text, nullable=True)
+    avatar_url = Column(String(500), nullable=True)
+    created_by_profile_id = Column(Integer, nullable=True)
+    created_by_profile_type = Column(String(50), nullable=True)
+    is_archived = Column(Boolean, default=False)
+    is_muted = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    last_message_at = Column(DateTime, nullable=True)
+
+
+class ConversationParticipant(Base):
+    """Conversation participant model"""
+    __tablename__ = "conversation_participants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    profile_id = Column(Integer, nullable=False)
+    profile_type = Column(String(50), nullable=False)  # 'tutor', 'student', 'parent', 'advertiser'
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(String(20), default="member")  # 'admin', 'member'
+    is_muted = Column(Boolean, default=False)
+    is_pinned = Column(Boolean, default=False)
+    last_read_at = Column(DateTime, nullable=True)
+    last_read_message_id = Column(Integer, nullable=True)
+    is_active = Column(Boolean, default=True)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    left_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ChatMessage(Base):
+    """Chat message model"""
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    sender_profile_id = Column(Integer, nullable=False)
+    sender_profile_type = Column(String(50), nullable=False)
+    sender_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message_type = Column(String(20), default="text")  # 'text', 'image', 'audio', 'video', 'file', 'system', 'call'
+    content = Column(Text, nullable=True)
+    media_url = Column(String(500), nullable=True)
+    media_metadata = Column(JSON, nullable=True)
+    reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
+    forwarded_from_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
+    is_edited = Column(Boolean, default=False)
+    edited_at = Column(DateTime, nullable=True)
+    original_content = Column(Text, nullable=True)
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    deleted_for_everyone = Column(Boolean, default=False)
+    is_pinned = Column(Boolean, default=False)
+    pinned_at = Column(DateTime, nullable=True)
+    pinned_by_profile_id = Column(Integer, nullable=True)
+    pinned_by_profile_type = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CallLog(Base):
+    """Call log model for voice/video calls"""
+    __tablename__ = "call_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    caller_profile_id = Column(Integer, nullable=False)
+    caller_profile_type = Column(String(50), nullable=False)
+    caller_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    call_type = Column(String(20), nullable=False)  # 'voice', 'video'
+    status = Column(String(20), default="initiated")  # 'initiated', 'ringing', 'answered', 'missed', 'declined', 'cancelled', 'ended', 'failed'
+    started_at = Column(DateTime, default=datetime.utcnow)
+    answered_at = Column(DateTime, nullable=True)
+    ended_at = Column(DateTime, nullable=True)
+    duration_seconds = Column(Integer, nullable=True)
+    participants = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 
 # Create all tables
 Base.metadata.create_all(bind=engine)

@@ -33,3 +33,18 @@
 .profile-dropdown-menu .dropdown-item {
     font-size: 0.875rem !important;
 }
+
+/* ============================================
+   RESPONSIVE - HIDE ELEMENTS ON MOBILE
+   ============================================ */
+
+/* Tablet (1024px and below) - Hide profile container and notification button */
+@media (max-width: 1024px) {
+    #profile-container {
+        display: none !important;
+    }
+
+    .icon-btn[aria-label="Notifications"] {
+        display: none !important;
+    }
+}

@@ -466,15 +466,21 @@ window.updateMobileProfileSection = function() {
             const dropdownEmail = document.getElementById('mobile-dropdown-email');
             const profileLink = document.getElementById('mobile-profile-link');
 
-            const avatarUrl = currentUser.profile_picture_url || currentUser.profilePicture ||
-                              '../images/default-avatar.png';
+            const avatarUrl = currentUser.profile_picture || currentUser.profile_picture_url ||
+                              currentUser.profilePicture || '../images/default-avatar.png';
             const name = currentUser.name || currentUser.full_name || 'User';
             const email = currentUser.email || '';
-            const role = localStorage.getItem('active_role') || currentUser.role || 'student';
+            // Fixed: Check userRole first (what auth.js sets), then fallbacks
+            const role = localStorage.getItem('userRole') || localStorage.getItem('active_role') ||
+                         currentUser.active_role || currentUser.role || 'student';
 
             if (profilePic) profilePic.src = avatarUrl;
             if (profileName) profileName.textContent = name;
-            if (profileRole) profileRole.textContent = role;
+            if (profileRole) {
+                // Format role name properly (Student, Tutor, Parent, etc.)
+                const formattedRole = window.formatRoleName ? window.formatRoleName(role) : role.charAt(0).toUpperCase() + role.slice(1);
+                profileRole.textContent = formattedRole;
+            }
             if (dropdownPic) dropdownPic.src = avatarUrl;
             if (dropdownName) dropdownName.textContent = name;
             if (dropdownEmail) dropdownEmail.textContent = email;

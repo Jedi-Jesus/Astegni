@@ -619,6 +619,11 @@ class KYCVerificationManager {
                 user.kyc_verified = true;
                 localStorage.setItem('user', JSON.stringify(user));
 
+                // Update KYC status badge on profile page (if function exists)
+                if (typeof updateKYCStatusBadge === 'function') {
+                    updateKYCStatusBadge();
+                }
+
             } else {
                 this.showFailedResult(data);
             }

@@ -199,6 +199,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             print(f"[get_current_user] Error converting role_ids: {e}")
             user.role_ids = {}
 
+    # Attach profile_id and profile_type based on current active role
+    user.profile_type = user.current_role
+    user.profile_id = user.role_ids.get(user.current_role) if user.role_ids else None
+    print(f"[get_current_user] Profile context: profile_type={user.profile_type}, profile_id={user.profile_id}")
+
     return user
 
 def get_current_user_optional(

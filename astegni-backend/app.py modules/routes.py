@@ -134,11 +134,12 @@ def get_platform_stats(db: Session = Depends(get_db)):
     try:
         # Get tutor count - only verified tutors
         # is_verified=True means: profile complete + KYC verified (auto-set by system)
+        # NOTE: is_verified is in users table, NOT tutor_profiles table
         tutor_count = db.execute(text("""
             SELECT COUNT(*) FROM tutor_profiles tp
             JOIN users u ON tp.user_id = u.id
             WHERE tp.is_active = true
-            AND tp.is_verified = true
+            AND u.is_verified = true
             AND u.is_active = true
         """)).scalar() or 0
 
@@ -148,13 +149,14 @@ def get_platform_stats(db: Session = Depends(get_db)):
         )).scalar() or 0
 
         # Get average rating from tutor_reviews table (only for verified tutors)
+        # NOTE: is_verified is in users table, NOT tutor_profiles table
         avg_rating_result = db.execute(text("""
             SELECT COALESCE(AVG(tr.rating), 0) as avg_rating
             FROM tutor_reviews tr
             JOIN tutor_profiles tp ON tr.tutor_id = tp.id
             JOIN users u ON tp.user_id = u.id
             WHERE tp.is_active = true
-            AND tp.is_verified = true
+            AND u.is_verified = true
             AND u.is_active = true
         """)).fetchone()
         avg_rating = float(avg_rating_result[0]) if avg_rating_result else 0.0
@@ -165,6 +167,7 @@ def get_platform_stats(db: Session = Depends(get_db)):
         )).scalar() or 0
 
         # Get tutor subscription tier breakdown
+        # NOTE: is_verified is in users table, NOT tutor_profiles table
         tier_breakdown = db.execute(text("""
             SELECT
                 subscription_plan_id,
@@ -172,7 +175,7 @@ def get_platform_stats(db: Session = Depends(get_db)):
             FROM tutor_profiles tp
             JOIN users u ON tp.user_id = u.id
             WHERE tp.is_active = true
-            AND tp.is_verified = true
+            AND u.is_verified = true
             AND u.is_active = true
             GROUP BY subscription_plan_id
             ORDER BY subscription_plan_id
@@ -919,13 +922,15 @@ def get_tutors(
     With 80% chance of shuffling on initial page load for variety
     """
     # Only show verified tutors (is_verified=True means profile complete + KYC verified)
+    # NOTE: is_verified is in users table, NOT tutor_profiles table
     query = db.query(TutorProfile).join(User).filter(
         TutorProfile.is_active == True,
-        TutorProfile.is_verified == True,
+        User.is_verified == True,  # Fixed: is_verified is in users table
         User.is_active == True
     )
 
-    # Exclude current user from results (tutor should not see their own card)
+    # Exclude current user from results (user should not see their own tutor card)
+    # This works for ALL users regardless of their current role (student, tutor, parent, etc.)
     if exclude_user_id:
         query = query.filter(TutorProfile.user_id != exclude_user_id)
 
@@ -1361,7 +1366,7 @@ def get_tutors(
             "communication_skills": rating_data["communication"],
             "discipline": rating_data["discipline"],
             "punctuality": rating_data["punctuality"],
-            "is_verified": tutor.is_verified,
+            "is_verified": tutor.user.is_verified,  # Fixed: is_verified is in users table
             "is_active": tutor.is_active,
             "is_basic": getattr(tutor, 'is_basic', False),
             "cover_image": tutor.cover_image,
@@ -1592,7 +1597,7 @@ def get_tutor_public_profile(tutor_id: int, db: Session = Depends(get_db)):
         "course_type": None,
         "languages": tutor.languages if hasattr(tutor, 'languages') else None,
         "experience": None,
-        "is_verified": tutor.is_verified,
+        "is_verified": tutor.user.is_verified if tutor.user else False,
         "cover_image": tutor.cover_image,
     }
 
@@ -4313,7 +4318,7 @@ def get_statistics(db: Session = Depends(get_db)):
         "books_available": 0,   # Hidden in frontend
         "job_opportunities": 0, # Hidden in frontend
         "success_rate": 95,
-        "active_users": total_parents + total_students + total_tutors,
+        "active_users": verified_parents + verified_students + verified_tutors,
         "monthly_growth": 12.5
     }
 

@@ -297,7 +297,7 @@ class ViewTutorDBLoader {
             const usernameDisplay = profile.username ? `@${profile.username}` : '';
             nameEl.innerHTML = `
                 <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <span style="font-size: 2rem; font-weight: bold; color: var(--text-primary); white-space: nowrap;">${profile.full_name}</span>
+                    <span style="font-size: 2rem; font-weight: bold; color: var(--text-primary); word-wrap: break-word; overflow-wrap: break-word;">${profile.full_name}</span>
                     ${usernameDisplay ? `<span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">${usernameDisplay}</span>` : ''}
                 </div>
             `;

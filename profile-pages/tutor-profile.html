@@ -50,6 +50,8 @@
     <link rel="stylesheet" href="../css/plug-ins/finance.css">
     <!-- Chat Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <link rel="stylesheet" href="../css/common-modals/digital-lab-modal.css">
     <!-- Advanced Notes Styles -->
@@ -2265,17 +2267,6 @@
                             <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
                         </div>
 
-                        <!-- Empty State (shown when no notes exist) -->
-                        <div class="notes-empty-state" id="notesEmptyState" style="display: none;">
-                            <div class="empty-icon">
-                                <i class="fas fa-sticky-note"></i>
-                            </div>
-                            <h3>No Notes Yet</h3>
-                            <p>Start taking notes to organize your learning journey</p>
-                            <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
-                                <i class="fas fa-plus"></i> Create Your First Note
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Credentials Panel (Academic Certificates, Achievements, Experience) -->
@@ -4634,6 +4625,8 @@
 
     <!-- Chat Modal JavaScript -->
     <script src="../js/common-modals/chat-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
     <script>
@@ -4651,6 +4644,43 @@
                     }
                 })
                 .catch(err => console.error('Failed to load chat-modal:', err));
+        })();
+
+        // Load standalone chat call modal HTML dynamically
+        (function loadChatCallModal() {
+            fetch('../modals/common-modals/chat-call-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Standalone Chat Call Modal loaded for tutor-profile');
+
+                    // Initialize chat WebSocket silently for incoming calls
+                    // This allows receiving calls without opening chat modal first
+                    setTimeout(() => {
+                        if (typeof ChatModalManager !== 'undefined') {
+                            console.log('[Call Init] Silently connecting chat WebSocket for calls...');
+
+                            // Check if ChatModalManager has profile loaded
+                            if (ChatModalManager.state && ChatModalManager.state.currentProfile) {
+                                console.log('[Call Init] Profile already loaded, connecting WebSocket...');
+                                ChatModalManager.connectWebSocket();
+                            } else {
+                                console.log('[Call Init] Profile not loaded yet, loading and connecting...');
+                                // Load current user first, then connect
+                                ChatModalManager.loadCurrentUser();
+                                // Give it a moment to load, then connect
+                                setTimeout(() => {
+                                    ChatModalManager.connectWebSocket();
+                                }, 500);
+                            }
+
+                            console.log('[Call Init] ✅ Chat WebSocket initialization triggered');
+                        } else {
+                            console.log('[Call Init] ❌ ChatModalManager not found');
+                        }
+                    }, 3000); // Wait 3 seconds for auth to complete
+                })
+                .catch(err => console.error('Failed to load chat-call-modal:', err));
         })();
 
         // Load view-request-modal HTML dynamically

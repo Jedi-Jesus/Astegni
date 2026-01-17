@@ -142,6 +142,27 @@ class GoogleOAuthManager {
 
             if (!res.ok) {
                 const error = await res.json();
+
+                // If 404, user doesn't have an account - open register modal
+                if (res.status === 404) {
+                    this.hideLoadingState();
+                    this.closeGoogleModal();
+                    this.showErrorMessage('No account found with this email. Please register first.');
+
+                    // Open register modal after a short delay
+                    setTimeout(() => {
+                        if (window.openModal) {
+                            window.openModal('register-modal');
+                        } else {
+                            const registerModal = document.getElementById('register-modal');
+                            if (registerModal) {
+                                registerModal.classList.add('active');
+                            }
+                        }
+                    }, 1000);
+                    return;
+                }
+
                 throw new Error(error.detail || 'Backend authentication failed');
             }
 
@@ -480,8 +501,8 @@ class GoogleOAuthManager {
 // ============================================
 
 /**
- * Global function for Google Sign-In
- * Called by "Continue with Google" / "Register with Google" buttons
+ * Global function for Google Sign-In (LOGIN ONLY)
+ * Called by "Continue with Google" buttons in login modal
  * @param {string} role - The role to sign in as (optional, defaults to 'student')
  */
 window.googleSignIn = async function(role = 'student') {

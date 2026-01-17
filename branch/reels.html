@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <!-- Search bar styling from find-tutors -->
     <link rel="stylesheet" href="../css/find-tutors/navbar.css">
 
@@ -1487,6 +1489,22 @@
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
+
+    <!-- Load Standalone Chat Call Modal HTML -->
+    <script>
+        // Load standalone chat call modal HTML dynamically (for logged-in users)
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('../modals/common-modals/chat-call-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Standalone Chat Call Modal loaded for reels');
+                })
+                .catch(err => console.error('Failed to load chat-call-modal:', err));
+        });
+    </script>
 
     <script>
         // Close Modal Function (for logout modal and other modals)

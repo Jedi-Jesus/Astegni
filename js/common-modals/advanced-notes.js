@@ -14,12 +14,19 @@
  */
 
 const NotesManager = {
+  // API Configuration
+  API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000'
+    : 'https://api.astegni.com',
+
   // State
   notes: [],
   currentNoteIndex: null,
+  currentNoteId: null,
   autoSaveTimeout: null,
   wordCountInterval: null,
   pendingChanges: false,
+  isLoading: false,
 
   // Media recording state
   mediaRecorder: null,
@@ -80,8 +87,8 @@ const NotesManager = {
   // INITIALIZATION
   // ============================================
 
-  init() {
-    this.loadNotes();
+  async init() {
+    await this.loadNotes();
     this.renderDashboard();
     this.updateStats();
     this.setupEventListeners();
@@ -89,25 +96,76 @@ const NotesManager = {
     this.setupAutocomplete();
     this.initializeAutoSave();
     this.populateVoices();
-    console.log('NotesManager initialized');
+    console.log('NotesManager initialized with backend API');
   },
 
   // ============================================
   // DATA MANAGEMENT
   // ============================================
 
-  loadNotes() {
-    const stored = localStorage.getItem('astegni_notes');
-    if (stored) {
-      this.notes = JSON.parse(stored);
-    } else {
-      this.notes = this.generateSampleNotes();
-      this.saveNotesToStorage();
+  async loadNotes() {
+    try {
+      this.isLoading = true;
+      // Try multiple token keys for compatibility
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+      if (!token) {
+        console.warn('No auth token found. User needs to log in.');
+        console.log('Available localStorage keys:', Object.keys(localStorage));
+        this.notes = [];
+        this.isLoading = false;
+        return;
+      }
+
+      const response = await fetch(`${this.API_BASE_URL}/api/notes/?limit=100&sort_by=date_desc`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('Session expired. Please log in again.');
+          this.notes = [];
+          this.isLoading = false;
+          return;
+        }
+        throw new Error(`Failed to load notes: ${response.status}`);
+      }
+
+      const notes = await response.json();
+
+      // Transform backend response to match existing format
+      this.notes = notes.map(note => ({
+        id: note.id,
+        title: note.title,
+        date: note.date,
+        course: note.course || '',
+        tutor: note.tutor || '',
+        tags: note.tags || '',
+        content: note.content || '',
+        background: note.background || '',
+        backgroundUrl: note.background_url || '',
+        favorite: note.is_favorite,
+        wordCount: note.word_count,
+        hasMedia: note.has_media,
+        media: [],
+        created: note.created_at,
+        lastModified: note.last_modified
+      }));
+
+      this.isLoading = false;
+      console.log(`Loaded ${this.notes.length} notes from backend`);
+    } catch (error) {
+      this.isLoading = false;
+      console.error('Load notes error:', error);
+      this.notes = [];
     }
   },
 
   saveNotesToStorage() {
-    localStorage.setItem('astegni_notes', JSON.stringify(this.notes));
+    console.warn('saveNotesToStorage() is deprecated. Notes are saved to backend automatically.');
   },
 
   generateSampleNotes() {
@@ -200,12 +258,6 @@ const NotesManager = {
 
     // Sort notes
     const sortedNotes = this.sortNotesArray([...this.notes]);
-
-    // Show/hide empty state
-    const emptyState = document.getElementById('notesEmptyState');
-    if (emptyState) {
-      emptyState.style.display = this.notes.length === 0 ? 'flex' : 'none';
-    }
 
     // Add note cards
     sortedNotes.forEach((note, index) => {
@@ -342,6 +394,7 @@ const NotesManager = {
 
   createNewNote() {
     this.currentNoteIndex = null;
+    this.currentNoteId = null;
     this.clearEditor();
     this.openEditorModal();
     this.renderHistorySidebar(-1);
@@ -353,6 +406,7 @@ const NotesManager = {
 
   openNote(index) {
     this.currentNoteIndex = index;
+    this.currentNoteId = this.notes[index] ? this.notes[index].id : null;
     this.loadNoteToEditor(this.notes[index]);
     this.openEditorModal();
     this.renderHistorySidebar(index);
@@ -590,28 +644,84 @@ const NotesManager = {
   // SAVE / DELETE FUNCTIONS
   // ============================================
 
-  saveNote() {
+  async saveNote() {
     const noteData = this.collectNoteData();
 
-    if (this.currentNoteIndex !== null) {
-      this.notes[this.currentNoteIndex] = noteData;
-    } else {
-      this.notes.unshift(noteData);
-      this.currentNoteIndex = 0;
+    try {
+      // Try multiple token keys for compatibility
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+      if (!token) {
+        console.error('No token found in localStorage');
+        console.log('Available localStorage keys:', Object.keys(localStorage));
+        alert('Please log in to save notes');
+        return;
+      }
+
+      let savedNote;
+
+      if (this.currentNoteId) {
+        // Update existing note
+        const response = await fetch(`${this.API_BASE_URL}/api/notes/${this.currentNoteId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(noteData)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Update note failed:', response.status, errorText);
+          throw new Error(`Failed to update note: ${response.status}`);
+        }
+        savedNote = await response.json();
+
+        // Update in local array
+        const index = this.notes.findIndex(n => n.id === this.currentNoteId);
+        if (index !== -1) {
+          this.notes[index] = this.transformNoteFromAPI(savedNote);
+          this.currentNoteIndex = index;
+        }
+      } else {
+        // Create new note
+        const response = await fetch(`${this.API_BASE_URL}/api/notes/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(noteData)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Create note failed:', response.status, errorText);
+          throw new Error(`Failed to create note: ${response.status}`);
+        }
+        savedNote = await response.json();
+
+        // Add to local array
+        this.notes.unshift(this.transformNoteFromAPI(savedNote));
+        this.currentNoteIndex = 0;
+        this.currentNoteId = savedNote.id;
+      }
+
+      localStorage.removeItem('noteDraft');
+      this.showSaveStatus('success', 'Note saved to cloud!');
+
+      const lastSaved = document.getElementById('lastSaved');
+      if (lastSaved) {
+        lastSaved.textContent = `Last saved: ${new Date().toLocaleTimeString()}`;
+      }
+
+      // Update history sidebar
+      this.renderHistorySidebar(this.currentNoteIndex);
+    } catch (error) {
+      this.showSaveStatus('error', 'Failed to save: ' + error.message);
+      console.error('Save error:', error);
     }
-
-    this.saveNotesToStorage();
-    localStorage.removeItem('noteDraft');
-
-    this.showSaveStatus('success', 'Note saved successfully!');
-
-    const lastSaved = document.getElementById('lastSaved');
-    if (lastSaved) {
-      lastSaved.textContent = `Last saved: ${new Date().toLocaleTimeString()}`;
-    }
-
-    // Update history sidebar
-    this.renderHistorySidebar(this.currentNoteIndex);
   },
 
   saveAndClose() {
@@ -631,19 +741,34 @@ const NotesManager = {
     }
   },
 
-  deleteCurrentNote() {
-    if (this.currentNoteIndex === null) {
+  async deleteCurrentNote() {
+    if (!this.currentNoteId) {
       this.closeEditorModal();
       return;
     }
 
     if (confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
-      this.notes.splice(this.currentNoteIndex, 1);
-      this.saveNotesToStorage();
-      this.showSaveStatus('success', 'Note deleted');
-      setTimeout(() => {
-        this.closeEditorModal();
-      }, 500);
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const response = await fetch(`${this.API_BASE_URL}/api/notes/${this.currentNoteId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete note');
+
+        // Remove from local array
+        this.notes = this.notes.filter(n => n.id !== this.currentNoteId);
+        this.showSaveStatus('success', 'Note deleted');
+        setTimeout(() => {
+          this.closeEditorModal();
+        }, 500);
+      } catch (error) {
+        alert('Failed to delete note: ' + error.message);
+        console.error('Delete error:', error);
+      }
     }
   },
 
@@ -666,14 +791,30 @@ const NotesManager = {
     this.renderHistorySidebar(0);
   },
 
-  toggleFavorite() {
-    const favoriteBtn = document.getElementById('favoriteBtn');
+  async toggleFavorite() {
+    if (!this.currentNoteId) return;
 
-    if (this.currentNoteIndex !== null) {
-      this.notes[this.currentNoteIndex].favorite = !this.notes[this.currentNoteIndex].favorite;
-      this.saveNotesToStorage();
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(`${this.API_BASE_URL}/api/notes/${this.currentNoteId}/favorite`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-      if (this.notes[this.currentNoteIndex].favorite) {
+      if (!response.ok) throw new Error('Failed to toggle favorite');
+      const updatedNote = await response.json();
+
+      // Update local state
+      const index = this.notes.findIndex(n => n.id === this.currentNoteId);
+      if (index !== -1) {
+        this.notes[index].favorite = updatedNote.is_favorite;
+      }
+
+      // Update UI
+      const favoriteBtn = document.getElementById('favoriteBtn');
+      if (updatedNote.is_favorite) {
         if (favoriteBtn) {
           favoriteBtn.classList.add('active');
           favoriteBtn.innerHTML = '<i class="fas fa-star"></i> Favorited';
@@ -686,6 +827,11 @@ const NotesManager = {
         }
         this.showSaveStatus('success', 'Removed from favorites');
       }
+
+      this.renderDashboard();
+    } catch (error) {
+      alert('Failed to toggle favorite: ' + error.message);
+      console.error('Toggle favorite error:', error);
     }
   },
 
@@ -697,32 +843,42 @@ const NotesManager = {
     const tagsEl = document.getElementById('noteTags');
     const contentEl = document.getElementById('noteContent');
 
-    const mediaItems = document.querySelectorAll('.media-item audio, .media-item video');
-    const mediaData = [];
+    const content = contentEl ? contentEl.innerHTML : '';
+    const wordCount = this.countWords(contentEl ? contentEl.innerText : '');
 
-    mediaItems.forEach(item => {
-      mediaData.push({
-        type: item.tagName.toLowerCase(),
-        src: item.src,
-        timestamp: item.parentElement.querySelector('.media-timestamp')?.textContent || ''
-      });
-    });
-
+    // Return format matching backend API
     return {
-      id: this.currentNoteIndex !== null ? this.notes[this.currentNoteIndex].id : Date.now(),
       title: titleEl ? titleEl.value || 'Untitled Note' : 'Untitled Note',
-      date: dateEl ? dateEl.value : '',
+      date: dateEl ? (dateEl.value || new Date().toISOString()) : new Date().toISOString(),
       course: courseEl ? courseEl.value : '',
       tutor: tutorEl ? tutorEl.value : '',
       tags: tagsEl ? tagsEl.value : '',
-      content: contentEl ? contentEl.innerHTML : '',
+      content: content,
       background: contentEl ? contentEl.dataset.background || '' : '',
-      media: mediaData,
-      hasMedia: mediaData.length > 0,
-      favorite: this.currentNoteIndex !== null ? this.notes[this.currentNoteIndex].favorite : false,
-      wordCount: this.countWords(contentEl ? contentEl.innerText : ''),
-      created: this.currentNoteIndex !== null ? this.notes[this.currentNoteIndex].created : new Date().toISOString(),
-      lastModified: new Date().toISOString()
+      background_url: '',
+      is_favorite: false, // Will be set separately via toggleFavorite
+      word_count: wordCount
+    };
+  },
+
+  // Transform backend API response to match frontend format
+  transformNoteFromAPI(apiNote) {
+    return {
+      id: apiNote.id,
+      title: apiNote.title,
+      date: apiNote.date,
+      course: apiNote.course || '',
+      tutor: apiNote.tutor || '',
+      tags: apiNote.tags || '',
+      content: apiNote.content || '',
+      background: apiNote.background || '',
+      backgroundUrl: apiNote.background_url || '',
+      favorite: apiNote.is_favorite,
+      wordCount: apiNote.word_count,
+      hasMedia: apiNote.has_media,
+      media: apiNote.media || [],
+      created: apiNote.created_at,
+      lastModified: apiNote.last_modified
     };
   },
 
@@ -1254,15 +1410,47 @@ const NotesManager = {
     }
   },
 
-  saveVoiceNote() {
+  async saveVoiceNote() {
     if (!this.recordedBlob) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      this.addMediaToNote('audio', reader.result);
+    if (!this.currentNoteId) {
+      alert('Please save the note first before adding voice recordings');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', this.recordedBlob, 'voice.webm');
+
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(
+        `${this.API_BASE_URL}/api/notes/${this.currentNoteId}/media?media_type=audio`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const media = await response.json();
+      console.log('Voice note uploaded:', media);
+
+      // Update hasMedia flag
+      const index = this.notes.findIndex(n => n.id === this.currentNoteId);
+      if (index !== -1) {
+        this.notes[index].hasMedia = true;
+      }
+
       this.closeVoiceRecorder();
-    };
-    reader.readAsDataURL(this.recordedBlob);
+      alert('Voice note uploaded successfully!');
+    } catch (error) {
+      alert('Failed to upload voice note: ' + error.message);
+      console.error('Voice upload error:', error);
+    }
   },
 
   resetVoiceRecorder() {
@@ -1491,15 +1679,47 @@ const NotesManager = {
     }
   },
 
-  saveVideoNote() {
+  async saveVideoNote() {
     if (!this.recordedBlob) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      this.addMediaToNote('video', reader.result);
+    if (!this.currentNoteId) {
+      alert('Please save the note first before adding video recordings');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', this.recordedBlob, 'video.webm');
+
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const response = await fetch(
+        `${this.API_BASE_URL}/api/notes/${this.currentNoteId}/media?media_type=video`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const media = await response.json();
+      console.log('Video note uploaded:', media);
+
+      // Update hasMedia flag
+      const index = this.notes.findIndex(n => n.id === this.currentNoteId);
+      if (index !== -1) {
+        this.notes[index].hasMedia = true;
+      }
+
       this.closeVideoRecorder();
-    };
-    reader.readAsDataURL(this.recordedBlob);
+      alert('Video note uploaded successfully!');
+    } catch (error) {
+      alert('Failed to upload video note: ' + error.message);
+      console.error('Video upload error:', error);
+    }
   },
 
   async switchCamera() {

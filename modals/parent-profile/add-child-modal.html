@@ -273,7 +273,13 @@
 // Security: Uses DOB verification for existing users
 // ============================================
 
-const ChildInvitationManager = {
+// Guard against multiple script executions
+if (typeof window._ChildInvitationManagerImpl !== 'undefined') {
+    console.log('⚠️ Add Child Modal script already loaded, skipping re-execution');
+} else {
+
+// Use a different approach to avoid 'already declared' errors when modal loads multiple times
+const ChildInvitationManagerImpl = {
     selectedUser: null,
     tempPassword: null,
     searchTimeout: null,
@@ -611,10 +617,13 @@ const ChildInvitationManager = {
 };
 
 // Make available globally
-window.ChildInvitationManager = ChildInvitationManager;
+// Use _ChildInvitationManagerImpl for the wrapper to detect
+window._ChildInvitationManagerImpl = ChildInvitationManagerImpl;
+// Set window.ChildInvitationManager directly - simpler than proxy
+window.ChildInvitationManager = ChildInvitationManagerImpl;
 
 // Keep old manager name for backwards compatibility
-window.ChildrenModalManager = ChildInvitationManager;
+window.ChildrenModalManager = ChildInvitationManagerImpl;
 
 // ============================================
 // MODAL OPEN/CLOSE FUNCTIONS
@@ -623,7 +632,7 @@ window.ChildrenModalManager = ChildInvitationManager;
 function openAddChildModal() {
     const modal = document.getElementById('addChildModal');
     if (modal) {
-        ChildInvitationManager.reset();
+        ChildInvitationManagerImpl.reset();
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -639,7 +648,7 @@ function closeAddChildModal() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
         document.body.style.overflow = '';
-        ChildInvitationManager.reset();
+        ChildInvitationManagerImpl.reset();
     }
 }
 
@@ -668,9 +677,15 @@ async function loadAddChildModal() {
 }
 
 // Make functions available globally
+// Use _*Impl versions so the wrapper in parent-profile.html can detect when loaded
+window._openAddChildModalImpl = openAddChildModal;
+window._closeAddChildModalImpl = closeAddChildModal;
+// Set them directly too - simpler than wrappers
 window.openAddChildModal = openAddChildModal;
 window.closeAddChildModal = closeAddChildModal;
 window.loadAddChildModal = loadAddChildModal;
 
 console.log('Add Child Modal with Invitation Flow loaded');
+
+} // End of guard against multiple executions
 </script>

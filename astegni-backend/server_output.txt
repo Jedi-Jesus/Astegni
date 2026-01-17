@@ -1,0 +1,19 @@
+Failed to initialize Backblaze: Cannot perform the operation, transaction cap exceeded.
+Failed to initialize Backblaze: Cannot perform the operation, transaction cap exceeded.
+Failed to initialize Backblaze: Cannot perform the operation, transaction cap exceeded.
+Failed to initialize Backblaze: Cannot perform the operation, transaction cap exceeded.
+INFO:     Started server process [287756]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+[EMAIL] Configuration loaded from database
+[OK] TFA Endpoints (Role-Based): Loaded
+[OK] TFA Protection (Role-Based + Panel-Based): Loaded
+[OK] Job Board API endpoints loaded successfully
+[OK] Job Alerts API endpoints loaded successfully
+[OK] Platform Reviews Endpoints: Loaded
+[WARN] face_recognition not available - face matching will use placeholder logic
+[WARN] dlib not available - liveliness detection will use OpenCV fallback
+[WARNING] Backblaze B2 not configured - using mock implementation

@@ -579,12 +579,21 @@
     }
 
     /* Hide desktop profile on mobile */
-    .desktop-nav-actions .profile-dropdown-container {
+    .desktop-nav-actions .profile-dropdown-container,
+    #profile-container {
         display: none !important;
     }
 
     /* Hide notification button on mobile (it's in the menu) */
-    .desktop-nav-actions #notificationBtn {
+    .desktop-nav-actions #notificationBtn,
+    #notificationBtn,
+    .desktop-nav-actions .icon-btn[aria-label="Notifications"],
+    button[aria-label="Notifications"]:not(.mobile-notifications-btn) {
+        display: none !important;
+    }
+
+    /* Hide theme toggle button on mobile */
+    #theme-toggle-btn {
         display: none !important;
     }
 }

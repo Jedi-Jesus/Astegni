@@ -412,46 +412,61 @@
                                 </div>
                             </div>
 
-                            <!-- Budget & Date Row -->
-                            <div class="campaign-form-row">
-                                <div class="campaign-form-group">
-                                    <label for="campaign-budget-input">
-                                        <i class="fas fa-coins"></i>
-                                        Total Campaign Budget <span class="required">*</span>
-                                    </label>
+                            <!-- Total Campaign Budget Row (Full Width) -->
+                            <div class="campaign-form-group">
+                                <label for="campaign-budget-input">
+                                    <i class="fas fa-coins"></i>
+                                    Total Campaign Budget <span class="required">*</span>
+                                </label>
 
-                                    <!-- Advertiser Balance Display -->
-                                    <div class="advertiser-balance-display" style="margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; border-left: 3px solid #667eea;">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-wallet" style="color: #667eea; font-size: 1.1rem;"></i>
-                                            <span style="font-size: 0.9rem; color: var(--text-secondary);">Your Available Balance:</span>
-                                            <strong id="advertiser-current-balance" style="color: #667eea; font-size: 1.1rem;">0.00 ETB</strong>
+                                <div class="campaign-budget-input-wrapper">
+                                    <span class="budget-currency">ETB</span>
+                                    <input type="number" id="campaign-budget-input" placeholder="10000" min="10000" step="100" required oninput="BrandsManager.calculateEstimatedImpressions(this.value); BrandsManager.updateBudgetBreakdown(this.value)">
+                                </div>
+
+                                <!-- Minimum budget notice -->
+                                <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                                    <i class="fas fa-info-circle" style="color: #667eea;"></i>
+                                    Minimum campaign budget: <strong style="color: #667eea;">10,000 ETB</strong>
+                                </div>
+
+                                <!-- Budget Breakdown (20% / 80%) -->
+                                <div id="budget-breakdown" style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-radius: 8px; border-left: 3px solid #667eea; display: none;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem;">
+                                        <div>
+                                            <div style="color: var(--text-secondary); margin-bottom: 4px;">
+                                                <i class="fas fa-arrow-right" style="color: #667eea;"></i>
+                                                20% Advance Payment (Invoice #1)
+                                            </div>
+                                            <div style="font-size: 1.1rem; font-weight: 600; color: #667eea;">
+                                                <span id="advance-payment-amount">2,000</span> ETB
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style="color: var(--text-secondary); margin-bottom: 4px;">
+                                                <i class="fas fa-arrow-right" style="color: #764ba2;"></i>
+                                                80% After Completion (Invoice #2)
+                                            </div>
+                                            <div style="font-size: 1.1rem; font-weight: 600; color: #764ba2;">
+                                                <span id="remaining-payment-amount">8,000</span> ETB
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div class="campaign-budget-input-wrapper">
-                                        <span class="budget-currency">ETB</span>
-                                        <input type="number" id="campaign-budget-input" placeholder="10000" min="10000" step="100" required oninput="BrandsManager.calculateEstimatedImpressions(this.value)">
-                                    </div>
-
-                                    <!-- Minimum budget notice -->
-                                    <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
-                                        <i class="fas fa-info-circle" style="color: #667eea;"></i>
-                                        Minimum campaign budget: <strong style="color: #667eea;">10,000 ETB</strong>
-                                    </div>
-
-                                    <!-- Show estimated impressions -->
-                                    <div class="campaign-budget-estimate" id="budget-estimate" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">
-                                        Estimated: ~0 impressions at 0.00 ETB/impression
-                                    </div>
                                 </div>
-                                <div class="campaign-form-group">
-                                    <label for="campaign-start-date-input">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        Start Date <span class="required">*</span>
-                                    </label>
-                                    <input type="date" id="campaign-start-date-input" required>
+
+                                <!-- Show estimated impressions -->
+                                <div class="campaign-budget-estimate" id="budget-estimate" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">
+                                    Estimated: ~0 impressions at 0.00 ETB/impression
                                 </div>
+                            </div>
+
+                            <!-- Start Date Row -->
+                            <div class="campaign-form-group">
+                                <label for="campaign-start-date-input">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Start Date <span class="required">*</span>
+                                </label>
+                                <input type="date" id="campaign-start-date-input" required>
                             </div>
 
                             <!-- Form Footer (inside form) -->

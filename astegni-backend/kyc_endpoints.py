@@ -774,18 +774,29 @@ async def upload_selfie(
             # If document not found locally, use placeholder
             comparison_result = {"match": True, "score": 0.92, "method": "placeholder"}
 
-        # Detect liveliness
-        liveliness_result = detect_liveliness(frames if frames else [selfie_bytes])
+        # Check liveliness from already-completed challenges
+        # The challenges are verified in real-time via /verify-liveliness endpoint
+        # Here we just check if all required challenges were passed
+        challenges_passed = (
+            verification.blink_detected and
+            verification.smile_detected and
+            verification.head_turn_detected
+        )
+
+        # Calculate liveliness score based on challenges passed
+        challenges_completed = sum([
+            verification.blink_detected,
+            verification.smile_detected,
+            verification.head_turn_detected
+        ])
+        liveliness_score = challenges_completed / 3.0
 
         # Update verification
         verification.selfie_image_url = selfie_url
         verification.face_match_score = comparison_result.get("score", 0)
         verification.face_match_passed = comparison_result.get("match", False)
-        verification.liveliness_passed = liveliness_result.get("passed", False)
-        verification.liveliness_score = liveliness_result.get("liveliness_score", 0)
-        verification.blink_detected = liveliness_result.get("blink_detected", False)
-        verification.smile_detected = liveliness_result.get("smile_detected", False)
-        verification.head_turn_detected = liveliness_result.get("head_turn_detected", False)
+        verification.liveliness_passed = challenges_passed
+        verification.liveliness_score = liveliness_score
         verification.last_attempt_at = datetime.utcnow()
 
         # Determine overall status
@@ -832,7 +843,14 @@ async def upload_selfie(
             analysis_result={
                 "face_detection": face_result,
                 "face_comparison": comparison_result,
-                "liveliness": liveliness_result
+                "liveliness": {
+                    "blink_detected": verification.blink_detected,
+                    "smile_detected": verification.smile_detected,
+                    "head_turn_detected": verification.head_turn_detected,
+                    "liveliness_score": liveliness_score,
+                    "passed": challenges_passed,
+                    "method": "challenge_verification"
+                }
             },
             completed_at=datetime.utcnow()
         )

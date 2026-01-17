@@ -140,25 +140,25 @@
                 </h3>
 
                 <div class="terms-cards">
-                    <!-- Upfront Payment -->
+                    <!-- 20% Advance Payment -->
                     <div class="term-card">
                         <div class="term-icon orange">
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="term-content">
-                            <h4>Upfront Payment Required</h4>
-                            <p>The full campaign budget (<strong id="confirm-upfront-amount">10,000 ETB</strong>) will be deducted from your account immediately upon creation. This amount is transferred directly to Astegni and allocated to your campaign.</p>
+                            <h4>20% Non-Refundable Advance Payment</h4>
+                            <p>Advance payment is <strong id="confirm-deposit-20-percent">2,000 ETB (20%)</strong>. An invoice will be generated for this payment. The remaining <strong id="confirm-remaining-80-percent">8,000 ETB (80%)</strong> will be invoiced after campaign completes based on actual impressions delivered.</p>
                         </div>
                     </div>
 
-                    <!-- Cancellation Policy -->
+                    <!-- Stop Anytime Policy -->
                     <div class="term-card">
                         <div class="term-icon blue">
-                            <i class="fas fa-times-circle"></i>
+                            <i class="fas fa-hand-paper"></i>
                         </div>
                         <div class="term-content">
-                            <h4>Cancel Anytime</h4>
-                            <p>You can cancel your campaign at any time. Campaigns that have spent less than <strong>100,000 ETB</strong> will incur a <strong>5% cancellation fee</strong> on the remaining budget. Campaigns that spent 100,000 ETB or more can cancel with no fee.</p>
+                            <h4>Stop Anytime - Pay for What You Use</h4>
+                            <p>You can stop your campaign at any time. You'll only pay for impressions actually delivered. If you stop early, a <strong>2% cancellation fee</strong> applies to the unspent budget. The 20% advance payment is <strong>non-refundable</strong> but covers your first impressions.</p>
                         </div>
                     </div>
 
@@ -168,19 +168,19 @@
                             <i class="fas fa-pause-circle"></i>
                         </div>
                         <div class="term-content">
-                            <h4>Pause Campaign Anytime (No Fee)</h4>
-                            <p>You can pause your campaign at any time without any fee. Pausing temporarily stops ad delivery while preserving your remaining budget. Resume anytime to continue your campaign. <strong>Note:</strong> Minimum campaign budget is 10,000 ETB.</p>
+                            <h4>Pause Anytime (No Fee)</h4>
+                            <p>You can pause your campaign at any time without any fee or settlement. Pausing temporarily stops ad delivery. Resume anytime to continue where you left off. Only settle up when you stop the campaign permanently.</p>
                         </div>
                     </div>
 
                     <!-- Fair Billing -->
                     <div class="term-card">
                         <div class="term-icon green">
-                            <i class="fas fa-check-circle"></i>
+                            <i class="fas fa-receipt"></i>
                         </div>
                         <div class="term-content">
-                            <h4>Fair & Transparent Billing</h4>
-                            <p>You'll receive a detailed transaction for every 1,000 impressions charged. View your complete billing history in your account transactions.</p>
+                            <h4>Invoice After Completion</h4>
+                            <p>After your campaign completes or you stop it, you'll receive a detailed invoice showing: impressions delivered, cost per impression, total cost, deposit paid, cancellation fee (if applicable), and balance due. You have 30 days to pay the invoice via payment gateway.</p>
                         </div>
                     </div>
 
@@ -865,8 +865,12 @@ window.CampaignCreationConfirmation = {
         document.getElementById('confirm-estimated-impressions').textContent =
             `${(estimated_impressions || 0).toLocaleString()}`;
 
-        // Upfront payment amount
-        document.getElementById('confirm-upfront-amount').textContent = `${(deposit_amount || 0).toLocaleString()} ${currency}`;
+        // 20% deposit calculation
+        const deposit_20_percent = (deposit_amount || 0) * 0.20;
+        const remaining_80_percent = (deposit_amount || 0) * 0.80;
+
+        document.getElementById('confirm-deposit-20-percent').textContent = `${deposit_20_percent.toLocaleString()} ${currency} (20%)`;
+        document.getElementById('confirm-remaining-80-percent').textContent = `${remaining_80_percent.toLocaleString()} ${currency} (80%)`;
 
         // Agreement CPI
         document.getElementById('confirm-agreement-cpi').textContent = `${(total_cpi || 0).toFixed(3)} ${currency}`;

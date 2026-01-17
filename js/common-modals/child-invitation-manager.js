@@ -11,7 +11,7 @@
 
 const CHILD_INV_API_URL = window.API_BASE_URL || 'http://localhost:8000';
 
-class ChildInvitationManager {
+class ChildInvitationDisplayManager {
     constructor() {
         this.receivedInvitations = [];
         this.currentStatus = 'all';
@@ -269,7 +269,7 @@ class ChildInvitationManager {
 }
 
 // Create global instance
-const childInvitationManager = new ChildInvitationManager();
+const childInvitationManager = new ChildInvitationDisplayManager();
 window.childInvitationManager = childInvitationManager;
 
 // Helper function to filter by child invitations type

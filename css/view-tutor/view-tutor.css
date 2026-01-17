@@ -38,10 +38,10 @@
             font-weight: bold;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            word-wrap: break-word;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .profile-badge {
@@ -714,12 +714,15 @@
            RIGHT SIDEBAR FIX - Prevent Overlap
            ============================================ */
 
-        /* Ensure proper layout and prevent sidebar overlap */
+        /* Ensure proper layout and prevent sidebar overlap - HIGH SPECIFICITY */
+        .container .flex.gap-6,
+        section .flex.gap-6,
         .flex.gap-6 {
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start;
-            position: relative;
+            display: flex !important;
+            gap: 1.5rem !important;
+            align-items: flex-start !important;
+            position: relative !important;
+            flex-direction: row !important;
         }
 
         .flex-1 {
@@ -736,6 +739,12 @@
             top: 5rem;
             height: fit-content;
             z-index: 0;
+        }
+
+        .right-sidebar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .panels-container {
@@ -803,13 +812,22 @@
             button[aria-label="Notifications"] {
                 display: none !important;
             }
+
+            /* Remove horizontal padding from container on tablets and mobile */
+            section.py-8 .container.px-4,
+            .container.mx-auto.px-4 {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
         }
 
         /* Tablet Landscape (769px-1024px) - Sidebar moves below, 3 columns */
         @media (max-width: 1024px) and (min-width: 769px) {
             /* Between 769px and 1024px - sidebar moves below with 3 columns */
+            .container .flex.gap-6,
+            section .flex.gap-6,
             .flex.gap-6 {
-                flex-direction: column;
+                flex-direction: column !important;
             }
 
             .right-sidebar-container {
@@ -927,11 +945,18 @@
                 text-align: center !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 1.5rem !important;
+            }
+
             .profile-details-section {
                 padding-top: 0 !important;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                width: 100%;
+                margin-top: 0 !important;
             }
 
             /* Center profile content */
@@ -953,13 +978,21 @@
                 justify-content: center !important;
             }
 
+            /* tutorName positioned under "view-story" label on tablets (768-1024px) */
             .profile-name {
                 font-size: 1.6rem;
                 text-align: center;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             .profile-name-row {
                 text-align: center;
+                width: 100%;
             }
 
             /* Stats grids - 2 columns on large tablets */
@@ -1016,8 +1049,10 @@
         /* Tablet Portrait (641px-768px) - Sidebar moves below, 2 columns */
         @media (max-width: 768px) and (min-width: 641px) {
             /* Between 641px and 768px - sidebar moves below with 2 columns */
+            .container .flex.gap-6,
+            section .flex.gap-6,
             .flex.gap-6 {
-                flex-direction: column;
+                flex-direction: column !important;
             }
 
             .right-sidebar-container {
@@ -1139,11 +1174,17 @@
                 text-align: center !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 1.5rem !important;
+            }
+
             .profile-details-section {
                 padding-top: 0 !important;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                margin-top: 0 !important;
             }
 
             /* Center profile content */
@@ -1165,13 +1206,21 @@
                 justify-content: center !important;
             }
 
+            /* tutorName visible and properly displayed on tablet portrait (641-768px) */
             .profile-name {
                 font-size: 1.5rem;
                 text-align: center;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             .profile-name-row {
                 text-align: center;
+                width: 100%;
             }
 
             /* Stats grids - 2 columns on tablet portrait */
@@ -1245,8 +1294,10 @@
         /* Small Mobile (640px) - 2 columns for widgets */
         @media (max-width: 640px) {
             /* Stack the layout - sidebar goes below content */
+            .container .flex.gap-6,
+            section .flex.gap-6,
             .flex.gap-6 {
-                flex-direction: column;
+                flex-direction: column !important;
             }
 
             .right-sidebar-container {
@@ -1329,11 +1380,17 @@
                 text-align: center !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 1.25rem !important;
+            }
+
             .profile-details-section {
                 padding-top: 0 !important;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                margin-top: 0 !important;
             }
 
             /* Center profile content */
@@ -1363,13 +1420,21 @@
                 padding: 3px !important;
             }
 
+            /* tutorName visible and centered on small mobile (≤640px) */
             .profile-name {
                 font-size: 1.35rem;
                 text-align: center;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             .profile-name-row {
                 text-align: center;
+                width: 100%;
             }
 
             /* Stats grids - single column on small mobile */
@@ -1460,8 +1525,10 @@
         /* Extra Small Mobile (480px) - 1 column for widgets */
         @media (max-width: 480px) {
             /* Stack the layout - sidebar goes below content */
+            .container .flex.gap-6,
+            section .flex.gap-6,
             .flex.gap-6 {
-                flex-direction: column;
+                flex-direction: column !important;
             }
 
             .right-sidebar-container {
@@ -1529,11 +1596,17 @@
                 text-align: center !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 1rem !important;
+            }
+
             .profile-details-section {
                 padding-top: 0 !important;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                margin-top: 0 !important;
             }
 
             /* Center profile content */
@@ -1566,14 +1639,22 @@
                 border-width: 3px !important;
             }
 
+            /* tutorName visible on extra small mobile (≤480px) */
             .profile-name {
                 font-size: 1.25rem;
                 margin-bottom: 0.4rem;
                 text-align: center;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             .profile-name-row {
                 text-align: center;
+                width: 100%;
             }
 
             /* Stats grids remain single column */
@@ -1841,6 +1922,15 @@
                 margin-top: -35px !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 1rem !important;
+            }
+
+            .profile-details-section {
+                margin-top: 0 !important;
+            }
+
             .profile-avatar-container img,
             .story-ring-container img {
                 width: 80px !important;
@@ -1854,8 +1944,15 @@
                 right: 8px !important;
             }
 
+            /* tutorName visible on ultra small mobile (≤400px) */
             .profile-name {
                 font-size: 1.15rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             /* Stats grids - more compact */
@@ -2113,6 +2210,15 @@
                 margin-top: -30px !important;
             }
 
+            /* Add spacing between avatar/story-text and tutorName */
+            .profile-avatar-container {
+                margin-bottom: 0.85rem !important;
+            }
+
+            .profile-details-section {
+                margin-top: 0 !important;
+            }
+
             .profile-avatar-container img,
             .story-ring-container img {
                 width: 70px !important;
@@ -2136,8 +2242,15 @@
                 margin-top: 4px !important;
             }
 
+            /* tutorName visible on minimum viable screen (≤320px) */
             .profile-name {
                 font-size: 1.05rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                word-wrap: break-word;
+                max-width: 100%;
+                display: block;
             }
 
             /* Stats grids - most compact */

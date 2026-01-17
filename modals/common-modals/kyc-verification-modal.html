@@ -53,13 +53,13 @@
                 </div>
 
                 <div class="capture-controls" style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="btn-capture-document" class="finance-btn-primary" onclick="captureDocument()" style="padding: 12px 32px;">
+                    <button id="btn-capture-document" class="finance-btn-primary" onclick="captureDocument()" style="padding: 12px 32px; background: var(--primary-color, #F59E0B); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                         Capture Document
                     </button>
                     <button id="btn-retake-document" class="btn-secondary" onclick="retakeDocument()" style="display: none; padding: 12px 32px;">
                         Retake
                     </button>
-                    <button id="btn-continue-document" class="finance-btn-primary" onclick="proceedToLiveliness()" style="display: none; padding: 12px 32px;">
+                    <button id="btn-continue-document" class="finance-btn-primary" onclick="proceedToLiveliness()" style="display: none; padding: 12px 32px; background: var(--primary-color, #F59E0B); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                         Continue
                     </button>
                 </div>
@@ -257,5 +257,19 @@
 
     #kyc-verification-modal .modal-overlay {
         background: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Button hover effects matching theme */
+    #btn-capture-document:hover,
+    #btn-continue-document:hover {
+        background: var(--primary-hover, #D97706) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    #btn-capture-document:active,
+    #btn-continue-document:active {
+        background: var(--primary-active, #92400E) !important;
+        transform: translateY(0);
     }
 </style>

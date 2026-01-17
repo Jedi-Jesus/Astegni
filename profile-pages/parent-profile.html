@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Community Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/community-modal.css">
@@ -2798,6 +2800,17 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- Pending Invitations Section -->
+                            <div id="pending-child-invitations-section" class="hidden mb-6">
+                                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <i class="fas fa-clock text-yellow-500"></i>
+                                    Pending Invitations
+                                </h2>
+                                <div id="pending-child-invitations-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Pending invitation cards will be loaded here -->
+                                </div>
+                            </div>
+
                             <!-- Children Cards Container (dynamically loaded) -->
                             <div id="children-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <!-- Child cards will be dynamically loaded here by ChildrenManager -->
@@ -3518,17 +3531,6 @@
                                 <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
                             </div>
 
-                            <!-- Empty State (shown when no notes exist) -->
-                            <div class="notes-empty-state" id="notesEmptyState" style="display: none;">
-                                <div class="empty-icon">
-                                    <i class="fas fa-sticky-note"></i>
-                                </div>
-                                <h3>No Notes Yet</h3>
-                                <p>Start taking notes to organize your learning journey</p>
-                                <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
-                                    <i class="fas fa-plus"></i> Create Your First Note
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Earnings & Investments Panel -->
@@ -5804,6 +5806,8 @@
     <!-- Subscription Modal JavaScript (Dynamic - fetches plans based on role) -->
     <script src="../js/common-modals/subscription-modal.js"></script>
     <script src="../js/common-modals/chat-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
     <script src="../js/common-modals/child-invitation-manager.js"></script>
@@ -5863,26 +5867,127 @@
             })
             .catch(error => console.error('Failed to load invite-parent-modal:', error));
 
-        // Load add-child-modal.html into the container
-        fetch('../modals/parent-profile/add-child-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                const container = document.getElementById('add-child-modal-container');
-                container.innerHTML = html;
-                // Execute scripts from the loaded HTML (innerHTML doesn't execute scripts)
-                const scripts = container.querySelectorAll('script');
-                scripts.forEach(script => {
-                    const newScript = document.createElement('script');
-                    if (script.src) {
-                        newScript.src = script.src;
-                    } else {
-                        newScript.textContent = script.textContent;
+        // Create safe wrappers for all modal functions that load the modal if needed
+        window.openAddChildModal = function() {
+            // If the actual function exists, call it
+            if (typeof window._openAddChildModalImpl === 'function') {
+                window._openAddChildModalImpl();
+            } else {
+                // Modal not loaded yet, load it first then open
+                console.log('🔄 Add Child Modal not loaded yet, loading now...');
+                loadAddChildModalOnce().then(() => {
+                    if (typeof window._openAddChildModalImpl === 'function') {
+                        window._openAddChildModalImpl();
                     }
-                    document.body.appendChild(newScript);
                 });
-                console.log('✅ Add Child Modal loaded and scripts executed');
-            })
-            .catch(error => console.error('Failed to load add-child-modal:', error));
+            }
+        };
+
+        window.closeAddChildModal = function() {
+            if (typeof window._closeAddChildModalImpl === 'function') {
+                window._closeAddChildModalImpl();
+            } else {
+                // Fallback: just hide the modal
+                const modal = document.getElementById('addChildModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+        };
+
+        // Create safe wrapper for ChildInvitationManager
+        window.ChildInvitationManager = new Proxy({}, {
+            get: function(target, prop) {
+                // If the real manager is loaded, use it
+                if (window._ChildInvitationManagerImpl) {
+                    const value = window._ChildInvitationManagerImpl[prop];
+                    // If it's a function, bind it to the implementation object to preserve 'this' context
+                    if (typeof value === 'function') {
+                        return value.bind(window._ChildInvitationManagerImpl);
+                    }
+                    return value;
+                }
+                // Otherwise return a function that loads the modal first
+                return function(...args) {
+                    console.log(`🔄 ChildInvitationManager.${prop} called before modal loaded, loading now...`);
+                    return loadAddChildModalOnce().then(() => {
+                        if (window._ChildInvitationManagerImpl && typeof window._ChildInvitationManagerImpl[prop] === 'function') {
+                            return window._ChildInvitationManagerImpl[prop].apply(window._ChildInvitationManagerImpl, args);
+                        }
+                    });
+                };
+            }
+        });
+
+        // Track if modal is being loaded to prevent duplicate loads
+        let addChildModalLoading = false;
+        let addChildModalLoaded = false;
+
+        function loadAddChildModalOnce() {
+            if (addChildModalLoaded) {
+                return Promise.resolve();
+            }
+            if (addChildModalLoading) {
+                // Wait for existing load to complete
+                return new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        if (addChildModalLoaded) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                });
+            }
+
+            addChildModalLoading = true;
+            return fetch('../modals/parent-profile/add-child-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    const container = document.getElementById('add-child-modal-container');
+                    container.innerHTML = html;
+
+                    // Execute scripts from the loaded HTML (innerHTML doesn't execute scripts)
+                    const scripts = container.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        document.body.appendChild(newScript);
+                    });
+
+                    // Wait a tick for scripts to execute
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            console.log('✅ Add Child Modal loaded and scripts executed');
+                            console.log('ChildInvitationManager available?', typeof ChildInvitationManager !== 'undefined');
+                            console.log('closeAddChildModal available?', typeof closeAddChildModal !== 'undefined');
+                            console.log('_ChildInvitationManagerImpl available?', typeof window._ChildInvitationManagerImpl !== 'undefined');
+                            if (window._ChildInvitationManagerImpl) {
+                                console.log('_ChildInvitationManagerImpl.searchUsers:', typeof window._ChildInvitationManagerImpl.searchUsers);
+                                console.log('_ChildInvitationManagerImpl.showAddNewChildForm:', typeof window._ChildInvitationManagerImpl.showAddNewChildForm);
+                            }
+                            console.log('ChildInvitationManager.searchUsers:', typeof window.ChildInvitationManager.searchUsers);
+                            console.log('ChildInvitationManager.showAddNewChildForm:', typeof window.ChildInvitationManager.showAddNewChildForm);
+                            addChildModalLoaded = true;
+                            addChildModalLoading = false;
+                            resolve();
+                        }, 50);
+                    });
+                })
+                .catch(error => {
+                    console.error('Failed to load add-child-modal:', error);
+                    addChildModalLoading = false;
+                    throw error;
+                });
+        }
+
+        // Pre-load the modal on page load
+        loadAddChildModalOnce();
     </script>
     <!-- View Request Modal Container (loaded dynamically) -->
     <div id="view-request-modal-container"></div>
@@ -5901,6 +6006,15 @@
                 }
             })
             .catch(error => console.error('Failed to load chat-modal:', error));
+
+        // Load standalone chat call modal HTML dynamically
+        fetch('../modals/common-modals/chat-call-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+                console.log('✅ Standalone Chat Call Modal loaded for parent-profile');
+            })
+            .catch(error => console.error('Failed to load chat-call-modal:', error));
 
         // Load view-request-modal HTML dynamically
         fetch('../modals/common-modals/view-request-modal.html')

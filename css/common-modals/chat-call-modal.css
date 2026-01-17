@@ -1,0 +1,487 @@
+/* ============================================
+   STANDALONE CHAT CALL MODAL STYLES
+   ============================================ */
+
+.call-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10002;
+    display: none;
+}
+
+.call-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.call-modal-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Incoming Call Screen */
+.incoming-call-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: white;
+}
+
+.incoming-call-avatar {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.incoming-call-avatar img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+.call-pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border: 3px solid rgba(34, 197, 94, 0.6);
+    border-radius: 50%;
+    animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.call-pulse-ring.delay-1 {
+    animation-delay: 0.5s;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 0;
+    }
+}
+
+.incoming-call-screen h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.incoming-call-type {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+}
+
+.incoming-call-status {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 3rem;
+}
+
+.incoming-call-actions {
+    display: flex;
+    gap: 4rem;
+}
+
+.call-action-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.call-action-btn.decline-btn {
+    background: #ef4444;
+}
+
+.call-action-btn.decline-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+.call-action-btn.accept-btn {
+    background: #22c55e;
+}
+
+.call-action-btn.accept-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
+}
+
+.call-action-btn svg {
+    color: white;
+}
+
+/* Active Call Screen */
+.active-call-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.call-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.call-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+}
+
+.call-user-info img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.call-user-info h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.call-user-info p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0.25rem 0 0 0;
+}
+
+.call-status {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.call-header-controls .call-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.call-header-controls .call-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.call-header-controls .call-close-btn svg {
+    color: white;
+}
+
+.call-timer {
+    position: absolute;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    z-index: 10;
+}
+
+.call-video {
+    flex: 1;
+    position: relative;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pip-video {
+    position: absolute;
+    top: 7rem;
+    right: 1.5rem;
+    width: 200px;
+    height: 150px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.voice-call-animation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.voice-wave {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.voice-wave span {
+    display: block;
+    width: 4px;
+    height: 20px;
+    background: rgba(34, 197, 94, 0.8);
+    border-radius: 2px;
+    animation: voice-wave 1.2s ease-in-out infinite;
+}
+
+.voice-wave span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.voice-wave span:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.voice-wave span:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.voice-wave span:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.voice-wave span:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes voice-wave {
+    0%, 100% {
+        height: 20px;
+    }
+    50% {
+        height: 50px;
+    }
+}
+
+.call-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    z-index: 10;
+}
+
+.call-controls button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.call-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.call-controls button svg {
+    color: white;
+}
+
+.call-controls button.end-call {
+    background: #ef4444;
+}
+
+.call-controls button.end-call:hover {
+    background: #dc2626;
+}
+
+.call-controls button.muted {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.call-controls button.video-off {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.call-controls button#chatSwitchCallModeBtn {
+    background: rgba(16, 185, 129, 0.3);
+}
+
+.call-controls button#chatSwitchCallModeBtn:hover {
+    background: rgba(16, 185, 129, 0.5);
+}
+
+.call-controls button#chatAddParticipantBtn {
+    background: rgba(99, 102, 241, 0.3);
+}
+
+.call-controls button#chatAddParticipantBtn:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
+
+.call-participants-list {
+    position: absolute;
+    top: 7rem;
+    left: 1.5rem;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 10;
+}
+
+.call-participants-list.active {
+    display: block;
+}
+
+.participants-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.participants-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.call-participants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+}
+
+.call-participants-grid video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .incoming-call-avatar img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .call-pulse-ring {
+        width: 100px;
+        height: 100px;
+    }
+
+    .incoming-call-screen h2 {
+        font-size: 1.5rem;
+    }
+
+    .incoming-call-actions {
+        gap: 3rem;
+    }
+
+    .call-action-btn {
+        width: 60px;
+        height: 60px;
+    }
+
+    .pip-video {
+        width: 120px;
+        height: 90px;
+        top: 6rem;
+        right: 1rem;
+    }
+
+    .call-controls {
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .call-controls button {
+        width: 55px;
+        height: 55px;
+    }
+
+    .call-timer {
+        font-size: 1rem;
+        padding: 0.4rem 1.2rem;
+        top: 4.5rem;
+    }
+
+    .call-header {
+        padding: 1rem;
+    }
+
+    .call-user-info img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .call-user-info h2 {
+        font-size: 1rem;
+    }
+
+    .call-participants-list {
+        left: 1rem;
+        top: 6rem;
+        max-width: calc(100% - 2rem);
+    }
+}

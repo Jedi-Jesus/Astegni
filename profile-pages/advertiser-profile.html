@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Community Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/community-modal.css">
@@ -1904,17 +1906,6 @@
                                 <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
                             </div>
 
-                            <!-- Empty State (shown when no notes exist) -->
-                            <div class="notes-empty-state" id="notesEmptyState" style="display: none;">
-                                <div class="empty-icon">
-                                    <i class="fas fa-sticky-note"></i>
-                                </div>
-                                <h3>No Notes Yet</h3>
-                                <p>Start taking notes to organize your learning journey</p>
-                                <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
-                                    <i class="fas fa-plus"></i> Create Your First Note
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Brands Panel -->
@@ -3703,6 +3694,8 @@
     <script src="../js/common-modals/protected-api-wrapper.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
     <script src="../js/common-modals/chat-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
     <script src="../js/common-modals/verify-company-info-modal.js"></script>
@@ -3778,6 +3771,15 @@
                 }
             })
             .catch(error => console.error('Failed to load chat-modal:', error));
+
+        // Load standalone chat call modal HTML dynamically
+        fetch('../modals/common-modals/chat-call-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+                console.log('✅ Standalone Chat Call Modal loaded for advertiser-profile');
+            })
+            .catch(error => console.error('Failed to load chat-call-modal:', error));
     </script>
 
     <!-- Floating Action Button (FAB) for Quick Actions -->

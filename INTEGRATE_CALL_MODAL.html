@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standalone Call Modal - Integration Example</title>
+
+    <!-- Add this CSS link to your existing pages -->
+    <link rel="stylesheet" href="/css/common-modals/chat-call-modal.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .integration-box {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .integration-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        .test-button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+        }
+        .test-button:hover {
+            background: #16a34a;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Standalone Chat Call Modal Integration</h1>
+
+    <p>This page demonstrates how to integrate the standalone call modal into any page in your application.</p>
+
+    <div class="warning">
+        <strong>Note:</strong> This is a demonstration page. In production, the modal will automatically appear when you receive an incoming call via WebSocket.
+    </div>
+
+    <div class="integration-box">
+        <h3>Step 1: Add CSS to Your Page</h3>
+        <p>Add this line to the <code>&lt;head&gt;</code> section:</p>
+        <pre><code>&lt;link rel="stylesheet" href="/css/common-modals/chat-call-modal.css"&gt;</code></pre>
+    </div>
+
+    <div class="integration-box">
+        <h3>Step 2: Add JavaScript</h3>
+        <p>Add this script tag before the closing <code>&lt;/body&gt;</code> tag:</p>
+        <pre><code>&lt;script src="/js/common-modals/chat-call-modal.js"&gt;&lt;/script&gt;</code></pre>
+    </div>
+
+    <div class="integration-box">
+        <h3>Step 3: Load Modal HTML</h3>
+        <p>Add this script to load the modal HTML into your page:</p>
+        <pre><code>document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/modals/common-modals/chat-call-modal.html');
+        const html = await response.text();
+        document.body.insertAdjacentHTML('beforeend', html);
+        console.log('Standalone chat call modal loaded');
+    } catch (error) {
+        console.error('Failed to load chat call modal:', error);
+    }
+});</code></pre>
+    </div>
+
+    <div class="integration-box">
+        <h3>Test the Modal</h3>
+        <p>Click the buttons below to simulate incoming calls:</p>
+
+        <button class="test-button" onclick="testVoiceCall()">
+            Test Voice Call
+        </button>
+        <br>
+        <button class="test-button" onclick="testVideoCall()">
+            Test Video Call
+        </button>
+    </div>
+
+    <div class="integration-box">
+        <h3>Pages to Integrate</h3>
+        <p>Add the standalone call modal to these pages so users can receive calls anywhere:</p>
+        <ul>
+            <li><code>profile-pages/tutor-profile.html</code></li>
+            <li><code>profile-pages/student-profile.html</code></li>
+            <li><code>profile-pages/parent-profile.html</code></li>
+            <li><code>profile-pages/advertiser-profile.html</code></li>
+            <li><code>branch/find-tutors.html</code></li>
+            <li><code>view-profiles/view-tutor.html</code></li>
+            <li><code>view-profiles/view-student.html</code></li>
+            <li><code>index.html</code> (homepage)</li>
+        </ul>
+    </div>
+
+    <!-- Load the standalone call modal JS -->
+    <script src="/js/common-modals/chat-call-modal.js"></script>
+
+    <!-- Load the modal HTML -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/modals/common-modals/chat-call-modal.html');
+                const html = await response.text();
+                document.body.insertAdjacentHTML('beforeend', html);
+                console.log('Standalone chat call modal loaded successfully');
+            } catch (error) {
+                console.error('Failed to load chat call modal:', error);
+            }
+        });
+
+        // Test functions to simulate incoming calls
+        function testVoiceCall() {
+            console.log('Testing voice call');
+            StandaloneChatCallManager.handleIncomingCall({
+                call_id: 'test_call_' + Date.now(),
+                conversation_id: 'test_conv_123',
+                caller_name: 'John Doe',
+                caller_role: 'Tutor',
+                caller_avatar: '/assets/default-avatar.png',
+                call_type: 'voice'
+            });
+        }
+
+        function testVideoCall() {
+            console.log('Testing video call');
+            StandaloneChatCallManager.handleIncomingCall({
+                call_id: 'test_call_' + Date.now(),
+                conversation_id: 'test_conv_123',
+                caller_name: 'Jane Smith',
+                caller_role: 'Student',
+                caller_avatar: '/assets/default-avatar.png',
+                call_type: 'video'
+            });
+        }
+    </script>
+</body>
+</html>

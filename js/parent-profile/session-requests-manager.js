@@ -322,11 +322,29 @@ const ParentRequestsManager = {
                 text: 'No students have invited you as their parent yet.',
                 action: null,
                 link: null
+            },
+            'child-invitations': {
+                icon: 'fa-child',
+                title: 'No Child Invitations',
+                text: 'You haven\'t sent any child invitations yet.',
+                action: 'Add Child',
+                link: '#'
             }
         };
 
         const msg = messages[this.currentType];
         const statusText = this.currentStatus !== 'all' ? ` (${this.currentStatus})` : '';
+
+        // Safety check: if type not found in messages, use a default
+        if (!msg) {
+            return `
+                <div class="card p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">No ${this.currentType}${statusText}</h3>
+                    <p class="mb-4">No items to display.</p>
+                </div>
+            `;
+        }
 
         return `
             <div class="card p-8 text-center text-gray-500">

@@ -91,7 +91,11 @@ async def track_impression(request: Request, impression: ImpressionTrack):
                 billing_frequency,
                 verification_status,
                 advertiser_id,
-                brand_id
+                brand_id,
+                payment_model,
+                total_impressions_planned,
+                deposit_amount,
+                invoice_status
             FROM campaign_profile
             WHERE id = %s
         """, (impression.campaign_id,))
@@ -110,6 +114,10 @@ async def track_impression(request: Request, impression: ImpressionTrack):
         campaign_status = campaign[6]
         advertiser_id = campaign[7]
         brand_id = campaign[8]
+        payment_model = campaign[9]
+        total_impressions_planned = campaign[10] if campaign[10] else 0
+        deposit_amount = float(campaign[11]) if campaign[11] else 0
+        invoice_status = campaign[12]
 
         # Check if campaign is active
         if campaign_status != 'active':
@@ -256,6 +264,75 @@ async def track_impression(request: Request, impression: ImpressionTrack):
                     WHERE id = %s
                 """, (campaign_id,))
 
+        # CHECK IF DEPOSIT MODEL CAMPAIGN REACHED PLANNED IMPRESSIONS
+        campaign_completed = False
+        invoice_generated = False
+
+        if payment_model == 'deposit' and total_impressions_planned > 0:
+            if new_impressions_delivered >= total_impressions_planned and invoice_status != 'paid':
+                # Campaign reached planned impressions - auto-generate invoice
+                from datetime import datetime
+
+                actual_cost = new_impressions_delivered * cpi_rate
+                outstanding_amount = actual_cost - deposit_amount
+
+                # Ensure outstanding is not negative
+                if outstanding_amount < 0:
+                    outstanding_amount = 0
+
+                # Generate invoice number
+                invoice_number = f"INV-{campaign_id}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+                # Create invoice
+                cursor.execute("""
+                    INSERT INTO campaign_invoices (
+                        campaign_id, advertiser_id, brand_id,
+                        invoice_number, invoice_type,
+                        amount, impressions_delivered, cpi_rate,
+                        deposit_amount, outstanding_amount,
+                        status, issued_at, due_date,
+                        notes,
+                        created_at, updated_at
+                    ) VALUES (
+                        %s, %s, %s,
+                        %s, 'final_settlement',
+                        %s, %s, %s,
+                        %s, %s,
+                        'pending', NOW(), NOW() + INTERVAL '30 days',
+                        %s,
+                        NOW(), NOW()
+                    )
+                    RETURNING id
+                """, (
+                    campaign_id,
+                    advertiser_id,
+                    brand_id,
+                    invoice_number,
+                    actual_cost,
+                    new_impressions_delivered,
+                    cpi_rate,
+                    deposit_amount,
+                    outstanding_amount,
+                    f"Final settlement for campaign '{campaign_name}' - {new_impressions_delivered:,} impressions delivered at {cpi_rate:.4f} ETB per impression"
+                ))
+                invoice_id = cursor.fetchone()[0]
+
+                # Update campaign status
+                cursor.execute("""
+                    UPDATE campaign_profile
+                    SET
+                        verification_status = 'completed_pending_payment',
+                        invoice_id = %s,
+                        invoice_status = 'pending',
+                        final_settlement_amount = %s,
+                        ended_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (invoice_id, outstanding_amount, campaign_id))
+
+                campaign_completed = True
+                invoice_generated = True
+
         conn.commit()
 
         return {
@@ -266,7 +343,9 @@ async def track_impression(request: Request, impression: ImpressionTrack):
             "impressions_charged": impressions_charged + (billing_frequency if billing_triggered else 0),
             "billing_triggered": billing_triggered,
             "charge_amount": billing_frequency * cpi_rate if billing_triggered else 0,
-            "transaction_id": transaction_id
+            "transaction_id": transaction_id,
+            "campaign_completed": campaign_completed,
+            "invoice_generated": invoice_generated
         }
 
     except HTTPException:

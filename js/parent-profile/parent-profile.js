@@ -2735,6 +2735,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const ChildrenManager = {
     // Store all children data
     allChildren: [],
+    pendingInvitations: [],
     isLoading: false,
 
     /**
@@ -2772,11 +2773,14 @@ const ChildrenManager = {
 
             console.log('[ChildrenManager] Loaded children:', this.allChildren);
 
+            // Also load pending child invitations
+            await this.loadPendingInvitations();
+
             // Hide loading state
             if (loadingState) loadingState.classList.add('hidden');
 
-            // Check for empty
-            if (this.allChildren.length === 0) {
+            // Check for empty - only show empty state if NO children AND NO pending invitations
+            if (this.allChildren.length === 0 && this.pendingInvitations.length === 0) {
                 if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
@@ -2793,6 +2797,119 @@ const ChildrenManager = {
             this.showError(container, error.message);
         } finally {
             this.isLoading = false;
+        }
+    },
+
+    /**
+     * Load pending child invitations
+     */
+    async loadPendingInvitations() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/parent/child-invitations/sent`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                console.error('[ChildrenManager] Failed to load pending invitations');
+                this.pendingInvitations = [];
+                return;
+            }
+
+            const data = await response.json();
+            this.pendingInvitations = (data.invitations || []).filter(inv => inv.status === 'pending');
+
+            console.log('[ChildrenManager] Pending invitations:', this.pendingInvitations);
+
+            // Render pending invitations
+            if (this.pendingInvitations.length > 0) {
+                this.renderPendingInvitations(this.pendingInvitations);
+            }
+        } catch (error) {
+            console.error('[ChildrenManager] Error loading pending invitations:', error);
+            this.pendingInvitations = [];
+        }
+    },
+
+    /**
+     * Render pending invitation cards
+     */
+    renderPendingInvitations(invitations) {
+        const section = document.getElementById('pending-child-invitations-section');
+        const container = document.getElementById('pending-child-invitations-container');
+
+        if (!section || !container) return;
+
+        section.classList.remove('hidden');
+        container.innerHTML = invitations.map(inv => this.createPendingInvitationCard(inv)).join('');
+    },
+
+    /**
+     * Create a pending invitation card
+     */
+    createPendingInvitationCard(invitation) {
+        const childName = invitation.child_name || 'Unknown';
+        const avatar = invitation.child_profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(childName)}&background=FFA500&color=fff&size=128`;
+        const contactInfo = invitation.pending_email || invitation.pending_phone || 'No contact info';
+        const isNewUser = invitation.is_new_user;
+
+        return `
+            <div class="card p-4 border-2 border-yellow-300 dark:border-yellow-600">
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="${avatar}" alt="${childName}" class="w-16 h-16 rounded-full object-cover border-2 border-yellow-400">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg">${childName}</h3>
+                        <p class="text-sm text-gray-500">${contactInfo}</p>
+                        ${isNewUser ? '<span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">New User</span>' : ''}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <div class="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                        <i class="fas fa-clock"></i>
+                        <span class="font-medium text-sm">Pending</span>
+                    </div>
+                    <button onclick="ChildrenManager.cancelInvitation(${invitation.id})"
+                            class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+                ${isNewUser ? `
+                <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle"></i> Waiting for them to log in with temporary password
+                </p>
+                ` : `
+                <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle"></i> Waiting for them to accept your invitation
+                </p>
+                `}
+            </div>
+        `;
+    },
+
+    /**
+     * Cancel a pending invitation
+     */
+    async cancelInvitation(invitationId) {
+        if (!confirm('Are you sure you want to cancel this invitation?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/parent/child-invitations/${invitationId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel invitation');
+            }
+
+            showNotification('Invitation cancelled successfully', 'success');
+            this.loadChildren(); // Reload to update the list
+        } catch (error) {
+            console.error('[ChildrenManager] Error cancelling invitation:', error);
+            showNotification('Failed to cancel invitation', 'error');
         }
     },
 

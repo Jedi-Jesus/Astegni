@@ -248,63 +248,32 @@ async def google_oauth_login(
     # Step 2: Check if user already exists
     existing_user = db.query(User).filter(User.email == email).first()
 
-    if existing_user:
+    if not existing_user:
         # ============================================
-        # EXISTING USER - LOGIN
+        # NO ACCOUNT FOUND - RETURN ERROR
         # ============================================
-
-        user = existing_user
-
-        # Update profile picture if changed
-        if google_user.get("picture") and not user.profile_picture:
-            user.profile_picture = google_user["picture"]
-
-        # Mark email as verified if Google says it's verified
-        if google_user.get("email_verified") and not user.email_verified:
-            user.email_verified = True
-
-        db.commit()
-
-        print(f"[GoogleOAuth] Existing user logged in: {user.email}")
-
-    else:
-        # ============================================
-        # NEW USER - REGISTER
-        # ============================================
-
-        # Parse name into Ethiopian format
-        name_parts = parse_ethiopian_name(
-            google_user.get("name", ""),
-            google_user.get("given_name"),
-            google_user.get("family_name")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email. Please register first."
         )
 
-        # Create new user
-        user = User(
-            first_name=name_parts["first_name"],
-            father_name=name_parts["father_name"],
-            grandfather_name=name_parts["grandfather_name"],
-            email=email,
-            phone=None,  # Google doesn't provide phone
-            hashed_password=hash_password(secrets.token_urlsafe(32)),  # Random password (OAuth only)
-            roles=[auth_request.role],  # Default to requested role
-            active_role=auth_request.role,
-            profile_picture=google_user.get("picture"),
-            email_verified=google_user.get("email_verified", False),
-            is_active=True,
-            created_at=datetime.utcnow()
-        )
+    # ============================================
+    # EXISTING USER - LOGIN
+    # ============================================
 
-        db.add(user)
-        db.flush()  # Get user.id
+    user = existing_user
 
-        # Create role-specific profile
-        profile_id = create_profile_for_role(db, user.id, auth_request.role)
+    # Update profile picture if changed
+    if google_user.get("picture") and not user.profile_picture:
+        user.profile_picture = google_user["picture"]
 
-        db.commit()
-        db.refresh(user)
+    # Mark email as verified if Google says it's verified
+    if google_user.get("email_verified") and not user.email_verified:
+        user.email_verified = True
 
-        print(f"[GoogleOAuth] New user registered via Google: {user.email} as {auth_request.role}")
+    db.commit()
+
+    print(f"[GoogleOAuth] Existing user logged in: {user.email}")
 
     # Step 3: Get role-specific IDs
     role_ids = {}

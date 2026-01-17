@@ -1259,37 +1259,32 @@ async def get_linked_parents(
             parent_profile_ids = student_profile['parent_id'] if student_profile['parent_id'] else []
 
             for parent_profile_id in parent_profile_ids:
-                # Look up parent profile by ID
+                # Look up parent profile by ID with user info in one query
                 cur.execute("""
-                    SELECT pp.id, pp.user_id, pp.profile_picture, pp.relationship_type, pp.is_verified
+                    SELECT pp.id, pp.user_id, pp.profile_picture, pp.relationship_type, u.is_verified,
+                           u.first_name, u.father_name, u.grandfather_name, u.email, u.phone
                     FROM parent_profiles pp
+                    JOIN users u ON pp.user_id = u.id
                     WHERE pp.id = %s
                 """, (parent_profile_id,))
-                parent_profile = cur.fetchone()
+                result = cur.fetchone()
 
-                if parent_profile:
-                    # Get user info from users table
-                    cur.execute("""
-                        SELECT id, first_name, father_name, grandfather_name, email, phone
-                        FROM users WHERE id = %s
-                    """, (parent_profile['user_id'],))
-                    parent_user = cur.fetchone()
-
-                    if parent_user:
-                        parents.append({
-                            "user_id": parent_user['id'],
-                            "profile_id": parent_profile['id'],
-                            "first_name": parent_user['first_name'],
-                            "father_name": parent_user['father_name'],
-                            "grandfather_name": parent_user['grandfather_name'] or '',
-                            "full_name": f"{parent_user['first_name']} {parent_user['father_name']} {parent_user['grandfather_name'] or ''}".strip(),
-                            "email": parent_user['email'],
-                            "phone": parent_user['phone'],
-                            "relationship_type": parent_profile['relationship_type'],
-                            "profile_picture": parent_profile['profile_picture'],
-                            "is_verified": parent_profile['is_verified'],
-                            "linked_at": None
-                        })
+                if result:
+                    # Use combined result
+                    parents.append({
+                        "user_id": result['user_id'],
+                        "profile_id": result['id'],
+                        "first_name": result['first_name'],
+                        "father_name": result['father_name'],
+                        "grandfather_name": result['grandfather_name'] or '',
+                        "full_name": f"{result['first_name']} {result['father_name']} {result['grandfather_name'] or ''}".strip(),
+                        "email": result['email'],
+                        "phone": result['phone'],
+                        "relationship_type": result['relationship_type'],
+                        "profile_picture": result['profile_picture'],
+                        "is_verified": result['is_verified'],
+                        "linked_at": None
+                    })
 
     return {"parents": parents, "total": len(parents)}
 

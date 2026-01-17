@@ -22,7 +22,9 @@ let currentTextIndex = 0;
 let typewriterActive = false;
 let currentTypeInterval = null;
 let currentDeleteInterval = null;
+let currentPauseTimeout = null;
 let heroTextsLoadedFromDB = false; // Flag to track if custom texts were loaded
+let isAnimationLocked = false; // Mutex to prevent concurrent animations
 
 /**
  * Initialize the hero section typewriter effect
@@ -53,19 +55,36 @@ function initializeTutorHeroSection() {
 function startTypewriterEffect(element, texts, index) {
     if (!element || !texts || texts.length === 0) return;
 
+    // Prevent concurrent animations
+    if (isAnimationLocked) {
+        console.log('Animation already in progress, skipping...');
+        return;
+    }
+    isAnimationLocked = true;
+
     const text = texts[index];
     let charIndex = 0;
     element.textContent = "";
 
-    // Typing interval
-    const typeInterval = setInterval(() => {
+    // Clear any existing intervals before starting new one
+    if (currentTypeInterval) {
+        clearInterval(currentTypeInterval);
+        currentTypeInterval = null;
+    }
+
+    // Typing interval - store in tracking variable
+    currentTypeInterval = setInterval(() => {
         if (charIndex < text.length) {
             element.textContent += text[charIndex];
             charIndex++;
         } else {
-            clearInterval(typeInterval);
-            // Pause before deleting
-            setTimeout(() => {
+            clearInterval(currentTypeInterval);
+            currentTypeInterval = null;
+
+            // Pause before deleting - store timeout in tracking variable
+            currentPauseTimeout = setTimeout(() => {
+                currentPauseTimeout = null;
+                isAnimationLocked = false; // Release lock before deleting
                 deleteTypewriterText(element, texts, index);
             }, tutorHeroConfig.PAUSE_DURATION);
         }
@@ -81,11 +100,28 @@ function startTypewriterEffect(element, texts, index) {
 function deleteTypewriterText(element, texts, index) {
     if (!element) return;
 
-    const deleteInterval = setInterval(() => {
+    // Prevent concurrent animations
+    if (isAnimationLocked) {
+        console.log('Animation already in progress, skipping delete...');
+        return;
+    }
+    isAnimationLocked = true;
+
+    // Clear any existing delete intervals
+    if (currentDeleteInterval) {
+        clearInterval(currentDeleteInterval);
+        currentDeleteInterval = null;
+    }
+
+    // Delete interval - store in tracking variable
+    currentDeleteInterval = setInterval(() => {
         if (element.textContent.length > 0) {
             element.textContent = element.textContent.slice(0, -1);
         } else {
-            clearInterval(deleteInterval);
+            clearInterval(currentDeleteInterval);
+            currentDeleteInterval = null;
+            isAnimationLocked = false; // Release lock before starting next text
+
             // Move to next text
             currentTextIndex = (index + 1) % texts.length;
             startTypewriterEffect(element, texts, currentTextIndex);
@@ -98,6 +134,9 @@ function deleteTypewriterText(element, texts, index) {
  */
 function stopTutorHeroTypewriter() {
     typewriterActive = false;
+    isAnimationLocked = false; // Release any locks
+
+    // Clear all intervals and timeouts
     if (currentTypeInterval) {
         clearInterval(currentTypeInterval);
         currentTypeInterval = null;
@@ -106,6 +145,16 @@ function stopTutorHeroTypewriter() {
         clearInterval(currentDeleteInterval);
         currentDeleteInterval = null;
     }
+    if (currentPauseTimeout) {
+        clearTimeout(currentPauseTimeout);
+        currentPauseTimeout = null;
+    }
+
+    // Clear the text content immediately
+    const textElement = document.getElementById("hero-text-content");
+    if (textElement) {
+        textElement.textContent = "";
+    }
 }
 
 /**
@@ -113,7 +162,9 @@ function stopTutorHeroTypewriter() {
  * @param {string|Array<string>} customTexts - Single text or array of texts
  */
 function setTutorHeroTexts(customTexts) {
-    // Stop current animation
+    console.log('Setting new hero texts:', customTexts);
+
+    // Stop current animation and clear display
     stopTutorHeroTypewriter();
 
     // Mark that custom texts were loaded from database
@@ -126,17 +177,22 @@ function setTutorHeroTexts(customTexts) {
     } else if (Array.isArray(customTexts) && customTexts.length > 0) {
         // Array of texts provided
         tutorHeroTexts = customTexts;
+    } else {
+        console.warn('Invalid customTexts provided, keeping existing texts');
+        return;
     }
 
     // Reset index
     currentTextIndex = 0;
 
-    // Restart animation
-    const textElement = document.getElementById("hero-text-content");
-    if (textElement) {
-        typewriterActive = true;
-        startTypewriterEffect(textElement, tutorHeroTexts, currentTextIndex);
-    }
+    // Small delay to ensure clean state before restarting
+    setTimeout(() => {
+        const textElement = document.getElementById("hero-text-content");
+        if (textElement) {
+            typewriterActive = true;
+            startTypewriterEffect(textElement, tutorHeroTexts, currentTextIndex);
+        }
+    }, 100); // 100ms delay to ensure clean transition
 }
 
 /**

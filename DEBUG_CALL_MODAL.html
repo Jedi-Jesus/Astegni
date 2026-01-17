@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Modal - Debug & Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        h1 { color: #333; margin-top: 0; }
+        h2 { color: #666; border-bottom: 2px solid #22c55e; padding-bottom: 10px; }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.warning { background: #fef3c7; color: #92400e; }
+        .status.info { background: #dbeafe; color: #1e40af; }
+        button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #16a34a; }
+        button.secondary { background: #3b82f6; }
+        button.secondary:hover { background: #2563eb; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-section {
+            border: 2px solid #e5e7eb;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Call Modal - Debug & Test Tool</h1>
+        <p>Use this tool to debug and test the standalone chat call modal integration.</p>
+    </div>
+
+    <div class="container">
+        <h2>1. System Check</h2>
+        <button onclick="runSystemCheck()">Run System Check</button>
+        <div id="systemCheckResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. File Check</h2>
+        <button onclick="checkFiles()">Check Required Files</button>
+        <div id="fileCheckResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. DOM Check</h2>
+        <button onclick="checkDOM()">Check Modal in DOM</button>
+        <div id="domCheckResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. Manager Check</h2>
+        <button onclick="checkManager()">Check StandaloneChatCallManager</button>
+        <div id="managerCheckResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. WebSocket Check</h2>
+        <button onclick="checkWebSocket()">Check WebSocket Connection</button>
+        <div id="websocketCheckResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>6. Test Calls</h2>
+        <div class="test-section">
+            <h3>Manual Test</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Voice Call Test</h4>
+                    <button onclick="testVoiceCall()">Test Voice Call</button>
+                </div>
+                <div class="card">
+                    <h4>Video Call Test</h4>
+                    <button onclick="testVideoCall()">Test Video Call</button>
+                </div>
+            </div>
+        </div>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>7. Console Logs</h2>
+        <button onclick="showConsoleLogs()">Show Recent Console Logs</button>
+        <button class="secondary" onclick="clearConsoleLogs()">Clear Logs</button>
+        <div id="consoleLogsResults"></div>
+    </div>
+
+    <div class="container">
+        <h2>8. Fix Common Issues</h2>
+        <div class="test-section">
+            <h3>Quick Fixes</h3>
+            <button class="secondary" onclick="forceLoadModal()">Force Load Modal HTML</button>
+            <button class="secondary" onclick="reinitializeManager()">Reinitialize Manager</button>
+            <button class="danger" onclick="resetEverything()">Reset Everything</button>
+        </div>
+        <div id="fixResults"></div>
+    </div>
+
+    <script>
+        // Store console logs
+        const consoleLogs = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            consoleLogs.push({ type: 'log', message: args.join(' '), time: new Date().toLocaleTimeString() });
+            originalLog.apply(console, args);
+        };
+        console.error = function(...args) {
+            consoleLogs.push({ type: 'error', message: args.join(' '), time: new Date().toLocaleTimeString() });
+            originalError.apply(console, args);
+        };
+        console.warn = function(...args) {
+            consoleLogs.push({ type: 'warn', message: args.join(' '), time: new Date().toLocaleTimeString() });
+            originalWarn.apply(console, args);
+        };
+
+        function runSystemCheck() {
+            const results = document.getElementById('systemCheckResults');
+            let html = '<h3>System Check Results:</h3>';
+
+            // Check browser
+            html += `<div class="status info">Browser: ${navigator.userAgent}</div>`;
+            html += `<div class="status info">Page URL: ${window.location.href}</div>`;
+            html += `<div class="status info">Protocol: ${window.location.protocol}</div>`;
+
+            // Check HTTPS
+            if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
+                html += `<div class="status success">✅ Secure context OK (HTTPS or localhost)</div>`;
+            } else {
+                html += `<div class="status warning">⚠️ Not HTTPS - WebRTC may not work in production</div>`;
+            }
+
+            // Check MediaDevices API
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                html += `<div class="status success">✅ MediaDevices API available</div>`;
+            } else {
+                html += `<div class="status error">❌ MediaDevices API not available</div>`;
+            }
+
+            // Check RTCPeerConnection
+            if (window.RTCPeerConnection) {
+                html += `<div class="status success">✅ RTCPeerConnection available</div>`;
+            } else {
+                html += `<div class="status error">❌ RTCPeerConnection not available</div>`;
+            }
+
+            results.innerHTML = html;
+        }
+
+        async function checkFiles() {
+            const results = document.getElementById('fileCheckResults');
+            let html = '<h3>File Check Results:</h3>';
+
+            const files = [
+                { path: 'modals/common-modals/chat-call-modal.html', type: 'HTML' },
+                { path: 'css/common-modals/chat-call-modal.css', type: 'CSS' },
+                { path: 'js/common-modals/chat-call-modal.js', type: 'JavaScript' }
+            ];
+
+            for (const file of files) {
+                try {
+                    const response = await fetch(file.path);
+                    if (response.ok) {
+                        const content = await response.text();
+                        html += `<div class="status success">✅ ${file.type} file found: ${file.path} (${content.length} bytes)</div>`;
+                    } else {
+                        html += `<div class="status error">❌ ${file.type} file not found: ${file.path} (${response.status})</div>`;
+                    }
+                } catch (error) {
+                    html += `<div class="status error">❌ Error loading ${file.type}: ${error.message}</div>`;
+                }
+            }
+
+            results.innerHTML = html;
+        }
+
+        function checkDOM() {
+            const results = document.getElementById('domCheckResults');
+            let html = '<h3>DOM Check Results:</h3>';
+
+            // Check if modal exists
+            const modal = document.getElementById('chatCallModal');
+            if (modal) {
+                html += `<div class="status success">✅ Modal found in DOM</div>`;
+                html += `<div class="status info">Modal classes: ${modal.className || 'none'}</div>`;
+                html += `<div class="status info">Modal display: ${window.getComputedStyle(modal).display}</div>`;
+
+                // Check screens
+                const incomingScreen = document.getElementById('chatIncomingCallScreen');
+                const activeScreen = document.getElementById('chatActiveCallScreen');
+
+                if (incomingScreen) {
+                    html += `<div class="status success">✅ Incoming call screen found</div>`;
+                } else {
+                    html += `<div class="status error">❌ Incoming call screen NOT found</div>`;
+                }
+
+                if (activeScreen) {
+                    html += `<div class="status success">✅ Active call screen found</div>`;
+                } else {
+                    html += `<div class="status error">❌ Active call screen NOT found</div>`;
+                }
+
+                // Check controls
+                const controls = [
+                    'chatMuteBtn',
+                    'chatSwitchVideoModeBtn',
+                    'chatSwitchCallModeBtn',
+                    'chatEndCallBtn'
+                ];
+
+                controls.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        html += `<div class="status success">✅ Control found: ${id}</div>`;
+                    } else {
+                        html += `<div class="status error">❌ Control NOT found: ${id}</div>`;
+                    }
+                });
+
+            } else {
+                html += `<div class="status error">❌ Modal NOT found in DOM!</div>`;
+                html += `<div class="status warning">⚠️ Modal HTML may not have loaded. Check console for errors.</div>`;
+            }
+
+            results.innerHTML = html;
+        }
+
+        function checkManager() {
+            const results = document.getElementById('managerCheckResults');
+            let html = '<h3>Manager Check Results:</h3>';
+
+            if (typeof StandaloneChatCallManager !== 'undefined') {
+                html += `<div class="status success">✅ StandaloneChatCallManager exists</div>`;
+
+                // Check properties
+                html += `<div class="status info">Current call: ${StandaloneChatCallManager.currentCall ? 'Active' : 'None'}</div>`;
+                html += `<div class="status info">Call mode: ${StandaloneChatCallManager.callMode}</div>`;
+                html += `<div class="status info">Is muted: ${StandaloneChatCallManager.isMuted}</div>`;
+                html += `<div class="status info">Video enabled: ${StandaloneChatCallManager.isVideoEnabled}</div>`;
+
+                // Check methods
+                const methods = [
+                    'initialize',
+                    'handleIncomingCall',
+                    'acceptIncomingCall',
+                    'declineIncomingCall',
+                    'endChatCall',
+                    'toggleChatMute'
+                ];
+
+                methods.forEach(method => {
+                    if (typeof StandaloneChatCallManager[method] === 'function') {
+                        html += `<div class="status success">✅ Method exists: ${method}()</div>`;
+                    } else {
+                        html += `<div class="status error">❌ Method missing: ${method}()</div>`;
+                    }
+                });
+
+            } else {
+                html += `<div class="status error">❌ StandaloneChatCallManager NOT found!</div>`;
+                html += `<div class="status warning">⚠️ JavaScript file may not have loaded. Check if script tag exists.</div>`;
+            }
+
+            results.innerHTML = html;
+        }
+
+        function checkWebSocket() {
+            const results = document.getElementById('websocketCheckResults');
+            let html = '<h3>WebSocket Check Results:</h3>';
+
+            if (window.chatWebSocket) {
+                const states = {
+                    0: 'CONNECTING',
+                    1: 'OPEN',
+                    2: 'CLOSING',
+                    3: 'CLOSED'
+                };
+
+                const state = window.chatWebSocket.readyState;
+                const stateText = states[state];
+
+                if (state === 1) {
+                    html += `<div class="status success">✅ WebSocket connected (${stateText})</div>`;
+                } else if (state === 0) {
+                    html += `<div class="status warning">⚠️ WebSocket connecting... (${stateText})</div>`;
+                } else {
+                    html += `<div class="status error">❌ WebSocket not connected (${stateText})</div>`;
+                }
+
+                html += `<div class="status info">WebSocket URL: ${window.chatWebSocket.url || 'Unknown'}</div>`;
+            } else {
+                html += `<div class="status error">❌ WebSocket (window.chatWebSocket) NOT found!</div>`;
+                html += `<div class="status warning">⚠️ WebSocket may not be initialized. User may not be logged in.</div>`;
+            }
+
+            results.innerHTML = html;
+        }
+
+        function testVoiceCall() {
+            const results = document.getElementById('testResults');
+
+            if (typeof StandaloneChatCallManager === 'undefined') {
+                results.innerHTML = '<div class="status error">❌ StandaloneChatCallManager not found! Run Manager Check first.</div>';
+                return;
+            }
+
+            try {
+                StandaloneChatCallManager.handleIncomingCall({
+                    call_id: 'test_voice_' + Date.now(),
+                    conversation_id: 'test_conv_123',
+                    caller_name: 'Test Voice Caller',
+                    caller_role: 'Tutor',
+                    caller_avatar: '/assets/default-avatar.png',
+                    call_type: 'voice'
+                });
+
+                results.innerHTML = '<div class="status success">✅ Voice call test triggered! Modal should appear now.</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                console.error('Voice call test error:', error);
+            }
+        }
+
+        function testVideoCall() {
+            const results = document.getElementById('testResults');
+
+            if (typeof StandaloneChatCallManager === 'undefined') {
+                results.innerHTML = '<div class="status error">❌ StandaloneChatCallManager not found! Run Manager Check first.</div>';
+                return;
+            }
+
+            try {
+                StandaloneChatCallManager.handleIncomingCall({
+                    call_id: 'test_video_' + Date.now(),
+                    conversation_id: 'test_conv_456',
+                    caller_name: 'Test Video Caller',
+                    caller_role: 'Student',
+                    caller_avatar: '/assets/default-avatar.png',
+                    call_type: 'video'
+                });
+
+                results.innerHTML = '<div class="status success">✅ Video call test triggered! Modal should appear now.</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                console.error('Video call test error:', error);
+            }
+        }
+
+        function showConsoleLogs() {
+            const results = document.getElementById('consoleLogsResults');
+            let html = '<h3>Recent Console Logs:</h3>';
+
+            if (consoleLogs.length === 0) {
+                html += '<div class="status info">No logs captured yet.</div>';
+            } else {
+                html += '<pre>';
+                consoleLogs.slice(-20).forEach(log => {
+                    const icon = log.type === 'error' ? '❌' : log.type === 'warn' ? '⚠️' : '📝';
+                    html += `${icon} [${log.time}] ${log.message}\n`;
+                });
+                html += '</pre>';
+            }
+
+            results.innerHTML = html;
+        }
+
+        function clearConsoleLogs() {
+            consoleLogs.length = 0;
+            document.getElementById('consoleLogsResults').innerHTML = '<div class="status success">✅ Logs cleared</div>';
+        }
+
+        async function forceLoadModal() {
+            const results = document.getElementById('fixResults');
+            results.innerHTML = '<div class="status info">Loading modal HTML...</div>';
+
+            try {
+                const response = await fetch('modals/common-modals/chat-call-modal.html');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const html = await response.text();
+
+                // Remove existing modal if any
+                const existing = document.getElementById('chatCallModal');
+                if (existing) {
+                    existing.remove();
+                }
+
+                // Insert new modal
+                document.body.insertAdjacentHTML('beforeend', html);
+
+                results.innerHTML = '<div class="status success">✅ Modal HTML force-loaded! Check DOM again.</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ Failed to load modal: ${error.message}</div>`;
+            }
+        }
+
+        function reinitializeManager() {
+            const results = document.getElementById('fixResults');
+
+            if (typeof StandaloneChatCallManager === 'undefined') {
+                results.innerHTML = '<div class="status error">❌ Manager not found! Check if JS file loaded.</div>';
+                return;
+            }
+
+            try {
+                StandaloneChatCallManager.initialize();
+                results.innerHTML = '<div class="status success">✅ Manager reinitialized!</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function resetEverything() {
+            const results = document.getElementById('fixResults');
+
+            // Remove modal
+            const modal = document.getElementById('chatCallModal');
+            if (modal) {
+                modal.remove();
+            }
+
+            // Reload page
+            results.innerHTML = '<div class="status warning">⚠️ Reloading page...</div>';
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        // Auto-run system check on load
+        window.addEventListener('load', () => {
+            console.log('Debug tool loaded');
+        });
+    </script>
+</body>
+</html>

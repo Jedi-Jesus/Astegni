@@ -53,6 +53,8 @@
 
     <!-- Chat Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <!-- Standalone Chat Call Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
 
     <!-- Digital Lab Modal Styles -->
@@ -3417,17 +3419,6 @@
                                 <!-- Note cards will be rendered here by NotesManager.renderDashboard() -->
                             </div>
 
-                            <!-- Empty State (shown when no notes exist) -->
-                            <div class="notes-empty-state" id="notesEmptyState" style="display: none;">
-                                <div class="empty-icon">
-                                    <i class="fas fa-sticky-note"></i>
-                                </div>
-                                <h3>No Notes Yet</h3>
-                                <p>Start taking notes to organize your learning journey</p>
-                                <button class="btn btn-primary" onclick="NotesManager.createNewNote()">
-                                    <i class="fas fa-plus"></i> Create Your First Note
-                                </button>
-                            </div>
                         </div>
 
                         <!-- My Session Requests Panel -->
@@ -6390,11 +6381,16 @@
     <!-- Logout Modal JavaScript -->
     <script src="../js/common-modals/logout-modal.js"></script>
 
+    <!-- KYC Verification Manager -->
+    <script src="../js/common-modals/kyc-verification-manager.js"></script>
+
     <!-- Subscription Modal JavaScript (Dynamic - fetches plans based on role) -->
     <script src="../js/common-modals/subscription-modal.js"></script>
 
     <!-- Chat Modal JavaScript -->
     <script src="../js/common-modals/chat-modal.js"></script>
+    <!-- Standalone Chat Call Modal JavaScript -->
+    <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
 
@@ -7955,6 +7951,15 @@
             })
             .catch(error => console.error('Failed to load chat-modal:', error));
 
+        // Load standalone chat call modal HTML dynamically
+        fetch('../modals/common-modals/chat-call-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+                console.log('✅ Standalone Chat Call Modal loaded for student-profile');
+            })
+            .catch(error => console.error('Failed to load chat-call-modal:', error));
+
         // Load view-request-modal HTML dynamically
         fetch('../modals/common-modals/view-request-modal.html')
             .then(response => response.text())
@@ -8033,6 +8038,7 @@
                 console.log('[OK] Review Astegni Modal loaded');
             })
             .catch(error => console.error('Failed to load review-astegni-modal:', error));
+
     </script>
 
     <!-- jsPDF for PDF Export in Notes -->

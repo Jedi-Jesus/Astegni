@@ -48,10 +48,10 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                     tp.id, tp.user_id, tp.username, tp.bio, tp.quote,
                     tp.location, tp.languages,
                     tp.hero_titles, tp.hero_subtitle,
-                    tp.is_verified, tp.verification_status, tp.profile_picture, tp.cover_image,
+                    u.is_verified, u.verification_status, tp.profile_picture, tp.cover_image,
                     tp.social_links,
                     u.first_name, u.father_name, u.grandfather_name, u.email, u.phone, u.gender,
-                    tp.expertise_badge, tp.is_suspended, tp.suspension_reason,
+                    tp.expertise_badge, u.is_suspended, u.suspended_at,
                     tp.is_active, tp.created_at, tp.updated_at
                 FROM tutor_profiles tp
                 JOIN users u ON tp.user_id = u.id
@@ -91,8 +91,8 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                 "hero_titles": row[7] or ["Excellence in Education, Delivered with Passion"],  # 7: tp.hero_titles (JSONB array)
                 "hero_subtitle": row[8],                                # 8: tp.hero_subtitle
                 "courses_created": 0,                                   # Column removed
-                "is_verified": row[9],                                  # 9: tp.is_verified
-                "verification_status": row[10],                         # 10: tp.verification_status
+                "is_verified": row[9],                                  # 9: u.is_verified
+                "verification_status": row[10],                         # 10: u.verification_status
                 "profile_picture": row[11],                             # 11: tp.profile_picture
                 "cover_image": row[12],                                 # 12: tp.cover_image
                 "social_links": row[13] or {},                          # 13: tp.social_links
@@ -100,8 +100,8 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                 "phone": row[18],                                       # 18: u.phone
                 "gender": row[19],                                      # 19: u.gender
                 "expertise_badge": row[20],                             # 20: tp.expertise_badge
-                "is_suspended": row[21],                                # 21: tp.is_suspended
-                "suspension_reason": row[22],                           # 22: tp.suspension_reason
+                "is_suspended": row[21],                                # 21: u.is_suspended
+                "suspended_at": row[22].isoformat() if row[22] else None,  # 22: u.suspended_at
                 "is_active": row[23],                                   # 23: tp.is_active
                 "created_at": row[24].isoformat() if row[24] else None, # 24: tp.created_at
                 "updated_at": row[25].isoformat() if row[25] else None, # 25: tp.updated_at
@@ -768,7 +768,7 @@ async def get_similar_tutors(
                         tp.profile_picture,
                         tp.location,
                         tp.languages,
-                        tp.is_verified,
+                        u.is_verified,
                         tp.expertise_badge,
                         u.first_name,
                         u.father_name,
@@ -818,7 +818,7 @@ async def get_similar_tutors(
                     JOIN users u ON tp.user_id = u.id
                     WHERE tp.id != %s
                     AND tp.is_active = TRUE
-                    AND (tp.is_suspended IS NULL OR tp.is_suspended = FALSE)
+                    AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
                 )
                 SELECT
                     id, user_id, username, profile_picture, location, languages,
@@ -880,7 +880,7 @@ async def get_similar_tutors(
                 cur.execute("""
                     SELECT
                         tp.id, tp.user_id, tp.username, tp.profile_picture,
-                        tp.location, tp.languages, tp.is_verified, tp.expertise_badge,
+                        tp.location, tp.languages, u.is_verified, tp.expertise_badge,
                         u.first_name, u.father_name, u.grandfather_name,
                         COALESCE(
                             (SELECT AVG(rating) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
@@ -900,7 +900,7 @@ async def get_similar_tutors(
                     JOIN users u ON tp.user_id = u.id
                     WHERE tp.id != ALL(%s)
                     AND tp.is_active = TRUE
-                    AND (tp.is_suspended IS NULL OR tp.is_suspended = FALSE)
+                    AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
                     ORDER BY avg_rating DESC, review_count DESC
                     LIMIT %s
                 """, (existing_ids, remaining))

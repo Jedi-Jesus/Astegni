@@ -779,6 +779,73 @@ async def handle_video_call_message(data: dict, sender_key: str, db: Session = N
         }, recipient_key)
         print(f"📞 Participant {data.get('left_participant_name', sender_key)} left the call - notified {recipient_key}")
 
+    # Handle chat modal call messages
+    elif message_type == "call_invitation":
+        # Chat modal call invitation - forward to recipient
+        print(f"📞 Chat call invitation: {data.get('call_type')} from {sender_key} to {recipient_key}")
+
+        # Check if recipient is online
+        is_recipient_online = manager.is_user_online(recipient_key)
+
+        if not is_recipient_online:
+            # Recipient is offline - notify caller
+            await manager.send_personal_message({
+                "type": "call_declined",
+                "reason": "offline",
+                "conversation_id": data.get("conversation_id")
+            }, sender_key)
+            print(f"📞 Recipient {recipient_key} is offline - sent decline to caller")
+            return
+
+        # Forward invitation to recipient
+        await manager.send_personal_message({
+            "type": "call_invitation",
+            "call_type": data.get("call_type"),
+            "conversation_id": data.get("conversation_id"),
+            "from_profile_id": data.get("from_profile_id"),
+            "from_profile_type": data.get("from_profile_type"),
+            "from_name": data.get("from_name"),
+            "from_avatar": data.get("from_avatar"),
+            "offer": data.get("offer"),
+            "timestamp": datetime.utcnow().isoformat()
+        }, recipient_key)
+        print(f"📞 Call invitation forwarded from {sender_key} to {recipient_key}")
+
+    elif message_type == "call_answer":
+        # Forward call answer to caller
+        await manager.send_personal_message({
+            "type": "call_answer",
+            "conversation_id": data.get("conversation_id"),
+            "from_profile_id": data.get("from_profile_id"),
+            "answer": data.get("answer")
+        }, recipient_key)
+        print(f"📞 Call answer forwarded from {sender_key} to {recipient_key}")
+
+    elif message_type == "call_declined":
+        # Forward call decline to caller
+        await manager.send_personal_message({
+            "type": "call_declined",
+            "conversation_id": data.get("conversation_id")
+        }, recipient_key)
+        print(f"📞 Call declined by {sender_key} - notified {recipient_key}")
+
+    elif message_type == "call_ended":
+        # Forward call ended to peer
+        await manager.send_personal_message({
+            "type": "call_ended",
+            "conversation_id": data.get("conversation_id")
+        }, recipient_key)
+        print(f"📞 Call ended by {sender_key} - notified {recipient_key}")
+
+    elif message_type == "call_cancelled":
+        # Forward call cancelled to recipient (caller hung up before answer)
+        await manager.send_personal_message({
+            "type": "call_cancelled",
+            "conversation_id": data.get("conversation_id"),
+            "call_type": data.get("call_type", "voice")
+        }, recipient_key)
+        print(f"📞 Call cancelled by {sender_key} - notified {recipient_key}")
+
     else:
         print(f"⚠️ Unknown video call message type: {message_type}")
 

@@ -559,7 +559,7 @@
     background: rgba(255, 255, 255, 0.15);
     color: white;
     cursor: pointer;
-    display: flex;
+    display: flex; /* Always visible */
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
@@ -934,6 +934,7 @@
     flex-direction: column;
     overflow: hidden;
     background: var(--highlight-bg, #f9fafb);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Campaign Details Placeholder */
@@ -1528,21 +1529,104 @@
     /* Campaign Modal Mobile */
     .campaign-modal-body {
         flex-direction: column;
+        position: relative;
     }
 
+    /* Campaign List Section - Sidebar overlay (slides from left to right) */
     .campaign-list-section {
-        width: 100%;
-        height: 40%;
-        border-right: none;
-        border-bottom: 1px solid var(--border, rgba(0,0,0,0.1));
+        position: fixed !important;
+        top: 0;
+        left: -100% !important; /* Start hidden off-screen */
+        width: 85% !important;
+        max-width: 400px !important;
+        height: 100vh !important;
+        z-index: 10002 !important;
+        background: var(--card-bg, #fff) !important;
+        overflow-y: auto !important;
+        border-right: 1px solid var(--border, rgba(0,0,0,0.1)) !important;
+        border-bottom: none !important;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2) !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .campaign-list-section.active {
+        left: 0 !important;
     }
 
     .campaign-list-section.collapsed {
-        height: 0;
+        left: -100% !important;
     }
 
+    /* Ensure campaign-list-view fills the height */
+    .campaign-list-view {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campaign-cards-container {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    /* Campaign Details Section - Full screen */
     .campaign-details-section {
-        height: 60%;
+        width: 100%;
+        height: calc(100vh - 72px);
+    }
+
+    /* Campaign Sidebar Overlay */
+    .campaign-modal-overlay::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        z-index: 10001;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        pointer-events: none;
+    }
+
+    .campaign-modal-overlay.sidebar-active::after {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+
+    /* Create Campaign Form - Sidebar overlay on mobile (slides from left to right) */
+    .create-campaign-form-section {
+        position: fixed !important;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100vh;
+        z-index: 10001;
+        background: var(--card-bg, #fff);
+        overflow-y: auto;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .create-campaign-form-section[style*="display: block"],
+    .create-campaign-form-section:not([style*="display: none"]) {
+        left: 0;
+    }
+
+    /* Make header sticky at top when scrolling */
+    .create-campaign-form-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.05));
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form content padding adjustment */
+    .create-campaign-form-content {
+        padding-top: 8px;
     }
 }
 

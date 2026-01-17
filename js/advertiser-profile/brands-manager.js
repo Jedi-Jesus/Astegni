@@ -337,6 +337,13 @@ const BrandsManager = {
         if (overlay) {
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // Close sidebar when clicking overlay (mobile only)
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay && overlay.classList.contains('sidebar-active')) {
+                    this.toggleCampaignSidebar();
+                }
+            });
         }
 
         // Reset to campaign list view
@@ -823,7 +830,9 @@ const BrandsManager = {
         if (listSection) {
             listSection.classList.add('dealing');
             setTimeout(() => {
-                listSection.classList.add('collapsed');
+                // On mobile, remove 'active' class to hide sidebar instead of 'collapsed'
+                // This allows the toggle button to still work
+                listSection.classList.remove('active');
                 listSection.classList.remove('dealing');
             }, 500);
         }
@@ -846,6 +855,8 @@ const BrandsManager = {
         const backBtn = document.getElementById('campaign-back-btn');
 
         if (listSection) {
+            // Show the sidebar by adding active class
+            listSection.classList.add('active');
             listSection.classList.remove('collapsed');
         }
 
@@ -1413,8 +1424,7 @@ const BrandsManager = {
             startDateInput.value = today;
         }
 
-        // Load advertiser balance
-        this.loadAdvertiserBalance();
+        // NOTE: loadAdvertiserBalance() removed - using 20% deposit model with external payment gateway
 
         // Load CPI rate
         this.loadCpiRate();
@@ -1513,8 +1523,7 @@ const BrandsManager = {
         // Populate form with campaign data
         this.populateEditForm(campaign);
 
-        // Load advertiser balance
-        this.loadAdvertiserBalance();
+        // NOTE: loadAdvertiserBalance() removed - using 20% deposit model with external payment gateway
 
         // Load CPI rate
         this.loadCpiRate();
@@ -1646,42 +1655,8 @@ const BrandsManager = {
         budgetGroup.appendChild(infoDiv);
     },
 
-    // Load user's account balance and display in form
-    async loadAdvertiserBalance() {
-        const balanceEl = document.getElementById('advertiser-current-balance');
-        if (!balanceEl) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                balanceEl.textContent = '0.00 ETB';
-                return;
-            }
-
-            // Get user's account balance (not advertiser balance)
-            const response = await fetch(`${API_BASE_URL}/api/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const balance = parseFloat(data.account_balance || 0).toFixed(2);
-                balanceEl.textContent = `${balance} ETB`;
-
-                // Store balance for validation
-                this.advertiserBalance = parseFloat(balance);
-            } else {
-                balanceEl.textContent = '0.00 ETB';
-                this.advertiserBalance = 0;
-            }
-        } catch (error) {
-            console.error('Error loading user balance:', error);
-            balanceEl.textContent = '0.00 ETB';
-            this.advertiserBalance = 0;
-        }
-    },
+    // DEPRECATED: Balance checking removed - using 20% deposit model with external payment gateway
+    // loadAdvertiserBalance() function removed - no longer needed
 
     // Load CPI (Cost Per Impression) rates from admin database
     async loadCpiRate() {
@@ -2317,12 +2292,8 @@ const BrandsManager = {
 
         console.log('[BrandsManager] Form data gathered:', { selectedObjectives, selectedAudiences, location, budget });
 
-        // Validate advertiser has sufficient balance (upfront payment model)
-        if (!this.advertiserBalance || this.advertiserBalance < budget) {
-            const currentBalance = (this.advertiserBalance || 0).toFixed(2);
-            alert(`Insufficient balance! You need ${budget.toFixed(2)} ETB but only have ${currentBalance} ETB. Please deposit funds to continue.`);
-            return;
-        }
+        // NOTE: Balance validation removed - using 20% deposit model with external payment gateway
+        // Campaign creation proceeds directly to backend, which returns Chapa payment link
 
         // Calculate CPI breakdown
         const cpiBreakdown = this.calculateCpiBreakdown();
@@ -2624,20 +2595,21 @@ const BrandsManager = {
             });
 
             const campaignData = {
+                brand_id: this.currentBrand.id,
                 name: document.getElementById('campaign-name-input').value.trim(),
                 description: document.getElementById('campaign-description-input').value.trim(),
-                objectives: selectedObjectives,
+                objective: selectedObjectives.join(', '),
                 target_audiences: selectedAudiences,
                 target_placements: selectedPlacements,
-                campaign_budget: parseFloat(document.getElementById('campaign-budget-input').value) || 0,
+                planned_budget: parseFloat(document.getElementById('campaign-budget-input').value) || 0,
                 start_date: document.getElementById('campaign-start-date-input').value,
                 target_location: location,
                 target_regions: location === 'regional' ? selectedRegions : [],
-                cpi_rate: confirmationData.total_cpi,
-                status: 'draft'  // Created as draft, can be launched later
+                cpi_rate: confirmationData.total_cpi
             };
 
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/brands/${this.currentBrand.id}/campaigns`, {
+            // Use new 20% deposit endpoint
+            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/create-with-deposit`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2649,15 +2621,26 @@ const BrandsManager = {
             if (response.ok) {
                 const result = await response.json();
 
-                // Hide form and reload campaigns
-                this.hideCreateCampaignForm();
-                await this.loadBrandCampaigns(this.currentBrand.id);
+                // Backend returns payment link - redirect to Chapa
+                if (result.payment && result.payment.payment_url) {
+                    alert('Campaign created! Redirecting to payment gateway for 20% deposit...');
 
-                // Show success notification
-                if (typeof showNotification === 'function') {
-                    showNotification('Campaign created successfully!', 'success');
+                    // TODO: Replace placeholder with actual Chapa integration
+                    console.log('Payment URL:', result.payment.payment_url);
+                    console.log('Deposit amount:', result.payment.deposit_amount);
+
+                    // For now, just show success and reload
+                    this.hideCreateCampaignForm();
+                    await this.loadBrandCampaigns(this.currentBrand.id);
+
+                    if (typeof showNotification === 'function') {
+                        showNotification(`Campaign created! Please complete ${result.payment.deposit_amount} ETB deposit payment.`, 'success');
+                    }
+
+                    // In production, redirect to payment gateway:
+                    // window.location.href = result.payment.payment_url;
                 } else {
-                    alert('Campaign created successfully!');
+                    throw new Error('Payment link not received from server');
                 }
             } else {
                 const error = await response.json();
@@ -2697,6 +2680,35 @@ const BrandsManager = {
         const currency = this.cpiCurrency || 'ETB';
 
         estimateEl.textContent = `Estimated: ~${this.formatNumber(estimatedImpressions)} impressions at ${cpiRate.toFixed(3)} ${currency}/impression`;
+    },
+
+    // Update budget breakdown showing 20% advance and 80% remaining
+    updateBudgetBreakdown(budget) {
+        const budgetValue = parseFloat(budget);
+        const breakdownDiv = document.getElementById('budget-breakdown');
+        const advanceAmountEl = document.getElementById('advance-payment-amount');
+        const remainingAmountEl = document.getElementById('remaining-payment-amount');
+
+        if (!breakdownDiv || !advanceAmountEl || !remainingAmountEl) {
+            return;
+        }
+
+        // Show/hide breakdown based on budget value
+        if (!budgetValue || budgetValue <= 0) {
+            breakdownDiv.style.display = 'none';
+            return;
+        }
+
+        // Calculate 20% and 80%
+        const advancePayment = budgetValue * 0.20;
+        const remainingPayment = budgetValue * 0.80;
+
+        // Update amounts with proper formatting
+        advanceAmountEl.textContent = advancePayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        remainingAmountEl.textContent = remainingPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Show the breakdown
+        breakdownDiv.style.display = 'block';
     },
 
     // Open create campaign for brand (legacy - now uses inline form)
@@ -3109,20 +3121,37 @@ const BrandsManager = {
     toggleCampaignSidebar() {
         const sidebar = document.getElementById('campaign-list-section');
         const toggleBtn = document.getElementById('campaign-sidebar-toggle');
+        const modalOverlay = document.getElementById('campaign-modal-overlay');
+        const isMobile = window.innerWidth <= 768;
 
         if (sidebar) {
-            sidebar.classList.toggle('collapsed');
+            if (isMobile) {
+                // Mobile: Toggle .active class (overlay behavior)
+                sidebar.classList.toggle('active');
+
+                // Toggle overlay for mobile
+                if (modalOverlay) {
+                    modalOverlay.classList.toggle('sidebar-active');
+                }
+            } else {
+                // Desktop: Toggle .collapsed class (width animation)
+                sidebar.classList.toggle('collapsed');
+            }
 
             // Update toggle button icon
             if (toggleBtn) {
                 const icon = toggleBtn.querySelector('i');
                 if (icon) {
-                    if (sidebar.classList.contains('collapsed')) {
-                        icon.className = 'fas fa-bars';
-                        toggleBtn.title = 'Show sidebar';
-                    } else {
+                    const isVisible = isMobile
+                        ? sidebar.classList.contains('active')
+                        : !sidebar.classList.contains('collapsed');
+
+                    if (isVisible) {
                         icon.className = 'fas fa-times';
                         toggleBtn.title = 'Hide sidebar';
+                    } else {
+                        icon.className = 'fas fa-bars';
+                        toggleBtn.title = 'Show sidebar';
                     }
                 }
             }
