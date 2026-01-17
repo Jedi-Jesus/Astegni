@@ -805,7 +805,7 @@
 /* ============================================
    LANDSCAPE MODE ON MOBILE
    ============================================ */
-@media (max-height: 500px) and (orientation: landscape) {
+@media (max-height: 500px) and (max-width: 1023px) and (orientation: landscape) {
     .hero-section {
         min-height: auto;
         padding: 80px 0 40px;
