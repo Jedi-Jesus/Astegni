@@ -832,6 +832,16 @@ async def upload_selfie(
         verification.attempt_count += 1
 
         # Create attempt record
+        # DEBUG: Log all values and their types before creating analysis_result
+        print(f"[KYC DEBUG] Creating analysis_result for selfie upload:")
+        print(f"  face_result type: {type(face_result)}, value: {face_result}")
+        print(f"  comparison_result type: {type(comparison_result)}, value: {comparison_result}")
+        print(f"  blink_detected type: {type(verification.blink_detected)}, value: {verification.blink_detected}")
+        print(f"  smile_detected type: {type(verification.smile_detected)}, value: {verification.smile_detected}")
+        print(f"  head_turn_detected type: {type(verification.head_turn_detected)}, value: {verification.head_turn_detected}")
+        print(f"  liveliness_score type: {type(liveliness_score)}, value: {liveliness_score}")
+        print(f"  challenges_passed type: {type(challenges_passed)}, value: {challenges_passed}")
+
         attempt = KYCVerificationAttempt(
             verification_id=verification.id,
             user_id=current_user.id,
@@ -844,18 +854,29 @@ async def upload_selfie(
                 "face_detection": face_result,
                 "face_comparison": comparison_result,
                 "liveliness": {
-                    "blink_detected": verification.blink_detected,
-                    "smile_detected": verification.smile_detected,
-                    "head_turn_detected": verification.head_turn_detected,
-                    "liveliness_score": liveliness_score,
-                    "passed": challenges_passed,
+                    "blink_detected": bool(verification.blink_detected),
+                    "smile_detected": bool(verification.smile_detected),
+                    "head_turn_detected": bool(verification.head_turn_detected),
+                    "liveliness_score": float(liveliness_score),
+                    "passed": bool(challenges_passed),
                     "method": "challenge_verification"
                 }
             },
             completed_at=datetime.utcnow()
         )
+        print(f"[KYC DEBUG] Attempt object created, now adding to db...")
         db.add(attempt)
-        db.commit()
+        print(f"[KYC DEBUG] Now committing to database...")
+        try:
+            db.commit()
+            print(f"[KYC DEBUG] Commit successful!")
+        except Exception as commit_error:
+            print(f"[KYC DEBUG ERROR] Commit failed!")
+            print(f"  Error type: {type(commit_error)}")
+            print(f"  Error message: {str(commit_error)}")
+            import traceback
+            print(f"  Traceback: {traceback.format_exc()}")
+            raise
 
         return {
             "success": verification.status == 'passed',
