@@ -357,6 +357,10 @@ app.include_router(admin_courses_router)
 from admin_schools_endpoints import router as admin_schools_router
 app.include_router(admin_schools_router)
 
+# Include admin recommended topics routes (reads from user_db: courses and schools)
+from admin_recommended_topics_endpoints import router as admin_recommended_topics_router
+app.include_router(admin_recommended_topics_router)
+
 # Include admin advertisers routes (brands and campaigns from user_db)
 from admin_advertisers_endpoints import router as admin_advertisers_router
 app.include_router(admin_advertisers_router)

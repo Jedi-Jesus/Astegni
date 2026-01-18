@@ -1,0 +1,90 @@
+/**
+ * Recommended Topics Widget Styles
+ */
+
+.recommended-topics-widget {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+/* Custom scrollbar */
+.recommended-topics-widget::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recommended-topics-widget::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.recommended-topics-widget::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.recommended-topics-widget::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Course items - prominent styling */
+.course-item {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.course-item:hover {
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .course-item {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+[data-theme="dark"] .course-item:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* School items - compact styling */
+.school-item {
+    border: 1px solid transparent;
+}
+
+.school-item:hover {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .school-item {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .school-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Section spacing */
+.courses-section {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.schools-section {
+    padding-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .recommended-topics-widget {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 640px) {
+    .recommended-topics-widget {
+        max-height: 250px;
+    }
+
+    .topic-item {
+        padding: 0.5rem !important;
+    }
+}

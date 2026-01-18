@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sidebar Responsive - View Student</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f3f4f6;
+            padding: 1rem;
+        }
+
+        .debug-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .debug-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .debug-header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .debug-header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .debug-controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .control-group select,
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .viewport-info {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .viewport-info span {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .iframe-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .iframe-header {
+            background: #1f2937;
+            color: white;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .iframe-header .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .iframe-header .dot:nth-child(2) {
+            background: #f59e0b;
+        }
+
+        .iframe-header .dot:nth-child(3) {
+            background: #10b981;
+        }
+
+        .iframe-wrapper {
+            width: 100%;
+            height: 800px;
+            border: none;
+            background: white;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .debug-info {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+
+        .debug-info h3 {
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .debug-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .debug-section:last-child {
+            border-bottom: none;
+        }
+
+        .debug-property {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .debug-property .key {
+            color: #a78bfa;
+            min-width: 200px;
+        }
+
+        .debug-property .value {
+            color: #34d399;
+        }
+
+        .breakpoint-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .bp-desktop { background: #dbeafe; color: #1e40af; }
+        .bp-tablet-landscape { background: #fef3c7; color: #92400e; }
+        .bp-tablet { background: #fce7f3; color: #9f1239; }
+        .bp-mobile { background: #dcfce7; color: #14532d; }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+
+        .quick-sizes {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .quick-size-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .quick-size-btn:hover {
+            border-color: #667eea;
+            background: #f3f4f6;
+        }
+
+        .quick-size-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <div class="debug-header">
+            <h1>🔍 Debug Console: Right Sidebar Responsive Grid</h1>
+            <p>Inspect and debug the responsive behavior of view-student.html sidebar cards</p>
+        </div>
+
+        <div class="debug-controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label>Viewport Width</label>
+                    <input type="range" id="widthSlider" min="320" max="1920" value="1200" step="10">
+                </div>
+            </div>
+
+            <div class="viewport-info">
+                <div>Current: <span id="currentWidth">1200px</span></div>
+                <div>Breakpoint: <span id="breakpoint" class="breakpoint-indicator bp-desktop">Desktop</span></div>
+                <div>Expected Columns: <span id="expectedCols">Sidebar (320px)</span></div>
+            </div>
+
+            <div class="quick-sizes">
+                <button class="quick-size-btn" data-width="1920">Desktop (1920px)</button>
+                <button class="quick-size-btn active" data-width="1200">Large (1200px)</button>
+                <button class="quick-size-btn" data-width="1024">Tablet L (1024px)</button>
+                <button class="quick-size-btn" data-width="768">Tablet (768px)</button>
+                <button class="quick-size-btn" data-width="640">Mobile (640px)</button>
+                <button class="quick-size-btn" data-width="480">Small (480px)</button>
+                <button class="quick-size-btn" data-width="375">iPhone (375px)</button>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button class="refresh-btn" onclick="refreshIframe()">🔄 Refresh Preview</button>
+            </div>
+        </div>
+
+        <div class="iframe-container">
+            <div class="iframe-header">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span style="margin-left: 0.5rem; font-size: 0.85rem;">view-student.html Preview</span>
+            </div>
+            <div class="iframe-wrapper" id="iframeWrapper">
+                <iframe id="previewFrame" src="view-profiles/view-student.html"></iframe>
+            </div>
+        </div>
+
+        <div class="debug-info">
+            <h3>📊 Live CSS Inspection</h3>
+
+            <div class="debug-section">
+                <h4 style="color: #fbbf24; margin-bottom: 0.75rem;">Right Sidebar Container</h4>
+                <div class="debug-property">
+                    <span class="key">display:</span>
+                    <span class="value" id="containerDisplay">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">grid-template-columns:</span>
+                    <span class="value" id="containerGridCols">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">width:</span>
+                    <span class="value" id="containerWidth">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">position:</span>
+                    <span class="value" id="containerPosition">-</span>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h4 style="color: #fbbf24; margin-bottom: 0.75rem;">Right Sidebar Content</h4>
+                <div class="debug-property">
+                    <span class="key">display:</span>
+                    <span class="value" id="contentDisplay">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">grid-template-columns:</span>
+                    <span class="value" id="contentGridCols">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">gap:</span>
+                    <span class="value" id="contentGap">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">flex-direction:</span>
+                    <span class="value" id="contentFlexDir">-</span>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h4 style="color: #fbbf24; margin-bottom: 0.75rem;">Widget Cards</h4>
+                <div class="debug-property">
+                    <span class="key">Count:</span>
+                    <span class="value" id="widgetCount">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">First card width:</span>
+                    <span class="value" id="widgetWidth">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">First card padding:</span>
+                    <span class="value" id="widgetPadding">-</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">Grid column placement:</span>
+                    <span class="value" id="widgetGridColumn">-</span>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h4 style="color: #fbbf24; margin-bottom: 0.75rem;">Diagnostic</h4>
+                <div class="debug-property">
+                    <span class="key">Issue Status:</span>
+                    <span class="value" id="issueStatus">Checking...</span>
+                </div>
+                <div class="debug-property">
+                    <span class="key">Expected Behavior:</span>
+                    <span class="value" id="expectedBehavior">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const widthSlider = document.getElementById('widthSlider');
+        const currentWidthSpan = document.getElementById('currentWidth');
+        const breakpointSpan = document.getElementById('breakpoint');
+        const expectedColsSpan = document.getElementById('expectedCols');
+        const iframeWrapper = document.getElementById('iframeWrapper');
+        const previewFrame = document.getElementById('previewFrame');
+
+        function updateWidth(width) {
+            iframeWrapper.style.width = width + 'px';
+            currentWidthSpan.textContent = width + 'px';
+
+            // Update breakpoint indicator
+            let bp, bpClass, expectedCols, expectedBehavior;
+            if (width > 1024) {
+                bp = 'Desktop';
+                bpClass = 'bp-desktop';
+                expectedCols = 'Sticky Sidebar (320px)';
+                expectedBehavior = 'Vertical flex column on right side';
+            } else if (width > 768) {
+                bp = 'Tablet Landscape';
+                bpClass = 'bp-tablet-landscape';
+                expectedCols = '3 cards per row';
+                expectedBehavior = 'Grid with 3 columns below panels';
+            } else if (width > 640) {
+                bp = 'Tablet Portrait';
+                bpClass = 'bp-tablet';
+                expectedCols = '2 cards per row';
+                expectedBehavior = 'Grid with 2 columns below panels';
+            } else {
+                bp = 'Mobile';
+                bpClass = 'bp-mobile';
+                expectedCols = '1 card per row';
+                expectedBehavior = 'Grid with 1 column below panels';
+            }
+
+            breakpointSpan.textContent = bp;
+            breakpointSpan.className = 'breakpoint-indicator ' + bpClass;
+            expectedColsSpan.textContent = expectedCols;
+            document.getElementById('expectedBehavior').textContent = expectedBehavior;
+
+            // Update active button
+            document.querySelectorAll('.quick-size-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.width) === width);
+            });
+
+            // Inspect after slight delay to let iframe resize
+            setTimeout(inspectElements, 300);
+        }
+
+        function inspectElements() {
+            try {
+                const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+
+                // Right sidebar container
+                const container = iframeDoc.querySelector('.right-sidebar-container');
+                if (container) {
+                    const containerStyle = window.getComputedStyle(container);
+                    document.getElementById('containerDisplay').textContent = containerStyle.display;
+                    document.getElementById('containerGridCols').textContent = containerStyle.gridTemplateColumns || 'none';
+                    document.getElementById('containerWidth').textContent = containerStyle.width;
+                    document.getElementById('containerPosition').textContent = containerStyle.position;
+                }
+
+                // Right sidebar content
+                const content = iframeDoc.querySelector('.right-sidebar-content');
+                if (content) {
+                    const contentStyle = window.getComputedStyle(content);
+                    document.getElementById('contentDisplay').textContent = contentStyle.display;
+                    document.getElementById('contentGridCols').textContent = contentStyle.gridTemplateColumns || 'none';
+                    document.getElementById('contentGap').textContent = contentStyle.gap || contentStyle.gridGap || 'none';
+                    document.getElementById('contentFlexDir').textContent = contentStyle.flexDirection || 'none';
+                }
+
+                // Widget cards
+                const widgets = iframeDoc.querySelectorAll('.right-sidebar-content > .sidebar-widget, .right-sidebar-content > .widget-card');
+                document.getElementById('widgetCount').textContent = widgets.length;
+
+                if (widgets.length > 0) {
+                    const firstWidget = widgets[0];
+                    const widgetStyle = window.getComputedStyle(firstWidget);
+                    document.getElementById('widgetWidth').textContent = widgetStyle.width;
+                    document.getElementById('widgetPadding').textContent = widgetStyle.padding;
+                    document.getElementById('widgetGridColumn').textContent = widgetStyle.gridColumn || 'auto';
+
+                    // Diagnostic
+                    const contentComputedStyle = window.getComputedStyle(content);
+                    const isGrid = contentComputedStyle.display === 'grid';
+                    const isFlex = contentComputedStyle.display === 'flex';
+                    const width = parseInt(currentWidthSpan.textContent);
+
+                    let issueStatus = '✅ Working correctly';
+
+                    if (width <= 1024 && width > 768) {
+                        // Should be 3 column grid
+                        if (!isGrid) {
+                            issueStatus = '❌ ERROR: Should be grid, but is ' + contentComputedStyle.display;
+                        } else if (!contentComputedStyle.gridTemplateColumns.includes('1fr 1fr 1fr')) {
+                            issueStatus = '⚠️ WARNING: Grid columns may not be correct';
+                        }
+                    } else if (width <= 768 && width > 640) {
+                        // Should be 2 column grid
+                        if (!isGrid) {
+                            issueStatus = '❌ ERROR: Should be grid, but is ' + contentComputedStyle.display;
+                        } else if (!contentComputedStyle.gridTemplateColumns.includes('1fr 1fr')) {
+                            issueStatus = '⚠️ WARNING: Grid columns may not be correct';
+                        }
+                    } else if (width <= 640) {
+                        // Should be 1 column grid
+                        if (!isGrid) {
+                            issueStatus = '❌ ERROR: Should be grid, but is ' + contentComputedStyle.display;
+                        }
+                    } else {
+                        // Desktop - should be flex column
+                        if (!isFlex) {
+                            issueStatus = '⚠️ WARNING: Should be flex on desktop';
+                        }
+                    }
+
+                    document.getElementById('issueStatus').textContent = issueStatus;
+                } else {
+                    document.getElementById('issueStatus').textContent = '❌ No widgets found';
+                }
+
+            } catch (e) {
+                console.error('Inspection error:', e);
+                document.getElementById('issueStatus').textContent = '⚠️ Cannot inspect (CORS or loading)';
+            }
+        }
+
+        widthSlider.addEventListener('input', (e) => {
+            updateWidth(parseInt(e.target.value));
+        });
+
+        document.querySelectorAll('.quick-size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const width = parseInt(btn.dataset.width);
+                widthSlider.value = width;
+                updateWidth(width);
+            });
+        });
+
+        function refreshIframe() {
+            previewFrame.src = previewFrame.src;
+            setTimeout(inspectElements, 500);
+        }
+
+        // Initial inspection after iframe loads
+        previewFrame.addEventListener('load', () => {
+            setTimeout(inspectElements, 500);
+        });
+
+        // Initial setup
+        updateWidth(1200);
+    </script>
+</body>
+</html>

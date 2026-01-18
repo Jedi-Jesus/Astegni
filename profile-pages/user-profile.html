@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
+    <link rel="stylesheet" href="../admin-pages/css/admin-pages/recommended-topics-widget.css">
     <!-- Shared Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
@@ -2460,73 +2461,6 @@
                         </script>
                     </div>
 
-                    <!-- Recommended Topics Widget -->
-                    <div class="admin-widget-card">
-                        <h3 class="text-lg font-semibold mb-4">💡 Recommended Topics</h3>
-                        <div class="activity-ticker-container">
-                            <div class="activity-ticker">
-                                <div class="activity-item">
-                                    <span class="text-blue-500">📐</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">Mathematics Mastery</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Explore algebra, calculus, and geometry with expert tutors. Perfect for all grade levels.</p>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <span class="text-green-500">⚗️</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">Chemistry Fundamentals</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Learn organic, inorganic chemistry and lab techniques from experienced educators.</p>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <span class="text-purple-500">🔬</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">Physics Exploration</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Discover mechanics, thermodynamics, and quantum physics with interactive lessons.</p>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <span class="text-orange-500">🧬</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">Biology & Life Sciences</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Study cells, genetics, ecology and human anatomy with expert guidance.</p>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <span class="text-pink-500">📚</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">English Language Arts</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Improve reading, writing, grammar and literature analysis skills effectively.</p>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <span class="text-indigo-500">🌍</span>
-                                    <div class="flex-1 text-sm">
-                                        <p class="font-medium" style="color: var(--heading);">History & Geography</p>
-                                        <p class="text-xs" style="color: var(--text-muted);">Explore world history, Ethiopian heritage, and global geography concepts.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Discover More Widget -->
-                    <div class="admin-widget-card">
-                        <h3 class="text-lg font-semibold mb-4">🎯 Discover More</h3>
-                        <p class="text-sm text-gray-600 mb-4" style="color: var(--text-muted);">Explore new tutors and educational content tailored for you</p>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-                            <a href="../branch/find-tutors.html" class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg text-center hover:shadow-md transition-all" style="text-decoration: none; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); padding: 0.75rem; border-radius: 8px;">
-                                <div class="text-2xl mb-1" style="font-size: 1.5rem; margin-bottom: 0.25rem;">👨‍🏫</div>
-                                <div class="text-xs font-semibold text-blue-700" style="font-size: 0.75rem; font-weight: 600; color: #3b82f6;">Find Tutors</div>
-                            </a>
-                            <a href="../branch/reels.html" class="p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg text-center hover:shadow-md transition-all" style="text-decoration: none; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); padding: 0.75rem; border-radius: 8px;">
-                                <div class="text-2xl mb-1" style="font-size: 1.5rem; margin-bottom: 0.25rem;">🎬</div>
-                                <div class="text-xs font-semibold text-purple-700" style="font-size: 0.75rem; font-weight: 600; color: #8b5cf6;">Watch Reels</div>
-                            </a>
-                        </div>
-                    </div>                    
-
                     <!-- Trending Tutors Widget -->
                     <div class="admin-widget-card">
                         <h3 class="text-lg font-semibold mb-4">🔥 Trending Tutors</h3>
@@ -2560,39 +2494,18 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Popular Reels Widget -->
+                    
+                    <!-- Recommended Topics Widget -->
                     <div class="admin-widget-card">
-                        <h3 class="text-lg font-semibold mb-4">🎬 Popular Reels</h3>
-                        <div class="space-y-3">
-                            <a href="../branch/reels.html" class="relative rounded-lg overflow-hidden cursor-pointer group block">
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='200'%3E%3Crect width='280' height='200' fill='%236366f1'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='sans-serif' font-size='16'%3EMath Tips%3C/text%3E%3C/svg%3E"
-                                    alt="Reel" class="w-full h-44 object-cover">
-                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                    </svg>
-                                </div>
-                                <div class="absolute bottom-2 left-2 right-2">
-                                    <p class="text-white text-sm font-semibold">Quick Math Tips</p>
-                                    <p class="text-white text-xs opacity-90">❤️ 2.3K • 👁️ 12K</p>
-                                </div>
-                            </a>
-                            <a href="../branch/reels.html" class="relative rounded-lg overflow-hidden cursor-pointer group block">
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='200'%3E%3Crect width='280' height='200' fill='%2310b981'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='sans-serif' font-size='16'%3EChemistry%3C/text%3E%3C/svg%3E"
-                                    alt="Reel" class="w-full h-44 object-cover">
-                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                    </svg>
-                                </div>
-                                <div class="absolute bottom-2 left-2 right-2">
-                                    <p class="text-white text-sm font-semibold">Chemistry Hacks</p>
-                                    <p class="text-white text-xs opacity-90">❤️ 1.8K • 👁️ 8.5K</p>
-                                </div>
-                            </a>
+                        <h3 class="text-lg font-semibold mb-4">💡 Recommended Topics</h3>
+                        <div id="recommended-topics-widget" class="recommended-topics-widget">
+                            <!-- Topics loaded dynamically from courses and schools database -->
+                            <div class="text-center py-8">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2 text-blue-500"></i>
+                                <p class="text-sm text-gray-500">Loading topics...</p>
+                            </div>
                         </div>
-                    </div>
+                    </div>            
                 </div>
             </div>
         </div>
