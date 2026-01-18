@@ -1693,49 +1693,8 @@ section[style*="grid-template-columns: repeat(auto-fit"] {
     }
 }
 
-@media (max-width: 768px) {
-    #chatModal .chat-modal-container {
-        width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
-        flex-direction: column;
-    }
-
-    #chatModal .chat-sidebar {
-        position: absolute;
-        left: -100%;
-        width: 85%;
-        max-width: 320px;
-        height: 100%;
-        z-index: 200;
-        transition: left 0.3s ease;
-    }
-
-    #chatModal .chat-sidebar.active {
-        left: 0;
-    }
-
-    #chatModal .chat-main {
-        width: 100%;
-    }
-
-    #chatModal .mobile-sidebar-toggle {
-        display: flex !important;
-    }
-
-    #chatModal .chat-header {
-        padding-left: 60px;
-    }
-
-    #chatModal .message-input-area {
-        padding: 0.75rem;
-    }
-
-    #chatModal .message-input {
-        font-size: 16px;
-    }
-}
+/* REMOVED: Chat modal mobile rules now controlled by /css/common-modals/chat-modal.css
+   to prevent conflicts with transform-based sidebar animation */
 
 @media (max-width: 480px) {
     #chatModal .chat-sidebar {

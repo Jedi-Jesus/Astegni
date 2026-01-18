@@ -444,7 +444,7 @@
     bottom: 0; /* Align to bottom */
     overflow: hidden;
     padding-left: 340px; /* Make space for sidebar */
-    padding-bottom: 35px; /* Space from bottom for input area */
+    padding-bottom: 40px; /* Space from bottom for input area */
     transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -5524,15 +5524,34 @@
     }
 
     /* On mobile, chat-main takes full width always (sidebar overlays) */
-    #chatModal .chat-main {
+    #chatModal .chat-main,
+    #chatModal .chat-sidebar.hidden ~ #chatModal .chat-main,
+    #chatModal .chat-main.sidebar-hidden {
         left: 0;
         top: 48px; /* Start just below header on mobile too */
         width: 100%;
+        padding-left: 0 !important; /* No padding - sidebar overlays on top */
+        transition: none !important; /* No animation/shift on mobile */
         z-index: 1; /* Lower z-index so sidebar appears on top */
     }
 
-    #chatModal .chat-main.sidebar-hidden {
-        left: 0;
+    /* Remove transitions from child elements on mobile */
+    #chatModal .chat-main .chat-area,
+    #chatModal .chat-main .input-area,
+    #chatModal .chat-main .pinned-messages,
+    #chatModal .chat-main .user-info,
+    #chatModal .chat-main .message-list {
+        transition: none !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        transform: none !important;
+    }
+
+    /* Prevent any animations on chatMain and all descendants */
+    #chatModal .chat-main,
+    #chatModal .chat-main * {
+        transition-property: none !important;
+        padding-left: 0 !important;
     }
 
     #chatModal .chat-info-panel {
