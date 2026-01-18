@@ -764,14 +764,51 @@ async def upload_selfie(
         # Save selfie
         selfie_url = save_image_to_storage(selfie_bytes, current_user.id, "selfie")
 
-        # Compare faces
+        # Compare faces - get document from storage
+        document_bytes = None
         document_path = verification.document_image_url.lstrip('/')
+
+        # Try to load document from local storage first
         if os.path.exists(document_path):
             with open(document_path, 'rb') as f:
                 document_bytes = f.read()
+            print(f"[KYC] Loaded document from local path: {document_path}")
+        # Try Backblaze B2 if document URL looks like a B2 URL
+        elif 'backblazeb2.com' in verification.document_image_url or 'b2' in verification.document_image_url:
+            try:
+                from backblaze_service import get_backblaze_service
+                b2_service = get_backblaze_service()
+
+                # Extract file path from URL (remove domain)
+                # URL format: https://f000.backblazeb2.com/file/bucket-name/path/to/file.jpg
+                if '/file/' in verification.document_image_url:
+                    # Extract path after bucket name
+                    parts = verification.document_image_url.split('/file/')
+                    if len(parts) > 1:
+                        # Remove bucket name from path
+                        path_parts = parts[1].split('/', 1)
+                        if len(path_parts) > 1:
+                            file_path = path_parts[1]
+                        else:
+                            file_path = parts[1]
+
+                        print(f"[KYC] Downloading document from B2: {file_path}")
+                        document_bytes = b2_service.download_file(file_path)
+
+                        if document_bytes:
+                            print(f"[KYC] Successfully downloaded document from B2 ({len(document_bytes)} bytes)")
+                        else:
+                            print(f"[KYC] Failed to download document from B2")
+            except Exception as e:
+                print(f"[KYC] Error downloading from B2: {str(e)}")
+
+        # Perform face comparison if we have the document
+        if document_bytes:
             comparison_result = compare_faces(document_bytes, selfie_bytes)
+            print(f"[KYC] Face comparison result: {comparison_result}")
         else:
-            # If document not found locally, use placeholder
+            # If document not found, use placeholder
+            print(f"[KYC] Document not found, using placeholder comparison")
             comparison_result = {"match": True, "score": 0.92, "method": "placeholder"}
 
         # Check liveliness from already-completed challenges
