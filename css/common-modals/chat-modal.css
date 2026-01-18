@@ -438,18 +438,20 @@
     flex-direction: column;
     background: var(--card-bg, white);
     position: absolute;
-    left: 340px; /* Default position when sidebar is visible */
+    left: 0;
     top: 48px; /* Start just below chat-main-header */
     right: 0;
-    bottom: 0;
+    bottom: 0; /* Align to bottom */
     overflow: hidden;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-left: 340px; /* Make space for sidebar */
+    padding-bottom: 35px; /* Space from bottom for input area */
+    transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Chat main when sidebar is hidden - expands to full width */
 #chatModal .chat-sidebar.hidden ~ #chatModal .chat-main,
 #chatModal .chat-main.sidebar-hidden {
-    left: 0;
+    padding-left: 0;
 }
 
 /* Chat Main Header - Contains toggle and window controls - Full width at top of container */
@@ -460,9 +462,13 @@
     padding: 8px 16px;
     background: var(--card-bg, white);
     border-bottom: 1px solid var(--border, #FDE68A);
-    min-height: 48px;
+    height: 48px;
     flex-shrink: 0;
     z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 /* Window Controls (Minimize/Close) */
@@ -565,8 +571,8 @@
 /* User Info Header */
 #chatModal .user-info {
     padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(var(--border-rgb, 245, 158, 11), 0.08) 0%, rgba(var(--border-rgb, 217, 119, 6), 0.08) 100%);
-    border-bottom: 1px solid rgba(var(--border-rgb, 245, 158, 11), 0.1);
+    background: linear-gradient(135deg, rgba(var(--border-rgb, 245, 158, 11), 0.15) 0%, rgba(var(--border-rgb, 217, 119, 6), 0.12) 100%);
+    border-bottom: 1px solid rgba(var(--border-rgb, 245, 158, 11), 0.2);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -1983,6 +1989,7 @@
     padding: 16px 20px;
     background: var(--card-bg, white);
     border-top: 1px solid rgba(var(--border-rgb, 245, 158, 11), 0.1);
+    flex-shrink: 0;
 }
 
 #chatModal .input-container {
