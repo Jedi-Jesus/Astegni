@@ -17,7 +17,7 @@
     <!-- admin.css removed - not needed for view pages, was causing tooltip transparency -->
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css?v=3">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css?v=3">
-    <link rel="stylesheet" href="../css/view-student/view-student.css?v=4">
+    <link rel="stylesheet" href="../css/view-student/view-student.css?v=6">
     <!-- Shared Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
@@ -188,6 +188,262 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+        }
+
+        /* RESPONSIVE OVERRIDES - These override the desktop styles above */
+        @media (max-width: 1200px) {
+            .right-sidebar-container {
+                width: 280px !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .right-sidebar-container {
+                width: 100% !important;
+                position: static !important;
+                flex-shrink: 1 !important;
+                top: auto !important;
+                height: auto !important;
+                margin-top: 1.5rem !important;
+                z-index: 1 !important;
+                display: block !important;
+            }
+
+            /* FIX: Make right-sidebar-content the grid container with 3 columns */
+            div.right-sidebar-content,
+            .right-sidebar-container > .right-sidebar-content {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 1.5rem !important;
+                width: 100% !important;
+            }
+
+            /* Ensure widget cards have proper sizing */
+            .right-sidebar-content > .sidebar-widget,
+            .right-sidebar-content > .widget-card {
+                min-width: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+                padding: 1rem !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Override internal grid layouts in widgets */
+            .stats-container[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Make ad content more compact */
+            .ad-content {
+                min-height: 120px !important;
+                padding: 1rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Profile header centering */
+            .profile-header-section {
+                text-align: center !important;
+            }
+
+            .profile-main-info {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            .profile-info-wrapper {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            .profile-details-section {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+
+            .profile-name-row {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            .rating-section,
+            .rating-wrapper {
+                justify-content: center !important;
+            }
+
+            .badges-row {
+                justify-content: center !important;
+            }
+
+            /* Gender & Location - stack on mobile */
+            .profile-details-section > div[style*="grid-template-columns: repeat(2, 1fr)"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Contact info grids */
+            .profile-contact-info {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Right sidebar - 2 cards per row and move below panels */
+            .right-sidebar-container {
+                order: 10 !important;
+            }
+
+            /* FIX: 2 columns grid on right-sidebar-content */
+            div.right-sidebar-content,
+            .right-sidebar-container > .right-sidebar-content {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 1.5rem !important;
+                width: 100% !important;
+            }
+
+            /* Ensure widget cards have proper sizing */
+            .right-sidebar-content > .sidebar-widget,
+            .right-sidebar-content > .widget-card {
+                min-width: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+                padding: 1rem !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Override internal grid layouts in widgets */
+            .stats-container[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Make ad content more compact */
+            .ad-content {
+                min-height: 100px !important;
+                padding: 0.75rem !important;
+            }
+
+            /* Main content area - ensure it appears first */
+            .flex-1 {
+                order: 1 !important;
+            }
+
+            /* Parent flex container */
+            .flex.gap-6 {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            /* Right sidebar - 3 cards per row between 769-1024px */
+            .right-sidebar-container {
+                order: 10 !important;
+            }
+
+            /* Main content first */
+            .flex-1 {
+                order: 1 !important;
+            }
+
+            /* Ensure flex column layout */
+            .flex.gap-6 {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            /* Right sidebar - 2 cards per row between 641-768px */
+            .right-sidebar-container {
+                order: 10 !important;
+            }
+
+            /* Main content first */
+            .flex-1 {
+                order: 1 !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            /* Right sidebar - 1 card per row */
+            .right-sidebar-container {
+                order: 10 !important;
+            }
+
+            /* FIX: 1 column grid on right-sidebar-content */
+            div.right-sidebar-content,
+            .right-sidebar-container > .right-sidebar-content {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+                width: 100% !important;
+            }
+
+            /* Ensure widget cards have proper sizing */
+            .right-sidebar-content > .sidebar-widget,
+            .right-sidebar-content > .widget-card {
+                min-width: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0.875rem !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Override internal grid layouts in widgets */
+            .stats-container[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Make ad content more compact */
+            .ad-content {
+                min-height: 100px !important;
+                padding: 0.75rem !important;
+            }
+
+            /* Main content first */
+            .flex-1 {
+                order: 1 !important;
+            }
+
+            /* Ensure flex column layout */
+            .flex.gap-6 {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            /* Profile name smaller */
+            .profile-name {
+                font-size: 1.5rem !important;
+            }
+
+            /* All inline grids to single column */
+            .profile-details-section div[style*="display: grid"],
+            .profile-details-section div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 56px !important;
+            }
+
+            .profile-avatar-container img {
+                width: 80px !important;
+                height: 80px !important;
+            }
+
+            .profile-name {
+                font-size: 1.25rem !important;
+            }
+
+            /* Compact cards */
+            .profile-details-section div[style*="padding"] {
+                padding: 0.5rem !important;
+            }
         }
 
         /* Main content animation when sidebar opens - only target the main section */
@@ -754,8 +1010,11 @@
                                     <span id="dropdown-user-email" class="dropdown-user-email"></span>
                                     <span id="dropdown-user-role" class="dropdown-user-role"></span>
                                 </div>
-                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                         </a>
@@ -824,7 +1083,8 @@
             </div>
             <button class="mobile-menu-close" onclick="closeMobileMenu()">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
             </button>
         </div>
@@ -861,13 +1121,16 @@
                         <span id="mobile-profile-role" class="mobile-profile-role"></span>
                     </div>
                     <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        <path fill-rule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
                     </svg>
                 </div>
                 <div class="mobile-profile-dropdown">
                     <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                         My Profile
                     </a>
@@ -879,7 +1142,9 @@
                     <div class="mobile-dropdown-divider"></div>
                     <button class="mobile-dropdown-item logout" onclick="showLogoutModal()">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
                         </svg>
                         Logout
                     </button>
@@ -889,8 +1154,11 @@
             <!-- Theme Toggle -->
             <div class="mobile-theme-section">
                 <button class="mobile-theme-toggle" onclick="toggleTheme()">
-                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
                     </svg>
                     <span>Toggle Theme</span>
                 </button>
@@ -900,7 +1168,9 @@
             <div class="mobile-notifications-section">
                 <button class="mobile-notifications-btn">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
                     </svg>
                     <span>Notifications</span>
                     <span class="mobile-notification-badge">3</span>
@@ -1056,7 +1326,8 @@
                                     <span id="typedText">Excellence in Learning, Driven by Passion</span>
                                     <span id="cursor" class="cursor-blink">|</span>
                                 </h2>
-                                <p id="hero-subtitle" class="hero-subtitle">Dedicated student pursuing academic excellence and personal growth</p>
+                                <p id="hero-subtitle" class="hero-subtitle">Dedicated student pursuing academic
+                                    excellence and personal growth</p>
                             </section>
 
                             <!-- Profile Header Section (Only visible in Dashboard) -->
@@ -1174,7 +1445,8 @@
                                             </div>
 
                                             <!-- Gender and Location in One Row -->
-                                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                            <div
+                                                style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
                                                 <!-- Gender -->
                                                 <div class="profile-location" id="gender-container">
                                                     <span class="location-icon">👤</span>
@@ -1184,7 +1456,8 @@
                                                 <!-- Location -->
                                                 <div class="profile-location">
                                                     <span class="location-icon">📍</span>
-                                                    <span id="student-location">Addis Ababa, Ethiopia | 12th Grade</span>
+                                                    <span id="student-location">Addis Ababa, Ethiopia | 12th
+                                                        Grade</span>
                                                 </div>
                                             </div>
 
@@ -1281,14 +1554,17 @@
                                             </div>
 
                                             <!-- Action Buttons -->
-                                            <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                            <div
+                                                style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                                 <!-- Connect Button -->
-                                                <button onclick="connectStudent()" class="btn-primary" style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; border: none; cursor: pointer;">
+                                                <button onclick="connectStudent()" class="btn-primary"
+                                                    style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; border: none; cursor: pointer;">
                                                     <span>🔗</span> Connect
                                                 </button>
 
                                                 <!-- Message Button -->
-                                                <button onclick="messageStudent()" style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                                <button onclick="messageStudent()"
+                                                    style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                                                     <span>💬</span> Message
                                                 </button>
                                             </div>
@@ -2150,16 +2426,21 @@
                         <!-- Credentials Panel (Combined: Achievements, Certifications, Extracurricular) -->
                         <div id="credentials-panel" class="panel-content">
                             <!-- Credential Type Selection Cards -->
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                                 <!-- Achievements Card -->
                                 <div id="cred-card-achievements" class="credential-type-card"
                                     onclick="switchCredentialSection('achievements')"
                                     style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05)); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
                                     <div style="text-align: center;">
                                         <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">🏆</span>
-                                        <h3 style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">Achievements</h3>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View awards & recognition</p>
-                                        <span id="achievements-count" style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(251, 191, 36, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #f59e0b;">Loading...</span>
+                                        <h3
+                                            style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">
+                                            Achievements</h3>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View awards &
+                                            recognition</p>
+                                        <span id="achievements-count"
+                                            style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(251, 191, 36, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #f59e0b;">Loading...</span>
                                     </div>
                                 </div>
 
@@ -2169,9 +2450,13 @@
                                     style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
                                     <div style="text-align: center;">
                                         <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">📜</span>
-                                        <h3 style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">Certifications</h3>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View certificates & qualifications</p>
-                                        <span id="certifications-count" style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(59, 130, 246, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #3b82f6;">Loading...</span>
+                                        <h3
+                                            style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">
+                                            Certifications</h3>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View certificates
+                                            & qualifications</p>
+                                        <span id="certifications-count"
+                                            style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(59, 130, 246, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #3b82f6;">Loading...</span>
                                     </div>
                                 </div>
 
@@ -2181,9 +2466,13 @@
                                     style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
                                     <div style="text-align: center;">
                                         <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">🎭</span>
-                                        <h3 style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">Extracurricular</h3>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View activities & involvement</p>
-                                        <span id="extracurricular-count" style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #10b981;">Loading...</span>
+                                        <h3
+                                            style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">
+                                            Extracurricular</h3>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View activities &
+                                            involvement</p>
+                                        <span id="extracurricular-count"
+                                            style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #10b981;">Loading...</span>
                                     </div>
                                 </div>
                             </div>
@@ -2218,7 +2507,8 @@
                                 <div id="student-blogs-container">
                                     <!-- Loading state -->
                                     <div style="text-align: center; padding: 3rem;">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                                        <i class="fas fa-spinner fa-spin"
+                                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
                                         <p style="color: var(--text-secondary);">Loading blog posts...</p>
                                     </div>
                                 </div>
@@ -2240,7 +2530,9 @@
                                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                                     <!-- Loading state - will be replaced by JS -->
                                     <div style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
-                                        <div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                        <div
+                                            style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;">
+                                        </div>
                                         <p style="color: var(--text-secondary);">Loading parents...</p>
                                     </div>
                                 </div>
@@ -2260,7 +2552,8 @@
                                 <div id="student-blogs-container">
                                     <!-- Loading state -->
                                     <div style="text-align: center; padding: 3rem;">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                                        <i class="fas fa-spinner fa-spin"
+                                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
                                         <p style="color: var(--text-secondary);">Loading blog posts...</p>
                                     </div>
                                 </div>
@@ -2308,7 +2601,8 @@
                                                 style="display: flex; flex-direction: column; gap: 0.75rem;">
                                                 <!-- Behavioral Categories (Dynamic) -->
                                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 0.875rem; width: 180px;">Subject Understanding</span>
+                                                    <span style="font-size: 0.875rem; width: 180px;">Subject
+                                                        Understanding</span>
                                                     <div
                                                         style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
                                                         <div id="rating-bar-subject"
@@ -2319,7 +2613,8 @@
                                                         style="font-size: 0.875rem; width: 40px; text-align: right;">0.0</span>
                                                 </div>
                                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 0.875rem; width: 180px;">Communication Skills</span>
+                                                    <span style="font-size: 0.875rem; width: 180px;">Communication
+                                                        Skills</span>
                                                     <div
                                                         style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
                                                         <div id="rating-bar-communication"
@@ -2352,7 +2647,8 @@
                                                         style="font-size: 0.875rem; width: 40px; text-align: right;">0.0</span>
                                                 </div>
                                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 0.875rem; width: 180px;">Class Activity</span>
+                                                    <span style="font-size: 0.875rem; width: 180px;">Class
+                                                        Activity</span>
                                                     <div
                                                         style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
                                                         <div id="rating-bar-class-activity"
@@ -2410,7 +2706,8 @@
                                         style="display: flex; flex-direction: column; gap: 1.5rem;">
                                         <!-- Loading state -->
                                         <div style="text-align: center; padding: 3rem;">
-                                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                                            <i class="fas fa-spinner fa-spin"
+                                                style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
                                             <p style="color: var(--text-secondary);">Loading reviews...</p>
                                         </div>
                                     </div>
@@ -2420,178 +2717,210 @@
                     </div>
                 </div>
 
-                    <!-- Right Sidebar -->
-                    <div class="right-sidebar-container">
-                        <div class="right-sidebar-content">
+                <!-- Right Sidebar -->
+                <div class="right-sidebar-container">
+                    <div class="right-sidebar-content">
 
-                    
-                    <!-- Ad Widget -->
-                    <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
-                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
-                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
-                        </div>
-                        <div class="ad-content" id="ad-container" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <!-- Rotating Ad Messages -->
-                            <div id="ad-message-container" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+
+                        <!-- Ad Widget -->
+                        <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
+                            <div class="widget-header"
+                                style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                                <span
+                                    style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                            </div>
+                            <div class="ad-content" id="ad-container"
+                                style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                                <!-- Rotating Ad Messages -->
+                                <div id="ad-message-container"
+                                    style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                    <div class="ad-message active"
+                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad
+                                            Goes Here</p>
+                                    </div>
+                                    <div class="ad-message"
+                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target
+                                            Millions of Audience</p>
+                                    </div>
+                                    <div class="ad-message"
+                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your
+                                            Business</p>
+                                    </div>
+                                    <div class="ad-message"
+                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your
+                                            Audience</p>
+                                    </div>
+                                    <div class="ad-message"
+                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise
+                                            With Us</p>
+                                    </div>
                                 </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                <!-- Ticker at bottom -->
+                                <div id="ad-ticker"
+                                    style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                    <div id="ad-ticker-content"
+                                        style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                                        <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                        <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                        <span style="padding: 0 2rem;">Contact us to advertise</span>
+                                        <span style="padding: 0 2rem;">Boost your brand visibility</span>
+                                        <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
+                                        <span style="padding: 0 2rem;">Premium ad placements available</span>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Ticker at bottom -->
-                            <div id="ad-ticker" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
-                        </div>
-                        <style>
-                            @keyframes tickerScroll {
-                                0% { transform: translateX(0); }
-                                100% { transform: translateX(-50%); }
-                            }
-                            #ad-ticker-content {
-                                animation: tickerScroll 20s linear infinite;
-                            }
-                            .ad-message {
-                                visibility: hidden;
-                            }
-                            .ad-message.active {
-                                opacity: 1 !important;
-                                transform: scale(1) !important;
-                                visibility: visible !important;
-                            }
-                            .ad-message.fade-out {
-                                opacity: 0 !important;
-                                transform: scale(0.8) !important;
-                                visibility: visible !important;
-                            }
-                        </style>
-                        <script>
-                            (function() {
-                                const messages = document.querySelectorAll('#ad-message-container .ad-message');
-                                let currentIndex = 0;
+                            <style>
+                                @keyframes tickerScroll {
+                                    0% {
+                                        transform: translateX(0);
+                                    }
 
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-
-                                    // Fade out current
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-
-                                    // Fade in next
-                                    messages[currentIndex].classList.add('active');
-
-                                    // Hide previous after animation
-                                    setTimeout(() => {
-                                        messages[prevIndex].classList.remove('fade-out');
-                                    }, 600);
+                                    100% {
+                                        transform: translateX(-50%);
+                                    }
                                 }
 
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
-                    </div>
+                                #ad-ticker-content {
+                                    animation: tickerScroll 20s linear infinite;
+                                }
 
-                    <!-- Academic Statistics Widget -->
-                    <div class="widget-card">
-                        <h3 class="text-lg font-semibold mb-4">📊 Academic Statistics</h3>
-                        <div class="stats-container"
-                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-                            <!-- Current GPA -->
-                            <div
-                                style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 8px;">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">3.8</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Current GPA</div>
-                            </div>
-                            <!-- Enrolled Courses Count -->
-                            <div
-                                style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05)); border-radius: 8px;">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">6</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Enrolled Courses</div>
-                            </div>
-                            <!-- Improvement Rate -->
-                            <div
-                                style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 8px;">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">+12%</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Improvement Rate</div>
-                            </div>
-                            <!-- Overall rating -->
-                            <div
-                                style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 8px;">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">96%</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Overall rating</div>
+                                .ad-message {
+                                    visibility: hidden;
+                                }
+
+                                .ad-message.active {
+                                    opacity: 1 !important;
+                                    transform: scale(1) !important;
+                                    visibility: visible !important;
+                                }
+
+                                .ad-message.fade-out {
+                                    opacity: 0 !important;
+                                    transform: scale(0.8) !important;
+                                    visibility: visible !important;
+                                }
+                            </style>
+                            <script>
+                                (function () {
+                                    const messages = document.querySelectorAll('#ad-message-container .ad-message');
+                                    let currentIndex = 0;
+
+                                    function rotateMessages() {
+                                        const prevIndex = currentIndex;
+                                        currentIndex = (currentIndex + 1) % messages.length;
+
+                                        // Fade out current
+                                        messages[prevIndex].classList.remove('active');
+                                        messages[prevIndex].classList.add('fade-out');
+
+                                        // Fade in next
+                                        messages[currentIndex].classList.add('active');
+
+                                        // Hide previous after animation
+                                        setTimeout(() => {
+                                            messages[prevIndex].classList.remove('fade-out');
+                                        }, 600);
+                                    }
+
+                                    setInterval(rotateMessages, 10000);
+                                })();
+                            </script>
+                        </div>
+
+                        <!-- Academic Statistics Widget -->
+                        <div class="widget-card">
+                            <h3 class="text-lg font-semibold mb-4">📊 Academic Statistics</h3>
+                            <div class="stats-container"
+                                style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                                <!-- Current GPA -->
+                                <div
+                                    style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 8px;">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">3.8</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Current GPA</div>
+                                </div>
+                                <!-- Enrolled Courses Count -->
+                                <div
+                                    style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05)); border-radius: 8px;">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">6</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Enrolled Courses
+                                    </div>
+                                </div>
+                                <!-- Improvement Rate -->
+                                <div
+                                    style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 8px;">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">+12%</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Improvement Rate
+                                    </div>
+                                </div>
+                                <!-- Overall rating -->
+                                <div
+                                    style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 8px;">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">96%</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Overall rating</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Academic Timeline Widget -->
-                    <div class="widget-card"
-                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                        <h3 class="text-lg font-semibold mb-4" style="color: white;">📈 Academic Journey</h3>
-                        <div class="timeline-content" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div class="timeline-item"
-                                style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2);">
-                                <div class="timeline-dot"
-                                    style="width: 12px; height: 12px; background: white; border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,255,255,0.5);">
+                        <!-- Academic Timeline Widget -->
+                        <div class="widget-card"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            <h3 class="text-lg font-semibold mb-4" style="color: white;">📈 Academic Journey</h3>
+                            <div class="timeline-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="timeline-item"
+                                    style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                    <div class="timeline-dot"
+                                        style="width: 12px; height: 12px; background: white; border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,255,255,0.5);">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade
+                                            12 -
+                                            Current</p>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.8/4.0 • Class Rank: 5/120
+                                        </p>
+                                    </div>
                                 </div>
-                                <div style="flex: 1;">
-                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade 12 -
-                                        Current</p>
-                                    <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.8/4.0 • Class Rank: 5/120</p>
+                                <div class="timeline-item"
+                                    style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <div class="timeline-dot"
+                                        style="width: 12px; height: 12px; background: rgba(255,255,255,0.7); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade
+                                            11 -
+                                            2023</p>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.7/4.0 • Honor Roll</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="timeline-item"
-                                style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <div class="timeline-dot"
-                                    style="width: 12px; height: 12px; background: rgba(255,255,255,0.7); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;">
-                                </div>
-                                <div style="flex: 1;">
-                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade 11 -
-                                        2023</p>
-                                    <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.7/4.0 • Honor Roll</p>
-                                </div>
-                            </div>
-                            <div class="timeline-item" style="display: flex; gap: 0.75rem;">
-                                <div class="timeline-dot"
-                                    style="width: 12px; height: 12px; background: rgba(255,255,255,0.5); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;">
-                                </div>
-                                <div style="flex: 1;">
-                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade 10 -
-                                        2022</p>
-                                    <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.6/4.0 • Math Olympiad Winner
-                                    </p>
+                                <div class="timeline-item" style="display: flex; gap: 0.75rem;">
+                                    <div class="timeline-dot"
+                                        style="width: 12px; height: 12px; background: rgba(255,255,255,0.5); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Grade
+                                            10 -
+                                            2022</p>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">GPA: 3.6/4.0 • Math Olympiad
+                                            Winner
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
         </div>
     </section>
@@ -3602,6 +3931,7 @@
 
     <!-- Ad Rotation Manager -->
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
+
 </body>
 
 </html>

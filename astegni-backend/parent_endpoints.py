@@ -1737,7 +1737,7 @@ async def get_parent_by_id(
         "children_info": children_info,
         "rating": parent_profile.rating,
         "rating_count": parent_profile.rating_count,
-        "is_verified": parent_profile.is_verified,
+        "is_verified": user.is_verified if user else False,  # FIXED: is_verified is in users table, not parent_profiles
         "profile_picture": parent_profile.profile_picture,
         "cover_image": parent_profile.cover_image,
         "total_children": parent_profile.total_children,

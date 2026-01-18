@@ -5247,11 +5247,16 @@ const ChatModalManager = {
         }
     },
 
-    // Toggle Sidebar (Mobile)
+    // Toggle Sidebar (All screens)
     toggleSidebar() {
         const sidebar = document.getElementById('chatSidebar');
+        const chatMain = document.getElementById('chatMain');
         if (sidebar) {
-            sidebar.classList.toggle('active');
+            sidebar.classList.toggle('hidden');
+            // Add class to chat-main for animation
+            if (chatMain) {
+                chatMain.classList.toggle('sidebar-hidden');
+            }
         }
     },
 

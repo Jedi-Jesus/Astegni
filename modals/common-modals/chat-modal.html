@@ -9,6 +9,30 @@
 
     <!-- Main Chat Container -->
     <div class="chat-modal-container">
+        <!-- Top Header with Toggle and Window Controls -->
+        <div class="chat-main-header">
+            <!-- Toggle Sidebar Button -->
+            <button class="toggle-sidebar-btn" id="toggleChatSidebar" onclick="toggleChatSidebar()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12h18M3 6h18M3 18h18"></path>
+                </svg>
+            </button>
+
+            <!-- Window Controls (Minimize/Close) -->
+            <div class="window-controls">
+                <button class="minimize-btn" onclick="minimizeChatModal()" title="Minimize">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"></path>
+                    </svg>
+                </button>
+                <button class="close-btn" onclick="closeChatModal()" title="Close">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         <!-- Left Sidebar - Contacts List -->
         <div class="chat-sidebar" id="chatSidebar">
             <!-- Sidebar Header -->
@@ -73,30 +97,6 @@
 
         <!-- Main Chat Area -->
         <div class="chat-main" id="chatMain">
-            <!-- Top Header with Toggle and Window Controls -->
-            <div class="chat-main-header">
-                <!-- Toggle Sidebar Button (Mobile) -->
-                <button class="toggle-sidebar-btn" id="toggleChatSidebar" onclick="toggleChatSidebar()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12h18M3 6h18M3 18h18"></path>
-                    </svg>
-                </button>
-
-                <!-- Window Controls (Minimize/Close) -->
-                <div class="window-controls">
-                    <button class="minimize-btn" onclick="minimizeChatModal()" title="Minimize">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14"></path>
-                        </svg>
-                    </button>
-                    <button class="close-btn" onclick="closeChatModal()" title="Close">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Empty State (when no chat selected) -->
             <div class="chat-empty-state" id="chatEmptyState">
                 <div class="empty-state-icon">

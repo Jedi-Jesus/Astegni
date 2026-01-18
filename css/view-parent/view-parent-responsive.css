@@ -1,0 +1,581 @@
+/* ============================================
+   VIEW PARENT - RESPONSIVE CSS
+   Fixes for profile-header-section centering and admin-right-widgets responsiveness
+   ============================================ */
+
+/* ============================================
+   1. PROFILE HEADER SECTION - CENTERING FIX
+   ============================================ */
+
+/* Desktop - Default layout */
+.profile-header-section {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-main-info {
+    width: 100%;
+    max-width: 100%;
+}
+
+.profile-info-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+/* ============================================
+   2. ADMIN RIGHT WIDGETS - RESPONSIVE
+   ============================================ */
+
+/* Desktop - Sticky sidebar */
+@media (min-width: 1025px) {
+    .admin-right-widgets {
+        width: 320px !important;
+        flex-shrink: 0 !important;
+        position: sticky !important;
+        top: 5rem !important;
+        height: fit-content !important;
+    }
+}
+
+/* Tablet Landscape (1024px) - 2 columns grid */
+@media (max-width: 1024px) {
+    .admin-right-widgets {
+        width: 100% !important;
+        position: static !important;
+        flex-shrink: 1 !important;
+        top: auto !important;
+        height: auto !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    /* Main flex container should stack */
+    .container > .flex.gap-6 {
+        flex-direction: column !important;
+    }
+
+    /* Profile header - center content */
+    .profile-header-section {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .profile-info-wrapper {
+        justify-content: center;
+    }
+
+    .admin-widget-card,
+    .admin-right-widgets .sidebar-widget,
+    .admin-right-widgets .widget-card {
+        padding: 1.25rem !important;
+        margin-bottom: 0 !important;
+    }
+}
+
+/* Tablet Portrait (768px) - 2 columns grid (maintained) */
+@media (max-width: 768px) {
+    .admin-right-widgets {
+        width: 100% !important;
+        position: static !important;
+        flex-shrink: 1 !important;
+        top: auto !important;
+        height: auto !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .admin-widget-card,
+    .admin-right-widgets .sidebar-widget,
+    .admin-right-widgets .widget-card {
+        padding: 1rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Profile header - full width, centered */
+    .profile-header-section {
+        width: 100%;
+        margin: 0 auto 1.5rem;
+        border-radius: 16px;
+    }
+
+    .profile-main-info {
+        padding: 0 1rem 1.5rem 1rem;
+        margin-top: -50px;
+    }
+
+    .profile-info-wrapper {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .profile-avatar-container {
+        width: 100px !important;
+        height: 100px !important;
+        margin: 0 auto;
+    }
+
+    .profile-details-section {
+        padding-top: 0 !important;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-name-row {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-name {
+        font-size: 1.5rem !important;
+        text-align: center;
+        width: 100%;
+    }
+
+    .badges-row {
+        justify-content: center !important;
+        width: 100%;
+    }
+
+    .rating-section {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .rating-wrapper {
+        justify-content: center !important;
+    }
+
+    .profile-quick-stats {
+        justify-content: center !important;
+        width: 100%;
+    }
+
+    .profile-actions-section {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .profile-actions {
+        justify-content: center !important;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+}
+
+/* Mobile (640px) - Single column */
+@media (max-width: 640px) {
+    .admin-right-widgets {
+        width: 100% !important;
+        position: static !important;
+        flex-shrink: 1 !important;
+        top: auto !important;
+        height: auto !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .profile-header-section {
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .profile-main-info {
+        padding: 0 0.75rem 1rem 0.75rem;
+        margin-top: -40px;
+    }
+
+    .profile-avatar-container {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .profile-name {
+        font-size: 1.25rem !important;
+    }
+
+    .badges-row {
+        gap: 0.5rem !important;
+    }
+
+    .profile-badge {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .profile-actions {
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Small Mobile (480px) - Compact layout */
+@media (max-width: 480px) {
+    .profile-header-section {
+        margin: 0 0.25rem 1rem;
+        border-radius: 10px;
+    }
+
+    .profile-main-info {
+        padding: 0 0.5rem 1rem 0.5rem;
+    }
+
+    .cover-image-container {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .profile-avatar-container {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .profile-name {
+        font-size: 1.1rem !important;
+    }
+
+    .badges-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem !important;
+        width: 100%;
+    }
+
+    .profile-badge {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+        padding: 0.4rem 0.5rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .action-btn {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .admin-widget-card,
+    .admin-right-widgets .sidebar-widget {
+        padding: 0.75rem !important;
+        border-radius: 10px;
+    }
+}
+
+/* ============================================
+   3. COVER IMAGE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .cover-image-container {
+        height: 180px;
+    }
+
+    .cover-img {
+        height: 180px;
+        object-fit: cover;
+    }
+}
+
+@media (max-width: 480px) {
+    .cover-image-container {
+        height: 140px;
+    }
+
+    .cover-img {
+        height: 140px;
+    }
+}
+
+/* ============================================
+   4. STATS SECTION RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .profile-quick-stats {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .quick-stat-item {
+        min-width: 80px;
+        padding: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-quick-stats {
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    .quick-stat-item {
+        min-width: 70px;
+        padding: 0.4rem;
+    }
+
+    .stat-number {
+        font-size: 1rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+    }
+}
+
+/* ============================================
+   5. RATING TOOLTIP RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .rating-tooltip {
+        left: 50%;
+        transform: translateX(-50%) !important;
+        width: 280px;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .rating-tooltip::before {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 480px) {
+    .rating-tooltip {
+        width: 250px;
+    }
+
+    .rating-metric {
+        margin-bottom: 0.75rem;
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+    }
+
+    .metric-score {
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================
+   6. VIEW MODE BADGE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .view-mode-badge {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .view-mode-badge {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.7rem;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .view-mode-badge span:first-child {
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   7. ONLINE INDICATOR RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .online-indicator {
+        width: 18px;
+        height: 18px;
+        bottom: 5px;
+        right: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .online-indicator {
+        width: 14px;
+        height: 14px;
+        bottom: 3px;
+        right: 3px;
+    }
+}
+
+/* ============================================
+   8. WIDGET SPECIFIC RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .testimonial-widget,
+    .activity-ticker,
+    .ad-carousel-widget {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .testimonial-widget,
+    .activity-ticker,
+    .ad-carousel-widget {
+        padding: 1rem;
+    }
+
+    .widget-header {
+        margin-bottom: 1rem !important;
+    }
+
+    .widget-title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonial-widget,
+    .activity-ticker,
+    .ad-carousel-widget {
+        padding: 0.75rem;
+    }
+
+    .widget-header {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .widget-title {
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   9. MAIN CONTAINER FLEX FIX
+   ============================================ */
+
+/* Ensure the main container has proper flex behavior */
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.container > .flex.gap-6 {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 1024px) {
+    .container > .flex.gap-6 {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .flex-1 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .container > .flex.gap-6 {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+
+    .container > .flex.gap-6 {
+        gap: 0.75rem;
+    }
+}
+
+/* ============================================
+   10. FORCE PROPER STACKING ORDER
+   ============================================ */
+
+@media (max-width: 1024px) {
+    /* Main content comes first */
+    .flex-1,
+    .main-content,
+    .admin-main-content {
+        order: 1;
+        width: 100%;
+    }
+
+    /* Right widgets come second */
+    .admin-right-widgets {
+        order: 2;
+        width: 100%;
+    }
+}
+
+/* ============================================
+   11. ENSURE CENTERED ALIGNMENT ON MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Center all text and elements within profile header on mobile */
+    .profile-header-section * {
+        text-align: center;
+    }
+
+    .profile-info-wrapper * {
+        text-align: center;
+    }
+
+    /* Override specific elements that need left alignment */
+    .rating-tooltip,
+    .panel-content,
+    .sidebar-content-panel {
+        text-align: left;
+    }
+}
