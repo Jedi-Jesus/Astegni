@@ -74,7 +74,7 @@ function openEditProfileModal() {
             document.getElementById('editPhone').value = currentUser.phone || '';
         } else {
             // Fallback to parsing display name
-            const fullName = document.getElementById('userName').textContent || '';
+            const fullName = document.getElementById('profile-name').textContent || '';
             const nameParts = fullName.split(' ');
             document.getElementById('editFirstName').value = nameParts[0] || '';
             document.getElementById('editFatherName').value = nameParts[1] || '';
@@ -342,7 +342,7 @@ async function saveUserProfile() {
 function updateProfileDisplay(firstName, fatherName, grandfatherName, location, email, phone, interests, bio, quote) {
     // Update full name display
     const fullName = `${firstName} ${fatherName} ${grandfatherName}`;
-    document.getElementById('userName').textContent = fullName;
+    document.getElementById('profile-name').textContent = fullName;
 
     if (location) document.getElementById('user-location').textContent = location;
 
@@ -634,36 +634,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ Authentication verified for user profile');
 
     // ============================================
-    // LOAD PROFILE DATA
+    // LOAD PROFILE DATA FROM API
     // ============================================
-    const savedData = localStorage.getItem('userProfileData');
-    if (savedData) {
-        try {
-            const profileData = JSON.parse(savedData);
-
-            if (profileData.fullName) document.getElementById('userName').textContent = profileData.fullName;
-            if (profileData.location) document.getElementById('user-location').textContent = profileData.location;
-
-            const emailContainer = document.getElementById('email-container');
-            const phoneContainer = document.getElementById('phone-container');
-
-            if (profileData.email) {
-                document.getElementById('user-email').textContent = profileData.email;
-                emailContainer.style.display = 'flex';
-            }
-
-            if (profileData.phone) {
-                document.getElementById('user-phone').textContent = profileData.phone;
-                phoneContainer.style.display = 'flex';
-            }
-
-            if (profileData.interests) document.getElementById('user-interests').textContent = profileData.interests;
-            if (profileData.bio) document.getElementById('user-bio').textContent = profileData.bio;
-            if (profileData.quote) document.getElementById('user-quote').textContent = `"${profileData.quote}"`;
-        } catch (error) {
-            console.error('Error loading profile data:', error);
-        }
-    }
+    await loadUserProfileData();
 });
 
 // Navigation link handler
@@ -860,3 +833,312 @@ switchPanel = function(panelName) {
 };
 
 console.log('User Profile module loaded successfully');
+
+// ============================================
+// USER PROFILE DATA MANAGEMENT
+// ============================================
+
+const API_BASE_URL_PROFILE = window.API_BASE_URL || 'http://localhost:8000';
+let currentUserProfile = null;
+
+/**
+ * Load full user profile data on page load
+ */
+async function loadUserProfileData() {
+    console.log('[loadUserProfileData] Starting to load user profile data...');
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('[loadUserProfileData] No authentication token found');
+            return;
+        }
+
+        console.log('[loadUserProfileData] Fetching from:', `${API_BASE_URL_PROFILE}/api/user/profile/full`);
+        const response = await fetch(`${API_BASE_URL_PROFILE}/api/user/profile/full`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('[loadUserProfileData] Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Failed to load profile data');
+        }
+
+        currentUserProfile = await response.json();
+        console.log('[loadUserProfileData] Profile data received:', currentUserProfile);
+        displayUserProfile(currentUserProfile);
+
+    } catch (error) {
+        console.error('[loadUserProfileData] Error loading user profile:', error);
+    }
+}
+
+/**
+ * Display user profile data in the UI
+ */
+function displayUserProfile(profile) {
+    console.log('[displayUserProfile] Displaying profile:', profile);
+    // Profile Header Section
+    const profileNameEl = document.getElementById('profile-name');
+    const usernameEl = document.getElementById('profile-username');
+    const profileLocationEl = document.getElementById('user-location');
+    const profilePicEl = document.getElementById('profile-pic');
+    const coverImgEl = document.getElementById('cover-img');
+
+    // Display name (from users table)
+    const fullName = [profile.first_name, profile.father_name, profile.grandfather_name]
+        .filter(Boolean)
+        .join(' ');
+
+    console.log('[displayUserProfile] Setting profile name to:', fullName);
+    if (profileNameEl) {
+        profileNameEl.textContent = fullName;
+    } else {
+        console.error('[displayUserProfile] profile-name element not found!');
+    }
+
+    // Display username (from user_profiles table)
+    if (usernameEl) {
+        usernameEl.textContent = profile.username ? `@${profile.username}` : '@username';
+        // Add styling for placeholder
+        if (!profile.username) {
+            usernameEl.style.opacity = '0.5';
+        } else {
+            usernameEl.style.opacity = '1';
+        }
+    }
+
+    // Display location
+    if (profileLocationEl) {
+        profileLocationEl.textContent = profile.location || 'Location not set';
+    }
+
+    // Display profile picture
+    if (profilePicEl && profile.profile_picture) {
+        profilePicEl.src = profile.profile_picture;
+    }
+
+    // Display cover image
+    if (coverImgEl && profile.cover_image) {
+        coverImgEl.src = profile.cover_image;
+    }
+
+    // Profile Details Section
+    const userQuoteEl = document.getElementById('user-quote');
+    const userBioEl = document.getElementById('user-bio');
+    const userInterestsEl = document.getElementById('user-interests');
+    const userEmailEl = document.getElementById('user-email');
+    const userPhoneEl = document.getElementById('user-phone');
+
+    if (userQuoteEl) {
+        userQuoteEl.textContent = profile.quote || '"Learning is a journey, not a destination."';
+    }
+
+    if (userBioEl) {
+        userBioEl.textContent = profile.about || profile.bio || 'No bio available';
+    }
+
+    if (userInterestsEl && profile.interested_in) {
+        userInterestsEl.textContent = profile.interested_in.join(', ') || 'Not specified';
+    }
+
+    if (userEmailEl) {
+        userEmailEl.textContent = profile.email || 'Not specified';
+    }
+
+    if (userPhoneEl) {
+        userPhoneEl.textContent = profile.phone || 'Not specified';
+    }
+
+    // Member since (created_at from users table)
+    const userJoinedEl = document.getElementById('user-joined');
+    if (userJoinedEl && profile.created_at) {
+        const joinDate = new Date(profile.created_at);
+        userJoinedEl.textContent = joinDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long'
+        });
+    }
+
+    // Hero section (if present on page)
+    const heroTitleEl = document.getElementById('typedText');
+    const heroSubtitleEl = document.getElementById('hero-subtitle');
+
+    if (heroTitleEl && profile.hero_title) {
+        heroTitleEl.textContent = profile.hero_title;
+    }
+
+    if (heroSubtitleEl && profile.hero_subtitle) {
+        heroSubtitleEl.textContent = profile.hero_subtitle;
+    }
+}
+
+/**
+ * Open edit profile modal and populate with current data
+ */
+function openEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (!modal) return;
+
+    // Populate form fields with current data
+    if (currentUserProfile) {
+        document.getElementById('editUsername').value = currentUserProfile.username || '';
+        document.getElementById('editHeroTitle').value = currentUserProfile.hero_title || '';
+        document.getElementById('editHeroSubtitle').value = currentUserProfile.hero_subtitle || '';
+        document.getElementById('editLocation').value = currentUserProfile.location || '';
+        document.getElementById('editQuote').value = currentUserProfile.quote || '';
+        document.getElementById('editAbout').value = currentUserProfile.about || '';
+
+        // Languages (array to comma-separated string)
+        document.getElementById('editLanguages').value =
+            currentUserProfile.languages ? currentUserProfile.languages.join(', ') : '';
+
+        // Interested in (array to comma-separated string)
+        document.getElementById('editInterestedIn').value =
+            currentUserProfile.interested_in ? currentUserProfile.interested_in.join(', ') : '';
+
+        // Social links
+        if (currentUserProfile.social_links) {
+            document.getElementById('editTwitter').value = currentUserProfile.social_links.twitter || '';
+            document.getElementById('editLinkedIn').value = currentUserProfile.social_links.linkedin || '';
+            document.getElementById('editFacebook').value = currentUserProfile.social_links.facebook || '';
+            document.getElementById('editInstagram').value = currentUserProfile.social_links.instagram || '';
+        }
+    }
+
+    modal.classList.remove('hidden');
+}
+
+/**
+ * Close edit profile modal
+ */
+function closeEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+/**
+ * Save user profile changes
+ */
+async function saveUserProfile() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login to continue');
+            return;
+        }
+
+        // Get form data
+        const username = document.getElementById('editUsername').value.trim();
+        const heroTitle = document.getElementById('editHeroTitle').value.trim();
+        const heroSubtitle = document.getElementById('editHeroSubtitle').value.trim();
+        const location = document.getElementById('editLocation').value.trim();
+        const quote = document.getElementById('editQuote').value.trim();
+        const about = document.getElementById('editAbout').value.trim();
+
+        // Parse comma-separated values to arrays
+        const languagesStr = document.getElementById('editLanguages').value.trim();
+        const languages = languagesStr ? languagesStr.split(',').map(l => l.trim()).filter(Boolean) : [];
+
+        const interestedInStr = document.getElementById('editInterestedIn').value.trim();
+        const interestedIn = interestedInStr ? interestedInStr.split(',').map(i => i.trim()).filter(Boolean) : [];
+
+        // Social links
+        const socialLinks = {
+            twitter: document.getElementById('editTwitter').value.trim(),
+            linkedin: document.getElementById('editLinkedIn').value.trim(),
+            facebook: document.getElementById('editFacebook').value.trim(),
+            instagram: document.getElementById('editInstagram').value.trim()
+        };
+
+        // Prepare update data
+        const updateData = {
+            username: username || null,
+            hero_title: heroTitle || null,
+            hero_subtitle: heroSubtitle || null,
+            location: location || null,
+            quote: quote || null,
+            about: about || null,
+            languages: languages,
+            interested_in: interestedIn,
+            social_links: socialLinks
+        };
+
+        // Send update request
+        const response = await fetch(`${API_BASE_URL_PROFILE}/api/user/profile`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || 'Failed to update profile');
+        }
+
+        // Show success message
+        if (window.showToast) {
+            window.showToast('Profile updated successfully!', 'success');
+        } else {
+            alert('Profile updated successfully!');
+        }
+
+        // Close modal
+        closeEditProfileModal();
+
+        // Reload profile data
+        await loadUserProfileData();
+
+    } catch (error) {
+        console.error('Error saving profile:', error);
+        if (window.showToast) {
+            window.showToast(error.message || 'Failed to update profile', 'error');
+        } else {
+            alert(error.message || 'Failed to update profile');
+        }
+    }
+}
+
+/**
+ * Share profile functionality
+ */
+function shareProfile() {
+    const profileUrl = window.location.href;
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Astegni Profile',
+            text: 'Check out my profile on Astegni',
+            url: profileUrl
+        }).catch(err => console.log('Error sharing:', err));
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(profileUrl).then(() => {
+            if (window.showToast) {
+                window.showToast('Profile link copied to clipboard!', 'success');
+            } else {
+                alert('Profile link copied to clipboard!');
+            }
+        });
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadUserProfileData();
+});
+
+// Export functions to window for global access
+window.openEditProfileModal = openEditProfileModal;
+window.closeEditProfileModal = closeEditProfileModal;
+window.saveUserProfile = saveUserProfile;
+window.shareProfile = shareProfile;
+window.loadUserProfileData = loadUserProfileData;

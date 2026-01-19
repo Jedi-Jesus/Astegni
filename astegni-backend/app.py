@@ -213,6 +213,10 @@ app.include_router(router)
 from course_management_endpoints import router as course_router
 app.include_router(course_router)
 
+# Include user profile routes
+from user_profile_endpoints import router as user_profile_router
+app.include_router(user_profile_router)
+
 # Include admin review routes
 from admin_review_endpoints import router as review_router
 app.include_router(review_router)

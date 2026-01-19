@@ -101,6 +101,7 @@ class User(Base):
 
     # Relationships
     tutor_profile = relationship("TutorProfile", back_populates="user", uselist=False)
+    user_profile = relationship("UserProfile", back_populates="user", uselist=False)
     student_profile = relationship("StudentProfile", back_populates="user", uselist=False)
     parent_profile = relationship("ParentProfile", back_populates="user", uselist=False)
     refresh_tokens = relationship("RefreshToken", back_populates="user")
@@ -209,6 +210,56 @@ class TutorProfile(Base):
     activities = relationship("TutorActivity", back_populates="tutor")
     # Note: schedules relationship removed - TutorSchedule now references users.id directly
     # Note: sessions relationship removed - use whiteboard_sessions table instead
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+
+    # Profile Display Fields
+    profile_picture = Column(String)
+    cover_image = Column(String)
+    username = Column(String, unique=True, index=True)
+    hero_title = Column(Text)
+    hero_subtitle = Column(Text)
+    quote = Column(Text)
+    about = Column(Text)
+
+    # Personal Information
+    interested_in = Column(ARRAY(String), default=[])  # Array of interests
+    location = Column(String)
+    languages = Column(ARRAY(String), default=[])  # Array of languages
+    social_links = Column(JSON, default={})  # {twitter: "", linkedin: "", etc.}
+
+    # Status Fields
+    is_active = Column(Boolean, default=True)
+    is_online = Column(Boolean, default=False)
+    last_seen = Column(DateTime, nullable=True)
+
+    # Two-Factor Authentication
+    two_factor_enabled = Column(Boolean, default=False)
+    two_factor_method = Column(String, nullable=True)  # 'email', 'sms', 'authenticator', 'inapp'
+    two_factor_secret = Column(String, nullable=True)  # For authenticator apps
+    two_factor_inapp_password = Column(String, nullable=True)  # For in-app password
+    two_factor_backup_codes = Column(Text, nullable=True)  # JSON array of backup codes
+    two_factor_temp_code = Column(String, nullable=True)  # Temporary code for email/sms
+    two_factor_temp_expiry = Column(DateTime, nullable=True)  # Expiry for temp code
+    two_factor_verification_token = Column(String, nullable=True)  # Token for verification
+    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Token expiry
+    two_factor_protected_panels = Column(JSON, nullable=True)  # Which panels require 2FA
+
+    # Subscription Fields
+    subscription_plan_id = Column(Integer, nullable=True)
+    subscription_started_at = Column(DateTime, nullable=True)
+    subscription_expires_at = Column(DateTime, nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="user_profile")
 
 class StudentProfile(Base):
     __tablename__ = "student_profiles"

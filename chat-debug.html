@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Modal Debug</title>
+    <style>
+        #debugConsole {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: rgba(0, 0, 0, 0.95);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 99999;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3);
+            border: 2px solid #00ff00;
+        }
+
+        #debugConsole h3 {
+            margin: 0 0 10px 0;
+            color: #00ffff;
+            font-size: 14px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+
+        .debug-section {
+            margin-bottom: 15px;
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .debug-label {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .debug-value {
+            color: #00ff00;
+            margin-left: 10px;
+        }
+
+        .debug-error {
+            color: #ff0000;
+        }
+
+        .debug-warning {
+            color: #ff9900;
+        }
+
+        .debug-success {
+            color: #00ff00;
+        }
+
+        #debugToggle {
+            position: fixed;
+            bottom: 20px;
+            right: 390px;
+            background: #00ff00;
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 99999;
+            font-weight: bold;
+        }
+
+        #debugToggle:hover {
+            background: #00cc00;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 9px;
+        }
+    </style>
+</head>
+<body>
+    <button id="debugToggle">Toggle Debug</button>
+
+    <div id="debugConsole">
+        <h3>🔍 Chat Modal Debug Console</h3>
+
+        <div class="debug-section">
+            <div class="debug-label">Screen Width:</div>
+            <div class="debug-value" id="screenWidth">-</div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-label">Sidebar Classes:</div>
+            <div class="debug-value" id="sidebarClasses">-</div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-label">ChatMain Classes:</div>
+            <div class="debug-value" id="chatMainClasses">-</div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-label">ChatMain Computed Styles:</div>
+            <div class="debug-value" id="chatMainStyles">-</div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-label">ChatMain Inline Styles:</div>
+            <div class="debug-value" id="chatMainInline">-</div>
+        </div>
+
+        <div class="debug-section">
+            <h3 style="font-size: 12px; color: #ffff00;">Event Log:</h3>
+            <div id="eventLog"></div>
+        </div>
+    </div>
+
+    <script>
+        let debugVisible = true;
+        let logEntries = [];
+        const maxLogs = 20;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = {
+                time: timestamp,
+                message: message,
+                type: type
+            };
+
+            logEntries.unshift(entry);
+            if (logEntries.length > maxLogs) {
+                logEntries.pop();
+            }
+
+            updateEventLog();
+        }
+
+        function updateEventLog() {
+            const logDiv = document.getElementById('eventLog');
+            logDiv.innerHTML = logEntries.map(entry => {
+                const typeClass = entry.type === 'error' ? 'debug-error' :
+                                 entry.type === 'warning' ? 'debug-warning' :
+                                 'debug-success';
+                return `<div class="log-entry">
+                    <span class="timestamp">[${entry.time}]</span>
+                    <span class="${typeClass}"> ${entry.message}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function updateDebugInfo() {
+            const sidebar = document.getElementById('chatSidebar');
+            const chatMain = document.getElementById('chatMain');
+
+            // Screen width
+            document.getElementById('screenWidth').textContent = `${window.innerWidth}px ${window.innerWidth <= 768 ? '(MOBILE)' : '(DESKTOP)'}`;
+            document.getElementById('screenWidth').className = window.innerWidth <= 768 ? 'debug-value debug-warning' : 'debug-value debug-success';
+
+            if (sidebar) {
+                document.getElementById('sidebarClasses').textContent = sidebar.className || 'none';
+            } else {
+                document.getElementById('sidebarClasses').innerHTML = '<span class="debug-error">Sidebar not found!</span>';
+            }
+
+            if (chatMain) {
+                document.getElementById('chatMainClasses').textContent = chatMain.className || 'none';
+
+                // Get computed styles
+                const computed = window.getComputedStyle(chatMain);
+                const stylesHTML = `
+                    padding-left: ${computed.paddingLeft}<br>
+                    padding-right: ${computed.paddingRight}<br>
+                    transition: ${computed.transition}<br>
+                    left: ${computed.left}<br>
+                    width: ${computed.width}<br>
+                    z-index: ${computed.zIndex}
+                `;
+                document.getElementById('chatMainStyles').innerHTML = stylesHTML;
+
+                // Check inline styles
+                const inlineStyle = chatMain.getAttribute('style');
+                document.getElementById('chatMainInline').innerHTML = inlineStyle || '<span class="debug-success">none (good!)</span>';
+
+                // Check for problematic values
+                if (computed.paddingLeft !== '0px' && window.innerWidth <= 768) {
+                    log(`⚠️ WARNING: paddingLeft is ${computed.paddingLeft} on mobile!`, 'error');
+                }
+
+                if (computed.transition !== 'none' && window.innerWidth <= 768) {
+                    log(`⚠️ WARNING: transition is "${computed.transition}" on mobile!`, 'error');
+                }
+            } else {
+                document.getElementById('chatMainClasses').innerHTML = '<span class="debug-error">ChatMain not found!</span>';
+            }
+        }
+
+        // Monitor class changes
+        function watchForChanges() {
+            const sidebar = document.getElementById('chatSidebar');
+            const chatMain = document.getElementById('chatMain');
+
+            if (sidebar) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const hasHidden = sidebar.classList.contains('hidden');
+                            log(`Sidebar toggled: ${hasHidden ? 'HIDDEN' : 'VISIBLE'}`, hasHidden ? 'warning' : 'success');
+                            updateDebugInfo();
+                        }
+                    });
+                });
+
+                observer.observe(sidebar, { attributes: true });
+                log('✓ Sidebar observer attached', 'success');
+            }
+
+            if (chatMain) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes') {
+                            if (mutation.attributeName === 'class') {
+                                log(`ChatMain class changed: ${chatMain.className}`, 'warning');
+                                updateDebugInfo();
+                            } else if (mutation.attributeName === 'style') {
+                                log(`ChatMain inline style changed!`, 'error');
+                                updateDebugInfo();
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(chatMain, { attributes: true });
+                log('✓ ChatMain observer attached', 'success');
+            }
+        }
+
+        // Toggle debug console
+        document.getElementById('debugToggle').addEventListener('click', () => {
+            debugVisible = !debugVisible;
+            document.getElementById('debugConsole').style.display = debugVisible ? 'block' : 'none';
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            log(`Window resized to ${window.innerWidth}px`, 'info');
+            updateDebugInfo();
+        });
+
+        // Initialize
+        setTimeout(() => {
+            log('Debug console initialized', 'success');
+            updateDebugInfo();
+            watchForChanges();
+
+            // Update every 500ms
+            setInterval(updateDebugInfo, 500);
+        }, 1000);
+
+        log('Waiting for chat modal elements...', 'info');
+    </script>
+</body>
+</html>

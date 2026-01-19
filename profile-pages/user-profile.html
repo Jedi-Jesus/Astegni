@@ -1405,7 +1405,8 @@
 
                                         <div class="profile-details-section">
                                             <div class="profile-name-row">
-                                                <h1 class="profile-name" id="userName">User Name</h1>
+                                                <h1 class="profile-name" id="profile-name">User Name</h1>
+                                                <p id="profile-username" style="color: var(--text-muted); font-size: 1rem; margin-top: 0.25rem;">@username</p>
                                                 <div class="badges-row">
                                                     <span class="profile-badge verified" id="verification-badge">✔
                                                         Verified User</span>
@@ -2765,68 +2766,63 @@
             </div>
             <div class="modal-body">
                 <form id="editProfileForm">
-                    <!-- Ethiopian Name Fields (Required) -->
+                    <!-- Username -->
                     <div class="form-group">
-                        <label>First Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="editFirstName" class="form-input" placeholder="Enter first name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Father Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="editFatherName" class="form-input" placeholder="Enter father name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Grandfather Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="editGrandfatherName" class="form-input" placeholder="Enter grandfather name" required>
+                        <label>Username</label>
+                        <input type="text" id="editUsername" class="form-input" placeholder="@username">
                     </div>
 
+                    <!-- Hero Title -->
+                    <div class="form-group">
+                        <label>Hero Title</label>
+                        <input type="text" id="editHeroTitle" class="form-input" placeholder="Your headline...">
+                    </div>
+
+                    <!-- Hero Subtitle -->
+                    <div class="form-group">
+                        <label>Hero Subtitle</label>
+                        <input type="text" id="editHeroSubtitle" class="form-input" placeholder="Your tagline...">
+                    </div>
+
+                    <!-- Location -->
                     <div class="form-group">
                         <label>Location</label>
                         <input type="text" id="editLocation" class="form-input" placeholder="City, Country">
                     </div>
 
-                    <!-- Email with OTP Verification -->
+                    <!-- Languages -->
                     <div class="form-group">
-                        <label>Email (Optional)</label>
-                        <div class="flex gap-2">
-                            <input type="email" id="editEmail" class="form-input flex-1" placeholder="your@email.com">
-                            <button type="button" id="sendEmailOtpBtn" class="btn-secondary" style="display: none;" onclick="sendEmailOTP()">
-                                Verify Email
-                            </button>
-                        </div>
-                        <small class="text-gray-500 text-xs mt-1" style="display: block;">
-                            Changing your email requires OTP verification
-                        </small>
+                        <label>Languages</label>
+                        <input type="text" id="editLanguages" class="form-input" placeholder="English, Amharic, Oromifa (comma-separated)">
                     </div>
 
-                    <!-- OTP Input (Hidden by default) -->
-                    <div id="otpVerificationSection" class="form-group" style="display: none;">
-                        <label>Enter OTP <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <input type="text" id="otpInput" class="form-input flex-1" placeholder="Enter 6-digit OTP" maxlength="6">
-                            <button type="button" class="btn-primary" onclick="verifyEmailOTP()">
-                                Verify
-                            </button>
-                        </div>
-                        <small class="text-gray-500 text-xs mt-1" id="otpTimer" style="display: block;">
-                            OTP sent to your new email
-                        </small>
+                    <!-- Interested In -->
+                    <div class="form-group">
+                        <label>Interested In</label>
+                        <input type="text" id="editInterestedIn" class="form-input" placeholder="Education, Learning, Technology (comma-separated)">
                     </div>
 
+                    <!-- About Me -->
                     <div class="form-group">
-                        <label>Phone (Optional)</label>
-                        <input type="tel" id="editPhone" class="form-input" placeholder="+251 912 345 678">
+                        <label>About Me</label>
+                        <textarea id="editAbout" class="form-input" rows="4" placeholder="Tell us about yourself..."></textarea>
                     </div>
+
+                    <!-- Quote -->
                     <div class="form-group">
-                        <label>Interests</label>
-                        <input type="text" id="editInterests" class="form-input" placeholder="Education, Learning, etc.">
-                    </div>
-                    <div class="form-group">
-                        <label>Bio</label>
-                        <textarea id="editBio" class="form-input" rows="4" placeholder="Tell us about yourself..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Favorite Quote</label>
+                        <label>Quote</label>
                         <input type="text" id="editQuote" class="form-input" placeholder="Your favorite quote...">
+                    </div>
+
+                    <!-- Social Media Links -->
+                    <div class="form-group">
+                        <label>Social Media</label>
+                        <div class="space-y-2">
+                            <input type="url" id="editTwitter" class="form-input" placeholder="Twitter/X URL">
+                            <input type="url" id="editLinkedIn" class="form-input" placeholder="LinkedIn URL">
+                            <input type="url" id="editFacebook" class="form-input" placeholder="Facebook URL">
+                            <input type="url" id="editInstagram" class="form-input" placeholder="Instagram URL">
+                        </div>
                     </div>
                 </form>
             </div>
@@ -3160,11 +3156,10 @@
     <script src="../js/page-structure/notification-manager.js"></script>
     <script src="../js/page-structure/humberger-menu.js"></script>
     <script src="../js/page-structure/coming-soon-notification.js"></script>
-    <script src="../js/page-structure/profile-dropdown.js"></script>
-
     <!-- Root/Shared Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251218"></script>
+    <script src="../js/root/profile-system.js?v=20251217"></script>
     <script src="../js/root/nav.js"></script>
     <script src="../js/root/theme-toggle.js"></script>
 
