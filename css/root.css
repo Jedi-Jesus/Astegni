@@ -5,6 +5,7 @@
 
 /* Core foundational styles */
 @import url('root/theme.css');
+@import url('root/color-palettes.css');
 
 /* Component-specific modules */
 @import url('root/buttons-forms.css');

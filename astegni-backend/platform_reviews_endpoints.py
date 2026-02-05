@@ -38,7 +38,7 @@ class PlatformReviewCreate(BaseModel):
     ease_of_use: int  # Ease of use rating (1-5), required
     features_quality: int  # Features rating (1-5), required
     support_quality: int  # Support/Customer service rating (1-5), required
-    overall_value: int  # Overall value & worth rating (1-5), required
+    pricing: int  # Pricing rating (1-5), required
     review_text: Optional[str] = None
     would_recommend: Optional[bool] = None
 
@@ -62,16 +62,12 @@ async def submit_platform_review(
         1 <= review.ease_of_use <= 5,
         1 <= review.features_quality <= 5,
         1 <= review.support_quality <= 5,
-        1 <= review.overall_value <= 5
+        1 <= review.pricing <= 5
     ]):
         raise HTTPException(status_code=400, detail="All ratings must be between 1 and 5")
 
     # Calculate overall rating as average of all category ratings
-    overall_rating = (review.ease_of_use + review.features_quality + review.support_quality + review.overall_value) / 4.0
-
-    # Get user's current active role from JWT token (set by get_current_user in utils.py)
-    # This is the role the user is currently logged in as, not just the first role in their roles array
-    user_role = getattr(current_user, 'current_role', None) or current_user.active_role or 'user'
+    overall_rating = (review.ease_of_use + review.features_quality + review.support_quality + review.pricing) / 4.0
 
     try:
         with get_admin_db() as conn:
@@ -92,19 +88,19 @@ async def submit_platform_review(
                             ease_of_use = %s,
                             features_quality = %s,
                             support_quality = %s,
-                            overall_value = %s,
+                            pricing = %s,
                             review_text = %s,
                             would_recommend = %s,
                             updated_at = CURRENT_TIMESTAMP
                         WHERE reviewer_id = %s
                         RETURNING id, rating, ease_of_use, features_quality, support_quality,
-                                  overall_value, review_text, would_recommend, created_at, updated_at
+                                  pricing, review_text, would_recommend, created_at, updated_at
                     """, (
                         overall_rating,
                         review.ease_of_use,
                         review.features_quality,
                         review.support_quality,
-                        review.overall_value,
+                        review.pricing,
                         review.review_text,
                         review.would_recommend,
                         current_user.id
@@ -114,29 +110,27 @@ async def submit_platform_review(
                     cur.execute("""
                         INSERT INTO astegni_reviews (
                             reviewer_id,
-                            reviewer_role,
                             rating,
                             ease_of_use,
                             features_quality,
                             support_quality,
-                            overall_value,
+                            pricing,
                             review_text,
                             would_recommend,
                             is_featured,
                             count,
                             created_at,
                             updated_at
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                         RETURNING id, rating, ease_of_use, features_quality, support_quality,
-                                  overall_value, review_text, would_recommend, created_at, updated_at
+                                  pricing, review_text, would_recommend, created_at, updated_at
                     """, (
                         current_user.id,
-                        user_role,
                         overall_rating,
                         review.ease_of_use,
                         review.features_quality,
                         review.support_quality,
-                        review.overall_value,
+                        review.pricing,
                         review.review_text,
                         review.would_recommend,
                         False,  # is_featured
@@ -154,7 +148,7 @@ async def submit_platform_review(
                         "ease_of_use": result['ease_of_use'],
                         "features_quality": result['features_quality'],
                         "support_quality": result['support_quality'],
-                        "overall_value": result['overall_value'],
+                        "pricing": result['pricing'],
                         "review_text": result['review_text'],
                         "would_recommend": result['would_recommend'],
                         "created_at": result['created_at'].isoformat() if result['created_at'] else None,
@@ -178,8 +172,8 @@ async def get_my_platform_review(
         with get_admin_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, reviewer_id, reviewer_role, rating,
-                           ease_of_use, features_quality, support_quality, overall_value,
+                    SELECT id, reviewer_id, rating,
+                           ease_of_use, features_quality, support_quality, pricing,
                            review_text, would_recommend, is_featured, created_at, updated_at
                     FROM astegni_reviews
                     WHERE reviewer_id = %s
@@ -193,12 +187,11 @@ async def get_my_platform_review(
                 return {
                     "id": review['id'],
                     "reviewer_id": review['reviewer_id'],
-                    "reviewer_role": review['reviewer_role'],
                     "rating": round(float(review['rating']), 2) if review['rating'] else 0,
                     "ease_of_use": review['ease_of_use'],
                     "features_quality": review['features_quality'],
                     "support_quality": review['support_quality'],
-                    "overall_value": review['overall_value'],
+                    "pricing": review['pricing'],
                     "review_text": review['review_text'],
                     "would_recommend": review['would_recommend'],
                     "is_featured": review['is_featured'],
@@ -227,7 +220,7 @@ async def get_platform_review_stats():
                         COALESCE(AVG(support_quality), 0) as avg_support,
                         COALESCE(AVG(ease_of_use), 0) as avg_ease,
                         COALESCE(AVG(features_quality), 0) as avg_features,
-                        COALESCE(AVG(overall_value), 0) as avg_value
+                        COALESCE(AVG(pricing), 0) as avg_pricing
                     FROM astegni_reviews
                 """)
 
@@ -255,7 +248,7 @@ async def get_platform_review_stats():
                         "ease_of_use": round(float(stats['avg_ease']), 2) if stats['avg_ease'] else 0,
                         "features_quality": round(float(stats['avg_features']), 2) if stats['avg_features'] else 0,
                         "support_quality": round(float(stats['avg_support']), 2) if stats['avg_support'] else 0,
-                        "overall_value": round(float(stats['avg_value']), 2) if stats['avg_value'] else 0
+                        "pricing": round(float(stats['avg_pricing']), 2) if stats['avg_pricing'] else 0
                     },
                     "rating_distribution": counts
                 }

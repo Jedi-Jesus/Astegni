@@ -55,8 +55,7 @@ const ModalLoader = (function() {
         'view-certification-modal.html',
         'view-experience-modal.html',
         'view-package-modal.html',
-        'view-request-modal.html',
-        'view-schedule-modal.html'
+        'view-request-modal.html'
     ];
 
     // Modals in common-modals folder (shared across profiles)
@@ -67,6 +66,7 @@ const ModalLoader = (function() {
         'add-role-modal.html',
         'appearance-modal.html',
         'coming-soon-modal.html',
+        'confirm-delete-schedule-modal.html',
         'connected-accounts-modal.html',
         'course-request-modal.html',
         'community-modal.html',
@@ -78,6 +78,7 @@ const ModalLoader = (function() {
         'coursework-my-courseworks-modal.html',
         'coursework-view-answers-modal.html',
         'coursework-view-details-modal.html',
+        'delete-credential-modal.html',
         'export-data-modal.html',
         'folder-modal.html',
         'invite-parent-modal.html',
@@ -86,15 +87,18 @@ const ModalLoader = (function() {
         'leave-astegni-modal.html',
         'login-activity-modal.html',
         'logout-modal.html',
+        'manage-role-modal.html',
         'payment-method-modal.html',
         'review-astegni-modal.html',
         'schedule-modal.html',
+        'share-profile-modal.html',
         'student-details-modal.html',
         'subscription-modal.html',
         'two-factor-auth-modal.html',
         'upload-document-modal.html',
         'universal-upload-modal.html',
         'verify-personal-info-modal.html',
+        'view-schedule-modal.html',
         'whiteboard-modal.html'
     ];
 
@@ -126,7 +130,7 @@ const ModalLoader = (function() {
         'viewCertificationModal': { file: 'view-certification-modal.html', path: 'tutor-profile' },
         'viewExperienceModal': { file: 'view-experience-modal.html', path: 'tutor-profile' },
         'viewRequestModal': { file: 'view-request-modal.html', path: 'tutor-profile' },
-        'viewScheduleModal': { file: 'view-schedule-modal.html', path: 'tutor-profile' },
+        'viewScheduleModal': { file: 'view-schedule-modal.html', path: 'common-modals' },
 
         // Common modals (shared across profiles)
         'accept-parent-invitation-modal': { file: 'accept-parent-invitation-modal.html', path: 'common-modals' },
@@ -135,6 +139,8 @@ const ModalLoader = (function() {
         'adAnalyticsModal': { file: 'ad-analytics-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },
         'coming-soon-modal': { file: 'coming-soon-modal.html', path: 'common-modals' },
+        'confirmDeleteScheduleModal': { file: 'confirm-delete-schedule-modal.html', path: 'common-modals' },
+        'confirm-delete-schedule-modal': { file: 'confirm-delete-schedule-modal.html', path: 'common-modals' },
         'course-request-modal': { file: 'course-request-modal.html', path: 'common-modals' },
         'logout-modal': { file: 'logout-modal.html', path: 'common-modals' },
         'communityModal': { file: 'community-modal.html', path: 'common-modals' },
@@ -157,6 +163,7 @@ const ModalLoader = (function() {
         'scheduleModal': { file: 'schedule-modal.html', path: 'common-modals' },
         'subscription-modal': { file: 'subscription-modal.html', path: 'common-modals' },
         'uploadDocumentModal': { file: 'upload-document-modal.html', path: 'common-modals' },
+        'deleteCredentialModal': { file: 'delete-credential-modal.html', path: 'common-modals' },
         'verify-personal-info-modal': { file: 'verify-personal-info-modal.html', path: 'common-modals' },
 
         // Settings modals (new)
@@ -167,6 +174,8 @@ const ModalLoader = (function() {
         'export-data-modal': { file: 'export-data-modal.html', path: 'common-modals' },
         'review-astegni-modal': { file: 'review-astegni-modal.html', path: 'common-modals' },
         'appearance-modal': { file: 'appearance-modal.html', path: 'common-modals' },
+        'share-profile-modal': { file: 'share-profile-modal.html', path: 'common-modals' },
+        'shareProfileModal': { file: 'share-profile-modal.html', path: 'common-modals' },
 
         // Digital Whiteboard modal
         'whiteboardModal': { file: 'whiteboard-modal.html', path: 'common-modals' },

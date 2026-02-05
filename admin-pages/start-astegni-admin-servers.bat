@@ -51,7 +51,8 @@ echo ========================================
 echo   ADMIN SERVERS READY!
 echo ========================================
 echo.
-echo Admin Frontend:  http://localhost:8082/admin-pages/
+echo Admin Login:     http://localhost:8082/index.html
+echo Admin Frontend:  http://localhost:8082/
 echo Admin Backend:   http://localhost:8001
 echo Admin API Docs:  http://localhost:8001/docs
 echo.

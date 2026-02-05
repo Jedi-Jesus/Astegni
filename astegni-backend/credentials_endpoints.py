@@ -1,8 +1,8 @@
 """
 Tutor Credentials Endpoints
 
-Credential management system for tutors:
-- Upload academic certificates, achievements, and experience documents
+Credential management system for tutors and students:
+- Upload academic credentials, awards and honors, and experience documents
 - Verification workflow (pending -> verified/rejected)
 - Admin verification with rejection reasons
 - Featured credential support
@@ -64,6 +64,7 @@ class TutorDocumentResponse(BaseModel):
     issued_by: Optional[str] = None
     date_of_issue: Optional[date] = None
     expiry_date: Optional[date] = None
+    years: Optional[int] = None
     document_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -178,7 +179,7 @@ def get_document_by_id(document_id: int) -> Optional[dict]:
                            issued_by, date_of_issue, expiry_date, document_url, file_name,
                            file_type, file_size, created_at, updated_at,
                            verification_status, is_verified, verified_by_admin_id,
-                           status_reason, status_at, is_featured
+                           status_reason, status_at, is_featured, years
                     FROM credentials
                     WHERE id = %s AND uploader_role = 'tutor'
                 """, (document_id,))
@@ -195,6 +196,7 @@ def get_document_by_id(document_id: int) -> Optional[dict]:
                         'issued_by': result['issued_by'],
                         'date_of_issue': result['date_of_issue'],
                         'expiry_date': result['expiry_date'],
+                        'years': result.get('years'),
                         'document_url': result['document_url'],
                         'created_at': result['created_at'],
                         'updated_at': result['updated_at'],
@@ -223,16 +225,17 @@ async def upload_tutor_document(
     date_of_issue: str = Form(...),
     description: Optional[str] = Form(None),
     expiry_date: Optional[str] = Form(None),
+    years: Optional[int] = Form(None),
     is_featured: Optional[str] = Form("false"),
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Upload a new tutor document (academic certificate, achievement, or experience)
+    Upload a new tutor document (academic credentials, awards and honors, or experience)
 
     - Validates document type
     - Uploads file to Backblaze B2
-    - Creates database record in unified 'documents' table with pending verification status
+    - Creates database record in unified 'credentials' table with pending verification status
     - Returns document details
     """
     try:
@@ -245,12 +248,8 @@ async def upload_tutor_document(
         if document_type not in ['academic', 'achievement', 'experience']:
             raise HTTPException(status_code=400, detail="Invalid document type. Must be 'academic', 'achievement', or 'experience'")
 
-        # Get tutor profile id
-        print(f"   Getting tutor_id for user_id: {current_user.id}")
-        tutor_id = get_tutor_id_from_user(current_user.id)
-        print(f"   Found tutor_id: {tutor_id}")
-        if not tutor_id:
-            raise HTTPException(status_code=404, detail="Tutor profile not found")
+        # USER-BASED: Use current_user.id directly (credentials belong to the person, not the role)
+        print(f"   Using user_id: {current_user.id} (uploader_role: 'tutor')")
 
         # Validate file type
         allowed_extensions = {'.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'}
@@ -273,7 +272,7 @@ async def upload_tutor_document(
             file_data=file_content,
             file_name=file.filename,
             file_type="files",
-            user_id=tutor_id
+            user_id=current_user.id  # Use user_id instead of tutor_id
         )
         print(f"   File upload result: {file_upload_result}")
 
@@ -293,20 +292,21 @@ async def upload_tutor_document(
 
         # Insert into unified documents table
         print(f"   Inserting into documents table...")
+        print(f"   Years: {years}")
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO credentials (
                         uploader_id, uploader_role, document_type, title, description,
                         issued_by, date_of_issue, expiry_date, document_url, file_name,
-                        file_type, file_size, verification_status, is_verified, is_featured
-                    ) VALUES (%s, 'tutor', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', FALSE, %s)
+                        file_type, file_size, verification_status, is_verified, is_featured, years
+                    ) VALUES (%s, 'tutor', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', FALSE, %s, %s)
                     RETURNING id, uploader_id, document_type, title, description, issued_by,
                               date_of_issue, expiry_date, document_url, created_at, updated_at,
                               verification_status, is_verified, verified_by_admin_id,
-                              status_reason, status_at, is_featured
-                """, (tutor_id, document_type, title, description, issued_by, issue_date, exp_date,
-                      file_url, file.filename, file.content_type, file_size, is_featured_bool))
+                              status_reason, status_at, is_featured, years
+                """, (current_user.id, document_type, title, description, issued_by, issue_date, exp_date,
+                      file_url, file.filename, file.content_type, file_size, is_featured_bool, years))
 
                 result = cursor.fetchone()
                 print(f"   ✅ Document inserted with ID: {result['id']}")
@@ -321,6 +321,7 @@ async def upload_tutor_document(
             issued_by=result['issued_by'],
             date_of_issue=result['date_of_issue'],
             expiry_date=result['expiry_date'],
+            years=result.get('years'),
             document_url=result['document_url'],
             created_at=result['created_at'],
             updated_at=result['updated_at'],
@@ -354,9 +355,14 @@ async def get_tutor_documents(
     - Returns list of documents sorted by date_of_issue DESC, then created_at DESC
     """
     try:
+        # Verify tutor profile exists
         tutor_id = get_tutor_id_from_user(current_user.id)
         if not tutor_id:
             raise HTTPException(status_code=404, detail="Tutor profile not found")
+
+        # FIX: Use user_id (not tutor_id) to query credentials table
+        # credentials.uploader_id stores user_id, not tutor_profiles.id
+        user_id = current_user.id
 
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
@@ -368,21 +374,21 @@ async def get_tutor_documents(
                         SELECT id, uploader_id, document_type, title, description, issued_by,
                                date_of_issue, expiry_date, document_url, created_at, updated_at,
                                verification_status, is_verified, verified_by_admin_id,
-                               status_reason, status_at, is_featured
+                               status_reason, status_at, is_featured, years
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = 'tutor' AND document_type = %s
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (tutor_id, document_type))
+                    """, (user_id, document_type))
                 else:
                     cursor.execute("""
                         SELECT id, uploader_id, document_type, title, description, issued_by,
                                date_of_issue, expiry_date, document_url, created_at, updated_at,
                                verification_status, is_verified, verified_by_admin_id,
-                               status_reason, status_at, is_featured
+                               status_reason, status_at, is_featured, years
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = 'tutor'
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (tutor_id,))
+                    """, (user_id,))
 
                 results = cursor.fetchall()
 
@@ -397,6 +403,7 @@ async def get_tutor_documents(
                 issued_by=row['issued_by'],
                 date_of_issue=row['date_of_issue'],
                 expiry_date=row['expiry_date'],
+                years=row.get('years'),
                 document_url=row['document_url'],
                 created_at=row['created_at'],
                 updated_at=row['updated_at'],
@@ -452,6 +459,7 @@ async def update_tutor_document(
     issued_by: Optional[str] = Form(None),
     date_of_issue: Optional[str] = Form(None),
     expiry_date: Optional[str] = Form(None),
+    years: Optional[int] = Form(None),
     is_featured: Optional[bool] = Form(None),
     file: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user)
@@ -465,15 +473,15 @@ async def update_tutor_document(
     - Supports is_featured toggle
     """
     try:
-        tutor_id = get_tutor_id_from_user(current_user.id)
-        if not tutor_id:
-            raise HTTPException(status_code=404, detail="Tutor profile not found")
+        # USER-BASED: Use current_user.id directly
+        user_id = current_user.id
 
         document = get_document_by_id(document_id)
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        if document['tutor_id'] != tutor_id:
+        # Check ownership: document.tutor_id is actually uploader_id (which is now user_id)
+        if document['tutor_id'] != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to update this document")
 
         if document['verification_status'] == 'verified':
@@ -514,6 +522,10 @@ async def update_tutor_document(
             update_fields.append("expiry_date = %s")
             update_values.append(None)
 
+        if years is not None:
+            update_fields.append("years = %s")
+            update_values.append(years)
+
         if is_featured is not None:
             update_fields.append("is_featured = %s")
             update_values.append(is_featured)
@@ -535,7 +547,7 @@ async def update_tutor_document(
                 file_data=file_content,
                 file_name=file.filename,
                 file_type="files",
-                user_id=tutor_id
+                user_id=user_id  # Use user_id instead of tutor_id
             )
 
             file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
@@ -564,7 +576,7 @@ async def update_tutor_document(
                     RETURNING id, uploader_id, document_type, title, description, issued_by,
                               date_of_issue, expiry_date, document_url, created_at, updated_at,
                               verification_status, is_verified, verified_by_admin_id,
-                              status_reason, status_at, is_featured
+                              status_reason, status_at, is_featured, years
                 """, update_values)
 
                 result = cursor.fetchone()
@@ -579,6 +591,7 @@ async def update_tutor_document(
             issued_by=result['issued_by'],
             date_of_issue=result['date_of_issue'],
             expiry_date=result['expiry_date'],
+            years=result.get('years'),
             document_url=result['document_url'],
             created_at=result['created_at'],
             updated_at=result['updated_at'],
@@ -609,15 +622,15 @@ async def delete_tutor_document(
     - Cannot delete verified documents
     """
     try:
-        tutor_id = get_tutor_id_from_user(current_user.id)
-        if not tutor_id:
-            raise HTTPException(status_code=404, detail="Tutor profile not found")
+        # USER-BASED: Use current_user.id directly
+        user_id = current_user.id
 
         document = get_document_by_id(document_id)
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        if document['tutor_id'] != tutor_id:
+        # Check ownership: document.tutor_id is actually uploader_id (which is now user_id)
+        if document['tutor_id'] != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to delete this document")
 
         if document['verification_status'] == 'verified':
@@ -647,14 +660,27 @@ async def get_tutor_credentials_public(profile_id: int):
     Public endpoint to get tutor credentials for view-tutor.html
 
     - No authentication required (public view)
-    - Returns only featured credentials (is_featured = true)
+    - Returns only featured AND verified credentials (is_featured = true AND is_verified = true)
     - Used by view-tutor-credentials.js
+    - profile_id is tutor_profiles.id, needs to be converted to user_id
     """
     try:
         print(f"[Public Credentials] GET /api/view/tutor/{profile_id}/documents")
 
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
+                # Convert tutor profile_id to user_id
+                cursor.execute("""
+                    SELECT user_id FROM tutor_profiles WHERE id = %s
+                """, (profile_id,))
+                result = cursor.fetchone()
+                if not result:
+                    raise HTTPException(status_code=404, detail="Tutor profile not found")
+
+                user_id = result['user_id']
+                print(f"[Public Credentials] Converted tutor profile {profile_id} -> user {user_id}")
+
+                # Fetch credentials using user_id
                 cursor.execute("""
                     SELECT id, uploader_id, document_type, title, description, issued_by,
                            date_of_issue, expiry_date, document_url, created_at, updated_at,
@@ -663,8 +689,9 @@ async def get_tutor_credentials_public(profile_id: int):
                     WHERE uploader_id = %s
                       AND uploader_role = 'tutor'
                       AND is_featured = TRUE
-                    ORDER BY is_verified DESC, date_of_issue DESC NULLS LAST, created_at DESC
-                """, (profile_id,))
+                      AND is_verified = TRUE
+                    ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
+                """, (user_id,))
 
                 results = cursor.fetchall()
                 print(f"[Public Credentials] Found {len(results)} credentials for tutor {profile_id}")
@@ -854,11 +881,11 @@ async def toggle_document_featured(
 
 @router.get("/api/admin/credentials/stats")
 async def get_credentials_stats():
-    """Get statistics for credentials dashboard"""
+    """Get statistics for credentials dashboard - shows credentials from ALL user roles"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # Get counts by verification status
+                # Get counts by verification status (removed uploader_role filter)
                 cursor.execute("""
                     SELECT
                         COUNT(*) FILTER (WHERE verification_status = 'pending') as pending,
@@ -866,7 +893,6 @@ async def get_credentials_stats():
                         COUNT(*) FILTER (WHERE verification_status = 'rejected') as rejected,
                         COUNT(*) as total
                     FROM credentials
-                    WHERE uploader_role = 'tutor'
                 """)
                 stats = cursor.fetchone()
 
@@ -883,14 +909,15 @@ async def get_credentials_stats():
 
 @router.get("/api/admin/credentials/pending")
 async def get_pending_credentials():
-    """Get all pending credentials for admin review"""
+    """Get all pending credentials for admin review - shows credentials from ALL user roles"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT
                         c.id,
-                        c.uploader_id as tutor_id,
+                        c.uploader_id,
+                        c.uploader_role,
                         c.title,
                         c.description,
                         c.document_url,
@@ -901,14 +928,12 @@ async def get_pending_credentials():
                         c.verification_status,
                         c.created_at,
                         c.updated_at,
-                        tp.user_id,
                         u.email,
                         u.first_name,
                         u.father_name
                     FROM credentials c
-                    LEFT JOIN tutor_profiles tp ON c.uploader_id = tp.id
-                    LEFT JOIN users u ON tp.user_id = u.id
-                    WHERE c.uploader_role = 'tutor' AND c.verification_status = 'pending'
+                    LEFT JOIN users u ON c.uploader_id = u.id
+                    WHERE c.verification_status = 'pending'
                     ORDER BY c.created_at DESC
                 """)
 
@@ -918,9 +943,10 @@ async def get_pending_credentials():
                 for cred in credentials:
                     result.append({
                         "id": cred['id'],
-                        "tutor_id": cred['tutor_id'],
-                        "tutor_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
-                        "tutor_email": cred['email'],
+                        "uploader_id": cred['uploader_id'],
+                        "uploader_role": cred['uploader_role'],
+                        "uploader_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
+                        "uploader_email": cred['email'],
                         "title": cred['title'],
                         "description": cred['description'],
                         "document_url": cred['document_url'],
@@ -942,14 +968,15 @@ async def get_pending_credentials():
 
 @router.get("/api/admin/credentials/verified")
 async def get_verified_credentials():
-    """Get all verified credentials"""
+    """Get all verified credentials - shows credentials from ALL user roles"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT
                         c.id,
-                        c.uploader_id as tutor_id,
+                        c.uploader_id,
+                        c.uploader_role,
                         c.title,
                         c.description,
                         c.document_url,
@@ -960,14 +987,12 @@ async def get_verified_credentials():
                         c.verification_status,
                         c.created_at,
                         c.updated_at,
-                        tp.user_id,
                         u.email,
                         u.first_name,
                         u.father_name
                     FROM credentials c
-                    LEFT JOIN tutor_profiles tp ON c.uploader_id = tp.id
-                    LEFT JOIN users u ON tp.user_id = u.id
-                    WHERE c.uploader_role = 'tutor' AND c.verification_status = 'verified'
+                    LEFT JOIN users u ON c.uploader_id = u.id
+                    WHERE c.verification_status = 'verified'
                     ORDER BY c.updated_at DESC
                 """)
 
@@ -977,9 +1002,10 @@ async def get_verified_credentials():
                 for cred in credentials:
                     result.append({
                         "id": cred['id'],
-                        "tutor_id": cred['tutor_id'],
-                        "tutor_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
-                        "tutor_email": cred['email'],
+                        "uploader_id": cred['uploader_id'],
+                        "uploader_role": cred['uploader_role'],
+                        "uploader_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
+                        "uploader_email": cred['email'],
                         "title": cred['title'],
                         "description": cred['description'],
                         "document_url": cred['document_url'],
@@ -1001,14 +1027,15 @@ async def get_verified_credentials():
 
 @router.get("/api/admin/credentials/rejected")
 async def get_rejected_credentials():
-    """Get all rejected credentials"""
+    """Get all rejected credentials - shows credentials from ALL user roles"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT
                         c.id,
-                        c.uploader_id as tutor_id,
+                        c.uploader_id,
+                        c.uploader_role,
                         c.title,
                         c.description,
                         c.document_url,
@@ -1021,14 +1048,12 @@ async def get_rejected_credentials():
                         c.status_at,
                         c.created_at,
                         c.updated_at,
-                        tp.user_id,
                         u.email,
                         u.first_name,
                         u.father_name
                     FROM credentials c
-                    LEFT JOIN tutor_profiles tp ON c.uploader_id = tp.id
-                    LEFT JOIN users u ON tp.user_id = u.id
-                    WHERE c.uploader_role = 'tutor' AND c.verification_status = 'rejected'
+                    LEFT JOIN users u ON c.uploader_id = u.id
+                    WHERE c.verification_status = 'rejected'
                     ORDER BY c.status_at DESC
                 """)
 
@@ -1038,9 +1063,10 @@ async def get_rejected_credentials():
                 for cred in credentials:
                     result.append({
                         "id": cred['id'],
-                        "tutor_id": cred['tutor_id'],
-                        "tutor_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
-                        "tutor_email": cred['email'],
+                        "uploader_id": cred['uploader_id'],
+                        "uploader_role": cred['uploader_role'],
+                        "uploader_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
+                        "uploader_email": cred['email'],
                         "title": cred['title'],
                         "description": cred['description'],
                         "document_url": cred['document_url'],
@@ -1064,14 +1090,15 @@ async def get_rejected_credentials():
 
 @router.get("/api/admin/credentials/suspended")
 async def get_suspended_credentials():
-    """Get all suspended credentials"""
+    """Get all suspended credentials - shows credentials from ALL user roles"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT
                         c.id,
-                        c.uploader_id as tutor_id,
+                        c.uploader_id,
+                        c.uploader_role,
                         c.title,
                         c.description,
                         c.document_url,
@@ -1084,14 +1111,12 @@ async def get_suspended_credentials():
                         c.status_at,
                         c.created_at,
                         c.updated_at,
-                        tp.user_id,
                         u.email,
                         u.first_name,
                         u.father_name
                     FROM credentials c
-                    LEFT JOIN tutor_profiles tp ON c.uploader_id = tp.id
-                    LEFT JOIN users u ON tp.user_id = u.id
-                    WHERE c.uploader_role = 'tutor' AND c.verification_status = 'suspended'
+                    LEFT JOIN users u ON c.uploader_id = u.id
+                    WHERE c.verification_status = 'suspended'
                     ORDER BY c.status_at DESC
                 """)
 
@@ -1101,9 +1126,10 @@ async def get_suspended_credentials():
                 for cred in credentials:
                     result.append({
                         "id": cred['id'],
-                        "tutor_id": cred['tutor_id'],
-                        "tutor_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
-                        "tutor_email": cred['email'],
+                        "uploader_id": cred['uploader_id'],
+                        "uploader_role": cred['uploader_role'],
+                        "uploader_name": f"{cred['first_name'] or ''} {cred['father_name'] or ''}".strip() or "Unknown",
+                        "uploader_email": cred['email'],
                         "title": cred['title'],
                         "description": cred['description'],
                         "document_url": cred['document_url'],
@@ -1176,28 +1202,43 @@ async def verify_credential(
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 if action in ['reject', 'suspend']:
-                    # Update with status reason and status timestamp
+                    # Reject/suspend: set is_verified = FALSE, add reason and timestamp
                     cursor.execute("""
                         UPDATE credentials
                         SET
                             verification_status = %s,
+                            is_verified = FALSE,
                             status_reason = %s,
                             status_at = CURRENT_TIMESTAMP,
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = %s
-                        RETURNING id, title, verification_status
+                        RETURNING id, title, verification_status, is_verified
                     """, (new_status, reason, credential_id))
-                else:
-                    # Verify or reactivate (clear status reason and update status timestamp)
+                elif action in ['verify', 'reactivate']:
+                    # Verify/reactivate: set is_verified = TRUE, clear reason
                     cursor.execute("""
                         UPDATE credentials
                         SET
                             verification_status = %s,
+                            is_verified = TRUE,
                             status_reason = NULL,
                             status_at = CURRENT_TIMESTAMP,
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = %s
-                        RETURNING id, title, verification_status
+                        RETURNING id, title, verification_status, is_verified
+                    """, (new_status, credential_id))
+                else:
+                    # Reconsider: set is_verified = FALSE, clear reason, back to pending
+                    cursor.execute("""
+                        UPDATE credentials
+                        SET
+                            verification_status = %s,
+                            is_verified = FALSE,
+                            status_reason = NULL,
+                            status_at = CURRENT_TIMESTAMP,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                        RETURNING id, title, verification_status, is_verified
                     """, (new_status, credential_id))
 
                 result = cursor.fetchone()
@@ -1300,13 +1341,8 @@ async def get_unified_documents(
         if uploader_role not in ['student', 'tutor']:
             raise HTTPException(status_code=400, detail="Invalid uploader_role. Must be 'student' or 'tutor'")
 
-        # Get profile ID for the specified role
-        profile_id = get_profile_id_for_role(current_user.id, uploader_role)
-        if not profile_id:
-            print(f"[Unified Documents] No {uploader_role} profile found for user {current_user.id}")
-            return []  # Return empty list if no profile
-
-        print(f"[Unified Documents] Found {uploader_role} profile_id: {profile_id}")
+        # USER-BASED: Query by user_id and uploader_role
+        print(f"[Unified Documents] Querying by user_id: {current_user.id}, uploader_role: {uploader_role}")
 
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
@@ -1320,7 +1356,7 @@ async def get_unified_documents(
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = %s AND document_type = %s
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (profile_id, uploader_role, document_type))
+                    """, (current_user.id, uploader_role, document_type))
                 else:
                     cursor.execute("""
                         SELECT id, uploader_id, uploader_role, document_type, title, description,
@@ -1331,7 +1367,7 @@ async def get_unified_documents(
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = %s
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (profile_id, uploader_role))
+                    """, (current_user.id, uploader_role))
 
                 results = cursor.fetchall()
                 print(f"[Unified Documents] Found {len(results)} credentials")
@@ -1391,11 +1427,7 @@ async def get_unified_document_stats(
         if uploader_role not in ['student', 'tutor']:
             raise HTTPException(status_code=400, detail="Invalid uploader_role. Must be 'student' or 'tutor'")
 
-        # Get profile ID for the specified role
-        profile_id = get_profile_id_for_role(current_user.id, uploader_role)
-        if not profile_id:
-            return UnifiedCredentialStats(total_credentials=0, by_type={})
-
+        # USER-BASED: Query by user_id and uploader_role
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
@@ -1403,7 +1435,7 @@ async def get_unified_document_stats(
                     FROM credentials
                     WHERE uploader_id = %s AND uploader_role = %s
                     GROUP BY document_type
-                """, (profile_id, uploader_role))
+                """, (current_user.id, uploader_role))
 
                 results = cursor.fetchall()
 
@@ -1441,7 +1473,7 @@ async def upload_unified_document(
     Upload a credential (works for both tutors and students)
 
     - uploader_role: 'student' or 'tutor' (defaults to 'student')
-    - document_type: For students: 'achievement', 'academic_certificate', 'extracurricular'
+    - document_type: For students: 'achievement', 'academic'
                      For tutors: 'academic', 'achievement', 'experience'
     - is_current: For tutors only - marks this as their current workplace (for "Currently Teaches At")
     """
@@ -1454,7 +1486,7 @@ async def upload_unified_document(
             raise HTTPException(status_code=400, detail="Invalid uploader_role. Must be 'student' or 'tutor'")
 
         # Validate document type based on role
-        valid_types_student = ['achievement', 'academic_certificate', 'extracurricular']
+        valid_types_student = ['achievement', 'academic']
         valid_types_tutor = ['academic', 'achievement', 'experience']
 
         if uploader_role == 'student' and document_type not in valid_types_student:
@@ -1462,12 +1494,9 @@ async def upload_unified_document(
         if uploader_role == 'tutor' and document_type not in valid_types_tutor:
             raise HTTPException(status_code=400, detail=f"Invalid document type for tutor. Must be one of: {', '.join(valid_types_tutor)}")
 
-        # Get profile ID for the specified role
-        profile_id = get_profile_id_for_role(current_user.id, uploader_role)
-        if not profile_id:
-            raise HTTPException(status_code=404, detail=f"{uploader_role.capitalize()} profile not found")
-
-        print(f"   Profile ID: {profile_id}")
+        # USER-BASED: Use current_user.id directly (credentials belong to the user, not the profile)
+        # The uploader_role field indicates which role uploaded it
+        print(f"   Using user_id: {current_user.id} (uploader_role: '{uploader_role}')")
 
         # Validate file type
         allowed_extensions = {'.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'}
@@ -1489,7 +1518,7 @@ async def upload_unified_document(
             file_data=file_content,
             file_name=file.filename,
             file_type="files",
-            user_id=profile_id
+            user_id=current_user.id  # Use user_id instead of profile_id
         )
 
         file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
@@ -1526,7 +1555,7 @@ async def upload_unified_document(
                         AND uploader_role = 'tutor'
                         AND document_type = 'experience'
                         AND is_current = TRUE
-                    """, (profile_id,))
+                    """, (current_user.id,))
                     conn.commit()
 
         # Insert into credentials table
@@ -1543,7 +1572,7 @@ async def upload_unified_document(
                               file_type, file_size, created_at, updated_at,
                               verification_status, is_verified, verified_by_admin_id,
                               status_reason, status_at, is_featured, is_current
-                """, (profile_id, uploader_role, document_type, title, description,
+                """, (current_user.id, uploader_role, document_type, title, description,
                       issued_by, issue_date, exp_date, file_url, file.filename,
                       file.content_type, file_size, is_featured_bool, is_current_bool))
 
@@ -1616,18 +1645,13 @@ async def update_unified_document(
         if uploader_role not in ['student', 'tutor']:
             raise HTTPException(status_code=400, detail="Invalid uploader_role. Must be 'student' or 'tutor'")
 
-        # Get profile ID for the specified role
-        profile_id = get_profile_id_for_role(current_user.id, uploader_role)
-        if not profile_id:
-            raise HTTPException(status_code=404, detail=f"{uploader_role.capitalize()} profile not found")
-
-        # Get existing document and verify ownership
+        # USER-BASED: Get existing document and verify ownership by user_id
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT * FROM credentials
                     WHERE id = %s AND uploader_id = %s AND uploader_role = %s
-                """, (document_id, profile_id, uploader_role))
+                """, (document_id, current_user.id, uploader_role))
 
                 existing = cursor.fetchone()
                 if not existing:
@@ -1702,7 +1726,7 @@ async def update_unified_document(
                             AND document_type = 'experience'
                             AND is_current = TRUE
                             AND id != %s
-                        """, (profile_id, document_id))
+                        """, (current_user.id, document_id))
                         conn.commit()
 
             update_fields.append("is_current = %s")
@@ -1725,7 +1749,7 @@ async def update_unified_document(
                 file_data=file_content,
                 file_name=file.filename,
                 file_type="files",
-                user_id=profile_id
+                user_id=current_user.id  # Use user_id instead of profile_id
             )
 
             file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
@@ -1743,7 +1767,7 @@ async def update_unified_document(
 
         # Always update the updated_at timestamp
         update_fields.append("updated_at = CURRENT_TIMESTAMP")
-        update_values.extend([document_id, profile_id, uploader_role])
+        update_values.extend([document_id, current_user.id, uploader_role])
 
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
@@ -1817,18 +1841,14 @@ async def delete_unified_document(
         if uploader_role not in ['student', 'tutor']:
             raise HTTPException(status_code=400, detail="Invalid uploader_role. Must be 'student' or 'tutor'")
 
-        # Get profile ID for the specified role
-        profile_id = get_profile_id_for_role(current_user.id, uploader_role)
-        if not profile_id:
-            raise HTTPException(status_code=404, detail=f"{uploader_role.capitalize()} profile not found")
-
+        # USER-BASED: Verify ownership by user_id
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 # Get existing document and verify ownership
                 cursor.execute("""
                     SELECT id, verification_status FROM credentials
                     WHERE id = %s AND uploader_id = %s AND uploader_role = %s
-                """, (document_id, profile_id, uploader_role))
+                """, (document_id, current_user.id, uploader_role))
 
                 existing = cursor.fetchone()
                 if not existing:
@@ -1842,7 +1862,7 @@ async def delete_unified_document(
                 cursor.execute("""
                     DELETE FROM credentials
                     WHERE id = %s AND uploader_id = %s AND uploader_role = %s
-                """, (document_id, profile_id, uploader_role))
+                """, (document_id, current_user.id, uploader_role))
 
                 conn.commit()
 

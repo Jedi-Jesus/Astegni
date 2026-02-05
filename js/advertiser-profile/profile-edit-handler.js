@@ -96,6 +96,12 @@ window.saveAdvertiserProfile = async function() {
         profileData.socials = socials;
     }
 
+    // Get display_location checkbox value
+    const displayLocationCheckbox = document.getElementById('editDisplayLocation');
+    const displayLocation = displayLocationCheckbox?.checked || false;
+    profileData.display_location = displayLocation;
+    console.log('[Advertiser Save] display_location value:', displayLocation);
+
     console.log('[AdvertiserProfile] Saving profile with data:', profileData);
 
     // Save profile

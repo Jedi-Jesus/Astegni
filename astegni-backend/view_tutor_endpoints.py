@@ -46,10 +46,10 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
             cur.execute(f"""
                 SELECT
                     tp.id, tp.user_id, tp.username, tp.bio, tp.quote,
-                    tp.location, tp.languages,
+                    u.location, u.languages, u.hobbies,
                     tp.hero_titles, tp.hero_subtitle,
-                    u.is_verified, u.verification_status, tp.profile_picture, tp.cover_image,
-                    tp.social_links,
+                    u.is_verified, u.verification_status, u.profile_picture, tp.cover_image,  -- NOTE: profile_picture now read from users table
+                    u.social_links,
                     u.first_name, u.father_name, u.grandfather_name, u.email, u.phone, u.gender,
                     tp.expertise_badge, u.is_suspended, u.suspended_at,
                     tp.is_active, tp.created_at, tp.updated_at
@@ -64,10 +64,10 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
 
             # Build full name (Ethiopian convention)
             # Handle NULL values gracefully
-            # New column order after removing courses, grades, course_type, teaches_at, sessionFormat, experience, courses_created
-            first_name = row[14] or ""
-            father_name = row[15] or ""
-            grandfather_name = row[16] or ""
+            # New column order: added hobbies at index 7 (after languages)
+            first_name = row[15] or ""
+            father_name = row[16] or ""
+            grandfather_name = row[17] or ""
             full_name = " ".join(filter(None, [first_name, father_name, grandfather_name]))
 
             profile = {
@@ -75,36 +75,37 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                 "user_id": row[1],                                      # 1: tp.user_id
                 "username": row[2],                                     # 2: tp.username
                 "full_name": full_name,
-                "first_name": first_name,                               # 14: u.first_name
-                "father_name": father_name,                             # 15: u.father_name
-                "grandfather_name": grandfather_name,                   # 16: u.grandfather_name
+                "first_name": first_name,                               # 15: u.first_name
+                "father_name": father_name,                             # 16: u.father_name
+                "grandfather_name": grandfather_name,                   # 17: u.grandfather_name
                 "bio": row[3],                                          # 3: tp.bio
                 "quote": row[4],                                        # 4: tp.quote
                 "courses": [],                                          # Column removed
                 "grades": [],                                           # Column removed
                 "course_type": None,                                    # Column removed
-                "location": row[5],                                     # 5: tp.location
+                "location": row[5],                                     # 5: u.location
                 "teaches_at": None,                                     # Column removed
                 "session_format": None,                                 # Column removed
-                "languages": row[6] or [],                              # 6: tp.languages
+                "languages": row[6] or [],                              # 6: u.languages
+                "hobbies": row[7] or [],                                # 7: u.hobbies
                 "experience": None,                                     # Column removed
-                "hero_titles": row[7] or ["Excellence in Education, Delivered with Passion"],  # 7: tp.hero_titles (JSONB array)
-                "hero_subtitle": row[8],                                # 8: tp.hero_subtitle
+                "hero_titles": row[8] or ["Excellence in Education, Delivered with Passion"],  # 8: tp.hero_titles (JSONB array)
+                "hero_subtitle": row[9],                                # 9: tp.hero_subtitle
                 "courses_created": 0,                                   # Column removed
-                "is_verified": row[9],                                  # 9: u.is_verified
-                "verification_status": row[10],                         # 10: u.verification_status
-                "profile_picture": row[11],                             # 11: tp.profile_picture
-                "cover_image": row[12],                                 # 12: tp.cover_image
-                "social_links": row[13] or {},                          # 13: tp.social_links
-                "email": row[17],                                       # 17: u.email
-                "phone": row[18],                                       # 18: u.phone
-                "gender": row[19],                                      # 19: u.gender
-                "expertise_badge": row[20],                             # 20: tp.expertise_badge
-                "is_suspended": row[21],                                # 21: u.is_suspended
-                "suspended_at": row[22].isoformat() if row[22] else None,  # 22: u.suspended_at
-                "is_active": row[23],                                   # 23: tp.is_active
-                "created_at": row[24].isoformat() if row[24] else None, # 24: tp.created_at
-                "updated_at": row[25].isoformat() if row[25] else None, # 25: tp.updated_at
+                "is_verified": row[10],                                 # 10: u.is_verified
+                "verification_status": row[11],                         # 11: u.verification_status
+                "profile_picture": row[12],                             # 12: u.profile_picture
+                "cover_image": row[13],                                 # 13: tp.cover_image
+                "social_links": row[14] or {},                          # 14: u.social_links
+                "email": row[18],                                       # 18: u.email
+                "phone": row[19],                                       # 19: u.phone
+                "gender": row[20],                                      # 20: u.gender
+                "expertise_badge": row[21],                             # 21: tp.expertise_badge
+                "is_suspended": row[22],                                # 22: u.is_suspended
+                "suspended_at": row[23].isoformat() if row[23] else None,  # 23: u.suspended_at
+                "is_active": row[24],                                   # 24: tp.is_active
+                "created_at": row[25].isoformat() if row[25] else None, # 25: tp.created_at
+                "updated_at": row[26].isoformat() if row[26] else None, # 26: tp.updated_at
 
                 # Default values for fields not in database
                 "rating": 0.0,
@@ -119,30 +120,34 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
             }
 
             # 2. GET QUICK STATS (calculated from various tables)
-            # Use enrolled_courses and sessions tables
+            # Use enrolled_students table
             stats = {
                 "active_students": 0,
                 "total_sessions_count": profile["total_sessions"],
                 "completion_rate": 98,
                 "response_time": f"< {profile['response_time_hours']}hrs",
                 "session_format": profile["session_format"],
-                "students_taught": profile["students_taught"],
+                "students_taught": 0,
                 "success_rate": profile["success_rate"]
             }
 
-            # Try to get stats from enrolled_courses and sessions tables
+            # Try to get stats from enrolled_students table
             try:
-                # Get active students from enrolled_courses
+                # Get active students and total students taught from enrolled_students
+                print(f"[DEBUG] Fetching enrolled_students stats for tutor_id={profile['id']}")
                 cur.execute("""
                     SELECT
-                        COALESCE(SUM(array_length(students_id, 1)), 0) as total_students
-                    FROM enrolled_courses
-                    WHERE tutor_id = %s AND status = 'active'
+                        COUNT(DISTINCT CASE WHEN status = 'active' THEN student_id END) as active_students,
+                        COUNT(DISTINCT student_id) as total_students_taught
+                    FROM enrolled_students
+                    WHERE tutor_id = %s
                 """, (profile["id"],))
                 students_row = cur.fetchone()
+                print(f"[DEBUG] Query result: {students_row}")
                 if students_row:
                     stats["active_students"] = students_row[0] or 0
-                    stats["students_taught"] = students_row[0] or 0
+                    stats["students_taught"] = students_row[1] or 0
+                    print(f"[DEBUG] Stats updated: active={stats['active_students']}, taught={stats['students_taught']}")
 
                 # Get session stats
                 cur.execute("""
@@ -150,8 +155,8 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                         COUNT(s.id) as total_sessions_count,
                         ROUND(AVG(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END) * 100, 0) as completion_rate
                     FROM sessions s
-                    JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
-                    WHERE ec.tutor_id = %s
+                    JOIN enrolled_students es ON s.enrolled_student_id = es.id
+                    WHERE es.tutor_id = %s
                 """, (profile["id"],))
                 stats_row = cur.fetchone()
                 if stats_row:
@@ -207,7 +212,7 @@ async def get_tutor_reviews(
                     tr.is_verified, tr.helpful_count, tr.is_featured,
                     tr.created_at, tr.user_role,
                     u.first_name, u.father_name, u.grandfather_name,
-                    sp.profile_picture, sp.grade_level
+                    u.profile_picture, sp.grade_level  -- NOTE: profile_picture now read from users table
                 FROM tutor_reviews tr
                 JOIN users u ON tr.reviewer_id = u.id
                 LEFT JOIN student_profiles sp ON u.id = sp.user_id
@@ -706,6 +711,141 @@ async def get_week_availability(tutor_id: int):
 
 
 # ============================================
+# GET FEATURED SCHEDULES AND SESSIONS
+# ============================================
+
+@router.get("/{tutor_id}/availability/featured")
+async def get_featured_availability(tutor_id: int, by_user_id: bool = Query(False)):
+    """
+    Get featured schedules and sessions for THIS WEEK availability widget
+    Returns:
+    - Recurring schedules (featured) that match weekdays in current week
+    - Schedules with specific_dates falling in current week
+    - Sessions scheduled for current week
+    """
+    from datetime import datetime, timedelta
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # Convert tutor_id to user_id if needed
+            if by_user_id:
+                user_id = tutor_id
+            else:
+                cur.execute("SELECT user_id FROM tutor_profiles WHERE id = %s", (tutor_id,))
+                row = cur.fetchone()
+                if not row:
+                    return {"schedules": [], "sessions": []}
+                user_id = row[0]
+
+            # Calculate current week range (Monday to Sunday)
+            today = datetime.now()
+            week_start = today - timedelta(days=today.weekday())  # Monday
+            week_end = week_start + timedelta(days=6)  # Sunday
+
+            # Get weekday names for this week
+            weekdays_in_week = [(week_start + timedelta(days=i)).strftime('%A') for i in range(7)]
+
+            # Get featured schedules (recurring and specific dates)
+            cur.execute("""
+                SELECT id, scheduler_id, scheduler_role, title, days, specific_dates,
+                       start_time, end_time, status, created_at, is_featured
+                FROM schedules
+                WHERE scheduler_id = %s
+                  AND scheduler_role = 'tutor'
+                  AND is_featured = TRUE
+                  AND status = 'active'
+                ORDER BY created_at DESC
+            """, (user_id,))
+
+            schedules = []
+            for row in cur.fetchall():
+                schedule_id, scheduler_id, scheduler_role, title, days, specific_dates, start_time, end_time, status, created_at, is_featured = row
+
+                # Check if this schedule is relevant for this week
+                is_relevant = False
+                relevant_days = []
+                relevant_dates = []
+
+                # Check recurring days
+                if days and len(days) > 0:
+                    matching_days = [d for d in days if d in weekdays_in_week]
+                    if matching_days:
+                        is_relevant = True
+                        relevant_days = matching_days
+
+                # Check specific dates
+                if specific_dates and len(specific_dates) > 0:
+                    matching_dates = [
+                        d for d in specific_dates
+                        if week_start.date() <= datetime.strptime(d, '%Y-%m-%d').date() <= week_end.date()
+                    ]
+                    if matching_dates:
+                        is_relevant = True
+                        relevant_dates = matching_dates
+
+                # Only include if relevant to this week
+                if is_relevant:
+                    schedules.append({
+                        "id": schedule_id,
+                        "scheduler_id": scheduler_id,
+                        "scheduler_role": scheduler_role,
+                        "title": title,
+                        "days": days,
+                        "specific_dates": specific_dates,
+                        "relevant_days": relevant_days,  # Days that match this week
+                        "relevant_dates": relevant_dates,  # Dates that fall in this week
+                        "start_time": str(start_time) if start_time else None,
+                        "end_time": str(end_time) if end_time else None,
+                        "status": status,
+                        "created_at": created_at.isoformat() if created_at else None,
+                        "is_featured": is_featured
+                    })
+
+            # Get featured sessions for THIS WEEK
+            cur.execute("""
+                SELECT s.id, s.enrolled_courses_id, s.session_date, s.start_time, s.end_time,
+                       s.status, s.created_at, s.is_featured, s.topics
+                FROM sessions s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE ec.tutor_id = %s
+                  AND s.is_featured = TRUE
+                  AND s.status IN ('scheduled', 'ongoing')
+                  AND s.session_date >= %s
+                  AND s.session_date <= %s
+                ORDER BY s.session_date ASC, s.start_time ASC
+            """, (user_id, week_start.date(), week_end.date()))
+
+            sessions = []
+            for row in cur.fetchall():
+                sessions.append({
+                    "id": row[0],
+                    "enrolled_courses_id": row[1],
+                    "session_date": row[2].isoformat() if row[2] else None,
+                    "start_time": str(row[3]) if row[3] else None,
+                    "end_time": str(row[4]) if row[4] else None,
+                    "status": row[5],
+                    "created_at": row[6].isoformat() if row[6] else None,
+                    "is_featured": row[7],
+                    "topics": row[8] if row[8] else None
+                })
+
+            return {
+                "schedules": schedules,
+                "sessions": sessions,
+                "total_count": len(schedules) + len(sessions),
+                "week_start": week_start.date().isoformat(),
+                "week_end": week_end.date().isoformat()
+            }
+
+    except Exception as e:
+        print(f"Error fetching featured availability: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+
+# ============================================
 # GET SIMILAR TUTORS
 # ============================================
 
@@ -731,8 +871,9 @@ async def get_similar_tutors(
             where_clause = "tp.user_id = %s" if by_user_id else "tp.id = %s"
 
             cur.execute(f"""
-                SELECT tp.id, tp.user_id, tp.location, tp.languages
+                SELECT tp.id, tp.user_id, u.location, u.languages
                 FROM tutor_profiles tp
+                JOIN users u ON tp.user_id = u.id
                 WHERE {where_clause}
             """, (tutor_id,))
 
@@ -765,9 +906,9 @@ async def get_similar_tutors(
                         tp.id,
                         tp.user_id,
                         tp.username,
-                        tp.profile_picture,
-                        tp.location,
-                        tp.languages,
+                        u.profile_picture,  -- NOTE: profile_picture now read from users table
+                        u.location,
+                        u.languages,
                         u.is_verified,
                         tp.expertise_badge,
                         u.first_name,
@@ -784,13 +925,13 @@ async def get_similar_tutors(
                             ) THEN 50 ELSE 0 END
                             +
                             -- Score for same location
-                            CASE WHEN tp.location = %s THEN 30 ELSE 0 END
+                            CASE WHEN u.location = %s THEN 30 ELSE 0 END
                             +
-                            -- Score for overlapping languages (tp.languages is JSON/JSONB)
+                            -- Score for overlapping languages (u.languages is JSON/JSONB)
                             CASE WHEN EXISTS (
                                 SELECT 1 FROM jsonb_array_elements_text(
-                                    CASE WHEN tp.languages IS NOT NULL AND tp.languages::text != 'null'
-                                         THEN tp.languages::jsonb
+                                    CASE WHEN u.languages IS NOT NULL AND u.languages::text != 'null'
+                                         THEN u.languages::jsonb
                                          ELSE '[]'::jsonb
                                     END
                                 ) AS lang
@@ -877,10 +1018,11 @@ async def get_similar_tutors(
                 existing_ids = [t["id"] for t in similar_tutors]
                 existing_ids.append(current_tutor_profile_id)
 
+                # NOTE: profile_picture now read from users table
                 cur.execute("""
                     SELECT
-                        tp.id, tp.user_id, tp.username, tp.profile_picture,
-                        tp.location, tp.languages, u.is_verified, tp.expertise_badge,
+                        tp.id, tp.user_id, tp.username, u.profile_picture,
+                        u.location, u.languages, u.is_verified, tp.expertise_badge,
                         u.first_name, u.father_name, u.grandfather_name,
                         COALESCE(
                             (SELECT AVG(rating) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),

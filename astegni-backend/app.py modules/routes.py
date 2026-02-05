@@ -27,6 +27,7 @@ from utils import *
 from config import *
 from backblaze_service import get_backblaze_service  # Import Backblaze service
 from admin_auth_endpoints import get_current_admin  # Import admin authentication
+from tutor_scoring import TutorScoringCalculator  # Import enhanced tutor scoring
 
 # Create router
 router = APIRouter()
@@ -37,23 +38,11 @@ router = APIRouter()
 
 def get_role_specific_profile_picture(user: User, db: Session) -> Optional[str]:
     """
-    Get profile picture from role-specific table based on user's active role.
-    Falls back to user.profile_picture if not found in role-specific table.
+    Get profile picture from users table.
+    NOTE: profile_picture has been centralized in the users table.
+    All role-specific profile_picture fields have been removed.
     """
-    active_role = user.active_role
-
-    # Check role-specific tables
-    if active_role == "tutor":
-        tutor_profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
-        if tutor_profile and tutor_profile.profile_picture:
-            return tutor_profile.profile_picture
-    elif active_role == "student":
-        student_profile = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
-        if student_profile and student_profile.profile_picture:
-            return student_profile.profile_picture
-    # Add more role-specific checks as needed (guardian, advertiser, etc.)
-
-    # Fallback to user table profile picture (deprecated but kept for backward compatibility)
+    # Profile picture is now always stored in users table
     return user.profile_picture
 
 def get_role_specific_username(user: User, db: Session) -> Optional[str]:
@@ -211,53 +200,124 @@ def get_platform_stats(db: Session = Depends(get_db)):
 
 @router.post("/api/register", response_model=TokenResponse)
 def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """Register a new user or add role to existing user"""
+    """
+    Register a new user or add role to existing user.
+
+    NEW BEHAVIOR: If no role is provided, user is created without any roles.
+    Users can add roles later through the role management system.
+    """
     # Check if user exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
 
     if existing_user:
-        # User exists - add new role if not already present
-        if user_data.role in existing_user.roles:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User already has {user_data.role} role"
-            )
+        # User exists - add new role if provided
+        if user_data.role:
+            # Verify password matches FIRST (before any role checks)
+            if not verify_password(user_data.password, existing_user.password_hash):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email exists with different password. Please login instead."
+                )
 
-        # Verify password matches
-        if not verify_password(user_data.password, existing_user.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email exists with different password. Please login instead."
-            )
+            # Check if user already has this role
+            if existing_user.roles and user_data.role in existing_user.roles:
+                # REACTIVATION LOGIC: Check if the role is deactivated
+                role_profile = None
+                if user_data.role == "tutor":
+                    role_profile = db.query(TutorProfile).filter(TutorProfile.user_id == existing_user.id).first()
+                elif user_data.role == "student":
+                    role_profile = db.query(StudentProfile).filter(StudentProfile.user_id == existing_user.id).first()
+                elif user_data.role == "parent":
+                    role_profile = db.query(ParentProfile).filter(ParentProfile.user_id == existing_user.id).first()
+                elif user_data.role == "advertiser":
+                    role_profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == existing_user.id).first()
 
-        # Add new role
-        existing_user.roles = existing_user.roles + [user_data.role]
-        existing_user.active_role = user_data.role
-        db.commit()
+                # If profile exists and is deactivated, reactivate it
+                if role_profile and not role_profile.is_active:
+                    print(f"[REACTIVATION] Reactivating {user_data.role} role for user {existing_user.id}")
+                    role_profile.is_active = True
+                    existing_user.active_role = user_data.role
+                    db.commit()
 
-        # Create profile for new role
-        if user_data.role == "tutor" and not existing_user.tutor_profile:
-            tutor_profile = TutorProfile(user_id=existing_user.id)
-            db.add(tutor_profile)
-            db.commit()
-        elif user_data.role == "student" and not existing_user.student_profile:
-            student_profile = StudentProfile(user_id=existing_user.id)
-            db.add(student_profile)
-            db.commit()
-        elif user_data.role == "admin":
-            # Create admin_profile record using raw SQL
-            db.execute(text("""
-                INSERT INTO admin_profile (admin_id, first_name, father_name, email, department, created_at, updated_at)
-                VALUES (:admin_id, :first_name, :father_name, :email, :department, NOW(), NOW())
-                ON CONFLICT (admin_id) DO NOTHING
-            """), {
-                "admin_id": existing_user.id,
-                "first_name": existing_user.first_name,
-                "father_name": existing_user.father_name,
-                "email": existing_user.email,
-                "department": user_data.department or "manage-system-settings"
-            })
-            db.commit()
+                    # Continue to token generation below (don't raise exception)
+                else:
+                    # Role is already active - cannot add again
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"User already has active {user_data.role} role"
+                    )
+            else:
+                # Add new role (doesn't exist in roles array)
+                current_roles = existing_user.roles or []
+                existing_user.roles = current_roles + [user_data.role]
+                existing_user.active_role = user_data.role
+                db.commit()
+
+                # Create profile for new role
+                if user_data.role == "tutor":
+                    tutor_profile = TutorProfile(user_id=existing_user.id)
+                    db.add(tutor_profile)
+                    db.commit()
+                    db.refresh(tutor_profile)
+
+                    # Create tutor_analysis with default 2.0 rating
+                    tutor_analysis = TutorAnalysis(
+                        tutor_id=tutor_profile.id,
+                        average_rating=2.0,
+                        total_reviews=0,
+                        avg_subject_understanding_rating=2.0,
+                        avg_communication_rating=2.0,
+                        avg_discipline_rating=2.0,
+                        avg_punctuality_rating=2.0,
+                        total_students=0,
+                        current_students=0,
+                        alumni_students=0,
+                        success_rate=0.0,
+                        total_sessions_completed=0,
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
+                    )
+                    db.add(tutor_analysis)
+                    db.commit()
+
+                elif user_data.role == "student":
+                    student_profile = StudentProfile(user_id=existing_user.id)
+                    db.add(student_profile)
+                    db.commit()
+
+                elif user_data.role == "parent":
+                    parent_profile = ParentProfile(
+                        user_id=existing_user.id,
+                        rating=2.0,  # Set default 2.0 rating
+                        rating_count=0
+                    )
+                    db.add(parent_profile)
+                    db.commit()
+                elif user_data.role == "advertiser":
+                    advertiser_profile = AdvertiserProfile(user_id=existing_user.id)
+                    db.add(advertiser_profile)
+                    db.commit()
+                elif user_data.role == "admin":
+                    # Create admin_profile record using raw SQL
+                    db.execute(text("""
+                        INSERT INTO admin_profile (admin_id, first_name, father_name, email, department, created_at, updated_at)
+                        VALUES (:admin_id, :first_name, :father_name, :email, :department, NOW(), NOW())
+                        ON CONFLICT (admin_id) DO NOTHING
+                    """), {
+                        "admin_id": existing_user.id,
+                        "first_name": existing_user.first_name,
+                        "father_name": existing_user.father_name,
+                        "email": existing_user.email,
+                        "department": user_data.department or "manage-system-settings"
+                    })
+                    db.commit()
+        else:
+            # No role provided for existing user - just verify password
+            if not verify_password(user_data.password, existing_user.password_hash):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email exists with different password. Please login instead."
+                )
 
         # Get role-specific IDs for all roles the user has
         role_ids = get_role_ids_from_user(existing_user, db)
@@ -318,35 +378,66 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         password_hash=hash_password(user_data.password),
         date_of_birth=user_data.date_of_birth,
         gender=user_data.gender,
-        roles=[user_data.role],
-        active_role=user_data.role
+        roles=[user_data.role] if user_data.role else None,  # No roles if not provided
+        active_role=user_data.role  # None if not provided
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # Create profile based on role
-    if user_data.role == "tutor":
-        tutor_profile = TutorProfile(user_id=new_user.id)
-        db.add(tutor_profile)
-    elif user_data.role == "student":
-        student_profile = StudentProfile(user_id=new_user.id)
-        db.add(student_profile)
-    elif user_data.role == "admin":
-        # Create admin_profile record using raw SQL
-        db.execute(text("""
-            INSERT INTO admin_profile (admin_id, first_name, father_name, email, department, created_at, updated_at)
-            VALUES (:admin_id, :first_name, :father_name, :email, :department, NOW(), NOW())
-        """), {
-            "admin_id": new_user.id,
-            "first_name": new_user.first_name,
-            "father_name": new_user.father_name,
-            "email": new_user.email,
-            "department": user_data.department or "manage-system-settings"
-        })
+    # Create profile based on role (only if role provided)
+    if user_data.role:
+        if user_data.role == "tutor":
+            tutor_profile = TutorProfile(user_id=new_user.id)
+            db.add(tutor_profile)
+            db.commit()
+            db.refresh(tutor_profile)
 
-    db.commit()
+            # Create tutor_analysis with default 2.0 rating
+            tutor_analysis = TutorAnalysis(
+                tutor_id=tutor_profile.id,
+                average_rating=2.0,
+                total_reviews=0,
+                avg_subject_understanding_rating=2.0,
+                avg_communication_rating=2.0,
+                avg_discipline_rating=2.0,
+                avg_punctuality_rating=2.0,
+                total_students=0,
+                current_students=0,
+                alumni_students=0,
+                success_rate=0.0,
+                total_sessions_completed=0,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(tutor_analysis)
+
+        elif user_data.role == "student":
+            student_profile = StudentProfile(user_id=new_user.id)
+            db.add(student_profile)
+
+        elif user_data.role == "parent":
+            parent_profile = ParentProfile(
+                user_id=new_user.id,
+                rating=2.0,  # Set default 2.0 rating
+                rating_count=0
+            )
+            db.add(parent_profile)
+        elif user_data.role == "admin":
+            # Create admin_profile record using raw SQL
+            db.execute(text("""
+                INSERT INTO admin_profile (admin_id, first_name, father_name, email, department, created_at, updated_at)
+                VALUES (:admin_id, :first_name, :father_name, :email, :department, NOW(), NOW())
+            """), {
+                "admin_id": new_user.id,
+                "first_name": new_user.first_name,
+                "father_name": new_user.father_name,
+                "email": new_user.email,
+                "department": user_data.department or "manage-system-settings"
+            })
+
+        db.commit()
 
     # Get role-specific IDs for all roles the user has
     role_ids = get_role_ids_from_user(new_user, db)
@@ -368,6 +459,59 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     )
     db.add(refresh_token_obj)
     db.commit()
+
+    # Handle referral code if provided
+    if user_data.referral_code:
+        try:
+            # Import referral models
+            from models import UserReferralCode, ReferralRegistration, ReferralClick
+
+            # Verify referral code exists
+            referral_code_obj = db.query(UserReferralCode).filter(
+                UserReferralCode.referral_code == user_data.referral_code
+            ).first()
+
+            if referral_code_obj:
+                # Check if this user hasn't already been registered via a referral
+                existing_referral = db.query(ReferralRegistration).filter(
+                    ReferralRegistration.referred_user_id == new_user.id
+                ).first()
+
+                if not existing_referral:
+                    # Create referral registration
+                    referral_registration = ReferralRegistration(
+                        referrer_user_id=referral_code_obj.user_id,
+                        referrer_profile_type=referral_code_obj.profile_type,
+                        referral_code=user_data.referral_code,
+                        referred_user_id=new_user.id,
+                        referred_user_email=new_user.email or "",
+                        referred_user_name=f"{new_user.first_name or ''} {new_user.last_name or ''}".strip(),
+                        last_activity=datetime.utcnow()
+                    )
+                    db.add(referral_registration)
+
+                    # Update referral code stats
+                    referral_code_obj.total_referrals += 1
+                    referral_code_obj.active_referrals += 1
+                    referral_code_obj.updated_at = datetime.utcnow()
+
+                    # Mark most recent click as converted
+                    recent_click = db.query(ReferralClick).filter(
+                        ReferralClick.referral_code == user_data.referral_code,
+                        ReferralClick.converted == False
+                    ).order_by(ReferralClick.clicked_at.desc()).first()
+
+                    if recent_click:
+                        recent_click.converted = True
+                        recent_click.converted_user_id = new_user.id
+
+                    db.commit()
+                    print(f"[REFERRAL] User {new_user.id} registered via referral code {user_data.referral_code}")
+        except Exception as e:
+            # Don't fail registration if referral tracking fails
+            print(f"[REFERRAL ERROR] Failed to track referral: {e}")
+            db.rollback()
+            # Continue with registration
 
     # Get profile picture from role-specific table
     profile_picture = get_role_specific_profile_picture(new_user, db)
@@ -398,7 +542,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     )
 
 @router.post("/api/login", response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db), restore_account: bool = False, otp_code: str = None):
     """
     User login endpoint
 
@@ -508,22 +652,145 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect email or password"
         )
 
-    # NOTE: We do NOT auto-restore accounts on login anymore.
-    # Role-based deletion means:
-    # - If user deletes their tutor role, they can still log in to use student/parent roles
-    # - Restoration only happens when user explicitly tries to add back the deleted role
-    # - Or when user clicks "Restore" from the account settings
-    #
-    # The account_status = 'pending_deletion' only applies when delete_user=True
-    # (i.e., when the user is deleting their ONLY role)
+    # Check if account is scheduled for deletion
     if user.account_status == 'pending_deletion':
-        # User's entire account is pending deletion (they had only one role)
-        # They can still log in but will see a banner about pending deletion
-        # They can cancel deletion from account settings
-        print(f"[Login] User {user.id} has pending account deletion - allowing login with warning")
+        # Get deletion details
+        deletion_request = db.execute(
+            text("""
+            SELECT id, scheduled_deletion_at, reasons, deletion_fee
+            FROM account_deletion_requests
+            WHERE user_id = :user_id AND status = 'pending'
+            ORDER BY requested_at DESC
+            LIMIT 1
+            """),
+            {"user_id": user.id}
+        ).fetchone()
+
+        if deletion_request:
+            scheduled_at = deletion_request[1]
+            days_remaining = (scheduled_at - datetime.utcnow()).days if scheduled_at else 0
+
+            # Check if user wants to restore account
+            if restore_account:
+                # VERIFY OTP FIRST
+                if not otp_code:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="OTP code is required for account restoration"
+                    )
+
+                print(f"[Login] Verifying OTP for account restoration - user {user.id}")
+                print(f"[Login] Provided OTP: {otp_code}")
+
+                # Verify OTP from database
+                otp_record = db.execute(
+                    text("""
+                    SELECT otp_code, expires_at FROM otps
+                    WHERE user_id = :user_id AND purpose = 'account_restoration'
+                    AND (is_used = FALSE OR is_used IS NULL)
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """),
+                    {"user_id": user.id}
+                ).fetchone()
+
+                if not otp_record:
+                    print(f"[Login] No account_restoration OTP found for user {user.id}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail="No OTP found. Please request a new OTP."
+                    )
+
+                stored_otp, expires_at = otp_record
+
+                # Check if OTP is expired
+                if datetime.utcnow() > expires_at:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="OTP has expired. Please request a new OTP."
+                    )
+
+                # Verify OTP code
+                if stored_otp != otp_code:
+                    raise HTTPException(
+                        status_code=401,
+                        detail="Invalid OTP code"
+                    )
+
+                # Mark OTP as used
+                db.execute(
+                    text("""
+                    UPDATE otps
+                    SET is_used = TRUE
+                    WHERE user_id = :user_id AND purpose = 'account_restoration' AND otp_code = :otp_code
+                    """),
+                    {"user_id": user.id, "otp_code": otp_code}
+                )
+
+                # OTP verified - Restore account by cancelling deletion
+                print(f"[Login] OTP verified - Restoring account for user {user.id}")
+
+                # Cancel the deletion request
+                db.execute(
+                    text("""
+                    UPDATE account_deletion_requests
+                    SET status = 'cancelled',
+                        cancelled_at = CURRENT_TIMESTAMP,
+                        cancelled_by_login = TRUE,
+                        cancellation_reason = 'User logged in and confirmed restoration with OTP'
+                    WHERE id = :request_id
+                    """),
+                    {"request_id": deletion_request[0]}
+                )
+
+                # Restore user account
+                db.execute(
+                    text("""
+                    UPDATE users
+                    SET account_status = 'active',
+                        deactivated_at = NULL,
+                        scheduled_deletion_at = NULL,
+                        is_active = TRUE
+                    WHERE id = :user_id
+                    """),
+                    {"user_id": user.id}
+                )
+
+                db.commit()
+
+                # Refresh user object
+                db.refresh(user)
+
+                print(f"[Login] Account restored successfully for user {user.id}")
+
+                # Continue with normal login flow
+            else:
+                # Return special response indicating pending deletion
+                # Frontend will show restoration confirmation modal
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "error_code": "ACCOUNT_PENDING_DELETION",
+                        "message": "Your account is scheduled for deletion",
+                        "days_remaining": days_remaining,
+                        "scheduled_deletion_at": scheduled_at.isoformat() if scheduled_at else None,
+                        "reasons": deletion_request[2] if deletion_request[2] else [],
+                        "deletion_fee": float(deletion_request[3]) if deletion_request[3] else 200.00,
+                        "email": user.email
+                    }
+                )
 
     # Update last login
     user.last_login = datetime.utcnow()
+
+    # CRITICAL FIX: Get first ACTIVE role instead of using user.active_role directly
+    # This ensures deactivated roles are not used for login
+    active_role = get_first_active_role(user, db)
+
+    # Update user's active_role in database to match first active role
+    if active_role != user.active_role:
+        user.active_role = active_role
+
     db.commit()
 
     # Get role-specific IDs for all roles the user has
@@ -532,7 +799,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     # Create tokens with role-specific IDs
     token_data = {
         "sub": user.id,
-        "role": user.active_role,
+        "role": active_role,  # Use active_role from database check, not user.active_role
         "role_ids": role_ids
     }
     access_token = create_access_token(data=token_data)
@@ -676,6 +943,43 @@ def refresh_token_endpoint(
 @router.get("/api/me", response_model=UserResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user information"""
+    # CRITICAL: The current_user from get_current_user() is already refreshed with db.expire() + db.refresh()
+    # so current_user.active_role and current_user.roles are fresh from the database
+    print(f"[/api/me] Called for user {current_user.id}, current active_role in DB: {current_user.active_role}")
+    print(f"[/api/me] User roles: {current_user.roles}")
+
+    # CRITICAL FIX: Only set active_role for NEW users who don't have one
+    # DO NOT overwrite existing active_role - that should only change via /api/switch-role
+    # The previous code was using get_first_active_role() which returns the FIRST role
+    # in priority order, not the user's chosen role, causing role switches to revert!
+
+    print(f"[/api/me] Checking if active_role needs initialization...")
+    print(f"[/api/me]   current_user.active_role: {current_user.active_role}")
+    print(f"[/api/me]   Condition: not active_role = {not current_user.active_role}")
+    print(f"[/api/me]   Condition: active_role not in roles = {current_user.active_role not in current_user.roles}")
+
+    # CRITICAL FIX: NEVER overwrite active_role!
+    # The ONLY endpoint that should change active_role is /api/switch-role
+    #
+    # Note: Deactivated roles stay in the roles array - they just have is_active=False
+    # So we can't detect deactivation by checking "not in roles array"
+    #
+    # If active_role is NULL, just return NULL - frontend will redirect to index.html
+    # If active_role is set, return it as-is - even if the role was deactivated
+    # The frontend/user is responsible for switching to another role if needed
+
+    if not current_user.active_role:
+        # User has no active_role - they need to select/add a role
+        print(f"[/api/me] active_role is NULL - user needs to add/select a role")
+        print(f"[/api/me] ⚠️ Returning NULL - frontend should redirect to index.html")
+    else:
+        # User has an active_role - return it unchanged
+        # Even if it's deactivated, only the user (via /api/switch-role) should change it
+        print(f"[/api/me] ✅ active_role is '{current_user.active_role}' - returning unchanged")
+        print(f"[/api/me] (Only /api/switch-role can change active_role)")
+
+    print(f"[/api/me] Final active_role to return: {current_user.active_role}")
+
     # Get profile picture from role-specific table
     profile_picture = get_role_specific_profile_picture(current_user, db)
     # Get username from role-specific table (no longer stored in users table)
@@ -687,11 +991,24 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
     # Calculate profile_complete status
     profile_complete = bool(current_user.date_of_birth and current_user.gender and current_user.digital_id_no)
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if current_user.last_name:
+        # International naming convention
+        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
     return UserResponse(
         id=current_user.id,
         first_name=current_user.first_name,
         father_name=current_user.father_name,
         grandfather_name=current_user.grandfather_name,
+        last_name=current_user.last_name,
+        name=display_name or "User",
         username=username,
         email=current_user.email,
         phone=current_user.phone,
@@ -707,7 +1024,9 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         is_active=current_user.is_active,
         email_verified=current_user.email_verified,
         role_ids=role_ids,  # FIXED: Include role-specific profile IDs
-        account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0
+        account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0,
+        location=current_user.location,  # Add location field for location filter
+        social_links=current_user.social_links  # Add social media links
     )
 
 @router.get("/api/verify-token")
@@ -745,7 +1064,8 @@ def verify_token(current_user: User = Depends(get_current_user), db: Session = D
             "profile_picture": profile_picture,
             "is_active": current_user.is_active,
             "email_verified": current_user.email_verified,
-            "role_ids": role_ids  # FIXED: Include role-specific profile IDs
+            "role_ids": role_ids,  # FIXED: Include role-specific profile IDs
+            "social_links": current_user.social_links  # Add social media links
         }
     }
 
@@ -841,11 +1161,11 @@ def update_user_profile(
 ):
     """
     Update user's basic profile information from users table.
-    Fields: first_name, father_name, grandfather_name, gender, date_of_birth, digital_id_no
+    Fields: first_name, father_name, grandfather_name, last_name, gender, date_of_birth, digital_id_no
     """
     from datetime import datetime as dt
 
-    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'gender', 'date_of_birth', 'digital_id_no']
+    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'last_name', 'gender', 'date_of_birth', 'digital_id_no']
 
     for field, value in profile_data.items():
         if field in allowed_fields and value is not None:
@@ -875,6 +1195,7 @@ def update_user_profile(
             "first_name": current_user.first_name,
             "father_name": current_user.father_name,
             "grandfather_name": current_user.grandfather_name,
+            "last_name": current_user.last_name,
             "gender": current_user.gender,
             "date_of_birth": current_user.date_of_birth.isoformat() if current_user.date_of_birth else None,
             "digital_id_no": current_user.digital_id_no,
@@ -898,13 +1219,14 @@ def get_tutors(
     courseType: Optional[str] = Query(None),
     gradeLevel: Optional[str] = Query(None),
     sessionFormat: Optional[str] = Query(None),
+    sessionFormatExclusive: Optional[str] = Query(None),  # "true" = only show tutors with ONLY this format
     min_price: Optional[float] = Query(None),
     max_price: Optional[float] = Query(None),
     min_rating: Optional[float] = Query(None),
     max_rating: Optional[float] = Query(None),
     sort_by: Optional[str] = Query("smart"),  # Default to smart ranking
     search_history_ids: Optional[str] = Query(None),  # Comma-separated tutor IDs from search history
-    exclude_user_id: Optional[int] = Query(None),  # Exclude this user from results (e.g., current user)
+    user_location: Optional[str] = Query(None),  # Filter tutors by location matching user's location
     db: Session = Depends(get_db)
 ):
     """
@@ -929,18 +1251,13 @@ def get_tutors(
         User.is_active == True
     )
 
-    # Exclude current user from results (user should not see their own tutor card)
-    # This works for ALL users regardless of their current role (student, tutor, parent, etc.)
-    if exclude_user_id:
-        query = query.filter(TutorProfile.user_id != exclude_user_id)
-
     # Apply filters
     if search:
         search_lower = search.lower()
 
-        # Build subquery to find tutor IDs that have courses with matching tags
-        # tutor_packages.tutor_id -> tutor_packages.course_ids -> courses.tags
-        tag_search_subquery = text("""
+        # Build subquery to find tutor IDs that have courses with matching tags/names
+        # tutor_packages.tutor_id -> tutor_packages.course_ids -> courses.tags/course_name
+        course_search_subquery = text("""
             SELECT DISTINCT tp.tutor_id
             FROM tutor_packages tp
             JOIN courses c ON c.id = ANY(tp.course_ids)
@@ -952,26 +1269,80 @@ def get_tutors(
             )
         """)
 
-        # Get tutor IDs that match tag/course search
-        tag_matching_tutor_ids = db.execute(
-            tag_search_subquery,
+        # Build subquery to find tutor IDs teaching at schools with matching names
+        # credentials.uploader_id (tutor profile ID) -> credentials.title (school name)
+        school_search_subquery = text("""
+            SELECT DISTINCT cr.uploader_id as tutor_id
+            FROM credentials cr
+            WHERE cr.uploader_role = 'tutor'
+            AND cr.document_type = 'experience'
+            AND cr.is_current = true
+            AND cr.title ILIKE :search_pattern
+        """)
+
+        # Additionally search schools table for verified schools
+        verified_school_search_subquery = text("""
+            SELECT DISTINCT cr.uploader_id as tutor_id
+            FROM credentials cr
+            JOIN schools s ON LOWER(cr.title) = LOWER(s.name)
+            WHERE cr.uploader_role = 'tutor'
+            AND cr.document_type = 'experience'
+            AND s.status = 'verified'
+            AND s.name ILIKE :search_pattern
+        """)
+
+        # Get tutor IDs that match course search
+        course_matching_tutor_ids = db.execute(
+            course_search_subquery,
             {"search_pattern": f'%{search_lower}%'}
         ).scalars().all()
+
+        # Get tutor IDs that match school search (from credentials)
+        school_matching_tutor_ids = db.execute(
+            school_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
+        # Get tutor IDs that match verified school search
+        verified_school_matching_tutor_ids = db.execute(
+            verified_school_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
+        # Combine all school matches
+        all_school_matching_tutor_ids = list(set(school_matching_tutor_ids) | set(verified_school_matching_tutor_ids))
 
         search_filter = or_(
             func.lower(User.first_name).contains(search_lower),
             func.lower(User.father_name).contains(search_lower),
-            func.lower(TutorProfile.location).contains(search_lower),
-            # Search in JSON arrays - languages
-            cast(TutorProfile.languages, String).ilike(f'%{search_lower}%'),
-            # Include tutors who have courses with matching tags
-            TutorProfile.id.in_(tag_matching_tutor_ids) if tag_matching_tutor_ids else False
+            func.lower(User.location).contains(search_lower),  # From users table (migrated from tutor_profiles)
+            # Search in JSON arrays - languages (from users table)
+            cast(User.languages, String).ilike(f'%{search_lower}%'),
+            # Include tutors who have courses with matching tags/names
+            TutorProfile.id.in_(course_matching_tutor_ids) if course_matching_tutor_ids else False,
+            # Include tutors teaching at schools with matching names
+            TutorProfile.id.in_(all_school_matching_tutor_ids) if all_school_matching_tutor_ids else False
         )
         query = query.filter(search_filter)
 
     if gender:
         genders = [g.strip() for g in gender.split(',')]
+        print(f"[Gender Filter] Filtering by genders: {genders}")
         query = query.filter(User.gender.in_(genders))
+
+    # Location filter - filter tutors by matching user's location
+    if user_location:
+        print(f"[Location Filter] Filtering tutors near: {user_location}")
+        # Case-insensitive partial match on location field in users table
+        # Also exclude tutors with NULL, empty, or "Not specified" locations
+        query = query.filter(
+            and_(
+                User.location.isnot(None),  # Not NULL
+                User.location != '',  # Not empty
+                func.lower(User.location) != 'not specified',  # Not "Not specified"
+                func.lower(User.location).contains(user_location.lower())  # Contains selected location
+            )
+        )
 
     # courseType, gradeLevel, sessionFormat filters removed - columns no longer exist
 
@@ -994,6 +1365,64 @@ def get_tutors(
 
     # Get all tutors for smart ranking (we'll do pagination after sorting)
     all_tutors = query.all()
+
+    # Apply exclusive session format filtering (v2.2)
+    # Filter tutors who have ONLY the specified format (excluding hybrid tutors)
+    if sessionFormat and sessionFormatExclusive == "true":
+        print(f"[Exclusive Filter] Filtering for tutors with ONLY {sessionFormat} packages")
+        filtered_tutors = []
+
+        for tutor in all_tutors:
+            # Get all package formats for this tutor
+            packages = db.query(TutorPackage).filter(
+                TutorPackage.tutor_id == tutor.id,
+                TutorPackage.is_active == True
+            ).all()
+
+            if not packages:
+                continue
+
+            # Get unique session formats this tutor offers
+            tutor_formats = set(pkg.session_format for pkg in packages if pkg.session_format)
+
+            # For Online-only: should have 'Online' but NOT 'In-person'
+            # For In-person-only: should have 'In-person' but NOT 'Online'
+            if sessionFormat == 'Online':
+                if 'Online' in tutor_formats and 'In-person' not in tutor_formats:
+                    filtered_tutors.append(tutor)
+            elif sessionFormat == 'In-person':
+                if 'In-person' in tutor_formats and 'Online' not in tutor_formats:
+                    filtered_tutors.append(tutor)
+
+        all_tutors = filtered_tutors
+        total = len(all_tutors)
+        print(f"[Exclusive Filter] Filtered to {total} tutors with ONLY {sessionFormat} packages")
+
+    # For Hybrid filter: get tutors who have BOTH formats
+    elif sessionFormat == 'Hybrid':
+        print(f"[Hybrid Filter] Filtering for tutors with BOTH Online and In-person packages")
+        hybrid_tutors = []
+
+        for tutor in all_tutors:
+            # Get all package formats for this tutor
+            packages = db.query(TutorPackage).filter(
+                TutorPackage.tutor_id == tutor.id,
+                TutorPackage.is_active == True
+            ).all()
+
+            if not packages:
+                continue
+
+            # Get unique session formats this tutor offers
+            tutor_formats = set(pkg.session_format for pkg in packages if pkg.session_format)
+
+            # Must have BOTH Online and In-person
+            if 'Online' in tutor_formats and 'In-person' in tutor_formats:
+                hybrid_tutors.append(tutor)
+
+        all_tutors = hybrid_tutors
+        total = len(all_tutors)
+        print(f"[Hybrid Filter] Filtered to {total} hybrid tutors")
 
     # Parse search history IDs
     search_history_tutor_ids = []
@@ -1032,28 +1461,79 @@ def get_tutors(
             Calculate ranking score for each tutor based on multiple factors
             Higher score = Higher priority in results
 
-            SUBSCRIPTION TIERS provide the primary visibility boost:
-            - Premium: +500 points (appears first)
-            - Standard+: +400 points
-            - Standard: +300 points
-            - Basic/Basic+: +200 points
-            - Free: +0 points (baseline)
+            NEW SCORING SYSTEM:
+            - Subscription Plan: 0-500 points
+            - Trending Score: 0-200+ points
+            - Interest/Hobby Match: 0-150 points (NEW)
+            - Total Students: 0-100 points (NEW)
+            - Completion Rate: 0-80 points (NEW)
+            - Response Time: 0-60 points (NEW)
+            - Experience: 0-50 points (NEW - RESTORED)
+            - Search History: 0-50 points
+            - Legacy Basic Flag: 0-100 points
+            - New Tutor Bonus: 0-50 points
+            - Verification: 0-25 points
+            - Combo Bonuses: 0-150 points
+
+            MAX POSSIBLE: ~1,615 points (was ~1,175)
             """
             score = 0
 
             # SUBSCRIPTION PLAN VISIBILITY SCORE (0-500 points) - PRIMARY FACTOR
-            subscription_plan_id = tutor.subscription_plan_id
+            subscription_plan_id = tutor.user.subscription_plan_id
             subscription_score = SUBSCRIPTION_VISIBILITY_SCORES.get(subscription_plan_id, 0)
             score += subscription_score
 
             # Check if subscription is expired (reduce score if expired)
-            if tutor.subscription_expires_at and tutor.subscription_expires_at < datetime.utcnow():
+            if tutor.user.subscription_expires_at and tutor.user.subscription_expires_at < datetime.utcnow():
                 # Expired subscription - treat as Free tier
                 score -= subscription_score  # Remove the subscription bonus
 
-            # Base rating score (0-50 points based on 0-5 rating)
-            # Rating column doesn't exist - skip rating score
-            # score += (tutor.rating or 0) * 10
+            # TRENDING SCORE (0-200+ points) - POPULARITY BOOST
+            trending_score = getattr(tutor, 'trending_score', 0) or 0
+            search_count = getattr(tutor, 'search_count', 0) or 0
+
+            if trending_score > 0:
+                if trending_score >= 100:
+                    score += 200  # Maximum trending bonus
+                elif trending_score >= 50:
+                    score += 100 + (trending_score - 50) * 2  # 100-200 points
+                else:
+                    score += trending_score * 2  # 0-100 points
+
+                # Additional boost for very high search counts (viral tutors)
+                if search_count >= 1000:
+                    score += 100  # Viral tutor bonus
+                elif search_count >= 500:
+                    score += 50  # Very popular tutor bonus
+                elif search_count >= 100:
+                    score += 25  # Popular tutor bonus
+
+            # NEW: Calculate all new scoring factors using TutorScoringCalculator
+            try:
+                scoring_calculator = TutorScoringCalculator(db)
+
+                # Get student interests/hobbies if available (for interest matching)
+                student_interests = []
+                student_hobbies = []
+                # Note: student data passed from outer scope if available
+
+                new_scores, score_breakdown = scoring_calculator.calculate_all_new_scores(
+                    tutor_id=tutor.id,
+                    tutor_user_id=tutor.user_id,
+                    tutor_profile_created_at=tutor.created_at,
+                    student_interests=student_interests,
+                    student_hobbies=student_hobbies
+                )
+
+                score += new_scores
+
+                # Store breakdown for debugging
+                tutor._score_breakdown = score_breakdown
+
+            except Exception as e:
+                print(f"⚠️ Error calculating new scores for tutor {tutor.id}: {e}")
+                # Continue with base scoring if new scoring fails
 
             # Check if tutor is in search history (50 points)
             in_search_history = tutor.id in search_history_tutor_ids
@@ -1086,15 +1566,8 @@ def get_tutors(
             elif is_new and is_basic:
                 score += 50   # New + Basic combo
 
-            # Experience bonus removed - column no longer exists
-
-            # Student count bonus (0-15 points) - field doesn't exist yet, skip for now
-            # TODO: Add total_students field or calculate from bookings table
-            # total_students = getattr(tutor, 'total_students', 0) or 0
-            # score += min(total_students / 10, 15)
-
             # Verification bonus (25 points)
-            if tutor.is_verified:
+            if tutor.user.is_verified:
                 score += 25
 
             return score
@@ -1114,11 +1587,13 @@ def get_tutors(
         print(f"\n📊 Smart Ranking Results (Total: {len(tutors_with_scores)} tutors)")
         print("   Top 5 tutors:")
         for i, (tutor, score) in enumerate(tutors_with_scores[:5], 1):
-            tier_label = SUBSCRIPTION_TIER_NAMES.get(tutor.subscription_plan_id, "NONE")
+            tier_label = SUBSCRIPTION_TIER_NAMES.get(tutor.user.subscription_plan_id, "NONE")
             basic_label = "BASIC" if (tutor.is_basic or False) else ""
             new_label = "NEW" if tutor.created_at and (datetime.utcnow() - tutor.created_at).days <= 30 else ""
             history_label = "HIST" if tutor.id in search_history_tutor_ids else ""
-            labels = f"[{tier_label}] {basic_label} {new_label} {history_label}".strip()
+            trending_count = getattr(tutor, 'search_count', 0) or 0
+            trending_label = f"TREND({trending_count})" if trending_count > 0 else ""
+            labels = f"[{tier_label}] {basic_label} {new_label} {history_label} {trending_label}".strip()
             print(f"   {i}. {labels} Score: {score:.0f} - {tutor.user.first_name} {tutor.user.father_name}")
 
         # Apply shuffling with 80% probability on first page
@@ -1130,9 +1605,9 @@ def get_tutors(
             print(f"🔀 SHUFFLING (roll: {shuffle_roll:.2f} < 0.80)")
 
             # Shuffle within tier groups to provide variety
-            # Tier 1: Top 20% (basic + search history matches)
-            # Tier 2: Next 30% (basic or search history)
-            # Tier 3: Remaining 50% (regular tutors)
+            # Tier 1: Top 20% (Premium + Trending + Search History)
+            # Tier 2: Next 30% (Standard + Some Trending)
+            # Tier 3: Remaining 50% (Basic/Free tutors)
 
             tier1_end = max(1, int(len(tutors_with_scores) * 0.2))
             tier2_end = max(tier1_end + 1, int(len(tutors_with_scores) * 0.5))
@@ -1201,12 +1676,13 @@ def get_tutors(
         SELECT
             tp.tutor_id,
             ARRAY_AGG(DISTINCT c.course_name) FILTER (WHERE c.course_name IS NOT NULL) as courses,
-            ARRAY_AGG(DISTINCT tp.grade_level) FILTER (WHERE tp.grade_level IS NOT NULL AND tp.grade_level != '') as grade_levels,
+            ARRAY_AGG(DISTINCT grade_elem) FILTER (WHERE grade_elem IS NOT NULL) as grade_levels,
             ARRAY_AGG(DISTINCT tp.session_format) FILTER (WHERE tp.session_format IS NOT NULL AND tp.session_format != '') as session_formats,
             MIN(tp.hourly_rate) as min_price,
             MAX(tp.hourly_rate) as max_price
         FROM tutor_packages tp
         LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
+        LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
         WHERE tp.tutor_id = ANY(:tutor_ids)
         AND tp.is_active = true
         GROUP BY tp.tutor_id
@@ -1343,6 +1819,7 @@ def get_tutors(
             "first_name": tutor.user.first_name,
             "father_name": tutor.user.father_name,
             "grandfather_name": tutor.user.grandfather_name,
+            "last_name": tutor.user.last_name,  # International naming convention
             "email": tutor.user.email,
             "profile_picture": tutor.user.profile_picture,
             "bio": tutor.bio,
@@ -1351,10 +1828,10 @@ def get_tutors(
             "courses": pkg_data["courses"],  # From tutor_packages -> course_ids -> courses
             "grades": pkg_data["grade_levels"],  # From tutor_packages.grade_level
             "course_type": None,
-            "location": tutor.location,
+            "location": tutor.user.location,  # From users table (migrated from tutor_profiles)
             "teaches_at": current_workplace,  # From credentials.title where is_current=true (no fallback - frontend shows "Not provided")
             "sessionFormat": session_format_display,  # From tutor_packages.session_format
-            "languages": tutor.languages or [],
+            "languages": tutor.user.languages or [],  # From users table (migrated from tutor_profiles)
             "experience": experience_count,  # Count of experience credentials
             "price": price,  # From tutor_packages.hourly_rate (min)
             "price_max": max_price,  # From tutor_packages.hourly_rate (max)
@@ -1372,11 +1849,11 @@ def get_tutors(
             "cover_image": tutor.cover_image,
             "intro_video_url": getattr(tutor, 'intro_video_url', None),
             # Subscription plan info
-            "subscription_plan_id": tutor.subscription_plan_id,
+            "subscription_plan_id": tutor.user.subscription_plan_id,
             "subscription_tier": {
                 9: "Premium", 8: "Standard+", 7: "Standard",
                 6: "Basic+", 5: "Basic", 16: "Free"
-            }.get(tutor.subscription_plan_id, "Free"),
+            }.get(tutor.user.subscription_plan_id, "Free"),
         }
         tutor_list.append(tutor_data)
 
@@ -1386,6 +1863,699 @@ def get_tutors(
         "page": page,
         "limit": limit,
         "pages": (total + limit - 1) // limit
+    }
+
+# ============================================
+# TIERED TUTOR FETCHING (STUDENT INTERESTS & HOBBIES)
+# ============================================
+
+@router.get("/api/tutors/tiered")
+def get_tutors_tiered(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    subject: Optional[str] = Query(None),
+    gender: Optional[str] = Query(None),
+    min_grade_level: Optional[float] = Query(None),
+    max_grade_level: Optional[float] = Query(None),
+    sessionFormat: Optional[str] = Query(None),
+    sessionFormatExclusive: Optional[str] = Query(None),  # "true" = only show tutors with ONLY this format
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    min_rating: Optional[float] = Query(None),
+    max_rating: Optional[float] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    user_location: Optional[str] = Query(None),  # Filter tutors by location matching user's location
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """
+    Get tutors with tier-based ranking prioritizing student's learning interests and hobbies
+
+    Tier Priority:
+    1. Tutors matching student's learning interests (interested_in from student_profiles)
+    2. Tutors matching student's hobbies (hobbies from users table)
+    3. All other tutors (sorted by smart ranking or specified sort)
+
+    Supports all filters and sorting from standard endpoint:
+    - search: Search tutors, courses, schools, languages
+    - subject: Filter by specific subject/course
+    - gender: Filter by gender (comma-separated for multiple)
+    - min/max_grade_level: Filter by grade level range
+    - sessionFormat: Filter by session format (Online, In-person, Hybrid)
+    - sessionFormatExclusive: Set to "true" to filter tutors with ONLY the specified format (excludes hybrid)
+    - min/max_price: Filter by price range
+    - min/max_rating: Filter by rating range
+    - sort_by: Sort results (smart, rating, price, experience, newest, name, etc.)
+
+    NOTE: Filters are applied AFTER tiering to maintain tier priority
+    """
+
+    # Log incoming filter parameters
+    print(f"\n[Tiered Tutors] === REQUEST PARAMETERS ===")
+    print(f"  search: {search}")
+    print(f"  subject: {subject}")
+    print(f"  gender: {gender}")
+    print(f"  min_grade_level: {min_grade_level}")
+    print(f"  max_grade_level: {max_grade_level}")
+    print(f"  sessionFormat: {sessionFormat}")
+    print(f"  sessionFormatExclusive: {sessionFormatExclusive}")
+    print(f"  min_price: {min_price}")
+    print(f"  max_price: {max_price}")
+    print(f"  min_rating: {min_rating}")
+    print(f"  max_rating: {max_rating}")
+    print(f"  sort_by: {sort_by}")
+    print(f"  page: {page}, limit: {limit}")
+
+    # Get student profile data if user is logged in and has student role
+    student_interests = []
+    student_hobbies = []
+
+    if current_user and "student" in current_user.roles:
+        # Get student profile to fetch interested_in
+        student_profile = db.query(StudentProfile).filter(
+            StudentProfile.user_id == current_user.id
+        ).first()
+
+        if student_profile and student_profile.interested_in:
+            # interested_in is an ARRAY type in PostgreSQL
+            student_interests = student_profile.interested_in or []
+            print(f"[Tiered Tutors] Student interests: {student_interests}")
+
+        # Get user hobbies from users table
+        if current_user.hobbies:
+            # hobbies is an ARRAY type in PostgreSQL
+            student_hobbies = current_user.hobbies or []
+            print(f"[Tiered Tutors] Student hobbies: {student_hobbies}")
+
+    # Base query - only verified, active tutors
+    query = db.query(TutorProfile).join(User).filter(
+        TutorProfile.is_active == True,
+        User.is_verified == True,
+        User.is_active == True
+    )
+
+    # Apply search filter
+    if search:
+        search_lower = search.lower()
+        print(f"[Tiered - Search Filter] Searching for: {search}")
+
+        # Build subquery to find tutor IDs that have courses with matching tags/names
+        course_search_subquery = text("""
+            SELECT DISTINCT tp.tutor_id
+            FROM tutor_packages tp
+            JOIN courses c ON c.id = ANY(tp.course_ids)
+            WHERE c.status = 'verified'
+            AND (
+                c.tags::text ILIKE :search_pattern
+                OR c.course_name ILIKE :search_pattern
+                OR c.course_category ILIKE :search_pattern
+            )
+        """)
+
+        # Build subquery to find tutor IDs teaching at schools with matching names
+        school_search_subquery = text("""
+            SELECT DISTINCT cr.uploader_id as tutor_id
+            FROM credentials cr
+            WHERE cr.uploader_role = 'tutor'
+            AND cr.document_type = 'experience'
+            AND cr.is_current = true
+            AND cr.title ILIKE :search_pattern
+        """)
+
+        # Additionally search schools table for verified schools
+        verified_school_search_subquery = text("""
+            SELECT DISTINCT cr.uploader_id as tutor_id
+            FROM credentials cr
+            JOIN schools s ON LOWER(cr.title) = LOWER(s.name)
+            WHERE cr.uploader_role = 'tutor'
+            AND cr.document_type = 'experience'
+            AND s.status = 'verified'
+            AND s.name ILIKE :search_pattern
+        """)
+
+        # Get tutor IDs that match course search
+        course_matching_tutor_ids = db.execute(
+            course_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
+        # Get tutor IDs that match school search (from credentials)
+        school_matching_tutor_ids = db.execute(
+            school_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
+        # Get tutor IDs that match verified school search
+        verified_school_matching_tutor_ids = db.execute(
+            verified_school_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
+        # Combine all school matches
+        all_school_matching_tutor_ids = list(set(school_matching_tutor_ids) | set(verified_school_matching_tutor_ids))
+
+        search_filter = or_(
+            func.lower(User.first_name).contains(search_lower),
+            func.lower(User.father_name).contains(search_lower),
+            func.lower(User.location).contains(search_lower),
+            # Search in JSON arrays - languages (from users table)
+            cast(User.languages, String).ilike(f'%{search_lower}%'),
+            # Include tutors who have courses with matching tags/names
+            TutorProfile.id.in_(course_matching_tutor_ids) if course_matching_tutor_ids else False,
+            # Include tutors teaching at schools with matching names
+            TutorProfile.id.in_(all_school_matching_tutor_ids) if all_school_matching_tutor_ids else False
+        )
+        query = query.filter(search_filter)
+
+    # Apply gender filter
+    if gender:
+        genders = [g.strip() for g in gender.split(',')]
+        print(f"[Tiered - Gender Filter] Filtering by genders: {genders}")
+        query = query.filter(User.gender.in_(genders))
+
+    # Location filter - filter tutors by matching user's location
+    if user_location:
+        print(f"[Tiered - Location Filter] Filtering tutors near: {user_location}")
+        # Case-insensitive partial match on location field in users table
+        # Also exclude tutors with NULL, empty, or "Not specified" locations
+        query = query.filter(
+            and_(
+                User.location.isnot(None),  # Not NULL
+                User.location != '',  # Not empty
+                func.lower(User.location) != 'not specified',  # Not "Not specified"
+                func.lower(User.location).contains(user_location.lower())  # Contains selected location
+            )
+        )
+
+    # Get all tutors for tiered ranking
+    all_tutors = query.all()
+    total = len(all_tutors)
+
+    # Tier 1: Tutors matching student's learning interests
+    tier1_tutors = []
+    # Tier 2: Tutors matching student's hobbies
+    tier2_tutors = []
+    # Tier 3: All other tutors
+    tier3_tutors = []
+
+    if student_interests or student_hobbies:
+        print(f"[Tiered Tutors] Applying interest/hobby matching for {len(all_tutors)} tutors")
+
+        for tutor in all_tutors:
+            matched_tier = None
+
+            # Check Tier 1: Learning interests match
+            # Match against courses taught by tutor
+            if student_interests:
+                # Get tutor's courses from packages
+                tutor_courses_query = text("""
+                    SELECT DISTINCT c.course_name, c.tags, c.course_category
+                    FROM tutor_packages tp
+                    JOIN courses c ON c.id = ANY(tp.course_ids)
+                    WHERE tp.tutor_id = :tutor_id AND c.status = 'verified'
+                """)
+                tutor_courses = db.execute(tutor_courses_query, {"tutor_id": tutor.id}).fetchall()
+
+                # Check if any student interest matches tutor's courses
+                for interest in student_interests:
+                    interest_lower = interest.lower()
+                    for course in tutor_courses:
+                        course_name = (course.course_name or "").lower()
+                        course_category = (course.course_category or "").lower()
+                        tags_str = str(course.tags or "").lower()
+
+                        if (interest_lower in course_name or
+                            interest_lower in course_category or
+                            interest_lower in tags_str):
+                            matched_tier = 1
+                            print(f"   [Tier 1] Tutor {tutor.id} matches interest '{interest}' via course '{course.course_name}'")
+                            break
+
+                    if matched_tier:
+                        break
+
+            # Check Tier 2: Hobbies match (only if not already in Tier 1)
+            if not matched_tier and student_hobbies:
+                # Match against tutor's hobbies
+                tutor_hobbies = tutor.user.hobbies or []
+
+                for hobby in student_hobbies:
+                    hobby_lower = hobby.lower()
+                    for tutor_hobby in tutor_hobbies:
+                        if hobby_lower == tutor_hobby.lower():
+                            matched_tier = 2
+                            print(f"   [Tier 2] Tutor {tutor.id} matches hobby '{hobby}'")
+                            break
+
+                    if matched_tier:
+                        break
+
+            # Assign to appropriate tier
+            if matched_tier == 1:
+                tier1_tutors.append(tutor)
+            elif matched_tier == 2:
+                tier2_tutors.append(tutor)
+            else:
+                tier3_tutors.append(tutor)
+
+        print(f"[Tiered Tutors] Tier 1: {len(tier1_tutors)} tutors (interests)")
+        print(f"[Tiered Tutors] Tier 2: {len(tier2_tutors)} tutors (hobbies)")
+        print(f"[Tiered Tutors] Tier 3: {len(tier3_tutors)} tutors (others)")
+    else:
+        # No student interests/hobbies - all tutors go to Tier 3
+        tier3_tutors = all_tutors
+        print(f"[Tiered Tutors] No interests/hobbies - all {len(tier3_tutors)} tutors in Tier 3")
+
+    # Apply smart ranking within each tier
+    import random
+    from datetime import datetime
+
+    def calculate_tier_score(tutor):
+        """Calculate smart ranking score for tutors within their tier"""
+        score = 0
+
+        # Subscription visibility score
+        SUBSCRIPTION_SCORES = {
+            9: 500, 8: 400, 7: 300, 6: 200, 5: 200, 16: 0, None: 0
+        }
+        score += SUBSCRIPTION_SCORES.get(tutor.user.subscription_plan_id, 0)
+
+        # Check if subscription is expired
+        if tutor.user.subscription_expires_at and tutor.user.subscription_expires_at < datetime.utcnow():
+            score -= SUBSCRIPTION_SCORES.get(tutor.user.subscription_plan_id, 0)
+
+        # Trending score
+        trending_score = getattr(tutor, 'trending_score', 0) or 0
+        if trending_score >= 100:
+            score += 200
+        elif trending_score >= 50:
+            score += 100 + (trending_score - 50) * 2
+        else:
+            score += trending_score * 2
+
+        # New tutor bonus
+        if tutor.created_at:
+            days_old = (datetime.utcnow() - tutor.created_at).days
+            if days_old <= 30:
+                score += 30
+                if days_old <= 7:
+                    score += 20
+
+        return score
+
+    # Sort each tier by smart ranking
+    tier1_tutors.sort(key=calculate_tier_score, reverse=True)
+    tier2_tutors.sort(key=calculate_tier_score, reverse=True)
+    tier3_tutors.sort(key=calculate_tier_score, reverse=True)
+
+    # Shuffle within tiers for variety (80% chance)
+    if page == 1 and random.random() < 0.8:
+        random.shuffle(tier1_tutors)
+        random.shuffle(tier2_tutors)
+        random.shuffle(tier3_tutors)
+        print("[Tiered Tutors] Shuffled within tiers")
+
+    # Combine tiers: Tier 1 → Tier 2 → Tier 3
+    all_ranked_tutors = tier1_tutors + tier2_tutors + tier3_tutors
+
+    # ============================================
+    # EXCLUSIVE SESSION FORMAT FILTERING (v2.2)
+    # Apply exclusive session format filtering BEFORE pagination
+    # ============================================
+
+    # Apply exclusive session format filtering (v2.2)
+    # Filter tutors who have ONLY the specified format (excluding hybrid tutors)
+    if sessionFormat and sessionFormatExclusive == "true":
+        print(f"[Tiered - Exclusive Filter] Filtering for tutors with ONLY {sessionFormat} packages")
+        filtered_tutors = []
+
+        for tutor in all_ranked_tutors:
+            # Get all package formats for this tutor using raw SQL
+            format_query = text("""
+                SELECT DISTINCT session_format
+                FROM tutor_packages
+                WHERE tutor_id = :tutor_id AND is_active = true AND session_format IS NOT NULL
+            """)
+            tutor_formats = set(row[0] for row in db.execute(format_query, {"tutor_id": tutor.id}).fetchall())
+
+            if not tutor_formats:
+                continue
+
+            # For Online-only: should have 'Online' but NOT 'In-person'
+            # For In-person-only: should have 'In-person' but NOT 'Online'
+            if sessionFormat == 'Online':
+                if 'Online' in tutor_formats and 'In-person' not in tutor_formats:
+                    filtered_tutors.append(tutor)
+            elif sessionFormat == 'In-person':
+                if 'In-person' in tutor_formats and 'Online' not in tutor_formats:
+                    filtered_tutors.append(tutor)
+
+        all_ranked_tutors = filtered_tutors
+        total = len(all_ranked_tutors)
+        print(f"[Tiered - Exclusive Filter] Filtered to {total} tutors with ONLY {sessionFormat} packages")
+
+    # For Hybrid filter: get tutors who have BOTH formats
+    elif sessionFormat == 'Hybrid':
+        print(f"[Tiered - Hybrid Filter] Filtering for tutors with BOTH Online and In-person packages")
+        hybrid_tutors = []
+
+        for tutor in all_ranked_tutors:
+            # Get all package formats for this tutor using raw SQL
+            format_query = text("""
+                SELECT DISTINCT session_format
+                FROM tutor_packages
+                WHERE tutor_id = :tutor_id AND is_active = true AND session_format IS NOT NULL
+            """)
+            tutor_formats = set(row[0] for row in db.execute(format_query, {"tutor_id": tutor.id}).fetchall())
+
+            if not tutor_formats:
+                continue
+
+            # Must have BOTH Online and In-person
+            if 'Online' in tutor_formats and 'In-person' in tutor_formats:
+                hybrid_tutors.append(tutor)
+
+        all_ranked_tutors = hybrid_tutors
+        total = len(all_ranked_tutors)
+        print(f"[Tiered - Hybrid Filter] Filtered to {total} hybrid tutors")
+
+    # ============================================
+    # POST-TIERING FILTERS
+    # Apply additional filters AFTER tiering to maintain tier priority
+    # ============================================
+
+    # OPTIMIZATION: Fetch all package and rating data in batched queries
+    all_tutor_ids = [t.id for t in all_ranked_tutors]
+
+    # Batch fetch package data for all tutors
+    pkg_batch_query = text("""
+        SELECT
+            tp.tutor_id,
+            ARRAY_AGG(DISTINCT c.course_name) FILTER (WHERE c.course_name IS NOT NULL) as courses,
+            ARRAY_AGG(DISTINCT grade_elem) FILTER (WHERE grade_elem IS NOT NULL) as grade_levels,
+            ARRAY_AGG(DISTINCT tp.session_format) FILTER (WHERE tp.session_format IS NOT NULL AND tp.session_format != '') as session_formats,
+            MIN(tp.hourly_rate) as min_price,
+            MAX(tp.hourly_rate) as max_price
+        FROM tutor_packages tp
+        LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
+        LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
+        WHERE tp.tutor_id = ANY(:tutor_ids)
+        GROUP BY tp.tutor_id
+    """)
+    pkg_batch_results = db.execute(pkg_batch_query, {"tutor_ids": all_tutor_ids}).fetchall()
+    pkg_data_map = {row.tutor_id: row for row in pkg_batch_results}
+
+    # Batch fetch rating data for all tutors
+    rating_batch_query = text("""
+        SELECT
+            tr.tutor_id,
+            AVG((tr.subject_understanding_rating + tr.communication_rating + tr.discipline_rating + tr.punctuality_rating) / 4.0) as rating
+        FROM tutor_reviews tr
+        WHERE tr.tutor_id = ANY(:tutor_ids)
+        GROUP BY tr.tutor_id
+    """)
+    rating_batch_results = db.execute(rating_batch_query, {"tutor_ids": all_tutor_ids}).fetchall()
+    rating_data_map = {row.tutor_id: float(row.rating) if row.rating else 0.0 for row in rating_batch_results}
+
+    print(f"[Post-Tiering Filters] Fetched data for {len(all_tutor_ids)} tutors")
+    print(f"[Post-Tiering Filters] Package data: {len(pkg_data_map)} tutors")
+    print(f"[Post-Tiering Filters] Rating data: {len(rating_data_map)} tutors")
+
+    filtered_tutors = []
+    for tutor in all_ranked_tutors:
+        # Get pre-fetched data
+        pkg_data = pkg_data_map.get(tutor.id)
+        tutor_rating = rating_data_map.get(tutor.id, 0.0)
+
+        # Apply subject filter
+        if subject:
+            if not pkg_data or not pkg_data.courses:
+                continue
+            subject_lower = subject.lower()
+            if not any(subject_lower in (course or "").lower() for course in pkg_data.courses):
+                continue
+
+        # Apply grade level filter
+        if min_grade_level is not None or max_grade_level is not None:
+            if not pkg_data or not pkg_data.grade_levels:
+                continue
+            grade_match = False
+            for grade in pkg_data.grade_levels:
+                try:
+                    # Extract numeric grade from strings like "Grade 10", "University" etc.
+                    if grade.lower().startswith("grade"):
+                        grade_num = float(grade.lower().replace("grade", "").strip())
+                    elif grade.lower() == "university":
+                        grade_num = 13.0
+                    elif grade.lower() == "kg" or grade.lower() == "kindergarten":
+                        grade_num = 0.5
+                    elif grade.lower() == "nursery":
+                        grade_num = 0.0
+                    else:
+                        continue
+
+                    if min_grade_level is not None and grade_num < min_grade_level:
+                        continue
+                    if max_grade_level is not None and grade_num > max_grade_level:
+                        continue
+                    grade_match = True
+                    break
+                except:
+                    continue
+            if not grade_match:
+                continue
+
+        # Apply session format filter (ONLY if not already applied with exclusive filter)
+        # The exclusive filter (lines 1841-1895) already filtered tutors, so skip this
+        if sessionFormat and sessionFormatExclusive != "true":
+            if not pkg_data or not pkg_data.session_formats:
+                continue
+
+            # For non-exclusive filtering, "Hybrid" means tutor offers BOTH online AND in-person
+            if sessionFormat == "Hybrid":
+                if not ('Online' in pkg_data.session_formats and 'In-person' in pkg_data.session_formats):
+                    continue
+            else:
+                # Non-exclusive: check if format exists in tutor's formats (WILL include hybrid tutors)
+                # This allows users to see hybrid tutors when filtering by Online or In-person (non-exclusively)
+                if sessionFormat not in pkg_data.session_formats:
+                    continue
+
+        # Apply price filter
+        if min_price is not None or max_price is not None:
+            if not pkg_data:
+                continue
+            tutor_min_price = pkg_data.min_price or 0
+            tutor_max_price = pkg_data.max_price or 0
+            if min_price is not None and tutor_max_price < min_price:
+                continue
+            if max_price is not None and tutor_min_price > max_price:
+                continue
+
+        # Apply rating filter
+        if min_rating is not None and tutor_rating < min_rating:
+            print(f"   [Rating Filter] Tutor {tutor.id} filtered out: rating {tutor_rating:.2f} < min {min_rating}")
+            continue
+        if max_rating is not None and tutor_rating > max_rating:
+            print(f"   [Rating Filter] Tutor {tutor.id} filtered out: rating {tutor_rating:.2f} > max {max_rating}")
+            continue
+
+        # Tutor passed all filters
+        filtered_tutors.append(tutor)
+
+    # Update total to reflect filtered count
+    total = len(filtered_tutors)
+
+    print(f"\n[Post-Tiering Filters] === FILTER RESULTS ===")
+    print(f"  Initial tutors (after tiering): {len(all_ranked_tutors)}")
+    print(f"  After all filters: {len(filtered_tutors)}")
+    print(f"  Filtered out: {len(all_ranked_tutors) - len(filtered_tutors)}")
+    if min_rating is not None or max_rating is not None:
+        rating_filtered = len([t for t in all_ranked_tutors if rating_data_map.get(t.id, 0.0) < (min_rating or 0) or rating_data_map.get(t.id, 0.0) > (max_rating or 5)])
+        print(f"  Rating filter removed: {rating_filtered} tutors")
+
+    # ============================================
+    # SORTING (OPTIONAL - OVERRIDES TIER RANKING)
+    # ============================================
+
+    if sort_by and sort_by != 'smart':
+        print(f"[Tiered Tutors] Applying sort: {sort_by}")
+
+        # Fetch all data needed for sorting
+        tutor_ids_for_sort = [t.id for t in filtered_tutors]
+
+        # Get package and rating data for sorting
+        sort_data_query = text("""
+            SELECT
+                tp.tutor_id,
+                MIN(tp.hourly_rate) as min_price,
+                AVG((tr.subject_understanding_rating + tr.communication_rating + tr.discipline_rating + tr.punctuality_rating) / 4.0) as avg_rating
+            FROM tutor_packages tp
+            LEFT JOIN tutor_reviews tr ON tr.tutor_id = tp.tutor_id
+            WHERE tp.tutor_id = ANY(:tutor_ids)
+            GROUP BY tp.tutor_id
+        """)
+        sort_data = db.execute(sort_data_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
+        sort_map = {row.tutor_id: row for row in sort_data}
+
+        # Apply sorting
+        if sort_by in ['rating', 'rating_desc']:
+            filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).avg_rating) if sort_map.get(t.id) and sort_map.get(t.id).avg_rating else 0.0, reverse=True)
+        elif sort_by == 'rating_asc':
+            filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).avg_rating) if sort_map.get(t.id) and sort_map.get(t.id).avg_rating else 0.0)
+        elif sort_by in ['price', 'price_asc']:
+            filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).min_price) if sort_map.get(t.id) and sort_map.get(t.id).min_price else 999999)
+        elif sort_by == 'price_desc':
+            filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).min_price) if sort_map.get(t.id) and sort_map.get(t.id).min_price else 0, reverse=True)
+        elif sort_by == 'experience' or sort_by == 'experience_desc':
+            filtered_tutors.sort(key=lambda t: int(t.experience_years) if t.experience_years else 0, reverse=True)
+        elif sort_by == 'experience_asc':
+            filtered_tutors.sort(key=lambda t: int(t.experience_years) if t.experience_years else 0)
+        elif sort_by in ['name', 'name_asc']:
+            filtered_tutors.sort(key=lambda t: f"{t.user.first_name or ''} {t.user.father_name or ''}".strip().lower())
+        elif sort_by == 'name_desc':
+            filtered_tutors.sort(key=lambda t: f"{t.user.first_name or ''} {t.user.father_name or ''}".strip().lower(), reverse=True)
+        elif sort_by == 'newest':
+            filtered_tutors.sort(key=lambda t: t.created_at if t.created_at else datetime.min, reverse=True)
+        elif sort_by == 'oldest':
+            filtered_tutors.sort(key=lambda t: t.created_at if t.created_at else datetime.max)
+        # If sort_by is 'smart' or unknown, keep tier ranking
+
+    # Apply pagination
+    offset = (page - 1) * limit
+    tutors = filtered_tutors[offset:offset + limit]
+
+    # Build tutor data (same format as get_tutors)
+    tutor_ids = [tutor.id for tutor in tutors]
+
+    # Fetch package data
+    package_data_query = text("""
+        SELECT
+            tp.tutor_id,
+            ARRAY_AGG(DISTINCT c.course_name) FILTER (WHERE c.course_name IS NOT NULL) as courses,
+            ARRAY_AGG(DISTINCT grade_elem) FILTER (WHERE grade_elem IS NOT NULL) as grade_levels,
+            ARRAY_AGG(DISTINCT tp.session_format) FILTER (WHERE tp.session_format IS NOT NULL AND tp.session_format != '') as session_formats,
+            MIN(tp.hourly_rate) as min_price,
+            MAX(tp.hourly_rate) as max_price
+        FROM tutor_packages tp
+        LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
+        LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
+        WHERE tp.tutor_id = ANY(:tutor_ids)
+        GROUP BY tp.tutor_id
+    """)
+    package_results = db.execute(package_data_query, {"tutor_ids": tutor_ids}).fetchall()
+    package_data_map = {row.tutor_id: row for row in package_results}
+
+    # Fetch rating data
+    rating_query = text("""
+        SELECT
+            tr.tutor_id,
+            AVG((tr.subject_understanding_rating + tr.communication_rating + tr.discipline_rating + tr.punctuality_rating) / 4.0) as rating,
+            COUNT(*) as rating_count,
+            AVG(tr.subject_understanding_rating) as subject_matter,
+            AVG(tr.communication_rating) as communication,
+            AVG(tr.discipline_rating) as discipline,
+            AVG(tr.punctuality_rating) as punctuality
+        FROM tutor_reviews tr
+        WHERE tr.tutor_id = ANY(:tutor_ids)
+        GROUP BY tr.tutor_id
+    """)
+    rating_results = db.execute(rating_query, {"tutor_ids": tutor_ids}).fetchall()
+    rating_data_map = {row.tutor_id: row for row in rating_results}
+
+    # Fetch workplace data
+    workplace_query = text("""
+        SELECT DISTINCT ON (cr.uploader_id)
+            cr.uploader_id as tutor_id,
+            cr.title as workplace
+        FROM credentials cr
+        WHERE cr.uploader_id = ANY(:tutor_ids)
+        AND cr.uploader_role = 'tutor'
+        AND cr.document_type = 'experience'
+        AND cr.is_current = true
+        ORDER BY cr.uploader_id, cr.created_at DESC
+    """)
+    workplace_results = db.execute(workplace_query, {"tutor_ids": tutor_ids}).fetchall()
+    workplace_map = {row.tutor_id: row.workplace for row in workplace_results}
+
+    # Build response
+    tutor_list = []
+    for tutor in tutors:
+        pkg_data = package_data_map.get(tutor.id)
+        rating_data = rating_data_map.get(tutor.id)
+
+        courses = pkg_data.courses if pkg_data and pkg_data.courses else []
+        grade_levels = pkg_data.grade_levels if pkg_data and pkg_data.grade_levels else []
+        session_formats = pkg_data.session_formats if pkg_data and pkg_data.session_formats else []
+        min_price = pkg_data.min_price if pkg_data else 0
+        max_price = pkg_data.max_price if pkg_data else 0
+
+        session_format_display = None
+        if session_formats:
+            if len(session_formats) == 1:
+                session_format_display = session_formats[0]
+            elif 'Online' in session_formats and 'In-person' in session_formats:
+                # Tutor offers both online and in-person = Hybrid
+                session_format_display = "Hybrid"
+            else:
+                session_format_display = "multiple"
+
+        current_workplace = workplace_map.get(tutor.id)
+
+        # Determine tier for this tutor
+        tier_label = "Tier 3"
+        if tutor in tier1_tutors:
+            tier_label = "Tier 1 (Interests)"
+        elif tutor in tier2_tutors:
+            tier_label = "Tier 2 (Hobbies)"
+
+        tutor_data = {
+            "id": tutor.id,
+            "user_id": tutor.user_id,
+            "first_name": tutor.user.first_name,
+            "father_name": tutor.user.father_name,
+            "grandfather_name": tutor.user.grandfather_name,
+            "last_name": tutor.user.last_name,
+            "email": tutor.user.email,
+            "profile_picture": tutor.user.profile_picture,
+            "bio": tutor.bio,
+            "quote": tutor.quote,
+            "gender": tutor.user.gender,
+            "courses": courses,
+            "grades": grade_levels,
+            "location": tutor.user.location,  # From users table (migrated from tutor_profiles)
+            "teaches_at": current_workplace,
+            "sessionFormat": session_format_display,
+            "languages": tutor.user.languages or [],  # From users table (migrated from tutor_profiles)
+            "price": min_price if min_price > 0 else 0,
+            "price_max": max_price if max_price > 0 else 0,
+            "currency": "ETB",
+            "rating": float(rating_data.rating) if rating_data else 0.0,
+            "rating_count": int(rating_data.rating_count) if rating_data else 0,
+            "subject_matter": float(rating_data.subject_matter) if rating_data else 0.0,
+            "communication_skills": float(rating_data.communication) if rating_data else 0.0,
+            "discipline": float(rating_data.discipline) if rating_data else 0.0,
+            "punctuality": float(rating_data.punctuality) if rating_data else 0.0,
+            "is_verified": tutor.user.is_verified,
+            "is_active": tutor.is_active,
+            "cover_image": tutor.cover_image,
+            "subscription_plan_id": tutor.user.subscription_plan_id,
+            "tier": tier_label  # NEW: Tier information for debugging
+        }
+        tutor_list.append(tutor_data)
+
+    return {
+        "tutors": tutor_list,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit,
+        "tier_counts": {
+            "tier1": len(tier1_tutors),
+            "tier2": len(tier2_tutors),
+            "tier3": len(tier3_tutors)
+        }
     }
 
 # ============================================
@@ -1494,20 +2664,32 @@ def get_current_tutor_profile(
             "earnings": earnings
         })
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if current_user.last_name:
+        # International naming convention
+        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
     return {
         "id": tutor_profile.id,
         "user_id": tutor_profile.user_id,
-        "name": " ".join(filter(None, [current_user.first_name, current_user.father_name, current_user.grandfather_name])),
+        "name": display_name or "Tutor",
         # Individual name fields for edit modal population
         "first_name": current_user.first_name,
         "father_name": current_user.father_name,
         "grandfather_name": current_user.grandfather_name,
+        "last_name": current_user.last_name,
         "username": tutor_profile.username,  # Read from tutor_profiles table
         # Contact info
         "email": current_user.email,
         "phone": current_user.phone,
-        # Profile images
-        "profile_picture": tutor_profile.profile_picture,
+        # Profile images - Read from users table
+        "profile_picture": current_user.profile_picture,
         "cover_photo": tutor_profile.cover_image,
         "cover_image": tutor_profile.cover_image,
         # Hero section
@@ -1525,8 +2707,8 @@ def get_current_tutor_profile(
         "grade_levels": [],
         "grades": [],
         "grade_level": "",
-        "languages": tutor_profile.languages,
-        "location": tutor_profile.location,
+        "languages": current_user.languages or [],  # Read from users table
+        "location": current_user.location,  # Read from users table
         "teaches_at": None,
         "years_experience": None,
         "experience": None,
@@ -1552,7 +2734,7 @@ def get_current_tutor_profile(
         "is_verified": current_user.is_verified,  # From users table
         "is_active": tutor_profile.is_active,
         "is_basic": tutor_profile.is_basic,
-        "social_links": tutor_profile.social_links,
+        "social_links": current_user.social_links or {},  # Read from users table
         # Dashboard stats - REQUIRED: current_students from enrolled_students, total_requests from requested_sessions
         "dashboard_stats": {
             "current_students": current_students,  # From enrolled_students table
@@ -1576,29 +2758,45 @@ def get_tutor_public_profile(tutor_id: int, db: Session = Depends(get_db)):
     if not tutor:
         raise HTTPException(status_code=404, detail="Tutor not found")
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    user = tutor.user
+    if user.last_name:
+        # International naming convention
+        display_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [user.first_name, user.father_name, user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
     return {
         "id": tutor.id,
         "user_id": tutor.user_id,
         "first_name": tutor.user.first_name,
         "father_name": tutor.user.father_name,
         "grandfather_name": tutor.user.grandfather_name,
+        "last_name": tutor.user.last_name,
+        "name": display_name or "Tutor",
         "username": tutor.username,
         "email": tutor.user.email,
         "phone": tutor.user.phone,
         "profile_picture": tutor.user.profile_picture,
         "bio": tutor.bio,
         "quote": tutor.quote,
-        "gender": tutor.gender if hasattr(tutor, 'gender') else tutor.user.gender,
+        "gender": tutor.user.gender,
         "courses": [],
         "grades": [],
-        "location": tutor.location,
+        "location": tutor.user.location,
         "teaches_at": None,
         "sessionFormat": None,
         "course_type": None,
-        "languages": tutor.languages if hasattr(tutor, 'languages') else None,
+        "languages": tutor.user.languages,
         "experience": None,
         "is_verified": tutor.user.is_verified if tutor.user else False,
         "cover_image": tutor.cover_image,
+        "social_links": tutor.user.social_links,
+        "hobbies": tutor.user.hobbies,
     }
 
 # ============================================
@@ -1626,7 +2824,9 @@ def update_tutor_profile(
 
     # Separate user fields from tutor profile fields
     # username removed - now saved to tutor_profiles.username instead of users.username
-    user_fields = {'first_name', 'father_name', 'grandfather_name', 'gender'}
+    # Fields that belong to users table
+    user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name', 'gender',
+                   'location', 'display_location', 'profile_picture', 'social_links', 'languages'}
 
     # Update user fields if provided
     for field in user_fields:
@@ -1636,6 +2836,9 @@ def update_tutor_profile(
                 value = value.strip()
                 if value:  # Only update if non-empty
                     setattr(current_user, field, value)
+            else:
+                # For non-string fields (JSON, arrays, etc.)
+                setattr(current_user, field, value)
 
     # Update tutor profile fields - only update non-None, non-empty values to prevent overwriting with blanks
     for field, value in profile_data.items():
@@ -1665,14 +2868,14 @@ def update_tutor_profile(
             print(f"⚠️ Field {db_field} does not exist in TutorProfile model")
 
     # Log final state before commit
-    print(f"📊 Before commit - languages: {tutor_profile.languages}, gender: {current_user.gender}")
+    print(f"📊 Before commit - languages: {current_user.languages}, gender: {current_user.gender}, display_location: {current_user.display_location}")
 
     tutor_profile.profile_completion = calculate_tutor_profile_completion(tutor_profile)
     tutor_profile.profile_complete = tutor_profile.profile_completion >= 80
 
     db.commit()
 
-    print(f"✅ Committed to database - languages: {tutor_profile.languages}")
+    print(f"✅ Committed to database - languages: {current_user.languages}, display_location: {current_user.display_location}")
 
     return {"message": "Profile updated successfully", "completion": tutor_profile.profile_completion}
 
@@ -1735,11 +2938,8 @@ async def upload_profile_picture(
         if not result:
             raise HTTPException(status_code=500, detail="Upload failed")
 
-        # Update profile with URL
-        profile.profile_picture = result['url']
-
-        # Keep users.profile_picture for backward compatibility (deprecated)
-        current_user.profile_picture = result['url']
+        # Update user with profile picture URL (centralized in users table)
+        current_user.profile_picture = result['url']  # From users table (centralized)
 
         db.commit()
 
@@ -2596,11 +3796,87 @@ async def get_my_uploads(
 # ============================================
 
 @router.get("/api/my-roles")
-def get_user_roles(current_user: User = Depends(get_current_user)):
-    """Get current user's roles and active role"""
+def get_user_roles(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's roles and active role (only returns active roles)"""
+    # FIX: DO NOT overwrite user's chosen active_role!
+    # Just use the current active_role - user chooses via /api/switch-role
+    active_role = current_user.active_role
+
+    # Filter out deactivated roles
+    active_roles = []
+
+    for role in current_user.roles:
+        # Check if role is active
+        is_active = True
+
+        if role == 'student':
+            profile = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+            if profile and hasattr(profile, 'is_active'):
+                is_active = profile.is_active
+        elif role == 'tutor':
+            profile = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+            if profile and hasattr(profile, 'is_active'):
+                is_active = profile.is_active
+        elif role == 'parent':
+            profile = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
+            if profile and hasattr(profile, 'is_active'):
+                is_active = profile.is_active
+        elif role == 'advertiser':
+            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            if profile and hasattr(profile, 'is_active'):
+                is_active = profile.is_active
+        elif role == 'user':
+            profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+            if profile and hasattr(profile, 'is_active'):
+                is_active = profile.is_active
+
+        # Only include active roles
+        if is_active:
+            active_roles.append(role)
+
     return {
-        "user_roles": current_user.roles,
-        "active_role": current_user.active_role
+        "user_roles": active_roles,
+        "active_role": active_role  # Return user's chosen active_role
+    }
+
+@router.get("/api/check-role-status")
+def check_role_status(
+    role: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Check if user has a role and whether it's active or deactivated"""
+    if role not in current_user.roles:
+        return {
+            "has_role": False,
+            "is_active": False,
+            "is_deactivated": False
+        }
+
+    # Check if role is deactivated
+    role_model = None
+    if role == 'student':
+        role_model = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+    elif role == 'tutor':
+        role_model = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    elif role == 'parent':
+        role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
+    elif role == 'advertiser':
+        role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+    elif role == 'user':
+        role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+
+    is_active = True
+    if role_model and hasattr(role_model, 'is_active'):
+        is_active = role_model.is_active
+
+    return {
+        "has_role": True,
+        "is_active": is_active,
+        "is_deactivated": not is_active
     }
 
 @router.post("/api/switch-role")
@@ -2633,8 +3909,9 @@ def switch_user_role(
         )
 
     # Update active role in database
+    print(f"[switch-role] BEFORE update: user {fresh_user.id} active_role = {fresh_user.active_role}")
     fresh_user.active_role = new_role
-    db.commit()
+    print(f"[switch-role] AFTER update (before commit): user {fresh_user.id} active_role = {fresh_user.active_role}")
 
     # Generate new JWT token with updated role information
     role_ids = get_role_ids_from_user(fresh_user, db)
@@ -2655,16 +3932,60 @@ def switch_user_role(
         expires_at=datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     )
     db.add(refresh_token_obj)
-    db.commit()
 
-    return {
-        "message": f"Successfully switched to {new_role} role",
-        "active_role": new_role,
-        "user_roles": fresh_user.roles,
-        "access_token": new_access_token,  # NEW: Return updated token
-        "refresh_token": new_refresh_token,  # NEW: Return updated refresh token
-        "token_type": "bearer"
-    }
+    # CRITICAL FIX: Commit both changes together in a single transaction
+    # This ensures active_role update and refresh token are both committed
+    try:
+        db.commit()
+        print(f"[switch-role] ✅ COMMIT SUCCESSFUL")
+    except Exception as commit_error:
+        print(f"[switch-role] ❌ COMMIT FAILED: {commit_error}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update role: {str(commit_error)}")
+
+    print(f"[switch-role] AFTER commit: user {fresh_user.id} active_role = {fresh_user.active_role}")
+
+    # Verify the database was actually updated by querying in a NEW session
+    db.expire_all()  # Clear the session cache
+    verification_user = db.query(User).filter(User.id == fresh_user.id).first()
+    print(f"[switch-role] VERIFIED from DB (fresh query): user {verification_user.id} active_role = {verification_user.active_role}")
+
+    if verification_user.active_role != new_role:
+        print(f"[switch-role] ⚠️ WARNING: Database verification failed!")
+        print(f"[switch-role]   Expected: {new_role}, Got: {verification_user.active_role}")
+        # Try to fix it by updating again
+        verification_user.active_role = new_role
+        db.commit()
+        print(f"[switch-role] Attempted second commit")
+
+        # Verify again after second commit
+        db.expire(verification_user)
+        db.refresh(verification_user)
+        print(f"[switch-role] After second commit, active_role: {verification_user.active_role}")
+
+    # CRITICAL FIX: Return the ACTUAL database value, not the request parameter
+    # This ensures the frontend gets the truth about what's in the database
+    actual_active_role = verification_user.active_role
+
+    print(f"[switch-role] Returning active_role: {actual_active_role}")
+
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        content={
+            "message": f"Successfully switched to {actual_active_role} role",
+            "active_role": actual_active_role,  # FIXED: Return database value, not request param
+            "user_roles": fresh_user.roles,
+            "access_token": new_access_token,  # NEW: Return updated token
+            "refresh_token": new_refresh_token,  # NEW: Return updated refresh token
+            "token_type": "bearer"
+        },
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
 
 # ============================================
 # OTP ENDPOINTS
@@ -2708,8 +4029,8 @@ def send_otp(
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))
 
-    # Set expiration (5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    # Set expiration (10 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
 
     # Invalidate any existing unused OTPs for this user and purpose
     db.query(OTP).filter(
@@ -2793,8 +4114,8 @@ def send_otp_to_custom_email(
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))
 
-    # Set expiration (5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    # Set expiration (10 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
 
     # Invalidate any existing unused OTPs for this user and purpose
     db.query(OTP).filter(
@@ -2907,8 +4228,8 @@ def forgot_password(
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))
 
-    # Set expiration (5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    # Set expiration (10 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
 
     # Invalidate any existing unused password reset OTPs for this user
     db.query(OTP).filter(
@@ -3063,10 +4384,30 @@ def add_user_role(
     if not password:
         raise HTTPException(status_code=400, detail="Password is required")
 
-    # Check if user already has this role BEFORE verifying OTP/password
-    # This prevents burning the OTP if the role already exists
+    # Check if user already has this role (active) BEFORE verifying OTP/password
+    # This prevents burning the OTP if the role already exists AND is active
     if new_role in current_user.roles:
-        raise HTTPException(status_code=400, detail=f"You already have the {new_role} role")
+        # Check if role is deactivated
+        role_model = None
+        is_deactivated = False
+
+        if new_role == 'student':
+            role_model = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+        elif new_role == 'tutor':
+            role_model = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+        elif new_role == 'parent':
+            role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
+        elif new_role == 'advertiser':
+            role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+        elif new_role == 'user':
+            role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+
+        if role_model and hasattr(role_model, 'is_active'):
+            is_deactivated = not role_model.is_active
+
+        if not is_deactivated:
+            raise HTTPException(status_code=400, detail=f"You already have the {new_role} role")
+        # If deactivated, continue to reactivate it
 
     # Verify password
     if not bcrypt.checkpw(password.encode('utf-8'), current_user.password_hash.encode('utf-8')):
@@ -3087,6 +4428,70 @@ def add_user_role(
     # Mark OTP as used ONLY after all validations pass
     otp_record.is_used = True
     db.commit()
+
+    # Check if role is deactivated and reactivate it
+    role_reactivated = False
+    if new_role in current_user.roles:
+        role_model = None
+        if new_role == 'student':
+            role_model = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+        elif new_role == 'tutor':
+            role_model = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+        elif new_role == 'parent':
+            role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
+        elif new_role == 'advertiser':
+            role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+        elif new_role == 'user':
+            role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+
+        if role_model and hasattr(role_model, 'is_active') and not role_model.is_active:
+            # Reactivate the role
+            role_model.is_active = True
+            # CRITICAL FIX: Clear scheduled_deletion_at when reactivating
+            if hasattr(role_model, 'scheduled_deletion_at'):
+                role_model.scheduled_deletion_at = None
+            role_reactivated = True
+
+            # DO NOT automatically set as active role - let user choose
+            # current_user.active_role = new_role  # REMOVED: User should choose via "Switch to Account" button
+
+            db.commit()
+            db.refresh(current_user)
+
+            # Generate new JWT tokens with CURRENT active role (not the newly reactivated one)
+            role_ids = get_role_ids_from_user(current_user, db)
+
+            token_data = {
+                "sub": current_user.id,
+                "role": current_user.active_role,  # Keep current active role, not the newly reactivated one
+                "role_ids": role_ids
+            }
+
+            new_access_token = create_access_token(data=token_data)
+            new_refresh_token = create_refresh_token(data=token_data)
+
+            # Store new refresh token
+            refresh_token_obj = RefreshToken(
+                token=new_refresh_token,
+                user_id=current_user.id,
+                expires_at=datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+            )
+            db.add(refresh_token_obj)
+            db.commit()
+
+            # Capture values BEFORE returning to avoid DetachedInstanceError
+            user_roles = current_user.roles
+            active_role = current_user.active_role
+
+            return {
+                "message": f"{new_role.capitalize()} role reactivated successfully",
+                "user_roles": user_roles,
+                "active_role": active_role,
+                "role_reactivated": True,
+                "access_token": new_access_token,  # NEW: Return updated token
+                "refresh_token": new_refresh_token,  # NEW: Return updated refresh token
+                "token_type": "bearer"
+            }
 
     # Check if user has a pending deletion request for this role
     # If so, restore the role instead of creating a new profile
@@ -3134,17 +4539,87 @@ def add_user_role(
     current_user.roles = current_roles + [new_role]  # Create NEW list instead of append
 
     # Create corresponding profile based on role (only if not restoring or profile doesn't exist)
+    new_tutor_created = False
+    new_parent_created = False
+
     if new_role == "tutor" and not current_user.tutor_profile:
         tutor_profile = TutorProfile(user_id=current_user.id)
         db.add(tutor_profile)
+        db.flush()  # Flush to get the profile ID
+        new_tutor_created = True
+
+        # Create tutor_analysis record with default 2.0 rating
+        tutor_analysis = TutorAnalysis(
+            tutor_id=tutor_profile.id,
+            average_rating=2.0,
+            total_reviews=0,
+            avg_subject_understanding_rating=2.0,
+            avg_communication_rating=2.0,
+            avg_discipline_rating=2.0,
+            avg_punctuality_rating=2.0,
+            total_students=0,
+            current_students=0,
+            alumni_students=0,
+            success_rate=0.0,
+            total_sessions_completed=0,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.add(tutor_analysis)
+
     elif new_role == "student" and not current_user.student_profile:
         student_profile = StudentProfile(user_id=current_user.id)
         db.add(student_profile)
+
+    elif new_role == "parent" and not current_user.parent_profile:
+        parent_profile = ParentProfile(
+            user_id=current_user.id,
+            rating=2.0,  # Set default 2.0 rating
+            rating_count=0
+        )
+        db.add(parent_profile)
+        new_parent_created = True
+
+    elif new_role == "advertiser" and not hasattr(current_user, 'advertiser_profile'):
+        advertiser_profile = AdvertiserProfile(user_id=current_user.id)
+        db.add(advertiser_profile)
+
+    elif new_role == "user" and not current_user.user_profile:
+        user_profile = UserProfile(user_id=current_user.id)
+        db.add(user_profile)
+
+    # DO NOT automatically set newly added role as active role - let user choose
+    # current_user.active_role = new_role  # REMOVED: User should choose via "Switch to Account" button
 
     # Commit and ensure changes are flushed to database
     db.commit()
     db.flush()  # Force write to database
     db.refresh(current_user)
+
+    # Generate new JWT tokens with CURRENT active role (not the newly added one)
+    role_ids = get_role_ids_from_user(current_user, db)
+
+    token_data = {
+        "sub": current_user.id,
+        "role": current_user.active_role,  # Keep current active role, not the newly added one
+        "role_ids": role_ids
+    }
+
+    new_access_token = create_access_token(data=token_data)
+    new_refresh_token = create_refresh_token(data=token_data)
+
+    # Store new refresh token
+    refresh_token_obj = RefreshToken(
+        token=new_refresh_token,
+        user_id=current_user.id,
+        expires_at=datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    db.add(refresh_token_obj)
+    db.commit()
+
+    # Capture values BEFORE closing session to avoid DetachedInstanceError
+    user_roles = current_user.roles
+    active_role = current_user.active_role
 
     # Close the session to ensure no stale data remains
     db.close()
@@ -3153,9 +4628,12 @@ def add_user_role(
 
     return {
         "message": message,
-        "user_roles": current_user.roles,
-        "active_role": current_user.active_role,
-        "role_restored": role_restored
+        "user_roles": user_roles,
+        "active_role": active_role,
+        "role_restored": role_restored,
+        "access_token": new_access_token,  # NEW: Return updated token
+        "refresh_token": new_refresh_token,  # NEW: Return updated refresh token
+        "token_type": "bearer"
     }
 
 # ============================================
@@ -3190,8 +4668,8 @@ def send_otp_for_email_change(
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))
 
-    # Set expiration (5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    # Set expiration (10 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
 
     # Invalidate any existing unused OTPs for email change
     db.query(OTP).filter(
@@ -3302,8 +4780,8 @@ def send_registration_otp(
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))
 
-    # Set expiration (5 minutes)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    # Set expiration (10 minutes)
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
 
     # Delete any existing unused OTPs for this contact
     if email:
@@ -3878,7 +5356,7 @@ def get_courses(
     category: Optional[str] = Query(None),
     level: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    sort_by: str = Query("popular", regex="^(popular|rating|newest)$"),
+    sort_by: str = Query("popular", regex="^(popular|rating|newest|trending)$"),
     db: Session = Depends(get_db)
 ):
     """Get courses with filtering and pagination
@@ -3887,6 +5365,7 @@ def get_courses(
     - course_name, course_category, course_level, course_description
     - thumbnail, duration, lessons, lesson_title[], language[]
     - rating, rating_count, created_at, updated_at
+    - search_count, trending_score (for trending sort)
     """
     # Check if courses table exists
     try:
@@ -3924,6 +5403,9 @@ def get_courses(
         query += " ORDER BY rating DESC"
     elif sort_by == "newest":
         query += " ORDER BY created_at DESC"
+    elif sort_by == "trending":
+        # Sort by trending_score (time-weighted search popularity), then rating
+        query += " ORDER BY trending_score DESC NULLS LAST, search_count DESC NULLS LAST, rating DESC"
 
     # Get total count
     count_query = f"SELECT COUNT(*) FROM ({query}) AS count_query"
@@ -4416,18 +5898,18 @@ def get_complete_tutor_profile(tutor_id: int, db: Session = Depends(get_db)):
         "gender": user.gender if user else None,  # REQUIRED: Gender from users table
         "bio": tutor.bio,
         "quote": tutor.quote,
-        "location": tutor.location,  # REQUIRED: Location from tutor_profiles
+        "location": user.location if user else None,  # REQUIRED: Location from users table (migrated from tutor_profiles)
         "teaches_at": None,  # Column removed
         "sessionFormat": None,  # Column removed
         "courses": [],  # Column removed
         "grades": [],  # Column removed
         "course_type": None,  # Column removed
-        "languages": tutor.languages,
+        "languages": user.languages if user else [],  # From users table (migrated from tutor_profiles)
         "experience": None,  # Column removed
         "expertise_badge": tutor.expertise_badge or "Tutor",  # REQUIRED: Expertise badge from tutor_profiles
-        "profile_picture": tutor.profile_picture,
+        "profile_picture": user.profile_picture if user else None,  # From users table (migrated from tutor_profiles)
         "cover_image": tutor.cover_image,
-        "social_links": tutor.social_links or {},
+        "social_links": user.social_links if user else {},  # From users table (migrated from tutor_profiles)
         "hero_titles": tutor.hero_titles or ["Excellence in Education, Delivered with Passion"], "hero_subtitle": tutor.hero_subtitle,
         "students_taught": getattr(tutor, 'students_taught', 0), "courses_created": 0,
         "rating": calculated_rating,  # REQUIRED: Calculated from tutor_reviews.rating average
@@ -4475,8 +5957,8 @@ def get_tutor_reviews(tutor_id: int, limit: int = 100, db: Session = Depends(get
                 if user:
                     reviewer_name = f"{user.first_name} {user.father_name}"
                     reviewer_user_id = user.id
+                    reviewer_profile_picture = user.profile_picture or "/uploads/system_images/system_profile_pictures/boy-user-image.jpg"  # From users table (centralized)
                 reviewer_description = f"{student_profile.grade_level or 'Student'}"
-                reviewer_profile_picture = student_profile.profile_picture or "/uploads/system_images/system_profile_pictures/boy-user-image.jpg"
 
         elif r.user_role == "parent":
             parent_profile = db.query(ParentProfile).filter(ParentProfile.id == r.reviewer_id).first()
@@ -4485,8 +5967,8 @@ def get_tutor_reviews(tutor_id: int, limit: int = 100, db: Session = Depends(get
                 if user:
                     reviewer_name = f"{user.first_name} {user.father_name}"
                     reviewer_user_id = user.id
+                    reviewer_profile_picture = user.profile_picture or "/uploads/system_images/system_profile_pictures/Dad-profile.jpg"  # From users table (centralized)
                 reviewer_description = "Parent"
-                reviewer_profile_picture = parent_profile.profile_picture or "/uploads/system_images/system_profile_pictures/Dad-profile.jpg"
 
         elif r.user_role == "tutor":
             tutor_profile = db.query(TutorProfile).filter(TutorProfile.id == r.reviewer_id).first()
@@ -4495,8 +5977,8 @@ def get_tutor_reviews(tutor_id: int, limit: int = 100, db: Session = Depends(get
                 if user:
                     reviewer_name = f"{user.first_name} {user.father_name}"
                     reviewer_user_id = user.id
+                    reviewer_profile_picture = user.profile_picture or "/uploads/system_images/system_profile_pictures/tutor-.jpg"  # From users table (centralized)
                 reviewer_description = "Tutor"
-                reviewer_profile_picture = tutor_profile.profile_picture or "/uploads/system_images/system_profile_pictures/tutor-.jpg"
 
         result.append({
             "id": r.id,
@@ -4632,27 +6114,41 @@ def get_student_profile(current_user: User = Depends(get_current_user), db: Sess
     # Improvement rate (stored in student profile or calculated)
     improvement_rate = getattr(student, 'improvement_rate', 0) or 0
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if current_user.last_name:
+        # International naming convention
+        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
     return {
         "id": student.id,
         "user_id": student.user_id,
         "username": student.username,  # Role-specific username from student_profiles
+        "name": display_name or "Student",
         "first_name": current_user.first_name,
         "father_name": current_user.father_name,
         "grandfather_name": current_user.grandfather_name,
+        "last_name": current_user.last_name,
         "email": current_user.email,
         "phone": current_user.phone,
         "gender": current_user.gender,  # Shared from users table
-        "profile_picture": student.profile_picture,  # Student-specific
+        "profile_picture": current_user.profile_picture,  # Read from users table
         "cover_image": student.cover_image,  # Student-specific
         "about": student.about,  # Renamed from bio
         "quote": student.quote if student.quote else [],  # Now array
-        "location": student.location,
+        "location": current_user.location,  # Read from users table
+        "social_links": current_user.social_links or {},  # Read from users table
         "grade_level": student.grade_level,
         "studying_at": student.studying_at,  # Renamed from school_name
         "interested_in": student.interested_in if student.interested_in else [],  # Renamed from subjects
-        "languages": student.languages if student.languages else [],  # Renamed from preferred_languages
+        "languages": current_user.languages or [],  # Read from users table
         "learning_method": student.learning_method if student.learning_method else [],  # Renamed from learning_style
-        "hobbies": student.hobbies if student.hobbies else [],  # Array of hobbies
+        "hobbies": current_user.hobbies or [],  # Read from users table
         "career_aspirations": student.career_aspirations,  # Replaces academic_goals
         "hero_title": student.hero_title if student.hero_title else [],  # Hero titles array
         "hero_subtitle": student.hero_subtitle if student.hero_subtitle else [],  # Hero subtitles array
@@ -4766,7 +6262,7 @@ def get_student_tutors(
             "bio": tutor_profile.bio,
             "quote": getattr(tutor_profile, 'quote', None),
             "gender": tutor_user.gender,
-            "location": tutor_profile.location,
+            "location": tutor_user.location,
             "rating": calculated_rating,
             "rating_count": rating_count,
             "rating_breakdown": {
@@ -4780,7 +6276,7 @@ def get_student_tutors(
             "currency": "ETB",
             "courses": [],  # Column removed
             "subjects": [],  # Column removed
-            "languages": tutor_profile.languages or [],
+            "languages": tutor_user.languages or [],
             "grades": [],  # Column removed
             "education_level": None,  # Column doesn't exist
             "experience": None,  # Column removed
@@ -4889,11 +6385,11 @@ def get_student_tutor_detail(
         "father_name": tutor_user.father_name,
         "full_name": f"{tutor_user.first_name} {tutor_user.father_name}",
         "username": tutor_profile.username,
-        "profile_picture": tutor_profile.profile_picture or tutor_user.profile_picture,
+        "profile_picture": tutor_user.profile_picture,  # From users table (centralized)
         "bio": tutor_profile.bio,
         "quote": tutor_profile.quote,
         "gender": tutor_user.gender,
-        "location": tutor_profile.location,
+        "location": tutor_user.location,
         "rating": calculated_rating,
         "rating_count": rating_count,
         "rating_breakdown": {
@@ -4907,7 +6403,7 @@ def get_student_tutor_detail(
         "currency": "ETB",
         "courses": [],  # Column removed
         "subjects": [],  # Column removed
-        "languages": tutor_profile.languages or [],
+        "languages": tutor_user.languages or [],
         "grades": [],  # Column removed
         "education_level": getattr(tutor_profile, 'education_level', None),
         "experience": None,  # Column removed
@@ -4978,7 +6474,7 @@ def get_student_courses(
             ec.is_recurring,
             tp.id as tutor_profile_id,
             tp.username as tutor_username,
-            tp.profile_picture as tutor_profile_picture,
+            u.profile_picture as tutor_profile_picture,  -- NOTE: profile_picture now read from users table
             u.first_name as tutor_first_name,
             u.father_name as tutor_father_name
         FROM enrolled_courses ec
@@ -5124,27 +6620,43 @@ def get_student_by_id(student_id: int, by_user_id: bool = Query(False), db: Sess
 
     user = db.query(User).filter(User.id == student.user_id).first()
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if user and user.last_name:
+        # International naming convention
+        display_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    elif user:
+        # Ethiopian naming convention
+        name_parts = [user.first_name, user.father_name, user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+    else:
+        display_name = "Student"
+
     return {
         "id": student.id,
         "user_id": student.user_id,
         "username": student.username,  # Role-specific username from student_profiles
+        "name": display_name,  # Built from naming convention
         "first_name": user.first_name if user else None,
         "father_name": user.father_name if user else None,
         "grandfather_name": user.grandfather_name if user else None,
+        "last_name": user.last_name if user else None,
         "email": user.email if user else None,
         "phone": user.phone if user else None,
         "gender": user.gender if user else None,
-        "profile_picture": student.profile_picture,
+        "profile_picture": user.profile_picture if user else None,
         "cover_image": student.cover_image,
         "about": student.about,  # Fixed: was 'bio', now 'about'
         "quote": student.quote if student.quote else [],  # Array field
-        "location": student.location,
+        "location": user.location if user else None,
         "grade_level": student.grade_level,
         "studying_at": student.studying_at,
         "career_aspirations": student.career_aspirations,
         "interested_in": student.interested_in if student.interested_in else [],  # Fixed: was 'subjects'
-        "hobbies": student.hobbies if student.hobbies else [],
-        "languages": student.languages if student.languages else [],  # Fixed: was 'preferred_languages'
+        "hobbies": user.hobbies if user else [],
+        "languages": user.languages if user else [],
+        "social_links": user.social_links if user else {},
         "learning_method": student.learning_method if student.learning_method else [],
         "hero_title": student.hero_title if student.hero_title else [],
         "hero_subtitle": student.hero_subtitle if student.hero_subtitle else [],
@@ -5171,25 +6683,26 @@ def update_student_profile(
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
 
-    # Update user fields (name, email, phone - shared across all roles)
-    if "first_name" in profile_data:
-        current_user.first_name = profile_data["first_name"]
-    if "father_name" in profile_data:
-        current_user.father_name = profile_data["father_name"]
-    if "grandfather_name" in profile_data:
-        current_user.grandfather_name = profile_data["grandfather_name"]
-    if "email" in profile_data:
-        current_user.email = profile_data["email"]
-    if "phone" in profile_data:
-        current_user.phone = profile_data["phone"]
-    if "gender" in profile_data:
-        current_user.gender = profile_data["gender"]
+    # Fields that belong to users table
+    user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name',
+                   'email', 'phone', 'gender', 'location', 'profile_picture',
+                   'social_links', 'languages'}
+
+    # Update user fields (shared across all roles)
+    for field in user_fields:
+        if field in profile_data and profile_data[field] is not None:
+            value = profile_data[field]
+            if isinstance(value, str):
+                value = value.strip()
+                if value:  # Only update if non-empty
+                    setattr(current_user, field, value)
+            else:
+                # For non-string fields (JSON, arrays, etc.)
+                setattr(current_user, field, value)
 
     # Update student profile fields (NEW SCHEMA - matching current database)
     if "username" in profile_data:
         student.username = profile_data["username"]
-    if "location" in profile_data:
-        student.location = profile_data["location"]
     if "grade_level" in profile_data:
         student.grade_level = profile_data["grade_level"]
 
@@ -5208,8 +6721,6 @@ def update_student_profile(
         student.interested_in = profile_data["interested_in"]
     if "hobbies" in profile_data:
         student.hobbies = profile_data["hobbies"]
-    if "languages" in profile_data:
-        student.languages = profile_data["languages"]
     if "learning_method" in profile_data:
         student.learning_method = profile_data["learning_method"]
 
@@ -5267,8 +6778,8 @@ async def get_student_reviews(
                     ELSE 'Unknown'
                 END as reviewer_name,
                 CASE
-                    WHEN sr.reviewer_role = 'tutor' THEN tp.profile_picture
-                    WHEN sr.reviewer_role = 'parent' THEN pp.profile_picture
+                    WHEN sr.reviewer_role = 'tutor' THEN tu.profile_picture  -- NOTE: profile_picture now read from users table
+                    WHEN sr.reviewer_role = 'parent' THEN pu.profile_picture  -- NOTE: profile_picture now read from users table
                     ELSE NULL
                 END as reviewer_picture
             FROM student_reviews sr
@@ -5401,7 +6912,7 @@ async def get_parent_profile(
         "bio": parent_profile.bio,
         "quote": parent_profile.quote,
         "relationship_type": parent_profile.relationship_type,
-        "location": parent_profile.location,
+        "location": current_user.location,
         "email": current_user.email,
         "phone": current_user.phone,
         "gender": current_user.gender,
@@ -5412,7 +6923,7 @@ async def get_parent_profile(
         "rating_count": parent_profile.rating_count,
         "is_verified": parent_profile.is_verified,
         "is_active": parent_profile.is_active,
-        "profile_picture": parent_profile.profile_picture,
+        "profile_picture": current_user.profile_picture,  # From users table (centralized)
         "cover_image": parent_profile.cover_image,
         "hero_title": parent_profile.hero_title,
         "hero_subtitle": parent_profile.hero_subtitle,
@@ -5492,9 +7003,9 @@ async def update_parent_profile(
     if parent_profile.bio: completion += 1
     if parent_profile.quote: completion += 1
     if parent_profile.relationship_type: completion += 1
-    if parent_profile.location: completion += 1
+    if current_user.location: completion += 1
     if parent_profile.education_focus: completion += 1
-    if parent_profile.profile_picture: completion += 1
+    if current_user.profile_picture: completion += 1  # From users table (centralized)
     if parent_profile.cover_image: completion += 1
     if current_user.email: completion += 1
     if current_user.phone: completion += 1
@@ -5550,8 +7061,6 @@ async def get_advertiser_profile(
             user_id=current_user.id,
             username=None,  # Will be set later by user
             joined_in=date.today(),
-            location=[],
-            socials={},
             hero_title=[],
             hero_subtitle=[]
         )
@@ -5559,25 +7068,35 @@ async def get_advertiser_profile(
         db.commit()
         db.refresh(advertiser_profile)
 
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if current_user.last_name:
+        # International naming convention
+        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
+    full_name = display_name or (current_user.email.split('@')[0] if current_user.email else 'Advertiser')
+
     # Build response with user data
     response = AdvertiserProfileResponse.from_orm(advertiser_profile)
     response_dict = response.dict()
 
-    # Construct full_name from Ethiopian name parts (first_name + father_name + grandfather_name)
-    name_parts = []
-    if hasattr(current_user, 'first_name') and current_user.first_name:
-        name_parts.append(current_user.first_name)
-    if hasattr(current_user, 'father_name') and current_user.father_name:
-        name_parts.append(current_user.father_name)
-    if hasattr(current_user, 'grandfather_name') and current_user.grandfather_name:
-        name_parts.append(current_user.grandfather_name)
-
-    full_name = ' '.join(name_parts) if name_parts else (current_user.email.split('@')[0] if current_user.email else 'Advertiser')
-
-    # Add user data (email, phone, full_name)
+    # Add user data (email, phone, full_name, and centralized fields)
     response_dict['email'] = current_user.email
     response_dict['phone'] = getattr(current_user, 'phone', None)
     response_dict['full_name'] = full_name
+    response_dict['first_name'] = current_user.first_name
+    response_dict['father_name'] = current_user.father_name
+    response_dict['grandfather_name'] = current_user.grandfather_name
+    response_dict['last_name'] = current_user.last_name
+    response_dict['profile_picture'] = current_user.profile_picture  # Read from users table
+    response_dict['location'] = current_user.location  # Read from users table
+    response_dict['social_links'] = current_user.social_links or {}  # Read from users table
+    response_dict['languages'] = current_user.languages or []  # Read from users table
 
     # Use joined_in instead of created_at (AdvertiserProfile model has joined_in, not created_at)
     if hasattr(advertiser_profile, 'joined_in') and advertiser_profile.joined_in:
@@ -5608,10 +7127,27 @@ async def update_advertiser_profile(
     if not advertiser_profile:
         raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
+    # Fields that belong to users table
+    user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name',
+                   'email', 'phone', 'gender', 'location', 'display_location', 'profile_picture',
+                   'social_links', 'languages'}
+
     # Update profile fields
     update_data = profile_data.dict(exclude_unset=True)
+
     for key, value in update_data.items():
-        if hasattr(advertiser_profile, key):
+        if key in user_fields:
+            # Update user table
+            if hasattr(current_user, key):
+                if isinstance(value, str):
+                    value = value.strip()
+                    if value:  # Only update if non-empty
+                        setattr(current_user, key, value)
+                else:
+                    # For non-string fields (JSON, arrays, etc.)
+                    setattr(current_user, key, value)
+        elif hasattr(advertiser_profile, key):
+            # Update advertiser_profile table
             setattr(advertiser_profile, key, value)
 
     db.commit()
@@ -6362,10 +7898,10 @@ def get_pending_tutors(
             "id": tutor_profile.id,
             "user_id": tutor_profile.user_id,
             "name": f"{user.first_name} {user.father_name}" if user else "Unknown",
-            "profile_picture": tutor_profile.profile_picture,
+            "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
             "id_document_url": None,  # Column removed
             "teaches_at": None,  # Column removed
-            "location": tutor_profile.location,
+            "location": user.location if user else None,
             "courses": [],  # Column removed
             "experience": None,  # Column removed
             "education_level": getattr(tutor_profile, 'education_level', None),
@@ -6402,14 +7938,14 @@ def get_tutor_review_details(
         "name": f"{user.first_name} {user.father_name} {user.grandfather_name or ''}".strip() if user else "Unknown",
         "email": user.email if user else None,
         "phone": user.phone if user else None,
-        "profile_picture": tutor_profile.profile_picture,
+        "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
         "id_document_url": None,  # Column removed
         "teaches_at": None,  # Column removed
-        "location": tutor_profile.location,
+        "location": user.location if user else None,
         "bio": tutor_profile.bio,
         "courses": [],  # Column removed
         "grades": [],  # Column removed
-        "languages": tutor_profile.languages,
+        "languages": user.languages if user else None,
         "experience": None,  # Column removed
         "education_level": tutor_profile.education_level,
         "certifications": tutor_profile.certifications,
@@ -6621,7 +8157,7 @@ def get_verified_tutors(
 
     # Query verified tutors
     query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.verification_status == "verified",
+        User.verification_status == "verified",
         TutorProfile.is_active == True
     )
 
@@ -6630,11 +8166,13 @@ def get_verified_tutors(
         search_filter = or_(
             User.first_name.ilike(f"%{search}%"),
             User.father_name.ilike(f"%{search}%"),
-            TutorProfile.location.ilike(f"%{search}%")
+            User.location.ilike(f"%{search}%")  # From users table (migrated from tutor_profiles)
         )
         query = query.filter(search_filter)
 
-    query = query.order_by(TutorProfile.rating.desc())
+    # TODO: Implement rating order using subquery to tutor_reviews table
+    # For now, order by created_at descending (most recent first)
+    query = query.order_by(TutorProfile.created_at.desc())
 
     total_count = query.count()
     skip = (page - 1) * limit
@@ -6648,9 +8186,9 @@ def get_verified_tutors(
             "id": tutor_profile.id,
             "user_id": tutor_profile.user_id,
             "name": f"{user.first_name} {user.father_name}" if user else "Unknown",
-            "profile_picture": tutor_profile.profile_picture,
+            "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
             "teaches_at": None,  # Column removed
-            "location": tutor_profile.location,
+            "location": user.location if user else None,
             "courses": [],  # Column removed
             "rating": tutor_profile.rating,
             "total_students": tutor_profile.total_students,
@@ -6678,7 +8216,7 @@ def get_rejected_tutors(
 
     # Query rejected tutors
     query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.verification_status == "rejected"
+        User.verification_status == "rejected"
     ).order_by(TutorProfile.updated_at.desc())
 
     total_count = query.count()
@@ -6693,9 +8231,9 @@ def get_rejected_tutors(
             "id": tutor_profile.id,
             "user_id": tutor_profile.user_id,
             "name": f"{user.first_name} {user.father_name}" if user else "Unknown",
-            "profile_picture": tutor_profile.profile_picture,
+            "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
             "teaches_at": None,  # Column removed
-            "location": tutor_profile.location,
+            "location": user.location if user else None,
             "courses": [],  # Column removed
             "rejection_reason": tutor_profile.rejection_reason,
             "updated_at": tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None
@@ -6736,9 +8274,9 @@ def get_suspended_tutors(
             "id": tutor_profile.id,
             "user_id": tutor_profile.user_id,
             "name": f"{user.first_name} {user.father_name}" if user else "Unknown",
-            "profile_picture": tutor_profile.profile_picture,
+            "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
             "teaches_at": None,  # Column removed
-            "location": tutor_profile.location,
+            "location": user.location if user else None,
             "courses": [],  # Column removed
             "suspension_reason": user.suspension_reason if user else None,  # From users table
             "suspended_at": user.suspended_at.isoformat() if user and user.suspended_at else None,  # From users table
@@ -6770,25 +8308,25 @@ def get_tutor_statistics(
         # Get counts by status (excluding not_verified)
         total_tutors = db.query(TutorProfile).filter(
             and_(
-                TutorProfile.verification_status != 'not_verified',
-                TutorProfile.verification_status != None
+                User.verification_status != 'not_verified',
+                User.verification_status != None
             )
         ).count()
 
         pending_count = db.query(TutorProfile).filter(
-            TutorProfile.verification_status == 'pending'
+            User.verification_status == 'pending'
         ).count()
 
         verified_count = db.query(TutorProfile).filter(
-            TutorProfile.verification_status == 'verified'
+            User.verification_status == 'verified'
         ).count()
 
         rejected_count = db.query(TutorProfile).filter(
-            TutorProfile.verification_status == 'rejected'
+            User.verification_status == 'rejected'
         ).count()
 
         suspended_count = db.query(TutorProfile).filter(
-            TutorProfile.verification_status == 'suspended'
+            User.verification_status == 'suspended'
         ).count()
 
         # Calculate archived (inactive for more than 6 months, excluding not_verified)
@@ -6796,8 +8334,8 @@ def get_tutor_statistics(
         archived_count = db.query(TutorProfile).filter(
             and_(
                 TutorProfile.updated_at < six_months_ago,
-                TutorProfile.verification_status != 'suspended',
-                TutorProfile.verification_status != 'not_verified'
+                User.verification_status != 'suspended',
+                User.verification_status != 'not_verified'
             )
         ).count()
 
@@ -6810,7 +8348,7 @@ def get_tutor_statistics(
         today_approved = db.query(TutorProfile).filter(
             and_(
                 func.date(TutorProfile.updated_at) == today,
-                TutorProfile.verification_status == 'verified'
+                User.verification_status == 'verified'
             )
         ).count()
 
@@ -6853,8 +8391,8 @@ def get_recent_tutor_activity(
         # Get recent tutors ordered by creation/update time (excluding not_verified)
         recent_tutors = db.query(TutorProfile).filter(
             and_(
-                TutorProfile.verification_status != 'not_verified',
-                TutorProfile.verification_status != None
+                User.verification_status != 'not_verified',
+                User.verification_status != None
             )
         ).order_by(
             desc(TutorProfile.updated_at)
@@ -6885,11 +8423,11 @@ def get_recent_tutor_activity(
                 "email": user.email if user else None,
                 "phone": user.phone if user else None,
                 "courses": courses,
-                "location": tutor.location,
-                "verification_status": tutor.verification_status or 'pending',
+                "location": user.location if user else None,  # From users table (migrated from tutor_profiles)
+                "verification_status": user.verification_status if user else 'pending',  # From users table (migrated from tutor_profiles)
                 "created_at": tutor.created_at.isoformat() if tutor.created_at else None,
                 "updated_at": tutor.updated_at.isoformat() if tutor.updated_at else None,
-                "profile_picture": tutor.profile_picture
+                "profile_picture": user.profile_picture if user else None  # From users table (migrated from tutor_profiles)
             }
             activities.append(activity)
 

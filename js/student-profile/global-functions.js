@@ -357,33 +357,37 @@ function resetUpload(type) {
 }
 
 // Share Profile
-function shareProfile() {
-    const profileUrl = window.location.href;
+// DEPRECATED: Old shareProfile() function removed
+// Now using shareProfile() from js/common-modals/share-profile-manager.js
+// which provides full referral system with modal, social sharing, and tracking
 
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out my Astegni Student Profile',
-            text: 'I\'m a student on Astegni. Check out my profile!',
-            url: profileUrl
-        }).then(() => {
-            console.log('Profile shared successfully');
-        }).catch((error) => {
-            console.error('Error sharing profile:', error);
-            fallbackShare(profileUrl);
-        });
-    } else {
-        fallbackShare(profileUrl);
-    }
-}
-
-function fallbackShare(url) {
-    navigator.clipboard.writeText(url).then(() => {
-        alert('Profile link copied to clipboard!');
-    }).catch((error) => {
-        console.error('Error copying to clipboard:', error);
-        alert('Failed to copy link');
-    });
-}
+// Old functions commented out:
+// function shareProfile() {
+//     const profileUrl = window.location.href;
+//     if (navigator.share) {
+//         navigator.share({
+//             title: 'Check out my Astegni Student Profile',
+//             text: 'I\'m a student on Astegni. Check out my profile!',
+//             url: profileUrl
+//         }).then(() => {
+//             console.log('Profile shared successfully');
+//         }).catch((error) => {
+//             console.error('Error sharing profile:', error);
+//             fallbackShare(profileUrl);
+//         });
+//     } else {
+//         fallbackShare(profileUrl);
+//     }
+// }
+//
+// function fallbackShare(url) {
+//     navigator.clipboard.writeText(url).then(() => {
+//         alert('Profile link copied to clipboard!');
+//     }).catch((error) => {
+//         console.error('Error copying to clipboard:', error);
+//         alert('Failed to copy link');
+//     });
+// }
 
 // Export all functions to window
 window.openEditProfileModal = openEditProfileModal;
@@ -396,7 +400,7 @@ window.closeProfileUploadModal = closeProfileUploadModal;
 window.handleImageSelect = handleImageSelect;
 window.uploadImage = uploadImage;
 window.resetUpload = resetUpload;
-window.shareProfile = shareProfile;
+// window.shareProfile = shareProfile; // REMOVED: Now defined in share-profile-manager.js
 
 // ============================================
 // PARENT PORTAL FUNCTIONS
@@ -442,6 +446,7 @@ window.closeInviteParentModal = closeInviteParentModal;
 
 let currentStudentRequestType = 'courses';
 let currentStudentRequestStatus = 'all';
+let currentStudentRequestDirection = 'sent'; // 'sent' or 'received' (students send requests to tutors)
 let currentStudentParentingDirection = 'received'; // 'received' or 'sent'
 let studentParentingReceivedInvitations = [];
 let studentParentingSentInvitations = [];
@@ -466,9 +471,32 @@ function filterStudentRequestType(type) {
         }
     });
 
+    // Show/hide request buttons based on type
+    const requestCourseBtn = document.getElementById('request-course-btn');
+    const requestSchoolBtn = document.getElementById('request-school-btn');
+
+    if (requestCourseBtn) {
+        requestCourseBtn.style.display = type === 'courses' ? 'flex' : 'none';
+    }
+    if (requestSchoolBtn) {
+        requestSchoolBtn.style.display = type === 'schools' ? 'flex' : 'none';
+    }
+
     // Show status tabs for all types
     const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
     if (statusTabs) statusTabs.style.display = 'flex';
+
+    // Show/hide tutor direction tabs (only for tutors request type)
+    const tutorDirectionTabs = document.getElementById('student-tutor-direction-tabs');
+    if (tutorDirectionTabs) {
+        if (type === 'tutors') {
+            tutorDirectionTabs.classList.remove('hidden');
+            tutorDirectionTabs.style.display = 'flex';
+        } else {
+            tutorDirectionTabs.classList.add('hidden');
+            tutorDirectionTabs.style.display = 'none';
+        }
+    }
 
     // Show/hide parenting direction tabs
     const parentingDirectionTabs = document.getElementById('student-parenting-direction-tabs');
@@ -525,6 +553,37 @@ async function loadStudentChildInvitations() {
 }
 
 /**
+ * Filter student requests by direction (sent/received)
+ */
+function filterStudentRequestDirection(direction) {
+    currentStudentRequestDirection = direction;
+
+    // Update tab active states
+    const tabs = document.querySelectorAll('.direction-tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.color = 'var(--text-secondary)';
+        tab.style.fontWeight = '500';
+        tab.style.borderBottomColor = 'transparent';
+        if (tab.dataset.direction === direction) {
+            tab.classList.add('active');
+            tab.style.color = 'var(--primary-color)';
+            tab.style.fontWeight = '600';
+            tab.style.borderBottomColor = 'var(--primary-color)';
+        }
+    });
+
+    // For session requests (tutors), use StudentSessionRequestsManager if available
+    if (currentStudentRequestType === 'tutors' && typeof StudentSessionRequestsManager !== 'undefined') {
+        StudentSessionRequestsManager.filterByDirection(direction);
+        return;
+    }
+
+    // For other types, reload with current filters
+    filterStudentRequestType(currentStudentRequestType);
+}
+
+/**
  * Filter student requests by status
  */
 function filterStudentRequestStatus(status) {
@@ -545,6 +604,12 @@ function filterStudentRequestStatus(status) {
             tab.style.borderBottom = 'none';
         }
     });
+
+    // For session requests (tutors), use StudentSessionRequestsManager if available
+    if (currentStudentRequestType === 'tutors' && typeof StudentSessionRequestsManager !== 'undefined') {
+        StudentSessionRequestsManager.filterByStatus(status);
+        return;
+    }
 
     // Reload content based on current type and status
     filterStudentRequestType(currentStudentRequestType);
@@ -1535,6 +1600,7 @@ async function loadStudentRequestCounts() {
 // Export functions
 window.filterStudentRequestType = filterStudentRequestType;
 window.filterStudentRequestStatus = filterStudentRequestStatus;
+window.filterStudentRequestDirection = filterStudentRequestDirection;
 window.loadStudentParentingInvitations = loadStudentParentingInvitations;
 window.switchStudentParentingDirection = switchStudentParentingDirection;
 window.updateStudentParentingCountBadges = updateStudentParentingCountBadges;
@@ -1936,6 +2002,7 @@ function openCreateScheduleModal() {
 
     // Show the modal
     modal.classList.remove('hidden');
+    modal.style.display = 'flex'; // Explicitly set display to flex (modal base class has display:none)
     document.body.style.overflow = 'hidden';
 }
 
@@ -1956,7 +2023,7 @@ async function openEditScheduleModal(scheduleId) {
     try {
         // Fetch schedule details
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-schedules/${scheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1981,6 +2048,7 @@ async function openEditScheduleModal(scheduleId) {
 
         // Show the modal
         modal.classList.remove('hidden');
+        modal.style.display = 'flex'; // Explicitly set display to flex
         document.body.style.overflow = 'hidden';
 
     } catch (error) {
@@ -1994,18 +2062,28 @@ async function openEditScheduleModal(scheduleId) {
  * @param {Object} schedule - Schedule data object
  */
 function populateScheduleForm(schedule) {
+    console.log('[Populate Form] Populating with schedule:', schedule);
+
     // Title and description
     const titleInput = document.getElementById('schedule-title');
     const descInput = document.getElementById('schedule-description');
     if (titleInput) titleInput.value = schedule.title || '';
     if (descInput) descInput.value = schedule.description || '';
 
-    // Priority
+    // Priority - map priority_level string to number
     const prioritySlider = document.getElementById('schedule-priority');
-    if (prioritySlider && schedule.priority) {
-        prioritySlider.value = schedule.priority;
+    if (prioritySlider) {
+        const priorityMap = {
+            'low': 1,
+            'medium': 2,
+            'high': 3,
+            'important': 4,
+            'urgent': 5
+        };
+        const priorityValue = priorityMap[schedule.priority_level] || 3;
+        prioritySlider.value = priorityValue;
         if (typeof updatePriorityLabel === 'function') {
-            updatePriorityLabel(schedule.priority);
+            updatePriorityLabel(priorityValue);
         }
     }
 
@@ -2022,6 +2100,90 @@ function populateScheduleForm(schedule) {
     // Is featured
     const featuredCheckbox = document.getElementById('schedule-is-featured');
     if (featuredCheckbox) featuredCheckbox.checked = schedule.is_featured || false;
+
+    // Year range
+    const yearFromInput = document.getElementById('schedule-year-from');
+    const yearToInput = document.getElementById('schedule-year-to');
+    if (yearFromInput && schedule.year) yearFromInput.value = schedule.year;
+    if (yearToInput && schedule.year_to) yearToInput.value = schedule.year_to;
+
+    // Schedule type (recurring or specific)
+    const scheduleType = schedule.schedule_type || 'recurring';
+    const recurringRadio = document.querySelector('input[name="schedule-type"][value="recurring"]');
+    const specificRadio = document.querySelector('input[name="schedule-type"][value="specific"]');
+
+    if (scheduleType === 'recurring' && recurringRadio) {
+        recurringRadio.checked = true;
+    } else if (scheduleType === 'specific' && specificRadio) {
+        specificRadio.checked = true;
+    }
+
+    // Toggle sections based on type
+    if (typeof toggleScheduleType === 'function') {
+        toggleScheduleType();
+    }
+
+    // Populate months (for recurring schedules)
+    if (schedule.months && Array.isArray(schedule.months) && schedule.months.length > 0) {
+        console.log('[Populate Form] Setting months:', schedule.months);
+        // Uncheck all first
+        document.querySelectorAll('input[name="schedule-month"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        // Check selected months
+        schedule.months.forEach(month => {
+            const checkbox = document.querySelector(`input[name="schedule-month"][value="${month}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                console.log('[Populate Form] Checked month:', month);
+            }
+        });
+    }
+
+    // Populate days (for recurring schedules)
+    if (schedule.days && Array.isArray(schedule.days) && schedule.days.length > 0) {
+        console.log('[Populate Form] Setting days:', schedule.days);
+        // Uncheck all first
+        document.querySelectorAll('input[name="schedule-day"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        // Check selected days
+        schedule.days.forEach(day => {
+            const checkbox = document.querySelector(`input[name="schedule-day"][value="${day}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                console.log('[Populate Form] Checked day:', day);
+            }
+        });
+    }
+
+    // Populate specific dates (for specific date schedules)
+    if (schedule.specific_dates && Array.isArray(schedule.specific_dates) && schedule.specific_dates.length > 0) {
+        console.log('[Populate Form] Setting specific dates:', schedule.specific_dates);
+
+        // Set date range if available
+        const dateFromInput = document.getElementById('schedule-date-from');
+        const dateToInput = document.getElementById('schedule-date-to');
+
+        if (dateFromInput && schedule.specific_dates[0]) {
+            dateFromInput.value = schedule.specific_dates[0];
+        }
+
+        if (dateToInput && schedule.specific_dates.length > 1) {
+            // Use the last date as the "to" date
+            dateToInput.value = schedule.specific_dates[schedule.specific_dates.length - 1];
+        }
+
+        // If there's a container for displaying selected dates, populate it
+        const selectedDatesContainer = document.getElementById('selected-dates-container');
+        if (selectedDatesContainer) {
+            selectedDatesContainer.innerHTML = schedule.specific_dates.map(date =>
+                `<span class="date-tag">${date} <button type="button" onclick="removeDate('${date}')">×</button></span>`
+            ).join('');
+        }
+    }
+
+    console.log('[Populate Form] Form populated successfully');
 }
 
 /**
@@ -2031,6 +2193,7 @@ function closeScheduleModal() {
     const modal = document.getElementById('scheduleModal');
     if (modal) {
         modal.classList.add('hidden');
+        modal.style.display = 'none'; // Explicitly hide modal
         document.body.style.overflow = '';
     }
 }
@@ -2038,6 +2201,36 @@ function closeScheduleModal() {
 /**
  * Save schedule (create or update)
  */
+// Convert date range objects to flat array of date strings for backend
+function convertDateRangesToFlatArray(dateRanges) {
+    const flatDates = [];
+
+    if (!dateRanges || dateRanges.length === 0) {
+        return flatDates;
+    }
+
+    for (const item of dateRanges) {
+        if (item.type === 'single') {
+            // Add single date
+            flatDates.push(item.date);
+        } else if (item.type === 'range') {
+            // Generate all dates between fromDate and toDate
+            const start = new Date(item.fromDate);
+            const end = new Date(item.toDate);
+
+            let current = new Date(start);
+            while (current <= end) {
+                const dateStr = current.toISOString().split('T')[0];
+                flatDates.push(dateStr);
+                current.setDate(current.getDate() + 1);
+            }
+        }
+    }
+
+    // Remove duplicates and sort
+    return [...new Set(flatDates)].sort();
+}
+
 async function saveSchedule() {
     console.log('[Schedule Modal] Saving schedule...');
 
@@ -2075,13 +2268,13 @@ async function saveSchedule() {
             return;
         }
 
-        // Map priority number to priority level name
+        // Map priority number to priority level for new schedules table
         const priorityMap = {
             1: 'low',
-            2: 'normal',
-            3: 'important',
-            4: 'very_important',
-            5: 'critical'
+            2: 'medium',
+            3: 'high',
+            4: 'urgent',
+            5: 'urgent'
         };
 
         // Gather form data matching backend ScheduleCreateRequest model
@@ -2093,7 +2286,9 @@ async function saveSchedule() {
             start_time: startTime,
             end_time: endTime,
             notes: notes,
-            priority_level: priorityMap[priority] || 'normal',
+            priority_level: priorityMap[priority] || 'medium',
+            status: 'active',  // New field for schedules table
+            is_featured: isFeatured,
             alarm_enabled: document.getElementById('enable-alarm')?.checked || false,
             alarm_before_minutes: parseInt(document.getElementById('alarm-before')?.value) || 15,
             notification_browser: document.querySelector('input[name="notification-browser"]')?.checked || true,
@@ -2126,9 +2321,12 @@ async function saveSchedule() {
                 return;
             }
         } else {
-            // Specific dates - use the selectedSpecificDates array
+            // Specific dates - selectedSpecificDates is already a flat array of date strings
             scheduleData.specific_dates = selectedSpecificDates || [];
             scheduleData.schedule_type = 'specific';
+            // Backend requires months and days arrays even for specific dates (send empty arrays)
+            scheduleData.months = [];
+            scheduleData.days = [];
 
             if (scheduleData.specific_dates.length === 0) {
                 alert('Please add at least one specific date');
@@ -2138,10 +2336,10 @@ async function saveSchedule() {
 
         console.log('[Schedule Modal] Schedule data:', scheduleData);
 
-        // Send to backend
+        // Send to backend - use universal schedules endpoint
         const url = isEditing
-            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules/${editingId}`
-            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules`;
+            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${editingId}`
+            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules`;
 
         const response = await fetch(url, {
             method: isEditing ? 'PUT' : 'POST',
@@ -2154,6 +2352,21 @@ async function saveSchedule() {
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('[Schedule Modal] Backend validation error:', errorData);
+
+            // Handle FastAPI validation errors (422 Unprocessable Entity)
+            if (response.status === 422 && errorData.detail) {
+                if (Array.isArray(errorData.detail)) {
+                    // Pydantic validation errors
+                    const errorMessages = errorData.detail.map(err =>
+                        `${err.loc.join('.')} - ${err.msg}`
+                    ).join('\n');
+                    throw new Error(`Validation errors:\n${errorMessages}`);
+                } else {
+                    throw new Error(errorData.detail);
+                }
+            }
+
             throw new Error(errorData.detail || 'Failed to save schedule');
         }
 
@@ -2556,12 +2769,476 @@ window.confirmDeleteSchedule = confirmDeleteSchedule;
 window.openCreateScheduleModal = openCreateScheduleModal;
 window.openEditScheduleModal = openEditScheduleModal;
 window.openScheduleDetailModal = openScheduleDetailModal;
+window.openScheduleModal = openCreateScheduleModal; // Alias for consistency
 window.closeScheduleModal = closeScheduleModal;
 window.saveSchedule = saveSchedule;
+window.convertDateRangesToFlatArray = convertDateRangesToFlatArray;
 window.toggleScheduleType = toggleScheduleType;
 window.updatePriorityLabel = updatePriorityLabel;
 window.toggleAlarmSettings = toggleAlarmSettings;
 window.populateScheduleForm = populateScheduleForm;
+
+// ============================================
+// VIEW SCHEDULE MODAL FUNCTIONS
+// ============================================
+
+let currentViewingSchedule = null; // Store current schedule being viewed
+
+/**
+ * Open view schedule modal
+ * @param {number} scheduleId - ID of the schedule to view
+ */
+async function openViewScheduleModal(scheduleId) {
+    console.log('[View Schedule Modal] Opening for ID:', scheduleId);
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please log in to view schedule details');
+            return;
+        }
+
+        // Fetch schedule details from API
+        const response = await fetch(
+            `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}`,
+            {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to load schedule details');
+        }
+
+        const schedule = await response.json();
+        console.log('[View Schedule Modal] Loaded schedule:', schedule);
+
+        // Store current schedule
+        currentViewingSchedule = schedule;
+
+        // Populate modal with schedule data
+        populateViewScheduleModal(schedule);
+
+        // Show modal
+        const modal = document.getElementById('viewScheduleModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        } else {
+            console.error('[View Schedule Modal] Modal element not found');
+        }
+
+    } catch (error) {
+        console.error('[View Schedule Modal] Error:', error);
+        alert('Failed to load schedule details: ' + error.message);
+    }
+}
+
+/**
+ * Populate view schedule modal with data
+ * @param {Object} schedule - Schedule object
+ */
+function populateViewScheduleModal(schedule) {
+    // Title and description
+    const titleEl = document.getElementById('view-schedule-name');
+    if (titleEl) titleEl.textContent = schedule.title;
+
+    const descEl = document.getElementById('view-schedule-description');
+    if (descEl) {
+        descEl.textContent = schedule.description || 'No description provided';
+        descEl.style.display = schedule.description ? 'block' : 'none';
+    }
+
+    // Priority badge
+    const priorityBadge = document.getElementById('view-schedule-priority-badge');
+    if (priorityBadge) {
+        priorityBadge.textContent = schedule.priority_level.toUpperCase();
+        priorityBadge.className = 'priority-badge priority-' + schedule.priority_level;
+    }
+
+    // Schedule type
+    const typeEl = document.getElementById('view-schedule-type');
+    if (typeEl) {
+        const typeText = schedule.schedule_type === 'recurring' ? 'Recurring Schedule' : 'Specific Dates';
+        const typeIcon = schedule.schedule_type === 'recurring' ? 'fa-sync-alt' : 'fa-calendar-day';
+        typeEl.innerHTML = `<i class="fas ${typeIcon}"></i> ${typeText}`;
+    }
+
+    // Times
+    const startTimeEl = document.getElementById('view-schedule-start-time');
+    if (startTimeEl) startTimeEl.textContent = schedule.start_time;
+
+    const endTimeEl = document.getElementById('view-schedule-end-time');
+    if (endTimeEl) endTimeEl.textContent = schedule.end_time;
+
+    // Year
+    const yearEl = document.getElementById('view-schedule-year');
+    if (yearEl) yearEl.textContent = schedule.year;
+
+    // Show/hide recurring vs specific dates sections
+    const recurringSection = document.getElementById('view-recurring-section');
+    const specificDatesSection = document.getElementById('view-specific-dates-section');
+
+    if (schedule.schedule_type === 'recurring') {
+        // Show recurring section
+        if (recurringSection) recurringSection.classList.remove('hidden');
+        if (specificDatesSection) specificDatesSection.classList.add('hidden');
+
+        // Populate months
+        const monthsContainer = document.getElementById('view-schedule-months');
+        if (monthsContainer && schedule.months && schedule.months.length > 0) {
+            monthsContainer.innerHTML = schedule.months.map(month =>
+                `<span class="tag month-tag">${month}</span>`
+            ).join('');
+        }
+
+        // Populate days
+        const daysContainer = document.getElementById('view-schedule-days');
+        if (daysContainer && schedule.days && schedule.days.length > 0) {
+            daysContainer.innerHTML = schedule.days.map(day =>
+                `<span class="tag day-tag">${day}</span>`
+            ).join('');
+        }
+    } else {
+        // Show specific dates section
+        if (recurringSection) recurringSection.classList.add('hidden');
+        if (specificDatesSection) specificDatesSection.classList.remove('hidden');
+
+        // Populate specific dates
+        const datesContainer = document.getElementById('view-schedule-specific-dates');
+        if (datesContainer && schedule.specific_dates && schedule.specific_dates.length > 0) {
+            datesContainer.innerHTML = schedule.specific_dates.map(date =>
+                `<span class="tag date-tag">${date}</span>`
+            ).join('');
+        }
+    }
+
+    // Notes
+    const notesSection = document.getElementById('view-notes-section');
+    const notesEl = document.getElementById('view-schedule-notes');
+    if (schedule.notes && schedule.notes.trim()) {
+        if (notesSection) notesSection.classList.remove('hidden');
+        if (notesEl) notesEl.textContent = schedule.notes;
+    } else {
+        if (notesSection) notesSection.classList.add('hidden');
+    }
+
+    // Notification settings
+    const alarmBadge = document.getElementById('view-alarm-badge');
+    const alarmMinutes = document.getElementById('view-alarm-minutes');
+    const browserBadge = document.getElementById('view-browser-notification-badge');
+    const soundBadge = document.getElementById('view-sound-notification-badge');
+    const featuredBadge = document.getElementById('view-featured-badge');
+    const noNotifications = document.getElementById('view-no-notifications');
+
+    let hasNotifications = false;
+
+    if (schedule.alarm_enabled) {
+        if (alarmBadge) alarmBadge.classList.remove('hidden');
+        if (alarmMinutes) alarmMinutes.textContent = schedule.alarm_before_minutes || 15;
+        hasNotifications = true;
+    } else {
+        if (alarmBadge) alarmBadge.classList.add('hidden');
+    }
+
+    if (schedule.notification_browser) {
+        if (browserBadge) browserBadge.classList.remove('hidden');
+        hasNotifications = true;
+    } else {
+        if (browserBadge) browserBadge.classList.add('hidden');
+    }
+
+    if (schedule.notification_sound) {
+        if (soundBadge) soundBadge.classList.remove('hidden');
+        hasNotifications = true;
+    } else {
+        if (soundBadge) soundBadge.classList.add('hidden');
+    }
+
+    if (schedule.is_featured) {
+        if (featuredBadge) featuredBadge.classList.remove('hidden');
+        hasNotifications = true;
+    } else {
+        if (featuredBadge) featuredBadge.classList.add('hidden');
+    }
+
+    if (noNotifications) {
+        noNotifications.style.display = hasNotifications ? 'none' : 'inline';
+    }
+
+    // Metadata
+    const roleEl = document.getElementById('view-schedule-role');
+    if (roleEl) {
+        const role = schedule.scheduler_role || 'Unknown';
+        roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    }
+
+    const statusEl = document.getElementById('view-schedule-status');
+    if (statusEl) {
+        const status = schedule.status || 'active';
+        statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    // Role-based permissions: Only show Edit/Delete if schedule belongs to current active role
+    const editBtn = document.getElementById('view-schedule-edit-btn');
+    const deleteBtn = document.getElementById('view-schedule-delete-btn');
+
+    // Detect current profile from URL or page context
+    let currentActiveRole = localStorage.getItem('active_role');
+
+    // Fallback: detect from URL path if localStorage is stale
+    const urlPath = window.location.pathname;
+    if (urlPath.includes('parent-profile')) {
+        currentActiveRole = 'parent';
+    } else if (urlPath.includes('student-profile')) {
+        currentActiveRole = 'student';
+    } else if (urlPath.includes('tutor-profile')) {
+        currentActiveRole = 'tutor';
+    }
+
+    const scheduleRole = schedule.scheduler_role;
+
+    console.log('[View Schedule Modal] Permission check - Active role:', currentActiveRole, 'Schedule role:', scheduleRole);
+    console.log('[View Schedule Modal] URL Path:', urlPath);
+
+    // Show buttons only if roles match
+    const canEdit = currentActiveRole === scheduleRole;
+
+    if (editBtn) {
+        if (canEdit) {
+            editBtn.classList.remove('hidden');
+            editBtn.style.display = 'inline-flex';
+            console.log('[View Schedule Modal] Edit button shown - roles match');
+        } else {
+            editBtn.classList.add('hidden');
+            editBtn.style.display = 'none';
+            console.log('[View Schedule Modal] Edit button hidden - roles do not match');
+        }
+    }
+
+    if (deleteBtn) {
+        if (canEdit) {
+            deleteBtn.classList.remove('hidden');
+            deleteBtn.style.display = 'inline-flex';
+            console.log('[View Schedule Modal] Delete button shown - roles match');
+        } else {
+            deleteBtn.classList.add('hidden');
+            deleteBtn.style.display = 'none';
+            console.log('[View Schedule Modal] Delete button hidden - roles do not match');
+        }
+    }
+}
+
+/**
+ * Close view schedule modal
+ */
+function closeViewScheduleModal() {
+    const modal = document.getElementById('viewScheduleModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    currentViewingSchedule = null;
+}
+
+/**
+ * Edit schedule from view modal
+ * Can also be called with scheduleId parameter for backward compatibility
+ */
+function editScheduleFromView(scheduleId) {
+    // If called with scheduleId parameter (old code path), use it directly
+    if (scheduleId) {
+        openEditScheduleModal(scheduleId);
+        return;
+    }
+
+    // Normal flow: called from view modal
+    if (!currentViewingSchedule) {
+        alert('No schedule selected');
+        return;
+    }
+
+    // Save schedule ID before closing modal (closeViewScheduleModal sets currentViewingSchedule to null)
+    const currentScheduleId = currentViewingSchedule.id;
+
+    // Close view modal
+    closeViewScheduleModal();
+
+    // Open edit modal with schedule data
+    openEditScheduleModal(currentScheduleId);
+}
+
+/**
+ * Delete schedule from view modal
+ * Can also be called with scheduleId parameter for backward compatibility
+ */
+async function deleteScheduleFromView(scheduleId) {
+    console.log('[Delete] Called with scheduleId:', scheduleId, 'currentViewingSchedule:', currentViewingSchedule);
+
+    // If called with scheduleId parameter (old code path), fetch the schedule first
+    if (scheduleId && !currentViewingSchedule) {
+        console.log('[Delete] Using backward compatible path - fetching schedule');
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const response = await fetch(
+                `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            if (response.ok) {
+                const schedule = await response.json();
+                openConfirmDeleteScheduleModal(schedule);
+                return;
+            } else {
+                throw new Error('Failed to fetch schedule');
+            }
+        } catch (error) {
+            console.error('[Delete] Error fetching schedule:', error);
+            alert('Failed to load schedule details: ' + error.message);
+            return;
+        }
+    }
+
+    // Normal flow: called from view modal
+    if (!currentViewingSchedule) {
+        console.error('[Delete] No schedule available - currentViewingSchedule is null');
+        alert('No schedule selected. Please try again.');
+        return;
+    }
+
+    console.log('[Delete] Using view modal path - schedule:', currentViewingSchedule.title);
+
+    // Save schedule reference before closing modal (closeViewScheduleModal sets it to null)
+    const scheduleToDelete = currentViewingSchedule;
+
+    // Close view modal
+    closeViewScheduleModal();
+
+    // Show delete confirmation modal
+    openConfirmDeleteScheduleModal(scheduleToDelete);
+}
+
+// ============================================
+// DELETE CONFIRMATION MODAL FUNCTIONS
+// ============================================
+
+let scheduleToDelete = null;
+
+/**
+ * Open confirm delete schedule modal
+ * @param {Object} schedule - Schedule object to delete
+ */
+function openConfirmDeleteScheduleModal(schedule) {
+    if (!schedule) {
+        console.error('[Confirm Delete Modal] No schedule provided');
+        alert('Error: No schedule selected');
+        return;
+    }
+
+    console.log('[Confirm Delete Modal] Opening for schedule:', schedule.title);
+
+    scheduleToDelete = schedule;
+
+    // Populate confirmation modal
+    const titleEl = document.getElementById('confirm-delete-schedule-title');
+    if (titleEl) titleEl.textContent = schedule.title;
+
+    const typeEl = document.getElementById('confirm-delete-schedule-type');
+    if (typeEl) {
+        const typeText = schedule.schedule_type === 'recurring' ? 'Recurring' : 'Specific Dates';
+        typeEl.textContent = typeText;
+    }
+
+    const yearEl = document.getElementById('confirm-delete-schedule-year');
+    if (yearEl) yearEl.textContent = schedule.year;
+
+    // Show modal
+    const modal = document.getElementById('confirmDeleteScheduleModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Close confirm delete schedule modal
+ */
+function closeConfirmDeleteScheduleModal() {
+    const modal = document.getElementById('confirmDeleteScheduleModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    scheduleToDelete = null;
+}
+
+/**
+ * Confirm and execute schedule deletion
+ */
+async function confirmDeleteSchedule() {
+    if (!scheduleToDelete) {
+        alert('No schedule selected for deletion');
+        return;
+    }
+
+    console.log('[Delete Schedule] Deleting schedule ID:', scheduleToDelete.id);
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please log in to delete schedules');
+            return;
+        }
+
+        const response = await fetch(
+            `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleToDelete.id}`,
+            {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to delete schedule');
+        }
+
+        console.log('[Delete Schedule] Successfully deleted');
+
+        // Close confirmation modal
+        closeConfirmDeleteScheduleModal();
+
+        // Show success message
+        alert('Schedule deleted successfully!');
+
+        // Refresh schedules list
+        if (typeof loadSchedules === 'function') {
+            await loadSchedules('all');
+        } else if (typeof loadStudentSchedules === 'function') {
+            await loadStudentSchedules();
+        }
+
+        // Reload counts if function exists
+        if (typeof loadSchedulePanelCounts === 'function') {
+            loadSchedulePanelCounts();
+        }
+
+    } catch (error) {
+        console.error('[Delete Schedule] Error:', error);
+        alert('Failed to delete schedule: ' + error.message);
+    }
+}
+
+// Export new functions to window
+window.openViewScheduleModal = openViewScheduleModal;
+window.closeViewScheduleModal = closeViewScheduleModal;
+window.editScheduleFromView = editScheduleFromView;
+window.deleteScheduleFromView = deleteScheduleFromView;
+window.openConfirmDeleteScheduleModal = openConfirmDeleteScheduleModal;
+window.closeConfirmDeleteScheduleModal = closeConfirmDeleteScheduleModal;
+window.confirmDeleteSchedule = confirmDeleteSchedule;
 
 
 // ============================================
@@ -2697,7 +3374,7 @@ async function loadStudentSessions(statusFilter = 'all') {
         console.log(`[Sessions] Loading sessions - status: ${statusFilter}`);
 
         // Show loading state
-        const sessionsContainer = document.getElementById('sessions-list');
+        const sessionsContainer = document.getElementById('sessions-table-container');
         if (sessionsContainer) {
             sessionsContainer.innerHTML = `
                 <div class="flex items-center justify-center py-12">
@@ -2740,7 +3417,7 @@ async function loadStudentSessions(statusFilter = 'all') {
  * @param {Array} sessions - Array of session objects
  */
 function renderSessionsList(sessions) {
-    const sessionsContainer = document.getElementById('sessions-list');
+    const sessionsContainer = document.getElementById('sessions-table-container');
     if (!sessionsContainer) return;
 
     if (!sessions || sessions.length === 0) {
@@ -2913,7 +3590,7 @@ function renderSessionCard(session) {
  * @param {string} message - Message to display
  */
 function renderSessionsEmptyState(message) {
-    const sessionsContainer = document.getElementById('sessions-list');
+    const sessionsContainer = document.getElementById('sessions-table-container');
     if (sessionsContainer) {
         sessionsContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center py-16 text-center">
@@ -3030,13 +3707,17 @@ window.viewSessionCourseworks = viewSessionCourseworks;
  * Students can view their scheduled sessions with tutors
  */
 function openStudentWhiteboard() {
-    if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
-        // Open whiteboard from Learning Tools - shows tutors instead of students
-        whiteboardManager.openWhiteboardFromLearningTools();
-    } else {
-        console.error('Whiteboard manager not loaded');
-        openComingSoonModal('Digital Whiteboard');
-    }
+    // Always show coming soon modal
+    openComingSoonModal('Digital Whiteboard');
+
+    // Original implementation (disabled):
+    // if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
+    //     // Open whiteboard from Learning Tools - shows tutors instead of students
+    //     whiteboardManager.openWhiteboardFromLearningTools();
+    // } else {
+    //     console.error('Whiteboard manager not loaded');
+    //     openComingSoonModal('Digital Whiteboard');
+    // }
 }
 
 /**
@@ -3211,3 +3892,43 @@ window.openDigitalLabModal = openDigitalLabModal;
 window.closeDigitalLabModal = closeDigitalLabModal;
 window.openDigitalLabComingSoon = openDigitalLabComingSoon;
 window.closeDigitalLabComingSoon = closeDigitalLabComingSoon;
+
+// ============================================
+// SCHEDULE ROLE FILTER FUNCTION
+// ============================================
+
+// Filter schedules by role (called from onclick handlers)
+async function filterSchedulesByRole(role, event) {
+    console.log(`[Global Functions] filterSchedulesByRole called with role: ${role}`);
+
+    // Update button styles
+    document.querySelectorAll('[onclick^="filterSchedulesByRole"]').forEach(btn => {
+        btn.classList.remove('bg-blue-500', 'text-white');
+        btn.classList.add('bg-gray-200');
+    });
+
+    const activeBtn = event?.target;
+    if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-200');
+        activeBtn.classList.add('bg-blue-500', 'text-white');
+    }
+
+    // Call the schedule manager's loadSchedules function if available
+    if (typeof loadSchedules === 'function') {
+        await loadSchedules(role);
+    } else {
+        console.error('[Global Functions] loadSchedules function not found');
+    }
+}
+
+// Export schedule filter function
+window.filterSchedulesByRole = filterSchedulesByRole;
+
+// Verify schedule functions are loaded
+console.log('[Student Global Functions] Schedule modal functions loaded:', {
+    openViewScheduleModal: typeof window.openViewScheduleModal,
+    closeViewScheduleModal: typeof window.closeViewScheduleModal,
+    editScheduleFromView: typeof window.editScheduleFromView,
+    deleteScheduleFromView: typeof window.deleteScheduleFromView,
+    filterSchedulesByRole: typeof window.filterSchedulesByRole
+});

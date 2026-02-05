@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Modal Debug Console</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #4fc3f7;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button.danger {
+            background: #d32f2f;
+        }
+
+        button.danger:hover {
+            background: #f44336;
+        }
+
+        button.success {
+            background: #388e3c;
+        }
+
+        button.success:hover {
+            background: #4caf50;
+        }
+
+        .output {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 5px 5px 0;
+            font-size: 13px;
+        }
+
+        .status.success {
+            background: #2d5016;
+            color: #a5d6a7;
+            border: 1px solid #4caf50;
+        }
+
+        .status.error {
+            background: #5c1a1a;
+            color: #ef9a9a;
+            border: 1px solid #f44336;
+        }
+
+        .status.warning {
+            background: #5c4813;
+            color: #ffd54f;
+            border: 1px solid #ffc107;
+        }
+
+        .status.info {
+            background: #1a3a5c;
+            color: #90caf9;
+            border: 1px solid #2196f3;
+        }
+
+        .code {
+            background: #2d2d30;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #ce9178;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .card {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #4fc3f7;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4fc3f7;
+        }
+
+        .card-value {
+            color: #d4d4d4;
+            word-break: break-all;
+        }
+
+        .icon {
+            font-size: 20px;
+        }
+
+        .copy-btn {
+            background: #3e3e42;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #4e4e52;
+        }
+
+        ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        li {
+            padding: 5px 0;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="icon">🐛</span>
+            Schedule Modal Debug Console
+        </h1>
+        <p class="subtitle">Comprehensive debugging tool for student-profile schedule modal issues</p>
+
+        <!-- Section 1: Quick Diagnostics -->
+        <div class="section">
+            <div class="section-title">
+                <span>🔍</span>
+                Quick Diagnostics
+            </div>
+            <button onclick="runDiagnostics()">🚀 Run Full Diagnostics</button>
+            <button onclick="checkFunctions()" class="success">✓ Check Functions</button>
+            <button onclick="checkScripts()">📜 Check Scripts</button>
+            <button onclick="checkModal()">🎭 Check Modal HTML</button>
+            <div id="diagnostic-output" class="output"></div>
+        </div>
+
+        <!-- Section 2: Script Management -->
+        <div class="section">
+            <div class="section-title">
+                <span>📦</span>
+                Script Management
+            </div>
+            <button onclick="reloadGlobalFunctions()">🔄 Reload global-functions.js</button>
+            <button onclick="reloadScheduleManager()">🔄 Reload schedule-manager.js</button>
+            <button onclick="reloadAllScripts()" class="danger">🔄 Reload All Schedule Scripts</button>
+            <button onclick="clearCache()" class="danger">🗑️ Clear Cache & Reload</button>
+            <div id="script-output" class="output"></div>
+        </div>
+
+        <!-- Section 3: Function Testing -->
+        <div class="section">
+            <div class="section-title">
+                <span>⚙️</span>
+                Function Testing
+            </div>
+            <button onclick="testOpenViewScheduleModal()" class="success">Test openViewScheduleModal</button>
+            <button onclick="testOpenCreateScheduleModal()" class="success">Test openCreateScheduleModal</button>
+            <button onclick="listAllScheduleFunctions()">📋 List All Schedule Functions</button>
+            <div id="function-output" class="output"></div>
+        </div>
+
+        <!-- Section 4: Live Status -->
+        <div class="section">
+            <div class="section-title">
+                <span>📊</span>
+                Live Status Monitor
+            </div>
+            <button onclick="updateStatus()">🔄 Refresh Status</button>
+            <button onclick="startAutoRefresh()">▶️ Auto-Refresh (5s)</button>
+            <button onclick="stopAutoRefresh()">⏸️ Stop Auto-Refresh</button>
+            <div id="status-grid" class="grid"></div>
+        </div>
+
+        <!-- Section 5: Console Scripts -->
+        <div class="section">
+            <div class="section-title">
+                <span>💻</span>
+                Console Scripts
+            </div>
+            <p style="color: #999; margin-bottom: 10px;">Copy and paste these into your browser console on the student-profile page:</p>
+
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #4fc3f7;">Force Reload Script:</strong>
+                <button class="copy-btn" onclick="copyScript('forceReload')">📋 Copy</button>
+                <pre id="forceReload" class="output" style="margin-top: 5px;">// Force reload global-functions.js
+const oldScript = document.querySelector('script[src*="global-functions"]');
+if (oldScript) oldScript.remove();
+const newScript = document.createElement('script');
+newScript.src = '../js/student-profile/global-functions.js?v=' + Date.now();
+newScript.onload = () => console.log('✅ Script reloaded!', typeof window.openViewScheduleModal);
+document.body.appendChild(newScript);</pre>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #4fc3f7;">Check Functions Script:</strong>
+                <button class="copy-btn" onclick="copyScript('checkFuncs')">📋 Copy</button>
+                <pre id="checkFuncs" class="output" style="margin-top: 5px;">// Check all schedule-related functions
+const funcs = Object.keys(window).filter(k => k.toLowerCase().includes('schedule'));
+console.log('Schedule Functions:', funcs);
+console.log('openViewScheduleModal:', typeof window.openViewScheduleModal);
+console.log('openCreateScheduleModal:', typeof window.openCreateScheduleModal);</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+
+        // Run full diagnostics
+        function runDiagnostics() {
+            const output = document.getElementById('diagnostic-output');
+            output.innerHTML = 'Running diagnostics...\n\n';
+
+            const results = [];
+
+            // Check if we're on the right page
+            const onStudentProfile = window.location.href.includes('student-profile');
+            results.push(`Page: ${onStudentProfile ? '✅' : '❌'} ${window.location.pathname}`);
+
+            // Check functions
+            const funcs = {
+                'openViewScheduleModal': typeof window.openViewScheduleModal,
+                'closeViewScheduleModal': typeof window.closeViewScheduleModal,
+                'openCreateScheduleModal': typeof window.openCreateScheduleModal,
+                'editScheduleFromView': typeof window.editScheduleFromView,
+                'deleteScheduleFromView': typeof window.deleteScheduleFromView,
+                'handleViewScheduleClick': typeof window.handleViewScheduleClick
+            };
+
+            results.push('\n📋 Function Status:');
+            Object.entries(funcs).forEach(([name, type]) => {
+                const status = type === 'function' ? '✅' : '❌';
+                results.push(`  ${status} ${name}: ${type}`);
+            });
+
+            // Check scripts
+            const scripts = Array.from(document.querySelectorAll('script[src]'));
+            const globalFunctions = scripts.find(s => s.src.includes('global-functions'));
+            const scheduleManager = scripts.find(s => s.src.includes('schedule-manager'));
+
+            results.push('\n📜 Script Status:');
+            results.push(`  ${globalFunctions ? '✅' : '❌'} global-functions.js: ${globalFunctions?.src || 'NOT FOUND'}`);
+            results.push(`  ${scheduleManager ? '✅' : '❌'} schedule-manager.js: ${scheduleManager?.src || 'NOT FOUND'}`);
+
+            // Check modal
+            const modal = document.getElementById('viewScheduleModal');
+            const createModal = document.getElementById('scheduleModal');
+            results.push('\n🎭 Modal Status:');
+            results.push(`  ${modal ? '✅' : '❌'} viewScheduleModal: ${modal ? 'Found' : 'NOT FOUND'}`);
+            results.push(`  ${createModal ? '✅' : '❌'} scheduleModal (create): ${createModal ? 'Found' : 'NOT FOUND'}`);
+
+            // Check all schedule-related window functions
+            const allScheduleFuncs = Object.keys(window).filter(k => k.toLowerCase().includes('schedule'));
+            results.push(`\n🔍 All Schedule Functions Found (${allScheduleFuncs.length}):`);
+            allScheduleFuncs.forEach(func => {
+                results.push(`  • ${func}`);
+            });
+
+            output.innerHTML = results.join('\n');
+        }
+
+        // Check functions only
+        function checkFunctions() {
+            const output = document.getElementById('diagnostic-output');
+            const funcs = {
+                'openViewScheduleModal': typeof window.openViewScheduleModal,
+                'closeViewScheduleModal': typeof window.closeViewScheduleModal,
+                'openCreateScheduleModal': typeof window.openCreateScheduleModal,
+                'editScheduleFromView': typeof window.editScheduleFromView,
+                'deleteScheduleFromView': typeof window.deleteScheduleFromView,
+                'handleViewScheduleClick': typeof window.handleViewScheduleClick,
+                'loadSchedules': typeof window.loadSchedules,
+                'filterSchedulesByRole': typeof window.filterSchedulesByRole
+            };
+
+            let result = '📋 Function Check Results:\n\n';
+            Object.entries(funcs).forEach(([name, type]) => {
+                const status = type === 'function' ? '✅ FOUND' : '❌ MISSING';
+                result += `${status} - ${name}: ${type}\n`;
+            });
+
+            output.innerHTML = result;
+        }
+
+        // Check scripts
+        function checkScripts() {
+            const output = document.getElementById('diagnostic-output');
+            const scripts = Array.from(document.querySelectorAll('script[src]'));
+            const scheduleScripts = scripts.filter(s =>
+                s.src.includes('schedule') ||
+                s.src.includes('global-functions')
+            );
+
+            let result = '📜 Schedule-Related Scripts:\n\n';
+            scheduleScripts.forEach((script, i) => {
+                result += `${i + 1}. ${script.src}\n`;
+                result += `   Loaded: ${script.readyState || 'unknown'}\n\n`;
+            });
+
+            if (scheduleScripts.length === 0) {
+                result += '❌ No schedule-related scripts found!\n';
+            }
+
+            output.innerHTML = result;
+        }
+
+        // Check modal
+        function checkModal() {
+            const output = document.getElementById('diagnostic-output');
+            const viewModal = document.getElementById('viewScheduleModal');
+            const createModal = document.getElementById('scheduleModal');
+            const confirmModal = document.getElementById('confirmDeleteScheduleModal');
+
+            let result = '🎭 Modal Check Results:\n\n';
+
+            result += `View Schedule Modal:\n`;
+            result += `  Status: ${viewModal ? '✅ Found' : '❌ Not Found'}\n`;
+            if (viewModal) {
+                result += `  Classes: ${viewModal.className}\n`;
+                result += `  Display: ${window.getComputedStyle(viewModal).display}\n`;
+            }
+
+            result += `\nCreate Schedule Modal:\n`;
+            result += `  Status: ${createModal ? '✅ Found' : '❌ Not Found'}\n`;
+            if (createModal) {
+                result += `  Classes: ${createModal.className}\n`;
+            }
+
+            result += `\nConfirm Delete Modal:\n`;
+            result += `  Status: ${confirmModal ? '✅ Found' : '❌ Not Found'}\n`;
+
+            output.innerHTML = result;
+        }
+
+        // Reload global-functions.js
+        function reloadGlobalFunctions() {
+            const output = document.getElementById('script-output');
+            output.innerHTML = 'Reloading global-functions.js...\n';
+
+            const oldScript = document.querySelector('script[src*="global-functions"]');
+            if (oldScript) {
+                output.innerHTML += `Removing old script: ${oldScript.src}\n`;
+                oldScript.remove();
+            }
+
+            const newScript = document.createElement('script');
+            newScript.src = '../js/student-profile/global-functions.js?v=' + Date.now();
+            newScript.onload = () => {
+                output.innerHTML += `✅ Script loaded!\n`;
+                output.innerHTML += `openViewScheduleModal: ${typeof window.openViewScheduleModal}\n`;
+                output.innerHTML += `openCreateScheduleModal: ${typeof window.openCreateScheduleModal}\n`;
+            };
+            newScript.onerror = (err) => {
+                output.innerHTML += `❌ Error loading script: ${err}\n`;
+            };
+            document.body.appendChild(newScript);
+        }
+
+        // Reload schedule-manager.js
+        function reloadScheduleManager() {
+            const output = document.getElementById('script-output');
+            output.innerHTML = 'Reloading schedule-manager.js...\n';
+
+            const oldScript = document.querySelector('script[src*="schedule-manager"]');
+            if (oldScript) {
+                output.innerHTML += `Removing old script: ${oldScript.src}\n`;
+                oldScript.remove();
+            }
+
+            const newScript = document.createElement('script');
+            newScript.src = '../js/student-profile/schedule-manager.js?v=' + Date.now();
+            newScript.onload = () => {
+                output.innerHTML += `✅ Script loaded!\n`;
+                output.innerHTML += `handleViewScheduleClick: ${typeof window.handleViewScheduleClick}\n`;
+            };
+            newScript.onerror = (err) => {
+                output.innerHTML += `❌ Error loading script: ${err}\n`;
+            };
+            document.body.appendChild(newScript);
+        }
+
+        // Reload all scripts
+        function reloadAllScripts() {
+            const output = document.getElementById('script-output');
+            output.innerHTML = 'Reloading all schedule scripts...\n\n';
+
+            const scripts = [
+                'global-functions',
+                'schedule-manager',
+                'sessions-panel-manager'
+            ];
+
+            scripts.forEach(scriptName => {
+                const oldScript = document.querySelector(`script[src*="${scriptName}"]`);
+                if (oldScript) {
+                    output.innerHTML += `✅ Removing ${scriptName}\n`;
+                    oldScript.remove();
+                }
+            });
+
+            output.innerHTML += '\n🔄 Loading fresh copies...\n\n';
+
+            // Reload in order
+            setTimeout(() => {
+                const s1 = document.createElement('script');
+                s1.src = '../js/student-profile/global-functions.js?v=' + Date.now();
+                s1.onload = () => output.innerHTML += '✅ global-functions.js loaded\n';
+                document.body.appendChild(s1);
+
+                setTimeout(() => {
+                    const s2 = document.createElement('script');
+                    s2.src = '../js/student-profile/schedule-manager.js?v=' + Date.now();
+                    s2.onload = () => {
+                        output.innerHTML += '✅ schedule-manager.js loaded\n\n';
+                        output.innerHTML += 'Final check:\n';
+                        output.innerHTML += `  openViewScheduleModal: ${typeof window.openViewScheduleModal}\n`;
+                        output.innerHTML += `  handleViewScheduleClick: ${typeof window.handleViewScheduleClick}\n`;
+                    };
+                    document.body.appendChild(s2);
+                }, 100);
+            }, 100);
+        }
+
+        // Clear cache and reload
+        function clearCache() {
+            if (confirm('This will reload the entire page. Continue?')) {
+                window.location.reload(true);
+            }
+        }
+
+        // Test openViewScheduleModal
+        function testOpenViewScheduleModal() {
+            const output = document.getElementById('function-output');
+
+            if (typeof window.openViewScheduleModal === 'function') {
+                output.innerHTML = '✅ Function exists! Testing with mock ID...\n\n';
+                try {
+                    output.innerHTML += 'Calling: window.openViewScheduleModal(1)\n';
+                    // Don't actually call it, just verify it exists
+                    output.innerHTML += '✅ Function is callable\n';
+                    output.innerHTML += '\nNote: Skipped actual execution to avoid API call\n';
+                } catch (err) {
+                    output.innerHTML += `❌ Error: ${err.message}\n`;
+                }
+            } else {
+                output.innerHTML = '❌ Function does not exist!\n\n';
+                output.innerHTML += `Type: ${typeof window.openViewScheduleModal}\n`;
+                output.innerHTML += '\nTry reloading global-functions.js in Script Management section';
+            }
+        }
+
+        // Test openCreateScheduleModal
+        function testOpenCreateScheduleModal() {
+            const output = document.getElementById('function-output');
+
+            if (typeof window.openCreateScheduleModal === 'function') {
+                output.innerHTML = '✅ Function exists!\n';
+            } else {
+                output.innerHTML = '❌ Function does not exist!\n\n';
+                output.innerHTML += `Type: ${typeof window.openCreateScheduleModal}\n`;
+            }
+        }
+
+        // List all schedule functions
+        function listAllScheduleFunctions() {
+            const output = document.getElementById('function-output');
+            const allFuncs = Object.keys(window).filter(k =>
+                k.toLowerCase().includes('schedule')
+            );
+
+            output.innerHTML = `Found ${allFuncs.length} schedule-related functions:\n\n`;
+            allFuncs.forEach((func, i) => {
+                output.innerHTML += `${i + 1}. ${func}\n`;
+            });
+
+            if (allFuncs.length === 0) {
+                output.innerHTML = '❌ No schedule-related functions found!';
+            }
+        }
+
+        // Update status
+        function updateStatus() {
+            const grid = document.getElementById('status-grid');
+
+            const checks = [
+                {
+                    title: 'openViewScheduleModal',
+                    value: typeof window.openViewScheduleModal === 'function' ? '✅ Loaded' : '❌ Missing',
+                    class: typeof window.openViewScheduleModal === 'function' ? 'success' : 'error'
+                },
+                {
+                    title: 'openCreateScheduleModal',
+                    value: typeof window.openCreateScheduleModal === 'function' ? '✅ Loaded' : '❌ Missing',
+                    class: typeof window.openCreateScheduleModal === 'function' ? 'success' : 'error'
+                },
+                {
+                    title: 'handleViewScheduleClick',
+                    value: typeof window.handleViewScheduleClick === 'function' ? '✅ Loaded' : '❌ Missing',
+                    class: typeof window.handleViewScheduleClick === 'function' ? 'success' : 'error'
+                },
+                {
+                    title: 'View Modal',
+                    value: document.getElementById('viewScheduleModal') ? '✅ Found' : '❌ Missing',
+                    class: document.getElementById('viewScheduleModal') ? 'success' : 'error'
+                },
+                {
+                    title: 'Create Modal',
+                    value: document.getElementById('scheduleModal') ? '✅ Found' : '❌ Missing',
+                    class: document.getElementById('scheduleModal') ? 'success' : 'error'
+                },
+                {
+                    title: 'global-functions.js',
+                    value: document.querySelector('script[src*="global-functions"]') ? '✅ Loaded' : '❌ Missing',
+                    class: document.querySelector('script[src*="global-functions"]') ? 'success' : 'error'
+                }
+            ];
+
+            grid.innerHTML = checks.map(check => `
+                <div class="card">
+                    <div class="card-title">${check.title}</div>
+                    <div class="card-value">
+                        <span class="status ${check.class}">${check.value}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Auto refresh
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            autoRefreshInterval = setInterval(updateStatus, 5000);
+            updateStatus();
+            alert('Auto-refresh started (every 5 seconds)');
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        // Copy script
+        function copyScript(id) {
+            const element = document.getElementById(id);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Script copied to clipboard!');
+            });
+        }
+
+        // Initialize
+        updateStatus();
+    </script>
+</body>
+</html>

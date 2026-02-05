@@ -251,6 +251,26 @@ class SupportTicketMessage(AdminBase):
     ticket = relationship("SupportTicket", back_populates="messages")
 
 
+class BasePriceRule(AdminBase):
+    """Base price rules for new tutors without market data"""
+    __tablename__ = "base_price_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rule_name = Column(String(200), nullable=False)
+    country = Column(String(100), default='all')  # Country code (ET, CM, KE, MX, etc.) or 'all' for global
+    subject_category = Column(String(100), nullable=False)  # all, mathematics, science, languages, etc.
+    session_format = Column(String(50), nullable=False)  # all, Online, In-Person, Hybrid
+    min_grade_level = Column(Integer, default=1)  # Minimum grade level (1-14: 1-12=grades, 13=university, 14=certification)
+    max_grade_level = Column(Integer, default=14)  # Maximum grade level (1-14: 1-12=grades, 13=university, 14=certification)
+    base_price_per_hour = Column(Numeric(10, 2), nullable=False)
+    credential_bonus = Column(Numeric(10, 2), default=0)  # Additional price per verified credential
+    experience_bonus_per_year = Column(Numeric(10, 2), default=0)  # Bonus per year of experience
+    priority = Column(Integer, default=2)  # 1=high, 2=medium, 3=low
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=True)
+
+
 # ============================================
 # PYDANTIC SCHEMAS FOR ADMIN API
 # ============================================

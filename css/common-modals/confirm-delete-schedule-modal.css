@@ -1,0 +1,179 @@
+/* ============================================
+   CONFIRM DELETE SCHEDULE MODAL STYLES
+   ============================================ */
+
+.confirm-delete-content {
+    max-width: 500px;
+}
+
+/* Warning Section */
+.delete-warning-section {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.warning-icon {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fef2f2;
+    border-radius: 50%;
+}
+
+.warning-icon i {
+    font-size: 2rem;
+    color: #dc2626;
+}
+
+.warning-content {
+    flex: 1;
+}
+
+.warning-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 0.5rem;
+}
+
+.warning-message {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
+}
+
+/* Schedule Info to Delete */
+.delete-schedule-info {
+    padding: 1.25rem;
+    background: var(--bg-secondary, #f9fafb);
+    border: 2px solid #fecaca;
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: 1.5rem;
+}
+
+.delete-schedule-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 0;
+}
+
+.delete-schedule-info .info-row:not(:last-child) {
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.delete-schedule-info .info-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 500;
+}
+
+.delete-schedule-info strong,
+.delete-schedule-info span:not(.info-label) {
+    font-size: 0.9375rem;
+    color: var(--text-primary, #1f2937);
+    font-weight: 600;
+}
+
+/* Modal Footer Buttons */
+.confirm-delete-content .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.confirm-delete-content .btn {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: var(--radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.15s);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.confirm-delete-content .btn-secondary {
+    background: var(--bg-secondary, #f3f4f6);
+    color: var(--text-primary, #374151);
+    border: 1px solid var(--border-color, #d1d5db);
+}
+
+.confirm-delete-content .btn-secondary:hover {
+    background: var(--bg-tertiary, #e5e7eb);
+}
+
+.confirm-delete-content .btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.confirm-delete-content .btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .warning-icon {
+    background: #7f1d1d;
+}
+
+[data-theme="dark"] .warning-title,
+[data-theme="dark"] .delete-schedule-info strong,
+[data-theme="dark"] .delete-schedule-info span:not(.info-label) {
+    color: var(--text-primary, #f9fafb);
+}
+
+[data-theme="dark"] .warning-message,
+[data-theme="dark"] .delete-schedule-info .info-label {
+    color: var(--text-secondary, #d1d5db);
+}
+
+[data-theme="dark"] .delete-schedule-info {
+    background: var(--bg-secondary, #1f2937);
+    border-color: #7f1d1d;
+}
+
+[data-theme="dark"] .delete-schedule-info .info-row:not(:last-child) {
+    border-bottom-color: var(--border-color, #374151);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .confirm-delete-content {
+        max-width: 95%;
+        padding: 1rem;
+    }
+
+    .delete-warning-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .warning-icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .warning-icon i {
+        font-size: 1.75rem;
+    }
+
+    .confirm-delete-content .modal-footer {
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    .confirm-delete-content .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

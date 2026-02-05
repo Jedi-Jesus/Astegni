@@ -3,8 +3,8 @@
   Purpose: Request a new course to be added to the platform
 -->
 
-<div id="course-request-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001;">
-    <div class="modal-content" style="background: var(--bg-primary, #fff); border-radius: 16px; width: 95%; max-width: 700px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+<div id="course-request-modal" class="modal-overlay hidden" onclick="closeCourseRequestModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001;">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-primary, #fff); border-radius: 16px; width: 95%; max-width: 700px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
         <!-- Modal Header -->
         <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -13,8 +13,8 @@
                 </h2>
                 <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Submit a course for admin approval</p>
             </div>
-            <button onclick="closeCourseRequestModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                <i class="fas fa-times"></i>
+            <button onclick="event.stopPropagation(); event.preventDefault(); console.log('[Modal] Close button clicked'); closeCourseRequestModal(event);" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-weight: bold; line-height: 1;">
+                ×
             </button>
         </div>
 
@@ -126,25 +126,28 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
                         <i class="fas fa-language" style="color: #3b82f6; margin-right: 0.5rem;"></i> Languages Taught
                     </label>
+                    <!-- Selected Languages (above input) -->
+                    <div id="courseRequestLanguageTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; min-height: 0;">
+                        <!-- Language tags will be added here -->
+                    </div>
+                    <!-- Input Section -->
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input type="text" id="courseRequestLanguageInput" placeholder="Type a language and press Enter"
                                onkeypress="handleCourseRequestLanguageKeypress(event)"
                                style="flex: 1; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
                         <button type="button" onclick="addCourseRequestLanguageTag()"
-                                style="padding: 0.75rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                            <i class="fas fa-plus"></i>
+                                style="padding: 0.75rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.25rem; line-height: 1;">
+                            +
                         </button>
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <!-- Suggestions (below input) -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                         <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
                         <button type="button" onclick="addCourseRequestLanguageSuggestion('English')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">English</button>
                         <button type="button" onclick="addCourseRequestLanguageSuggestion('Amharic')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Amharic</button>
                         <button type="button" onclick="addCourseRequestLanguageSuggestion('Oromo')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Oromo</button>
                         <button type="button" onclick="addCourseRequestLanguageSuggestion('Tigrinya')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Tigrinya</button>
                         <button type="button" onclick="addCourseRequestLanguageSuggestion('French')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">French</button>
-                    </div>
-                    <div id="courseRequestLanguageTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        <!-- Language tags will be added here -->
                     </div>
                 </div>
 
@@ -153,16 +156,22 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
                         <i class="fas fa-tags" style="color: #10b981; margin-right: 0.5rem;"></i> Course Tags
                     </label>
+                    <!-- Selected Tags (above input) -->
+                    <div id="courseRequestTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; min-height: 0;">
+                        <!-- Tags will be added here -->
+                    </div>
+                    <!-- Input Section -->
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input type="text" id="courseRequestTagInput" placeholder="Type a tag and press Enter"
                                onkeypress="handleCourseRequestTagKeypress(event)"
                                style="flex: 1; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
                         <button type="button" onclick="addCourseRequestTag()"
-                                style="padding: 0.75rem 1rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                            <i class="fas fa-plus"></i>
+                                style="padding: 0.75rem 1rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.25rem; line-height: 1;">
+                            +
                         </button>
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <!-- Suggestions (below input) -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                         <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
                         <button type="button" onclick="addCourseRequestTagSuggestion('beginner')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">beginner</button>
                         <button type="button" onclick="addCourseRequestTagSuggestion('advanced')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">advanced</button>
@@ -170,9 +179,6 @@
                         <button type="button" onclick="addCourseRequestTagSuggestion('practical')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">practical</button>
                         <button type="button" onclick="addCourseRequestTagSuggestion('theory')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">theory</button>
                         <button type="button" onclick="addCourseRequestTagSuggestion('online')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">online</button>
-                    </div>
-                    <div id="courseRequestTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        <!-- Tags will be added here -->
                     </div>
                 </div>
 
@@ -190,7 +196,7 @@
 
         <!-- Modal Footer -->
         <div class="modal-footer" style="padding: 1.5rem 2rem; background: var(--bg-secondary, #f9fafb); border-top: 1px solid var(--border-color, #e5e7eb); display: flex; justify-content: flex-end; gap: 1rem;">
-            <button type="button" onclick="closeCourseRequestModal()"
+            <button type="button" onclick="event.stopPropagation(); event.preventDefault(); console.log('[Modal] Cancel button clicked'); closeCourseRequestModal(event);"
                     style="padding: 0.75rem 1.5rem; background: var(--bg-primary, #fff); border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
                 Cancel
             </button>

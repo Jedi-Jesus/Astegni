@@ -10,6 +10,7 @@
 const ParentRequestsManager = {
     currentType: 'courses',     // courses, schools, sessions, parenting
     currentStatus: 'all',       // all, pending, accepted/verified, rejected
+    currentDirection: 'sent',   // sent, received (for sessions only)
     allData: {
         courses: [],
         schools: [],
@@ -236,11 +237,37 @@ const ParentRequestsManager = {
     },
 
     /**
-     * Get filtered data based on current type and status
+     * Filter by direction (sent/received) - for sessions only
+     */
+    filterByDirection(direction) {
+        this.currentDirection = direction;
+
+        // Update tab styling
+        document.querySelectorAll('#parent-session-direction-tabs .direction-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.direction === direction) {
+                tab.classList.add('active');
+            }
+        });
+
+        this.renderCurrentView();
+    },
+
+    /**
+     * Get filtered data based on current type, status, and direction
      */
     getFilteredData() {
         let data = this.allData[this.currentType] || [];
 
+        // Apply direction filter for sessions
+        if (this.currentType === 'sessions') {
+            data = data.filter(item => {
+                const direction = item.direction || 'sent';
+                return direction === this.currentDirection;
+            });
+        }
+
+        // Apply status filter
         if (this.currentStatus !== 'all') {
             data = data.filter(item => {
                 const itemStatus = (item.status || '').toLowerCase();
@@ -788,14 +815,65 @@ const ParentRequestsManager = {
 function filterParentRequestType(type) {
     console.log('[filterParentRequestType] Called with type:', type);
 
+    // Update active state on cards
+    const cards = document.querySelectorAll('#my-requests-panel .request-type-card');
+    cards.forEach(card => {
+        if (card.getAttribute('data-type') === type) {
+            card.classList.add('active');
+            card.style.borderColor = 'var(--primary-color)';
+            card.style.background = 'rgba(139, 92, 246, 0.05)';
+        } else {
+            card.classList.remove('active');
+            card.style.borderColor = 'var(--border-color)';
+            card.style.background = 'var(--card-bg)';
+        }
+    });
+
+    // Show/hide request buttons based on type
+    const requestCourseBtn = document.getElementById('request-course-btn');
+    const requestSchoolBtn = document.getElementById('request-school-btn');
+
+    if (requestCourseBtn) {
+        requestCourseBtn.style.display = type === 'courses' ? 'flex' : 'none';
+        console.log('[filterParentRequestType] Request Course button display:', type === 'courses' ? 'flex' : 'none');
+    }
+    if (requestSchoolBtn) {
+        requestSchoolBtn.style.display = type === 'schools' ? 'flex' : 'none';
+        console.log('[filterParentRequestType] Request School button display:', type === 'schools' ? 'flex' : 'none');
+    }
+
+    // Show/hide session direction tabs
+    const sessionDirectionTabs = document.getElementById('parent-session-direction-tabs');
     // Show/hide parenting direction tabs
     const parentingDirectionTabs = document.getElementById('parent-parenting-direction-tabs');
     const statusTabs = document.querySelector('#my-requests-panel .status-tabs');
 
+    console.log('[filterParentRequestType] sessionDirectionTabs:', sessionDirectionTabs);
     console.log('[filterParentRequestType] parentingDirectionTabs:', parentingDirectionTabs);
     console.log('[filterParentRequestType] statusTabs:', statusTabs);
 
-    if (type === 'parenting') {
+    if (type === 'sessions') {
+        // Show session direction tabs
+        if (sessionDirectionTabs) {
+            sessionDirectionTabs.classList.remove('hidden');
+            sessionDirectionTabs.style.display = 'flex';
+            console.log('[filterParentRequestType] Showing session direction tabs');
+        }
+        // Hide parenting direction tabs
+        if (parentingDirectionTabs) {
+            parentingDirectionTabs.classList.add('hidden');
+            parentingDirectionTabs.style.display = 'none';
+        }
+        // Show status tabs
+        if (statusTabs) {
+            statusTabs.style.display = 'flex';
+        }
+    } else if (type === 'parenting') {
+        // Hide session direction tabs
+        if (sessionDirectionTabs) {
+            sessionDirectionTabs.classList.add('hidden');
+            sessionDirectionTabs.style.display = 'none';
+        }
         // Show parenting direction tabs
         if (parentingDirectionTabs) {
             parentingDirectionTabs.classList.remove('hidden');
@@ -812,7 +890,11 @@ function filterParentRequestType(type) {
             loadParentParentingInvitations();
         }
     } else if (type === 'child-invitations') {
-        // Hide parenting direction tabs for child invitations
+        // Hide both direction tabs
+        if (sessionDirectionTabs) {
+            sessionDirectionTabs.classList.add('hidden');
+            sessionDirectionTabs.style.display = 'none';
+        }
         if (parentingDirectionTabs) {
             parentingDirectionTabs.classList.add('hidden');
             parentingDirectionTabs.style.display = 'none';
@@ -824,7 +906,11 @@ function filterParentRequestType(type) {
         // Load child invitations
         loadParentChildInvitations();
     } else {
-        // Hide parenting direction tabs for other types
+        // Hide both direction tabs for other types (courses, schools)
+        if (sessionDirectionTabs) {
+            sessionDirectionTabs.classList.add('hidden');
+            sessionDirectionTabs.style.display = 'none';
+        }
         if (parentingDirectionTabs) {
             parentingDirectionTabs.classList.add('hidden');
             parentingDirectionTabs.style.display = 'none';
@@ -891,10 +977,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 
+/**
+ * Filter parent session requests by direction (sent/received)
+ */
+function filterParentRequestDirection(direction) {
+    console.log('[filterParentRequestDirection] Called with direction:', direction);
+
+    // Update tab styling
+    const tabs = document.querySelectorAll('#parent-session-direction-tabs .direction-tab');
+    tabs.forEach(tab => {
+        if (tab.dataset.direction === direction) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
+    // Call manager's filterByDirection
+    if (typeof ParentRequestsManager !== 'undefined') {
+        ParentRequestsManager.filterByDirection(direction);
+    }
+}
+
 // Export to window for onclick handlers
 window.ParentRequestsManager = ParentRequestsManager;
 window.filterParentRequestType = filterParentRequestType;
 window.filterParentRequestStatus = filterParentRequestStatus;
+window.filterParentRequestDirection = filterParentRequestDirection;
 
 // Also keep old name for backward compatibility
 window.ParentSessionRequestsManager = ParentRequestsManager;

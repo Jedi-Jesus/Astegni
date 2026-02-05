@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emergency Cache Fix</title>
+</head>
+<body>
+    <h1>Emergency Cache Fix</h1>
+    <p>Copy and paste this into your browser console (F12 → Console):</p>
+
+    <textarea id="code" rows="20" cols="100" readonly>
+// Step 1: Clear all caches
+if ('caches' in window) {
+    caches.keys().then(names => {
+        names.forEach(name => {
+            caches.delete(name);
+            console.log('Deleted cache:', name);
+        });
+    });
+}
+
+// Step 2: Clear localStorage (backup first)
+console.log('Current localStorage:', {...localStorage});
+
+// Step 3: Remove old scripts
+document.querySelectorAll('script[src*="schedule-manager"]').forEach(script => {
+    console.log('Removing script:', script.src);
+    script.remove();
+});
+
+// Step 4: Force reload with new script
+const script = document.createElement('script');
+script.src = '../js/student-profile/schedule-manager.js?v=' + Date.now();
+script.onload = function() {
+    console.log('Script loaded. Testing...');
+    console.log('filterSchedulesByRole type:', typeof window.filterSchedulesByRole);
+    console.log('filterSchedulesByRole:', window.filterSchedulesByRole);
+
+    if (typeof window.filterSchedulesByRole === 'function') {
+        alert('✅ SUCCESS! The function is now available. Try clicking the filter buttons.');
+    } else {
+        alert('❌ Still not working. Close ALL tabs and restart browser.');
+    }
+};
+document.head.appendChild(script);
+    </textarea>
+
+    <button onclick="document.getElementById('code').select(); document.execCommand('copy'); alert('Copied! Paste in console.')">
+        Copy to Clipboard
+    </button>
+
+    <hr>
+
+    <h2>OR: Use This One-Line Nuclear Option</h2>
+    <p>This will clear everything and force reload:</p>
+
+    <textarea id="nuclear" rows="3" cols="100" readonly>
+location.reload(true);
+    </textarea>
+
+    <button onclick="document.getElementById('nuclear').select(); document.execCommand('copy'); alert('Copied! Paste in console and press Enter.')">
+        Copy Nuclear Option
+    </button>
+
+    <hr>
+
+    <h2>Manual Steps If Above Doesn't Work:</h2>
+    <ol>
+        <li>Close ALL browser tabs</li>
+        <li>Close the entire browser</li>
+        <li>Restart browser</li>
+        <li>Clear cache: Ctrl+Shift+Delete → Check "Cached images and files" → Clear data</li>
+        <li>Open student-profile.html again</li>
+    </ol>
+</body>
+</html>

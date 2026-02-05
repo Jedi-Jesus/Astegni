@@ -1,0 +1,56 @@
+<!--
+  Modal: confirm-delete-schedule-modal
+  Purpose: Confirmation dialog for deleting a schedule
+-->
+
+<div id="confirmDeleteScheduleModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeConfirmDeleteScheduleModal()"></div>
+    <div class="modal-content confirm-delete-content">
+        <div class="modal-header">
+            <h2 class="text-red-600">
+                <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
+            </h2>
+            <button class="modal-close" onclick="closeConfirmDeleteScheduleModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Warning Icon and Message -->
+            <div class="delete-warning-section">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="warning-content">
+                    <h3 class="warning-title">Are you sure you want to delete this schedule?</h3>
+                    <p class="warning-message">
+                        This action cannot be undone. The schedule and all its settings will be permanently removed.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Schedule Info to be Deleted -->
+            <div class="delete-schedule-info">
+                <div class="info-row">
+                    <span class="info-label">Schedule:</span>
+                    <strong id="confirm-delete-schedule-title">Schedule Title</strong>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span id="confirm-delete-schedule-type">Recurring</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Year:</span>
+                    <span id="confirm-delete-schedule-year">2026</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteScheduleModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteSchedule()">
+                <i class="fas fa-trash"></i> Yes, Delete Schedule
+            </button>
+        </div>
+    </div>
+</div>

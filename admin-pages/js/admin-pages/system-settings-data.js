@@ -827,6 +827,14 @@ function initializeSystemSettingsData(panel = 'dashboard') {
         case 'performance':
             loadPerformanceMetrics();
             break;
+        case 'pricing':
+            // Pricing panel managers load their data independently
+            console.log('Pricing panel activated - loading base price rules from database');
+            // Load base price rules from base_price_rules table
+            if (typeof window.loadBasePriceRules === 'function') {
+                window.loadBasePriceRules();
+            }
+            break;
         default:
             console.log(`Panel ${panel} data loading not implemented yet`);
     }

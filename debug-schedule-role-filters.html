@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Schedule Role Filters</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .test-section { margin: 20px 0; padding: 15px; background: #2a2a2a; border: 1px solid #0f0; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Schedule Role Filters Debug Console</h1>
+    <p>Paste this in your browser console on tutor-profile.html</p>
+
+    <script>
+        console.log('%c=== SCHEDULE ROLE FILTERS DEBUG ===', 'color: cyan; font-size: 20px; font-weight: bold');
+
+        // Test 1: Check function exists
+        console.log('\n%c[TEST 1] Checking if filterSchedulesByRole exists', 'color: yellow; font-weight: bold');
+        if (typeof window.filterSchedulesByRole === 'function') {
+            console.log('%c✅ filterSchedulesByRole function EXISTS', 'color: lime');
+        } else {
+            console.log('%c❌ filterSchedulesByRole function DOES NOT EXIST', 'color: red');
+        }
+
+        // Test 2: Check schedules loaded
+        console.log('\n%c[TEST 2] Checking if schedules are loaded', 'color: yellow; font-weight: bold');
+        if (typeof window.allSchedules !== 'undefined') {
+            console.log('%c✅ allSchedules exists:', 'color: lime', window.allSchedules.length, 'schedules');
+
+            if (window.allSchedules.length === 0) {
+                console.log('%c⚠️ WARNING: allSchedules array is EMPTY', 'color: orange; font-weight: bold');
+                console.log('%c   Role filters will NOT work until schedules are loaded!', 'color: orange');
+            } else {
+                const roles = {};
+                window.allSchedules.forEach(s => {
+                    const role = s.scheduler_role || 'tutor';
+                    roles[role] = (roles[role] || 0) + 1;
+                });
+                console.log('%c📊 Role distribution:', 'color: cyan', roles);
+            }
+        } else {
+            console.log('%c❌ allSchedules DOES NOT EXIST', 'color: red');
+        }
+
+        // Test 3: Check container
+        console.log('\n%c[TEST 3] Checking DOM elements', 'color: yellow; font-weight: bold');
+        const container = document.getElementById('schedules-table-container');
+        const filters = document.getElementById('schedule-role-filters');
+
+        if (container) {
+            console.log('%c✅ schedules-table-container EXISTS', 'color: lime');
+        } else {
+            console.log('%c❌ schedules-table-container DOES NOT EXIST', 'color: red');
+        }
+
+        if (filters) {
+            console.log('%c✅ schedule-role-filters EXISTS', 'color: lime');
+            console.log('   Filter buttons:', filters.querySelectorAll('button').length);
+        } else {
+            console.log('%c❌ schedule-role-filters DOES NOT EXIST', 'color: red');
+        }
+
+        // Test 4: Test calling the filter
+        console.log('\n%c[TEST 4] Testing filter function manually', 'color: yellow; font-weight: bold');
+        console.log('%cRun: window.filterSchedulesByRole("tutor")', 'color: cyan');
+
+        console.log('\n%c=== FIX SUGGESTIONS ===', 'color: magenta; font-size: 16px; font-weight: bold');
+        if (!window.allSchedules || window.allSchedules.length === 0) {
+            console.log('%c💡 FIX: Load schedules first', 'color: yellow');
+            console.log('%c   Run: await window.loadSchedules()', 'color: cyan');
+        }
+    </script>
+</body>
+</html>

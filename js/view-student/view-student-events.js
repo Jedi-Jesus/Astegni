@@ -204,7 +204,7 @@ function renderEventCard(event) {
                     ${event.price > 0 ? `
                         <div class="event-info-item event-fee">
                             <i class="fas fa-money-bill-wave"></i>
-                            <span>${event.price} ETB</span>
+                            <span>${event.price} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
                         </div>
                     ` : `
                         <div class="event-info-item event-free">

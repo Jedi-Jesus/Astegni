@@ -1,0 +1,299 @@
+/* ============================================
+   VIEW SCHEDULE MODAL STYLES
+   ============================================ */
+
+.view-schedule-content {
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Schedule Header Section */
+.schedule-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.schedule-view-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 0.5rem;
+}
+
+.schedule-view-description {
+    font-size: 0.95rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
+}
+
+/* Priority Badge */
+.priority-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.priority-low {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.priority-medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.priority-high {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.priority-urgent {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+/* Info Sections */
+.schedule-info-section {
+    margin-bottom: 1.5rem;
+}
+
+.schedule-info-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 0.5rem;
+}
+
+.info-label i {
+    color: var(--primary-color, #3b82f6);
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary, #1f2937);
+}
+
+.notes-text {
+    padding: 1rem;
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-color, #e5e7eb);
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+/* Tags Container */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tags-container .tag {
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-secondary, #f3f4f6);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary, #374151);
+}
+
+.tags-container .tag.month-tag {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+.tags-container .tag.day-tag {
+    background: #e9d5ff;
+    color: #7e22ce;
+    border-color: #d8b4fe;
+}
+
+.tags-container .tag.date-tag {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+/* Notification Badges */
+.notification-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.notification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--bg-secondary, #f3f4f6);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--radius-md, 6px);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary, #374151);
+}
+
+.notification-badge i {
+    color: var(--primary-color, #3b82f6);
+}
+
+/* Metadata Section */
+.schedule-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.metadata-item i {
+    color: var(--primary-color, #3b82f6);
+}
+
+.metadata-item strong {
+    color: var(--text-primary, #1f2937);
+    font-weight: 600;
+}
+
+/* Recurring Section */
+.recurring-section {
+    padding: 1rem;
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-color, #e5e7eb);
+    margin-bottom: 1.5rem;
+}
+
+/* Modal Footer Button Styles */
+.modal-footer .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: var(--radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.15s);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-footer .btn-secondary {
+    background: var(--bg-secondary, #f3f4f6);
+    color: var(--text-primary, #374151);
+    border: 1px solid var(--border-color, #d1d5db);
+}
+
+.modal-footer .btn-secondary:hover {
+    background: var(--bg-tertiary, #e5e7eb);
+}
+
+.modal-footer .btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.modal-footer .btn-warning:hover {
+    background: #d97706;
+}
+
+.modal-footer .btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.modal-footer .btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .schedule-view-title,
+[data-theme="dark"] .info-value {
+    color: var(--text-primary, #f9fafb);
+}
+
+[data-theme="dark"] .schedule-view-description,
+[data-theme="dark"] .info-label,
+[data-theme="dark"] .metadata-item {
+    color: var(--text-secondary, #d1d5db);
+}
+
+[data-theme="dark"] .notes-text,
+[data-theme="dark"] .recurring-section {
+    background: var(--bg-secondary, #1f2937);
+    border-color: var(--border-color, #374151);
+}
+
+[data-theme="dark"] .notification-badge,
+[data-theme="dark"] .tags-container .tag {
+    background: var(--bg-secondary, #1f2937);
+    border-color: var(--border-color, #374151);
+    color: var(--text-primary, #f3f4f6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .view-schedule-content {
+        max-width: 95%;
+        padding: 1rem;
+    }
+
+    .schedule-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .schedule-info-row {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-metadata {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

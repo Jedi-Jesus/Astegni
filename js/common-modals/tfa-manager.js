@@ -1422,6 +1422,8 @@ If you lose access to your authenticator app, use one of these codes to log in.
     protectedPanelsState: {
         panels: [],
         protectedPanels: [],
+        panelsByPage: {},       // Panels organized by page
+        currentPageTab: null,   // Currently active page tab
         isLoading: false,
         verified: false,
         hasChanges: false
@@ -1555,41 +1557,160 @@ If you lose access to your authenticator app, use one of these codes to log in.
         }
     },
 
-    // Render the protected panels list with toggles
+    // Render the protected panels list with page-based tabs
     renderProtectedPanelsList() {
-        const container = document.getElementById('tfa-protected-panels-list');
-        if (!container) return;
+        const tabsContainer = document.getElementById('tfa-page-tabs-container');
+        const tabsNav = document.getElementById('tfa-page-tabs');
+        const tabsContent = document.getElementById('tfa-page-tabs-content');
+
+        if (!tabsContainer || !tabsNav || !tabsContent) return;
 
         if (!this.protectedPanelsState.panels.length) {
-            container.innerHTML = '<p class="text-gray-500 text-sm">No panels available</p>';
+            tabsContainer.classList.add('hidden');
             return;
         }
 
-        // Get the list of currently protected panel IDs
+        // Get current page identifier (tutor-profile, student-profile, etc.)
+        const currentPage = this.getCurrentPageIdentifier();
+
+        // Filter panels to only show those for the current page
+        const currentPagePanels = this.protectedPanelsState.panels.filter(panel => {
+            return panel.page === currentPage;
+        });
+
+        if (currentPagePanels.length === 0) {
+            tabsContainer.classList.add('hidden');
+            tabsContent.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No panels available for this page</p>';
+            return;
+        }
+
+        // Organize current page panels by section/category if they have one
+        this.protectedPanelsState.panelsByPage = {};
+        currentPagePanels.forEach(panel => {
+            const section = panel.section || 'General';
+            if (!this.protectedPanelsState.panelsByPage[section]) {
+                this.protectedPanelsState.panelsByPage[section] = [];
+            }
+            this.protectedPanelsState.panelsByPage[section].push(panel);
+        });
+
+        const sections = Object.keys(this.protectedPanelsState.panelsByPage).sort();
+
+        // Set first section as current if not set
+        if (!this.protectedPanelsState.currentPageTab && sections.length > 0) {
+            this.protectedPanelsState.currentPageTab = sections[0];
+        }
+
+        // Render section tabs (only if there are multiple sections)
+        if (sections.length > 1) {
+            const tabsHTML = sections.map(section => `
+                <button class="tfa-page-tab ${section === this.protectedPanelsState.currentPageTab ? 'active' : ''}"
+                        data-page="${section}"
+                        onclick="TFAManager.switchPageTab('${section}')">
+                    ${this.formatPageName(section)}
+                </button>
+            `).join('');
+            tabsNav.innerHTML = tabsHTML;
+        } else {
+            // Hide tabs if only one section
+            tabsNav.innerHTML = '';
+        }
+
+        // Render tab content for each section
         const protectedPanelIds = this.protectedPanelsState.protectedPanels || [];
 
-        const html = this.protectedPanelsState.panels.map(panel => {
-            // Check if this panel is in the protected list
-            const isProtected = protectedPanelIds.includes(panel.id);
+        const contentHTML = sections.map(section => {
+            const panels = this.protectedPanelsState.panelsByPage[section];
+            const panelsHTML = panels.map(panel => {
+                const isProtected = protectedPanelIds.includes(panel.id);
+                return `
+                    <div class="tfa-panel-item">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-gray-800">${panel.name}</span>
+                            ${panel.recommended ? '<span class="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Recommended</span>' : ''}
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox"
+                                   class="sr-only peer tfa-panel-toggle"
+                                   data-panel-id="${panel.id}"
+                                   ${isProtected ? 'checked' : ''}
+                                   onchange="TFAManager.togglePanelProtection('${panel.id}', this.checked)">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                `;
+            }).join('');
 
             return `
-            <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium text-gray-800">${panel.name}</span>
-                    ${panel.recommended ? '<span class="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Recommended</span>' : ''}
+                <div class="tfa-page-tab-content ${section === this.protectedPanelsState.currentPageTab ? 'active' : ''}"
+                     data-page="${section}">
+                    <div class="space-y-0 max-h-[300px] overflow-y-auto">
+                        ${panelsHTML}
+                    </div>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox"
-                           class="sr-only peer tfa-panel-toggle"
-                           data-panel-id="${panel.id}"
-                           ${isProtected ? 'checked' : ''}
-                           onchange="TFAManager.togglePanelProtection('${panel.id}', this.checked)">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                </label>
-            </div>
-        `}).join('');
+            `;
+        }).join('');
 
-        container.innerHTML = html;
+        tabsContent.innerHTML = contentHTML;
+        tabsContainer.classList.remove('hidden');
+    },
+
+    // Get current page identifier
+    getCurrentPageIdentifier() {
+        // Use the detected role from state
+        if (this.state.currentPageRole) {
+            return `${this.state.currentPageRole}-profile`;
+        }
+
+        // Fallback: detect from URL
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('tutor-profile')) {
+            return 'tutor-profile';
+        } else if (path.includes('student-profile')) {
+            return 'student-profile';
+        } else if (path.includes('parent-profile')) {
+            return 'parent-profile';
+        } else if (path.includes('advertiser-profile')) {
+            return 'advertiser-profile';
+        }
+
+        // Default fallback
+        return 'profile';
+    },
+
+    // Format page name for display
+    formatPageName(page) {
+        // Convert snake_case or kebab-case to Title Case
+        return page
+            .replace(/[-_]/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    },
+
+    // Switch page tab
+    switchPageTab(page) {
+        this.protectedPanelsState.currentPageTab = page;
+
+        // Update tab buttons
+        const tabButtons = document.querySelectorAll('.tfa-page-tab');
+        tabButtons.forEach(btn => {
+            if (btn.dataset.page === page) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update tab content
+        const tabContents = document.querySelectorAll('.tfa-page-tab-content');
+        tabContents.forEach(content => {
+            if (content.dataset.page === page) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
     },
 
     // Toggle panel protection (local state only - no auto-save)

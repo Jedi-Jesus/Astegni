@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Share Button - Parent Profile</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #545b62; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+            font-size: 12px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Share Button Debug - Parent & User Profiles</h1>
+    <p>This tool helps diagnose why the share button isn't working in parent-profile.html and user-profile.html</p>
+
+    <div class="debug-panel">
+        <h2>Step 1: Setup Test Environment</h2>
+        <button onclick="setupTestData()">Setup Mock User Data</button>
+        <button onclick="clearTestData()" class="secondary">Clear All Data</button>
+        <div id="setup-result"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Step 2: Check if shareProfile() Function Exists</h2>
+        <button onclick="checkFunction()">Check Function</button>
+        <div id="function-check"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Step 3: Check localStorage Keys</h2>
+        <button onclick="checkStorage()">Check localStorage</button>
+        <div id="storage-check"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Step 4: Test Button Click</h2>
+        <div class="test-button">
+            <button class="btn-secondary" onclick="shareProfile()">
+                🔗 Share Profile (Test Button)
+            </button>
+        </div>
+        <div id="click-result"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Step 5: Check Script Loading</h2>
+        <button onclick="checkScripts()">Check Scripts</button>
+        <div id="script-check"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Step 6: Check Console Errors</h2>
+        <button onclick="checkErrors()">Show Errors</button>
+        <div id="error-check"></div>
+    </div>
+
+    <!-- Load the actual share-profile-manager.js -->
+    <script src="js/common-modals/share-profile-manager.js?v=20260204"></script>
+
+    <script>
+        // Store console errors
+        const consoleErrors = [];
+        const originalError = console.error;
+        console.error = function(...args) {
+            consoleErrors.push(args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        function setupTestData() {
+            const mockUser = {
+                id: 999,
+                first_name: 'Debug',
+                father_name: 'Test',
+                grandfather_name: 'User',
+                last_name: 'Parent',
+                email: 'debug@test.com',
+                active_role: 'parent',
+                roles: ['parent'],
+                role: 'parent',
+                profile_picture: 'https://via.placeholder.com/150'
+            };
+
+            // Set BOTH keys to be safe
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'debug-token-12345');
+            localStorage.setItem('userRole', 'parent');
+            localStorage.setItem('active_role', 'parent');
+
+            document.getElementById('setup-result').innerHTML = `
+                <div class="status success">
+                    ✅ Mock user data set in localStorage<br>
+                    <small>Keys: currentUser, user, token, userRole, active_role</small>
+                </div>
+            `;
+        }
+
+        function clearTestData() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('active_role');
+
+            document.getElementById('setup-result').innerHTML = `
+                <div class="status info">
+                    🧹 All test data cleared from localStorage
+                </div>
+            `;
+        }
+
+        function checkFunction() {
+            let html = '';
+
+            if (typeof shareProfile === 'function') {
+                html += '<div class="status success">✅ shareProfile() function EXISTS and is callable</div>';
+                html += '<pre>Function signature:\n' + shareProfile.toString().substring(0, 200) + '...</pre>';
+            } else if (typeof shareProfile !== 'undefined') {
+                html += `<div class="status error">❌ shareProfile exists but is NOT a function (type: ${typeof shareProfile})</div>`;
+            } else {
+                html += '<div class="status error">❌ shareProfile() function NOT FOUND<br><small>The script may not have loaded or there\'s a naming conflict</small></div>';
+            }
+
+            // Check if it's in window object
+            if (typeof window.shareProfile === 'function') {
+                html += '<div class="status success">✅ Also found as window.shareProfile()</div>';
+            }
+
+            // Check for other share-related functions
+            const shareFunctions = [
+                'closeShareModal', 'shareViaWhatsApp', 'shareViaFacebook',
+                'shareViaTwitter', 'copyShareLink'
+            ];
+            let foundCount = 0;
+            shareFunctions.forEach(fn => {
+                if (typeof window[fn] === 'function') foundCount++;
+            });
+
+            if (foundCount > 0) {
+                html += `<div class="status success">✅ Found ${foundCount} other share functions (script loaded correctly)</div>`;
+            }
+
+            document.getElementById('function-check').innerHTML = html;
+        }
+
+        function checkStorage() {
+            const currentUser = localStorage.getItem('currentUser');
+            const legacyUser = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('userRole');
+            const activeRole = localStorage.getItem('active_role');
+
+            let html = '<h3>localStorage Status:</h3>';
+            html += '<div style="display: grid; gap: 10px;">';
+
+            html += currentUser
+                ? `<div class="status success">✅ currentUser: EXISTS (${currentUser.length} chars)</div>`
+                : `<div class="status error">❌ currentUser: NOT FOUND</div>`;
+
+            html += legacyUser
+                ? `<div class="status success">✅ user (legacy): EXISTS (${legacyUser.length} chars)</div>`
+                : `<div class="status warning">⚠️ user (legacy): NOT FOUND</div>`;
+
+            html += token
+                ? `<div class="status success">✅ token: EXISTS</div>`
+                : `<div class="status error">❌ token: NOT FOUND</div>`;
+
+            html += userRole
+                ? `<div class="status success">✅ userRole: ${userRole}</div>`
+                : `<div class="status warning">⚠️ userRole: NOT FOUND</div>`;
+
+            html += activeRole
+                ? `<div class="status success">✅ active_role: ${activeRole}</div>`
+                : `<div class="status warning">⚠️ active_role: NOT FOUND</div>`;
+
+            html += '</div>';
+
+            if (currentUser || legacyUser) {
+                try {
+                    const userData = JSON.parse(currentUser || legacyUser);
+                    html += '<h3>User Data:</h3>';
+                    html += '<pre>' + JSON.stringify(userData, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<div class="status error">❌ Error parsing user data: ' + e.message + '</div>';
+                }
+            }
+
+            document.getElementById('storage-check').innerHTML = html;
+        }
+
+        function checkScripts() {
+            const scripts = Array.from(document.getElementsByTagName('script'));
+            const shareScript = scripts.find(s => s.src.includes('share-profile-manager'));
+
+            let html = '<h3>Script Loading Status:</h3>';
+
+            if (shareScript) {
+                html += `<div class="status success">✅ share-profile-manager.js script tag found<br><small>Source: ${shareScript.src}</small></div>`;
+
+                // Check if it loaded successfully
+                if (typeof shareProfile === 'function') {
+                    html += '<div class="status success">✅ Script executed successfully (shareProfile function exists)</div>';
+                } else {
+                    html += '<div class="status error">❌ Script tag exists but function not found (may have failed to load or execute)</div>';
+                }
+            } else {
+                html += '<div class="status error">❌ share-profile-manager.js script tag NOT FOUND</div>';
+            }
+
+            html += `<h3>All Loaded Scripts (${scripts.length} total):</h3>`;
+            html += '<pre style="max-height: 300px; overflow-y: auto;">';
+            scripts.forEach((script, i) => {
+                if (script.src) {
+                    const filename = script.src.split('/').pop();
+                    html += `${i + 1}. ${filename}\n`;
+                }
+            });
+            html += '</pre>';
+
+            document.getElementById('script-check').innerHTML = html;
+        }
+
+        function checkErrors() {
+            let html = '<h3>Console Errors Captured:</h3>';
+
+            if (consoleErrors.length === 0) {
+                html += '<div class="status success">✅ No console errors detected</div>';
+            } else {
+                html += `<div class="status error">❌ Found ${consoleErrors.length} errors:</div>`;
+                html += '<pre style="max-height: 300px; overflow-y: auto;">';
+                consoleErrors.forEach((err, i) => {
+                    html += `${i + 1}. ${err}\n\n`;
+                });
+                html += '</pre>';
+            }
+
+            document.getElementById('error-check').innerHTML = html;
+        }
+
+        // Auto-run initial checks on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                checkFunction();
+                checkStorage();
+                checkScripts();
+            }, 500);
+        });
+
+        // Intercept shareProfile calls to log them
+        if (typeof shareProfile === 'function') {
+            const originalShareProfile = shareProfile;
+            window.shareProfile = async function(...args) {
+                console.log('🔍 shareProfile() called with args:', args);
+                document.getElementById('click-result').innerHTML = `
+                    <div class="status info">
+                        📞 shareProfile() was called at ${new Date().toLocaleTimeString()}<br>
+                        <small>Check browser console for details</small>
+                    </div>
+                `;
+                try {
+                    const result = await originalShareProfile.apply(this, args);
+                    document.getElementById('click-result').innerHTML += `
+                        <div class="status success">
+                            ✅ Function executed successfully
+                        </div>
+                    `;
+                    return result;
+                } catch (error) {
+                    document.getElementById('click-result').innerHTML += `
+                        <div class="status error">
+                            ❌ Error in shareProfile(): ${error.message}<br>
+                            <pre>${error.stack}</pre>
+                        </div>
+                    `;
+                    throw error;
+                }
+            };
+        }
+    </script>
+
+    <div class="debug-panel">
+        <h2>📋 Instructions</h2>
+        <ol>
+            <li><strong>Setup:</strong> Click "Setup Mock User Data" to create test data</li>
+            <li><strong>Verify Function:</strong> Check if shareProfile() exists</li>
+            <li><strong>Test Click:</strong> Click the "Share Profile (Test Button)" above</li>
+            <li><strong>Compare:</strong> Open parent-profile.html in another tab and compare results</li>
+        </ol>
+
+        <h3>Expected Results:</h3>
+        <ul>
+            <li>✅ shareProfile() function should exist</li>
+            <li>✅ localStorage keys should be present</li>
+            <li>✅ Clicking button should open share modal or show alert</li>
+        </ul>
+    </div>
+</body>
+</html>

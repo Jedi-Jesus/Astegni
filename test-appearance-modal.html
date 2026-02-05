@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appearance Modal - Astegni</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="css/root/theme.css">
+    <link rel="stylesheet" href="css/common-modals/appearance-modal.css">
+
+    <style>
+        /* Demo page styles */
+        .demo-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .demo-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .demo-button {
+            background: var(--primary-color);
+            color: var(--button-text);
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .demo-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--input-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .demo-item {
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .accent-demo {
+            width: 100%;
+            height: 40px;
+            background: var(--accent-color, var(--primary-color));
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        /* Density variations */
+        [data-density="compact"] .demo-section {
+            padding: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        [data-density="compact"] .demo-item {
+            padding: 0.5rem;
+        }
+
+        [data-density="spacious"] .demo-section {
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        [data-density="spacious"] .demo-item {
+            padding: 1.5rem;
+        }
+
+        /* Animations disabled */
+        [data-no-animations="true"] * {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        /* Reduce motion */
+        [data-reduce-motion="true"] * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        /* Sidebar position demo */
+        [data-sidebar-position="right"] .sidebar-indicator {
+            text-align: right;
+        }
+
+        [data-sidebar-position="left"] .sidebar-indicator {
+            text-align: left;
+        }
+
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-card">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">Appearance Modal Test</h1>
+                    <p class="text-gray-500">Test all appearance customization features</p>
+                </div>
+            </div>
+
+            <button onclick="openAppearanceModal()" class="demo-button w-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+                Open Appearance Settings
+            </button>
+
+            <div class="demo-section">
+                <h3 class="font-semibold mb-2">Current Settings</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span>Theme:</span>
+                        <span id="current-theme" class="info-badge">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span>Font Size:</span>
+                        <span id="current-font-size" class="info-badge">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span>Display Density:</span>
+                        <span id="current-density" class="info-badge">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span>Accent Color:</span>
+                        <span id="current-accent" class="info-badge">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span>Animations:</span>
+                        <span id="current-animations" class="info-badge">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span>Sidebar Position:</span>
+                        <span id="current-sidebar" class="info-badge">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Accent color demo -->
+                <div class="accent-demo"></div>
+            </div>
+
+            <div class="demo-section">
+                <h3 class="font-semibold mb-2">Sample Content</h3>
+                <p class="mb-4">This text adapts to your font size preference. Try changing it in the appearance settings!</p>
+
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <div class="text-2xl mb-2">📚</div>
+                        <div class="font-medium">Courses</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="text-2xl mb-2">👨‍🏫</div>
+                        <div class="font-medium">Tutors</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="text-2xl mb-2">📊</div>
+                        <div class="font-medium">Progress</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="text-2xl mb-2">⚙️</div>
+                        <div class="font-medium">Settings</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3 class="font-semibold mb-2">Quick Actions</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="setThemePreference('light')" class="px-4 py-2 bg-white text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        ☀️ Light
+                    </button>
+                    <button onclick="setThemePreference('dark')" class="px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors">
+                        🌙 Dark
+                    </button>
+                    <button onclick="setThemePreference('system')" class="px-4 py-2 bg-gradient-to-r from-white to-gray-800 text-gray-800 border border-gray-300 rounded-lg hover:opacity-80 transition-opacity">
+                        💻 System
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-indicator mt-4 text-sm text-gray-500">
+                <p>Sidebar Position: <span id="sidebar-position-text">Left</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the appearance modal HTML -->
+    <div id="modal-container"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Load the appearance modal
+        fetch('modals/common-modals/appearance-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('modal-container').innerHTML = html;
+
+                // Initialize after modal is loaded
+                const script = document.createElement('script');
+                script.src = 'js/common-modals/appearance-manager.js';
+                document.body.appendChild(script);
+
+                // Update display after a short delay
+                setTimeout(updateCurrentSettings, 500);
+            })
+            .catch(error => {
+                console.error('Error loading appearance modal:', error);
+            });
+
+        // Update current settings display
+        function updateCurrentSettings() {
+            const settings = JSON.parse(localStorage.getItem('appearance_settings') || '{}');
+
+            document.getElementById('current-theme').textContent = settings.theme || 'system';
+            document.getElementById('current-font-size').textContent = `${settings.fontSize || 16}px`;
+            document.getElementById('current-density').textContent = settings.displayDensity || 'comfortable';
+            document.getElementById('current-accent').textContent = settings.accentColor || 'indigo';
+            document.getElementById('current-animations').textContent = settings.enableAnimations !== false ? 'Enabled' : 'Disabled';
+            document.getElementById('current-sidebar').textContent = settings.sidebarPosition || 'left';
+            document.getElementById('sidebar-position-text').textContent = (settings.sidebarPosition || 'left').charAt(0).toUpperCase() + (settings.sidebarPosition || 'left').slice(1);
+        }
+
+        // Refresh settings display when modal closes
+        setInterval(updateCurrentSettings, 1000);
+
+        // Listen for ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAppearanceModal();
+            }
+        });
+    </script>
+</body>
+</html>

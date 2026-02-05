@@ -1,0 +1,115 @@
+<!-- Attendance Suggestion Modal -->
+<div id="attendance-suggestion-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-user-check"></i>
+                AI Attendance Suggestion
+            </h2>
+            <button class="modal-close" onclick="closeAttendanceSuggestionModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+            <!-- Loading State -->
+            <div id="attendance-loading" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary-color);"></i>
+                <p style="margin-top: 20px; color: var(--text-secondary);">Analyzing whiteboard connection data...</p>
+            </div>
+
+            <!-- No Whiteboard Data -->
+            <div id="attendance-no-data" style="display: none; text-align: center; padding: 40px;">
+                <i class="fas fa-info-circle" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                <h3 style="margin-top: 20px;">No Whiteboard Data Available</h3>
+                <p style="color: var(--text-secondary); margin-top: 10px;">
+                    This session doesn't have whiteboard connection tracking data.
+                    Please mark attendance manually.
+                </p>
+                <button class="btn-primary" onclick="openManualAttendanceModal()" style="margin-top: 20px;">
+                    <i class="fas fa-edit"></i> Mark Manually
+                </button>
+            </div>
+
+            <!-- Suggestion Content -->
+            <div id="attendance-suggestion-content" style="display: none;">
+                <!-- Overall Recommendation Banner -->
+                <div id="attendance-recommendation-banner" class="alert" style="margin-bottom: 24px; padding: 16px; border-radius: 8px;">
+                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                    <span id="attendance-recommendation-text"></span>
+                </div>
+
+                <!-- Tutor Attendance Card -->
+                <div class="attendance-card" style="margin-bottom: 20px; padding: 20px; border: 2px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            Tutor Attendance
+                        </h3>
+                        <div id="tutor-status-badge"></div>
+                    </div>
+
+                    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Lateness</div>
+                            <div id="tutor-lateness" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Engagement</div>
+                            <div id="tutor-engagement" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Active Time</div>
+                            <div id="tutor-active-time" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                    </div>
+
+                    <div id="tutor-confidence" style="margin-top: 12px; padding: 8px 12px; background: var(--bg-primary); border-radius: 6px; font-size: 0.875rem;"></div>
+                </div>
+
+                <!-- Student Attendance Card -->
+                <div class="attendance-card" style="margin-bottom: 20px; padding: 20px; border: 2px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-graduate"></i>
+                            Student Attendance
+                        </h3>
+                        <div id="student-status-badge"></div>
+                    </div>
+
+                    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Lateness</div>
+                            <div id="student-lateness" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Engagement</div>
+                            <div id="student-engagement" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                        <div class="metric-item">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Active Time</div>
+                            <div id="student-active-time" style="font-size: 1.5rem; font-weight: 600;"></div>
+                        </div>
+                    </div>
+
+                    <div id="student-confidence" style="margin-top: 12px; padding: 8px 12px; background: var(--bg-primary); border-radius: 6px; font-size: 0.875rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="closeAttendanceSuggestionModal()">
+                Cancel
+            </button>
+            <button class="btn-secondary" onclick="openManualAttendanceModal()" id="manual-override-btn" style="display: none;">
+                <i class="fas fa-edit"></i> Override Manually
+            </button>
+            <button class="btn-primary" onclick="applyAttendanceSuggestion()" id="apply-suggestion-btn" style="display: none;">
+                <i class="fas fa-check"></i> Apply Suggestion
+            </button>
+        </div>
+    </div>
+</div>

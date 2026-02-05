@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Brands Panel - Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section h2 {
+            margin-top: 0;
+            color: #8B5CF6;
+        }
+        .result {
+            background: #f9fafb;
+            padding: 15px;
+            border-left: 4px solid #8B5CF6;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        button {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+        .code {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏷️ Brands Panel Debug Tool</h1>
+    <p>This tool will help you diagnose and fix the missing create brand card issue.</p>
+
+    <div class="debug-section">
+        <h2>Step 1: Open Advertiser Profile</h2>
+        <p>First, make sure you have the advertiser profile page open in another tab.</p>
+        <button onclick="window.open('/profile-pages/advertiser-profile.html?panel=brands', '_blank')">
+            Open Advertiser Profile (Brands Panel)
+        </button>
+    </div>
+
+    <div class="debug-section">
+        <h2>Step 2: Run This Code in Console</h2>
+        <p>Open Developer Tools (F12) on the advertiser profile page, go to Console tab, and paste this:</p>
+        <div class="code">
+console.log('=== BRANDS PANEL COMPREHENSIVE DEBUG ===');
+
+// 1. Check brandsGrid element
+const brandsGrid = document.getElementById('brandsGrid');
+console.log('1. brandsGrid element:', brandsGrid);
+console.log('2. brandsGrid exists:', !!brandsGrid);
+
+if (brandsGrid) {
+    const computedStyle = window.getComputedStyle(brandsGrid);
+    console.log('3. brandsGrid display:', computedStyle.display);
+    console.log('4. brandsGrid visibility:', computedStyle.visibility);
+    console.log('5. brandsGrid opacity:', computedStyle.opacity);
+    console.log('6. brandsGrid innerHTML length:', brandsGrid.innerHTML.length);
+    console.log('7. brandsGrid children count:', brandsGrid.children.length);
+}
+
+// 2. Check brands panel
+const brandsPanel = document.getElementById('brands-panel');
+console.log('8. brands-panel element:', brandsPanel);
+if (brandsPanel) {
+    console.log('9. brands-panel has .active class:', brandsPanel.classList.contains('active'));
+    console.log('10. brands-panel has .hidden class:', brandsPanel.classList.contains('hidden'));
+    const panelStyle = window.getComputedStyle(brandsPanel);
+    console.log('11. brands-panel display:', panelStyle.display);
+}
+
+// 3. Check BrandsManager
+console.log('12. BrandsManager exists:', typeof BrandsManager !== 'undefined');
+if (typeof BrandsManager !== 'undefined') {
+    console.log('13. BrandsManager.brands:', BrandsManager.brands);
+    console.log('14. BrandsManager.brands length:', BrandsManager.brands?.length);
+    console.log('15. BrandsManager.renderBrands exists:', typeof BrandsManager.renderBrands === 'function');
+}
+
+// 4. Check for brand cards
+const allBrandCards = document.querySelectorAll('.brand-card');
+console.log('16. Total .brand-card elements:', allBrandCards.length);
+
+const newBrandCard = document.querySelector('.brand-card.new-brand');
+console.log('17. .brand-card.new-brand element:', newBrandCard);
+
+if (newBrandCard) {
+    const newBrandStyle = window.getComputedStyle(newBrandCard);
+    console.log('18. New brand card display:', newBrandStyle.display);
+    console.log('19. New brand card visibility:', newBrandStyle.visibility);
+    console.log('20. New brand card position:', {
+        top: newBrandStyle.top,
+        left: newBrandStyle.left,
+        position: newBrandStyle.position
+    });
+}
+
+// 5. Try to force render
+console.log('21. Attempting to force render...');
+if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.renderBrands === 'function') {
+    BrandsManager.renderBrands();
+
+    setTimeout(() => {
+        const cardsAfterRender = document.querySelectorAll('.brand-card');
+        const newCardAfterRender = document.querySelector('.brand-card.new-brand');
+        console.log('22. After force render - Total cards:', cardsAfterRender.length);
+        console.log('23. After force render - New brand card:', newCardAfterRender);
+
+        if (newCardAfterRender) {
+            console.log('✅ SUCCESS: New brand card is NOW visible!');
+            newCardAfterRender.style.border = '3px solid lime';
+            newCardAfterRender.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            console.log('❌ FAILED: New brand card still not found after render');
+            console.log('brandsGrid content:', brandsGrid?.innerHTML.substring(0, 500));
+        }
+    }, 200);
+}
+
+console.log('=== DEBUG COMPLETE ===');
+        </div>
+        <button onclick="copyCode()">Copy Code to Clipboard</button>
+    </div>
+
+    <div class="debug-section">
+        <h2>Step 3: Expected Results</h2>
+        <div class="result success">
+✅ If working correctly, you should see:
+- brandsGrid element found
+- brands-panel has .active class
+- BrandsManager exists
+- At least 1 .brand-card.new-brand element
+- After force render: "SUCCESS: New brand card is NOW visible!"
+        </div>
+        <div class="result error">
+❌ If broken, you might see:
+- brandsGrid not found
+- brands-panel doesn't have .active class
+- BrandsManager not defined
+- No .brand-card.new-brand elements
+- brandsGrid innerHTML is empty or very short
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Quick Fixes</h2>
+        <p>Based on common issues, try these fixes:</p>
+
+        <h3>Fix 1: Switch to Brands Panel</h3>
+        <p>Run this in console to switch to brands panel:</p>
+        <div class="code">switchPanel('brands');</div>
+        <button onclick="copyToClipboard('switchPanel(\'brands\');')">Copy Fix 1</button>
+
+        <h3>Fix 2: Force Render Brands</h3>
+        <p>Run this to manually render brands:</p>
+        <div class="code">BrandsManager.renderBrands();</div>
+        <button onclick="copyToClipboard('BrandsManager.renderBrands();')">Copy Fix 2</button>
+
+        <h3>Fix 3: Initialize Everything</h3>
+        <p>Run this to reinitialize the entire system:</p>
+        <div class="code">
+if (typeof BrandsManager !== 'undefined') {
+    BrandsManager.initialize();
+    setTimeout(() => BrandsManager.renderBrands(), 200);
+}
+        </div>
+        <button onclick="copyToClipboard('if (typeof BrandsManager !== \'undefined\') { BrandsManager.initialize(); setTimeout(() => BrandsManager.renderBrands(), 200); }')">Copy Fix 3</button>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.querySelector('.code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Code copied to clipboard! Now paste it in the browser console.');
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copied! Paste it in the advertiser profile console.');
+            });
+        }
+    </script>
+</body>
+</html>

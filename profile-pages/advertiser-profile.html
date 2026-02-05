@@ -7,6 +7,39 @@
     <title>ASTEGNI - Advertiser Profile</title>
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v=20251217"></script>
+    <!-- Safe wrapper for openChatModal - waits for function to be available -->
+    <script>
+        // Temporary stub - will be replaced by chat-modal.js when it loads
+        if (!window.openChatModal) {
+            window.openChatModal = function(targetUser = null) {
+                if (typeof ChatModalManager !== 'undefined') {
+                    ChatModalManager.open(targetUser);
+                } else {
+                    console.log('Chat modal not loaded yet, waiting...');
+                    // Wait for chat modal to load
+                    const checkInterval = setInterval(function() {
+                        if (typeof ChatModalManager !== 'undefined') {
+                            clearInterval(checkInterval);
+                            ChatModalManager.open(targetUser);
+                        }
+                    }, 100);
+                    // Stop checking after 10 seconds
+                    setTimeout(function() {
+                        clearInterval(checkInterval);
+                    }, 10000);
+                }
+            };
+        }
+    </script>
+    <!-- Active Role Guard - Prevents access to deactivated roles -->
+    <script src="../js/root/active-role-guard.js"></script>
+    <!-- Preconnect for faster font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts - For Appearance Modal Font Selection -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for analytics charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,6 +56,7 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/appearance-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
     <!-- Standalone Chat Call Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
@@ -1122,7 +1156,7 @@
                         <span></span>
                     </span>
                 </button>
-                <a href="../profile-pages/advertiser-profile.html" class="logo-container">
+                <a href="../index.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">Ad</span>
@@ -1135,17 +1169,14 @@
             <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
                 <!-- Navigation Links -->
                 <div class="nav-items" style="display: flex; gap: 0.25rem;">
-                    <a class="nav-link" href="../index.html">
-                        <span class="nav-icon">🏠</span> Home
-                    </a>
                     <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
                         <span class="nav-icon">📰</span> News
                     </a>
                     <a class="nav-link" href="../branch/find-tutors.html">
                         <span class="nav-icon">👨‍🏫</span> Find Tutors
                     </a>
-                    <a class="nav-link" href="../branch/reels.html">
-                        <span class="nav-icon">🎬</span> Reels
+                    <a class="nav-link" href="../branch/videos.html">
+                        <span class="nav-icon">🎬</span> Videos
                     </a>
                     <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
                         <span class="nav-icon">📚</span> Bookstore
@@ -1187,6 +1218,31 @@
                         </a>
 
                         <div class="dropdown-divider"></div>
+
+                        <!-- Deletion Countdown Banner (shown when role is scheduled for deletion) -->
+                        <div id="deletion-countdown-banner" class="deletion-countdown-banner hidden">
+                            <div class="countdown-content">
+                                <div class="countdown-icon">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="countdown-text">
+                                    <div class="countdown-title">Role Scheduled for Deletion</div>
+                                    <div class="countdown-details">
+                                        Your <span id="countdown-role-name" class="font-semibold"></span> role will be
+                                        deleted in
+                                        <span id="countdown-days" class="font-bold text-orange-600"></span> days
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openAddRoleModal()" class="countdown-restore-btn">
+                                Restore Role
+                            </button>
+                        </div>
+
+                        <div class="dropdown-divider" id="countdown-divider" style="display: none;"></div>
 
                         <!-- Role switcher (shown only if user has multiple roles) -->
                         <div id="role-switcher-section" class="role-switcher-section hidden">
@@ -1256,17 +1312,14 @@
         <div class="mobile-menu-content">
             <!-- Navigation Links -->
             <div class="mobile-nav-section">
-                <a href="../index.html" class="mobile-menu-link">
-                    <span class="nav-icon">🏠</span> Home
-                </a>
                 <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
                 <a href="../branch/find-tutors.html" class="mobile-menu-link">
                     <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </a>
-                <a href="../branch/reels.html" class="mobile-menu-link">
-                    <span class="nav-icon">🎬</span> Reels
+                <a href="../branch/videos.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Videos
                 </a>
                 <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
                     <span class="nav-icon">📚</span> Bookstore
@@ -1279,20 +1332,25 @@
             <!-- Mobile Profile Section -->
             <div id="mobile-profile-section" class="mobile-profile-section">
                 <div class="mobile-profile-dropdown">
-                    <button id="mobile-profile-header" class="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <button id="mobile-profile-header" class="mobile-profile-header"
+                        onclick="toggleMobileProfileDropdown()">
                         <img id="mobile-profile-pic" class="mobile-profile-pic" src="" alt="Profile">
                         <div class="mobile-profile-info">
                             <span id="mobile-profile-name" class="mobile-profile-name"></span>
                             <span id="mobile-profile-role" class="mobile-profile-role">Advertiser</span>
                         </div>
-                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
                         </svg>
                     </button>
 
                     <div class="mobile-profile-dropdown-content">
                         <!-- View Profile Link -->
-                        <a href="advertiser-profile.html" class="mobile-dropdown-user-info" onclick="closeMobileMenu();">
+                        <a href="advertiser-profile.html" class="mobile-dropdown-user-info"
+                            onclick="closeMobileMenu();">
                             <img id="mobile-dropdown-pic" class="mobile-dropdown-pic" src="" alt="Profile">
                             <div class="mobile-dropdown-info">
                                 <span id="mobile-dropdown-name" class="mobile-dropdown-name"></span>
@@ -1309,9 +1367,12 @@
                         </div>
 
                         <!-- Logout Button -->
-                        <button id="mobile-logout-btn" class="mobile-dropdown-logout" onclick="showLogoutModal(); closeMobileMenu();">
+                        <button id="mobile-logout-btn" class="mobile-dropdown-logout"
+                            onclick="showLogoutModal(); closeMobileMenu();">
                             <svg class="mobile-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
                             </svg>
                             Logout
                         </button>
@@ -1323,8 +1384,11 @@
             <!-- Theme Toggle -->
             <div class="mobile-theme-section">
                 <button class="mobile-theme-toggle" onclick="toggleTheme()">
-                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    <svg class="theme-icon-sun" width="20" height="20" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
                     </svg>
                     <span>Toggle Theme</span>
                 </button>
@@ -1334,7 +1398,9 @@
             <div class="mobile-notifications-section">
                 <button class="mobile-notifications-btn">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
                     </svg>
                     <span>Notifications</span>
                     <span class="mobile-notification-badge">7</span>
@@ -1346,7 +1412,7 @@
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
     <div class="ad-container premium-ad" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1355,7 +1421,7 @@
                 <span class="ad-label">Ad 1</span>
                 <h3 class="ad-title">Boost Your Reach Today</h3>
                 <p class="ad-text">Premium advertising solutions</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1367,7 +1433,7 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1376,7 +1442,7 @@
                 <span class="ad-label">Ad 2</span>
                 <h3 class="ad-title">Analytics Dashboard</h3>
                 <p class="ad-text">Track your campaign performance</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">View Analytics</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">View Analytics</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1388,7 +1454,7 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1397,7 +1463,7 @@
                 <span class="ad-label">Ad 3</span>
                 <h3 class="ad-title">Target Your Audience</h3>
                 <p class="ad-text">Reach students & educators</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Create Campaign</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Create Campaign</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1409,7 +1475,7 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1418,7 +1484,7 @@
                 <span class="ad-label">Ad 4</span>
                 <h3 class="ad-title">Premium Placements</h3>
                 <p class="ad-text">Feature your brand prominently</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Featured</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Featured</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1440,6 +1506,7 @@
                     <span class="sidebar-icon">🏠</span>
                     <span>Dashboard</span>
                 </a>
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('notes'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📝</span>
                     <span>Notes</span>
@@ -1464,13 +1531,13 @@
                     <span class="sidebar-icon">⚙️</span>
                     <span>Settings</span>
                 </a>
-                <!-- Sidebar Footer with Wave Animation -->
-                    <div style="text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.75rem;">
-                        <p style="margin: 0;">© 2024 Astegni</p>
-                        <p style="margin: 0.25rem 0 0 0;">Advertiser Dashboard v1.1</p>
-                    </div>
-                </div>
+                <a href="#" onclick="showLogoutModal(); return false;"
+                    class="sidebar-link text-red-500 hover:bg-red-50">
+                    <span class="sidebar-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
             </div>
+        </div>
         </div>
     </aside>
 
@@ -1559,24 +1626,34 @@
 
                                         <div class="profile-details-section" style="flex: 1; padding-top: 1.5rem;">
                                             <div class="profile-name-row" style="margin-bottom: 1.25rem;">
-                                                <h1 class="profile-name" id="advertiserName" style="margin-bottom: 0.5rem; white-space: nowrap !important; word-break: keep-all !important; max-width: none !important; width: auto !important; display: inline-block !important;">Loading...</h1>
+                                                <h1 class="profile-name" id="advertiserName"
+                                                    style="margin-bottom: 0.5rem; white-space: nowrap !important; word-break: keep-all !important; max-width: none !important; width: auto !important; display: inline-block !important;">
+                                                    Loading...</h1>
                                                 <!-- Username Display (replaces hero-title) -->
-                                                <div id="advertiser-username-display" style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem;">
+                                                <div id="advertiser-username-display"
+                                                    style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem;">
                                                     @username
                                                 </div>
-                                                <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
-                                                    <span class="profile-badge verified" id="verification-badge" style="display: none;">✅ Verified</span>
+                                                <div class="badges-row"
+                                                    style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
+                                                    <span class="profile-badge verified" id="verification-badge"
+                                                        style="display: none;">✅ Verified</span>
                                                     <span class="profile-badge active">📢 Active Advertiser</span>
                                                 </div>
                                             </div>
 
                                             <!-- Rating Section -->
                                             <div class="rating-section" style="margin-bottom: 1rem;">
-                                                <div class="rating-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <div class="rating-wrapper"
+                                                    style="display: flex; align-items: center; gap: 0.75rem;">
                                                     <div class="rating-tooltip-container">
-                                                        <div class="rating-stars" id="rating-stars" style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 2px;">★★★★★</div>
+                                                        <div class="rating-stars" id="rating-stars"
+                                                            style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 2px;">
+                                                            ★★★★★</div>
                                                         <div class="rating-tooltip" id="rating-tooltip">
-                                                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">Rating Breakdown</h4>
+                                                            <h4
+                                                                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">
+                                                                Rating Breakdown</h4>
                                                             <div class="rating-metric">
                                                                 <div class="metric-header">
                                                                     <span class="metric-label">Campaign Quality</span>
@@ -1615,8 +1692,11 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <span class="rating-value" id="advertiser-rating" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
-                                                    <span class="rating-count" id="rating-count" style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;">(24 reviews)</span>
+                                                    <span class="rating-value" id="advertiser-rating"
+                                                        style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
+                                                    <span class="rating-count" id="rating-count"
+                                                        style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;">(24
+                                                        reviews)</span>
                                                 </div>
                                             </div>
 
@@ -1627,30 +1707,67 @@
                                             </div>
 
                                             <!-- Contact Information (Email & Phone) - Card Style -->
-                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                            <div class="profile-contact-info"
+                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div
+                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;">📧</span>
                                                     <div style="flex: 1; overflow: hidden;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
-                                                        <div id="advertiser-email" style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No email yet</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                            Email</div>
+                                                        <div id="advertiser-email"
+                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                            No email yet</div>
                                                     </div>
                                                 </div>
-                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                <div
+                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;">📱</span>
                                                     <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Phone</div>
-                                                        <div id="advertiser-phone" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">No phone yet</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                            Phone</div>
+                                                        <div id="advertiser-phone"
+                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
+                                                            No phone yet</div>
                                                     </div>
                                                 </div>
                                             </div>
 
+                                            <!-- Hobbies & Interests -->
+                                            <div id="hobbies-display-container"
+                                                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; margin-bottom: 0.75rem;">
+                                                <span style="font-size: 1.25rem;">🎨</span>
+                                                <div style="flex: 1;">
+                                                    <div
+                                                        style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                        Hobbies & Interests</div>
+                                                    <div id="advertiser-hobbies"
+                                                        style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; font-style: italic;">
+                                                        No hobbies yet</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Social Links -->
+                                            <div class="profile-social-links" id="social-links-container"
+                                                style="display: flex; gap: 0.75rem; margin-top: 1.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0;">
+                                                <!-- Social links will be populated dynamically by JS with beautiful styling -->
+                                            </div>
+
                                             <!-- Member Since (Card Style) -->
-                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                            <div class="profile-contact-info"
+                                                style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div
+                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;">📅</span>
                                                     <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Member Since</div>
-                                                        <div id="advertiser-joined" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Loading...</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                            Member Since</div>
+                                                        <div id="advertiser-joined"
+                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
+                                                            Loading...</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1661,26 +1778,41 @@
                                             </div>
 
                                             <!-- Social Links Section - hidden by default -->
-                                            <div id="social-links-section" class="social-links-section" style="display: none; gap: 0.75rem; margin-top: 1rem;">
-                                                <a href="#" id="socialWebsite" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Website">
+                                            <div id="social-links-section" class="social-links-section"
+                                                style="display: none; gap: 0.75rem; margin-top: 1rem;">
+                                                <a href="#" id="socialWebsite" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="Website">
                                                     <i class="fas fa-globe"></i>
                                                 </a>
-                                                <a href="#" id="socialFacebook" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Facebook">
+                                                <a href="#" id="socialFacebook" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="Facebook">
                                                     <i class="fab fa-facebook-f"></i>
                                                 </a>
-                                                <a href="#" id="socialTwitter" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Twitter">
+                                                <a href="#" id="socialTwitter" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="Twitter">
                                                     <i class="fab fa-twitter"></i>
                                                 </a>
-                                                <a href="#" id="socialLinkedin" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="LinkedIn">
+                                                <a href="#" id="socialLinkedin" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="LinkedIn">
                                                     <i class="fab fa-linkedin-in"></i>
                                                 </a>
-                                                <a href="#" id="socialInstagram" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Instagram">
+                                                <a href="#" id="socialInstagram" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="Instagram">
                                                     <i class="fab fa-instagram"></i>
                                                 </a>
-                                                <a href="#" id="socialYoutube" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="YouTube">
+                                                <a href="#" id="socialYoutube" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="YouTube">
                                                     <i class="fab fa-youtube"></i>
                                                 </a>
-                                                <a href="#" id="socialTiktok" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="TikTok">
+                                                <a href="#" id="socialTiktok" class="social-link"
+                                                    style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;"
+                                                    title="TikTok">
                                                     <i class="fab fa-tiktok"></i>
                                                 </a>
                                             </div>
@@ -1691,34 +1823,37 @@
                                                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                                     <h4
                                                         style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
-                                                        <span style="margin-right: 0.5rem;">🤝</span>Community
+                                                        <span style="margin-right: 0.5rem;">📊</span>Activity Stats
                                                     </h4>
-                                                    <button onclick="openCommunityModal()" class="btn-sm"
-                                                        style="font-size: 0.75rem; padding: 0.25rem 0.75rem;">
-                                                        View All
-                                                    </button>
                                                 </div>
                                                 <div class="connections-stats"
-                                                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
-                                                    <div class="stat-box" onclick="openCommunityModal()"
-                                                        style="cursor: pointer; padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); transition: all 0.3s;"
-                                                        onmouseover="this.style.background='rgba(var(--button-bg-rgb), 0.1)'"
-                                                        onmouseout="this.style.background='rgba(var(--button-bg-rgb), 0.05)'">
+                                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                                                    <!-- Connections Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('connections')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
                                                             id="connections-count">0</div>
                                                         <div
                                                             style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                                             Connections</div>
                                                     </div>
-                                                    <div class="stat-box" onclick="openCommunityModal()"
-                                                        style="cursor: pointer; padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); transition: all 0.3s;"
-                                                        onmouseover="this.style.background='rgba(var(--button-bg-rgb), 0.1)'"
-                                                        onmouseout="this.style.background='rgba(var(--button-bg-rgb), 0.05)'">
+                                                    <!-- Pending Requests Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('pending')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="requests-count">0</div>
+                                                            id="pending-requests-count">0</div>
                                                         <div
                                                             style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                            Requests</div>
+                                                            Pending Requests</div>
+                                                    </div>
+                                                    <!-- Received Requests Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('received')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="received-requests-count">0</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Received Requests</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1732,7 +1867,7 @@
                                                     <span class="mr-2">💬</span>
                                                     Message
                                                 </button>
-                                                <button onclick="shareProfile()" class="btn-secondary ml-2">
+                                                <button onclick="shareProfile(event)" class="btn-secondary ml-2">
                                                     <span class="mr-2">🔗</span>
                                                     Share Profile
                                                 </button>
@@ -1744,12 +1879,16 @@
 
                             <!-- About Section (from advertiser bio) -->
                             <section id="about-section" class="mb-8">
-                                <div style="background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                <div
+                                    style="background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                                     <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
                                         <span style="font-size: 1.5rem;">📖</span>
-                                        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--heading); margin: 0;">About</h2>
+                                        <h2
+                                            style="font-size: 1.25rem; font-weight: 700; color: var(--heading); margin: 0;">
+                                            About</h2>
                                     </div>
-                                    <p id="advertiser-bio" style="color: var(--text); font-size: 0.95rem; line-height: 1.6; margin: 0;">
+                                    <p id="advertiser-bio"
+                                        style="color: var(--text); font-size: 0.95rem; line-height: 1.6; margin: 0;">
                                         No bio available yet. Click Edit Profile to add your company description.
                                     </p>
                                 </div>
@@ -1867,19 +2006,24 @@
                             <div class="controls-bar">
                                 <div class="search-box">
                                     <i class="fas fa-search search-icon"></i>
-                                    <input type="text" class="search-input" id="searchInput" placeholder="Search notes..." oninput="NotesManager.searchNotes(this.value)">
+                                    <input type="text" class="search-input" id="searchInput"
+                                        placeholder="Search notes..." oninput="NotesManager.searchNotes(this.value)">
                                 </div>
                                 <div class="filter-buttons">
-                                    <button class="filter-btn active" data-filter="all" onclick="NotesManager.filterNotes('all', this)">
+                                    <button class="filter-btn active" data-filter="all"
+                                        onclick="NotesManager.filterNotes('all', this)">
                                         <i class="fas fa-th"></i> All Notes
                                     </button>
-                                    <button class="filter-btn" data-filter="recent" onclick="NotesManager.filterNotes('recent', this)">
+                                    <button class="filter-btn" data-filter="recent"
+                                        onclick="NotesManager.filterNotes('recent', this)">
                                         <i class="fas fa-clock"></i> Recent
                                     </button>
-                                    <button class="filter-btn" data-filter="favorites" onclick="NotesManager.filterNotes('favorites', this)">
+                                    <button class="filter-btn" data-filter="favorites"
+                                        onclick="NotesManager.filterNotes('favorites', this)">
                                         <i class="fas fa-star"></i> Favorites
                                     </button>
-                                    <button class="filter-btn" data-filter="media" onclick="NotesManager.filterNotes('media', this)">
+                                    <button class="filter-btn" data-filter="media"
+                                        onclick="NotesManager.filterNotes('media', this)">
                                         <i class="fas fa-microphone"></i> Media Notes
                                     </button>
                                 </div>
@@ -1964,26 +2108,31 @@
                             <!-- Controls Row -->
                             <div class="brands-controls-row">
                                 <div class="brands-filter-buttons">
-                                    <button class="brands-filter-btn active" data-status="all" onclick="filterBrandsByStatus('all')">
+                                    <button class="brands-filter-btn active" data-status="all"
+                                        onclick="filterBrandsByStatus('all')">
                                         <i class="fas fa-th"></i>
                                         All Brands
                                     </button>
-                                    <button class="brands-filter-btn" data-status="active" onclick="filterBrandsByStatus('active')">
+                                    <button class="brands-filter-btn" data-status="active"
+                                        onclick="filterBrandsByStatus('active')">
                                         <i class="fas fa-circle" style="color: #10b981; font-size: 0.5rem;"></i>
                                         Active
                                     </button>
-                                    <button class="brands-filter-btn" data-status="paused" onclick="filterBrandsByStatus('paused')">
+                                    <button class="brands-filter-btn" data-status="paused"
+                                        onclick="filterBrandsByStatus('paused')">
                                         <i class="fas fa-circle" style="color: #f59e0b; font-size: 0.5rem;"></i>
                                         Paused
                                     </button>
-                                    <button class="brands-filter-btn" data-status="inactive" onclick="filterBrandsByStatus('inactive')">
+                                    <button class="brands-filter-btn" data-status="inactive"
+                                        onclick="filterBrandsByStatus('inactive')">
                                         <i class="fas fa-circle" style="color: #6b7280; font-size: 0.5rem;"></i>
                                         Inactive
                                     </button>
                                 </div>
                                 <div class="brands-search-box">
                                     <i class="fas fa-search"></i>
-                                    <input type="text" placeholder="Search brands..." oninput="searchBrandsInput(event)">
+                                    <input type="text" placeholder="Search brands..."
+                                        oninput="searchBrandsInput(event)">
                                 </div>
                             </div>
 
@@ -2002,7 +2151,8 @@
                                         <i class="fas fa-users"></i>
                                         Team Management
                                     </h2>
-                                    <p class="team-subtitle">Invite team members to help manage your brands and campaigns</p>
+                                    <p class="team-subtitle">Invite team members to help manage your brands and
+                                        campaigns</p>
                                 </div>
                                 <button class="invite-member-btn" onclick="TeamManager.openInviteModal()">
                                     <i class="fas fa-user-plus"></i>
@@ -2043,9 +2193,12 @@
                                 <div class="team-members-header">
                                     <h3>Team Members</h3>
                                     <div class="team-filter-tabs">
-                                        <button class="team-filter-tab active" onclick="TeamManager.filterByStatus('all')">All</button>
-                                        <button class="team-filter-tab" onclick="TeamManager.filterByStatus('active')">Active</button>
-                                        <button class="team-filter-tab" onclick="TeamManager.filterByStatus('pending')">Pending</button>
+                                        <button class="team-filter-tab active"
+                                            onclick="TeamManager.filterByStatus('all')">All</button>
+                                        <button class="team-filter-tab"
+                                            onclick="TeamManager.filterByStatus('active')">Active</button>
+                                        <button class="team-filter-tab"
+                                            onclick="TeamManager.filterByStatus('pending')">Pending</button>
                                     </div>
                                 </div>
 
@@ -2074,31 +2227,39 @@
 
                             <!-- Create Job Button -->
                             <div class="mb-6">
-                                <button onclick="openCreateJobModal()" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg font-semibold flex items-center gap-2">
+                                <button onclick="openCreateJobModal()"
+                                    class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg font-semibold flex items-center gap-2">
                                     <span>➕</span> Create New Job
                                 </button>
                             </div>
 
                             <!-- Job Board Tabs -->
                             <div class="tabs-container mb-6">
-                                <div class="tabs-nav" style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color); overflow-x: auto;">
-                                    <button onclick="switchJobTab('drafts')" class="tab-btn active" data-tab="drafts" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
+                                <div class="tabs-nav"
+                                    style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color); overflow-x: auto;">
+                                    <button onclick="switchJobTab('drafts')" class="tab-btn active" data-tab="drafts"
+                                        style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
                                         <span class="tab-icon">📝</span> Drafts
                                         <span class="badge-count" id="drafts-count">0</span>
                                     </button>
-                                    <button onclick="switchJobTab('active-jobs')" class="tab-btn" data-tab="active-jobs" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
+                                    <button onclick="switchJobTab('active-jobs')" class="tab-btn" data-tab="active-jobs"
+                                        style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
                                         <span class="tab-icon">🟢</span> Active Jobs
                                         <span class="badge-count" id="active-jobs-count">0</span>
                                     </button>
-                                    <button onclick="switchJobTab('closed-jobs')" class="tab-btn" data-tab="closed-jobs" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
+                                    <button onclick="switchJobTab('closed-jobs')" class="tab-btn" data-tab="closed-jobs"
+                                        style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
                                         <span class="tab-icon">📁</span> Closed Jobs
                                         <span class="badge-count" id="closed-jobs-count">0</span>
                                     </button>
-                                    <button onclick="switchJobTab('applications')" class="tab-btn" data-tab="applications" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
+                                    <button onclick="switchJobTab('applications')" class="tab-btn"
+                                        data-tab="applications"
+                                        style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
                                         <span class="tab-icon">📄</span> Applications
                                         <span class="badge-count" id="applications-count">0</span>
                                     </button>
-                                    <button onclick="switchJobTab('analytics')" class="tab-btn" data-tab="analytics" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
+                                    <button onclick="switchJobTab('analytics')" class="tab-btn" data-tab="analytics"
+                                        style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s;">
                                         <span class="tab-icon">📊</span> Analytics
                                     </button>
                                 </div>
@@ -2111,8 +2272,10 @@
                                     <div class="col-span-2 text-center py-12">
                                         <div class="text-6xl mb-4">📝</div>
                                         <h3 class="text-xl font-bold mb-2">No Drafts Yet</h3>
-                                        <p class="text-gray-600 mb-6">Save job listings as drafts to continue editing them later</p>
-                                        <button onclick="openCreateJobModal()" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg font-semibold">
+                                        <p class="text-gray-600 mb-6">Save job listings as drafts to continue editing
+                                            them later</p>
+                                        <button onclick="openCreateJobModal()"
+                                            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg font-semibold">
                                             ➕ Create Your First Job
                                         </button>
                                     </div>
@@ -2122,7 +2285,8 @@
                             <!-- Active Jobs Tab -->
                             <div id="active-jobs-tab" class="job-tab-content" style="display: none;">
                                 <div class="mb-6 flex gap-4 items-center">
-                                    <input type="text" placeholder="Search active jobs..." class="flex-1 p-3 border rounded-lg" />
+                                    <input type="text" placeholder="Search active jobs..."
+                                        class="flex-1 p-3 border rounded-lg" />
                                     <select class="p-3 border rounded-lg">
                                         <option value="">All Types</option>
                                         <option value="full-time">Full-time</option>
@@ -2149,7 +2313,8 @@
                             <!-- Closed Jobs Tab -->
                             <div id="closed-jobs-tab" class="job-tab-content" style="display: none;">
                                 <div class="mb-6 flex gap-4 items-center">
-                                    <input type="text" placeholder="Search closed jobs..." class="flex-1 p-3 border rounded-lg" />
+                                    <input type="text" placeholder="Search closed jobs..."
+                                        class="flex-1 p-3 border rounded-lg" />
                                     <select class="p-3 border rounded-lg">
                                         <option value="">Sort by: Recent</option>
                                         <option value="filled">Successfully Filled</option>
@@ -2170,7 +2335,8 @@
                             <!-- Applications Tab -->
                             <div id="applications-tab" class="job-tab-content" style="display: none;">
                                 <div class="mb-6 flex gap-4 items-center">
-                                    <input type="text" placeholder="Search applicants..." class="flex-1 p-3 border rounded-lg" />
+                                    <input type="text" placeholder="Search applicants..."
+                                        class="flex-1 p-3 border rounded-lg" />
                                     <select id="applications-job-filter" class="p-3 border rounded-lg">
                                         <option value="">All Jobs</option>
                                         <!-- Dynamic options loaded by job-board-manager.js -->
@@ -2190,11 +2356,16 @@
                                         <table class="w-full">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Applicant</th>
-                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Job Title</th>
-                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Applied</th>
-                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
-                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                        Applicant</th>
+                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                        Job Title</th>
+                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                        Applied</th>
+                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                        Status</th>
+                                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                        Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="applications-tbody" class="divide-y">
@@ -2217,7 +2388,8 @@
                                 <h2 class="text-2xl font-bold mb-6">Job Performance Analytics</h2>
 
                                 <!-- Overview Stats -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="analytics-grid">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+                                    id="analytics-grid">
                                     <div class="card p-6 text-center" data-metric="total-posts">
                                         <div class="text-4xl mb-2">📝</div>
                                         <p class="text-3xl font-bold text-blue-600" id="analytics-total-posts">0</p>
@@ -2225,7 +2397,8 @@
                                     </div>
                                     <div class="card p-6 text-center" data-metric="total-applications">
                                         <div class="text-4xl mb-2">📄</div>
-                                        <p class="text-3xl font-bold text-purple-600" id="analytics-total-applications">0</p>
+                                        <p class="text-3xl font-bold text-purple-600" id="analytics-total-applications">
+                                            0</p>
                                         <p class="text-sm text-gray-600">Total Applications</p>
                                     </div>
                                     <div class="card p-6 text-center" data-metric="total-hires">
@@ -2245,7 +2418,8 @@
                                     </div>
                                     <div class="card p-6 text-center" data-metric="conversion-rate">
                                         <div class="text-4xl mb-2">📊</div>
-                                        <p class="text-3xl font-bold text-teal-600" id="analytics-conversion-rate">0%</p>
+                                        <p class="text-3xl font-bold text-teal-600" id="analytics-conversion-rate">0%
+                                        </p>
                                         <p class="text-sm text-gray-600">Conversion Rate</p>
                                     </div>
                                 </div>
@@ -2263,7 +2437,9 @@
                             <div class="settings-section mb-8">
                                 <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                        </path>
                                     </svg>
                                     Account & Security
                                 </h2>
@@ -2273,11 +2449,13 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
                                         onclick="openVerifyPersonalInfoModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🔐</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Personal Info</h3>
-                                            <p class="text-sm text-gray-600">Personal details and contact verification</p>
+                                            <p class="text-sm text-gray-600">Personal details and contact verification
+                                            </p>
                                         </div>
                                     </div>
 
@@ -2285,12 +2463,14 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-indigo-500"
                                         onclick="openTwoFactorAuthModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🛡️</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Two-Factor Auth</h3>
                                             <p class="text-sm text-gray-600">Extra security with 2FA</p>
-                                            <span id="2fa-status-badge" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <span id="2fa-status-badge"
+                                                class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                 Not Enabled
                                             </span>
                                         </div>
@@ -2300,7 +2480,8 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-cyan-500"
                                         onclick="openLoginActivityModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">📱</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Login Activity</h3>
@@ -2312,7 +2493,8 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-orange-500"
                                         onclick="openConnectedAccountsModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🔗</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Connected Accounts</h3>
@@ -2324,12 +2506,14 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-emerald-500"
                                         onclick="openVerifyCompanyInfoModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🏢</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Company Info</h3>
                                             <p class="text-sm text-gray-600">Business details and verification</p>
-                                            <span id="company-verification-status" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <span id="company-verification-status"
+                                                class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                 Not Verified
                                             </span>
                                         </div>
@@ -2341,7 +2525,9 @@
                             <div class="settings-section mb-8">
                                 <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                        </path>
                                     </svg>
                                     Payments & Subscription
                                 </h2>
@@ -2351,7 +2537,8 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500"
                                         onclick="openPaymentMethodModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">💳</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Payment Method</h3>
@@ -2361,9 +2548,10 @@
 
                                     <!-- Subscription Card -->
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
-                                        onclick="openSubscriptionModal()">
+                                        onclick="openComingSoonModal('Subscription & Storage')">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">⭐</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Subscription & Storage</h3>
@@ -2377,7 +2565,9 @@
                             <div class="settings-section mb-8">
                                 <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01">
+                                        </path>
                                     </svg>
                                     Personalization
                                 </h2>
@@ -2387,7 +2577,8 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-violet-500"
                                         onclick="openAppearanceModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🎨</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Appearance</h3>
@@ -2397,9 +2588,10 @@
 
                                     <!-- Language Preferences Card -->
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
-                                        onclick="openLanguagePreferencesModal()">
+                                        onclick="openComingSoonModal('Language Preferences')">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🌐</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Language</h3>
@@ -2413,7 +2605,9 @@
                             <div class="settings-section mb-8">
                                 <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        </path>
                                     </svg>
                                     Data & Privacy
                                 </h2>
@@ -2421,9 +2615,10 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <!-- Export Data Card -->
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
-                                        onclick="openExportDataModal()">
+                                        onclick="openComingSoonModal('Export Data')">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">📦</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Export Data</h3>
@@ -2437,7 +2632,9 @@
                             <div class="settings-section mb-8">
                                 <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                        </path>
                                     </svg>
                                     Feedback & Support
                                 </h2>
@@ -2447,7 +2644,8 @@
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500"
                                         onclick="openReviewAstegniModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">⭐</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
@@ -2461,17 +2659,33 @@
                             <div class="settings-section">
                                 <h2 class="text-xl font-semibold mb-4 text-red-600 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                        </path>
                                     </svg>
                                     Danger Zone
                                 </h2>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Manage Roles Card -->
+                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-rose-500"
+                                        onclick="openManageRoleModal()">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                                <span class="text-3xl">🗑️</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Manage Roles</h3>
+                                            <p class="text-sm text-gray-600">Deactivate or remove your role</p>
+                                        </div>
+                                    </div>
+
                                     <!-- Leave Astegni Card -->
                                     <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
                                         onclick="openLeaveAstegniModal()">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <div
+                                                class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
                                                 <span class="text-3xl">🚪</span>
                                             </div>
                                             <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
@@ -2485,38 +2699,55 @@
                 </div>
 
                 <!-- Right Sidebar -->
-                <div class="right-sidebar-content" style="width: 320px; flex-shrink: 0; position: sticky; top: 5rem; height: fit-content; overflow-y: visible;">
+                <div class="right-sidebar-content"
+                    style="width: 320px; flex-shrink: 0; position: sticky; top: 5rem; height: fit-content; overflow-y: visible;">
 
                     <!-- Ad Widget -->
                     <div class="sidebar-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
-                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        <div class="widget-header"
+                            style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span
+                                style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="ad-content" id="ad-container-advertiser" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <div id="ad-message-container-advertiser" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message-advertiser active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
+                        <div class="ad-content" id="ad-container-advertiser"
+                            style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                            <div id="ad-message-container-advertiser"
+                                style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
+                                <div class="ad-message-advertiser active"
+                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes
+                                        Here</p>
                                 </div>
-                                <div class="ad-message-advertiser" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                <div class="ad-message-advertiser"
+                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions
+                                        of Audience</p>
                                 </div>
-                                <div class="ad-message-advertiser" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                <div class="ad-message-advertiser"
+                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your
+                                        Business</p>
                                 </div>
-                                <div class="ad-message-advertiser" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                <div class="ad-message-advertiser"
+                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your
+                                        Audience</p>
                                 </div>
-                                <div class="ad-message-advertiser" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
+                                <div class="ad-message-advertiser"
+                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
+                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With
+                                        Us</p>
                                 </div>
                             </div>
-                            <div id="ad-ticker-advertiser" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content-advertiser" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
+                            <div id="ad-ticker-advertiser"
+                                style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                <div id="ad-ticker-content-advertiser"
+                                    style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
                                     <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
                                     <span style="padding: 0 2rem;">Premium ad placements available</span>
                                     <span style="padding: 0 2rem;">Contact us to advertise</span>
@@ -2527,14 +2758,38 @@
                             </div>
                         </div>
                         <style>
-                            @keyframes tickerScrollAdvertiser { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-                            #ad-ticker-content-advertiser { animation: tickerScrollAdvertiser 20s linear infinite; }
-                            .ad-message-advertiser { visibility: hidden; }
-                            .ad-message-advertiser.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
-                            .ad-message-advertiser.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
+                            @keyframes tickerScrollAdvertiser {
+                                0% {
+                                    transform: translateX(0);
+                                }
+
+                                100% {
+                                    transform: translateX(-50%);
+                                }
+                            }
+
+                            #ad-ticker-content-advertiser {
+                                animation: tickerScrollAdvertiser 20s linear infinite;
+                            }
+
+                            .ad-message-advertiser {
+                                visibility: hidden;
+                            }
+
+                            .ad-message-advertiser.active {
+                                opacity: 1 !important;
+                                transform: scale(1) !important;
+                                visibility: visible !important;
+                            }
+
+                            .ad-message-advertiser.fade-out {
+                                opacity: 0 !important;
+                                transform: scale(0.8) !important;
+                                visibility: visible !important;
+                            }
                         </style>
                         <script>
-                            (function() {
+                            (function () {
                                 const messages = document.querySelectorAll('#ad-message-container-advertiser .ad-message-advertiser');
                                 let currentIndex = 0;
                                 function rotateMessages() {
@@ -2912,7 +3167,7 @@
                         </label>
                         <div class="user-search-container">
                             <input type="text" id="invite-email" placeholder="Search by name or email..."
-                                   autocomplete="off" oninput="TeamManager.searchUsers(this.value)">
+                                autocomplete="off" oninput="TeamManager.searchUsers(this.value)">
                             <div class="user-search-results" id="user-search-results" style="display: none;">
                                 <!-- Search results will be populated here -->
                             </div>
@@ -2973,7 +3228,8 @@
                                 <span>Brand Manager</span>
                             </div>
                             <p class="info-card-desc">
-                                Brand Managers can create and edit brands & campaigns but cannot access Team or Settings panels.
+                                Brand Managers can create and edit brands & campaigns but cannot access Team or Settings
+                                panels.
                             </p>
                         </div>
                     </div>
@@ -3045,6 +3301,30 @@
                             placeholder="e.g., Addis Ababa, Ethiopia (comma-separated for multiple)">
                         <small style="color: var(--text-muted); font-size: 0.75rem;">Separate multiple locations with
                             commas</small>
+
+                        <!-- GPS Location Detection -->
+                        <div class="flex items-center gap-2 mt-2">
+                            <input type="checkbox" id="editAllowLocation" onchange="handleAllowLocationChange(this)"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editAllowLocation" class="text-sm text-gray-700">
+                                Enable GPS location detection
+                            </label>
+                        </div>
+                        <small style="color: var(--text-muted); font-size: 0.75rem;">Uses GPS/WiFi positioning to detect
+                            your physical location (not affected by VPN)</small>
+
+                        <!-- Detect Location Button (shown when checkbox is checked) -->
+                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
+                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
+                        </button>
+
+                        <!-- Change Location Button (shown when location exists) -->
+                        <button type="button" id="changeLocationBtn" onclick="handleChangeLocationAdvertiser()"
+                            class="hidden mt-2 text-sm bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 flex items-center gap-1">
+                            <i class="fas fa-edit mr-1"></i> Change Location
+                        </button>
+                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
                     </div>
 
                     <div class="form-group">
@@ -3671,26 +3951,31 @@
     <!-- Initialization (Auto-initializes all loaded managers) -->
     <script src="../js/page-structure/initializationManager.js"></script>
 
+    <!-- Share Profile Manager (Must load early for onclick handlers) -->
+    <script src="../js/common-modals/share-profile-manager.js?v=20260204k"></script>
+
     <!-- Authentication Manager - MUST load before profile-specific code -->
-    <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/auth.js?v=20260124"></script>
+    <script src="../js/root/google-oauth.js"></script>
     <!-- Navigation - mobile menu handler -->
     <script src="../js/root/nav.js"></script>
     <!-- Theme Toggle - for theme persistence across pages -->
     <script src="../js/root/theme-toggle.js"></script>
 
     <!-- Profile System -->
-    <script src="../js/root/profile-system.js?v=20251218"></script>
+    <script src="../js/root/profile-system.js?v=20260124"></script>
 
     <!-- Common Modal Loader - loads add-role-modal, logout-modal, create-job-modal, etc. -->
-    <script src="../modals/common-modals/common-modal-loader.js"></script>
+    <script src="../modals/common-modals/common-modal-loader.js?v=20260204g"></script>
 
     <!-- Common Modals -->
     <script src="../js/index/init-modals.js"></script>
-    <script src="../js/common-modals/coming-soon-modal.js"></script>
+    <script src="../js/common-modals/coming-soon-modal.js?v=20260205"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <!-- Two-Factor Authentication Manager -->
     <script src="../js/common-modals/tfa-manager.js?v=20251227"></script>
+    <script src="../js/common-modals/role-manager.js?v=20260126"></script>
     <script src="../js/common-modals/protected-api-wrapper.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
     <script src="../js/common-modals/chat-modal.js"></script>
@@ -3733,7 +4018,7 @@
     <script src="../js/advertiser-profile/team-manager.js"></script>
 
     <!-- 7. Global Functions (for HTML onclick handlers) -->
-    <script src="../js/advertiser-profile/global-functions.js"></script>
+    <script src="../js/advertiser-profile/global-functions.js?v=20260204h"></script>
 
     <!-- Community Manager (Database Integration - Class Definition) -->
     <script src="../js/common-modals/communityManager.js"></script>
@@ -3744,42 +4029,42 @@
     <!-- 6. Main Application Logic (Load last) -->
     <script src="../js/advertiser-profile/advertiser-profile.js"></script>
 
-    <!-- Initialize Profile Data Loader -->
+    <!-- Initialize Profile Data Loader and Load Modals -->
     <script>
-        // Initialize advertiser profile data loader after DOM is ready
-        document.addEventListener('DOMContentLoaded', function () {
-            // Wait a bit for other scripts to initialize
-            setTimeout(function () {
-                if (typeof AdvertiserProfileDataLoader !== 'undefined') {
-                    AdvertiserProfileDataLoader.init();
-                }
+    // Initialize Profile Data Loader when available
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AdvertiserProfileDataLoader !== 'undefined') {
+            setTimeout(function() {
+                AdvertiserProfileDataLoader.loadProfileData();
             }, 500);
-        });
-    </script>
+        }
+    });
 
-    <!-- Load Chat Modal -->
-    <script>
-        fetch('../modals/common-modals/chat-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('chat-modal-container').innerHTML = html;
-                console.log('✅ Chat Modal loaded');
-                // Initialize ChatModalManager after DOM is ready
-                if (typeof ChatModalManager !== 'undefined') {
-                    ChatModalManager.init();
-                    console.log('✅ ChatModalManager initialized');
-                }
-            })
-            .catch(error => console.error('Failed to load chat-modal:', error));
+    // Load Chat Modal HTML dynamically
+    fetch('../modals/common-modals/chat-modal.html')
+    .then(response => response.text())
+    .then(html => {
+        document.body.insertAdjacentHTML('beforeend', html);
+        console.log('✅ Chat Modal loaded for advertiser-profile');
 
-        // Load standalone chat call modal HTML dynamically
-        fetch('../modals/common-modals/chat-call-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                document.body.insertAdjacentHTML('beforeend', html);
-                console.log('✅ Standalone Chat Call Modal loaded for advertiser-profile');
-            })
-            .catch(error => console.error('Failed to load chat-call-modal:', error));
+        // Initialize ChatModalManager after modal HTML is loaded
+        setTimeout(function() {
+            if (typeof ChatModalManager !== 'undefined') {
+                ChatModalManager.init();
+                console.log('✅ ChatModalManager initialized');
+            }
+        }, 500);
+    })
+    .catch(error => console.error('Failed to load chat-modal:', error));
+
+    // Load standalone chat call modal HTML dynamically
+    fetch('../modals/common-modals/chat-call-modal.html')
+    .then(response => response.text())
+    .then(html => {
+        document.body.insertAdjacentHTML('beforeend', html);
+        console.log('✅ Standalone Chat Call Modal loaded for advertiser-profile');
+    })
+    .catch(error => console.error('Failed to load chat-call-modal:', error));
     </script>
 
     <!-- Floating Action Button (FAB) for Quick Actions -->
@@ -3871,231 +4156,266 @@
         }
     </style>
 
+    <!-- FAB Menu Toggle Script -->
     <script>
-        let fabOpen = false;
+    // FAB Menu Toggle
+    let fabOpen = false;
 
-        function toggleFabMenu() {
-            const fabMenu = document.getElementById('fabMenu');
-            const fabIcon = document.getElementById('fabIcon');
-            const fabMain = document.getElementById('fabMain');
+    function toggleFabMenu() {
+        const fabMenu = document.getElementById('fabMenu');
+        const fabIcon = document.getElementById('fabIcon');
+        const fabMain = document.getElementById('fabMain');
 
-            fabOpen = !fabOpen;
+        fabOpen = !fabOpen;
 
-            if (fabOpen) {
-                fabMenu.style.display = 'flex';
-                fabIcon.textContent = '✕';
-                fabMain.style.transform = 'rotate(180deg)';
-            } else {
-                fabMenu.style.display = 'none';
-                fabIcon.textContent = '⚡';
-                fabMain.style.transform = 'rotate(0deg)';
-            }
+        if (fabOpen) {
+            fabMenu.style.display = 'flex';
+            fabIcon.textContent = '✕';
+            fabMain.style.transform = 'rotate(180deg)';
+        } else {
+            fabMenu.style.display = 'none';
+            fabIcon.textContent = '⚡';
+            fabMain.style.transform = 'rotate(0deg)';
         }
+    }
 
-        // Close FAB menu when clicking outside
-        document.addEventListener('click', function (event) {
-            const fabContainer = document.querySelector('.fab-container');
-            if (fabOpen && !fabContainer.contains(event.target)) {
-                toggleFabMenu();
-            }
-        });
+    // Close FAB menu when clicking outside
+    document.addEventListener('click', function (event) {
+        const fabContainer = document.querySelector('.fab-container');
+        if (fabOpen && !fabContainer.contains(event.target)) {
+            toggleFabMenu();
+        }
+    });
     </script>
 
+    <!-- Load Advertiser Profile Script -->
     <script>
-        // API Configuration is loaded from config.js (window.API_BASE_URL)
-        // No need to redeclare it here
+    // Load advertiser profile data
+    async function loadAdvertiserProfile() {
+        try {
+            const token = localStorage.getItem('token');
+    if (!token) {
+    console.error('No authentication token found');
+    return;
+    }
 
-        // Load advertiser profile from database on page load
-        async function loadAdvertiserProfile() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.error('No authentication token found');
-                    return;
-                }
+    const response = await fetch(`${API_BASE_URL}/api/advertiser/profile`, {
+    headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+    }
+    });
 
-                const response = await fetch(`${API_BASE_URL}/api/advertiser/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+    if (!response.ok) {
+    throw new Error('Failed to load profile');
+    }
 
-                if (!response.ok) {
-                    throw new Error('Failed to load profile');
-                }
+    const data = await response.json();
+    populateProfileData(data);
+    } catch (error) {
+    console.error('Error loading profile:', error);
+    console.warn('⚠️ Backend advertiser endpoints not implemented yet. Using mock data.');
+    // Fallback to mock data since backend doesn't have advertiser endpoints yet
+    const mockData = {
+    company_name: 'EduAds Inc.',
+    industry: 'Education Technology',
+    email: 'contact@eduads.et',
+    phone: '+251 11 234 5678',
+    location: 'Addis Ababa, Ethiopia',
+    bio: 'Leading education advertising platform in Ethiopia.',
+    tagline: 'Empowering Education Through Smart Advertising',
+    social_links: {
+    facebook: '',
+    twitter: '',
+    linkedin: '',
+    instagram: ''
+    }
+    };
+    populateProfileData(mockData);
+    }
+    }
 
-                const data = await response.json();
-                populateProfileData(data);
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                console.warn('⚠️ Backend advertiser endpoints not implemented yet. Using mock data.');
-                // Fallback to mock data since backend doesn't have advertiser endpoints yet
-                const mockData = {
-                    company_name: 'EduAds Inc.',
-                    industry: 'Education Technology',
-                    email: 'contact@eduads.et',
-                    phone: '+251 11 234 5678',
-                    location: 'Addis Ababa, Ethiopia',
-                    bio: 'Leading education advertising platform in Ethiopia.',
-                    tagline: 'Empowering Education Through Smart Advertising',
-                    social_links: {
-                        facebook: '',
-                        twitter: '',
-                        linkedin: '',
-                        instagram: ''
-                    }
-                };
-                populateProfileData(mockData);
-            }
-        }
+    // Populate profile data on page
+    function populateProfileData(data) {
+    // NOTE: Profile UI is now managed by profile-data-loader.js
+    // These elements are legacy and may not exist. Adding null checks.
 
-        // Populate profile data on page
-        function populateProfileData(data) {
-            // NOTE: Profile UI is now managed by profile-data-loader.js
-            // These elements are legacy and may not exist. Adding null checks.
+    // Basic info
+    const advertiserName = document.getElementById('advertiserName');
+    if (advertiserName) {
+    advertiserName.textContent = data.company_name || 'EduAds Inc.';
+    }
 
-            // Basic info
-            const advertiserName = document.getElementById('advertiserName');
-            if (advertiserName) {
-                advertiserName.textContent = data.company_name || 'EduAds Inc.';
-            }
+    // Contact info
+    if (data.email) {
+    const advertiserEmail = document.getElementById('advertiserEmail');
+    if (advertiserEmail) {
+    advertiserEmail.textContent = data.email;
+    advertiserEmail.href = `mailto:${data.email}`;
+    }
+    }
+    if (data.phone) {
+    const advertiserPhone = document.getElementById('advertiserPhone');
+    if (advertiserPhone) {
+    advertiserPhone.textContent = data.phone;
+    advertiserPhone.href = `tel:${data.phone}`;
+    }
+    }
 
-            // Contact info
-            if (data.email) {
-                const advertiserEmail = document.getElementById('advertiserEmail');
-                if (advertiserEmail) {
-                    advertiserEmail.textContent = data.email;
-                    advertiserEmail.href = `mailto:${data.email}`;
-                }
-            }
-            if (data.phone) {
-                const advertiserPhone = document.getElementById('advertiserPhone');
-                if (advertiserPhone) {
-                    advertiserPhone.textContent = data.phone;
-                    advertiserPhone.href = `tel:${data.phone}`;
-                }
-            }
+    // Location and industry
+    if (data.location) {
+    const advertiserLocation = document.getElementById('advertiser-location');
+    if (advertiserLocation) {
+    advertiserLocation.textContent = data.location + (data.industry ? ' | ' + data.industry : '');
+    }
+    }
 
-            // Location and industry
-            if (data.location) {
-                const advertiserLocation = document.getElementById('advertiser-location');
-                if (advertiserLocation) {
-                    advertiserLocation.textContent = data.location + (data.industry ? ' | ' + data.industry : '');
-                }
-            }
+    // Bio and tagline
+    if (data.bio) {
+    const advertiserBio = document.getElementById('advertiser-bio');
+    if (advertiserBio) {
+    advertiserBio.textContent = data.bio;
+    }
+    }
+    if (data.tagline) {
+    const advertiserQuote = document.getElementById('advertiser-quote');
+    if (advertiserQuote) {
+    advertiserQuote.textContent = data.tagline;
+    }
+    }
 
-            // Bio and tagline
-            if (data.bio) {
-                const advertiserBio = document.getElementById('advertiser-bio');
-                if (advertiserBio) {
-                    advertiserBio.textContent = data.bio;
-                }
-            }
-            if (data.tagline) {
-                const advertiserQuote = document.getElementById('advertiser-quote');
-                if (advertiserQuote) {
-                    advertiserQuote.textContent = data.tagline;
-                }
-            }
+    // Social links
+    if (data.social_links) {
+    if (data.social_links.facebook) {
+    document.getElementById('socialFacebook').href = data.social_links.facebook;
+    }
+    if (data.social_links.twitter) {
+    document.getElementById('socialTwitter').href = data.social_links.twitter;
+    }
+    if (data.social_links.linkedin) {
+    document.getElementById('socialLinkedin').href = data.social_links.linkedin;
+    }
+    if (data.social_links.instagram) {
+    document.getElementById('socialInstagram').href = data.social_links.instagram;
+    }
+    }
 
-            // Social links
-            if (data.social_links) {
-                if (data.social_links.facebook) {
-                    document.getElementById('socialFacebook').href = data.social_links.facebook;
-                }
-                if (data.social_links.twitter) {
-                    document.getElementById('socialTwitter').href = data.social_links.twitter;
-                }
-                if (data.social_links.linkedin) {
-                    document.getElementById('socialLinkedin').href = data.social_links.linkedin;
-                }
-                if (data.social_links.instagram) {
-                    document.getElementById('socialInstagram').href = data.social_links.instagram;
-                }
-            }
+    // Store data globally for modal
+    window.advertiserData = data;
+    }
 
-            // Store data globally for modal
-            window.advertiserData = data;
-        }
+    // Open edit modal and populate with current data FROM DATABASE
+    function openEditProfileModal() {
+    const modal = document.getElementById('edit-profile-modal');
 
-        // Open edit modal and populate with current data FROM DATABASE
-        function openEditProfileModal() {
-            const modal = document.getElementById('edit-profile-modal');
+    console.log('[AdvertiserProfile] Opening edit profile modal...');
 
-            console.log('[AdvertiserProfile] Opening edit profile modal...');
+    // initializationManager.js sets inline style="display: none" on all modals
+    // So we need to change style.display, not just remove the 'hidden' class
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex'; // Override inline style
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
 
-            // initializationManager.js sets inline style="display: none" on all modals
-            // So we need to change style.display, not just remove the 'hidden' class
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex'; // Override inline style
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+    // Get data from AdvertiserProfileDataLoader (real database data)
+    let data = null;
 
-            // Get data from AdvertiserProfileDataLoader (real database data)
-            let data = null;
+    if (typeof AdvertiserProfileDataLoader !== 'undefined' && AdvertiserProfileDataLoader.profileData) {
+    data = AdvertiserProfileDataLoader.profileData;
+    console.log('[AdvertiserProfile] Populating modal with DATABASE data:', data);
+    } else {
+    console.warn('[AdvertiserProfile] AdvertiserProfileDataLoader not available');
+    }
 
-            if (typeof AdvertiserProfileDataLoader !== 'undefined' && AdvertiserProfileDataLoader.profileData) {
-                data = AdvertiserProfileDataLoader.profileData;
-                console.log('[AdvertiserProfile] Populating modal with DATABASE data:', data);
-            } else {
-                console.warn('[AdvertiserProfile] AdvertiserProfileDataLoader not available');
-            }
+    // Populate form with real database data
+    if (data) {
+    // Username
+    document.getElementById('editUsername').value = data.username || '';
 
-            // Populate form with real database data
-            if (data) {
-                // Username
-                document.getElementById('editUsername').value = data.username || '';
+    // Bio
+    document.getElementById('editBio').value = data.bio || '';
 
-                // Bio
-                document.getElementById('editBio').value = data.bio || '';
+    // Quote
+    document.getElementById('editQuote').value = data.quote || '';
 
-                // Quote
-                document.getElementById('editQuote').value = data.quote || '';
+    // Location (array - join with comma for input)
+    if (data.location && Array.isArray(data.location)) {
+    document.getElementById('editLocation').value = data.location.join(', ');
+    } else {
+    document.getElementById('editLocation').value = '';
+    }
 
-                // Location (array - join with comma for input)
-                if (data.location && Array.isArray(data.location)) {
-                    document.getElementById('editLocation').value = data.location.join(', ');
-                } else {
-                    document.getElementById('editLocation').value = '';
-                }
+    // Social links (from socials JSONB)
+    const socials = data.socials || {};
+    document.getElementById('editSocialWebsite').value = socials.website || '';
+    document.getElementById('editSocialFacebook').value = socials.facebook || '';
+    document.getElementById('editSocialTwitter').value = socials.twitter || '';
+    document.getElementById('editSocialLinkedin').value = socials.linkedin || '';
+    document.getElementById('editSocialInstagram').value = socials.instagram || '';
+    document.getElementById('editSocialYoutube').value = socials.youtube || '';
+    document.getElementById('editSocialTiktok').value = socials.tiktok || '';
 
-                // Social links (from socials JSONB)
-                const socials = data.socials || {};
-                document.getElementById('editSocialWebsite').value = socials.website || '';
-                document.getElementById('editSocialFacebook').value = socials.facebook || '';
-                document.getElementById('editSocialTwitter').value = socials.twitter || '';
-                document.getElementById('editSocialLinkedin').value = socials.linkedin || '';
-                document.getElementById('editSocialInstagram').value = socials.instagram || '';
-                document.getElementById('editSocialYoutube').value = socials.youtube || '';
-                document.getElementById('editSocialTiktok').value = socials.tiktok || '';
+    // Load display_location checkbox (show/hide location on public profile)
+    const displayLocationCheckbox = document.getElementById('editDisplayLocation');
+    if (displayLocationCheckbox) {
+    displayLocationCheckbox.checked = data.display_location === true;
+    console.log('[Advertiser Edit] display_location loaded:', data.display_location);
+    }
 
-                console.log('[AdvertiserProfile] Modal populated with profile data');
-            } else {
-                console.error('[AdvertiserProfile] No profile data available to populate modal');
-            }
-        }
+    // Disable GPS detection checkbox and show "Change Location" button if location exists
+    const allowLocationCheckbox = document.getElementById('editAllowLocation');
+    const changeLocationBtn = document.getElementById('changeLocationBtn');
+    if (allowLocationCheckbox && data.location && data.location.length > 0) {
+    allowLocationCheckbox.checked = false;
+    allowLocationCheckbox.disabled = true; // Make unselectable
+    if (changeLocationBtn) {
+    changeLocationBtn.classList.remove('hidden');
+    }
+    console.log('[Advertiser Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
+    }
 
-        // Close edit modal
-        function closeEditProfileModal() {
-            const modal = document.getElementById('edit-profile-modal');
-            modal.classList.add('hidden');
-            modal.style.display = 'none'; // Set inline style back to none
-            document.body.style.overflow = ''; // Restore scrolling
-        }
+    console.log('[AdvertiserProfile] Modal populated with profile data');
+    } else {
+    console.error('[AdvertiserProfile] No profile data available to populate modal');
+    }
+    }
 
-        // NOTE: saveAdvertiserProfile is now defined in profile-edit-handler.js
-        // This inline version is removed to avoid conflicts
-        // The profile-edit-handler.js version properly saves to database and reloads data
+    // Close edit modal
+    function closeEditProfileModal() {
+    const modal = document.getElementById('edit-profile-modal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none'; // Set inline style back to none
+    document.body.style.overflow = ''; // Restore scrolling
+    }
 
-        // Expose functions to window for onclick handlers
-        window.openEditProfileModal = openEditProfileModal;
-        window.closeEditProfileModal = closeEditProfileModal;
-        // window.saveAdvertiserProfile is already exposed by profile-edit-handler.js
+    // Handle "Change Location" button click - enables GPS checkbox
+    function handleChangeLocationAdvertiser() {
+    const allowLocationCheckbox = document.getElementById('editAllowLocation');
+    const changeLocationBtn = document.getElementById('changeLocationBtn');
 
-        // Load profile on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            loadAdvertiserProfile();
-        });
+    if (allowLocationCheckbox) {
+    allowLocationCheckbox.disabled = false; // Enable the checkbox
+    allowLocationCheckbox.checked = false; // Uncheck it
+    console.log('[Advertiser Edit] GPS checkbox enabled for location change');
+    }
+
+    if (changeLocationBtn) {
+    changeLocationBtn.classList.add('hidden'); // Hide the button
+    }
+    }
+
+    // NOTE: saveAdvertiserProfile is now defined in profile-edit-handler.js
+    // This inline version is removed to avoid conflicts
+    // The profile-edit-handler.js version properly saves to database and reloads data
+
+    // Expose functions to window for onclick handlers
+    window.openEditProfileModal = openEditProfileModal;
+    window.closeEditProfileModal = closeEditProfileModal;
+    // window.saveAdvertiserProfile is already exposed by profile-edit-handler.js
+
+    // Load profile on page load
+    document.addEventListener('DOMContentLoaded', function () {
+    loadAdvertiserProfile();
+    });
     </script>
 
     <!-- Coming Soon Modal -->
@@ -4129,104 +4449,108 @@
     <!-- Settings Panel Modal Scripts -->
     <script src="../js/tutor-profile/settings-panel-personal-verification.js"></script>
     <script src="../js/tutor-profile/payment-method-modal.js"></script>
-    <script src="../js/tutor-profile/leave-astegni-modal.js"></script>
+    <script src="../js/common-modals/leave-astegni-modal.js?v=20260127"></script>
+    <!-- Appearance Manager (Theme, Font Size, Display Density, etc.) -->
+    <script src="../js/common-modals/appearance-manager.js?v=20260127"></script>
     <script src="../js/common-modals/settings-manager.js"></script>
     <script src="../js/common-modals/review-astegni-manager.js"></script>
 
     <!-- Load Settings Modals HTML -->
     <script>
-        // Load verify-personal-info-modal
-        fetch('../modals/common-modals/verify-personal-info-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Verify Personal Info Modal loaded');
-            })
-            .catch(error => console.error('Failed to load verify-personal-info-modal:', error));
+    // Load verify-personal-info-modal
+    fetch('../modals/common-modals/verify-personal-info-modal.html')
+    .then(response => response.text())
+    .then(html => {
+        let container = document.getElementById('modal-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'modal-container';
+            document.body.appendChild(container);
+        }
+        container.insertAdjacentHTML('beforeend', html);
+        console.log('[OK] Verify Personal Info Modal loaded');
+    })
+    .catch(error => console.error('Failed to load verify-personal-info-modal:', error));
 
-        // Load payment-method-modal
-        fetch('../modals/common-modals/payment-method-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Payment Method Modal loaded');
-            })
-            .catch(error => console.error('Failed to load payment-method-modal:', error));
+    // Load payment-method-modal
+    fetch('../modals/common-modals/payment-method-modal.html')
+    .then(response => response.text())
+    .then(html => {
+    let container = document.getElementById('modal-container');
+    if (!container) {
+    container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', html);
+    console.log('[OK] Payment Method Modal loaded');
+    })
+    .catch(error => console.error('Failed to load payment-method-modal:', error));
 
-        // Load leave-astegni-modal
-        fetch('../modals/common-modals/leave-astegni-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Leave Astegni Modal loaded');
-            })
-            .catch(error => console.error('Failed to load leave-astegni-modal:', error));
+    // Load leave-astegni-modal
+    fetch('../modals/common-modals/leave-astegni-modal.html')
+    .then(response => response.text())
+    .then(html => {
+    let container = document.getElementById('modal-container');
+    if (!container) {
+    container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', html);
+    console.log('[OK] Leave Astegni Modal loaded');
+    })
+    .catch(error => console.error('Failed to load leave-astegni-modal:', error));
 
-        // Load review-astegni-modal
-        fetch('../modals/common-modals/review-astegni-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Review Astegni Modal loaded');
-            })
-            .catch(error => console.error('Failed to load review-astegni-modal:', error));
-        // Load notes-modal
-        fetch('../modals/common-modals/notes-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Notes Modal loaded');
-            })
-            .catch(error => console.error('Failed to load notes-modal:', error));
+    // Load review-astegni-modal HTML dynamically
+    (function loadReviewAstegniModal() {
+    fetch('../modals/common-modals/review-astegni-modal.html')
+    .then(response => response.text())
+    .then(html => {
+    let container = document.getElementById('modal-container');
+    if (!container) {
+    container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', html);
+    console.log('✅ Review Astegni Modal loaded for advertiser-profile');
+    })
+    .catch(error => console.error('Failed to load review-astegni-modal:', error));
+    })();
+    // Load notes-modal
+    fetch('../modals/common-modals/notes-modal.html')
+    .then(response => response.text())
+    .then(html => {
+    let container = document.getElementById('modal-container');
+    if (!container) {
+    container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', html);
+    console.log('[OK] Notes Modal loaded');
+    })
+    .catch(error => console.error('Failed to load notes-modal:', error));
 
-        // Load verify-company-info-modal
-        fetch('../modals/common-modals/verify-company-info-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                // Initialize form submit handler
-                if (typeof initCompanyVerificationModal === 'function') {
-                    initCompanyVerificationModal();
-                }
-                console.log('[OK] Verify Company Info Modal loaded');
-            })
-            .catch(error => console.error('Failed to load verify-company-info-modal:', error));
+    // Load verify-company-info-modal
+    fetch('../modals/common-modals/verify-company-info-modal.html')
+    .then(response => response.text())
+    .then(html => {
+    let container = document.getElementById('modal-container');
+    if (!container) {
+    container = document.createElement('div');
+    container.id = 'modal-container';
+    document.body.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', html);
+    // Initialize form submit handler
+    if (typeof initCompanyVerificationModal === 'function') {
+    initCompanyVerificationModal();
+    }
+    console.log('[OK] Verify Company Info Modal loaded');
+    })
+    .catch(error => console.error('Failed to load verify-company-info-modal:', error));
     </script>
 
     <!-- Notes Manager -->
@@ -4237,6 +4561,45 @@
 
     <!-- Ad Rotation Manager -->
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
+
+    <!-- Geolocation Utilities for GPS-based location detection -->
+    <script src="../js/utils/geolocation-utils.js"></script>
+
+    <!-- Currency Utilities for dynamic currency display -->
+    <script src="../js/utils/currency-utils.js"></script>
+
+    <!-- Location Helper Functions for Advertiser Profile -->
+    <script>
+    // Helper function to set location value in the edit modal
+    window.setLocation = function(location) {
+        const locationInput = document.getElementById('editLocation');
+        if (locationInput) {
+            const currentValue = locationInput.value.trim();
+
+            // Only add if not already present
+            if (currentValue && !currentValue.split(',').map(s => s.trim()).includes(location)) {
+                locationInput.value = currentValue + ', ' + location;
+            } else if (!currentValue) {
+                locationInput.value = location;
+            }
+            console.log(`[Advertiser Profile] Location set to: ${locationInput.value}`);
+        }
+    };
+
+    // Helper function to get current location values (comma-separated)
+    window.getLocations = function() {
+        const locationInput = document.getElementById('editLocation');
+        if (locationInput) {
+            return locationInput.value.split(',').map(s => s.trim()).filter(v => v);
+        }
+        return [];
+    };
+    </script>
+
+    <!-- Share Profile Manager - MOVED EARLIER (after initializationManager.js) to ensure onclick handlers work -->
+
+    <!-- Referral Dashboard Manager -->
+    <script src="../js/common-modals/referral-dashboard-manager.js"></script>
 
 </body>
 

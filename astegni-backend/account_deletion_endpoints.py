@@ -2,15 +2,16 @@
 Account Deletion Endpoints
 Handles the complete account deletion flow with 90-day grace period
 
-ROLE-BASED DELETION:
-- If user has multiple roles: Delete only the specific profile from role table
-- If user has only one role: Delete both profile AND user from users table
+COMPLETE ACCOUNT DELETION:
+- Deletes ENTIRE user account from users table (CASCADE handles all profiles and related data)
+- Requires OTP verification + password confirmation
+- 90-day grace period before permanent deletion
 
 Flow:
-1. POST /api/account/delete/initiate - Start deletion process (validates password)
-2. GET /api/account/delete/status - Check deletion status
-3. POST /api/account/delete/cancel - Cancel pending deletion
-4. POST /api/account/delete/reasons - Get deletion reasons for UI
+1. POST /api/account/delete/send-otp - Send OTP for account deletion
+2. POST /api/account/delete/initiate - Start deletion process (validates OTP + password)
+3. GET /api/account/delete/status - Check deletion status
+4. POST /api/account/delete/cancel - Cancel pending deletion
 
 On login:
 - If account has pending deletion, automatically restore it
@@ -28,6 +29,8 @@ import bcrypt
 import psycopg
 import jwt
 import os
+import secrets
+from email_service import email_service
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -99,10 +102,14 @@ ROLE_PROFILE_TABLES = {
 
 # ==================== SCHEMAS ====================
 
+class DeletionSendOTPRequest(BaseModel):
+    """Request body for sending OTP for account deletion"""
+    pass  # Uses authenticated user's email
+
 class DeletionInitiateRequest(BaseModel):
     """Request body for initiating account deletion"""
-    password: str
-    role: str  # The role being deleted: "student", "tutor", "parent", "advertiser"
+    otp_code: str  # 6-digit OTP code
+    password: str  # User's password
     reasons: List[str]  # Array of reason codes: ["not_useful", "too_expensive", etc.]
     other_reason: Optional[str] = None  # Required if "other" is in reasons
 
@@ -124,7 +131,161 @@ class DeletionReasonResponse(BaseModel):
     reason_label: str
     description: str
 
+# ==================== HELPER FUNCTIONS ====================
+
+def generate_otp() -> str:
+    """Generate a 6-digit OTP"""
+    return ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+
 # ==================== ENDPOINTS ====================
+
+@router.post("/delete/send-otp")
+async def send_deletion_otp(current_user: dict = Depends(get_current_user)):
+    """
+    Send OTP to user's email for account deletion verification
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Generate 6-digit OTP
+        otp_code = generate_otp()
+        expires_at = datetime.now() + timedelta(minutes=5)  # 5-minute expiration
+
+        print(f"[ACCOUNT DELETION] Generating OTP for user {current_user['id']}")
+        print(f"[ACCOUNT DELETION] OTP Code: {otp_code}")
+        print(f"[ACCOUNT DELETION] Expires at: {expires_at}")
+
+        # Delete any existing deletion OTPs for this user
+        cursor.execute("""
+            DELETE FROM otps
+            WHERE user_id = %s AND purpose = 'account_deletion'
+        """, (current_user["id"],))
+        deleted_count = cursor.rowcount
+        print(f"[ACCOUNT DELETION] Deleted {deleted_count} old OTPs")
+
+        # Store OTP in database
+        cursor.execute("""
+            INSERT INTO otps (user_id, otp_code, purpose, expires_at, is_used, created_at)
+            VALUES (%s, %s, 'account_deletion', %s, FALSE, CURRENT_TIMESTAMP)
+        """, (current_user["id"], otp_code, expires_at))
+        print(f"[ACCOUNT DELETION] OTP inserted into database")
+
+        conn.commit()
+        print(f"[ACCOUNT DELETION] Transaction committed")
+
+        # Send email with OTP code
+        email_sent = email_service.send_otp_email(
+            to_email=current_user["email"],
+            otp_code=otp_code,
+            purpose="Account Deletion Verification"
+        )
+
+        if not email_sent:
+            print(f"[ACCOUNT DELETION] Failed to send email, but OTP stored in database")
+
+        return {
+            "success": True,
+            "message": "OTP sent to your email" if email_sent else "OTP generated (check console in development)",
+            "expires_in_minutes": 5,
+            "email": current_user["email"],
+            # DEVELOPMENT ONLY - Include OTP in response if email failed:
+            "otp_code": otp_code if not email_sent else None
+        }
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error sending deletion OTP: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send OTP")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.post("/restore/send-otp")
+async def send_restoration_otp(email: str):
+    """
+    Send OTP to user's email for account restoration verification
+    This endpoint does NOT require authentication (user can't log in yet)
+    Email is passed as form parameter
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Find user by email
+        cursor.execute("""
+            SELECT id, email, account_status
+            FROM users
+            WHERE email = %s
+        """, (email,))
+
+        user = cursor.fetchone()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_id, user_email, account_status = user
+
+        if account_status != 'pending_deletion':
+            raise HTTPException(status_code=400, detail="Account is not scheduled for deletion")
+
+        # Generate 6-digit OTP
+        otp_code = generate_otp()
+        expires_at = datetime.utcnow() + timedelta(minutes=5)  # 5-minute expiration (UTC)
+
+        print(f"[ACCOUNT RESTORATION] Generating OTP for user {user_id}")
+        print(f"[ACCOUNT RESTORATION] OTP Code: {otp_code}")
+        print(f"[ACCOUNT RESTORATION] Expires at (UTC): {expires_at}")
+
+        # Delete any existing restoration OTPs for this user
+        cursor.execute("""
+            DELETE FROM otps
+            WHERE user_id = %s AND purpose = 'account_restoration'
+        """, (user_id,))
+        deleted_count = cursor.rowcount
+        print(f"[ACCOUNT RESTORATION] Deleted {deleted_count} old OTPs")
+
+        # Store OTP in database
+        cursor.execute("""
+            INSERT INTO otps (user_id, otp_code, purpose, expires_at, is_used, created_at)
+            VALUES (%s, %s, 'account_restoration', %s, FALSE, CURRENT_TIMESTAMP)
+        """, (user_id, otp_code, expires_at))
+        print(f"[ACCOUNT RESTORATION] OTP inserted into database")
+
+        conn.commit()
+        print(f"[ACCOUNT RESTORATION] Transaction committed")
+
+        # Send email with OTP code
+        email_sent = email_service.send_otp_email(
+            to_email=user_email,
+            otp_code=otp_code,
+            purpose="Account Restoration Verification"
+        )
+
+        if not email_sent:
+            print(f"[ACCOUNT RESTORATION] Failed to send email, but OTP stored in database")
+
+        return {
+            "success": True,
+            "message": "OTP sent to your email" if email_sent else "OTP generated (check console in development)",
+            "expires_in_minutes": 5,
+            "email": user_email,
+            # DEVELOPMENT ONLY - Include OTP in response if email failed:
+            "otp_code": otp_code if not email_sent else None
+        }
+
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"Error sending restoration OTP: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send OTP")
+    finally:
+        cursor.close()
+        conn.close()
+
 
 @router.get("/delete/reasons")
 async def get_deletion_reasons():
@@ -216,29 +377,63 @@ async def initiate_account_deletion(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Initiate role-based account deletion process
+    Initiate complete account deletion process
 
-    ROLE-BASED DELETION:
-    - If user has multiple roles: Delete only the specific profile from role table
-    - If user has only one role: Delete both profile AND user from users table
-
-    - Validates password
+    COMPLETE ACCOUNT DELETION:
+    - Deletes entire user account from users table
+    - CASCADE handles deletion of all profiles and related data
+    - Requires OTP verification + password confirmation
     - Creates deletion request with 90-day grace period
-    - Deactivates profile immediately (or user if only role)
     - Records reasons for analytics
     """
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # 0. Validate role
-        role = request_data.role.lower()
-        if role not in ROLE_PROFILE_TABLES:
-            raise HTTPException(status_code=400, detail=f"Invalid role: {role}. Must be one of: student, tutor, parent, advertiser")
+        # 1. Verify OTP
+        print(f"[ACCOUNT DELETION] Verifying OTP for user {current_user['id']}")
+        print(f"[ACCOUNT DELETION] Provided OTP: {request_data.otp_code}")
 
-        profile_table = ROLE_PROFILE_TABLES[role]
+        cursor.execute("""
+            SELECT otp_code, expires_at FROM otps
+            WHERE user_id = %s AND purpose = 'account_deletion' AND (is_used = FALSE OR is_used IS NULL)
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (current_user["id"],))
 
-        # 1. Verify password
+        otp_record = cursor.fetchone()
+
+        if not otp_record:
+            # Debug: Check all OTPs for this user
+            cursor.execute("""
+                SELECT purpose, otp_code, is_used, created_at FROM otps
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 5
+            """, (current_user["id"],))
+            all_otps = cursor.fetchall()
+            print(f"[ACCOUNT DELETION] No account_deletion OTP found for user {current_user['id']}")
+            print(f"[ACCOUNT DELETION] Recent OTPs for this user: {all_otps}")
+            raise HTTPException(status_code=400, detail="No OTP found. Please request a new OTP.")
+
+        stored_otp, expires_at = otp_record
+
+        # Check if OTP is expired
+        if datetime.now() > expires_at:
+            raise HTTPException(status_code=400, detail="OTP has expired. Please request a new OTP.")
+
+        # Verify OTP code
+        if stored_otp != request_data.otp_code:
+            raise HTTPException(status_code=401, detail="Invalid OTP code")
+
+        # Mark OTP as used
+        cursor.execute("""
+            UPDATE otps
+            SET is_used = TRUE
+            WHERE user_id = %s AND purpose = 'account_deletion' AND otp_code = %s
+        """, (current_user["id"], request_data.otp_code))
+
+        # 2. Verify password
         cursor.execute("""
             SELECT password_hash FROM users WHERE id = %s
         """, (current_user["id"],))
@@ -253,68 +448,43 @@ async def initiate_account_deletion(
         if not bcrypt.checkpw(request_data.password.encode('utf-8'), password_hash.encode('utf-8')):
             raise HTTPException(status_code=401, detail="Incorrect password")
 
-        # 2. Check if user actually has this role/profile
-        cursor.execute(f"""
-            SELECT id FROM {profile_table} WHERE user_id = %s
-        """, (current_user["id"],))
-
-        profile = cursor.fetchone()
-        if not profile:
-            raise HTTPException(status_code=404, detail=f"You don't have a {role} profile to delete")
-
-        profile_id = profile[0]
-
-        # 3. Check if there's already a pending deletion request for this role
+        # 3. Check if there's already a pending deletion request
         cursor.execute("""
             SELECT id FROM account_deletion_requests
-            WHERE user_id = %s AND role = %s AND status = 'pending'
-        """, (current_user["id"], role))
+            WHERE user_id = %s AND status = 'pending'
+        """, (current_user["id"],))
 
         existing = cursor.fetchone()
         if existing:
             raise HTTPException(
                 status_code=400,
-                detail=f"You already have a pending deletion request for your {role} profile. Please wait or cancel it first."
+                detail="You already have a pending deletion request. Please wait or cancel it first."
             )
 
-        # 4. Count how many roles/profiles this user has
-        role_count = 0
-        for r, table in ROLE_PROFILE_TABLES.items():
-            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE user_id = %s", (current_user["id"],))
-            count = cursor.fetchone()[0]
-            if count > 0:
-                role_count += 1
-
-        # If this is the only role, we'll delete the user too
-        delete_user = (role_count == 1)
-
-        # 5. Validate reasons
+        # 4. Validate reasons
         if not request_data.reasons or len(request_data.reasons) == 0:
             raise HTTPException(status_code=400, detail="Please select at least one reason")
 
         if "other" in request_data.reasons and not request_data.other_reason:
             raise HTTPException(status_code=400, detail="Please specify the reason for 'Other'")
 
-        # 6. Calculate scheduled deletion date (90 days from now)
+        # 5. Calculate scheduled deletion date (90 days from now)
         scheduled_deletion_at = datetime.now() + timedelta(days=90)
 
-        # 7. Get client info
+        # 6. Get client info
         ip_address = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent", "")
 
-        # 8. Create deletion request with role info
+        # 7. Create deletion request (COMPLETE ACCOUNT DELETION)
         cursor.execute("""
             INSERT INTO account_deletion_requests (
-                user_id, role, profile_id, delete_user, status, reasons, other_reason, deletion_fee,
+                user_id, status, reasons, other_reason, deletion_fee,
                 requested_at, scheduled_deletion_at, ip_address, user_agent
             )
-            VALUES (%s, %s, %s, %s, 'pending', %s, %s, 200.00, CURRENT_TIMESTAMP, %s, %s, %s)
+            VALUES (%s, 'pending', %s, %s, 200.00, CURRENT_TIMESTAMP, %s, %s, %s)
             RETURNING id, requested_at, scheduled_deletion_at
         """, (
             current_user["id"],
-            role,
-            profile_id,
-            delete_user,
             json.dumps(request_data.reasons),
             request_data.other_reason,
             scheduled_deletion_at,
@@ -324,67 +494,17 @@ async def initiate_account_deletion(
 
         new_request = cursor.fetchone()
 
-        # 9. Remove role from users.roles array and update account status
-        # First, get current roles
-        cursor.execute("SELECT roles, active_role FROM users WHERE id = %s", (current_user["id"],))
-        user_data = cursor.fetchone()
-        current_roles = user_data[0] if user_data[0] else []
-        current_active_role = user_data[1]
-
-        # Remove the deleted role from the roles array
-        if role in current_roles:
-            updated_roles = [r for r in current_roles if r != role]
-        else:
-            updated_roles = current_roles
-
-        # Determine new active role if the deleted role was the active one
-        new_active_role = current_active_role
-        if current_active_role == role:
-            # Switch to another available role, or 'user' if none left
-            if updated_roles:
-                # Prefer these roles in order: student, tutor, parent, advertiser
-                for preferred in ['student', 'tutor', 'parent', 'advertiser']:
-                    if preferred in updated_roles:
-                        new_active_role = preferred
-                        break
-                else:
-                    new_active_role = updated_roles[0]  # Fallback to first available
-            else:
-                new_active_role = 'user'
-
-        # 9a. Deactivate the profile in the role-specific table
-        cursor.execute(f"""
-            UPDATE {profile_table}
-            SET is_active = FALSE
+        # 8. Deactivate entire user account
+        cursor.execute("""
+            UPDATE users
+            SET account_status = 'pending_deletion',
+                deactivated_at = CURRENT_TIMESTAMP,
+                scheduled_deletion_at = %s,
+                is_active = FALSE
             WHERE id = %s
-        """, (profile_id,))
+        """, (scheduled_deletion_at, current_user["id"]))
 
-        if delete_user:
-            # Deleting the only role - deactivate entire account
-            cursor.execute("""
-                UPDATE users
-                SET roles = %s,
-                    active_role = %s,
-                    account_status = 'pending_deletion',
-                    deactivated_at = CURRENT_TIMESTAMP,
-                    scheduled_deletion_at = %s,
-                    is_active = FALSE
-                WHERE id = %s
-            """, (json.dumps(updated_roles), new_active_role, scheduled_deletion_at, current_user["id"]))
-            deletion_message = f"Your {role} profile and user account will be permanently deleted in 90 days"
-            restore_message = "You can restore your account by adding the role back within 90 days"
-        else:
-            # Remove role but keep account active for other roles
-            cursor.execute("""
-                UPDATE users
-                SET roles = %s,
-                    active_role = %s
-                WHERE id = %s
-            """, (json.dumps(updated_roles), new_active_role, current_user["id"]))
-            deletion_message = f"Your {role} profile will be permanently deleted in 90 days. Your other profiles remain active."
-            restore_message = f"You can restore your {role} profile by adding the role back within 90 days"
-
-        # 10. Update deletion reason stats (for analytics)
+        # 9. Update deletion reason stats (for analytics)
         current_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         for reason in request_data.reasons:
             cursor.execute("""
@@ -398,17 +518,14 @@ async def initiate_account_deletion(
 
         return {
             "success": True,
-            "message": deletion_message,
+            "message": "Your account will be permanently deleted in 90 days",
             "deletion_request_id": new_request[0],
-            "role": role,
-            "profile_id": profile_id,
-            "delete_user": delete_user,
             "requested_at": new_request[1].isoformat(),
             "scheduled_deletion_at": new_request[2].isoformat(),
             "days_until_deletion": 90,
             "deletion_fee": 200.00,
             "can_restore": True,
-            "restore_message": restore_message
+            "restore_message": "You can restore your account by logging in within 90 days"
         }
 
     except HTTPException:
@@ -429,17 +546,15 @@ async def cancel_account_deletion(current_user: dict = Depends(get_current_user)
     Cancel a pending account deletion request
 
     - Restores account to active status
-    - Restores the role to users.roles array
-    - Restores the profile is_active status
     - Marks deletion request as cancelled
     """
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # 1. Find pending deletion request with role info
+        # 1. Find pending deletion request
         cursor.execute("""
-            SELECT id, role, profile_id, delete_user FROM account_deletion_requests
+            SELECT id FROM account_deletion_requests
             WHERE user_id = %s AND status = 'pending'
         """, (current_user["id"],))
 
@@ -447,7 +562,7 @@ async def cancel_account_deletion(current_user: dict = Depends(get_current_user)
         if not request:
             raise HTTPException(status_code=404, detail="No pending deletion request found")
 
-        request_id, role, profile_id, delete_user = request
+        request_id = request[0]
 
         # 2. Cancel the deletion request
         cursor.execute("""
@@ -459,42 +574,22 @@ async def cancel_account_deletion(current_user: dict = Depends(get_current_user)
             WHERE id = %s
         """, (request_id,))
 
-        # 3. Restore the role to users.roles array
-        cursor.execute("SELECT roles FROM users WHERE id = %s", (current_user["id"],))
-        user_data = cursor.fetchone()
-        current_roles = user_data[0] if user_data[0] else []
-
-        # Add back the role if not already present
-        if role and role not in current_roles:
-            current_roles.append(role)
-
-        # 4. Restore user account
+        # 3. Restore user account
         cursor.execute("""
             UPDATE users
             SET account_status = 'active',
-                roles = %s,
                 deactivated_at = NULL,
                 scheduled_deletion_at = NULL,
                 is_active = TRUE
             WHERE id = %s
-        """, (json.dumps(current_roles), current_user["id"]))
-
-        # 5. Restore profile is_active status
-        if role and role in ROLE_PROFILE_TABLES and profile_id:
-            profile_table = ROLE_PROFILE_TABLES[role]
-            cursor.execute(f"""
-                UPDATE {profile_table}
-                SET is_active = TRUE
-                WHERE id = %s
-            """, (profile_id,))
+        """, (current_user["id"],))
 
         conn.commit()
 
         return {
             "success": True,
             "message": "Account deletion cancelled successfully",
-            "account_restored": True,
-            "role_restored": role
+            "account_restored": True
         }
 
     except HTTPException:
@@ -525,9 +620,9 @@ def restore_account_on_login(user_id: int, conn=None):
     cursor = conn.cursor()
 
     try:
-        # Check if user has pending deletion with role info
+        # Check if user has pending deletion
         cursor.execute("""
-            SELECT id, role, profile_id FROM account_deletion_requests
+            SELECT id FROM account_deletion_requests
             WHERE user_id = %s AND status = 'pending'
         """, (user_id,))
 
@@ -535,7 +630,7 @@ def restore_account_on_login(user_id: int, conn=None):
         if not request:
             return False
 
-        request_id, role, profile_id = request
+        request_id = request[0]
 
         # Cancel the deletion request
         cursor.execute("""
@@ -547,34 +642,15 @@ def restore_account_on_login(user_id: int, conn=None):
             WHERE id = %s
         """, (request_id,))
 
-        # Restore the role to users.roles array
-        cursor.execute("SELECT roles FROM users WHERE id = %s", (user_id,))
-        user_data = cursor.fetchone()
-        current_roles = user_data[0] if user_data[0] else []
-
-        # Add back the role if not already present
-        if role and role not in current_roles:
-            current_roles.append(role)
-
         # Restore user account
         cursor.execute("""
             UPDATE users
             SET account_status = 'active',
-                roles = %s,
                 deactivated_at = NULL,
                 scheduled_deletion_at = NULL,
                 is_active = TRUE
             WHERE id = %s
-        """, (json.dumps(current_roles), user_id,))
-
-        # Restore profile is_active status
-        if role and role in ROLE_PROFILE_TABLES and profile_id:
-            profile_table = ROLE_PROFILE_TABLES[role]
-            cursor.execute(f"""
-                UPDATE {profile_table}
-                SET is_active = TRUE
-                WHERE id = %s
-            """, (profile_id,))
+        """, (user_id,))
 
         conn.commit()
         return True
@@ -593,11 +669,11 @@ def restore_account_on_login(user_id: int, conn=None):
 
 def process_expired_deletions():
     """
-    Called by cron job to permanently delete profiles/accounts past the 90-day grace period
+    Called by cron job to permanently delete accounts past the 90-day grace period
 
-    ROLE-BASED DELETION:
-    - If delete_user=True: Delete from users table (CASCADE handles profiles)
-    - If delete_user=False: Delete only the specific profile from role table
+    COMPLETE ACCOUNT DELETION:
+    - Deletes entire user account from users table
+    - CASCADE handles deletion of all profiles and related data
 
     This should be run daily to process expired deletion requests
     """
@@ -607,7 +683,7 @@ def process_expired_deletions():
     try:
         # Find all pending deletions past their scheduled date
         cursor.execute("""
-            SELECT adr.id, adr.user_id, adr.role, adr.profile_id, adr.delete_user, u.email, u.first_name
+            SELECT adr.id, adr.user_id, u.email, u.first_name
             FROM account_deletion_requests adr
             JOIN users u ON adr.user_id = u.id
             WHERE adr.status = 'pending'
@@ -616,10 +692,9 @@ def process_expired_deletions():
 
         expired_requests = cursor.fetchall()
         deleted_count = 0
-        profile_deleted_count = 0
 
         for req in expired_requests:
-            request_id, user_id, role, profile_id, delete_user, email, first_name = req
+            request_id, user_id, email, first_name = req
 
             try:
                 # Mark deletion request as completed
@@ -630,26 +705,18 @@ def process_expired_deletions():
                     WHERE id = %s
                 """, (request_id,))
 
-                if delete_user:
-                    # Permanently delete user (CASCADE will handle related data)
-                    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-                    deleted_count += 1
-                    print(f"Permanently deleted user {user_id} ({email})")
-                else:
-                    # Delete only the specific profile
-                    if role and role in ROLE_PROFILE_TABLES:
-                        profile_table = ROLE_PROFILE_TABLES[role]
-                        cursor.execute(f"DELETE FROM {profile_table} WHERE id = %s", (profile_id,))
-                        profile_deleted_count += 1
-                        print(f"Permanently deleted {role} profile {profile_id} for user {user_id} ({email})")
+                # Permanently delete user (CASCADE will handle all related data)
+                cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                deleted_count += 1
+                print(f"Permanently deleted user {user_id} ({email})")
 
             except Exception as e:
-                print(f"Error deleting user/profile {user_id}: {e}")
+                print(f"Error deleting user {user_id}: {e}")
                 continue
 
         conn.commit()
-        print(f"Processed {deleted_count} user deletions and {profile_deleted_count} profile deletions")
-        return deleted_count + profile_deleted_count
+        print(f"Processed {deleted_count} account deletions")
+        return deleted_count
 
     except Exception as e:
         conn.rollback()

@@ -190,6 +190,25 @@ const AdvertiserProfileDataLoader = {
             this.updateElement('advertiser-phone', data.phone);
         }
 
+        // Hobbies & Interests - always show, with "No hobbies yet" if empty
+        const hobbiesEl = document.getElementById('advertiser-hobbies');
+        if (hobbiesEl) {
+            if (data.hobbies && Array.isArray(data.hobbies) && data.hobbies.length > 0) {
+                const hobbiesText = data.hobbies.join(', ');
+                hobbiesEl.textContent = hobbiesText;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else if (data.hobbies && typeof data.hobbies === 'string' && data.hobbies.trim() !== '') {
+                hobbiesEl.textContent = data.hobbies;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else {
+                hobbiesEl.textContent = 'No hobbies yet';
+                hobbiesEl.style.color = 'var(--text-muted)';
+                hobbiesEl.style.fontStyle = 'italic';
+            }
+        }
+
         // Social links (JSONB object) - only show section if there are socials
         if (data.socials && typeof data.socials === 'object' && Object.keys(data.socials).length > 0) {
             this.populateSocialLinks(data.socials);

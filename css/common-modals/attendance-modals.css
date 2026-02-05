@@ -1,0 +1,128 @@
+/* ============================================
+   ATTENDANCE MODALS STYLES
+   ============================================ */
+
+/* Attendance suggestion modal specific styles */
+#attendance-suggestion-modal .alert {
+    display: flex;
+    align-items: center;
+    font-size: 0.9375rem;
+}
+
+#attendance-suggestion-modal .alert.success {
+    background: #D1FAE5;
+    color: #065F46;
+    border-left: 4px solid #10B981;
+}
+
+#attendance-suggestion-modal .alert.warning {
+    background: #FEF3C7;
+    color: #92400E;
+    border-left: 4px solid #F59E0B;
+}
+
+#attendance-suggestion-modal .alert.info {
+    background: #DBEAFE;
+    color: #1E40AF;
+    border-left: 4px solid #3B82F6;
+}
+
+/* Attendance status badges */
+.attendance-status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attendance-status-badge.present {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.attendance-status-badge.late {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.attendance-status-badge.absent {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Confidence indicators */
+.confidence-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.confidence-indicator i {
+    font-size: 1.25rem;
+}
+
+.confidence-indicator.high {
+    color: #10B981;
+}
+
+.confidence-indicator.medium {
+    color: #F59E0B;
+}
+
+.confidence-indicator.low {
+    color: #EF4444;
+}
+
+/* Manual attendance modal - option button styles */
+.attendance-option-btn {
+    transition: all 0.2s ease;
+}
+
+.attendance-option-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-option-btn.selected {
+    border-color: var(--primary-color) !important;
+    background: var(--primary-light, rgba(99, 102, 241, 0.1)) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Metrics grid responsive */
+@media (max-width: 640px) {
+    .metrics-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #attendance-suggestion-modal .modal-content,
+    #mark-attendance-modal .modal-content {
+        max-width: 95%;
+        margin: 20px;
+    }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fa-spinner.fa-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Attendance card hover effect */
+.attendance-card {
+    transition: all 0.2s ease;
+}
+
+.attendance-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}

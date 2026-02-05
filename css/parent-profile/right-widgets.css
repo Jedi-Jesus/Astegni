@@ -1,0 +1,381 @@
+/* ============================================================
+   PARENT PROFILE RIGHT WIDGETS STYLES
+   ============================================================
+   Styles specific to right sidebar widgets for parent profile
+   ============================================================ */
+
+/* ============================================================
+   CHILDREN'S PROGRESS WIDGET
+   ============================================================ */
+
+#children-progress-widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+#children-progress-widget:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Widget Header */
+#children-progress-widget h3 {
+    margin: 0;
+}
+
+/* Loading State */
+#progress-loading-state .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Coming Soon State */
+#progress-coming-soon-state {
+    position: relative;
+    overflow: hidden;
+}
+
+#progress-coming-soon-state::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(139, 92, 246, 0.05) 50%,
+        transparent 70%
+    );
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Feature List Styling */
+#progress-coming-soon-state ul li {
+    transition: all 0.3s ease;
+}
+
+#progress-coming-soon-state ul li:hover {
+    transform: translateX(5px);
+    color: var(--primary-color);
+}
+
+/* Progress Bars */
+#progress-data-state .w-full {
+    position: relative;
+    overflow: hidden;
+}
+
+#progress-data-state .w-full > div {
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Error State */
+#progress-error-state button:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* ============================================================
+   THIS WEEK'S SCHEDULE WIDGET
+   ============================================================ */
+
+#this-week-schedule-widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+#this-week-schedule-widget:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Widget Header */
+#this-week-schedule-widget h3 {
+    margin: 0;
+}
+
+#week-item-count {
+    min-width: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Loading State */
+#week-schedule-loading .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Empty State */
+#week-schedule-empty {
+    transition: all 0.3s ease;
+}
+
+#week-schedule-empty:hover {
+    background: var(--card-bg) !important;
+}
+
+/* Schedule Item Cards */
+.week-schedule-item {
+    transition: all 0.3s ease;
+}
+
+.week-schedule-item > div {
+    transition: all 0.3s ease;
+}
+
+.week-schedule-item > div:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* View All Button */
+#view-all-schedule-btn:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Error State */
+#week-schedule-error button:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* ============================================================
+   TRENDING TUTORS WIDGET
+   ============================================================ */
+
+#trending-tutors-widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+#trending-tutors-widget:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Widget Header */
+#trending-tutors-widget h3 {
+    margin: 0;
+}
+
+#trending-tutors-count {
+    min-width: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Loading State */
+#trending-tutors-loading .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Empty State */
+#trending-tutors-empty {
+    transition: all 0.3s ease;
+}
+
+/* Tutor Cards with Carousel */
+#trending-tutors-data {
+    position: relative;
+    overflow: hidden;
+}
+
+.trending-tutor-card {
+    transition: opacity 0.6s ease-in-out;
+}
+
+.trending-tutor-card > div:hover {
+    background: var(--card-bg) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.trending-tutor-card img {
+    transition: all 0.3s ease;
+}
+
+.trending-tutor-card > div:hover img {
+    transform: scale(1.05);
+    border-color: var(--primary-color) !important;
+}
+
+.trending-tutor-card button:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Explore Button */
+#explore-more-tutors-btn:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Error State */
+#trending-tutors-error button:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Legacy support for old styles */
+.sidebar-widget .hover\:bg-gray-50 {
+    transition: all 0.3s ease;
+}
+
+.sidebar-widget .hover\:bg-gray-50:hover {
+    background: var(--bg-secondary) !important;
+}
+
+/* Tutor Avatar */
+.sidebar-widget img.rounded-full {
+    border: 2px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.sidebar-widget .hover\:bg-gray-50:hover img.rounded-full {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+/* View Button */
+.sidebar-widget a.bg-blue-500 {
+    transition: all 0.3s ease;
+}
+
+.sidebar-widget a.bg-blue-500:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.space-y-3 > * + * {
+    margin-top: 0.75rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================================
+   RESPONSIVE STYLES
+   ============================================================ */
+
+@media (max-width: 1024px) {
+    #children-progress-widget,
+    .sidebar-widget.card {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #children-progress-widget {
+        padding: 1rem !important;
+    }
+
+    #progress-coming-soon-state {
+        padding: 1.5rem 0.75rem !important;
+    }
+
+    #progress-coming-soon-state > div:first-child {
+        font-size: 2.5rem !important;
+    }
+
+    #progress-coming-soon-state h4 {
+        font-size: 1rem !important;
+    }
+
+    #progress-coming-soon-state p {
+        font-size: 0.8rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #children-progress-widget {
+        border-radius: 10px;
+    }
+
+    #children-progress-widget h3 {
+        font-size: 1rem !important;
+    }
+
+    #progress-coming-soon-state > div:first-child {
+        font-size: 2rem !important;
+    }
+}
+
+/* ============================================================
+   DARK MODE SUPPORT
+   ============================================================ */
+
+[data-theme="dark"] #children-progress-widget,
+[data-theme="dark"] .sidebar-widget.card {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] #children-progress-widget:hover,
+[data-theme="dark"] .sidebar-widget.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] #progress-coming-soon-state {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, var(--card-bg) 100%);
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    #children-progress-widget,
+    .sidebar-widget.card,
+    #progress-coming-soon-state::before,
+    #progress-data-state .w-full > div {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    #children-progress-widget:hover,
+    .sidebar-widget.card:hover {
+        transform: none !important;
+    }
+}
+
+/* Focus styles for accessibility */
+#progress-error-state button:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

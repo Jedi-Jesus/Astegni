@@ -1,0 +1,504 @@
+/* ============================================
+   TUTOR CARDS LIST VIEW STYLING
+   ============================================
+   This file handles the horizontal list view layout
+   for tutor cards when data-view="list" is active
+   ============================================ */
+
+/* List View Container - Override grid layout */
+.tutor-cards-list,
+#tutorCards.tutor-cards-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    grid-template-columns: unset !important;
+    margin-bottom: 2rem;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100% !important;
+}
+
+/* List View Card - Horizontal Layout - SINGLE ROW */
+.tutor-cards-list .tutor-card {
+    display: grid !important;
+    grid-template-columns: 180px 1fr 200px !important;
+    grid-template-rows: auto !important;
+    column-gap: 2rem !important;
+    row-gap: 0 !important;
+    padding: 1.5rem !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: auto !important;
+    overflow: visible !important; /* Allow tooltips to appear on top */
+    position: relative; /* Enable z-index */
+    z-index: 1; /* Default stacking order */
+}
+
+/* Increase z-index when tooltip is shown */
+.tutor-cards-list .tutor-card:hover {
+    z-index: 10; /* Bring card to front when hovered */
+}
+
+/* Increase tooltip z-index in list view to appear above all cards */
+.tutor-cards-list .rating-breakdown-tooltip {
+    z-index: 1000 !important; /* Higher than any card z-index */
+}
+
+/* Remove the top orange accent bar in list view */
+.tutor-cards-list .tutor-card::before {
+    display: none !important;
+}
+
+/* Remove orange left border from quote section in list view */
+.tutor-cards-list .tutor-quote {
+    border-left: none !important;
+    background: transparent !important;
+    padding-left: 0 !important;
+}
+
+/* Remove border from teaches-at section in list view */
+.tutor-cards-list .tutor-teaches-at {
+    border-left: none !important;
+    background: transparent !important;
+    padding-left: 0 !important;
+}
+
+/* ============================================
+   LEFT COLUMN: Avatar + Action Buttons + Meta Info
+   ============================================ */
+
+.tutor-cards-list .tutor-card > .tutor-header {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    margin: 0 !important;
+    min-width: 180px !important;
+}
+
+/* Avatar stays in header but centered */
+.tutor-cards-list .tutor-avatar-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.tutor-cards-list .tutor-avatar-container {
+    order: 1 !important;
+}
+
+.tutor-cards-list .tutor-avatar {
+    width: 90px !important;
+    height: 90px !important;
+}
+
+.tutor-cards-list .tutor-actions-top {
+    order: 2 !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+}
+
+/* Name below avatar */
+.tutor-cards-list .tutor-name {
+    order: 3 !important;
+    text-align: center !important;
+    font-size: 1rem !important;
+    margin-top: 0.5rem !important;
+}
+
+/* Show meta rows in left column (unhide them) */
+.tutor-cards-list .tutor-meta-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    order: 4 !important;
+    margin-top: 0.5rem !important;
+    width: 100% !important;
+}
+
+.tutor-cards-list .tutor-meta-row > span {
+    font-size: 0.8rem !important;
+    text-align: center !important;
+}
+
+.tutor-cards-list .tutor-rating-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    order: 5 !important;
+    margin-top: 0.5rem !important;
+    width: 100% !important;
+}
+
+/* Center the rating in left column */
+.tutor-cards-list .tutor-rating {
+    justify-content: center !important;
+}
+
+/* Center verified badge */
+.tutor-cards-list .verified-badge {
+    margin-top: 0.25rem !important;
+}
+
+/* ============================================
+   CENTER COLUMN: Content Area
+   ============================================ */
+
+/* Container for Quote + Subjects + Details + Bio */
+.tutor-cards-list .tutor-card > :not(.tutor-header):not(.tutor-actions):not(.price-section) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+}
+
+/* Ensure quote and content are in the same area and stack properly */
+.tutor-cards-list .tutor-quote {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    margin: 0 0 1rem 0 !important;
+    align-self: start !important;
+}
+
+.tutor-cards-list .tutor-content {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    margin-top: 3.5rem !important;
+    align-self: start !important;
+}
+
+/* Remove extra padding from content in list view */
+.tutor-cards-list .tutor-content.p-6 {
+    padding: 0 !important;
+}
+
+.tutor-cards-list .tutor-content.space-y-4 {
+    gap: 0.75rem !important;
+}
+
+/* Subjects Section */
+.tutor-cards-list .subjects-section {
+    background: rgba(245, 158, 11, 0.03);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(245, 158, 11, 0.1);
+}
+
+.tutor-cards-list .subjects-section h4 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.tutor-cards-list .subjects-section .detail-value {
+    font-size: 0.875rem;
+}
+
+/* Details Grid - Keep 2 columns */
+.tutor-cards-list .tutor-details-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+}
+
+.tutor-cards-list .tutor-details-grid .detail-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+}
+
+/* Additional Details - Compact row layout */
+.tutor-cards-list .additional-details {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    padding: 0.75rem !important;
+    background: var(--hover-bg, rgba(0, 0, 0, 0.02)) !important;
+    border-radius: 0.5rem !important;
+}
+
+[data-theme="dark"] .tutor-cards-list .additional-details {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.tutor-cards-list .additional-details .detail-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    font-size: 0.8rem !important;
+    flex: 1 1 auto !important;
+    min-width: 150px !important;
+}
+
+.tutor-cards-list .additional-details .detail-icon {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.tutor-cards-list .additional-details .detail-label {
+    font-size: 0.8rem !important;
+}
+
+.tutor-cards-list .additional-details .detail-value {
+    font-size: 0.8rem !important;
+}
+
+/* Bio Section - Compact */
+.tutor-cards-list .bio-section {
+    margin-top: 0 !important;
+}
+
+.tutor-cards-list .bio-section h4 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.tutor-cards-list .bio-section .detail-value {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+}
+
+/* Make detail labels and values more compact in list view */
+.tutor-cards-list .detail-label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.25rem !important;
+    font-weight: 600 !important;
+}
+
+.tutor-cards-list .detail-value {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+}
+
+.tutor-cards-list .detail-item {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Meta Info Section - Hidden (we show gender/location/rating in left column instead) */
+.tutor-card .tutor-meta-info-list,
+.tutor-cards-list .tutor-meta-info-list {
+    display: none !important;
+}
+
+/* ============================================
+   RIGHT COLUMN: Price + Actions (In SAME ROW - Flexbox Stack)
+   ============================================ */
+
+/* Create a flex container wrapper for right column */
+.tutor-cards-list .price-section,
+.tutor-cards-list .tutor-actions {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+}
+
+/* Price section at top - increased height */
+.tutor-cards-list .price-section {
+    margin: 0 0 0.5rem 0 !important;
+    min-width: 200px !important;
+    align-self: start !important;
+    padding: 1.25rem !important;
+}
+
+.tutor-cards-list .price-section .tutor-price {
+    padding: 0.5rem 0 !important;
+}
+
+.tutor-cards-list .price-amount {
+    font-size: 2rem !important;
+}
+
+.tutor-cards-list .price-period {
+    font-size: 0.95rem !important;
+    margin-top: 0.25rem !important;
+}
+
+/* Actions below price, both in same grid cell */
+.tutor-cards-list .tutor-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 200px !important;
+    align-self: start !important;
+    margin-top: auto !important;
+}
+
+.tutor-cards-list .tutor-actions > button {
+    width: 100% !important;
+    flex: none !important;
+}
+
+/* ============================================
+   RESPONSIVE LIST VIEW
+   ============================================ */
+
+/* Tablet - Switch to 2 column layout */
+@media (max-width: 1024px) {
+    .tutor-cards-list .tutor-card {
+        grid-template-columns: auto 1fr !important;
+        grid-template-areas:
+            "left-col content-col"
+            "left-col right-col" !important;
+    }
+
+    .tutor-cards-list .tutor-header {
+        min-width: 100px !important;
+    }
+
+    .tutor-cards-list .tutor-avatar {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .tutor-cards-list .price-section,
+    .tutor-cards-list .tutor-actions {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+    }
+
+    .tutor-cards-list .tutor-actions {
+        flex-direction: row !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .tutor-cards-list .tutor-actions > button {
+        flex: 1 !important;
+    }
+}
+
+/* Mobile - Back to vertical stack */
+@media (max-width: 768px) {
+    .tutor-cards-list .tutor-card {
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+            "left-col"
+            "content-col"
+            "right-col" !important;
+        padding: 1rem !important;
+    }
+
+    .tutor-cards-list .tutor-header {
+        min-width: 100% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+
+    .tutor-cards-list .tutor-avatar-row {
+        flex-direction: row !important;
+        width: 100% !important;
+    }
+
+    .tutor-cards-list .tutor-avatar-container {
+        order: 1 !important;
+    }
+
+    .tutor-cards-list .tutor-name {
+        order: 2 !important;
+        text-align: left !important;
+        flex: 1 !important;
+        margin-top: 0 !important;
+        margin-left: 1rem !important;
+    }
+
+    .tutor-cards-list .tutor-actions-top {
+        order: 3 !important;
+    }
+
+    .tutor-cards-list .tutor-avatar {
+        width: 64px !important;
+        height: 64px !important;
+    }
+
+    .tutor-cards-list .tutor-quote {
+        padding: 0.75rem !important;
+        margin: 1rem 0 !important;
+    }
+
+    .tutor-cards-list .tutor-details-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tutor-cards-list .additional-details {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .tutor-cards-list .additional-details .detail-item {
+        min-width: 100% !important;
+    }
+
+    .tutor-cards-list .bio-section .detail-value {
+        -webkit-line-clamp: 4 !important;
+    }
+
+    .tutor-cards-list .price-section,
+    .tutor-cards-list .tutor-actions {
+        grid-column: 1 !important;
+        min-width: 100% !important;
+    }
+
+    .tutor-cards-list .price-section {
+        margin-bottom: 1rem !important;
+    }
+
+    .tutor-cards-list .tutor-actions {
+        margin-top: 0 !important;
+    }
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+
+[data-theme="dark"] .tutor-cards-list .subjects-section {
+    background: rgba(255, 213, 79, 0.05);
+    border-color: rgba(255, 213, 79, 0.1);
+}
+
+[data-theme="dark"] .tutor-cards-list .tutor-card::after {
+    border-color: var(--border-color);
+}
+
+/* ============================================
+   SMOOTH TRANSITIONS
+   ============================================ */
+
+.tutor-cards-grid,
+.tutor-cards-list {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tutor-cards-list .tutor-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.tutor-cards-list .tutor-card:focus-within {
+    outline: 2px solid var(--button-bg);
+    outline-offset: 2px;
+}
+
+/* Ensure all content is keyboard accessible */
+.tutor-cards-list .tutor-card * {
+    transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

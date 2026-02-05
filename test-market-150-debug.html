@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Data 150 ETB Debug</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            background: #f9fafb;
+        }
+        .debug-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1f2937; }
+        h2 { color: #374151; margin-top: 0; }
+        pre {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 1rem;
+        }
+        .btn:hover { background: #2563eb; }
+        .error { color: #dc2626; }
+        .success { color: #16a34a; }
+        .warning { color: #ea580c; }
+        .info { color: #3b82f6; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th { background: #f9fafb; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debugging 150 ETB Mystery</h1>
+
+    <div class="debug-card">
+        <h2>Step 1: Check Browser Cache</h2>
+        <p>Current JavaScript file loaded at: <span id="jsTimestamp"></span></p>
+        <p>market-trend-functions.js version check:</p>
+        <pre id="versionCheck">Checking...</pre>
+        <button class="btn" onclick="location.reload(true)">Hard Refresh (Ctrl+Shift+R)</button>
+        <button class="btn" onclick="clearAllCache()">Clear All Cache & Reload</button>
+    </div>
+
+    <div class="debug-card">
+        <h2>Step 2: Test Market API Directly</h2>
+        <button class="btn" onclick="testMarketAPI()">Fetch Market Data</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <div class="debug-card">
+        <h2>Step 3: Check for Hardcoded Values</h2>
+        <button class="btn" onclick="searchFor150()">Search for "150" in JavaScript</button>
+        <div id="searchResult"></div>
+    </div>
+
+    <div class="debug-card">
+        <h2>Step 4: Aggregation Test</h2>
+        <button class="btn" onclick="testAggregation()">Test Data Aggregation</button>
+        <div id="aggResult"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Display when this script was loaded
+        document.getElementById('jsTimestamp').textContent = new Date().toLocaleString();
+
+        // Check if market-trend-functions.js is loaded
+        if (typeof fetchMarketTutorData !== 'undefined') {
+            document.getElementById('versionCheck').innerHTML =
+                '<span class="success">✅ market-trend-functions.js is loaded</span>\n' +
+                'Functions available: ' +
+                (typeof aggregateDataByRating !== 'undefined' ? '✅ aggregateDataByRating ' : '❌ aggregateDataByRating ') +
+                (typeof aggregateDataBySingleMetric !== 'undefined' ? '✅ aggregateDataBySingleMetric ' : '❌ aggregateDataBySingleMetric ');
+        } else {
+            document.getElementById('versionCheck').innerHTML =
+                '<span class="error">❌ market-trend-functions.js NOT loaded</span>';
+        }
+
+        async function testMarketAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p class="info">⏳ Fetching market data...</p>';
+
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found. Please log in first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/market-pricing/market-tutors`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        time_period_months: 3,
+                        session_format: 'Online'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                console.log('📊 API Response:', data);
+
+                let html = '<h3 class="success">✅ API Response Received</h3>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+
+                // Check for 150
+                const dataString = JSON.stringify(data);
+                if (dataString.includes('150')) {
+                    html += '<p class="error">⚠️ WARNING: Found "150" in API response!</p>';
+                } else {
+                    html += '<p class="success">✅ No "150" found in API response</p>';
+                }
+
+                // Display prices
+                if (data.tutors && data.tutors.length > 0) {
+                    html += '<h4>Prices in response:</h4><ul>';
+                    data.tutors.forEach(t => {
+                        html += `<li>Tutor ${t.id}: ${t.price_per_hour} ETB (similarity: ${t.similarity_score})</li>`;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p class="warning">⚠️ No tutors in response</p>';
+                }
+
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                console.error('API Error:', error);
+            }
+        }
+
+        async function testAggregation() {
+            const resultDiv = document.getElementById('aggResult');
+            resultDiv.innerHTML = '<p class="info">⏳ Testing aggregation...</p>';
+
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found. Please log in first.</p>';
+                return;
+            }
+
+            try {
+                // Fetch real data
+                const response = await fetch(`${API_BASE_URL}/api/market-pricing/market-tutors`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        time_period_months: 3,
+                        session_format: 'Online'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.tutors || data.tutors.length === 0) {
+                    resultDiv.innerHTML = '<p class="warning">⚠️ No tutors returned from API</p>';
+                    return;
+                }
+
+                // Check if aggregateDataByRating function exists
+                if (typeof aggregateDataByRating === 'undefined') {
+                    resultDiv.innerHTML = '<p class="error">❌ aggregateDataByRating function not found. Cache issue!</p>';
+                    return;
+                }
+
+                // Test aggregation
+                const aggregated = aggregateDataByRating(data.tutors);
+
+                console.log('📊 Aggregated Data:', aggregated);
+
+                let html = '<h3 class="success">✅ Aggregation Test Complete</h3>';
+                html += '<table>';
+                html += '<tr><th>Rating</th><th>Count</th><th>Avg Price</th><th>Avg Completion</th><th>Avg Students</th><th>Avg Experience</th></tr>';
+
+                aggregated.forEach(group => {
+                    html += `<tr>
+                        <td>${group.rating}⭐</td>
+                        <td>${group.count}</td>
+                        <td>${group.avgPrice} ETB</td>
+                        <td>${(group.avgCompletionRate * 100).toFixed(0)}%</td>
+                        <td>${group.avgStudentCount}</td>
+                        <td>${group.avgExperienceScore}/100</td>
+                    </tr>`;
+
+                    // Check for 150
+                    if (group.avgPrice === 150 || group.avgPrice === '150') {
+                        html += `<tr><td colspan="6" class="error">⚠️ WARNING: Found 150 ETB in aggregated data!</td></tr>`;
+                    }
+                });
+
+                html += '</table>';
+
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                console.error('Aggregation Error:', error);
+            }
+        }
+
+        function searchFor150() {
+            const resultDiv = document.getElementById('searchResult');
+
+            // Check if any global variable contains 150
+            let found = [];
+
+            // Check window object for any variable with 150
+            for (let key in window) {
+                try {
+                    const value = window[key];
+                    const stringValue = JSON.stringify(value);
+                    if (stringValue && stringValue.includes('150')) {
+                        found.push(`window.${key} contains "150"`);
+                    }
+                } catch (e) {
+                    // Skip if can't stringify
+                }
+            }
+
+            if (found.length > 0) {
+                resultDiv.innerHTML = '<p class="error">⚠️ Found "150" in:</p><ul><li>' +
+                    found.join('</li><li>') + '</li></ul>';
+            } else {
+                resultDiv.innerHTML = '<p class="success">✅ No "150" found in global variables</p>';
+            }
+
+            console.log('Search results:', found);
+        }
+
+        function clearAllCache() {
+            // Clear localStorage
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            localStorage.clear();
+            if (token) localStorage.setItem('access_token', token);
+
+            // Clear session storage
+            sessionStorage.clear();
+
+            alert('Cache cleared! Page will reload with fresh JavaScript.');
+
+            // Force reload with cache bypass
+            window.location.reload(true);
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            console.log('🔍 Debug page loaded');
+            console.log('Token exists:', !!(localStorage.getItem('access_token') || localStorage.getItem('token')));
+        });
+    </script>
+
+    <!-- Load market-trend-functions.js with cache busting -->
+    <script src="js/tutor-profile/market-trend-functions.js?v=<?php echo time(); ?>"></script>
+</body>
+</html>

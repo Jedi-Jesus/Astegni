@@ -323,7 +323,7 @@ class StudentTutorsManager {
 
                 <div class="price-section">
                     <div class="tutor-price text-center">
-                        <div class="price-amount">ETB ${tutor.price || 0}</div>
+                        <div class="price-amount">${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${tutor.price || 0}</div>
                         <div class="price-period">per session</div>
                     </div>
                 </div>

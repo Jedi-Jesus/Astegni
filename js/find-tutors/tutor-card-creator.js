@@ -5,17 +5,37 @@
 const TutorCardCreator = {
     createTutorCard(tutor) {
         // Ensure tutor has required properties with defaults
-        const tutorName = tutor.full_name || `${tutor.first_name || 'Unknown'} ${tutor.father_name || 'Tutor'}`;
+        // Handle both naming conventions:
+        // - Ethiopian: first_name + father_name (+ grandfather_name)
+        // - International: first_name + last_name
+        let tutorName;
+        if (tutor.full_name) {
+            // If full_name is already provided, use it
+            tutorName = tutor.full_name;
+        } else if (tutor.last_name) {
+            // International naming: first_name + last_name
+            tutorName = `${tutor.first_name || 'Unknown'} ${tutor.last_name}`.trim();
+        } else {
+            // Ethiopian naming: first_name + father_name
+            tutorName = `${tutor.first_name || 'Unknown'} ${tutor.father_name || 'Tutor'}`.trim();
+        }
+
         const firstName = tutor.first_name || tutorName.split(' ')[0];
         const profilePicture = tutor.profile_picture || this.getDefaultAvatar(firstName);
         const bio = tutor.bio || 'Experienced educator dedicated to helping students succeed.';
 
-        // Use ACTUAL rating from database (default to 4.0 if not set)
-        const rating = parseFloat(tutor.rating) || 4.0;
+        // Use ACTUAL rating from database (show 0 if no reviews, don't default to 4.0)
+        const rating = tutor.rating !== undefined && tutor.rating !== null
+            ? parseFloat(tutor.rating)
+            : 0.0;  // Show 0 stars if no reviews instead of fake 4.0
 
         // Use ACTUAL price from database
         const price = tutor.price || 0;
-        const currency = tutor.currency || 'ETB';
+
+        // Use logged-in user's currency symbol (based on their GPS-detected location)
+        // Falls back to 'Br' (Ethiopian Birr) if user hasn't set location yet
+        const currencySymbol = window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br';
+
         const location = tutor.location || 'Not specified';
 
         // Use ACTUAL gender from database
@@ -38,7 +58,7 @@ const TutorCardCreator = {
         // Use ACTUAL grades from database
         const gradeLevel = Array.isArray(tutor.grades) && tutor.grades.length > 0
                           ? tutor.grades.join(', ')
-                          : 'All levels';
+                          : 'Not specified';
 
         // Use ACTUAL sessionFormat from database
         const sessionFormat = tutor.sessionFormat || 'Not specified';
@@ -78,20 +98,23 @@ const TutorCardCreator = {
         const quote = tutor.quote || "Dedicated to student success";
 
         // Create category breakdown based on overall rating
-        // Use actual breakdown if available from tutor, otherwise default to overall rating
+        // Use actual breakdown if available from tutor, otherwise use 0 (no reviews)
         // The 4-factor rating system: Subject Matter, Communication, Discipline, Punctuality
         const ratingBreakdown = {
-            subject_matter: tutor.subject_matter_rating || tutor.subject_matter || rating,
-            communication_skills: tutor.communication_skills_rating || tutor.communication_skills || rating,
-            discipline: tutor.discipline_rating || tutor.discipline || rating,
-            punctuality: tutor.punctuality_rating || tutor.punctuality || rating
+            subject_matter: tutor.subject_matter_rating ?? tutor.subject_matter ?? rating,
+            communication_skills: tutor.communication_skills_rating ?? tutor.communication_skills ?? rating,
+            discipline: tutor.discipline_rating ?? tutor.discipline ?? rating,
+            punctuality: tutor.punctuality_rating ?? tutor.punctuality ?? rating
         };
 
         // Add subtle premium styling without badge
         const premiumClass = tutor.is_premium ? 'ring-2 ring-yellow-400/30 shadow-xl' : '';
 
         return `
-            <article class="tutor-card group relative ${premiumClass}">
+            <article class="tutor-card group relative ${premiumClass}"
+                     data-gender="${gender}"
+                     data-location="${location}"
+                     data-rating="${rating}">
 
                 <!-- Header Section - Stacked Layout -->
                 <div class="tutor-header">
@@ -186,6 +209,29 @@ const TutorCardCreator = {
                             "${quote}"
                         </em>
                     </div>
+                </div>
+
+                <!-- Meta Info (visible in list view) -->
+                <div class="tutor-meta-info-list">
+                    <span class="meta-info-item">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        ${gender}
+                    </span>
+                    <span class="meta-info-separator">•</span>
+                    <span class="meta-info-item">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        ${location}
+                    </span>
+                    <span class="meta-info-separator">•</span>
+                    <span class="meta-info-item">
+                        <span class="stars-small">${starsHTML}</span>
+                        <span class="rating-small">${rating}</span>
+                    </span>
                 </div>
 
                 <!-- Content Section -->
@@ -287,7 +333,7 @@ const TutorCardCreator = {
                     <div class="tutor-price">
                         <div class="text-center">
                             <div class="price-amount">
-                                ${currency} ${price}
+                                ${currencySymbol}${price}
                             </div>
                             <div class="price-period">per session</div>
                         </div>

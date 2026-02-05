@@ -1,0 +1,108 @@
+<!--
+  Modal: school-request-modal
+  Purpose: Request a new school to be added to the platform
+-->
+
+<div id="school-request-modal" class="modal-overlay hidden" onclick="closeSchoolRequestModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001;">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-primary, #fff); border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <!-- Modal Header -->
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-school"></i> Request New School
+                </h2>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Submit a school for admin approval</p>
+            </div>
+            <button onclick="event.stopPropagation(); event.preventDefault(); console.log('[Modal] Close button clicked'); closeSchoolRequestModal(event);" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-weight: bold; line-height: 1;">
+                ×
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" style="padding: 2rem; overflow-y: auto; max-height: calc(90vh - 180px);">
+            <form id="schoolRequestForm">
+                <!-- School Name -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-school" style="color: #10b981; margin-right: 0.5rem;"></i> School Name *
+                    </label>
+                    <input type="text" id="schoolRequestName" required placeholder="e.g., Excellence Academy"
+                           style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; transition: all 0.2s;">
+                </div>
+
+                <!-- School Type & Level Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-building" style="color: #10b981; margin-right: 0.5rem;"></i> School Type *
+                        </label>
+                        <select id="schoolRequestType" required
+                                style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; background: var(--bg-primary, #fff);">
+                            <option value="">Select Type</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Polytechnic">Polytechnic</option>
+                            <option value="Culinary">Culinary</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="Arts">Arts</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-graduation-cap" style="color: #10b981; margin-right: 0.5rem;"></i> Level *
+                        </label>
+                        <select id="schoolRequestLevel" required
+                                style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; background: var(--bg-primary, #fff);">
+                            <option value="">Select Level</option>
+                            <option value="Kindergarten">Kindergarten</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="High School">High School</option>
+                            <option value="College">College</option>
+                            <option value="University">University</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-map-marker-alt" style="color: #10b981; margin-right: 0.5rem;"></i> Location
+                    </label>
+                    <input type="text" id="schoolRequestLocation" placeholder="e.g., Addis Ababa, Ethiopia"
+                           style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                </div>
+
+                <!-- Email & Phone Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-envelope" style="color: #10b981; margin-right: 0.5rem;"></i> School Email
+                        </label>
+                        <input type="email" id="schoolRequestEmail" placeholder="contact@school.edu.et"
+                               style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-phone" style="color: #10b981; margin-right: 0.5rem;"></i> School Phone
+                        </label>
+                        <input type="tel" id="schoolRequestPhone" placeholder="+251 11 xxx xxxx"
+                               style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="padding: 1.5rem 2rem; background: var(--bg-secondary, #f9fafb); border-top: 1px solid var(--border-color, #e5e7eb); display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" onclick="event.stopPropagation(); event.preventDefault(); console.log('[Modal] Cancel button clicked'); closeSchoolRequestModal(event);"
+                    style="padding: 0.75rem 1.5rem; background: var(--bg-primary, #fff); border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+                Cancel
+            </button>
+            <button type="button" onclick="submitSchoolRequest()" id="submitSchoolRequestBtn"
+                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-paper-plane"></i> Submit for Approval
+            </button>
+        </div>
+    </div>
+</div>

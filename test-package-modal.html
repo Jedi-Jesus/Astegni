@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Package Modal</title>
+    <title>Test Package Modal - Astegni v2.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/tutor-profile/tutor-profile.css">
+
+    <!-- Root CSS -->
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/root/theme.css">
+
+    <!-- Package Modal CSS -->
+    <link rel="stylesheet" href="css/tutor-profile/package-modal-enhanced.css">
+    <link rel="stylesheet" href="css/tutor-profile/package-modal-clean.css">
+    <link rel="stylesheet" href="css/tutor-profile/package-modal-fix.css">
+    <link rel="stylesheet" href="css/tutor-profile/package-modal-responsive.css">
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -71,22 +81,100 @@
         .status.show {
             display: block;
         }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .test-btn {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .test-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .test-btn i {
+            font-size: 20px;
+            color: #3b82f6;
+        }
+        #debugConsole {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f2937;
+            color: #10b981;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        #debugConsole.show {
+            display: block;
+        }
+        .debug-line {
+            margin: 2px 0;
+        }
+        .debug-error {
+            color: #ef4444;
+        }
+        .debug-success {
+            color: #10b981;
+        }
+        .debug-info {
+            color: #60a5fa;
+        }
     </style>
 </head>
 <body>
     <div class="test-container">
-        <h1><i class="fas fa-vial"></i> Package Modal Test Page</h1>
-        <p style="margin-bottom: 30px; color: #6b7280;">
-            This page tests the package management modal functionality. Click the button below to open the modal.
+        <h1><i class="fas fa-vial"></i> Package Modal Test Page v2.2</h1>
+        <p style="margin-bottom: 20px; color: #6b7280;">
+            Comprehensive testing for the package management modal with market trends and session format filters.
         </p>
 
-        <button class="btn-primary" onclick="testOpenModal()">
-            <i class="fas fa-box"></i> Open Package Modal
-        </button>
+        <div class="test-grid">
+            <button class="test-btn" onclick="testOpenModal()">
+                <i class="fas fa-box-open"></i>
+                <span>Open Modal</span>
+            </button>
+            <button class="test-btn" onclick="testCreatePackage()">
+                <i class="fas fa-plus"></i>
+                <span>Create Test Package</span>
+            </button>
+            <button class="test-btn" onclick="testMarketTrends()">
+                <i class="fas fa-chart-line"></i>
+                <span>Test Market Trends</span>
+            </button>
+            <button class="test-btn" onclick="testCalculator()">
+                <i class="fas fa-calculator"></i>
+                <span>Test Calculator</span>
+            </button>
+            <button class="test-btn" onclick="checkStatus()">
+                <i class="fas fa-info-circle"></i>
+                <span>Check Status</span>
+            </button>
+            <button class="test-btn" onclick="toggleDebug()">
+                <i class="fas fa-terminal"></i>
+                <span>Toggle Debug Console</span>
+            </button>
+        </div>
 
         <div id="status" class="status">
-            <strong>Success!</strong> Check the console for debugging information.
+            <strong>Success!</strong> Check the console and debug output below.
         </div>
+
+        <div id="debugConsole"></div>
 
         <div style="margin-top: 40px; padding: 20px; background: #fef3c7; border-radius: 8px;">
             <h3 style="margin-top: 0; color: #92400e;"><i class="fas fa-info-circle"></i> Step-by-Step Instructions</h3>
@@ -121,134 +209,226 @@
         </div>
     </div>
 
-    <!-- Package Management Modal -->
-    <div id="package-management-modal" class="hidden">
-        <div class="modal-overlay" onclick="closePackageModal()"></div>
-        <div class="modal-content package-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title"><i class="fas fa-box mr-2"></i>Package Management</h2>
-                <button class="modal-close" onclick="closePackageModal()">×</button>
-            </div>
+    <!-- Modal will be loaded here -->
+    <div id="modalContainer"></div>
 
-            <!-- Tab Navigation -->
-            <div class="package-tabs">
-                <button class="package-tab active" data-tab="set-package" onclick="switchPackageTab('set-package')">
-                    <i class="fas fa-cog"></i> Set Package
-                </button>
-                <button class="package-tab" data-tab="view-package" onclick="switchPackageTab('view-package')">
-                    <i class="fas fa-eye"></i> View Package
-                </button>
-            </div>
+    <!-- Chart.js for market trends -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-            <div class="modal-body">
-                <!-- Set Package -->
-                <div id="set-package" class="tab-content">
-                    <div class="tab-header">
-                        <h3 class="tab-title">Set Package</h3>
-                        <p class="tab-subtitle">Configure your course packages and pricing</p>
-                    </div>
-                    <form id="setPackageForm" class="enhanced-form">
-                        <div id="coursesContainer" class="space-y-4">
-                            <!-- Package Entry Template -->
-                            <div class="course-entry">
-                                <div class="course-header">
-                                    <h4 class="course-title"><i class="fas fa-box mr-2"></i>Package 1</h4>
-                                    <button type="button" class="remove-course-btn" onclick="removePackageEntry(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <div class="course-grid">
-                                    <div class="form-group">
-                                        <label class="form-label">
-                                            <i class="fas fa-plus-circle mr-1"></i>Course Names (Add multiple courses)
-                                        </label>
-                                        <div class="courses-list-container">
-                                            <div class="course-name-group">
-                                                <input type="text" class="course-name form-input" placeholder="Enter course name">
-                                                <button type="button" class="add-course-to-package btn-icon" onclick="addCourseToPackage(this)">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
-                                            <div class="added-courses-list"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Payment Frequency</label>
-                                        <select class="payment-frequency form-select" required>
-                                            <option value="2-weeks">2 Weeks</option>
-                                            <option value="monthly">Monthly</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Hourly Rate (ETB)</label>
-                                        <input type="number" class="hourly-rate form-input" placeholder="Enter hourly rate" min="0" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Discounts (%)</label>
-                                        <div class="discount-grid">
-                                            <input type="number" class="discount-3months form-input" placeholder="3 Months" min="0" max="100" value="0">
-                                            <input type="number" class="discount-6months form-input" placeholder="6 Months" min="0" max="100" value="0">
-                                            <input type="number" class="discount-yearly form-input" placeholder="Yearly" min="0" max="100" value="0">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" id="addCourseBtn" class="btn-add-course" onclick="addNewPackageEntry()">
-                            <i class="fas fa-plus mr-2"></i>Add Package
-                        </button>
-                    </form>
-                </div>
-
-                <!-- View Package -->
-                <div id="view-package" class="tab-content hidden">
-                    <div class="tab-header">
-                        <h3 class="tab-title">View Package</h3>
-                        <p class="tab-subtitle">Review your course packages and calculate fees</p>
-                    </div>
-                    <div class="calculation-section">
-                        <div class="calc-grid">
-                            <div class="form-group">
-                                <label class="form-label">Days per Week</label>
-                                <input type="number" id="days-per-week" class="form-input" placeholder="Enter days per week" min="1" max="7" value="3">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Hours per Day</label>
-                                <input type="number" id="hours-per-day" class="form-input" placeholder="Enter hours per day" min="1" max="24" value="1">
-                            </div>
-                        </div>
-                        <button id="calculate-fees" class="btn-primary" onclick="calculatePackageFees()">
-                            <i class="fas fa-calculator mr-2"></i>Calculate Fees
-                        </button>
-                    </div>
-                    <div id="coursesDisplay" class="courses-display">
-                        <p class="no-courses-message">No courses have been set. Please add packages in the "Set Package" tab.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closePackageModal()">Close</button>
-                <button type="button" class="btn-primary" onclick="savePackages()">
-                    <i class="fas fa-save mr-2"></i>Save Packages
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="js/tutor-profile/package-manager.js"></script>
+    <!-- Config -->
     <script>
-        function testOpenModal() {
-            console.log('Test button clicked');
-            document.getElementById('status').classList.add('show');
-            openPackageModal();
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+        window.API_BASE_URL = API_BASE_URL;
+
+        // Debug logging function
+        function debugLog(message, type = 'info') {
+            const console = document.getElementById('debugConsole');
+            const line = document.createElement('div');
+            line.className = `debug-line debug-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            line.textContent = `[${timestamp}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+
+            // Also log to browser console
+            if (type === 'error') {
+                window.console.error(message);
+            } else if (type === 'success') {
+                window.console.log(`✅ ${message}`);
+            } else {
+                window.console.log(message);
+            }
         }
 
-        // Log when script loads
-        console.log('Test page loaded');
-        console.log('packageManager available:', typeof window.packageManager !== 'undefined');
-        console.log('openPackageModal available:', typeof window.openPackageModal !== 'undefined');
+        // Load modal dynamically
+        async function loadModal() {
+            try {
+                debugLog('Loading package-management-modal.html...', 'info');
+                const response = await fetch('modals/tutor-profile/package-management-modal.html');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const html = await response.text();
+                document.getElementById('modalContainer').innerHTML = html;
+                debugLog('Modal loaded successfully', 'success');
+            } catch (error) {
+                debugLog(`Failed to load modal: ${error.message}`, 'error');
+                alert('Failed to load modal. Check console for details.');
+            }
+        }
+
+        // Load modal on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            debugLog('Page loaded, initializing...', 'info');
+            loadModal().then(() => {
+                // Initialize package manager after a short delay
+                setTimeout(() => {
+                    if (typeof PackageManagerClean !== 'undefined') {
+                        window.packageManager = new PackageManagerClean();
+                        debugLog('PackageManagerClean initialized', 'success');
+                    } else {
+                        debugLog('PackageManagerClean not found', 'error');
+                    }
+                }, 500);
+            });
+        });
+    </script>
+
+    <!-- Package Manager Scripts (with cache busting) -->
+    <script src="js/tutor-profile/package-manager-clean.js?v=2"></script>
+    <script src="js/tutor-profile/market-trend-functions.js?v=2"></script>
+
+    <!-- Test Functions -->
+    <script>
+        function testOpenModal() {
+            debugLog('Opening package modal...', 'info');
+            const modal = document.getElementById('package-management-modal');
+            if (!modal) {
+                debugLog('Modal element not found!', 'error');
+                alert('Modal not loaded yet. Please wait and try again.');
+                return;
+            }
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            debugLog('Modal opened successfully', 'success');
+            document.getElementById('status').classList.add('show');
+        }
+
+        function testCreatePackage() {
+            debugLog('Testing package creation...', 'info');
+            testOpenModal();
+            setTimeout(() => {
+                if (typeof createNewPackage === 'function') {
+                    createNewPackage();
+                    debugLog('Create new package function called', 'success');
+                } else {
+                    debugLog('createNewPackage function not found', 'error');
+                }
+            }, 500);
+        }
+
+        function testMarketTrends() {
+            debugLog('Testing market trends...', 'info');
+            testOpenModal();
+            setTimeout(() => {
+                if (typeof switchPackagePanel === 'function') {
+                    switchPackagePanel('market-trend');
+                    debugLog('Switched to market trends panel', 'success');
+                } else {
+                    debugLog('switchPackagePanel function not found', 'error');
+                }
+            }, 500);
+        }
+
+        function testCalculator() {
+            debugLog('Testing calculator widget...', 'info');
+            testOpenModal();
+            setTimeout(() => {
+                if (typeof toggleCalculatorWidget === 'function') {
+                    toggleCalculatorWidget();
+                    debugLog('Calculator widget toggled', 'success');
+                } else {
+                    debugLog('toggleCalculatorWidget function not found', 'error');
+                }
+            }, 500);
+        }
+
+        function checkStatus() {
+            debugLog('Checking system status...', 'info');
+
+            const packages = JSON.parse(localStorage.getItem('tutorPackages') || '[]');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const modal = document.getElementById('package-management-modal');
+
+            debugLog(`Authentication: ${token ? 'Token found ✅' : 'No token ❌'}`, token ? 'success' : 'error');
+            debugLog(`Packages in storage: ${packages.length}`, packages.length > 0 ? 'success' : 'info');
+            debugLog(`Modal loaded: ${modal ? 'Yes ✅' : 'No ❌'}`, modal ? 'success' : 'error');
+            debugLog(`PackageManager: ${typeof window.packageManager !== 'undefined' ? 'Loaded ✅' : 'Not loaded ❌'}`, typeof window.packageManager !== 'undefined' ? 'success' : 'error');
+            debugLog(`API Base URL: ${API_BASE_URL}`, 'info');
+
+            if (packages.length > 0) {
+                packages.forEach((pkg, i) => {
+                    debugLog(`  Package ${i + 1}: ${pkg.title || 'Untitled'} (${pkg.session_format || 'No format'})`, 'info');
+                });
+            }
+
+            document.getElementById('status').classList.add('show');
+        }
+
+        function toggleDebug() {
+            const console = document.getElementById('debugConsole');
+            console.classList.toggle('show');
+            if (console.classList.contains('show')) {
+                debugLog('Debug console enabled', 'info');
+            }
+        }
+
+        // Global function stubs for modal (if not loaded from package-manager-clean.js)
+        window.closePackageModal = window.closePackageModal || function() {
+            const modal = document.getElementById('package-management-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+                debugLog('Modal closed', 'info');
+            }
+        };
+
+        window.togglePackageSidebar = window.togglePackageSidebar || function() {
+            debugLog('togglePackageSidebar called', 'info');
+        };
+
+        window.switchPackagePanel = window.switchPackagePanel || function(panel) {
+            debugLog(`switchPackagePanel called: ${panel}`, 'info');
+        };
+
+        window.createNewPackage = window.createNewPackage || function() {
+            debugLog('createNewPackage called (stub)', 'info');
+        };
+
+        window.toggleCalculatorWidget = window.toggleCalculatorWidget || function() {
+            debugLog('toggleCalculatorWidget called (stub)', 'info');
+        };
+
+        window.updateCalculator = window.updateCalculator || function() {
+            debugLog('updateCalculator called', 'info');
+        };
+
+        window.saveCurrentPackage = window.saveCurrentPackage || function() {
+            debugLog('saveCurrentPackage called', 'info');
+        };
+
+        window.changeGraphType = window.changeGraphType || function(type) {
+            debugLog(`changeGraphType called: ${type}`, 'info');
+        };
+
+        window.updateMarketGraph = window.updateMarketGraph || function() {
+            debugLog('updateMarketGraph called', 'info');
+        };
+
+        window.populateMarketTable = window.populateMarketTable || function() {
+            debugLog('populateMarketTable called', 'info');
+        };
+
+        window.suggestMarketPrice = window.suggestMarketPrice || function() {
+            debugLog('suggestMarketPrice called', 'info');
+        };
+
+        window.updateMarketTimePeriodOnly = window.updateMarketTimePeriodOnly || function(value) {
+            debugLog(`updateMarketTimePeriodOnly called: ${value}`, 'info');
+        };
+
+        window.updatePriceTimePeriod = window.updatePriceTimePeriod || function(value) {
+            debugLog(`updatePriceTimePeriod called: ${value}`, 'info');
+        };
+
+        window.toggleMarketDataset = window.toggleMarketDataset || function(checkbox) {
+            debugLog(`toggleMarketDataset called: ${checkbox.checked}`, 'info');
+        };
+
+        window.updateGraphSessionFormat = window.updateGraphSessionFormat || function() {
+            debugLog('updateGraphSessionFormat called', 'info');
+        };
+
+        // Log when scripts load
+        debugLog('Test page scripts loaded', 'success');
     </script>
 </body>
 </html>

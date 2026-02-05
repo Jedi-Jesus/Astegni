@@ -17,8 +17,7 @@ const ChatModalManager = {
     // State Management
     state: {
         isOpen: false,
-        currentUser: null,
-        currentProfile: null,  // {profile_id, profile_type, user_id}
+        currentUser: null,  // {user_id, name, avatar, email}
         selectedChat: null,
         selectedConversation: null,  // Full conversation object
         conversations: [],
@@ -142,7 +141,7 @@ const ChatModalManager = {
 
         this._initialized = true;
         this.loadCurrentUser();
-        console.log('Chat: After loadCurrentUser - currentProfile:', this.state.currentProfile);
+        console.log('Chat: After loadCurrentUser - currentUser:', this.state.currentUser);
         console.log('Chat: After loadCurrentUser - currentUser:', this.state.currentUser?.full_name || this.state.currentUser?.email);
         this.setupEventListeners();
         this.loadEmojis();
@@ -153,12 +152,11 @@ const ChatModalManager = {
         console.log('Chat Modal Manager initialized successfully');
     },
 
-    // Get profile-specific localStorage key for chat settings
+    // Get user-specific localStorage key for chat settings
     getChatSettingsKey() {
-        const profileId = this.state.currentProfile?.profile_id;
-        const profileType = this.state.currentProfile?.profile_type;
-        if (profileId && profileType) {
-            return `chatSettings_${profileType}_${profileId}`;
+        const userId = this.state.currentUser?.user_id;
+        if (userId) {
+            return `chatSettings_user_${userId}`;
         }
         return 'chatSettings'; // Fallback to global key
     },
@@ -191,11 +189,10 @@ const ChatModalManager = {
     // Refresh chat settings from API (can be called anytime)
     async refreshChatSettingsFromAPI() {
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
+            const userId = this.state.currentUser?.user_id;
 
-            if (!profileId || !profileType) {
-                console.log('[Chat] No profile set, skipping API settings load');
+            if (!userId) {
+                console.log('[Chat] No user ID, skipping API settings load');
                 return;
             }
 
@@ -205,10 +202,10 @@ const ChatModalManager = {
                 return;
             }
 
-            console.log('[Chat] Loading settings from API for', profileType, profileId);
+            console.log('[Chat] Loading settings from API for user', userId);
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/settings?profile_id=${profileId}&profile_type=${profileType}`,
+                `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -262,14 +259,11 @@ const ChatModalManager = {
             }
 
             // Try to load from API for latest settings
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-
-            if (profileId && profileType) {
+                                    if (profileId && profileType) {
                 const token = localStorage.getItem('token') || localStorage.getItem('access_token');
                 if (token) {
                     const response = await fetch(
-                        `${this.API_BASE_URL}/api/chat/settings?profile_id=${profileId}&profile_type=${profileType}`,
+                        `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                         { headers: { 'Authorization': `Bearer ${token}` } }
                     );
 
@@ -393,13 +387,13 @@ const ChatModalManager = {
 
     // Update current user's active status (heartbeat) with device info
     async updateMyActiveStatus() {
-        if (!this.state.currentProfile) return;
+        if (!this.state.currentUser) return;
 
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
         try {
-            const { profile_id, profile_type, user_id } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             // Get device info for Active Sessions feature
             const deviceInfo = this.getCurrentDeviceInfo();
@@ -407,9 +401,7 @@ const ChatModalManager = {
 
             // Build URL with device info
             const params = new URLSearchParams({
-                profile_id: profile_id,
-                profile_type: profile_type,
-                user_id: user_id,
+                user_id: userId,
                 device_name: deviceName,
                 device_type: deviceInfo.deviceType || 'desktop',
                 browser: deviceInfo.browser,
@@ -467,13 +459,13 @@ const ChatModalManager = {
     },
 
     // Check if a recipient allows messages from everyone (for who_can_message setting)
-    async checkRecipientAllowsEveryone(recipientProfileId, recipientProfileType) {
+    async checkRecipientAllowsEveryone(recipientUserId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return false;
 
         try {
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/settings?profile_id=${recipientProfileId}&profile_type=${recipientProfileType}`,
+                `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
@@ -499,40 +491,38 @@ const ChatModalManager = {
         try {
             const profileParams = this.getProfileParams();
 
-            // Build list of profile_ids to query
-            const profileIds = this.state.conversations
+            // Build list of user_ids to query (not profile_ids)
+            const userIds = this.state.conversations
                 .filter(conv => conv.type !== 'group' && conv.type !== 'channel')
-                .map(conv => {
-                    const pType = conv.other_profile_type || conv.profile_type;
-                    const pId = conv.other_profile_id || conv.profile_id;
-                    return pType && pId ? `${pType}_${pId}` : null;
-                })
+                .map(conv => conv.other_user_id)  // Use other_user_id instead of profile IDs
                 .filter(Boolean)
                 .join(',');
 
-            if (!profileIds) return;
+            if (!userIds) return;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/users/online-status?${profileParams}&profile_ids=${encodeURIComponent(profileIds)}`,
+                `${this.API_BASE_URL}/api/chat/users/online-status?${profileParams}&user_ids=${encodeURIComponent(userIds)}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
             if (!response.ok) return;
 
             const data = await response.json();
-            const statusMap = data.statuses || {};
+            const statuses = data.statuses || [];
+
+            // Create a map of user_id to status for quick lookup
+            const statusMap = {};
+            statuses.forEach(status => {
+                statusMap[status.user_id] = status;
+            });
 
             // Update conversations state silently
             this.state.conversations.forEach(conv => {
-                const pType = conv.other_profile_type || conv.profile_type;
-                const pId = conv.other_profile_id || conv.profile_id;
-                const key = `${pType}_${pId}`;
+                const otherUserId = conv.other_user_id;
 
-                if (statusMap[key]) {
-                    conv.is_online = statusMap[key].is_online;
-                    conv.last_seen = statusMap[key].last_seen;
-                    conv.online_hidden = statusMap[key].online_hidden;
-                    conv.last_seen_hidden = statusMap[key].last_seen_hidden;
+                if (otherUserId && statusMap[otherUserId]) {
+                    conv.is_online = statusMap[otherUserId].is_online;
+                    conv.last_seen = statusMap[otherUserId].last_seen;
                 }
             });
 
@@ -997,183 +987,27 @@ const ChatModalManager = {
         }
     },
 
-    // Load Current User from Auth - tries multiple sources
+    // Load Current User from Auth - simplified for user-based architecture
     loadCurrentUser() {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-
-        // Try multiple localStorage keys where user data might be stored
-        const possibleKeys = ['userData', 'user', 'currentUser', 'userProfile', 'authUser'];
-        let userData = null;
-
-        for (const key of possibleKeys) {
-            const stored = localStorage.getItem(key);
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    if (parsed && (parsed.id || parsed.user_id || parsed.full_name)) {
-                        userData = parsed;
-                        console.log('Chat: Found user data in localStorage key:', key);
-                        break;
-                    }
-                } catch (e) {
-                    // Not valid JSON, try next
-                }
-            }
+        if (!token) {
+            console.log('Chat: No token found');
+            return;
         }
 
-        if (userData) {
-            this.state.currentUser = userData;
-
-            // Extract profile info from user data
-            // The user data should contain role_ids with profile IDs
-            const user = this.state.currentUser;
-
-            // Detect active role from current page URL first, then from stored role
-            const currentPath = window.location.pathname.toLowerCase();
-            let activeRole = null;
-
-            // First try to detect from URL path (for profile pages)
-            if (currentPath.includes('tutor-profile') || currentPath.includes('tutor_profile')) {
-                activeRole = 'tutor';
-            } else if (currentPath.includes('student-profile') || currentPath.includes('student_profile')) {
-                activeRole = 'student';
-            } else if (currentPath.includes('parent-profile') || currentPath.includes('parent_profile')) {
-                activeRole = 'parent';
-            } else if (currentPath.includes('advertiser-profile') || currentPath.includes('advertiser_profile')) {
-                activeRole = 'advertiser';
-            }
-
-            // If not on a profile page, check localStorage for current role
-            if (!activeRole) {
-                // Check various localStorage keys for current role
-                // 'userRole' is the primary key used by auth.js and profile-system.js
-                const storedRole = localStorage.getItem('userRole') ||
-                                   localStorage.getItem('currentRole') ||
-                                   localStorage.getItem('current_role') ||
-                                   localStorage.getItem('activeRole') ||
-                                   localStorage.getItem('active_role');
-                if (storedRole) {
-                    activeRole = storedRole;
-                    console.log('Chat: Active role from localStorage:', activeRole);
-                }
-            }
-
-            // If still no role, try to get from JWT token
-            if (!activeRole && token) {
-                try {
-                    const tokenParts = token.split('.');
-                    if (tokenParts.length === 3) {
-                        const payload = JSON.parse(atob(tokenParts[1]));
-                        if (payload.role) {
-                            activeRole = payload.role;
-                            console.log('Chat: Active role from JWT token:', activeRole);
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Chat: Could not decode JWT token for role:', e);
-                }
-            }
-
-            // If still no role, use user object fields
-            if (!activeRole) {
-                activeRole = user.current_role || user.active_role || user.role || 'student';
-                console.log('Chat: Active role from user object:', activeRole);
-            }
-
-            // Try to get role_ids from user object first, then from JWT token
-            let roleIds = user.role_ids || {};
-
-            // If role_ids is empty, try to get fresh currentUser from localStorage (auth may have updated it)
-            if (!roleIds || Object.keys(roleIds).length === 0) {
-                try {
-                    const freshUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                    if (freshUser.role_ids && Object.keys(freshUser.role_ids).length > 0) {
-                        roleIds = freshUser.role_ids;
-                        console.log('Chat: Got role_ids from fresh localStorage read:', roleIds);
-                    }
-                } catch (e) {
-                    console.warn('Chat: Could not re-read currentUser:', e);
-                }
-            }
-
-            // If role_ids is empty, try to decode JWT token to get role_ids
-            if (!roleIds || Object.keys(roleIds).length === 0) {
-                try {
-                    const tokenParts = token.split('.');
-                    if (tokenParts.length === 3) {
-                        const payload = JSON.parse(atob(tokenParts[1]));
-                        if (payload.role_ids) {
-                            roleIds = payload.role_ids;
-                            console.log('Chat: Extracted role_ids from JWT:', roleIds);
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Chat: Could not decode JWT token:', e);
-                }
-            }
-
-            // Also try profile-specific ID fields (student_profile_id, tutor_profile_id, etc.)
-            if (!roleIds || Object.keys(roleIds).length === 0) {
-                roleIds = {
-                    student: user.student_profile_id,
-                    tutor: user.tutor_profile_id,
-                    parent: user.parent_profile_id,
-                    advertiser: user.advertiser_profile_id
-                };
-                console.log('Chat: Built role_ids from profile fields:', roleIds);
-            }
-
-            // Get the actual user_id (not profile_id)
-            // user_id should come from user object's user_id field, or from JWT token
-            let actualUserId = user.user_id || user.userId;
-
-            // If user_id is not in user object, try to get it from JWT token
-            if (!actualUserId && token) {
-                try {
-                    const tokenParts = token.split('.');
-                    if (tokenParts.length === 3) {
-                        const payload = JSON.parse(atob(tokenParts[1]));
-                        // JWT token has 'sub' field for user_id
-                        actualUserId = payload.sub || payload.user_id;
-                        console.log('Chat: Got user_id from JWT token sub:', actualUserId);
-                    }
-                } catch (e) {
-                    console.warn('Chat: Could not decode JWT for user_id:', e);
-                }
-            }
-
-            // Last resort: use user.id but only if it looks like a user_id (>100 typically)
-            // Profile IDs are usually smaller numbers
-            if (!actualUserId) {
-                actualUserId = user.id;
-            }
-
-            // Debug logging
-            console.log('Chat: User data from localStorage:', user);
-            console.log('Chat: role_ids resolved:', roleIds);
-            console.log('Chat: activeRole detected:', activeRole);
-            console.log('Chat: profile_id for role:', roleIds[activeRole]);
-            console.log('Chat: actual user_id:', actualUserId);
-
-            this.state.currentProfile = {
-                profile_id: roleIds[activeRole] || user.profile_id || user.id,
-                profile_type: activeRole,
-                user_id: parseInt(actualUserId) || user.id
-            };
-
-            this.updateCurrentUserUI();
-            console.log('Chat: Current profile loaded:', this.state.currentProfile, 'from page:', currentPath);
-        } else if (token) {
-            // Try to fetch from API if we have a token but no local data
-            this.fetchCurrentUser();
-        }
+        // Fetch from API
+        this.fetchCurrentUser();
     },
 
-    // Fetch current user from API
+
+    // Fetch current user from API - simplified for user-based architecture
     async fetchCurrentUser() {
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            if (!token) return;
+            if (!token) {
+                console.log('Chat: No token available');
+                return null;
+            }
 
             const response = await fetch(`${this.API_BASE_URL}/api/me`, {
                 headers: {
@@ -1181,97 +1015,62 @@ const ChatModalManager = {
                 }
             });
 
-            if (response.ok) {
-                const user = await response.json();
-                this.state.currentUser = user;
-
-                // Detect active role from current page URL
-                const currentPath = window.location.pathname.toLowerCase();
-                let activeRole = 'student'; // default
-
-                if (currentPath.includes('tutor-profile') || currentPath.includes('tutor_profile')) {
-                    activeRole = 'tutor';
-                } else if (currentPath.includes('student-profile') || currentPath.includes('student_profile')) {
-                    activeRole = 'student';
-                } else if (currentPath.includes('parent-profile') || currentPath.includes('parent_profile')) {
-                    activeRole = 'parent';
-                } else if (currentPath.includes('advertiser-profile') || currentPath.includes('advertiser_profile')) {
-                    activeRole = 'advertiser';
-                } else {
-                    // Fallback to stored role from localStorage or user object
-                    const storedRole = localStorage.getItem('userRole');
-                    activeRole = storedRole || user.current_role || user.active_role || user.role || 'student';
-                }
-
-                const roleIds = user.role_ids || {};
-
-                // Get user_id properly - from user object or JWT token
-                let actualUserId = user.user_id || user.userId;
-                if (!actualUserId) {
-                    try {
-                        const tokenParts = token.split('.');
-                        if (tokenParts.length === 3) {
-                            const payload = JSON.parse(atob(tokenParts[1]));
-                            actualUserId = payload.sub || payload.user_id;
-                        }
-                    } catch (e) {
-                        console.warn('Chat: Could not decode JWT for user_id:', e);
-                    }
-                }
-                if (!actualUserId) {
-                    actualUserId = user.id;
-                }
-
-                this.state.currentProfile = {
-                    profile_id: roleIds[activeRole] || user.profile_id || user.id,
-                    profile_type: activeRole,
-                    user_id: parseInt(actualUserId) || user.id
-                };
-
-                this.updateCurrentUserUI();
-                console.log('Chat: User fetched from API:', this.state.currentProfile, 'from page:', currentPath);
+            if (!response.ok) {
+                console.error('Chat: Failed to fetch user:', response.status);
+                return null;
             }
+
+            const user = await response.json();
+
+            // Build display name
+            const firstName = user.first_name || '';
+            const lastName = user.last_name || user.father_name || '';
+            const displayName = `${firstName} ${lastName}`.trim() || user.email?.split('@')[0] || 'User';
+
+            // Set current user (user-based, no role needed!)
+            this.state.currentUser = {
+                user_id: user.id,
+                name: displayName,
+                avatar: user.profile_picture || getChatDefaultAvatar(displayName),
+                email: user.email,
+                // Keep full user object for backward compatibility
+                _fullUser: user
+            };
+
+            console.log('Chat: Current user loaded:', this.state.currentUser);
+
+            // Update UI
+            this.updateCurrentUserDisplay();
+
+            return user;
+
         } catch (error) {
-            console.log('Chat: Could not fetch user from API:', error.message);
+            console.error('Chat: Failed to fetch current user:', error);
+            return null;
         }
     },
 
-    // Update Current User UI in sidebar
+
+    // Update Current User Display - simplified for user-based architecture
+    updateCurrentUserDisplay() {
+        const { name, avatar } = this.state.currentUser || {};
+
+        const avatarEl = document.getElementById('chatCurrentUserAvatar');
+        const nameEl = document.getElementById('chatCurrentUserName');
+        const roleEl = document.getElementById('chatCurrentUserRole');
+
+        if (avatarEl && avatar) avatarEl.src = avatar;
+        if (nameEl) nameEl.textContent = name || 'You';
+        if (roleEl) roleEl.textContent = 'Astegni User';  // No role distinction needed
+
+        console.log('Chat: Updated user display:', name);
+    },
+
+    // DEPRECATED - kept for backward compatibility
     updateCurrentUserUI() {
-        const user = this.state.currentUser;
-        if (!user) return;
-
-        const avatar = document.getElementById('chatCurrentUserAvatar');
-        const name = document.getElementById('chatCurrentUserName');
-        const role = document.getElementById('chatCurrentUserRole');
-
-        // Get display name from various possible fields
-        const displayName = user.full_name || user.name || user.username ||
-                           `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'You';
-
-        // Get avatar from various possible fields
-        const avatarUrl = user.profile_picture || user.avatar || user.avatar_url ||
-                         user.profile_image || user.photo ||
-                         `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=F59E0B&color=fff`;
-
-        // Get role from currentProfile.profile_type (which was correctly detected in loadCurrentUser)
-        // This ensures we show the actual logged-in role, not just whatever is in user object
-        const userRole = this.state.currentProfile?.profile_type ||
-                        user.current_role || user.active_role || user.role || 'user';
-
-        if (avatar) {
-            avatar.src = avatarUrl;
-            avatar.alt = displayName;
-        }
-        if (name) {
-            name.textContent = displayName;
-        }
-        if (role) {
-            role.textContent = this.capitalizeFirst(userRole);
-        }
-
-        console.log('Chat: Updated sidebar with user:', displayName, 'role:', userRole);
+        this.updateCurrentUserDisplay();
     },
+
 
     // Setup Event Listeners
     setupEventListeners() {
@@ -1502,7 +1301,7 @@ const ChatModalManager = {
         this.state.conversations = [];
         this.state.connectionRequests = { sent: [], received: [] };
 
-        console.log('Chat: After loadCurrentUser, currentProfile:', this.state.currentProfile);
+        console.log('Chat: After loadCurrentUser, currentUser:', this.state.currentUser);
 
         // IMPORTANT: Refresh settings from API when modal opens (ensures profile-specific settings)
         await this.refreshChatSettingsFromAPI();
@@ -1549,20 +1348,20 @@ const ChatModalManager = {
                 return false;
             }
 
-            if (!this.state.currentProfile) {
+            if (!this.state.currentUser) {
                 console.log('Chat: No currentProfile, attempting to load user');
                 this.loadCurrentUser();
-                if (!this.state.currentProfile) {
+                if (!this.state.currentUser) {
                     console.log('Chat: Still no currentProfile after load, skipping 2FA check');
                     return false;
                 }
             }
 
-            const { profile_id, profile_type } = this.state.currentProfile;
-            console.log('Chat: Checking 2FA status for profile_id:', profile_id, 'profile_type:', profile_type);
+            const userId = this.state.currentUser?.user_id;
+            console.log('Chat: Checking 2FA status for user_id:', userId);
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/security/two-step?profile_id=${profile_id}&profile_type=${profile_type}`,
+                `${this.API_BASE_URL}/api/chat/security/two-step?user_id=${userId}`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }
@@ -1662,10 +1461,10 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const { profile_id, profile_type } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/security/two-step/verify?profile_id=${profile_id}&profile_type=${profile_type}`,
+                `${this.API_BASE_URL}/api/chat/security/two-step/verify?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -1806,10 +1605,10 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const { profile_id, profile_type, user_id } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/security/two-step/forgot?profile_id=${profile_id}&profile_type=${profile_type}&user_id=${user_id}`,
+                `${this.API_BASE_URL}/api/chat/security/two-step/forgot?user_id=${user_id}`,
                 {
                     method: 'POST',
                     headers: {
@@ -1932,10 +1731,10 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const { profile_id, profile_type, user_id } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/security/two-step/reset?profile_id=${profile_id}&profile_type=${profile_type}&user_id=${user_id}`,
+                `${this.API_BASE_URL}/api/chat/security/two-step/reset?user_id=${user_id}`,
                 {
                     method: 'POST',
                     headers: {
@@ -2106,9 +1905,9 @@ const ChatModalManager = {
 
     // Build API query params with profile info
     getProfileParams() {
-        const profile = this.state.currentProfile;
-        if (!profile) return '';
-        return `profile_id=${profile.profile_id}&profile_type=${profile.profile_type}&user_id=${profile.user_id}`;
+        const userId = this.state.currentUser?.user_id;
+        if (!userId) return '';
+        return `user_id=${userId}`;
     },
 
     // Load Conversations from API
@@ -2120,16 +1919,22 @@ const ChatModalManager = {
             // Show loading
             if (loadingEl) loadingEl.style.display = 'flex';
 
-            if (!this.state.currentProfile) {
+            if (!this.state.currentUser) {
                 console.warn('Chat: No current profile, loading user first');
-                this.loadCurrentUser();
+                await this.loadCurrentUser();
             }
 
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const profileParams = this.getProfileParams();
 
+            // Don't proceed if we still don't have a user ID
+            if (!profileParams) {
+                console.error('Chat: Cannot load conversations - no user ID available');
+                return;
+            }
+
             console.log('Chat: API Request - profile params:', profileParams);
-            console.log('Chat: API Request - currentProfile:', this.state.currentProfile);
+            console.log('Chat: API Request - currentUser:', this.state.currentUser);
 
             // Load conversations AND connection requests in parallel
             const [conversationsResult, requestsResult] = await Promise.allSettled([
@@ -2200,40 +2005,49 @@ const ChatModalManager = {
 
     // Load contacts from connections (accepted connections)
     async loadContacts(search = '') {
-        if (!this.state.currentProfile) {
-            this.loadCurrentUser();
-        }
+        if (!this.state.currentUser) return;
 
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const profileParams = this.getProfileParams();
+        if (!token) return;
 
         try {
-            const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-            const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/contacts?${profileParams}${searchParam}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
+            const userId = this.state.currentUser.user_id;
 
-            if (response.ok) {
-                const data = await response.json();
-                this.state.contacts = data.contacts || [];
-                console.log('Chat: Loaded contacts:', this.state.contacts.length);
-                return this.state.contacts;
+            let url = `${this.API_BASE_URL}/api/chat/contacts?user_id=${userId}`;
+            if (search) {
+                url += `&search=${encodeURIComponent(search)}`;
             }
-        } catch (error) {
-            console.log('Chat: Error loading contacts:', error.message);
-        }
 
-        return [];
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to load contacts: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.state.contacts = data.contacts || [];
+
+            console.log('Chat: Loaded', this.state.contacts.length, 'contacts');
+
+            // Render contacts if we're in contacts tab
+            const activeTab = document.querySelector('#chatTabButtons .active');
+            if (activeTab && activeTab.dataset.tab === 'contacts') {
+                this.renderContacts();
+            }
+
+        } catch (error) {
+            console.error('Chat: Failed to load contacts:', error);
+        }
     },
 
-    // Load connection requests (pending - sent and received)
+    
     async loadConnectionRequests() {
-        if (!this.state.currentProfile) {
+        if (!this.state.currentUser) {
             this.loadCurrentUser();
         }
 
@@ -3013,33 +2827,35 @@ const ChatModalManager = {
                     },
                     body: JSON.stringify({
                         type: 'direct',
-                        participants: [{
-                            profile_id: conn.other_profile_id,
-                            profile_type: conn.other_profile_type,
-                            user_id: conn.other_user_id
-                        }]
+                        participant_user_ids: [conn.other_user_id]  // Backend expects array of user IDs
                     })
                 }
             );
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Chat: Created conversation from connection:', data.conversation_id);
+                const conversationId = data.conversation?.id;
+                console.log('Chat: Created conversation from connection:', conversationId);
+
+                if (!conversationId) {
+                    console.error('Chat: No conversation ID in response:', data);
+                    return null;
+                }
 
                 // Update the connection in our state to be a real conversation
                 const idx = this.state.conversations.findIndex(c => c.id === conn.id);
                 if (idx >= 0) {
-                    this.state.conversations[idx].id = data.conversation_id;
+                    this.state.conversations[idx].id = conversationId;
                     this.state.conversations[idx].is_connection = false;
 
                     // Update the DOM element
                     const el = document.querySelector(`[data-conversation-id="${conn.id}"]`);
                     if (el) {
-                        el.dataset.conversationId = data.conversation_id;
+                        el.dataset.conversationId = conversationId;
                     }
                 }
 
-                return { id: data.conversation_id, existing: data.existing };
+                return { id: conversationId, existing: data.message?.includes('Existing') };
             }
         } catch (error) {
             console.log('Chat: Could not create conversation:', error.message);
@@ -3054,12 +2870,12 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const profile = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
-            if (!token || !profile) return null;
+            if (!token || !this.state.currentUser) return null;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations?profile_id=${profile.profile_id}&profile_type=${profile.profile_type}&user_id=${profile.user_id}`,
+                `${this.API_BASE_URL}/api/chat/conversations?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -3068,34 +2884,37 @@ const ChatModalManager = {
                     },
                     body: JSON.stringify({
                         type: 'direct',
-                        participants: [{
-                            profile_id: pendingRecipient.profile_id,
-                            profile_type: pendingRecipient.profile_type,
-                            user_id: pendingRecipient.user_id
-                        }]
+                        participant_user_ids: [pendingRecipient.user_id]  // Backend expects array of user IDs
                     })
                 }
             );
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Chat: Created conversation with pending recipient:', data.conversation_id);
+                const conversationId = data.conversation?.id;
+                console.log('Chat: Created conversation with pending recipient:', conversationId);
+
+                if (!conversationId) {
+                    console.error('Chat: No conversation ID in response:', data);
+                    return null;
+                }
 
                 // Update state
-                this.state.selectedChat = data.conversation_id;
+                this.state.selectedChat = conversationId;
                 this.state.selectedConversation = {
-                    id: data.conversation_id,
+                    id: conversationId,
                     type: 'direct',
                     display_name: pendingRecipient.display_name,
                     avatar: pendingRecipient.avatar,
                     other_profile_id: pendingRecipient.profile_id,
-                    other_profile_type: pendingRecipient.profile_type
+                    other_profile_type: pendingRecipient.profile_type,
+                    other_user_id: pendingRecipient.user_id
                 };
 
                 // Clear pending recipient
                 this.state.pendingRequestRecipient = null;
 
-                return { id: data.conversation_id, existing: data.existing };
+                return { id: conversationId, existing: data.message?.includes('Existing') };
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 console.log('Chat: Could not create conversation with pending recipient:', errorData.detail);
@@ -3206,18 +3025,18 @@ const ChatModalManager = {
     },
 
     // Send connection request from chat modal (for strangers)
-    async sendConnectionRequestFromChat(profileId, profileType, displayName) {
+    async sendConnectionRequestFromChat(recipientUserId, displayName) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
 
-        if (!token || !profile) {
+        if (!token || !userId) {
             this.showToast('Please log in to send connection requests', 'error');
             return;
         }
 
         try {
             const response = await fetch(
-                `${this.API_BASE_URL}/api/connections/request`,
+                `${this.API_BASE_URL}/api/connections`,
                 {
                     method: 'POST',
                     headers: {
@@ -3225,10 +3044,9 @@ const ChatModalManager = {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        sender_profile_id: profile.profile_id,
-                        sender_profile_type: profile.profile_type,
-                        receiver_profile_id: profileId,
-                        receiver_profile_type: profileType
+                        recipient_id: recipientUserId,
+                        recipient_type: 'student',  // Default, could be dynamic based on recipient
+                        requester_type: this.state.currentUser?.role || 'student'
                     })
                 }
             );
@@ -3850,16 +3668,16 @@ const ChatModalManager = {
     isChannelCreator(conv) {
         if (!conv || conv.type !== 'channel') return true; // Not a channel, allow posting
 
-        const profile = this.state.currentProfile;
-        if (!profile) return false;
+        const userId = this.state.currentUser?.user_id;
+        if (!this.state.currentUser) return false;
 
         // Check if current user is the creator
-        const isCreator = String(conv.created_by_profile_id) === String(profile.profile_id) &&
-                         conv.created_by_profile_type === profile.profile_type;
+        const isCreator = String(conv.created_by_profile_id) === String(userId) &&
+                         conv.created_by_user_id === userId;
 
         console.log('Chat: Channel creator check:', {
-            convCreator: { id: conv.created_by_profile_id, type: conv.created_by_profile_type },
-            currentProfile: { id: profile.profile_id, type: profile.profile_type },
+            convCreator: { user_id: conv.created_by_user_id },
+            currentUser: { user_id: userId },
             isCreator
         });
 
@@ -3878,21 +3696,21 @@ const ChatModalManager = {
         // For groups, we need to check participants
         // If we have cached participant data, use it
         if (conv.participants && Array.isArray(conv.participants)) {
-            const profile = this.state.currentProfile;
-            if (!profile) return false;
+            const userId = this.state.currentUser?.user_id;
+            if (!this.state.currentUser) return false;
             return conv.participants.some(p =>
-                String(p.profile_id) === String(profile.profile_id) &&
-                p.profile_type === profile.profile_type &&
+                String(p.profile_id) === String(userId) &&
+                p.profile_type === null &&
                 p.role === 'admin'
             );
         }
 
         // Fallback: Check if user is the creator (created_by fields)
-        const profile = this.state.currentProfile;
-        if (!profile) return false;
+        const userId = this.state.currentUser?.user_id;
+        if (!this.state.currentUser) return false;
 
-        return String(conv.created_by_profile_id) === String(profile.profile_id) &&
-               conv.created_by_profile_type === profile.profile_type;
+        return String(conv.created_by_profile_id) === String(userId) &&
+               conv.created_by_profile_type === null;
     },
 
     // Update input area for channel restrictions
@@ -4072,7 +3890,7 @@ const ChatModalManager = {
 
                 // Check if the original sender is the current user using profile_id (most reliable)
                 // Only show "You" if: 1) I sent this forwarded message, AND 2) the original sender is me
-                const currentProfile = this.state.currentProfile;
+                const userId = this.state.currentUser?.user_id;
                 const currentUser = this.state.currentUser;
                 const isMySentMessage = msg.sent || msg.is_mine;
 
@@ -4081,8 +3899,8 @@ const ChatModalManager = {
                 if (msg.forwarded_from_profile_id && currentProfile?.profile_id) {
                     // Use profile_id comparison (most reliable)
                     isCurrentUserOriginalSender =
-                        String(msg.forwarded_from_profile_id) === String(currentProfile.profile_id) &&
-                        msg.forwarded_from_profile_type === currentProfile.profile_type;
+                        String(msg.forwarded_from_profile_id) === String(userId) &&
+                        msg.forwarded_from_profile_type === null;
                 } else {
                     // Fallback to name comparison for old messages
                     const currentUserName = currentUser?.full_name ||
@@ -4708,7 +4526,7 @@ const ChatModalManager = {
             return;
         }
 
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
         const user = this.state.currentUser;
         const conv = this.state.selectedConversation;
 
@@ -4748,8 +4566,8 @@ const ChatModalManager = {
             text: messageText,
             content: messageText,
             message_type: this.state.recordedAudio ? 'audio' : 'text',
-            sender_id: profile?.profile_id || 'me',
-            sender_name: user?.full_name || user?.first_name || 'You',
+            sender_id: userId || 'me',
+            sender_name: user?.name || user?.full_name || user?.first_name || 'You',
             avatar: user?.profile_picture,
             time: new Date(),
             sent: true,
@@ -4839,16 +4657,17 @@ const ChatModalManager = {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Chat: Message sent successfully:', data.message_id);
+                const messageId = data.message?.id || data.message_id;  // Backend returns data.message.id
+                console.log('Chat: Message sent successfully:', messageId);
                 // Update the optimistic message with the real ID and status
                 const oldId = messageData.id;
-                messageData.id = data.message_id;
+                messageData.id = messageId;
                 messageData.status = 'sent';
                 // Update status indicator in UI
                 this.updateMessageStatus(oldId, 'sent');
                 // Update the data-message-id attribute
                 const msgEl = document.querySelector(`[data-message-id="${oldId}"]`);
-                if (msgEl) msgEl.dataset.messageId = data.message_id;
+                if (msgEl) msgEl.dataset.messageId = messageId;
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 console.log('Chat: Message API returned error:', errorData);
@@ -4873,11 +4692,11 @@ const ChatModalManager = {
             return;
         }
 
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
         const user = this.state.currentUser;
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
-        if (!profile || !token) {
+        if (!this.state.currentUser || !token) {
             this.showToast('Please log in to send messages', 'error');
             return;
         }
@@ -4885,7 +4704,7 @@ const ChatModalManager = {
         try {
             // First, create a conversation with the recipient
             const createResponse = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations?profile_id=${profile.profile_id}&profile_type=${profile.profile_type}&user_id=${profile.user_id}`,
+                `${this.API_BASE_URL}/api/chat/conversations?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -4894,11 +4713,7 @@ const ChatModalManager = {
                     },
                     body: JSON.stringify({
                         type: 'direct',
-                        participants: [{
-                            profile_id: pendingRecipient.profile_id,
-                            profile_type: pendingRecipient.profile_type,
-                            user_id: pendingRecipient.user_id
-                        }]
+                        participant_user_ids: [pendingRecipient.user_id]  // Backend expects array of user IDs
                     })
                 }
             );
@@ -4910,11 +4725,17 @@ const ChatModalManager = {
             }
 
             const convData = await createResponse.json();
-            const conversationId = convData.conversation_id;
+            const conversationId = convData.conversation?.id;
+
+            if (!conversationId) {
+                console.error('Chat: No conversation ID in response:', convData);
+                this.showToast('Could not start conversation', 'error');
+                return;
+            }
 
             // Now send the message
             const sendResponse = await fetch(
-                `${this.API_BASE_URL}/api/chat/messages?profile_id=${profile.profile_id}&profile_type=${profile.profile_type}&user_id=${profile.user_id}`,
+                `${this.API_BASE_URL}/api/chat/messages?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -5011,23 +4832,19 @@ const ChatModalManager = {
     },
 
     // Open chat with original sender of a forwarded message
-    async openChatWithOriginalSender(profileId, profileType, name, avatar) {
-        console.log('Chat: Opening chat with original sender:', { profileId, profileType, name, avatar });
+    async openChatWithOriginalSender(targetUserId, name, avatar) {
+        console.log('Chat: Opening chat with original sender:', { targetUserId, name, avatar });
 
         // Don't open chat with yourself
-        const currentProfile = this.state.currentProfile;
-        if (currentProfile &&
-            String(currentProfile.profile_id) === String(profileId) &&
-            currentProfile.profile_type === profileType) {
+        const userId = this.state.currentUser?.user_id;
+        if (userId === targetUserId) {
             this.showToast('This is your own message', 'info');
             return;
         }
 
         // Use existing openConversationWith method with the original sender's info
         await this.openConversationWith({
-            profile_id: profileId,
-            profile_type: profileType,
-            profileType: profileType,
+            user_id: targetUserId,
             full_name: name,
             name: name,
             profile_picture: avatar,
@@ -5793,17 +5610,15 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            if (!token || !this.state.currentProfile) {
+            if (!token || !this.state.currentUser) {
                 this.showToast('Please log in to create a group', 'error');
                 return;
             }
 
-            // Build participants array from selected members
-            const participants = this.state.selectedGroupMembers.map(member => ({
-                profile_id: member.other_profile_id || member.profile_id,
-                profile_type: member.other_profile_type || member.profile_type,
-                user_id: member.other_user_id || member.user_id
-            }));
+            // Build participants array from selected members - backend expects just user IDs
+            const participantUserIds = this.state.selectedGroupMembers.map(member =>
+                member.other_user_id || member.user_id
+            );
 
             // Upload group icon if provided
             let avatarUrl = null;
@@ -5831,11 +5646,11 @@ const ChatModalManager = {
             }
 
             // Create the group/channel via API
-            const { profile_id, profile_type, user_id } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
             const convType = isChannel ? 'channel' : 'group';
 
             const createResponse = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations?profile_id=${profile_id}&profile_type=${profile_type}&user_id=${user_id}`,
+                `${this.API_BASE_URL}/api/chat/conversations?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -5847,7 +5662,7 @@ const ChatModalManager = {
                         name: name,
                         description: description || null,
                         avatar_url: avatarUrl,
-                        participants: participants
+                        participant_user_ids: participantUserIds  // Backend expects array of user IDs
                     })
                 }
             );
@@ -5858,8 +5673,13 @@ const ChatModalManager = {
             }
 
             const result = await createResponse.json();
-            const conversationId = result.conversation_id;
+            const conversationId = result.conversation?.id;
             const rejectedParticipants = result.rejected_participants || [];
+
+            if (!conversationId) {
+                console.error('Chat: No conversation ID in response:', result);
+                throw new Error('No conversation ID returned from server');
+            }
 
             // Show feedback about rejected participants (privacy settings prevented adding)
             if (rejectedParticipants.length > 0) {
@@ -6105,7 +5925,7 @@ const ChatModalManager = {
                 if (!senderGender) {
                     // If sent by current user, use current user's gender
                     if (isSent) {
-                        senderGender = this.state.currentUser?.gender || this.state.currentProfile?.gender || 'male';
+                        senderGender = this.state.currentUser?.gender || 'male';
                     } else {
                         // For received messages, try to get from conversation partner
                         const conv = this.state.selectedConversation;
@@ -6461,13 +6281,13 @@ const ChatModalManager = {
     },
 
     // Check if recipient allows calls from everyone (for who_can_call setting)
-    async checkRecipientAllowsCalls(recipientProfileId, recipientProfileType) {
+    async checkRecipientAllowsCalls(recipientUserId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return false;
 
         try {
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/settings?profile_id=${recipientProfileId}&profile_type=${recipientProfileType}`,
+                `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
@@ -6486,13 +6306,13 @@ const ChatModalManager = {
     },
 
     // Check if message sender allows forwarding their messages
-    async checkSenderAllowsForwarding(senderProfileId, senderProfileType) {
+    async checkSenderAllowsForwarding(senderUserId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return true; // Default to allow if we can't check
 
         try {
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/settings?profile_id=${senderProfileId}&profile_type=${senderProfileType}`,
+                `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
@@ -6511,13 +6331,13 @@ const ChatModalManager = {
     },
 
     // Check if sender has screenshot protection enabled
-    async checkSenderBlocksScreenshots(senderProfileId, senderProfileType) {
+    async checkSenderBlocksScreenshots(senderUserId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return false;
 
         try {
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/settings?profile_id=${senderProfileId}&profile_type=${senderProfileType}`,
+                `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
@@ -6540,7 +6360,11 @@ const ChatModalManager = {
         if (!chatArea) return;
 
         // Check if the other party has screenshot protection enabled
-        const hasProtection = await this.checkSenderBlocksScreenshots(profileId, profileType);
+        // Note: We need the user_id, not profile_id. Get it from the selected conversation
+        const otherUserId = this.state.selectedConversation?.other_user_id;
+        if (!otherUserId) return;
+
+        const hasProtection = await this.checkSenderBlocksScreenshots(otherUserId);
 
         if (hasProtection) {
             // Add protection class to chat area
@@ -6631,13 +6455,9 @@ const ChatModalManager = {
 
         // For pending requests, check if recipient allows calls from everyone
         if (!this.state.selectedChat && pendingRecipient) {
-            const allowsCalls = await this.checkRecipientAllowsCalls(
-                pendingRecipient.profile_id,
-                pendingRecipient.profile_type
-            );
-
+            const allowsCalls = await this.checkRecipientAllowsCalls(pendingRecipient.user_id);
             if (!allowsCalls) {
-                this.showToast('This user only accepts calls from connections', 'error');
+                this.showToast('User does not accept calls', 'error');
                 return;
             }
 
@@ -6702,13 +6522,9 @@ const ChatModalManager = {
 
         // For pending requests, check if recipient allows calls from everyone
         if (!this.state.selectedChat && pendingRecipient) {
-            const allowsCalls = await this.checkRecipientAllowsCalls(
-                pendingRecipient.profile_id,
-                pendingRecipient.profile_type
-            );
-
+            const allowsCalls = await this.checkRecipientAllowsCalls(pendingRecipient.user_id);
             if (!allowsCalls) {
-                this.showToast('This user only accepts calls from connections', 'error');
+                this.showToast('User does not accept calls', 'error');
                 return;
             }
 
@@ -7061,7 +6877,7 @@ const ChatModalManager = {
             const senderProfileType = messageObj.sender_profile_type;
 
             if (senderProfileId && senderProfileType) {
-                const canForward = await this.checkSenderAllowsForwarding(senderProfileId, senderProfileType);
+                const canForward = await this.checkSenderAllowsForwarding(senderUserId);
                 if (!canForward) {
                     this.showToast('This message cannot be forwarded - sender has disabled forwarding', 'error');
                     this.hideContextMenu();
@@ -7079,7 +6895,7 @@ const ChatModalManager = {
         // Get ORIGINAL sender info using profile IDs
         const isSent = messageEl.classList.contains('sent');
         const messageAvatar = messageEl.querySelector('.message-avatar');
-        const currentProfile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
         const currentUser = this.state.currentUser;
 
         let originalSenderName, originalSenderAvatar, originalSenderProfileId, originalSenderProfileType;
@@ -8049,7 +7865,7 @@ const ChatModalManager = {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         const profileParams = this.getProfileParams();
         const user = this.state.currentUser;
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
 
         let successCount = 0;
         let failCount = 0;
@@ -8674,7 +8490,7 @@ const ChatModalManager = {
                 }
 
                 // Check if current user is admin
-                const currentProfile = this.state.currentProfile;
+                const userId = this.state.currentUser?.user_id;
                 const isCurrentUserAdmin = participants.some(p =>
                     p.profile_id == currentProfile?.profile_id &&
                     p.profile_type === currentProfile?.profile_type &&
@@ -8724,7 +8540,7 @@ const ChatModalManager = {
     },
 
     // Remove a member from group/channel
-    async removeMember(profileId, profileType) {
+    async removeMember(userId) {
         const conv = this.state.selectedConversation;
         if (!conv) return;
 
@@ -8781,8 +8597,8 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const profile = this.state.currentProfile;
-            if (!profile) {
+            const userId = this.state.currentUser?.user_id;
+            if (!this.state.currentUser) {
                 this.showToast('Profile not found', 'error');
                 return;
             }
@@ -8791,7 +8607,7 @@ const ChatModalManager = {
 
             // Use the same endpoint as removeMember but remove self
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations/${conv.id}/participants/${profile.profile_id}/${profile.profile_type}?${profileParams}`,
+                `${this.API_BASE_URL}/api/chat/conversations/${conv.id}/participants/${userId}?${profileParams}`,
                 {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -9219,8 +9035,6 @@ const ChatModalManager = {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            blocked_profile_id: conv.other_profile_id,
-                            blocked_profile_type: conv.other_profile_type || 'student',
                             blocked_user_id: conv.other_user_id
                         })
                     }
@@ -9948,14 +9762,14 @@ const ChatModalManager = {
         const timeRemaining = this.getPollTimeRemaining(poll);
 
         // Check if current user is the poll creator
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
         // Handle both old format (createdBy as user_id) and new format (createdBy as object)
         let isCreator = false;
         if (profile && poll.createdBy) {
             if (typeof poll.createdBy === 'object') {
                 // New format: createdBy is an object with profile_id and profile_type
-                isCreator = String(profile.profile_id) === String(poll.createdBy.profile_id) &&
-                    profile.profile_type === poll.createdBy.profile_type;
+                isCreator = String(userId) === String(poll.createdBy.profile_id) &&
+                    userId === poll.createdBy.user_id;
             } else {
                 // Old format: createdBy was just user_id - compare with current user_id
                 isCreator = String(profile.user_id) === String(poll.createdBy);
@@ -9965,7 +9779,7 @@ const ChatModalManager = {
         console.log('Poll delete check:', {
             pollId: poll.id,
             isCreator,
-            profile: profile ? { profile_id: profile.profile_id, profile_type: profile.profile_type } : null,
+            userId: userId,
             createdBy: poll.createdBy
         });
 
@@ -10069,7 +9883,7 @@ const ChatModalManager = {
         }
 
         // Get current profile for creator check
-        const profile = this.state.currentProfile;
+        const userId = this.state.currentUser?.user_id;
 
         pollsList.innerHTML = conversationPolls.map(poll => {
             const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
@@ -10082,8 +9896,8 @@ const ChatModalManager = {
             if (profile && poll.createdBy) {
                 if (typeof poll.createdBy === 'object') {
                     // New format: createdBy is an object with profile_id and profile_type
-                    isCreator = String(profile.profile_id) === String(poll.createdBy.profile_id) &&
-                        profile.profile_type === poll.createdBy.profile_type;
+                    isCreator = String(userId) === String(poll.createdBy.profile_id) &&
+                        userId === poll.createdBy.user_id;
                 } else {
                     // Old format: createdBy was just user_id - compare with current user_id
                     isCreator = String(profile.user_id) === String(poll.createdBy);
@@ -10142,9 +9956,8 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const profileParams = this.getProfileParams();
-
-            if (!profileParams) {
+            const userId = this.state.currentUser?.user_id;
+            if (!userId) {
                 console.error('Chat: No profile loaded for voting');
                 this.showToast('Please refresh the page and try again', 'error');
                 return;
@@ -10249,9 +10062,8 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const profileParams = this.getProfileParams();
-
-            if (!profileParams) {
+            const userId = this.state.currentUser?.user_id;
+            if (!userId) {
                 console.error('Chat: No profile loaded for deleting poll');
                 this.showToast('Please refresh the page and try again', 'error');
                 return;
@@ -10569,14 +10381,12 @@ const ChatModalManager = {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const profileParams = this.getProfileParams();
 
-            // Build participants array with proper profile data
-            const participants = this.selectedMembersToAdd.map(member => ({
-                user_id: member.user_id,
-                profile_id: member.other_profile_id || member.profile_id || member.user_id,
-                profile_type: member.other_profile_type || member.profile_type || 'student'
-            }));
+            // Build participants array - backend expects just user IDs
+            const participantUserIds = this.selectedMembersToAdd.map(member =>
+                member.user_id || member.other_user_id
+            );
 
-            console.log('Adding participants:', participants);
+            console.log('Adding participants (user IDs):', participantUserIds);
 
             // Send all participants in one request
             const response = await fetch(`${this.API_BASE_URL}/api/chat/conversations/${conv.id}/participants?${profileParams}`, {
@@ -10586,7 +10396,7 @@ const ChatModalManager = {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    participants: participants
+                    participant_user_ids: participantUserIds  // Backend expects array of user IDs
                 })
             });
 
@@ -10833,7 +10643,14 @@ const ChatModalManager = {
 
     // Broadcast typing status to backend
     async broadcastTypingStatus(isTyping) {
-        if (!this.state.selectedChat || !this.state.currentProfile) return;
+        if (!this.state.selectedChat || !this.state.currentUser) return;
+
+        // Skip typing indicator for synthetic conversations (they don't have real conversation IDs yet)
+        const conv = this.state.selectedConversation;
+        if (conv && this.isSyntheticConversation(conv)) {
+            console.debug('[Chat] Skipping typing indicator for synthetic conversation:', this.state.selectedChat);
+            return;
+        }
 
         // Double-check typing indicators setting
         const settings = this.state.chatSettings || {};
@@ -10843,15 +10660,16 @@ const ChatModalManager = {
         if (!token) return;
 
         try {
-            const { profile_id, profile_type } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
             await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations/${this.state.selectedChat}/typing?profile_id=${profile_id}&profile_type=${profile_type}&is_typing=${isTyping}`,
+                `${this.API_BASE_URL}/api/chat/conversations/${this.state.selectedChat}/typing?user_id=${userId}`,
                 {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({ is_typing: isTyping })  // Backend expects is_typing in request body
                 }
             );
         } catch (error) {
@@ -10862,7 +10680,7 @@ const ChatModalManager = {
 
     // Poll for other users' typing status
     async pollTypingStatus() {
-        if (!this.state.selectedChat || !this.state.currentProfile) return;
+        if (!this.state.selectedChat || !this.state.currentUser) return;
 
         // Skip polling for synthetic conversations (invitations, connections, etc.)
         if (this.isSyntheticConversation(this.state.selectedChat)) return;
@@ -10871,9 +10689,9 @@ const ChatModalManager = {
         if (!token) return;
 
         try {
-            const { profile_id, profile_type } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations/${this.state.selectedChat}/typing?profile_id=${profile_id}&profile_type=${profile_type}`,
+                `${this.API_BASE_URL}/api/chat/conversations/${this.state.selectedChat}/typing?user_id=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -10950,8 +10768,7 @@ const ChatModalManager = {
         if (!chatArea) return;
 
         const conversationId = message.conversation_id || this.state.selectedChat;
-        const isMine = message.sender_profile_id === this.state.currentProfile?.profile_id &&
-                       message.sender_profile_type === this.state.currentProfile?.profile_type;
+        const isMine = message.sender_user_id === this.state.currentUser?.user_id;
 
         // Add message to state for persistence
         const messageData = {
@@ -11635,7 +11452,7 @@ const ChatModalManager = {
     // Handle send message (checks current mode)
     handleSendMessage() {
         console.log('Chat: handleSendMessage() called');
-        console.log('Chat: currentProfile:', this.state.currentProfile);
+        console.log('Chat: currentUser:', this.state.currentUser);
         console.log('Chat: selectedConversation:', this.state.selectedConversation);
 
         // Check if in forward mode - execute forward instead of normal send
@@ -12311,13 +12128,10 @@ const ChatModalManager = {
 
         // Try to load from API (takes precedence)
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-
-            if (profileId && profileType) {
+                                    if (profileId && profileType) {
                 console.log('[Chat] loadChatSettings: Loading from API for', profileType, profileId);
                 const response = await fetch(
-                    `${this.API_BASE_URL}/api/chat/settings?profile_id=${profileId}&profile_type=${profileType}`,
+                    `${this.API_BASE_URL}/api/chat/settings?user_id=${userId}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`
@@ -12496,10 +12310,7 @@ const ChatModalManager = {
 
         // Try to save to API
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-
-            if (profileId && profileType) {
+                                    if (profileId && profileType) {
                 const response = await fetch(`${this.API_BASE_URL}/api/chat/settings`, {
                     method: 'PUT',
                     headers: {
@@ -12655,7 +12466,7 @@ const ChatModalManager = {
             const profileType = this.state.currentUser?.profileType;
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/sessions?profile_id=${profileId}&profile_type=${profileType}`,
+                `${this.API_BASE_URL}/api/chat/sessions?user_id=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -12948,9 +12759,7 @@ const ChatModalManager = {
         }
 
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-            const userId = this.state.currentUser?.id;
+                                    const userId = this.state.currentUser?.id;
 
             if (!profileId || !profileType || !userId) {
                 this.showToast('Profile information not available', 'error');
@@ -12959,8 +12768,6 @@ const ChatModalManager = {
 
             // Call the dedicated enable endpoint that hashes and saves the password
             const params = new URLSearchParams({
-                profile_id: profileId,
-                profile_type: profileType,
                 user_id: userId,
                 password: password
             });
@@ -13009,7 +12816,7 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const { profile_id, profile_type } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             const params = new URLSearchParams();
             params.append('profile_id', profile_id);
@@ -13071,7 +12878,7 @@ const ChatModalManager = {
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const { profile_id, profile_type } = this.state.currentProfile;
+            const userId = this.state.currentUser?.user_id;
 
             const params = new URLSearchParams();
             params.append('profile_id', profile_id);
@@ -13242,9 +13049,7 @@ const ChatModalManager = {
     // Load conversations for export modal
     async loadExportConversations() {
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-            const userId = this.state.currentUser?.id;
+                                    const userId = this.state.currentUser?.id;
 
             if (!profileId || !profileType) {
                 this.showToast('User profile not found', 'error');
@@ -13253,7 +13058,7 @@ const ChatModalManager = {
             }
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/conversations?profile_id=${profileId}&profile_type=${profileType}&user_id=${userId}`,
+                `${this.API_BASE_URL}/api/chat/conversations?user_id=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`
@@ -13274,7 +13079,7 @@ const ChatModalManager = {
                 conversations.map(async (conv) => {
                     try {
                         const messagesResponse = await fetch(
-                            `${this.API_BASE_URL}/api/chat/messages/${conv.id}?profile_id=${profileId}&profile_type=${profileType}&user_id=${userId}&limit=1`,
+                            `${this.API_BASE_URL}/api/chat/messages/${conv.id}?user_id=${userId}&limit=1`,
                             {
                                 headers: {
                                     'Authorization': `Bearer ${token}`
@@ -13569,9 +13374,7 @@ const ChatModalManager = {
         this.showToast('Preparing export...', 'info');
 
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-            const userId = this.state.currentUser?.id;
+                                    const userId = this.state.currentUser?.id;
             const currentUserName = this.state.currentUser?.name || this.state.currentUser?.full_name || 'You';
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
@@ -13582,7 +13385,7 @@ const ChatModalManager = {
                 try {
                     // Fetch all messages (high limit for export - no pagination needed)
                     const messagesResponse = await fetch(
-                        `${this.API_BASE_URL}/api/chat/messages/${conv.id}?profile_id=${profileId}&profile_type=${profileType}&user_id=${userId}&limit=10000`,
+                        `${this.API_BASE_URL}/api/chat/messages/${conv.id}?user_id=${userId}&limit=10000`,
                         {
                             headers: {
                                 'Authorization': `Bearer ${token}`
@@ -13730,9 +13533,7 @@ const ChatModalManager = {
         this.showToast('Deleting all chat data...', 'info');
 
         try {
-            const profileId = this.state.currentProfile?.profile_id;
-            const profileType = this.state.currentProfile?.profile_type;
-            const userId = this.state.currentUser?.id;
+                                    const userId = this.state.currentUser?.id;
 
             if (!profileId || !profileType || !userId) {
                 this.showToast('User profile not found', 'error');
@@ -13740,7 +13541,7 @@ const ChatModalManager = {
             }
 
             const response = await fetch(
-                `${this.API_BASE_URL}/api/chat/data?profile_id=${profileId}&profile_type=${profileType}&user_id=${userId}`,
+                `${this.API_BASE_URL}/api/chat/data?user_id=${userId}`,
                 {
                     method: 'DELETE',
                     headers: {
@@ -14008,7 +13809,7 @@ const ChatModalManager = {
             return;
         }
 
-        if (!this.state.currentProfile || !this.state.currentUser) {
+        if (!this.state.currentUser) {
             console.log('📡 Cannot connect WebSocket: No profile loaded yet');
             console.log('🔍 Current Profile:', this.state.currentProfile);
             console.log('🔍 Current User:', this.state.currentUser);
@@ -14016,18 +13817,16 @@ const ChatModalManager = {
             return;
         }
 
-        const profileId = this.state.currentProfile.profile_id;
-        const profileType = this.state.currentProfile.profile_type;
+        const userId = this.state.currentUser?.user_id;
 
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const apiHost = (this.API_BASE_URL || 'http://localhost:8000').replace(/^https?:\/\//, '');
-        const wsUrl = `${wsProtocol}//${apiHost}/ws/${profileId}/${profileType}`;
+        const wsUrl = `${wsProtocol}//${apiHost}/ws/${userId}`;
 
         console.log('📡 Connecting to WebSocket for calls');
-        console.log('📡 Profile ID:', profileId);
-        console.log('📡 Profile Type:', profileType);
+        console.log('📡 User ID:', userId);
         console.log('📡 WebSocket URL:', wsUrl);
-        console.log('📡 Connection key will be:', `${profileType}_${profileId}`);
+        console.log('📡 Connection key will be:', `user_${userId}`);
         console.log('🔍 ================================================');
 
         try {
@@ -14038,8 +13837,8 @@ const ChatModalManager = {
 
             this.websocket.onopen = () => {
                 console.log('🔍 ========== WEBSOCKET CONNECTED ==========');
-                console.log(`✅ Chat WebSocket connected as ${profileType} profile ${profileId}`);
-                console.log('✅ Connection key:', `${profileType}_${profileId}`);
+                console.log(`✅ Chat WebSocket connected for user ${userId}`);
+                console.log('✅ Connection key:', `user_${userId}`);
                 console.log('🔍 ==========================================');
 
                 // Dispatch websocket-ready event for StandaloneChatCallManager
@@ -14210,8 +14009,7 @@ const ChatModalManager = {
                 },
                 body: JSON.stringify({
                     conversation_id: conversationId,
-                    caller_profile_id: this.state.currentProfile.profile_id,
-                    caller_profile_type: this.state.currentProfile.profile_type,
+                    caller_user_id: this.state.currentUser?.user_id,
                     call_type: callType,
                     status: 'initiated',
                     started_at: new Date().toISOString()
@@ -14483,11 +14281,10 @@ const ChatModalManager = {
 
         console.log('🔍 Conversation object:', JSON.stringify(conversation, null, 2));
 
-        // Get recipient info from conversation (uses other_profile_id instead of participants array)
-        if (!conversation.other_profile_id || !conversation.other_profile_type) {
+        // Get recipient info from conversation (USER-BASED: uses other_user_id)
+        if (!conversation.other_user_id) {
             console.error('❌ No recipient found in conversation!');
-            console.error('❌ other_profile_id:', conversation.other_profile_id);
-            console.error('❌ other_profile_type:', conversation.other_profile_type);
+            console.error('❌ other_user_id:', conversation.other_user_id);
             console.error('❌ Full conversation:', conversation);
             this.showToast('Could not find call recipient', 'error');
             this.cleanupCall();
@@ -14498,18 +14295,15 @@ const ChatModalManager = {
             type: 'call_invitation',
             call_type: callType,  // 'voice' or 'video'
             conversation_id: conversation.id,
-            from_profile_id: this.state.currentProfile.profile_id,
-            from_profile_type: this.state.currentProfile.profile_type,
-            from_name: this.state.currentUser.full_name || this.state.currentUser.first_name || this.state.currentUser.email,
+            from_user_id: this.state.currentUser?.user_id,
+            from_name: (this.state.currentUser?.full_name || this.state.currentUser?.first_name || this.state.currentUser?.email),
             from_avatar: this.state.currentUser.profile_picture,
-            to_profile_id: conversation.other_profile_id,
-            to_profile_type: conversation.other_profile_type,
             to_user_id: conversation.other_user_id,
             offer: offer
         };
 
         console.log('📤 Sending call invitation:', JSON.stringify(invitation, null, 2));
-        console.log('📤 Recipient key will be:', `${conversation.other_profile_type}_${conversation.other_profile_id}`);
+        console.log('📤 Recipient key will be:', `user_${conversation.other_user_id}`);
         this.websocket.send(JSON.stringify(invitation));
         console.log('✅ Call invitation sent via WebSocket');
         console.log('🔍 ========================================');
@@ -14559,7 +14353,7 @@ const ChatModalManager = {
                     const message = {
                         type: 'call_cancelled',
                         conversation_id: conversation.id,
-                        from_profile_id: this.state.currentProfile.profile_id,
+                        from_profile_id: this.state.userId,
                         to_profile_id: otherProfileId,
                         to_profile_type: otherProfileType,
                         call_type: callType
@@ -14686,14 +14480,13 @@ const ChatModalManager = {
     async acceptGroupCallInvitation(data) {
         console.log('✅ Accepting group call invitation from', data.from_name);
 
-        const participantId = `${data.from_profile_type}_${data.from_profile_id}`;
+        const participantId = `user_${data.from_user_id}`;
 
         // Add to participants list
         if (!this.state.callParticipants.some(p => p.id === participantId)) {
             this.state.callParticipants.push({
                 id: participantId,
-                profile_type: data.from_profile_type,
-                profile_id: data.from_profile_id,
+                user_id: data.from_user_id,
                 name: data.from_name,
                 avatar: data.from_avatar
             });
@@ -14734,10 +14527,8 @@ const ChatModalManager = {
                 const message = {
                     type: 'ice_candidate',
                     candidate: event.candidate,
-                    from_profile_id: this.state.currentProfile.profile_id,
-                    from_profile_type: this.state.currentProfile.profile_type,
-                    to_profile_id: inviteData.from_profile_id,
-                    to_profile_type: inviteData.from_profile_type
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: inviteData.from_user_id
                 };
                 this.websocket.send(JSON.stringify(message));
             }
@@ -14767,10 +14558,8 @@ const ChatModalManager = {
                 const message = {
                     type: 'call_answer',
                     answer: answer,
-                    from_profile_id: this.state.currentProfile.profile_id,
-                    from_profile_type: this.state.currentProfile.profile_type,
-                    to_profile_id: inviteData.from_profile_id,
-                    to_profile_type: inviteData.from_profile_type
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: inviteData.from_user_id
                 };
                 this.websocket.send(JSON.stringify(message));
             }
@@ -14894,7 +14683,7 @@ const ChatModalManager = {
             const message = {
                 type: 'call_declined',
                 conversation_id: this.state.pendingCallInvitation.conversation_id,
-                from_profile_id: this.state.currentProfile.profile_id,
+                from_profile_id: this.state.userId,
                 to_profile_id: this.state.pendingCallInvitation.from_profile_id,
                 to_profile_type: this.state.pendingCallInvitation.from_profile_type
             };
@@ -14923,9 +14712,8 @@ const ChatModalManager = {
         const message = {
             type: 'call_answer',
             conversation_id: this.state.pendingCallInvitation.conversation_id,
-            from_profile_id: this.state.currentProfile.profile_id,
-            to_profile_id: this.state.pendingCallInvitation.from_profile_id,
-            to_profile_type: this.state.pendingCallInvitation.from_profile_type,
+            from_user_id: this.state.currentUser?.user_id,
+            to_user_id: this.state.pendingCallInvitation.from_user_id,
             answer: answer
         };
 
@@ -14971,20 +14759,15 @@ const ChatModalManager = {
         const conversation = this.state.selectedConversation ||
                             { id: this.state.pendingCallInvitation?.conversation_id };
 
-        const otherProfileId = this.state.isIncomingCall
-            ? this.state.pendingCallInvitation?.from_profile_id
-            : this.state.selectedConversation?.other_profile_id;
-
-        const otherProfileType = this.state.isIncomingCall
-            ? this.state.pendingCallInvitation?.from_profile_type
-            : this.state.selectedConversation?.other_profile_type;
+        const otherUserId = this.state.isIncomingCall
+            ? this.state.pendingCallInvitation?.from_user_id
+            : this.state.selectedConversation?.other_user_id;
 
         const message = {
             type: 'ice_candidate',
             conversation_id: conversation.id,
-            from_profile_id: this.state.currentProfile.profile_id,
-            to_profile_id: otherProfileId,
-            to_profile_type: otherProfileType,
+            from_user_id: this.state.currentUser?.user_id,
+            to_user_id: otherUserId,
             candidate: candidate
         };
 
@@ -15199,7 +14982,7 @@ const ChatModalManager = {
                 const message = {
                     type: 'call_mode_switched',
                     conversation_id: conversationId,
-                    from_profile_id: this.state.currentProfile.profile_id,
+                    from_profile_id: this.state.userId,
                     to_profile_id: otherProfileId,
                     to_profile_type: otherProfileType,
                     new_mode: targetMode
@@ -15229,7 +15012,7 @@ const ChatModalManager = {
                     const message = {
                         type: 'webrtc_offer',
                         conversation_id: conversationId,
-                        from_profile_id: this.state.currentProfile.profile_id,
+                        from_profile_id: this.state.userId,
                         to_profile_id: otherProfileId,
                         to_profile_type: otherProfileType,
                         offer: offer
@@ -15280,31 +15063,36 @@ const ChatModalManager = {
             const conversation = this.state.selectedConversation ||
                                 { id: this.state.pendingCallInvitation?.conversation_id };
 
-            // Get recipient profile ID
-            const otherProfileId = this.state.isIncomingCall
-                ? this.state.pendingCallInvitation?.from_profile_id
-                : this.state.selectedConversation?.other_profile_id;
+            // Get recipient user ID (user-based)
+            const otherUserId = this.state.isIncomingCall
+                ? this.state.pendingCallInvitation?.from_user_id
+                : this.state.selectedConversation?.other_user_id;
 
-            const otherProfileType = this.state.isIncomingCall
-                ? this.state.pendingCallInvitation?.from_profile_type
-                : this.state.selectedConversation?.other_profile_type;
+            // Only send message if we have a valid recipient
+            if (otherUserId) {
+                // Determine message type based on whether call was answered
+                const messageType = wasAnswered ? 'call_ended' : 'call_cancelled';
 
-            // Determine message type based on whether call was answered
-            const messageType = wasAnswered ? 'call_ended' : 'call_cancelled';
+                // Update call log with final status and duration
+                const finalStatus = wasAnswered ? 'ended' : 'cancelled';
+                this.updateCallLog(finalStatus, duration);
 
-            // Update call log with final status and duration
-            const finalStatus = wasAnswered ? 'ended' : 'cancelled';
-            this.updateCallLog(finalStatus, duration);
+                const message = {
+                    type: messageType,
+                    conversation_id: conversation.id,
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: otherUserId,
+                    call_type: callType  // Include call type for cancelled calls
+                };
 
-            const message = {
-                type: messageType,
-                conversation_id: conversation.id,
-                from_profile_id: this.state.currentProfile.profile_id,
-                to_profile_id: otherProfileId,
-                to_profile_type: otherProfileType,
-                call_type: callType  // Include call type for cancelled calls
-            };
-            this.websocket.send(JSON.stringify(message));
+                console.log(`📤 Sending ${messageType} to user_${otherUserId}`);
+                this.websocket.send(JSON.stringify(message));
+            } else {
+                console.warn('⚠️ Cannot send call end message: recipient user ID not found');
+                console.warn('⚠️ isIncomingCall:', this.state.isIncomingCall);
+                console.warn('⚠️ pendingCallInvitation:', this.state.pendingCallInvitation);
+                console.warn('⚠️ selectedConversation:', this.state.selectedConversation);
+            }
         }
 
         // Cleanup
@@ -15443,8 +15231,8 @@ const ChatModalManager = {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             const message = {
                 type: 'call_invite',
-                from_profile_id: this.state.currentProfile.profile_id,
-                from_profile_type: this.state.currentProfile.profile_type,
+                from_profile_id: this.state.userId,
+                // from_profile_type removed
                 to_profile_id: profileId,
                 to_profile_type: profileType,
                 call_type: this.state.isVideoCall ? 'video' : 'voice',
@@ -15455,7 +15243,7 @@ const ChatModalManager = {
     },
 
     // Setup peer connection for a new participant (mesh topology)
-    async setupPeerConnectionForParticipant(participantId, profileType, profileId) {
+    async setupPeerConnectionForParticipant(participantId, userId) {
         console.log(`🔗 Setting up peer connection for participant: ${participantId}`);
 
         // Create new RTCPeerConnection
@@ -15479,10 +15267,8 @@ const ChatModalManager = {
                 const message = {
                     type: 'ice_candidate',
                     candidate: event.candidate,
-                    from_profile_id: this.state.currentProfile.profile_id,
-                    from_profile_type: this.state.currentProfile.profile_type,
-                    to_profile_id: profileId,
-                    to_profile_type: profileType
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: userId
                 };
                 this.websocket.send(JSON.stringify(message));
             }
@@ -15508,8 +15294,8 @@ const ChatModalManager = {
                 const message = {
                     type: 'call_offer',
                     offer: offer,
-                    from_profile_id: this.state.currentProfile.profile_id,
-                    from_profile_type: this.state.currentProfile.profile_type,
+                    from_profile_id: this.state.userId,
+                    // from_profile_type removed
                     to_profile_id: profileId,
                     to_profile_type: profileType,
                     call_type: this.state.isVideoCall ? 'video' : 'voice'
@@ -15661,7 +15447,7 @@ const ChatModalManager = {
         const participantHTML = [
             // Add self first
             `<div class="participant-list-item you">
-                <img src="${this.state.currentProfile.avatar || 'https://ui-avatars.com/api/?name=You&background=10b981&color=fff&size=24'}"
+                <img src="${this.state.currentUser?.avatar || 'https://ui-avatars.com/api/?name=You&background=10b981&color=fff&size=24'}"
                      alt="You"
                      onerror="this.src='https://ui-avatars.com/api/?name=You&background=10b981&color=fff&size=24'">
                 <span class="participant-name">You</span>
@@ -16368,6 +16154,25 @@ if (typeof window !== 'undefined') {
     window.ChatModalManager = ChatModalManager;
     window.openChatModal = openChatModal;
     window.closeChatModal = closeChatModal;
+    window.filterLanguages = filterLanguages;
+    window.toggleChatSettings = toggleChatSettings;
+    window.minimizeChatModal = minimizeChatModal;
+    window.restoreChatModal = restoreChatModal;
+    window.toggleChatSidebar = toggleChatSidebar;
+    window.toggleChatInfo = toggleChatInfo;
+    window.toggleChatSearch = toggleChatSearch;
+    window.navigateSearchNext = navigateSearchNext;
+    window.navigateSearchPrev = navigateSearchPrev;
+    window.toggleReadMessages = toggleReadMessages;
+    window.showComingSoonReadMessages = showComingSoonReadMessages;
+    window.startChatVoiceCall = startChatVoiceCall;
+    window.startChatVideoCall = startChatVideoCall;
+    window.toggleVoiceToText = toggleVoiceToText;
+    window.showSendOptions = showSendOptions;
+    window.setSendMode = setSendMode;
+    window.handleSendMessage = handleSendMessage;
+    window.toggleSendMode = toggleSendMode;
+    window.toggleVoiceRecordMode = toggleVoiceRecordMode;
 
     // ===========================================
     // DEBUG CONSOLE - Run debugChatModal() in browser console

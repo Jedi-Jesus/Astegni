@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Share Button Test</title>
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body style="padding: 40px;">
+    <h1>Share Button Test</h1>
+    <button onclick="shareProfile()" style="padding: 12px 24px; background: #F59E0B; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        <i class="fas fa-share-alt"></i> Share Profile
+    </button>
+
+    <script src="js/config.js"></script>
+    <script src="js/common-modals/share-profile-manager.js"></script>
+    <script>
+        // Mock user
+        localStorage.setItem('currentUser', JSON.stringify({
+            user_id: 123, first_name: 'Test', last_name: 'User',
+            profile_picture: 'https://via.placeholder.com/150', active_role: 'parent'
+        }));
+        localStorage.setItem('token', 'test');
+        localStorage.setItem('active_role', 'parent');
+    </script>
+</body>
+</html>

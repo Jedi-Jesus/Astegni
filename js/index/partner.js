@@ -207,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = document.getElementById('partner-description').value.trim();
             const proposalFile = document.getElementById('partner-proposal').files[0];
 
-            // Validate
-            if (!companyName || !contactPerson || emails.length === 0 || phones.length === 0 || !partnershipType || !description) {
+            // Validate required fields (company name and description are now optional)
+            if (!contactPerson || emails.length === 0 || phones.length === 0 || !partnershipType) {
                 alert('Please fill in all required fields');
                 return;
             }

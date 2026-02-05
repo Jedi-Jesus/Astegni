@@ -1,0 +1,112 @@
+<!-- Role Access Denied Modal -->
+<!-- Shows when user tries to access find-tutors page without student/parent role -->
+<div id="roleAccessDeniedModal" class="modal-overlay hidden" onclick="closeRoleAccessDeniedModal(event)">
+    <div class="modal-container max-w-md" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="modal-header bg-gradient-to-r from-orange-500 to-red-500 text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">Access Restricted</h2>
+                    <p class="text-sm text-white/80">Role verification required</p>
+                </div>
+            </div>
+            <button onclick="closeRoleAccessDeniedModal()" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body p-6">
+            <!-- Icon -->
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4">
+                        </path>
+                    </svg>
+                </div>
+
+                <!-- Dynamic Title -->
+                <h3 id="roleAccessDeniedTitle" class="text-xl font-bold text-gray-800 mb-2">
+                    Access Restricted
+                </h3>
+                <!-- Dynamic Message -->
+                <p id="roleAccessDeniedMessage" class="text-gray-600">
+                    The tutor marketplace is only accessible to students, parents, and users.
+                </p>
+            </div>
+
+            <!-- Current Role Display -->
+            <div id="roleAccessDeniedDetails" class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p id="roleAccessDeniedReason" class="text-sm text-orange-800 font-medium">
+                            You are currently logged in as a <strong id="currentRoleText">User</strong>.
+                        </p>
+                        <p id="roleAccessDeniedSuggestion" class="mt-1 text-sm text-orange-700">
+                            <!-- Dynamic suggestion based on whether user has student/parent role -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Students, Parents & Users can:</h4>
+                <ul class="space-y-2">
+                    <li class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Browse thousands of qualified tutors</span>
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Filter by subject, grade level, and price</span>
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Connect with tutors directly</span>
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Book tutoring sessions</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer with Dynamic Actions -->
+        <div class="modal-footer border-t border-gray-200 p-4 bg-gray-50 rounded-b-2xl">
+            <!-- Will be populated dynamically based on user's roles -->
+            <div id="roleAccessDeniedActions" class="flex gap-3">
+                <!-- Default: Go Back button -->
+                <button onclick="goBackToPreviousPage()"
+                    class="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-400 transition-colors">
+                    Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

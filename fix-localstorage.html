@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix localStorage - Astegni</title>
+    <style>
+        body {
+            font-family: 'Consolas', monospace;
+            background: #0d1117;
+            color: #58a6ff;
+            padding: 40px;
+            line-height: 1.8;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 30px;
+        }
+        h1 {
+            color: #3fb950;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #238636;
+            color: #fff;
+            border: 1px solid #2ea043;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #2ea043;
+            transform: translateY(-2px);
+        }
+        button.danger {
+            background: #da3633;
+            border-color: #f85149;
+        }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            color: #3fb950;
+            font-size: 13px;
+        }
+        .success { color: #3fb950; }
+        .error { color: #f85149; }
+        .warning { color: #d29922; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix localStorage for Role Switching</h1>
+
+        <div class="section">
+            <h2>Current State:</h2>
+            <pre id="currentState">Loading...</pre>
+        </div>
+
+        <div class="section">
+            <h2>Actions:</h2>
+            <button onclick="fixLocalStorage()">✅ Fix localStorage</button>
+            <button onclick="checkState()" style="background: #21262d; border-color: #30363d;">🔍 Check State</button>
+            <button onclick="clearAll()" class="danger">🗑️ Clear All (Logout)</button>
+        </div>
+
+        <div class="section">
+            <h2>Result:</h2>
+            <pre id="result">No actions taken yet.</pre>
+        </div>
+
+        <div class="section">
+            <h2>Instructions:</h2>
+            <ol style="color: #c9d1d9;">
+                <li>Click "🔍 Check State" to see current localStorage</li>
+                <li>Click "✅ Fix localStorage" to repair the data</li>
+                <li>Go to <a href="http://localhost:8081/index.html" style="color: #58a6ff;">http://localhost:8081/index.html</a></li>
+                <li>Try switching roles or reactivating</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function checkState() {
+            const state = {
+                'localStorage.userRole': localStorage.getItem('userRole'),
+                'localStorage.token': localStorage.getItem('token') ? 'Present' : 'Missing',
+                'localStorage.currentUser': localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : 'Missing',
+                'sessionStorage.role_switch_in_progress': sessionStorage.getItem('role_switch_in_progress'),
+                'sessionStorage.target_role': sessionStorage.getItem('target_role')
+            };
+
+            document.getElementById('currentState').textContent = JSON.stringify(state, null, 2);
+            return state;
+        }
+
+        function fixLocalStorage() {
+            const userRole = localStorage.getItem('userRole');
+            const currentUserStr = localStorage.getItem('currentUser');
+
+            if (!currentUserStr) {
+                document.getElementById('result').innerHTML = '<span class="error">❌ No currentUser found in localStorage!</span>';
+                return;
+            }
+
+            if (!userRole) {
+                document.getElementById('result').innerHTML = '<span class="error">❌ No userRole found in localStorage!</span>';
+                return;
+            }
+
+            try {
+                const currentUser = JSON.parse(currentUserStr);
+
+                // Fix the active_role field
+                currentUser.active_role = userRole;
+                currentUser.role = userRole;
+
+                // Save back to localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                // Clear any stale sessionStorage flags
+                sessionStorage.removeItem('role_switch_in_progress');
+                sessionStorage.removeItem('target_role');
+
+                document.getElementById('result').innerHTML = `
+<span class="success">✅ Fixed successfully!</span>
+
+Changes made:
+- Set currentUser.active_role = "${userRole}"
+- Set currentUser.role = "${userRole}"
+- Cleared sessionStorage flags
+
+Updated currentUser:
+${JSON.stringify(currentUser, null, 2)}
+
+<span class="success">You can now go to the main app and switch roles!</span>
+                `;
+
+                // Auto-refresh current state
+                checkState();
+
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        function clearAll() {
+            if (confirm('This will clear ALL localStorage and sessionStorage. You will be logged out. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                document.getElementById('result').innerHTML = '<span class="warning">⚠️ All data cleared! You have been logged out.</span>';
+                checkState();
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', checkState);
+    </script>
+</body>
+</html>

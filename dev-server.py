@@ -19,6 +19,24 @@ class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Suppress harmless errors when browser cancels requests
             pass
 
+    def guess_type(self, path):
+        """Override to add charset=utf-8 to text files."""
+        result = super().guess_type(path)
+
+        # Handle different return formats (Python 3.13 compatibility)
+        if isinstance(result, tuple):
+            mime_type = result[0] if len(result) > 0 else None
+            encoding = result[1] if len(result) > 1 else None
+        else:
+            mime_type = result
+            encoding = None
+
+        # Add charset=utf-8 for HTML, CSS, JS, and other text files
+        if mime_type and mime_type.startswith(('text/', 'application/javascript', 'application/json')):
+            mime_type += '; charset=utf-8'
+
+        return mime_type
+
     def end_headers(self):
         # Add headers to prevent caching
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')

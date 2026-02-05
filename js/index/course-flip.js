@@ -8,7 +8,8 @@ const courseApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 async function fetchCoursesFromAPI() {
     try {
         // Fetch 16 courses (8 cards × 2 sides = 16 unique courses)
-        const response = await fetch(`${courseApiUrl}/api/courses?limit=16&sort_by=popular`);
+        // Use trending sort to show courses based on recent search activity
+        const response = await fetch(`${courseApiUrl}/api/courses?limit=16&sort_by=trending`);
         if (response.ok) {
             const data = await response.json();
             if (data.courses && data.courses.length >= 16) {
@@ -283,12 +284,38 @@ function filterCourses(filter) {
 }
 
 function handleCourseClick(courseTitle) {
-    // Navigate to find-tutors.html with subject filter (filters tutors teaching this subject)
-    window.location.href = `branch/find-tutors.html?subject=${encodeURIComponent(courseTitle)}`;
+    // Check if user is logged in
+    const isLoggedIn = (typeof APP_STATE !== 'undefined' && APP_STATE.isLoggedIn) ||
+                       localStorage.getItem('token') ||
+                       localStorage.getItem('access_token');
+
+    if (!isLoggedIn) {
+        // User not logged in - open login modal
+        openModal('login-modal');
+        return;
+    }
+
+    // User is logged in - navigate to find-tutors.html with search parameter
+    // This will search for tutors who teach this course by searching:
+    // - Course names, tags, and categories in courses table
+    // - School names where tutors teach
+    // - Tutor names and languages
+    window.location.href = `branch/find-tutors.html?search=${encodeURIComponent(courseTitle)}`;
 }
 
 function handleViewMoreCourses() {
-    // Navigate to find-tutors.html without filters
+    // Check if user is logged in
+    const isLoggedIn = (typeof APP_STATE !== 'undefined' && APP_STATE.isLoggedIn) ||
+                       localStorage.getItem('token') ||
+                       localStorage.getItem('access_token');
+
+    if (!isLoggedIn) {
+        // User not logged in - open login modal
+        openModal('login-modal');
+        return;
+    }
+
+    // User is logged in - navigate to find-tutors.html without filters
     window.location.href = "branch/find-tutors.html";
 }
 

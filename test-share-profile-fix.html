@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Share Profile Fix Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .instruction {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+            margin: 15px 0;
+        }
+        .instruction ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instruction li {
+            margin: 8px 0;
+        }
+        code {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🔧 Share Profile Fix - Testing Guide</h1>
+        <p>This page will help you verify the Share Profile button fix is working correctly.</p>
+    </div>
+
+    <div class="test-card">
+        <h2>📋 Step 1: Clear Cache & Reload</h2>
+        <div class="instruction">
+            <p><strong>Before testing, you MUST:</strong></p>
+            <ol>
+                <li>Press <code>Ctrl+Shift+Delete</code> to open Clear Browsing Data</li>
+                <li>Select "All time" and check "Cached images and files"</li>
+                <li>Click "Clear data"</li>
+                <li>Close this tab and reopen: <code>http://localhost:8081/profile-pages/tutor-profile.html</code></li>
+                <li>Do a hard refresh: <code>Ctrl+Shift+F5</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>🔍 Step 2: Run Verification Script</h2>
+        <p>Click this button to run the verification in the current page's console:</p>
+        <button onclick="runVerification()">Run Verification Script</button>
+        <div id="verificationResult"></div>
+        
+        <div class="instruction" style="margin-top: 20px;">
+            <p><strong>Or manually in tutor-profile.html console:</strong></p>
+            <ol>
+                <li>Open tutor-profile.html: <code>http://localhost:8081/profile-pages/tutor-profile.html</code></li>
+                <li>Press <code>F12</code> to open DevTools console</li>
+                <li>Paste this code and press Enter:</li>
+            </ol>
+            <pre style="background: #1e293b; color: #f1f5f9; padding: 15px; border-radius: 6px; overflow-x: auto;">var script = document.createElement('script');
+script.src = '../verify-share-fix-complete.js?v=' + Date.now();
+document.head.appendChild(script);</pre>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>✅ Step 3: Expected Results</h2>
+        <div class="status success">
+            <strong>✅ VERIFICATION PASSED!</strong><br>
+            All checks should pass:
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>✅ shareProfile is async</li>
+                <li>✅ Has event parameter</li>
+                <li>✅ Has ensureShareModalLoaded</li>
+                <li>✅ Has loadReferralData</li>
+                <li>✅ Modal exists in DOM</li>
+                <li>✅ Scripts loaded with v=20260204k</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>🎯 Step 4: Test the Button</h2>
+        <p>On the tutor-profile.html page:</p>
+        <ol>
+            <li>Look for the "Share Profile" button (usually near profile header)</li>
+            <li>Click it</li>
+            <li><strong>Expected behavior:</strong> A modal should open with:
+                <ul>
+                    <li>Referral code display</li>
+                    <li>"Copy Link" button</li>
+                    <li>Social media share buttons</li>
+                    <li>QR code (if implemented)</li>
+                </ul>
+            </li>
+        </ol>
+        <div class="status warning">
+            <strong>⚠️ If it opens native share dialog or copies to clipboard:</strong><br>
+            The old function is still cached. Clear cache again and hard refresh.
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>❌ Troubleshooting</h2>
+        <div class="status error">
+            <strong>If verification fails:</strong>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Try in <strong>Incognito/Private window</strong></li>
+                <li>Check Network tab for script versions (should be v=20260204k)</li>
+                <li>Check Console for JavaScript errors</li>
+                <li>Verify backend is running: <code>http://localhost:8000</code></li>
+                <li>Check if dev-server.py is running on port 8081</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>📊 Quick Links</h2>
+        <button onclick="window.open('http://localhost:8081/profile-pages/tutor-profile.html', '_blank')">
+            Open Tutor Profile
+        </button>
+        <button onclick="window.open('http://localhost:8000/docs', '_blank')">
+            Open API Docs
+        </button>
+        <button onclick="window.location.reload()">
+            Reload This Page
+        </button>
+    </div>
+
+    <script>
+        function runVerification() {
+            const resultDiv = document.getElementById('verificationResult');
+            resultDiv.innerHTML = '<div class="status warning">⚠️ This only works if you\'re on tutor-profile.html!<br>Open tutor-profile.html and run the script there.</div>';
+        }
+    </script>
+</body>
+</html>

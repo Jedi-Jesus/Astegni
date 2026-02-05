@@ -437,8 +437,9 @@ async def get_received_child_invitations(
     """
     with get_db_connection() as conn:
         with conn.cursor() as cur:
+            # NOTE: profile_picture now read from users table
             cur.execute("""
-                SELECT ci.*, u.first_name, u.father_name, pp.profile_picture
+                SELECT ci.*, u.first_name, u.father_name, u.profile_picture
                 FROM child_invitations ci
                 JOIN users u ON u.id = ci.inviter_user_id
                 LEFT JOIN parent_profiles pp ON pp.user_id = ci.inviter_user_id
@@ -479,11 +480,12 @@ async def get_sent_child_invitations(
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
+            # NOTE: profile_picture now read from users table
             cur.execute("""
                 SELECT ci.*,
                        u.first_name as child_first_name,
                        u.father_name as child_father_name,
-                       sp.profile_picture as child_profile_picture
+                       u.profile_picture as child_profile_picture
                 FROM child_invitations ci
                 LEFT JOIN users u ON u.id = ci.invited_to_user_id
                 LEFT JOIN student_profiles sp ON sp.user_id = ci.invited_to_user_id

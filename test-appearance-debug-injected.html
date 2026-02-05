@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appearance Debug - Injected Console</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            background: #f7f7f7;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            text-align: left;
+        }
+
+        .step h3 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+
+        .step p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .code-box {
+            background: #1e1e1e;
+            color: #4ec9b0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #1177bb;
+        }
+
+        .method {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+        }
+
+        .method h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background: #5568d3;
+        }
+
+        .button.secondary {
+            background: #764ba2;
+        }
+
+        .button.secondary:hover {
+            background: #653a8b;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Appearance Debug Console</h1>
+        <p style="color: #666;">Two ways to use the debug console on user-profile.html</p>
+
+        <!-- Method 1: Browser Console -->
+        <div class="method">
+            <h2>Method 1: Browser Console (Recommended)</h2>
+
+            <div class="step">
+                <h3>Step 1: Open User Profile Page</h3>
+                <p>Navigate to:</p>
+                <div class="code-box">
+                    http://localhost:8081/profile-pages/user-profile.html
+                </div>
+                <a href="http://localhost:8081/profile-pages/user-profile.html" target="_blank" class="button">
+                    Open User Profile
+                </a>
+            </div>
+
+            <div class="step">
+                <h3>Step 2: Open Browser Console</h3>
+                <p>Press <strong>F12</strong> or <strong>Ctrl+Shift+J</strong> (Windows) / <strong>Cmd+Option+J</strong> (Mac)</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 3: Load Debug Script</h3>
+                <p>Paste this code into the console and press Enter:</p>
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyScript()">Copy</button>
+                    <pre id="script-code" style="margin: 0; white-space: pre-wrap;">var script = document.createElement('script');
+script.src = 'http://localhost:8081/debug-appearance-injected.js';
+document.body.appendChild(script);</pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 4: Open Appearance Modal</h3>
+                <p>Click the appearance/settings button on the user profile page to open the modal</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 5: Run Tests</h3>
+                <p>In the floating debug console that appeared, click <strong>"🧪 Run All Tests"</strong></p>
+            </div>
+
+            <div class="step">
+                <h3>Step 6: Copy Results</h3>
+                <p>Click <strong>"📋 Copy Results"</strong> and paste them back here in the chat</p>
+            </div>
+        </div>
+
+        <!-- Method 2: Direct Link -->
+        <div class="method">
+            <h2>Method 2: Auto-Inject (Alternative)</h2>
+
+            <div class="step">
+                <h3>Bookmarklet (Drag to Bookmarks Bar)</h3>
+                <p>Drag this link to your bookmarks bar, then click it when on user-profile.html:</p>
+                <div style="margin: 15px 0;">
+                    <a href="javascript:(function(){var s=document.createElement('script');s.src='http://localhost:8081/debug-appearance-injected.js';document.body.appendChild(s);})();"
+                       class="button secondary"
+                       onclick="alert('Drag this button to your bookmarks bar instead of clicking it!'); return false;">
+                        📌 Debug Console
+                    </a>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>💡 Note:</strong> This creates a bookmark that you can click on any page to inject the debug console.
+            </div>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+        <div class="step">
+            <h3>🎯 What the Debug Console Checks:</h3>
+            <ul style="text-align: left; color: #666;">
+                <li><strong>Issue A:</strong> Glossy backdrop covering page in mini-mode</li>
+                <li><strong>Issue B:</strong> Modal header not at the very top in normal mode</li>
+                <li><strong>Issue C:</strong> Mini-mode not tall enough to show 3 rows of theme cards</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <strong>⚠️ Important:</strong> Make sure you're running from <code>localhost:8081</code> for the script to load properly!
+        </div>
+    </div>
+
+    <script>
+        function copyScript() {
+            const code = document.getElementById('script-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#007acc';
+                }, 2000);
+            }).catch(err => {
+                alert('Copy failed. Please select and copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>

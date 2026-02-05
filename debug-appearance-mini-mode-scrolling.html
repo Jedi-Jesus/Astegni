@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug: Appearance Mini-Mode Scrolling</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .debug-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .debug-header {
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007acc;
+        }
+
+        .debug-header h1 {
+            margin: 0 0 10px 0;
+            color: #4ec9b0;
+        }
+
+        .debug-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .debug-panel {
+            background: #252526;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #3e3e42;
+        }
+
+        .debug-panel h2 {
+            margin: 0 0 15px 0;
+            color: #569cd6;
+            font-size: 16px;
+            border-bottom: 1px solid #3e3e42;
+            padding-bottom: 10px;
+        }
+
+        .console-output {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-info {
+            color: #4ec9b0;
+        }
+
+        .log-warn {
+            color: #dcdcaa;
+            background: rgba(220, 220, 170, 0.1);
+        }
+
+        .log-error {
+            color: #f48771;
+            background: rgba(244, 135, 113, 0.1);
+        }
+
+        .log-success {
+            color: #6a9955;
+            background: rgba(106, 153, 85, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button:active {
+            background: #0d5a8f;
+        }
+
+        button.clear-btn {
+            background: #c5c5c5;
+            color: #1e1e1e;
+        }
+
+        button.clear-btn:hover {
+            background: #d4d4d4;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background: #6a9955;
+            box-shadow: 0 0 8px #6a9955;
+        }
+
+        .status-inactive {
+            background: #f48771;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: #9cdcfe;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #ce9178;
+            font-family: 'Consolas', monospace;
+        }
+
+        .test-section {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .test-section h3 {
+            margin: 0 0 10px 0;
+            color: #dcdcaa;
+            font-size: 14px;
+        }
+
+        .event-listener-list {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        .event-listener-item {
+            padding: 5px;
+            margin: 3px 0;
+            border-left: 3px solid #569cd6;
+            padding-left: 10px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <div class="debug-header">
+            <h1>🔍 Appearance Mini-Mode Scrolling Debug Console</h1>
+            <p>Debugging: Mini-mode scrolling button in user-profile.html appearance modal</p>
+            <p style="font-size: 12px; color: #9cdcfe; margin-top: 10px;">
+                Running from: <strong>http://localhost:8081/debug-appearance-mini-mode-scrolling.html</strong>
+            </p>
+        </div>
+
+        <div class="button-group">
+            <button onclick="runAllTests()">🧪 Run All Tests</button>
+            <button onclick="inspectModal()">🔎 Inspect Modal</button>
+            <button onclick="inspectScrollButton()">🔘 Inspect Scroll Button</button>
+            <button onclick="testScrollFunctionality()">📜 Test Scroll Function</button>
+            <button onclick="simulateClick()">👆 Simulate Click</button>
+            <button onclick="checkEventListeners()">📡 Check Event Listeners</button>
+            <button onclick="checkMiniMode()">🎨 Check Mini-Mode State</button>
+            <button onclick="checkBackdropOverlay()">🌫️ Check Glossy Backdrop</button>
+            <button onclick="checkModalHeaderPosition()">📍 Check Header Position</button>
+            <button onclick="checkMiniModeHeight()">📏 Check Mini-Mode Height</button>
+            <button onclick="copyResults()" style="background: #16825d;">📋 Copy All Results</button>
+            <button class="clear-btn" onclick="clearConsole()">🗑️ Clear Console</button>
+        </div>
+
+        <div class="debug-grid">
+            <div class="debug-panel">
+                <h2>📊 Real-Time Status</h2>
+                <div class="info-grid">
+                    <div class="info-label">Modal Status:</div>
+                    <div class="info-value" id="modalStatus">
+                        <span class="status-indicator status-inactive"></span>Not Checked
+                    </div>
+
+                    <div class="info-label">Scroll Button:</div>
+                    <div class="info-value" id="scrollButtonStatus">
+                        <span class="status-indicator status-inactive"></span>Not Found
+                    </div>
+
+                    <div class="info-label">Mini-Mode:</div>
+                    <div class="info-value" id="miniModeStatus">
+                        <span class="status-indicator status-inactive"></span>Unknown
+                    </div>
+
+                    <div class="info-label">Scroll Position:</div>
+                    <div class="info-value" id="scrollPosition">0px</div>
+
+                    <div class="info-label">Event Listeners:</div>
+                    <div class="info-value" id="eventListenersCount">0</div>
+
+                    <div class="info-label">Backdrop Issue:</div>
+                    <div class="info-value" id="backdropStatus">
+                        <span class="status-indicator status-inactive"></span>Not Checked
+                    </div>
+
+                    <div class="info-label">Header Position:</div>
+                    <div class="info-value" id="headerPositionStatus">
+                        <span class="status-indicator status-inactive"></span>Not Checked
+                    </div>
+
+                    <div class="info-label">Mini-Mode Height:</div>
+                    <div class="info-value" id="miniModeHeightStatus">
+                        <span class="status-indicator status-inactive"></span>Not Checked
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <h3>Quick Actions</h3>
+                    <button onclick="openAppearanceModal()" style="width: 100%; margin-bottom: 10px;">
+                        🎭 Open Appearance Modal
+                    </button>
+                    <button onclick="toggleMiniMode()" style="width: 100%; margin-bottom: 10px;">
+                        🔄 Toggle Mini-Mode
+                    </button>
+                    <button onclick="forceScrollToTop()" style="width: 100%;">
+                        ⬆️ Force Scroll to Top
+                    </button>
+                </div>
+            </div>
+
+            <div class="debug-panel">
+                <h2>🎯 Element Inspector</h2>
+                <div id="elementInfo" class="console-output" style="max-height: 300px;">
+                    <div class="log-info">Click "Inspect Modal" or "Inspect Scroll Button" to view element details...</div>
+                </div>
+            </div>
+
+            <div class="debug-panel full-width">
+                <h2>📝 Console Log</h2>
+                <div id="consoleLog" class="console-output"></div>
+            </div>
+
+            <div class="debug-panel full-width">
+                <h2>🔧 Event Listener Analysis</h2>
+                <div id="eventListenerAnalysis" class="event-listener-list">
+                    <div class="log-info">Click "Check Event Listeners" to analyze...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store all logs for copying
+        let allLogs = [];
+
+        // Console logging system
+        function log(message, type = 'info') {
+            const consoleLog = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+
+            // Store log for copying
+            allLogs.push(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
+
+            // Also log to browser console
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleLog').innerHTML = '';
+            allLogs = [];
+            log('Console cleared', 'info');
+        }
+
+        // Copy all results to clipboard
+        function copyResults() {
+            if (allLogs.length === 0) {
+                alert('No results to copy. Run some tests first!');
+                return;
+            }
+
+            // Get status information
+            const modalStatus = document.getElementById('modalStatus').textContent.trim();
+            const scrollButtonStatus = document.getElementById('scrollButtonStatus').textContent.trim();
+            const miniModeStatus = document.getElementById('miniModeStatus').textContent.trim();
+            const scrollPosition = document.getElementById('scrollPosition').textContent.trim();
+            const backdropStatus = document.getElementById('backdropStatus').textContent.trim();
+            const headerPositionStatus = document.getElementById('headerPositionStatus').textContent.trim();
+            const miniModeHeightStatus = document.getElementById('miniModeHeightStatus').textContent.trim();
+
+            // Create formatted output
+            let output = '═══════════════════════════════════════════════════════\n';
+            output += '🔍 APPEARANCE MINI-MODE DEBUG RESULTS\n';
+            output += '═══════════════════════════════════════════════════════\n\n';
+
+            output += '📊 STATUS SUMMARY:\n';
+            output += '─────────────────────────────────────────────────────\n';
+            output += `Modal Status: ${modalStatus}\n`;
+            output += `Scroll Button: ${scrollButtonStatus}\n`;
+            output += `Mini-Mode: ${miniModeStatus}\n`;
+            output += `Scroll Position: ${scrollPosition}\n`;
+            output += `Backdrop Issue: ${backdropStatus}\n`;
+            output += `Header Position: ${headerPositionStatus}\n`;
+            output += `Mini-Mode Height: ${miniModeHeightStatus}\n\n`;
+
+            output += '📝 DETAILED LOG:\n';
+            output += '─────────────────────────────────────────────────────\n';
+            output += allLogs.join('\n');
+            output += '\n\n';
+
+            output += '═══════════════════════════════════════════════════════\n';
+            output += `Generated: ${new Date().toLocaleString()}\n`;
+            output += '═══════════════════════════════════════════════════════\n';
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(output).then(() => {
+                // Show success notification
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = '#107c10';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#16825d';
+                }, 2000);
+
+                log('✅ Results copied to clipboard!', 'success');
+            }).catch(err => {
+                log('❌ Failed to copy: ' + err.message, 'error');
+
+                // Fallback: show in alert
+                const fallback = confirm('Clipboard access failed. Click OK to see results in an alert box.');
+                if (fallback) {
+                    alert(output);
+                }
+            });
+        }
+
+        // Modal inspection
+        function inspectModal() {
+            log('🔍 Inspecting appearance modal...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            const elementInfo = document.getElementById('elementInfo');
+
+            if (!modal) {
+                log('❌ Modal not found in DOM', 'error');
+                elementInfo.innerHTML = '<div class="log-error">Modal element not found. Is the modal loaded?</div>';
+                updateStatus('modalStatus', 'Not Found', false);
+                return;
+            }
+
+            log('✅ Modal found', 'success');
+            updateStatus('modalStatus', 'Found', true);
+
+            const info = {
+                'ID': modal.id,
+                'Classes': modal.className,
+                'Display': window.getComputedStyle(modal).display,
+                'Visibility': window.getComputedStyle(modal).visibility,
+                'Z-Index': window.getComputedStyle(modal).zIndex,
+                'Position': window.getComputedStyle(modal).position,
+                'Child Elements': modal.children.length
+            };
+
+            let html = '<div class="log-success">Modal Element Details:</div>';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<div style="margin: 5px 0;"><span style="color: #9cdcfe;">${key}:</span> <span style="color: #ce9178;">${value}</span></div>`;
+            }
+
+            elementInfo.innerHTML = html;
+        }
+
+        // Scroll button inspection
+        function inspectScrollButton() {
+            log('🔍 Inspecting scroll-to-top button...', 'info');
+
+            const button = document.getElementById('scrollToTopBtnMiniMode');
+            const elementInfo = document.getElementById('elementInfo');
+
+            if (!button) {
+                log('❌ Scroll button not found in DOM', 'error');
+                elementInfo.innerHTML = '<div class="log-error">Scroll button not found. ID: scrollToTopBtnMiniMode</div>';
+                updateStatus('scrollButtonStatus', 'Not Found', false);
+                return;
+            }
+
+            log('✅ Scroll button found', 'success');
+            updateStatus('scrollButtonStatus', 'Found', true);
+
+            const computedStyle = window.getComputedStyle(button);
+            const info = {
+                'ID': button.id,
+                'Classes': button.className,
+                'Display': computedStyle.display,
+                'Visibility': computedStyle.visibility,
+                'Opacity': computedStyle.opacity,
+                'Pointer Events': computedStyle.pointerEvents,
+                'Position': computedStyle.position,
+                'Bottom': computedStyle.bottom,
+                'Right': computedStyle.right,
+                'Z-Index': computedStyle.zIndex,
+                'Width': computedStyle.width,
+                'Height': computedStyle.height,
+                'Background': computedStyle.backgroundColor,
+                'Cursor': computedStyle.cursor,
+                'Disabled': button.disabled,
+                'InnerHTML': button.innerHTML.substring(0, 100)
+            };
+
+            let html = '<div class="log-success">Scroll Button Details:</div>';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<div style="margin: 5px 0;"><span style="color: #9cdcfe;">${key}:</span> <span style="color: #ce9178;">${value}</span></div>`;
+            }
+
+            // Check parent elements
+            html += '<div style="margin-top: 15px; color: #dcdcaa;">Parent Chain:</div>';
+            let parent = button.parentElement;
+            let depth = 0;
+            while (parent && depth < 5) {
+                const parentStyle = window.getComputedStyle(parent);
+                html += `<div style="margin-left: ${depth * 15}px; color: #569cd6;">
+                    ${parent.tagName} ${parent.id ? '#' + parent.id : ''} ${parent.className ? '.' + parent.className.split(' ')[0] : ''}
+                    (display: ${parentStyle.display}, overflow: ${parentStyle.overflow})
+                </div>`;
+                parent = parent.parentElement;
+                depth++;
+            }
+
+            elementInfo.innerHTML = html;
+        }
+
+        // Check event listeners
+        function checkEventListeners() {
+            log('🔍 Checking event listeners...', 'info');
+
+            const button = document.getElementById('scrollToTopBtnMiniMode');
+            const analysisDiv = document.getElementById('eventListenerAnalysis');
+
+            if (!button) {
+                log('❌ Cannot check listeners - button not found', 'error');
+                analysisDiv.innerHTML = '<div class="log-error">Button not found</div>';
+                return;
+            }
+
+            // Check onclick attribute
+            const hasOnclick = button.hasAttribute('onclick');
+            const onclickValue = button.getAttribute('onclick');
+
+            let html = '';
+
+            if (hasOnclick) {
+                html += `<div class="event-listener-item" style="border-color: #6a9955;">
+                    ✅ <strong>onclick attribute found:</strong><br>
+                    <code>${onclickValue}</code>
+                </div>`;
+                log('✅ onclick attribute exists: ' + onclickValue, 'success');
+            } else {
+                html += `<div class="event-listener-item" style="border-color: #f48771;">
+                    ❌ <strong>No onclick attribute</strong>
+                </div>`;
+                log('❌ No onclick attribute found', 'error');
+            }
+
+            // Try to get event listeners (limited in modern browsers due to security)
+            html += `<div class="event-listener-item">
+                ℹ️ <strong>Note:</strong> JavaScript event listeners added via addEventListener()
+                cannot be inspected directly due to browser security restrictions.
+            </div>`;
+
+            // Check if functions exist
+            html += '<div style="margin-top: 15px; color: #dcdcaa;">Function Availability Check:</div>';
+
+            const functionsToCheck = [
+                'scrollToTopMiniMode',
+                'scrollToTop',
+                'appearanceManager',
+                'AppearanceManager'
+            ];
+
+            functionsToCheck.forEach(funcName => {
+                const exists = typeof window[funcName] !== 'undefined';
+                const color = exists ? '#6a9955' : '#f48771';
+                const icon = exists ? '✅' : '❌';
+                html += `<div class="event-listener-item" style="border-color: ${color};">
+                    ${icon} <strong>${funcName}:</strong> ${exists ? 'Available' : 'Not Found'}
+                </div>`;
+
+                if (exists) {
+                    log(`✅ Function ${funcName} is available`, 'success');
+                } else {
+                    log(`❌ Function ${funcName} not found`, 'error');
+                }
+            });
+
+            analysisDiv.innerHTML = html;
+            updateStatus('eventListenersCount', hasOnclick ? '1+' : '0');
+        }
+
+        // Test scroll functionality
+        function testScrollFunctionality() {
+            log('🧪 Testing scroll functionality...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Cannot test - modal not found', 'error');
+                return;
+            }
+
+            const modalContent = modal.querySelector('.modal-content') ||
+                                modal.querySelector('.appearance-content');
+
+            if (!modalContent) {
+                log('❌ Cannot find modal content container', 'error');
+                return;
+            }
+
+            log(`📏 Modal content scroll height: ${modalContent.scrollHeight}px`, 'info');
+            log(`📏 Modal content client height: ${modalContent.clientHeight}px`, 'info');
+            log(`📏 Current scroll position: ${modalContent.scrollTop}px`, 'info');
+
+            const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
+            log(isScrollable ? '✅ Content is scrollable' : '⚠️ Content is NOT scrollable',
+                isScrollable ? 'success' : 'warn');
+
+            updateStatus('scrollPosition', `${modalContent.scrollTop}px`);
+
+            // Scroll down to test
+            if (isScrollable) {
+                log('⬇️ Scrolling down 200px for testing...', 'info');
+                modalContent.scrollTop = 200;
+                setTimeout(() => {
+                    log(`📍 New scroll position: ${modalContent.scrollTop}px`, 'info');
+                    updateStatus('scrollPosition', `${modalContent.scrollTop}px`);
+                }, 100);
+            }
+        }
+
+        // Simulate click
+        function simulateClick() {
+            log('👆 Simulating click on scroll button...', 'info');
+
+            const button = document.getElementById('scrollToTopBtnMiniMode');
+            if (!button) {
+                log('❌ Cannot simulate click - button not found', 'error');
+                return;
+            }
+
+            log('🎯 Attempting click simulation...', 'info');
+
+            // Try multiple click methods
+            try {
+                button.click();
+                log('✅ button.click() executed', 'success');
+            } catch (e) {
+                log('❌ button.click() failed: ' + e.message, 'error');
+            }
+
+            try {
+                const event = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                button.dispatchEvent(event);
+                log('✅ MouseEvent dispatched', 'success');
+            } catch (e) {
+                log('❌ MouseEvent dispatch failed: ' + e.message, 'error');
+            }
+
+            // Check scroll position after
+            setTimeout(() => {
+                const modal = document.getElementById('appearance-modal');
+                if (modal) {
+                    const modalContent = modal.querySelector('.modal-content') ||
+                                        modal.querySelector('.appearance-content');
+                    if (modalContent) {
+                        log(`📍 Scroll position after click: ${modalContent.scrollTop}px`, 'info');
+                        if (modalContent.scrollTop === 0) {
+                            log('✅ Scroll successful - at top', 'success');
+                        } else {
+                            log('⚠️ Scroll may not have worked - not at top', 'warn');
+                        }
+                    }
+                }
+            }, 200);
+        }
+
+        // Check mini-mode state
+        function checkMiniMode() {
+            log('🎨 Checking mini-mode state...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Modal not found', 'error');
+                updateStatus('miniModeStatus', 'Unknown', false);
+                return;
+            }
+
+            const hasMiniModeClass = modal.classList.contains('mini-mode');
+            const miniModeToggle = document.getElementById('miniModeToggle');
+            const toggleChecked = miniModeToggle ? miniModeToggle.checked : null;
+
+            log(`Mini-mode class: ${hasMiniModeClass}`, hasMiniModeClass ? 'success' : 'info');
+            log(`Toggle checkbox: ${toggleChecked}`, 'info');
+
+            const scrollButton = document.getElementById('scrollToTopBtnMiniMode');
+            if (scrollButton) {
+                const buttonDisplay = window.getComputedStyle(scrollButton).display;
+                log(`Scroll button display: ${buttonDisplay}`, 'info');
+            }
+
+            updateStatus('miniModeStatus', hasMiniModeClass ? 'Active' : 'Inactive', hasMiniModeClass);
+        }
+
+        // Force scroll to top
+        function forceScrollToTop() {
+            log('⬆️ Force scrolling to top...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Modal not found', 'error');
+                return;
+            }
+
+            const modalContent = modal.querySelector('.modal-content') ||
+                                modal.querySelector('.appearance-content');
+
+            if (!modalContent) {
+                log('❌ Modal content not found', 'error');
+                return;
+            }
+
+            const beforeScroll = modalContent.scrollTop;
+            modalContent.scrollTop = 0;
+
+            setTimeout(() => {
+                const afterScroll = modalContent.scrollTop;
+                log(`Before: ${beforeScroll}px → After: ${afterScroll}px`,
+                    afterScroll === 0 ? 'success' : 'warn');
+                updateStatus('scrollPosition', `${afterScroll}px`);
+            }, 100);
+        }
+
+        // Open appearance modal
+        function openAppearanceModal() {
+            log('🎭 Attempting to open appearance modal...', 'info');
+
+            if (typeof window.openAppearanceModal === 'function') {
+                window.openAppearanceModal();
+                log('✅ openAppearanceModal() called', 'success');
+            } else if (typeof window.appearanceManager !== 'undefined' &&
+                       typeof window.appearanceManager.openModal === 'function') {
+                window.appearanceManager.openModal();
+                log('✅ appearanceManager.openModal() called', 'success');
+            } else {
+                log('❌ No function found to open modal', 'error');
+                log('💡 Try opening it manually from the page', 'warn');
+            }
+        }
+
+        // Toggle mini-mode
+        function toggleMiniMode() {
+            log('🔄 Toggling mini-mode...', 'info');
+
+            const toggle = document.getElementById('miniModeToggle');
+            if (!toggle) {
+                log('❌ Mini-mode toggle not found', 'error');
+                return;
+            }
+
+            toggle.checked = !toggle.checked;
+            toggle.dispatchEvent(new Event('change', { bubbles: true }));
+            log(`✅ Mini-mode toggled to: ${toggle.checked}`, 'success');
+
+            setTimeout(() => checkMiniMode(), 200);
+        }
+
+        // Check backdrop overlay (Issue A)
+        function checkBackdropOverlay() {
+            log('🌫️ Checking backdrop/overlay in mini-mode...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Modal not found', 'error');
+                updateStatus('backdropStatus', 'Modal Not Found', false);
+                return;
+            }
+
+            const isMiniMode = modal.classList.contains('mini-mode');
+            log(`Mini-mode status: ${isMiniMode ? 'Active' : 'Inactive'}`, isMiniMode ? 'success' : 'info');
+
+            // Check for backdrop/overlay elements
+            const backdrop = modal.querySelector('.modal-backdrop') ||
+                           modal.querySelector('.backdrop') ||
+                           modal.querySelector('.overlay') ||
+                           document.querySelector('.modal-backdrop');
+
+            if (backdrop) {
+                const backdropStyle = window.getComputedStyle(backdrop);
+                log('📍 Backdrop element found', 'warn');
+                log(`  Display: ${backdropStyle.display}`, 'info');
+                log(`  Visibility: ${backdropStyle.visibility}`, 'info');
+                log(`  Opacity: ${backdropStyle.opacity}`, 'info');
+                log(`  Background: ${backdropStyle.backgroundColor}`, 'info');
+                log(`  Z-Index: ${backdropStyle.zIndex}`, 'info');
+                log(`  Pointer Events: ${backdropStyle.pointerEvents}`, 'info');
+
+                if (isMiniMode && backdropStyle.display !== 'none' && backdropStyle.visibility !== 'hidden') {
+                    log('⚠️ ISSUE A FOUND: Backdrop is visible in mini-mode!', 'error');
+                    log('💡 Solution: Backdrop should be display:none or visibility:hidden in mini-mode', 'warn');
+                    updateStatus('backdropStatus', 'Visible (Problem!)', false);
+                } else if (isMiniMode) {
+                    log('✅ Backdrop is properly hidden in mini-mode', 'success');
+                    updateStatus('backdropStatus', 'Hidden (Good)', true);
+                } else {
+                    updateStatus('backdropStatus', 'Found (Not in Mini-Mode)', false);
+                }
+            } else {
+                log('ℹ️ No backdrop element found', 'info');
+                updateStatus('backdropStatus', 'No Backdrop Found', true);
+            }
+
+            // Check modal itself for backdrop-like properties
+            const modalStyle = window.getComputedStyle(modal);
+            if (modalStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && modalStyle.backgroundColor !== 'transparent') {
+                log(`⚠️ Modal has background: ${modalStyle.backgroundColor}`, 'warn');
+                if (isMiniMode) {
+                    log('💡 In mini-mode, modal background should be transparent or removed', 'warn');
+                }
+            }
+
+            // Check for ::before or ::after pseudo-elements
+            const beforeStyle = window.getComputedStyle(modal, '::before');
+            const afterStyle = window.getComputedStyle(modal, '::after');
+
+            if (beforeStyle.content !== 'none' && beforeStyle.content !== '""') {
+                log(`⚠️ Modal has ::before pseudo-element: ${beforeStyle.content}`, 'warn');
+                log(`  Background: ${beforeStyle.backgroundColor}`, 'info');
+            }
+
+            if (afterStyle.content !== 'none' && afterStyle.content !== '""') {
+                log(`⚠️ Modal has ::after pseudo-element: ${afterStyle.content}`, 'warn');
+                log(`  Background: ${afterStyle.backgroundColor}`, 'info');
+            }
+
+            // Check pointer-events
+            log(`Modal pointer-events: ${modalStyle.pointerEvents}`, 'info');
+            if (isMiniMode && modalStyle.pointerEvents === 'none') {
+                log('⚠️ Modal pointer-events is "none" - clicks may not work!', 'error');
+            }
+        }
+
+        // Check modal header position (Issue B)
+        function checkModalHeaderPosition() {
+            log('📍 Checking modal header position...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Modal not found', 'error');
+                updateStatus('headerPositionStatus', 'Modal Not Found', false);
+                return;
+            }
+
+            const isMiniMode = modal.classList.contains('mini-mode');
+            log(`Mini-mode status: ${isMiniMode ? 'Active' : 'Inactive'}`, isMiniMode ? 'success' : 'info');
+
+            const header = modal.querySelector('.modal-header') ||
+                          modal.querySelector('.appearance-header') ||
+                          modal.querySelector('h2');
+
+            if (!header) {
+                log('❌ Modal header not found', 'error');
+                updateStatus('headerPositionStatus', 'Header Not Found', false);
+                return;
+            }
+
+            log('✅ Header found', 'success');
+            const headerStyle = window.getComputedStyle(header);
+            const headerRect = header.getBoundingClientRect();
+
+            // Get modal content container
+            const modalContent = modal.querySelector('.modal-content') ||
+                               modal.querySelector('.appearance-content');
+
+            if (modalContent) {
+                const contentStyle = window.getComputedStyle(modalContent);
+                const contentRect = modalContent.getBoundingClientRect();
+
+                log(`📏 Header position analysis:`, 'info');
+                log(`  Header top: ${headerRect.top}px`, 'info');
+                log(`  Header position: ${headerStyle.position}`, 'info');
+                log(`  Modal content top: ${contentRect.top}px`, 'info');
+                log(`  Modal content position: ${contentStyle.position}`, 'info');
+                log(`  Modal content padding-top: ${contentStyle.paddingTop}`, 'info');
+
+                if (!isMiniMode) {
+                    // In normal mode, header should be at the very top
+                    const scrollTop = modalContent.scrollTop;
+                    log(`  Content scroll position: ${scrollTop}px`, 'info');
+
+                    if (scrollTop === 0 && headerRect.top === contentRect.top) {
+                        log('✅ ISSUE B OK: Header is at the very top in normal mode', 'success');
+                        updateStatus('headerPositionStatus', 'At Top (Good)', true);
+                    } else if (scrollTop === 0 && headerRect.top > contentRect.top) {
+                        log('⚠️ ISSUE B FOUND: Header is NOT at the very top!', 'error');
+                        log(`💡 Gap detected: ${headerRect.top - contentRect.top}px`, 'warn');
+                        log(`💡 Solution: Remove padding-top or margin-top from modal-content`, 'warn');
+                        updateStatus('headerPositionStatus', 'Gap Above Header!', false);
+                    } else {
+                        updateStatus('headerPositionStatus', 'Check Manually', false);
+                    }
+                } else {
+                    updateStatus('headerPositionStatus', 'Mini-Mode Active', true);
+                }
+
+                // Check for sticky positioning
+                if (headerStyle.position === 'sticky' || headerStyle.position === 'fixed') {
+                    log(`✅ Header has ${headerStyle.position} positioning`, 'success');
+                    log(`  Top value: ${headerStyle.top}`, 'info');
+                }
+            } else {
+                log('❌ Modal content container not found', 'error');
+            }
+        }
+
+        // Check mini-mode height (Issue C)
+        function checkMiniModeHeight() {
+            log('📏 Checking mini-mode height and theme card visibility...', 'info');
+
+            const modal = document.getElementById('appearance-modal');
+            if (!modal) {
+                log('❌ Modal not found', 'error');
+                updateStatus('miniModeHeightStatus', 'Modal Not Found', false);
+                return;
+            }
+
+            const isMiniMode = modal.classList.contains('mini-mode');
+            if (!isMiniMode) {
+                log('⚠️ Mini-mode is not active', 'warn');
+                updateStatus('miniModeHeightStatus', 'Not in Mini-Mode', false);
+                return;
+            }
+
+            log('✅ Mini-mode is active', 'success');
+
+            const modalStyle = window.getComputedStyle(modal);
+            const modalContent = modal.querySelector('.modal-content') ||
+                               modal.querySelector('.appearance-content');
+
+            if (!modalContent) {
+                log('❌ Modal content not found', 'error');
+                return;
+            }
+
+            const contentStyle = window.getComputedStyle(modalContent);
+            const contentHeight = modalContent.clientHeight;
+            const scrollHeight = modalContent.scrollHeight;
+
+            log(`📐 Mini-mode dimensions:`, 'info');
+            log(`  Modal height: ${modalStyle.height}`, 'info');
+            log(`  Modal max-height: ${modalStyle.maxHeight}`, 'info');
+            log(`  Content height: ${contentHeight}px`, 'info');
+            log(`  Content scroll height: ${scrollHeight}px`, 'info');
+            log(`  Content max-height: ${contentStyle.maxHeight}`, 'info');
+
+            // Find theme cards
+            const themeCards = modal.querySelectorAll('.theme-card') ||
+                             modal.querySelectorAll('[class*="theme"]');
+
+            if (themeCards.length > 0) {
+                log(`🎨 Found ${themeCards.length} theme cards`, 'success');
+
+                const firstCard = themeCards[0];
+                const cardStyle = window.getComputedStyle(firstCard);
+                const cardHeight = firstCard.offsetHeight;
+                const cardMargin = parseInt(cardStyle.marginBottom) || 0;
+
+                log(`📏 Single theme card dimensions:`, 'info');
+                log(`  Card height: ${cardHeight}px`, 'info');
+                log(`  Card margin-bottom: ${cardMargin}px`, 'info');
+
+                const totalCardHeight = cardHeight + cardMargin;
+                const requiredHeightFor3Rows = totalCardHeight * 3;
+
+                log(`📊 Calculation for 3 rows:`, 'info');
+                log(`  Single card total height: ${totalCardHeight}px`, 'info');
+                log(`  Required height for 3 rows: ${requiredHeightFor3Rows}px`, 'info');
+                log(`  Current content height: ${contentHeight}px`, 'info');
+
+                if (contentHeight < requiredHeightFor3Rows) {
+                    log('⚠️ ISSUE C FOUND: Mini-mode height is too short!', 'error');
+                    log(`💡 Current height shows only ~${Math.floor(contentHeight / totalCardHeight)} rows`, 'warn');
+                    log(`💡 Solution: Increase mini-mode max-height to at least ${requiredHeightFor3Rows + 100}px`, 'warn');
+                    updateStatus('miniModeHeightStatus', `Too Short (${Math.floor(contentHeight / totalCardHeight)} rows)`, false);
+                } else {
+                    const visibleRows = Math.floor(contentHeight / totalCardHeight);
+                    log(`✅ Mini-mode can show ~${visibleRows} rows`, 'success');
+                    updateStatus('miniModeHeightStatus', `Shows ${visibleRows} rows (Good)`, true);
+                }
+
+                // Check grid layout
+                const cardsContainer = themeCards[0].parentElement;
+                if (cardsContainer) {
+                    const containerStyle = window.getComputedStyle(cardsContainer);
+                    log(`🔲 Cards container layout:`, 'info');
+                    log(`  Display: ${containerStyle.display}`, 'info');
+                    log(`  Grid template columns: ${containerStyle.gridTemplateColumns}`, 'info');
+                    log(`  Gap: ${containerStyle.gap}`, 'info');
+                }
+            } else {
+                log('⚠️ No theme cards found', 'warn');
+                updateStatus('miniModeHeightStatus', 'No Theme Cards', false);
+            }
+
+            // Check for CSS rules affecting mini-mode height
+            log(`🔍 Searching for mini-mode height CSS...`, 'info');
+            const stylesheets = Array.from(document.styleSheets);
+            let foundMiniModeRule = false;
+
+            try {
+                stylesheets.forEach(sheet => {
+                    try {
+                        const rules = Array.from(sheet.cssRules || sheet.rules || []);
+                        rules.forEach(rule => {
+                            if (rule.selectorText && rule.selectorText.includes('mini-mode')) {
+                                if (rule.style.height || rule.style.maxHeight) {
+                                    log(`📝 Found CSS rule: ${rule.selectorText}`, 'info');
+                                    log(`  height: ${rule.style.height || 'not set'}`, 'info');
+                                    log(`  max-height: ${rule.style.maxHeight || 'not set'}`, 'info');
+                                    foundMiniModeRule = true;
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        // Cross-origin stylesheet
+                    }
+                });
+            } catch (e) {
+                log(`⚠️ Could not inspect stylesheets: ${e.message}`, 'warn');
+            }
+
+            if (!foundMiniModeRule) {
+                log('⚠️ No explicit height rules found for .mini-mode', 'warn');
+            }
+        }
+
+        // Run all tests
+        function runAllTests() {
+            log('🧪 Running all tests...', 'info');
+            log('═══════════════════════════════════', 'info');
+
+            setTimeout(() => inspectModal(), 100);
+            setTimeout(() => inspectScrollButton(), 300);
+            setTimeout(() => checkEventListeners(), 500);
+            setTimeout(() => testScrollFunctionality(), 700);
+            setTimeout(() => checkMiniMode(), 900);
+            setTimeout(() => checkBackdropOverlay(), 1100);
+            setTimeout(() => checkModalHeaderPosition(), 1300);
+            setTimeout(() => checkMiniModeHeight(), 1500);
+            setTimeout(() => {
+                log('═══════════════════════════════════', 'info');
+                log('✅ All tests completed', 'success');
+            }, 1700);
+        }
+
+        // Update status indicators
+        function updateStatus(elementId, text, isActive) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const statusClass = isActive ? 'status-active' : 'status-inactive';
+            element.innerHTML = `<span class="status-indicator ${statusClass}"></span>${text}`;
+        }
+
+        // Monitor scroll position in real-time
+        setInterval(() => {
+            const modal = document.getElementById('appearance-modal');
+            if (modal && window.getComputedStyle(modal).display !== 'none') {
+                const modalContent = modal.querySelector('.modal-content') ||
+                                    modal.querySelector('.appearance-content');
+                if (modalContent) {
+                    updateStatus('scrollPosition', `${modalContent.scrollTop}px`);
+                }
+            }
+        }, 500);
+
+        // Initial log
+        log('🚀 Debug console initialized', 'success');
+        log('💡 Open user-profile.html and the appearance modal to begin debugging', 'info');
+    </script>
+</body>
+</html>

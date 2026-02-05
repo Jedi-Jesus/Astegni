@@ -64,7 +64,7 @@ async function switchPanel(panelName) {
 
     // Close sidebar on mobile after panel switch
     if (window.innerWidth < 1024) {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById('packageManagementSidebar');
         if (sidebar) {
             sidebar.classList.remove('active');
             console.log('📱 Sidebar closed (mobile view)');
@@ -92,8 +92,8 @@ async function switchPanel(panelName) {
     });
     window.dispatchEvent(panelSwitchedEvent);
 
-    // Initialize Community Panel when switching to tutor-community
-    if (panelName === 'tutor-community' && window.tutorCommunityPanel) {
+    // Initialize Community Panel when switching to community
+    if (panelName === 'community' && window.tutorCommunityPanel) {
         console.log('🎯 Initializing Community Panel...');
         setTimeout(() => {
             window.tutorCommunityPanel.initialize();

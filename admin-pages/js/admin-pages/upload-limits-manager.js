@@ -326,9 +326,9 @@ function selectPlan(planId, planName, price, existingSettingId = null) {
     document.getElementById('storage-subscription-plan-id').value = planId;
 
     // Update selected plan display
-    document.getElementById('selected-plan-name').textContent = planName;
-    document.getElementById('selected-plan-price').textContent = price > 0 ? `${price} ETB/mo` : 'Free';
-    document.getElementById('selected-plan-display').classList.remove('hidden');
+    document.getElementById('upload-limit-selected-plan-name').textContent = planName;
+    document.getElementById('upload-limit-selected-plan-price').textContent = price > 0 ? `${price} ETB/mo` : 'Free';
+    document.getElementById('upload-limit-selected-plan-display').classList.remove('hidden');
 
     // Hide search input and results
     document.getElementById('plan-search-input').value = '';
@@ -353,7 +353,7 @@ function selectPlan(planId, planName, price, existingSettingId = null) {
                 `<i class="fas fa-edit mr-2 text-purple-600"></i>Edit Storage Settings - ${planName}`;
 
             // Show "configured" indicator on selected plan display
-            const selectedPlanDisplay = document.getElementById('selected-plan-display');
+            const selectedPlanDisplay = document.getElementById('upload-limit-selected-plan-display');
             if (selectedPlanDisplay) {
                 const configuredBadge = selectedPlanDisplay.querySelector('.configured-badge');
                 if (!configuredBadge) {
@@ -385,11 +385,16 @@ function selectPlan(planId, planName, price, existingSettingId = null) {
     }
 }
 
-function clearSelectedPlan() {
+function clearUploadLimitSelectedPlan() {
     selectedPlanId = null;
     document.getElementById('storage-subscription-plan-id').value = '';
-    document.getElementById('selected-plan-display').classList.add('hidden');
+    document.getElementById('upload-limit-selected-plan-display').classList.add('hidden');
     document.getElementById('plan-search-input').value = '';
+}
+
+// Backward compatibility alias
+function clearSelectedPlan() {
+    clearUploadLimitSelectedPlan();
 }
 
 // ============================================
@@ -412,7 +417,7 @@ function openAddStorageSettingsModal() {
     // Show search container, hide edit display
     document.getElementById('plan-search-container').classList.remove('hidden');
     document.getElementById('plan-name-display-container').classList.add('hidden');
-    document.getElementById('selected-plan-display').classList.add('hidden');
+    document.getElementById('upload-limit-selected-plan-display').classList.add('hidden');
 
     // Set default values
     document.getElementById('storage-max-image-size').value = 5;
@@ -649,6 +654,7 @@ window.deleteStorageSettings = deleteStorageSettings;
 window.deleteUploadLimit = deleteStorageSettings; // Alias
 window.selectPlan = selectPlan;
 window.clearSelectedPlan = clearSelectedPlan;
+window.clearUploadLimitSelectedPlan = clearUploadLimitSelectedPlan;
 
 // Close search results when clicking outside
 document.addEventListener('click', (e) => {

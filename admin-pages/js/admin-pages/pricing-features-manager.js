@@ -50,8 +50,238 @@ let countryRegions = {};
 // Currently selected country for region exclusion premiums
 let currentSelectedCountry = 'ET';
 
+// Store detected currency based on GPS location
+let cpiDetectedCurrency = 'ETB';
+
+// Format country label for display
+function formatCountryLabel(country) {
+    if (country === 'all') return 'Global (All Countries)';
+
+    const countries = {
+        'ET': 'Ethiopia', 'CM': 'Cameroon', 'KE': 'Kenya', 'NG': 'Nigeria', 'GH': 'Ghana',
+        'ZA': 'South Africa', 'EG': 'Egypt', 'TZ': 'Tanzania', 'UG': 'Uganda', 'MA': 'Morocco',
+        'DZ': 'Algeria', 'TN': 'Tunisia', 'RW': 'Rwanda', 'SN': 'Senegal', 'CI': 'Ivory Coast',
+        'MX': 'Mexico', 'US': 'United States', 'CA': 'Canada', 'BR': 'Brazil', 'AR': 'Argentina',
+        'CO': 'Colombia', 'CL': 'Chile', 'PE': 'Peru',
+        'GB': 'United Kingdom', 'DE': 'Germany', 'FR': 'France', 'ES': 'Spain', 'IT': 'Italy',
+        'NL': 'Netherlands', 'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria', 'PL': 'Poland',
+        'CN': 'China', 'IN': 'India', 'JP': 'Japan', 'KR': 'South Korea', 'SG': 'Singapore',
+        'MY': 'Malaysia', 'TH': 'Thailand', 'VN': 'Vietnam', 'PH': 'Philippines', 'ID': 'Indonesia',
+        'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates', 'IL': 'Israel', 'TR': 'Turkey',
+        'AU': 'Australia', 'NZ': 'New Zealand'
+    };
+
+    return countries[country] || country;
+}
+
+// Map country names to ISO codes
+function getCountryCode(countryName) {
+    const countryNameToCode = {
+        'Ethiopia': 'ET', 'Cameroon': 'CM', 'Kenya': 'KE', 'Nigeria': 'NG', 'Ghana': 'GH',
+        'South Africa': 'ZA', 'Egypt': 'EG', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Morocco': 'MA',
+        'Algeria': 'DZ', 'Tunisia': 'TN', 'Rwanda': 'RW', 'Senegal': 'SN',
+        'Ivory Coast': 'CI', 'Côte d\'Ivoire': 'CI',
+        'Mexico': 'MX', 'United States': 'US', 'United States of America': 'US', 'Canada': 'CA',
+        'Brazil': 'BR', 'Argentina': 'AR', 'Colombia': 'CO', 'Chile': 'CL', 'Peru': 'PE',
+        'United Kingdom': 'GB', 'Germany': 'DE', 'France': 'FR', 'Spain': 'ES', 'Italy': 'IT',
+        'Netherlands': 'NL', 'Belgium': 'BE', 'Switzerland': 'CH', 'Austria': 'AT', 'Poland': 'PL',
+        'China': 'CN', 'India': 'IN', 'Japan': 'JP', 'South Korea': 'KR', 'Singapore': 'SG',
+        'Malaysia': 'MY', 'Thailand': 'TH', 'Vietnam': 'VN', 'Philippines': 'PH', 'Indonesia': 'ID',
+        'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE', 'UAE': 'AE',
+        'Israel': 'IL', 'Turkey': 'TR',
+        'Australia': 'AU', 'New Zealand': 'NZ'
+    };
+
+    return countryNameToCode[countryName] || null;
+}
+
+// Map country codes to currencies
+function getCurrencyForCountry(countryCode) {
+    const countryToCurrency = {
+        // Africa (15 countries)
+        'ET': 'ETB',  // Ethiopia - Ethiopian Birr
+        'KE': 'KES',  // Kenya - Kenyan Shilling
+        'NG': 'NGN',  // Nigeria - Nigerian Naira
+        'ZA': 'ZAR',  // South Africa - South African Rand
+        'EG': 'EGP',  // Egypt - Egyptian Pound
+        'GH': 'GHS',  // Ghana - Ghanaian Cedi
+        'TZ': 'TZS',  // Tanzania - Tanzanian Shilling
+        'UG': 'UGX',  // Uganda - Ugandan Shilling
+        'MA': 'MAD',  // Morocco - Moroccan Dirham
+        'DZ': 'DZD',  // Algeria - Algerian Dinar
+        'TN': 'TND',  // Tunisia - Tunisian Dinar
+        'RW': 'RWF',  // Rwanda - Rwandan Franc
+        'SN': 'XOF',  // Senegal - West African CFA Franc
+        'CI': 'XOF',  // Ivory Coast - West African CFA Franc
+        'CM': 'XAF',  // Cameroon - Central African CFA Franc
+
+        // Americas (8 countries)
+        'US': 'USD',  // United States - US Dollar
+        'CA': 'CAD',  // Canada - Canadian Dollar
+        'MX': 'MXN',  // Mexico - Mexican Peso
+        'BR': 'BRL',  // Brazil - Brazilian Real
+        'AR': 'ARS',  // Argentina - Argentine Peso
+        'CO': 'COP',  // Colombia - Colombian Peso
+        'CL': 'CLP',  // Chile - Chilean Peso
+        'PE': 'PEN',  // Peru - Peruvian Sol
+
+        // Europe (11 countries)
+        'GB': 'GBP',  // United Kingdom - British Pound
+        'CH': 'CHF',  // Switzerland - Swiss Franc
+        'PL': 'PLN',  // Poland - Polish Zloty
+        // Euro countries
+        'DE': 'EUR',  // Germany - Euro
+        'FR': 'EUR',  // France - Euro
+        'ES': 'EUR',  // Spain - Euro
+        'IT': 'EUR',  // Italy - Euro
+        'NL': 'EUR',  // Netherlands - Euro
+        'BE': 'EUR',  // Belgium - Euro
+        'AT': 'EUR',  // Austria - Euro
+        'TR': 'TRY',  // Turkey - Turkish Lira
+
+        // Asia (10 countries)
+        'CN': 'CNY',  // China - Chinese Yuan
+        'IN': 'INR',  // India - Indian Rupee
+        'JP': 'JPY',  // Japan - Japanese Yen
+        'KR': 'KRW',  // South Korea - South Korean Won
+        'SG': 'SGD',  // Singapore - Singapore Dollar
+        'MY': 'MYR',  // Malaysia - Malaysian Ringgit
+        'TH': 'THB',  // Thailand - Thai Baht
+        'VN': 'VND',  // Vietnam - Vietnamese Dong
+        'PH': 'PHP',  // Philippines - Philippine Peso
+        'ID': 'IDR',  // Indonesia - Indonesian Rupiah
+
+        // Middle East (4 countries)
+        'SA': 'SAR',  // Saudi Arabia - Saudi Riyal
+        'AE': 'AED',  // UAE - UAE Dirham
+        'IL': 'ILS',  // Israel - Israeli Shekel
+
+        // Oceania (2 countries)
+        'AU': 'AUD',  // Australia - Australian Dollar
+        'NZ': 'NZD',  // New Zealand - New Zealand Dollar
+
+        // Default
+        'all': 'USD'  // Global - US Dollar as default
+    };
+
+    return countryToCurrency[countryCode] || 'USD';
+}
+
+// Detect country from GPS for CPI settings
+async function detectCpiCountryFromGPS() {
+    const countryField = document.getElementById('cpi-country');
+    const countryDisplay = document.getElementById('cpi-country-display');
+    const countryStatusDiv = document.getElementById('cpi-country-status');
+
+    if (!countryField || !countryDisplay) {
+        console.error('[GPS-CPI] Country field or display not found');
+        return;
+    }
+
+    try {
+        countryDisplay.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...';
+        if (countryStatusDiv) {
+            countryStatusDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin mr-1"></i>Detecting your GPS location...</span>';
+        }
+
+        if (!navigator.geolocation) {
+            console.warn('[GPS-CPI] Geolocation not supported, defaulting to Global');
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-info-circle mr-1"></i>GPS not available. Using global pricing.</span>';
+            }
+            return;
+        }
+
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            });
+        });
+
+        const { latitude, longitude } = position.coords;
+        console.log(`[GPS-CPI] Coordinates: ${latitude}, ${longitude}`);
+
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
+
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'Astegni-Admin-CPI-Settings-Manager/1.0'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Geocoding request failed');
+        }
+
+        const data = await response.json();
+        console.log('[GPS-CPI] Geocoding data:', data);
+
+        if (data && data.address) {
+            const countryName = data.address.country;
+            let countryCode = data.address.country_code ? data.address.country_code.toUpperCase() : null;
+
+            console.log(`[GPS-CPI] Country detected: ${countryName} (${countryCode})`);
+
+            if (!countryCode && countryName) {
+                countryCode = getCountryCode(countryName);
+            }
+
+            if (countryCode) {
+                countryField.value = countryCode;
+                countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-green-500"></i>${countryName}`;
+
+                // Set currency based on country
+                cpiDetectedCurrency = getCurrencyForCountry(countryCode);
+                console.log(`[GPS-CPI] Currency set to: ${cpiDetectedCurrency} for ${countryName}`);
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Detected: ${countryName} (${cpiDetectedCurrency})</span>`;
+                }
+
+                console.log(`[GPS-CPI] Country set to: ${countryName} (${countryCode})`);
+            } else {
+                countryField.value = 'all';
+                countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country code. Using global pricing.</span>`;
+                }
+            }
+        } else {
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country. Using global pricing.</span>`;
+            }
+        }
+
+    } catch (error) {
+        console.error('[GPS-CPI] Error detecting country:', error);
+
+        countryField.value = 'all';
+        countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+        if (countryStatusDiv) {
+            if (error.code === 1) {
+                countryStatusDiv.innerHTML = '<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>Location permission denied. Using global pricing.</span>';
+            } else if (error.code === 2) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>Location unavailable. Using global pricing.</span>';
+            } else if (error.code === 3) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-clock mr-1"></i>Location timeout. Using global pricing.</span>';
+            } else {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>Location unavailable. Using global pricing.</span>';
+            }
+        }
+    }
+}
+
 // Open CPI Settings Modal
-function openCpiSettingsModal() {
+async function openCpiSettingsModal() {
     const modal = document.getElementById('cpi-settings-modal');
     if (modal) {
         // Load current settings into form
@@ -59,6 +289,15 @@ function openCpiSettingsModal() {
         modal.classList.remove('hidden');
         // Calculate initial preview
         calculateCpiPreview();
+
+        // Auto-detect country from GPS ONLY if no existing country is set
+        // (i.e., when creating new settings for the first time)
+        const existingCountry = cpiSettings.country;
+        if (!existingCountry || existingCountry === '') {
+            detectCpiCountryFromGPS().catch(err => {
+                console.warn('[GPS-CPI] Auto-detection failed:', err);
+            });
+        }
     }
 }
 
@@ -116,6 +355,20 @@ function loadCpiSettingsToForm() {
     // Base rate (applies to "All" audience and "International" location)
     const baseRateEl = document.getElementById('cpi-base-rate');
     if (baseRateEl) baseRateEl.value = cpiSettings.baseRate || '';
+
+    // Set country (hidden field and display) - no GPS detection when loading existing data
+    const countryCode = cpiSettings.country || 'all';
+    const countryField = document.getElementById('cpi-country');
+    const countryDisplay = document.getElementById('cpi-country-display');
+    if (countryField) {
+        countryField.value = countryCode;
+    }
+    if (countryDisplay) {
+        countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>${formatCountryLabel(countryCode)}`;
+    }
+
+    // Set currency based on existing settings currency or derive from country
+    cpiDetectedCurrency = cpiSettings.currency || getCurrencyForCountry(countryCode);
 
     // Audience premiums (Tutor, Student, Parent, Advertiser, User - "All" uses base rate)
     const tutorEl = document.getElementById('cpi-tutor-premium');
@@ -379,7 +632,7 @@ function calculateCpiPreview() {
 
     // Base rate
     const baseEl = document.getElementById('cpi-preview-base');
-    if (baseEl) baseEl.textContent = `${formatPrice(baseRate)} ETB`;
+    if (baseEl) baseEl.textContent = `${formatPrice(baseRate)} ${cpiDetectedCurrency}`;
 
     // Audience row
     const audienceRow = document.getElementById('cpi-preview-audience-row');
@@ -389,7 +642,7 @@ function calculateCpiPreview() {
         if (selectedAudience !== 'none' && audiencePremium > 0) {
             audienceRow.classList.remove('hidden');
             if (audienceLabelEl) audienceLabelEl.textContent = audienceLabel;
-            if (audienceValueEl) audienceValueEl.textContent = `+${formatPrice(audiencePremium)} ETB`;
+            if (audienceValueEl) audienceValueEl.textContent = `+${formatPrice(audiencePremium)} ${cpiDetectedCurrency}`;
         } else {
             audienceRow.classList.add('hidden');
         }
@@ -403,7 +656,7 @@ function calculateCpiPreview() {
         if ((selectedLocation === 'national' || selectedLocation === 'regional') && locationPremium > 0) {
             locationRow.classList.remove('hidden');
             if (locationLabelEl) locationLabelEl.textContent = locationLabel;
-            if (locationValueEl) locationValueEl.textContent = `+${formatPrice(locationPremium)} ETB`;
+            if (locationValueEl) locationValueEl.textContent = `+${formatPrice(locationPremium)} ${cpiDetectedCurrency}`;
         } else {
             locationRow.classList.add('hidden');
         }
@@ -417,7 +670,7 @@ function calculateCpiPreview() {
         if (selectedLocation === 'regional' && regionExclusionPremium > 0) {
             regionRow.classList.remove('hidden');
             if (regionLabelEl) regionLabelEl.textContent = regionLabel;
-            if (regionValueEl) regionValueEl.textContent = `+${formatPrice(regionExclusionPremium)} ETB`;
+            if (regionValueEl) regionValueEl.textContent = `+${formatPrice(regionExclusionPremium)} ${cpiDetectedCurrency}`;
         } else {
             regionRow.classList.add('hidden');
         }
@@ -431,7 +684,7 @@ function calculateCpiPreview() {
         if (selectedPlacement !== 'none' && placementPremium > 0) {
             placementRow.classList.remove('hidden');
             if (placementLabelEl) placementLabelEl.textContent = placementLabel;
-            if (placementValueEl) placementValueEl.textContent = `+${formatPrice(placementPremium)} ETB`;
+            if (placementValueEl) placementValueEl.textContent = `+${formatPrice(placementPremium)} ${cpiDetectedCurrency}`;
         } else {
             placementRow.classList.add('hidden');
         }
@@ -439,15 +692,15 @@ function calculateCpiPreview() {
 
     // Total CPI
     const totalEl = document.getElementById('cpi-preview-total');
-    if (totalEl) totalEl.textContent = `${formatPrice(totalCpi)} ETB`;
+    if (totalEl) totalEl.textContent = `${formatPrice(totalCpi)} ${cpiDetectedCurrency}`;
 
     // Example calculations
     const example1k = document.getElementById('cpi-example-1k');
     const example10k = document.getElementById('cpi-example-10k');
     const example100k = document.getElementById('cpi-example-100k');
-    if (example1k) example1k.textContent = `${(totalCpi * 1000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
-    if (example10k) example10k.textContent = `${(totalCpi * 10000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
-    if (example100k) example100k.textContent = `${(totalCpi * 100000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ETB`;
+    if (example1k) example1k.textContent = `${(totalCpi * 1000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${cpiDetectedCurrency}`;
+    if (example10k) example10k.textContent = `${(totalCpi * 10000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${cpiDetectedCurrency}`;
+    if (example100k) example100k.textContent = `${(totalCpi * 100000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${cpiDetectedCurrency}`;
 
     return { baseRate, audiencePremium, locationPremium, regionExclusionPremium, totalCpi };
 }
@@ -459,6 +712,7 @@ async function saveCpiSettings(event) {
     // Get values from form
     // Base rate covers "All" audience and "International" location (no targeting)
     const baseRate = parseFloat(document.getElementById('cpi-base-rate')?.value) || 0;
+    const country = document.getElementById('cpi-country')?.value || 'all';
     const tutorPremium = parseFloat(document.getElementById('cpi-tutor-premium')?.value) || 0;
     const studentPremium = parseFloat(document.getElementById('cpi-student-premium')?.value) || 0;
     const parentPremium = parseFloat(document.getElementById('cpi-parent-premium')?.value) || 0;
@@ -482,6 +736,8 @@ async function saveCpiSettings(event) {
     // Update local settings object with JSONB region premiums format
     cpiSettings = {
         baseRate,
+        country,
+        currency: cpiDetectedCurrency,  // Auto-detected currency based on GPS location
         audiencePremiums: {
             tutor: tutorPremium,
             student: studentPremium,
@@ -546,6 +802,7 @@ function renderCpiRatesGrid() {
     const grid = document.getElementById('cpi-rates-grid');
     if (!grid) return;
 
+    const currency = cpiSettings.currency || 'ETB';  // Read currency from settings
     const formatPrice = (price) => price.toFixed(3);
 
     grid.innerHTML = `
@@ -561,7 +818,7 @@ function renderCpiRatesGrid() {
                 </div>
             </div>
             <div class="text-2xl font-bold text-orange-600 mb-2">
-                ${formatPrice(cpiSettings.baseRate || 0)} <span class="text-sm font-normal text-gray-500">ETB</span>
+                ${formatPrice(cpiSettings.baseRate || 0)} <span class="text-sm font-normal text-gray-500">${currency}</span>
             </div>
             <p class="text-xs text-gray-500">Per impression (no targeting)</p>
         </div>
@@ -582,31 +839,31 @@ function renderCpiRatesGrid() {
                     <span class="flex items-center gap-1">
                         <i class="fas fa-chalkboard-teacher text-blue-500"></i> Tutor
                     </span>
-                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.audiencePremiums?.tutor || 0)} ETB</span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.audiencePremiums?.tutor || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-user-graduate text-green-500"></i> Student
                     </span>
-                    <span class="font-semibold text-green-600">+${formatPrice(cpiSettings.audiencePremiums?.student || 0)} ETB</span>
+                    <span class="font-semibold text-green-600">+${formatPrice(cpiSettings.audiencePremiums?.student || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-user-friends text-yellow-500"></i> Parent
                     </span>
-                    <span class="font-semibold text-yellow-600">+${formatPrice(cpiSettings.audiencePremiums?.parent || 0)} ETB</span>
+                    <span class="font-semibold text-yellow-600">+${formatPrice(cpiSettings.audiencePremiums?.parent || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-bullhorn text-purple-500"></i> Advertiser
                     </span>
-                    <span class="font-semibold text-purple-600">+${formatPrice(cpiSettings.audiencePremiums?.advertiser || 0)} ETB</span>
+                    <span class="font-semibold text-purple-600">+${formatPrice(cpiSettings.audiencePremiums?.advertiser || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-user text-gray-500"></i> User
                     </span>
-                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.audiencePremiums?.user || 0)} ETB</span>
+                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.audiencePremiums?.user || 0)} ${currency}</span>
                 </div>
             </div>
         </div>
@@ -627,7 +884,7 @@ function renderCpiRatesGrid() {
                     <span class="flex items-center gap-1">
                         <i class="fas fa-flag text-blue-500"></i> National
                     </span>
-                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.locationPremiums?.national || 0)} ETB</span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.locationPremiums?.national || 0)} ${currency}</span>
                 </div>
             </div>
         </div>
@@ -664,25 +921,25 @@ function renderCpiRatesGrid() {
                     <span class="flex items-center gap-1">
                         <i class="fas fa-minus-circle text-gray-400 text-xs"></i> Placeholder
                     </span>
-                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.placementPremiums?.placeholder || 0)} ETB</span>
+                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.placementPremiums?.placeholder || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-minus-circle text-blue-400 text-xs"></i> Widget
                     </span>
-                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.placementPremiums?.widget || 0)} ETB</span>
+                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.placementPremiums?.widget || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-minus-circle text-orange-400 text-xs"></i> WB Pop-up
                     </span>
-                    <span class="font-semibold text-orange-600">+${formatPrice(cpiSettings.placementPremiums?.popup || 0)} ETB</span>
+                    <span class="font-semibold text-orange-600">+${formatPrice(cpiSettings.placementPremiums?.popup || 0)} ${currency}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="flex items-center gap-1">
                         <i class="fas fa-minus-circle text-red-400 text-xs"></i> WB In-Session
                     </span>
-                    <span class="font-semibold text-red-600">+${formatPrice(cpiSettings.placementPremiums?.insession || 0)} ETB</span>
+                    <span class="font-semibold text-red-600">+${formatPrice(cpiSettings.placementPremiums?.insession || 0)} ${currency}</span>
                 </div>
             </div>
         </div>

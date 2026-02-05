@@ -711,7 +711,7 @@ class ParentCommunityManager {
               <span>👥</span>
               <span>${event.registered_count || 0}/${event.available_seats || 'Unlimited'} registered</span>
             </div>
-            ${event.price > 0 ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${event.price} ETB</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
+            ${event.price > 0 ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${event.price} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
           </div>
           <p style="color: var(--text); font-size: 0.9rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">${event.description || 'No description available'}</p>
         </div>
@@ -918,7 +918,7 @@ class ParentCommunityManager {
               <span>👥</span>
               <span>${club.member_count || 0}/${club.member_limit || 'Unlimited'} members</span>
             </div>
-            ${club.is_paid ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${club.membership_fee} ETB</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
+            ${club.is_paid ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
           </div>
           <p style="color: var(--text); font-size: 0.9rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">${club.description || 'No description available'}</p>
         </div>
@@ -1203,6 +1203,43 @@ function filterClubsByTab(tab) {
 function switchCommunityMainTab(section) {
   console.log('Switching to main section:', section);
 
+  // Handle direct requests cards
+  if (section === 'requests-sent' || section === 'requests-received') {
+    // Hide all main tab content sections
+    const mainTabContents = document.querySelectorAll('.community-main-tab-content');
+    mainTabContents.forEach(content => {
+      content.classList.add('hidden');
+    });
+
+    // Show requests content
+    const requestsContent = document.getElementById('requests-main-tab-content');
+    if (requestsContent) {
+      requestsContent.classList.remove('hidden');
+    }
+
+    // Update active state on cards
+    const mainCards = document.querySelectorAll('.community-main-card');
+    mainCards.forEach(card => {
+      card.classList.remove('active-community-card');
+      card.style.transform = '';
+      card.style.boxShadow = '';
+    });
+
+    // Add active state to clicked card
+    const activeCard = document.getElementById(`${section}-main-tab`);
+    if (activeCard) {
+      activeCard.classList.add('active-community-card');
+      activeCard.style.transform = 'translateY(-4px)';
+      activeCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+    }
+
+    // IMPORTANT: Fetch data when card is clicked
+    const subsection = section === 'requests-sent' ? 'sent' : 'received';
+    console.log(`📥 Fetching ${subsection} requests on click...`);
+    toggleRequestsSubSection(subsection);
+    return;
+  }
+
   // Hide all main tab content sections
   const mainTabContents = document.querySelectorAll('.community-main-tab-content');
   mainTabContents.forEach(content => {
@@ -1413,7 +1450,8 @@ function toggleRequestsSubSection(subsection) {
     selectedSubsection.classList.remove('hidden');
   }
 
-  // Load data for the subsection if not already loaded
+  // IMPORTANT: Fetch data when subsection is toggled
+  console.log(`📥 Fetching ${subsection} requests data...`);
   if (subsection === 'sent') {
     loadSentRequests();
   } else if (subsection === 'received') {
@@ -1587,6 +1625,12 @@ async function loadSentRequests() {
     if (response.ok) {
       const requests = await response.json();
 
+      // Update count in main card (on community panel main view)
+      const mainCountElement = document.getElementById('sent-requests-count-main');
+      if (mainCountElement) {
+        mainCountElement.textContent = requests.length;
+      }
+
       if (requests.length === 0) {
         listElement.innerHTML = '<div class="text-center py-8"><span class="text-4xl">📤</span><p class="text-gray-500 mt-2">No sent requests yet</p></div>';
         return;
@@ -1635,6 +1679,12 @@ async function loadReceivedRequests() {
 
     if (response.ok) {
       const requests = await response.json();
+
+      // Update count in main card (on community panel main view)
+      const mainCountElement = document.getElementById('received-requests-count-main');
+      if (mainCountElement) {
+        mainCountElement.textContent = requests.length;
+      }
 
       if (requests.length === 0) {
         listElement.innerHTML = '<div class="text-center py-8"><span class="text-4xl">📥</span><p class="text-gray-500 mt-2">No received requests yet</p></div>';
@@ -1928,7 +1978,7 @@ async function cancelConnectionRequest(connectionId) {
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   // Only initialize if we're on the parent profile page
-  if (document.getElementById('parent-community-panel')) {
+  if (document.getElementById('community-panel')) {
     window.parentCommunityManager = new ParentCommunityManager();
     console.log('✅ Parent Community Manager initialized');
     console.log('✅ Parent Community Panel functions loaded');

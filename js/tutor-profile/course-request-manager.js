@@ -57,6 +57,9 @@ window.openCourseRequestModal = async function() {
 
         // Reset form
         resetCourseRequestForm();
+
+        // Update submit button text based on page context
+        updateSubmitButtonText();
     } else {
         console.error('[CourseRequestManager] Course request modal not found');
         alert('Failed to load course request modal. Please refresh the page and try again.');
@@ -64,17 +67,51 @@ window.openCourseRequestModal = async function() {
 };
 
 /**
+ * Update submit button text based on page context
+ */
+function updateSubmitButtonText() {
+    const submitBtn = document.getElementById('submitCourseRequestBtn');
+    if (!submitBtn) return;
+
+    // Check if we're on tutor-profile page
+    const isTutorProfile = window.location.pathname.includes('tutor-profile');
+
+    if (isTutorProfile) {
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Approval';
+    } else {
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+    }
+}
+
+/**
  * Close the course request modal
  */
-window.closeCourseRequestModal = function() {
+window.closeCourseRequestModal = function(event) {
+    // Stop event propagation if event is provided
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
     const modal = document.getElementById('course-request-modal');
     if (modal) {
+        console.log('[CourseRequestManager] Closing modal...');
+        console.log('[CourseRequestManager] Modal current display:', window.getComputedStyle(modal).display);
+        console.log('[CourseRequestManager] Modal current visibility:', window.getComputedStyle(modal).visibility);
+
+        // Force hide with setProperty to override inline styles
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('visibility', 'hidden', 'important');
+        modal.style.setProperty('opacity', '0', 'important');
+
         modal.classList.add('hidden');
         modal.classList.remove('active');
-        modal.style.display = 'none';
-        modal.style.visibility = 'hidden';
-        modal.style.opacity = '0';
         document.body.style.overflow = '';
+
+        console.log('[CourseRequestManager] Modal after close - display:', window.getComputedStyle(modal).display);
+        console.log('[CourseRequestManager] Modal closed successfully');
+    } else {
+        console.warn('[CourseRequestManager] Modal element not found when trying to close');
     }
 };
 
@@ -240,8 +277,8 @@ function renderCourseRequestLanguageTags() {
     container.innerHTML = courseRequestLanguages.map(lang => `
         <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; background: #3b82f6; color: white; border-radius: 20px; font-size: 0.875rem; font-weight: 500;">
             ${lang}
-            <button type="button" onclick="removeCourseRequestLanguage('${lang}')" style="background: none; border: none; color: white; cursor: pointer; padding: 0; display: flex; align-items: center;">
-                <i class="fas fa-times" style="font-size: 0.75rem;"></i>
+            <button type="button" onclick="removeCourseRequestLanguage('${lang}')" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0; display: flex; align-items: center; border-radius: 50%; width: 18px; height: 18px; justify-content: center; transition: all 0.2s; font-size: 16px; line-height: 1; font-weight: bold;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                ×
             </button>
         </span>
     `).join('');
@@ -306,8 +343,8 @@ function renderCourseRequestTags() {
     container.innerHTML = courseRequestTags.map(tag => `
         <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.875rem; font-weight: 500;">
             ${tag}
-            <button type="button" onclick="removeCourseRequestTag('${tag}')" style="background: none; border: none; color: white; cursor: pointer; padding: 0; display: flex; align-items: center;">
-                <i class="fas fa-times" style="font-size: 0.75rem;"></i>
+            <button type="button" onclick="removeCourseRequestTag('${tag}')" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0; display: flex; align-items: center; border-radius: 50%; width: 18px; height: 18px; justify-content: center; transition: all 0.2s; font-size: 16px; line-height: 1; font-weight: bold;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                ×
             </button>
         </span>
     `).join('');
@@ -353,6 +390,103 @@ window.updateCourseRequestLessonTitles = function() {
 };
 
 /**
+ * Validate if course already exists or is similar
+ */
+async function validateCourseExists(courseName) {
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const response = await fetch(`${COURSE_REQUEST_API_URL}/api/courses?search=${encodeURIComponent(courseName)}&limit=20`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+
+        if (response.ok) {
+            const courses = await response.json();
+
+            // Check for exact match
+            const exactMatch = courses.find(c =>
+                c.course_name && c.course_name.toLowerCase() === courseName.toLowerCase()
+            );
+
+            if (exactMatch) {
+                return {
+                    exists: true,
+                    exact: true,
+                    match: exactMatch,
+                    message: `Course "${exactMatch.course_name}" already exists in the system.`
+                };
+            }
+
+            // Check for similar matches using Levenshtein distance
+            const similarCourses = courses.filter(c => {
+                if (!c.course_name) return false;
+                const similarity = calculateSimilarity(courseName.toLowerCase(), c.course_name.toLowerCase());
+                return similarity > 0.6; // 60% similarity threshold
+            });
+
+            if (similarCourses.length > 0) {
+                return {
+                    exists: false,
+                    similar: true,
+                    matches: similarCourses,
+                    message: `Similar course${similarCourses.length > 1 ? 's' : ''} found: ${similarCourses.map(c => c.course_name).join(', ')}`
+                };
+            }
+
+            return { exists: false, similar: false };
+        }
+
+        return { exists: false, similar: false };
+    } catch (error) {
+        console.error('Error validating course:', error);
+        return { exists: false, similar: false };
+    }
+}
+
+/**
+ * Calculate string similarity using Levenshtein distance
+ */
+function calculateSimilarity(str1, str2) {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+
+    if (longer.length === 0) return 1.0;
+
+    const editDistance = getEditDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+}
+
+/**
+ * Get Levenshtein edit distance between two strings
+ */
+function getEditDistance(str1, str2) {
+    const matrix = [];
+
+    for (let i = 0; i <= str2.length; i++) {
+        matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= str1.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= str2.length; i++) {
+        for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+
+    return matrix[str2.length][str1.length];
+}
+
+/**
  * Submit course request
  */
 window.submitCourseRequest = async function() {
@@ -384,6 +518,47 @@ window.submitCourseRequest = async function() {
         return;
     }
 
+    // Show loading state on submit button
+    const submitBtn = document.getElementById('submitCourseRequestBtn');
+    const originalContent = submitBtn?.innerHTML;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    }
+
+    // Validate if course already exists or is similar
+    const validation = await validateCourseExists(name);
+
+    if (validation.exists && validation.exact) {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+        }
+        alert(`❌ ${validation.message}\n\nPlease search for this course in the system instead of requesting it again.`);
+        return;
+    }
+
+    if (validation.similar) {
+        const proceed = confirm(
+            `⚠️ ${validation.message}\n\n` +
+            `Did you mean one of these courses?\n\n` +
+            `Click "Cancel" to review, or "OK" to continue with your request anyway.`
+        );
+
+        if (!proceed) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+            }
+            return;
+        }
+    }
+
+    // Update button text to "Submitting..."
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    }
+
     // Collect lesson titles from the form
     const lessonInputs = document.querySelectorAll('#courseRequestLessonTitlesContainer input[type="text"]');
     const lessonTitles = Array.from(lessonInputs).map(input => input.value.trim()).filter(t => t);
@@ -401,14 +576,6 @@ window.submitCourseRequest = async function() {
         lesson_title: lessonTitles,
         thumbnail: thumbnail || null
     };
-
-    // Show loading state
-    const submitBtn = document.getElementById('submitCourseRequestBtn');
-    const originalContent = submitBtn?.innerHTML;
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-    }
 
     try {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');

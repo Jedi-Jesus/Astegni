@@ -143,26 +143,24 @@ class GoogleOAuthManager {
             if (!res.ok) {
                 const error = await res.json();
 
-                // If 404, user doesn't have an account - open register modal
-                if (res.status === 404) {
+                // Check if it's account pending deletion (403)
+                if (res.status === 403 && error.detail && error.detail.error_code === 'ACCOUNT_PENDING_DELETION') {
+                    console.log('[GoogleOAuth] Account has pending deletion - showing confirmation modal');
                     this.hideLoadingState();
-                    this.closeGoogleModal();
-                    this.showErrorMessage('No account found with this email. Please register first.');
+                    this.closeAuthModals();
 
-                    // Open register modal after a short delay
-                    setTimeout(() => {
-                        if (window.openModal) {
-                            window.openModal('register-modal');
-                        } else {
-                            const registerModal = document.getElementById('register-modal');
-                            if (registerModal) {
-                                registerModal.classList.add('active');
-                            }
-                        }
-                    }, 1000);
+                    // Show restoration confirmation modal
+                    // For Google OAuth, we don't have password, so pass empty string
+                    if (window.showRestorationConfirmModal) {
+                        window.showRestorationConfirmModal(error.detail.email, '', error.detail);
+                    } else {
+                        this.showErrorMessage('Your account is scheduled for deletion. Please log in with email/password to restore.');
+                    }
                     return;
                 }
 
+                // Note: Backend now creates new users automatically
+                // No need to handle 404 - all users are created on first OAuth sign-in
                 throw new Error(error.detail || 'Backend authentication failed');
             }
 

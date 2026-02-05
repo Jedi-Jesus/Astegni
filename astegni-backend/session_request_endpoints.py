@@ -194,30 +194,29 @@ async def create_session_request(
     cur = conn.cursor()
 
     try:
-        # Get active role and role-specific IDs from JWT
+        # Get user ID and active role from JWT
+        user_id = current_user.get('id')  # This is the requester_id (users.id)
         active_role = current_user.get('active_role')
         role_ids = current_user.get('role_ids', {})
-        user_id = current_user.get('id')
 
-        # Determine requester type and get role-specific ID
+        # Determine requester type from active role
         # Also determine requested_to_id (the student the session is for)
         requested_to_id = request.requested_to_id  # From request body (parent specifies child)
 
         if active_role == 'student':
             requester_type = 'student'
-            requester_id = role_ids.get('student')
-            if not requester_id:
+            student_profile_id = role_ids.get('student')
+            if not student_profile_id:
                 raise HTTPException(status_code=400, detail="Student profile not found. Please complete your student profile first.")
             # Student requests for themselves - set requested_to_id to their own profile
-            requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
-            requested_to_id = requester_id  # Student is requesting for themselves
+            student_profile_id = int(student_profile_id) if isinstance(student_profile_id, str) else student_profile_id
+            requested_to_id = student_profile_id  # Student is requesting for themselves
         elif active_role == 'parent':
             requester_type = 'parent'
-            requester_id = role_ids.get('parent')
-            if not requester_id:
+            parent_profile_id = role_ids.get('parent')
+            if not parent_profile_id:
                 raise HTTPException(status_code=400, detail="Parent profile not found. Please complete your parent profile first.")
             # Parent must specify which child the session is for
-            requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
             if requested_to_id:
                 requested_to_id = int(requested_to_id) if isinstance(requested_to_id, str) else requested_to_id
         else:
@@ -274,9 +273,43 @@ async def create_session_request(
         days_json = json.dumps(package_days) if package_days else None
         specific_dates_json = json.dumps(request.specific_dates) if request.specific_dates else None
 
-        # Insert session request with role-specific ID and schedule fields
-        # Uses package defaults if user didn't provide schedule preferences
-        # requested_to_id is the student profile ID (self for students, child for parents)
+        # =============================================
+        # CHECK FOR DUPLICATE REQUESTS
+        # =============================================
+        # Check for existing pending or accepted requests for the same tutor + package + requester
+        cur.execute("""
+            SELECT id, created_at, status FROM requested_sessions
+            WHERE tutor_id = %s
+            AND requester_id = %s
+            AND package_id = %s
+            AND status IN ('pending', 'accepted')
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (request.tutor_id, user_id, request.package_id))
+
+        existing_request = cur.fetchone()
+
+        if existing_request:
+            existing_id = existing_request[0]
+            existing_created_at = existing_request[1]
+            existing_status = existing_request[2]
+
+            if existing_status == 'pending':
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"⚠️PENDING⚠️Request already sent. You have a pending request for this package (Request ID: {existing_id}, sent on {existing_created_at.strftime('%B %d, %Y')}). Please wait for the tutor's response."
+                )
+            elif existing_status == 'accepted':
+                # Use 409 for consistency but mark it as accepted with a prefix
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"✅ACCEPTED✅Request already accepted. You already have an accepted request for this package (Request ID: {existing_id}, accepted on {existing_created_at.strftime('%B %d, %Y')}). Check your profile to view active sessions."
+                )
+
+        # Insert session request with USER-BASED requester_id
+        # requester_id = users.id (not profile ID)
+        # requester_type = role context ('student' or 'parent')
+        # requested_to_id = student profile ID (self for students, child for parents)
         cur.execute("""
             INSERT INTO requested_sessions (
                 tutor_id, requester_id, requester_type, package_id,
@@ -288,9 +321,9 @@ async def create_session_request(
                 %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id, created_at
         """, (
-            request.tutor_id, requester_id, requester_type,
+            request.tutor_id, user_id, requester_type,  # user_id is now users.id
             request.package_id, request.message, request.preferred_schedule,
-            requested_to_id,  # Use local variable (auto-set for students, from request for parents)
+            requested_to_id,  # Student profile ID
             package_schedule_type, year_range_json, months_json, days_json,
             specific_dates_json, package_start_time, package_end_time,
             request.counter_offer_price
@@ -301,47 +334,47 @@ async def create_session_request(
         created_at = session_result[1]
 
         # =============================================
-        # CREATE OR GET CHAT CONVERSATION
+        # CREATE OR GET CHAT CONVERSATION (USER-BASED)
         # =============================================
 
-        # Check if a direct conversation already exists between requester and tutor
+        # Check if a direct conversation already exists between requester and tutor (user-based)
         cur.execute("""
             SELECT c.id FROM conversations c
             JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
             JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
             WHERE c.type = 'direct'
-            AND cp1.profile_id = %s AND cp1.profile_type = %s
-            AND cp2.profile_id = %s AND cp2.profile_type = 'tutor'
+            AND cp1.user_id = %s
+            AND cp2.user_id = %s
             LIMIT 1
-        """, (requester_id, requester_type, request.tutor_id))
+        """, (user_id, tutor_user_id))
 
         existing_conv = cur.fetchone()
 
         if existing_conv:
             conversation_id = existing_conv[0]
         else:
-            # Create new conversation
+            # Create new conversation (user-based, no profile tracking)
             cur.execute("""
                 INSERT INTO conversations (
-                    type, created_by_profile_id, created_by_profile_type, created_at, updated_at
-                ) VALUES ('direct', %s, %s, NOW(), NOW())
+                    type, created_by_user_id, created_at, updated_at
+                ) VALUES ('direct', %s, NOW(), NOW())
                 RETURNING id
-            """, (requester_id, requester_type))
+            """, (user_id,))
             conversation_id = cur.fetchone()[0]
 
-            # Add requester as participant
+            # Add requester as participant (user-based)
             cur.execute("""
                 INSERT INTO conversation_participants (
-                    conversation_id, profile_id, profile_type, user_id, role, is_active, joined_at, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, 'member', true, NOW(), NOW(), NOW())
-            """, (conversation_id, requester_id, requester_type, user_id))
+                    conversation_id, user_id, role, is_active, joined_at, created_at, updated_at
+                ) VALUES (%s, %s, 'member', true, NOW(), NOW(), NOW())
+            """, (conversation_id, user_id))
 
-            # Add tutor as participant
+            # Add tutor as participant (user-based)
             cur.execute("""
                 INSERT INTO conversation_participants (
-                    conversation_id, profile_id, profile_type, user_id, role, is_active, joined_at, created_at, updated_at
-                ) VALUES (%s, %s, 'tutor', %s, 'member', true, NOW(), NOW(), NOW())
-            """, (conversation_id, request.tutor_id, tutor_user_id))
+                    conversation_id, user_id, role, is_active, joined_at, created_at, updated_at
+                ) VALUES (%s, %s, 'member', true, NOW(), NOW(), NOW())
+            """, (conversation_id, tutor_user_id))
 
         # =============================================
         # CREATE SESSION REQUEST MESSAGE WITH PACKAGE CARD
@@ -368,15 +401,15 @@ async def create_session_request(
         # The content will be the optional message from the user (or empty)
         message_content = request.message or ""
 
-        # Insert session_request message
+        # Insert session_request message (user-based)
         cur.execute("""
             INSERT INTO chat_messages (
-                conversation_id, sender_profile_id, sender_profile_type, sender_user_id,
+                conversation_id, sender_user_id,
                 message_type, content, media_metadata, created_at, updated_at
-            ) VALUES (%s, %s, %s, %s, 'session_request', %s, %s, NOW(), NOW())
+            ) VALUES (%s, %s, 'session_request', %s, %s, NOW(), NOW())
             RETURNING id
         """, (
-            conversation_id, requester_id, requester_type, user_id,
+            conversation_id, user_id,
             message_content, json.dumps(message_metadata)
         ))
 
@@ -620,7 +653,7 @@ async def get_my_students(
                 sp.id as student_profile_id,
                 CONCAT(u.first_name, ' ', u.father_name, ' ', u.grandfather_name) as student_name,
                 sp.grade_level as student_grade,
-                sp.profile_picture,
+                u.profile_picture as profile_picture,  -- NOTE: profile_picture now read from users table
                 tp.name as package_name,
                 tp.course_ids,
                 u.phone as contact_phone,
@@ -953,23 +986,51 @@ async def update_session_request_status(
 
             existing = cur.fetchone()
             if not existing:
+                # Create new enrollment with payment tracking
                 cur.execute("""
                     INSERT INTO enrolled_students (
-                        tutor_id, student_id, package_id, enrolled_at, agreed_price
+                        tutor_id, student_id, package_id, enrolled_at, agreed_price,
+                        payment_status, payment_due_date, total_sessions
                     ) VALUES (
-                        %s, %s, %s, CURRENT_TIMESTAMP, %s
+                        %s, %s, %s, CURRENT_TIMESTAMP, %s,
+                        'pending', CURRENT_DATE + INTERVAL '7 days', %s
                     )
+                    RETURNING id
                 """, (
                     tutor_id,
                     student_profile_id,
                     package_id,
-                    agreed_price
+                    agreed_price,
+                    1  # Default to 1 session (can be updated later)
+                ))
+                enrollment_id = cur.fetchone()[0]
+
+                # Create corresponding user_investment record for unified payment tracking
+                # Get student's user_id
+                cur.execute("SELECT user_id FROM student_profiles WHERE id = %s", (student_profile_id,))
+                student_user_id = cur.fetchone()[0]
+
+                cur.execute("""
+                    INSERT INTO user_investments (
+                        user_id, investment_type, investment_name, student_payment_id,
+                        investment_date, due_date, payment_status, created_at
+                    ) VALUES (
+                        %s, 'booking', %s, %s,
+                        CURRENT_DATE, CURRENT_DATE + INTERVAL '7 days', 'pending', CURRENT_TIMESTAMP
+                    )
+                """, (
+                    student_user_id,
+                    f'Booking with tutor (Package ID: {package_id})',
+                    enrollment_id
                 ))
             else:
                 # Update existing enrollment with new agreed_price if different package/price
                 cur.execute("""
                     UPDATE enrolled_students
-                    SET package_id = %s, agreed_price = %s, updated_at = CURRENT_TIMESTAMP
+                    SET package_id = %s, agreed_price = %s,
+                        payment_status = 'pending',
+                        payment_due_date = CURRENT_DATE + INTERVAL '7 days',
+                        updated_at = CURRENT_TIMESTAMP
                     WHERE tutor_id = %s AND student_id = %s
                 """, (package_id, agreed_price, tutor_id, student_profile_id))
 
@@ -1007,13 +1068,115 @@ async def update_session_request_status(
                         tutor_id, package_id, students_id, course_id, status
                     ) VALUES (
                         %s, %s, %s, %s, 'active'
-                    )
+                    ) RETURNING id
                 """, (
                     tutor_id,
                     package_id,
                     [student_profile_id],
                     course_ids
                 ))
+                enrolled_course_id = cur.fetchone()[0]
+
+            # AUTO-CREATE SESSIONS based on the request's schedule preferences
+            # Fetch schedule data from the original request
+            cur.execute("""
+                SELECT schedule_type, year_range, months, days, specific_dates,
+                       start_time, end_time, message
+                FROM requested_sessions
+                WHERE id = %s
+            """, (request_id,))
+
+            schedule_data = cur.fetchone()
+            sessions_created = 0
+
+            if schedule_data:
+                schedule_type = schedule_data[0]
+                year_range = schedule_data[1]
+                months = schedule_data[2]
+                days = schedule_data[3]
+                specific_dates = schedule_data[4]
+                start_time = schedule_data[5]
+                end_time = schedule_data[6]
+                message = schedule_data[7]
+
+                # Extract topics from message or use default
+                topics = [message] if message else []
+
+                # Calculate duration if times are provided
+                duration = None
+                if start_time and end_time:
+                    from datetime import datetime, timedelta
+                    start_dt = datetime.combine(datetime.today(), start_time)
+                    end_dt = datetime.combine(datetime.today(), end_time)
+                    duration = int((end_dt - start_dt).total_seconds() / 60)
+
+                # Create sessions based on schedule type
+                if schedule_type == 'specific_dates' and specific_dates:
+                    # Create sessions for specific dates
+                    for date_str in specific_dates:
+                        try:
+                            from datetime import datetime
+                            session_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+                            cur.execute("""
+                                INSERT INTO sessions (
+                                    enrolled_courses_id, session_date, start_time, end_time,
+                                    duration, topics, session_mode, status, priority_level,
+                                    created_at, updated_at
+                                ) VALUES (
+                                    %s, %s, %s, %s, %s, %s, 'online', 'scheduled', 'medium',
+                                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                                )
+                            """, (
+                                enrolled_course_id, session_date, start_time, end_time,
+                                duration, json.dumps(topics)
+                            ))
+                            sessions_created += 1
+                        except Exception as e:
+                            print(f"Warning: Could not create session for date {date_str}: {e}")
+                            continue
+
+                elif schedule_type == 'recurring' and days and start_time and end_time:
+                    # For recurring sessions, create sessions for the next 8 weeks
+                    from datetime import datetime, timedelta
+
+                    # Get day names mapping
+                    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                    selected_day_indices = []
+
+                    for day in days:
+                        if day in day_names:
+                            selected_day_indices.append(day_names.index(day))
+
+                    if selected_day_indices:
+                        # Start from today
+                        current_date = datetime.today().date()
+                        end_date = current_date + timedelta(weeks=8)  # Create for next 8 weeks
+
+                        while current_date <= end_date:
+                            # Check if this day is in the selected days
+                            if current_date.weekday() in selected_day_indices:
+                                try:
+                                    cur.execute("""
+                                        INSERT INTO sessions (
+                                            enrolled_courses_id, session_date, start_time, end_time,
+                                            duration, topics, session_mode, status, priority_level,
+                                            created_at, updated_at
+                                        ) VALUES (
+                                            %s, %s, %s, %s, %s, %s, 'online', 'scheduled', 'medium',
+                                            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                                        )
+                                    """, (
+                                        enrolled_course_id, current_date, start_time, end_time,
+                                        duration, json.dumps(topics)
+                                    ))
+                                    sessions_created += 1
+                                except Exception as e:
+                                    print(f"Warning: Could not create recurring session for {current_date}: {e}")
+
+                            current_date += timedelta(days=1)
+
+                print(f"Auto-created {sessions_created} sessions for enrolled_course_id {enrolled_course_id}")
 
             # NOTE: Request is kept in requested_sessions with status='accepted'
             # This allows tutors to see history of accepted requests
@@ -1028,9 +1191,11 @@ async def update_session_request_status(
             "responded_at": result[2].isoformat() if result[2] else None
         }
 
-        # Include agreed_price in response for accepted requests
+        # Include agreed_price and sessions_created in response for accepted requests
         if update.status == 'accepted':
             response["agreed_price"] = float(agreed_price) if agreed_price else None
+            response["sessions_created"] = sessions_created
+            response["enrolled_course_id"] = enrolled_course_id
 
         return response
 
@@ -1049,35 +1214,31 @@ async def get_my_session_requests(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get session requests made by the current user (student/parent)
-    Uses role-specific ID to filter requests
+    Get session requests for the current user:
+    - SENT: Requests the user sent as student/parent to tutors
+    - RECEIVED: Requests the user received as a tutor (if they have tutor role)
+    Each request includes a 'direction' field to indicate sent/received
     """
-    # Get active role and role-specific IDs
+    # Get user ID and role info
+    user_id = current_user.get('id')  # This is users.id
     active_role = current_user.get('active_role')
     role_ids = current_user.get('role_ids', {})
 
-    # Determine requester type and get role-specific ID
-    if active_role == 'student':
-        requester_type = 'student'
-        requester_id = role_ids.get('student')
-        if not requester_id:
-            raise HTTPException(status_code=400, detail="Student profile not found")
-    elif active_role == 'parent':
-        requester_type = 'parent'
-        requester_id = role_ids.get('parent')
-        if not requester_id:
-            raise HTTPException(status_code=400, detail="Parent profile not found")
-    else:
+    # Verify user has student or parent role
+    if active_role not in ['student', 'parent']:
         raise HTTPException(status_code=403, detail="Only students and parents can view session requests")
 
-    # Convert requester_id to integer (JWT stores as string)
-    requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
+    # Check if user also has tutor role for RECEIVED requests
+    tutor_id = role_ids.get('tutor')
+    if tutor_id:
+        tutor_id = int(tutor_id) if isinstance(tutor_id, str) else tutor_id
 
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
 
     try:
-        cur.execute("""
+        # Query for SENT requests (where user is the requester)
+        sent_query = """
             SELECT
                 sr.id, sr.tutor_id, sr.requester_id, sr.requester_type,
                 CONCAT(u.first_name, ' ', u.father_name) as tutor_name,
@@ -1127,24 +1288,110 @@ async def get_my_session_requests(
                  JOIN users u3 ON sp3.user_id = u3.id
                  WHERE sp3.id = sr.requested_to_id) as requested_to_name,
                 -- Counter-offer price
-                sr.counter_offer_price
+                sr.counter_offer_price,
+                'sent' as direction
             FROM requested_sessions sr
             LEFT JOIN tutor_profiles tp ON sr.tutor_id = tp.id
             LEFT JOIN users u ON tp.user_id = u.id
-            WHERE sr.requester_id = %s AND sr.requester_type = %s
-            ORDER BY sr.created_at DESC
-        """, (requester_id, requester_type))
+            WHERE sr.requester_id = %s
+        """
 
-        rows = cur.fetchall()
+        # Query for RECEIVED requests (where user is the tutor receiving the request)
+        received_query = """
+            SELECT
+                sr.id, sr.tutor_id, sr.requester_id, sr.requester_type,
+                -- Requester name (person who sent the request)
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT CONCAT(u.first_name, ' ', u.father_name)
+                         FROM student_profiles sp
+                         JOIN users u ON sp.user_id = u.id
+                         WHERE sp.id = sr.requester_id)
+                    WHEN sr.requester_type = 'parent' THEN
+                        (SELECT CONCAT(u.first_name, ' ', u.father_name)
+                         FROM parent_profiles pp
+                         JOIN users u ON pp.user_id = u.id
+                         WHERE pp.id = sr.requester_id)
+                END as requester_name,
+                -- Requester profile picture
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT u.profile_picture FROM student_profiles sp JOIN users u ON sp.user_id = u.id WHERE sp.id = sr.requester_id)
+                    WHEN sr.requester_type = 'parent' THEN
+                        (SELECT u.profile_picture FROM parent_profiles pp JOIN users u ON pp.user_id = u.id WHERE pp.id = sr.requester_id)
+                END as requester_profile_picture,
+                sr.package_id,
+                (SELECT tp2.name FROM tutor_packages tp2 WHERE tp2.id = sr.package_id) as package_name,
+                sr.status, sr.message,
+                -- Student name
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT CONCAT(u2.first_name, ' ', u2.father_name)
+                         FROM student_profiles sp2
+                         JOIN users u2 ON sp2.user_id = u2.id
+                         WHERE sp2.id = sr.requester_id)
+                    WHEN sr.requested_to_id IS NOT NULL THEN
+                        (SELECT CONCAT(u3.first_name, ' ', u3.father_name)
+                         FROM student_profiles sp3
+                         JOIN users u3 ON sp3.user_id = u3.id
+                         WHERE sp3.id = sr.requested_to_id)
+                    ELSE NULL
+                END as student_name,
+                -- Student grade
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT sp2.grade_level FROM student_profiles sp2 WHERE sp2.id = sr.requester_id)
+                    WHEN sr.requested_to_id IS NOT NULL THEN
+                        (SELECT sp3.grade_level FROM student_profiles sp3 WHERE sp3.id = sr.requested_to_id)
+                    ELSE NULL
+                END as student_grade,
+                sr.preferred_schedule,
+                -- Contact phone
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT u2.phone FROM student_profiles sp2 JOIN users u2 ON sp2.user_id = u2.id WHERE sp2.id = sr.requester_id)
+                    WHEN sr.requester_type = 'parent' THEN
+                        (SELECT u2.phone FROM parent_profiles pp2 JOIN users u2 ON pp2.user_id = u2.id WHERE pp2.id = sr.requester_id)
+                END as contact_phone,
+                -- Contact email
+                CASE
+                    WHEN sr.requester_type = 'student' THEN
+                        (SELECT u2.email FROM student_profiles sp2 JOIN users u2 ON sp2.user_id = u2.id WHERE sp2.id = sr.requester_id)
+                    WHEN sr.requester_type = 'parent' THEN
+                        (SELECT u2.email FROM parent_profiles pp2 JOIN users u2 ON pp2.user_id = u2.id WHERE pp2.id = sr.requester_id)
+                END as contact_email,
+                sr.created_at, sr.updated_at, sr.responded_at,
+                sr.rejected_reason, sr.rejected_at,
+                -- Schedule fields
+                sr.schedule_type, sr.year_range, sr.months, sr.days,
+                sr.specific_dates, sr.start_time, sr.end_time,
+                -- Requested to (student) when parent requests for child
+                sr.requested_to_id,
+                (SELECT CONCAT(u3.first_name, ' ', u3.father_name)
+                 FROM student_profiles sp3
+                 JOIN users u3 ON sp3.user_id = u3.id
+                 WHERE sp3.id = sr.requested_to_id) as requested_to_name,
+                -- Counter-offer price
+                sr.counter_offer_price,
+                'received' as direction
+            FROM requested_sessions sr
+            WHERE sr.tutor_id = %s
+        """
+
+        # Execute SENT requests query (now using user_id instead of profile_id)
+        cur.execute(sent_query, (user_id,))
+        sent_rows = cur.fetchall()
 
         requests = []
-        for row in rows:
+
+        # Process SENT requests
+        for row in sent_rows:
             requests.append({
                 "id": row[0],
                 "tutor_id": row[1],
                 "requester_id": row[2],
                 "requester_type": row[3],
-                "requester_name": row[4],  # Actually tutor name in this context
+                "requester_name": row[4],  # Tutor name for sent requests
                 "requester_profile_picture": row[5],
                 "package_id": row[6],
                 "package_name": row[7],
@@ -1172,8 +1419,58 @@ async def get_my_session_requests(
                 "requested_to_id": row[27],
                 "requested_to_name": row[28],
                 # Counter-offer price
-                "counter_offer_price": float(row[29]) if row[29] else None
+                "counter_offer_price": float(row[29]) if row[29] else None,
+                # Direction
+                "direction": row[30]  # 'sent'
             })
+
+        # If user also has tutor role, fetch RECEIVED requests
+        if tutor_id:
+            cur.execute(received_query, (tutor_id,))
+            received_rows = cur.fetchall()
+
+            # Process RECEIVED requests
+            for row in received_rows:
+                requests.append({
+                    "id": row[0],
+                    "tutor_id": row[1],
+                    "requester_id": row[2],
+                    "requester_type": row[3],
+                    "requester_name": row[4],  # Actual requester name for received requests
+                    "requester_profile_picture": row[5],
+                    "package_id": row[6],
+                    "package_name": row[7],
+                    "status": row[8],
+                    "message": row[9],
+                    "student_name": row[10],
+                    "student_grade": row[11],
+                    "preferred_schedule": row[12],
+                    "contact_phone": row[13],
+                    "contact_email": row[14],
+                    "created_at": row[15].isoformat() if row[15] else None,
+                    "updated_at": row[16].isoformat() if row[16] else None,
+                    "responded_at": row[17].isoformat() if row[17] else None,
+                    "rejected_reason": row[18],
+                    "rejected_at": row[19].isoformat() if row[19] else None,
+                    # Schedule fields
+                    "schedule_type": row[20],
+                    "year_range": row[21],
+                    "months": row[22],
+                    "days": row[23],
+                    "specific_dates": row[24],
+                    "start_time": str(row[25]) if row[25] else None,
+                    "end_time": str(row[26]) if row[26] else None,
+                    # Requested to (student when parent requests for child)
+                    "requested_to_id": row[27],
+                    "requested_to_name": row[28],
+                    # Counter-offer price
+                    "counter_offer_price": float(row[29]) if row[29] else None,
+                    # Direction
+                    "direction": row[30]  # 'received'
+                })
+
+        # Sort by created_at descending (most recent first)
+        requests.sort(key=lambda x: x['created_at'] if x['created_at'] else '', reverse=True)
 
         return requests
 
@@ -1269,14 +1566,14 @@ async def get_student_details(
                 sp.username as display_name,
                 sp.grade_level,
                 sp.career_aspirations,
-                sp.profile_picture as sp_profile_picture,
+                u.profile_picture as sp_profile_picture,  -- NOTE: profile_picture now read from users table
                 sp.cover_image as sp_cover_image,
-                sp.location,
+                u.location,  -- NOTE: location now read from users table
                 sp.hero_title,
                 sp.hero_subtitle,
                 sp.interested_in,
-                sp.hobbies,
-                sp.languages,
+                u.hobbies,  -- NOTE: hobbies now read from users table
+                u.languages,  -- NOTE: languages now read from users table
                 sp.learning_method,
                 sp.studying_at,
                 sp.about,
@@ -1361,13 +1658,11 @@ async def get_student_details(
                     "relationship": parent_row[4] or 'Parent'
                 }
 
-        # Get the user_id of the tutor for whiteboard_sessions query (tutor_id in whiteboard_sessions is user_id not profile_id)
-        cur.execute("SELECT user_id FROM tutor_profiles WHERE id = %s", (tutor_profile_id,))
-        tutor_user_row = cur.fetchone()
-        tutor_user_id = tutor_user_row[0] if tutor_user_row else None
+        # Get tutor's user_id from current_user (needed for courseworks query)
+        tutor_user_id = current_user.get('id')
 
         # Compute session statistics from whiteboard_sessions
-        # Note: student_id in whiteboard_sessions is an integer array, and tutor_id is user_id
+        # Note: whiteboard_sessions now uses tutor_profile_id and student_profile_ids (profile-based)
         cur.execute("""
             SELECT
                 COUNT(*) as total_sessions,
@@ -1377,8 +1672,8 @@ async def get_student_details(
                 SUM(CASE WHEN status = 'completed' AND actual_start IS NOT NULL AND actual_end IS NOT NULL
                     THEN EXTRACT(EPOCH FROM (actual_end - actual_start)) / 60 ELSE 0 END) as total_minutes
             FROM whiteboard_sessions
-            WHERE tutor_id = %s AND %s = ANY(student_id)
-        """, (tutor_user_id, student_profile_id))
+            WHERE tutor_profile_id = %s AND %s = ANY(student_profile_ids)
+        """, (tutor_profile_id, student_profile_id))
         session_stats = cur.fetchone()
 
         total_sessions = session_stats[0] if session_stats else 0

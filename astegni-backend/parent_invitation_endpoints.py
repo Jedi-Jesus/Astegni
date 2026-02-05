@@ -222,8 +222,9 @@ async def search_users(
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             # Search by first name, email, or phone (starts with)
+            # Note: profile_picture is now in users table (centralized from profile tables)
             cur.execute("""
-                SELECT id, first_name, father_name, grandfather_name, email, phone, roles
+                SELECT id, first_name, father_name, grandfather_name, email, phone, roles, profile_picture
                 FROM users
                 WHERE id != %s
                 AND is_active = TRUE
@@ -239,25 +240,7 @@ async def search_users(
 
             results = []
             for user in users:
-                # Get profile picture
-                profile_picture = None
                 user_roles = user['roles'] if isinstance(user['roles'], list) else []
-
-                if "parent" in user_roles:
-                    cur.execute("""
-                        SELECT profile_picture FROM parent_profiles WHERE user_id = %s
-                    """, (user['id'],))
-                    pp = cur.fetchone()
-                    if pp:
-                        profile_picture = pp['profile_picture']
-
-                if not profile_picture:
-                    cur.execute("""
-                        SELECT profile_picture FROM student_profiles WHERE user_id = %s
-                    """, (user['id'],))
-                    sp = cur.fetchone()
-                    if sp:
-                        profile_picture = sp['profile_picture']
 
                 results.append(UserSearchResult(
                     user_id=user['id'],
@@ -266,7 +249,7 @@ async def search_users(
                     grandfather_name=user['grandfather_name'] or '',
                     email=user['email'],
                     phone=user['phone'],
-                    profile_picture=profile_picture,
+                    profile_picture=user['profile_picture'],
                     roles=user_roles,
                     has_parent_role="parent" in user_roles
                 ))
@@ -659,12 +642,13 @@ async def get_student_invitations(
             student_profile_id = student_profile['id']
 
             # Query using user_id and join with parent_profiles for invitee info
+            # NOTE: profile_picture now read from users table
             cur.execute("""
                 SELECT pi.*,
                        pp.id as parent_profile_id,
                        u.first_name as parent_first_name,
                        u.father_name as parent_father_name,
-                       pp.profile_picture as parent_profile_picture
+                       u.profile_picture as parent_profile_picture
                 FROM parent_invitations pi
                 LEFT JOIN parent_profiles pp ON pi.invited_to_user_id = pp.user_id
                 LEFT JOIN users u ON pi.invited_to_user_id = u.id
@@ -745,17 +729,14 @@ async def get_parent_pending_invitations(
                        inviter_user.profile_picture as user_profile_picture,
                        -- Student profile fields
                        sp.id as student_profile_id,
-                       sp.profile_picture as student_profile_picture,
                        sp.username as student_username,
                        sp.grade_level,
                        sp.studying_at,
                        -- Parent profile fields
                        pp.id as parent_profile_id,
-                       pp.profile_picture as parent_profile_picture,
                        pp.username as parent_username,
                        -- Tutor profile fields
                        tp.id as tutor_profile_id,
-                       tp.profile_picture as tutor_profile_picture,
                        tp.username as tutor_username
                 FROM parent_invitations pi
                 JOIN users inviter_user ON pi.inviter_user_id = inviter_user.id
@@ -876,7 +857,7 @@ async def get_parent_sent_invitations(
                        u.email as invitee_email,
                        u.phone as invitee_phone,
                        u.profile_picture as user_profile_picture,
-                       pp.profile_picture as invitee_profile_picture
+                       u.profile_picture as invitee_profile_picture
                 FROM parent_invitations pi
                 LEFT JOIN parent_profiles pp ON pi.invited_to_user_id = pp.user_id
                 LEFT JOIN users u ON pi.invited_to_user_id = u.id
@@ -1261,7 +1242,7 @@ async def get_linked_parents(
             for parent_profile_id in parent_profile_ids:
                 # Look up parent profile by ID with user info in one query
                 cur.execute("""
-                    SELECT pp.id, pp.user_id, pp.profile_picture, pp.relationship_type, u.is_verified,
+                    SELECT pp.id, pp.user_id, u.profile_picture, pp.relationship_type, u.is_verified,
                            u.first_name, u.father_name, u.grandfather_name, u.email, u.phone
                     FROM parent_profiles pp
                     JOIN users u ON pp.user_id = u.id

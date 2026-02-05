@@ -1,0 +1,530 @@
+<!-- Manage Role Modal -->
+<div id="manage-role-modal" class="modal hidden"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-overlay" onclick="closeManageRoleModal()"></div>
+    <div class="modal-content manage-role-modal-content" style="max-width: 550px; max-height: 90vh; overflow: hidden; position: relative;">
+
+        <!-- Main Content Container -->
+        <div id="manage-role-main-content">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Manage Role</h2>
+                        <p class="text-sm text-gray-500">Deactivate or permanently remove your role</p>
+                    </div>
+                </div>
+                <button onclick="closeManageRoleModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Role Status Section -->
+            <div id="manage-role-status-section" class="overflow-y-auto" style="max-height: calc(90vh - 120px);">
+                <!-- Loading State -->
+                <div id="manage-role-loading" class="flex items-center justify-center py-8">
+                    <div class="w-8 h-8 border-3 border-gray-200 border-t-red-600 rounded-full animate-spin"></div>
+                    <span class="ml-3 text-gray-600">Loading role information...</span>
+                </div>
+
+                <!-- Main Options -->
+                <div id="manage-role-options" class="hidden">
+                    <!-- Current Role Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div id="role-icon" class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-blue-800">Current Role: <span id="current-role-name" class="capitalize"></span></h3>
+                                <p class="text-sm text-blue-600" id="current-role-description"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="font-medium text-gray-700 mb-4">Choose an action:</h4>
+                    <div class="space-y-3">
+                        <!-- Deactivate Role Option -->
+                        <div class="manage-role-option p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-500 transition-all" onclick="RoleManager.openActionPanel('deactivate')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">Deactivate Role</h5>
+                                    <p class="text-sm text-gray-500">Temporarily hide your profile. You can reactivate later.</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Remove Role Option (Danger) -->
+                        <div class="manage-role-option p-4 border-2 border-red-200 rounded-xl cursor-pointer hover:border-red-500 hover:bg-red-50 transition-all" onclick="RoleManager.openActionPanel('remove')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-red-800">Remove Role Permanently</h5>
+                                    <p class="text-sm text-red-600">Delete all data associated with this role. This cannot be undone.</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Message -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-6">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div>
+                                <h5 class="font-semibold text-yellow-800 mb-1">Important Notice</h5>
+                                <p class="text-sm text-yellow-700">Deactivation requires password only. Permanent removal requires password + OTP for extra security.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SLIDING PANELS ========== -->
+
+        <!-- Deactivate Role Panel -->
+        <div id="manage-role-panel-deactivate" class="manage-role-sliding-panel">
+            <div class="manage-role-panel-header bg-gradient-to-r from-orange-500 to-amber-600">
+                <button class="manage-role-panel-back" onclick="RoleManager.closeActionPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Deactivate Role</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="manage-role-panel-content">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Deactivate Your <span id="deactivate-role-name" class="capitalize"></span> Role</h4>
+                    <p class="text-gray-500">Your profile will be hidden, but you can reactivate it anytime</p>
+                </div>
+
+                <!-- What Happens -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                    <h5 class="font-semibold text-blue-800 mb-2">What happens when you deactivate?</h5>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Your profile will be hidden from searches</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Your data will be preserved safely</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>You can reactivate anytime by logging in</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Other roles remain active</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Password Confirmation -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Your Password</label>
+                    <div class="relative">
+                        <input type="password" id="deactivate-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all pr-12" placeholder="Enter your password">
+                        <button type="button" onclick="RoleManager.togglePasswordVisibility('deactivate-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="deactivate-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="RoleManager.closeActionPanel()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                    <button onclick="RoleManager.confirmDeactivate()" id="deactivate-btn" class="flex-1 py-3 px-4 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors font-medium">
+                        <span id="deactivate-btn-text">Deactivate Role</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove Role Panel -->
+        <div id="manage-role-panel-remove" class="manage-role-sliding-panel">
+            <div class="manage-role-panel-header bg-gradient-to-r from-red-500 to-rose-600">
+                <button class="manage-role-panel-back" onclick="RoleManager.closeActionPanel()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-semibold">Remove Role Permanently</h3>
+                <div class="w-9"></div>
+            </div>
+            <div class="manage-role-panel-content">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Permanently Remove Your <span id="remove-role-name" class="capitalize"></span> Role</h4>
+                    <p class="text-gray-500">This action cannot be undone. All data will be deleted.</p>
+                </div>
+
+                <!-- Danger Warning -->
+                <div class="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4">
+                    <h5 class="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        This will permanently delete:
+                    </h5>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Your profile and all personal information</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>All uploaded documents and credentials</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>All connections, reviews, and interactions</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Access to all role-specific features</span>
+                        </li>
+                    </ul>
+                    <p class="text-sm text-red-800 font-semibold mt-3">This action is irreversible. You will need to create a new account if you change your mind.</p>
+                </div>
+
+                <!-- Confirmation Checkbox -->
+                <div class="mb-4">
+                    <label class="flex items-start gap-3 cursor-pointer p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <input type="checkbox" id="remove-confirmation-checkbox" class="mt-1 w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                        <span class="text-sm text-gray-700">I understand that this action is permanent and cannot be undone. All my data for this role will be deleted.</span>
+                    </label>
+                </div>
+
+                <!-- Password Confirmation -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Your Password</label>
+                    <div class="relative">
+                        <input type="password" id="remove-password" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all pr-12" placeholder="Enter your password">
+                        <button type="button" onclick="RoleManager.togglePasswordVisibility('remove-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OTP Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Enter OTP Code</label>
+                    <input type="text" id="remove-otp" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-center text-lg tracking-widest" placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+                    <div class="flex items-center justify-between mt-2">
+                        <button type="button" id="remove-send-otp" onclick="RoleManager.sendOTP('remove')" class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            Send OTP
+                        </button>
+                        <span id="remove-otp-timer" class="text-sm text-gray-500 hidden"></span>
+                    </div>
+                    <p id="remove-error" class="text-red-500 text-sm mt-2 hidden"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="RoleManager.closeActionPanel()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">Cancel</button>
+                    <button onclick="RoleManager.showFinalConfirmation()" id="remove-btn" class="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium" disabled>
+                        <span id="remove-btn-text">Continue</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Confirmation Panel (slides in after password + OTP) -->
+        <div class="action-panel absolute inset-0 bg-white transform translate-x-full transition-transform duration-300 ease-in-out p-6 overflow-y-auto" id="final-confirmation-panel">
+            <div class="max-w-lg mx-auto">
+                <!-- Warning Icon -->
+                <div class="text-center mb-6">
+                    <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-2xl font-bold text-red-600 mb-2">⚠️ FINAL WARNING ⚠️</h4>
+                    <p class="text-gray-600 text-lg">You are about to permanently delete your <span id="final-role-name" class="capitalize font-semibold"></span> role</p>
+                </div>
+
+                <!-- Critical Warning Box -->
+                <div class="bg-red-50 border-4 border-red-400 rounded-xl p-6 mb-6">
+                    <h5 class="font-bold text-red-800 mb-4 text-lg flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        The following data will be PERMANENTLY DELETED:
+                    </h5>
+                    <ul class="text-sm text-red-800 space-y-2 mb-4">
+                        <li class="flex items-start gap-2 font-medium">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Your complete profile and personal information</span>
+                        </li>
+                        <li class="flex items-start gap-2 font-medium">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>All documents, credentials, and uploaded files</span>
+                        </li>
+                        <li class="flex items-start gap-2 font-medium">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>All connections, reviews, and interactions</span>
+                        </li>
+                        <li class="flex items-start gap-2 font-medium">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>All role-specific data and features</span>
+                        </li>
+                    </ul>
+                    <div class="bg-red-100 border-2 border-red-500 rounded-lg p-4">
+                        <p class="text-red-900 font-bold text-center text-base">⚠️ THIS ACTION CANNOT BE UNDONE ⚠️</p>
+                        <p class="text-red-800 text-center text-sm mt-2">You will need to create a completely new account if you change your mind.</p>
+                    </div>
+                </div>
+
+                <!-- Final Confirmation Question -->
+                <div class="bg-gray-50 border-2 border-gray-300 rounded-xl p-5 mb-6 text-center">
+                    <p class="text-gray-800 font-semibold text-lg mb-2">Are you absolutely sure you want to proceed?</p>
+                    <p class="text-gray-600 text-sm">This is your last chance to cancel before permanent deletion.</p>
+                </div>
+
+                <!-- Error Message -->
+                <p id="final-confirm-error" class="text-red-500 text-sm mb-4 hidden"></p>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button onclick="RoleManager.backToRemovePanel()" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
+                        ← Go Back
+                    </button>
+                    <button onclick="RoleManager.executeRemove()" id="final-remove-btn" class="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium">
+                        <span id="final-remove-btn-text">Yes, Delete Permanently</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Panel (90-Day Grace Period Confirmation) -->
+        <div class="action-panel absolute inset-0 bg-white transform translate-x-full transition-transform duration-300 ease-in-out p-6 overflow-y-auto" id="success-panel">
+            <div class="max-w-lg mx-auto">
+                <!-- Success Icon -->
+                <div class="text-center mb-6">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-2xl font-bold text-gray-800 mb-2">Role Scheduled for Deletion</h4>
+                    <p class="text-gray-600 text-lg">Your <span id="success-role-name" class="capitalize font-semibold"></span> role has been scheduled for deletion in 90 days</p>
+                </div>
+
+                <!-- Grace Period Info -->
+                <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-6 mb-6">
+                    <h5 class="font-bold text-blue-800 mb-4 text-lg flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        90-Day Grace Period
+                    </h5>
+                    <ul class="text-sm text-blue-800 space-y-3">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span><strong>Your data will be preserved for 90 days</strong> - Nothing is deleted yet</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span><strong>You can restore your role anytime</strong> by re-adding it from the homepage</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span><strong>After 90 days</strong>, the role and all associated data will be permanently deleted</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Remaining Roles Info -->
+                <div id="remaining-roles-info" class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                    <h5 class="font-semibold text-gray-800 mb-2">Your Remaining Roles</h5>
+                    <p id="remaining-roles-text" class="text-sm text-gray-600"></p>
+                </div>
+
+                <!-- Deletion Date -->
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 text-center">
+                    <p class="text-sm text-orange-800 font-medium">Scheduled Deletion Date</p>
+                    <p id="deletion-date" class="text-lg font-bold text-orange-900 mt-1"></p>
+                    <p class="text-xs text-orange-700 mt-1">You have <span id="days-remaining" class="font-semibold"></span> days to restore your role</p>
+                </div>
+
+                <!-- Action Button -->
+                <div class="flex gap-3">
+                    <button onclick="closeManageRoleModal(); window.location.href = '/index.html';" class="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                        Go to Homepage
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Manage Role Modal Styles */
+.manage-role-modal-content {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sliding Panel Styles */
+.manage-role-sliding-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.manage-role-sliding-panel.active {
+    transform: translateX(0);
+}
+
+.manage-role-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.manage-role-panel-header h3 {
+    margin: 0;
+}
+
+.manage-role-panel-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.manage-role-panel-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.manage-role-panel-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Option Hover Effect */
+.manage-role-option {
+    transition: all 0.2s ease;
+}
+
+.manage-role-option:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Final Confirmation Panel - Higher z-index to appear above other panels */
+#final-confirmation-panel {
+    z-index: 20;
+    border-radius: 16px;
+}
+
+/* Success Panel - Highest z-index to appear above all panels */
+#success-panel {
+    z-index: 30;
+    border-radius: 16px;
+}
+
+/* Animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+</style>

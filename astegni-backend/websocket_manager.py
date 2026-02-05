@@ -583,13 +583,18 @@ def get_missed_calls_for_user(db: Session, profile_type: str, profile_id: int) -
 def get_recipient_connection_key(data: dict) -> str:
     """
     Get the recipient's connection key from message data.
-    Connection keys are formatted as "{role}_{profile_id}" (e.g., "student_123", "tutor_456")
+    Connection keys are formatted as:
+    - User-based (PREFERRED): "user_{user_id}" (e.g., "user_123")
+    - Legacy profile-based: "{role}_{profile_id}" (e.g., "student_123", "tutor_456")
 
-    Supports both:
-    - Generic: to_profile_id + to_profile_type (preferred, role-agnostic)
-    - Legacy: to_student_profile_id or to_tutor_profile_id
+    Supports both approaches for backward compatibility.
     """
-    # Check for generic profile recipient (preferred - role-agnostic)
+    # Check for user-based recipient (PREFERRED - new chat system)
+    to_user_id = data.get("to_user_id")
+    if to_user_id:
+        return f"user_{to_user_id}"
+
+    # Legacy: Check for generic profile recipient (role-agnostic)
     to_profile_id = data.get("to_profile_id")
     to_profile_type = data.get("to_profile_type")
     if to_profile_id and to_profile_type:
@@ -728,12 +733,13 @@ async def handle_video_call_message(data: dict, sender_key: str, db: Session = N
         print(f"📹 Video answer sent from {sender_key} to {recipient_key}")
 
     elif message_type == "ice_candidate":
-        # Forward ICE candidate to peer
+        # Forward ICE candidate to peer (supports both user-based and profile-based)
         await manager.send_personal_message({
             "type": "ice_candidate",
             "candidate": data.get("candidate"),
-            "from_student_profile_id": data.get("from_student_profile_id"),
-            "from_tutor_profile_id": data.get("from_tutor_profile_id"),
+            "from_user_id": data.get("from_user_id"),  # User-based (chat calls)
+            "from_student_profile_id": data.get("from_student_profile_id"),  # Legacy (whiteboard)
+            "from_tutor_profile_id": data.get("from_tutor_profile_id"),  # Legacy (whiteboard)
             "is_multi_party": data.get("is_multi_party", False)
         }, recipient_key)
         # Don't log every ICE candidate as there are many
@@ -797,13 +803,12 @@ async def handle_video_call_message(data: dict, sender_key: str, db: Session = N
             print(f"📞 Recipient {recipient_key} is offline - sent decline to caller")
             return
 
-        # Forward invitation to recipient
+        # Forward invitation to recipient (USER-BASED)
         await manager.send_personal_message({
             "type": "call_invitation",
             "call_type": data.get("call_type"),
             "conversation_id": data.get("conversation_id"),
-            "from_profile_id": data.get("from_profile_id"),
-            "from_profile_type": data.get("from_profile_type"),
+            "from_user_id": data.get("from_user_id"),
             "from_name": data.get("from_name"),
             "from_avatar": data.get("from_avatar"),
             "offer": data.get("offer"),
@@ -812,11 +817,11 @@ async def handle_video_call_message(data: dict, sender_key: str, db: Session = N
         print(f"📞 Call invitation forwarded from {sender_key} to {recipient_key}")
 
     elif message_type == "call_answer":
-        # Forward call answer to caller
+        # Forward call answer to caller (USER-BASED)
         await manager.send_personal_message({
             "type": "call_answer",
             "conversation_id": data.get("conversation_id"),
-            "from_profile_id": data.get("from_profile_id"),
+            "from_user_id": data.get("from_user_id"),
             "answer": data.get("answer")
         }, recipient_key)
         print(f"📞 Call answer forwarded from {sender_key} to {recipient_key}")

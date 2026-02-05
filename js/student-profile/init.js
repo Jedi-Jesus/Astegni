@@ -29,27 +29,71 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Check if user has student role
-        const userRole = window.AuthManager.getUserRole();
-        const user = window.AuthManager.getUser();
+        // FIX: Check if role switch is in progress FIRST (before getting userRole)
+        // Use localStorage with timestamp - valid for 10 seconds after switch
+        const switchTimestamp = localStorage.getItem('role_switch_timestamp');
+        const targetRole = localStorage.getItem('role_switch_target');
 
-        // DEBUG: Log detailed role information
-        console.log('🔍 Role Check Debug:', {
-            userRole: userRole,
-            user_active_role: user?.active_role,
-            user_role: user?.role,
-            user_roles: user?.roles,
-            localStorage_userRole: localStorage.getItem('userRole')
+        console.log('🔍 [StudentProfile] Grace Period Check:', {
+            switchTimestamp: switchTimestamp,
+            targetRole: targetRole,
+            currentTime: Date.now(),
+            timeSinceSwitch: switchTimestamp ? Date.now() - parseInt(switchTimestamp) : 'N/A'
         });
 
-        // More defensive role check - handle undefined, null, and string "undefined"
-        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+        if (switchTimestamp && targetRole === 'student') {
+            const timeSinceSwitch = Date.now() - parseInt(switchTimestamp);
+            const isWithinGracePeriod = timeSinceSwitch < 10000; // 10 seconds grace period
 
-        if (normalizedRole !== 'student') {
-            console.warn(`⚠️ [StudentProfile] User role is '${normalizedRole}', not 'student'. Redirecting...`);
-            alert(`This page is for students only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your student role or log in with a student account.`);
-            window.location.href = '../index.html';
-            return;
+            console.log(`🔍 [StudentProfile] Time since switch: ${timeSinceSwitch}ms, Grace period valid: ${isWithinGracePeriod}`);
+
+            if (isWithinGracePeriod) {
+                // DON'T clear the flags here - let them expire naturally
+                // This ensures any subsequent checks within the grace period still pass
+                // The flags will be cleared by AuthManager.restoreSession() when they expire
+                console.log('✅ [StudentProfile] Role switch detected (within 10s grace period) - allowing page load');
+                console.log('✅ [StudentProfile] Skipping role validation (user just switched roles)');
+                console.log(`✅ [StudentProfile] Grace period will expire in ${10000 - timeSinceSwitch}ms`);
+                // Continue to initialize the page - skip role validation entirely
+            } else {
+                // Grace period expired, clear flags and perform normal check
+                console.log(`⚠️ [StudentProfile] Role switch grace period expired (${timeSinceSwitch}ms > 10000ms), performing normal role check`);
+                localStorage.removeItem('role_switch_timestamp');
+                localStorage.removeItem('role_switch_target');
+
+                // Fall through to normal role check below
+                performNormalRoleCheck();
+            }
+        } else {
+            // No role switch in progress - perform normal check
+            console.log('🔍 [StudentProfile] No active role switch detected, performing normal role check');
+            performNormalRoleCheck();
+        }
+
+        function performNormalRoleCheck() {
+            const userRole = window.AuthManager.getUserRole();
+            const user = window.AuthManager.getUser();
+
+            // DEBUG: Log detailed role information
+            console.log('🔍 [StudentProfile] Role Check Debug:', {
+                userRole: userRole,
+                user_active_role: user?.active_role,
+                user_role: user?.role,
+                user_roles: user?.roles,
+                localStorage_userRole: localStorage.getItem('userRole'),
+                localStorage_switchTimestamp: localStorage.getItem('role_switch_timestamp'),
+                localStorage_switchTarget: localStorage.getItem('role_switch_target')
+            });
+
+            // More defensive role check - handle undefined, null, and string "undefined"
+            const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+            if (normalizedRole !== 'student') {
+                console.warn(`⚠️ [StudentProfile] User role is '${normalizedRole}', not 'student'. Redirecting...`);
+                alert(`This page is for students only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your student role or log in with a student account.`);
+                window.location.href = '../index.html';
+                return;
+            }
         }
 
         console.log('✅ [StudentProfile] Authentication verified for student role');

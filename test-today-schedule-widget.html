@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Today's Schedule Widget</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="css/root/theme.css">
+    <link rel="stylesheet" href="css/root.css">
+
+    <style>
+        body {
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .widget-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 1rem;">Test Today's Schedule Widget</h1>
+
+    <div class="test-info">
+        <strong>Test Info:</strong>
+        <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Make sure backend is running (port 8000)</li>
+            <li>Make sure you're logged in as a tutor</li>
+            <li>Today's date: <span id="test-today-date"></span></li>
+            <li>Check console for logs (F12)</li>
+        </ul>
+    </div>
+
+    <!-- Today's Schedule Widget -->
+    <div class="widget-card">
+        <h3 class="text-lg font-semibold mb-4">📅 Today's Schedule</h3>
+        <div id="today-schedule-widget-content">
+            <!-- Dynamic content loaded by today-schedule-widget.js -->
+            <div class="text-center py-4">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                <p class="text-sm text-gray-500 mt-2">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-info" style="margin-top: 1rem;">
+        <strong>Debug:</strong>
+        <button onclick="loadTodaySchedule()" style="padding: 0.5rem 1rem; margin-top: 0.5rem; border-radius: 4px; background: var(--button-bg); color: var(--button-text); border: none; cursor: pointer;">
+            Reload Widget
+        </button>
+        <button onclick="console.log('Token:', localStorage.getItem('token') || localStorage.getItem('access_token'))" style="padding: 0.5rem 1rem; margin-top: 0.5rem; margin-left: 0.5rem; border-radius: 4px; background: var(--button-bg); color: var(--button-text); border: none; cursor: pointer;">
+            Check Token
+        </button>
+    </div>
+
+    <script>
+        // Display today's date
+        const today = new Date();
+        document.getElementById('test-today-date').textContent =
+            today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Mock openSchedulePanel for testing
+        window.openSchedulePanel = function() {
+            alert('Would open schedule panel');
+        };
+    </script>
+
+    <!-- Today's Schedule Widget Script -->
+    <script src="js/tutor-profile/today-schedule-widget.js"></script>
+</body>
+</html>

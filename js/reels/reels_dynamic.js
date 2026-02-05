@@ -10,9 +10,9 @@ const UrlHelper = {
     isFileProtocol: window.location.protocol === 'file:',
 
     getApiBaseUrl() {
-        return this.isFileProtocol
-            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api`
-            : '/api';
+        // Use window.API_BASE_URL from config.js and add /api suffix for API calls
+        const baseUrl = window.API_BASE_URL || 'http://localhost:8000';
+        return `${baseUrl}/api`;
     },
 
     getAssetUrl(path) {
@@ -71,8 +71,9 @@ const UrlHelper = {
 // ============================================
 // API CONFIGURATION
 // ============================================
-const API_BASE_URL = UrlHelper.getApiBaseUrl();
-window.API_BASE_URL = API_BASE_URL;
+// Use local constant for reels API calls with unique name to avoid conflicts
+// (window.API_BASE_URL is set by config.js and used by other modules)
+const REELS_API_BASE_URL = UrlHelper.getApiBaseUrl();
 
 // API Helper Functions
 const ApiService = {
@@ -96,7 +97,7 @@ const ApiService = {
 
     async fetch(url, options = {}) {
         try {
-            const response = await fetch(`${API_BASE_URL}${url}`, {
+            const response = await fetch(`${REELS_API_BASE_URL}${url}`, {
                 ...options,
                 headers: this.getHeaders(options.includeAuth !== false),
             });
@@ -132,7 +133,7 @@ const ApiService = {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/refresh`, {
+            const response = await fetch(`${REELS_API_BASE_URL}/refresh`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refresh_token: refreshToken })

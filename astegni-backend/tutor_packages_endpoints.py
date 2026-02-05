@@ -100,7 +100,7 @@ router = APIRouter(prefix="/api/tutor", tags=["tutor-packages"])
 # Pydantic Models
 class PackageCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
-    grade_level: Optional[str] = None
+    grade_level: Optional[List[str]] = None
     course_ids: Optional[List[int]] = []  # Array of course IDs (status determined from courses table)
     description: Optional[str] = None
     session_format: Optional[str] = None
@@ -123,7 +123,7 @@ class PackageCreate(BaseModel):
 
 class PackageUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-    grade_level: Optional[str] = None
+    grade_level: Optional[List[str]] = None
     course_ids: Optional[List[int]] = None  # Array of course IDs (status determined from courses table)
     description: Optional[str] = None
     session_format: Optional[str] = None
@@ -176,7 +176,7 @@ class PackageResponse(BaseModel):
     id: int
     tutor_id: int
     name: str
-    grade_level: Optional[str]
+    grade_level: Optional[List[str]]
     course_ids: List[int] = []  # Array of course IDs
     courses: Optional[List[CourseInfo]] = []  # Full approved course details (populated on read)
     pending_courses: Optional[List[PendingCourseInfo]] = []  # Full pending course details (filtered by status)
@@ -940,31 +940,32 @@ async def get_schools_for_tutor(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get schools list for tutor requests panel.
-    Returns all schools or filtered by status (pending, verified, rejected, suspended).
+    Get schools list for tutor requests panel (user-based).
+    Returns all schools requested by the current user or filtered by status (pending, verified, rejected, suspended).
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Build query based on status filter
+        # Build query based on status filter - FILTER BY USER
         if status and status != 'all':
             cur.execute("""
                 SELECT id, name, type, level, location, email, phone,
                        rating, student_count, established_year, principal,
                        status, status_reason, status_at, created_at, updated_at
                 FROM schools
-                WHERE status = %s
+                WHERE requester_id = %s AND status = %s
                 ORDER BY created_at DESC
-            """, (status,))
+            """, (current_user['id'], status))
         else:
             cur.execute("""
                 SELECT id, name, type, level, location, email, phone,
                        rating, student_count, established_year, principal,
                        status, status_reason, status_at, created_at, updated_at
                 FROM schools
+                WHERE requester_id = %s
                 ORDER BY created_at DESC
-            """)
+            """, (current_user['id'],))
 
         rows = cur.fetchall()
         schools = []

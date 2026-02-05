@@ -1,0 +1,20 @@
+                    let container = document.getElementById('modal-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = 'modal-container';
+                        document.body.appendChild(container);
+                    }
+                    container.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Review Astegni Modal loaded for tutor-profile');
+                })
+                .catch(error => console.error('Failed to load review-astegni-modal:', error));
+        })();
+    </script>
+
+    <!-- Share Profile Manager - MOVED EARLIER (after navigationManager.js) to ensure onclick handlers work -->
+
+    <!-- Referral Dashboard Manager -->
+    <script src="../js/common-modals/referral-dashboard-manager.js"></script>
+
+</body>
+</html>

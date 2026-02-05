@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Share Modal Fix</title>
+
+    <!-- Load CSS in the same order as parent-profile -->
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .test-btn {
+            background: #F59E0B;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+        }
+        .test-btn:hover {
+            background: #D97706;
+        }
+        .success {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .error {
+            color: #ff0000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Share Profile Modal Fix Test</h1>
+
+        <div class="test-info">
+            <strong>What was fixed:</strong>
+            <ul>
+                <li>✅ Fixed HTML structure (added proper wrapper and overlay divs)</li>
+                <li>✅ Fixed transparent background (now uses solid #ffffff)</li>
+                <li>✅ Fixed backdrop-filter conflicts</li>
+                <li>✅ Added dark mode support</li>
+            </ul>
+        </div>
+
+        <button class="test-btn" onclick="openModal()">
+            <i class="fas fa-share-alt"></i> Open Share Modal
+        </button>
+
+        <button class="test-btn" onclick="toggleTheme()">
+            <i class="fas fa-moon"></i> Toggle Dark Mode
+        </button>
+
+        <button class="test-btn" onclick="runDebug()">
+            <i class="fas fa-bug"></i> Run Debug
+        </button>
+
+        <div id="debugOutput" style="margin-top: 20px; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <!-- Load the modal -->
+    <div id="modalContainer"></div>
+
+    <script>
+        // Mock user data for testing
+        const mockUser = {
+            user_id: 123,
+            first_name: 'Test',
+            last_name: 'User',
+            profile_picture: 'https://via.placeholder.com/150',
+            referral_code: 'TEST123',
+            active_role: 'parent'
+        };
+
+        // Load the modal
+        fetch('modals/common-modals/share-profile-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('modalContainer').innerHTML = html;
+                console.log('✅ Modal loaded successfully');
+            })
+            .catch(error => {
+                console.error('❌ Error loading modal:', error);
+                document.getElementById('debugOutput').innerHTML =
+                    '<span class="error">Error loading modal. Make sure you\'re running this from the root directory.</span>';
+            });
+
+        function openModal() {
+            const modal = document.getElementById('shareProfileModal');
+            if (!modal) {
+                alert('Modal not loaded yet. Please wait a moment and try again.');
+                return;
+            }
+
+            // Populate modal with mock data
+            document.getElementById('shareProfilePic').src = mockUser.profile_picture;
+            document.getElementById('shareProfileName').textContent =
+                `${mockUser.first_name} ${mockUser.last_name}`;
+            document.getElementById('shareProfileType').textContent = mockUser.active_role;
+            document.getElementById('shareReferralCode').value = mockUser.referral_code;
+
+            const shareLink = `${window.location.origin}/view-${mockUser.active_role}.html?id=${mockUser.user_id}&ref=${mockUser.referral_code}`;
+            document.getElementById('shareProfileLink').value = shareLink;
+
+            // Show modal
+            modal.style.display = 'block';
+
+            console.log('Modal opened');
+
+            // Auto-run debug after opening
+            setTimeout(runDebug, 500);
+        }
+
+        window.closeShareModal = function() {
+            const modal = document.getElementById('shareProfileModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            console.log('Theme changed to:', newTheme);
+        }
+
+        function runDebug() {
+            const output = document.getElementById('debugOutput');
+            output.innerHTML = '<strong>Debug Analysis:</strong><br><br>';
+
+            const modal = document.getElementById('shareProfileModal');
+            if (!modal) {
+                output.innerHTML += '<span class="error">❌ Modal not found</span>';
+                return;
+            }
+
+            output.innerHTML += '<span class="success">✅ Modal found</span><br>';
+
+            const overlay = modal.querySelector('.modal-overlay');
+            const container = modal.querySelector('.modal-container');
+
+            output.innerHTML += `<br><strong>Structure:</strong><br>`;
+            output.innerHTML += `- Has .modal-overlay: ${!!overlay ? '<span class="success">✅ YES</span>' : '<span class="error">❌ NO</span>'}<br>`;
+            output.innerHTML += `- Has .modal-container: ${!!container ? '<span class="success">✅ YES</span>' : '<span class="error">❌ NO</span>'}<br>`;
+
+            if (overlay) {
+                const overlayStyles = window.getComputedStyle(overlay);
+                output.innerHTML += `<br><strong>Overlay Styles:</strong><br>`;
+                output.innerHTML += `- backdrop-filter: ${overlayStyles.backdropFilter}<br>`;
+                output.innerHTML += `- background: ${overlayStyles.backgroundColor}<br>`;
+
+                if (overlayStyles.backdropFilter.includes('blur(4px)')) {
+                    output.innerHTML += '<span class="success">✅ Overlay blur is correct (4px)</span><br>';
+                } else {
+                    output.innerHTML += '<span class="error">❌ Overlay blur is wrong: ' + overlayStyles.backdropFilter + '</span><br>';
+                }
+            }
+
+            if (container) {
+                const containerStyles = window.getComputedStyle(container);
+                output.innerHTML += `<br><strong>Container Styles:</strong><br>`;
+                output.innerHTML += `- backdrop-filter: ${containerStyles.backdropFilter}<br>`;
+                output.innerHTML += `- background: ${containerStyles.backgroundColor}<br>`;
+                output.innerHTML += `- opacity: ${containerStyles.opacity}<br>`;
+
+                if (containerStyles.backdropFilter === 'none') {
+                    output.innerHTML += '<span class="success">✅ Container has no blur</span><br>';
+                } else {
+                    output.innerHTML += '<span class="error">❌ Container has blur: ' + containerStyles.backdropFilter + '</span><br>';
+                }
+
+                // Check if background is solid
+                const bgColor = containerStyles.backgroundColor;
+                if (bgColor.includes('rgba') && bgColor.includes(', 0)')) {
+                    output.innerHTML += '<span class="error">❌ Background is TRANSPARENT</span><br>';
+                } else if (bgColor.includes('rgb')) {
+                    output.innerHTML += '<span class="success">✅ Background is SOLID</span><br>';
+                } else {
+                    output.innerHTML += `<span class="error">⚠️ Background: ${bgColor}</span><br>`;
+                }
+
+                if (containerStyles.opacity === '1') {
+                    output.innerHTML += '<span class="success">✅ Opacity is correct (1)</span><br>';
+                } else {
+                    output.innerHTML += '<span class="error">❌ Opacity is wrong: ' + containerStyles.opacity + '</span><br>';
+                }
+            }
+
+            output.innerHTML += '<br><strong>Conclusion:</strong><br>';
+
+            const hasCorrectStructure = !!overlay && !!container;
+            const hasCorrectBlur = overlay && window.getComputedStyle(overlay).backdropFilter.includes('blur(4px)');
+            const hasNoContainerBlur = container && window.getComputedStyle(container).backdropFilter === 'none';
+            const hasSolidBg = container && !window.getComputedStyle(container).backgroundColor.includes('rgba(0, 0, 0, 0)');
+
+            if (hasCorrectStructure && hasCorrectBlur && hasNoContainerBlur && hasSolidBg) {
+                output.innerHTML += '<span class="success" style="font-size: 16px;">🎉 ALL CHECKS PASSED! Modal should display correctly.</span>';
+            } else {
+                output.innerHTML += '<span class="error" style="font-size: 16px;">⚠️ Some issues detected. See details above.</span>';
+            }
+        }
+
+        // Mock share functions
+        window.copyReferralCode = function() { alert('Copy referral code (mock)'); };
+        window.copyShareLink = function() { alert('Copy share link (mock)'); };
+        window.shareViaNative = function() { alert('Native share (mock)'); };
+        window.shareViaWhatsApp = function() { alert('WhatsApp share (mock)'); };
+        window.shareViaFacebook = function() { alert('Facebook share (mock)'); };
+        window.shareViaTwitter = function() { alert('Twitter share (mock)'); };
+        window.shareViaTelegram = function() { alert('Telegram share (mock)'); };
+        window.shareViaEmail = function() { alert('Email share (mock)'); };
+        window.viewReferralDashboard = function() { alert('View referral dashboard (mock)'); };
+    </script>
+</body>
+</html>

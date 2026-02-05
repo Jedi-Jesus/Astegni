@@ -19,19 +19,19 @@
 
         <form id="partner-form" class="auth-form">
             <div class="form-group">
-                <input type="text" id="partner-company" placeholder=" " required>
+                <input type="text" id="partner-company" placeholder=" ">
                 <label>Company/Institution Name</label>
             </div>
 
             <div class="form-group">
                 <input type="text" id="partner-contact" placeholder=" " required>
-                <label>Contact Person</label>
+                <label>Contact Person *</label>
             </div>
 
             <!-- Multiple Emails Section -->
             <div class="form-group">
                 <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
-                    Business Email(s)
+                    Email(s) *
                 </label>
                 <div id="emails-container" style="margin-bottom: 12px;">
                     <div class="email-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -49,7 +49,7 @@
             <!-- Multiple Phones Section -->
             <div class="form-group">
                 <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
-                    Phone Number(s)
+                    Phone Number(s) *
                 </label>
                 <div id="phones-container" style="margin-bottom: 12px;">
                     <div class="phone-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -71,17 +71,17 @@
                     <option value="technology">Technology Partner</option>
                     <option value="other">Other</option>
                 </select>
-                <label>Partnership Type</label>
+                <label>Partnership Type *</label>
             </div>
 
             <!-- Other Partnership Type Specification (Hidden by default) -->
             <div class="form-group" id="other-partner-type-container" style="display: none;">
                 <input type="text" id="other-partner-type" placeholder=" ">
-                <label>Please specify partnership type</label>
+                <label>Please specify partnership type *</label>
             </div>
 
             <div class="form-group">
-                <textarea id="partner-description" placeholder=" " rows="4" required></textarea>
+                <textarea id="partner-description" placeholder=" " rows="4"></textarea>
                 <label>Briefly describe your company</label>
             </div>
 

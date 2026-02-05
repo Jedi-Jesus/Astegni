@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astegni Server Debug Console</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #0d1117;
+            color: #58a6ff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #58a6ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .status-card h2 {
+            font-size: 0.9em;
+            color: #8b949e;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .status-value {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .status-value.online {
+            color: #3fb950;
+        }
+
+        .status-value.offline {
+            color: #f85149;
+        }
+
+        .status-value.warning {
+            color: #d29922;
+        }
+
+        .section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #30363d;
+            padding-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #238636;
+            color: #fff;
+            border: 1px solid #2ea043;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #2ea043;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #21262d;
+            border-color: #30363d;
+        }
+
+        button.secondary:hover {
+            background: #30363d;
+        }
+
+        button.danger {
+            background: #da3633;
+            border-color: #f85149;
+        }
+
+        button.danger:hover {
+            background: #f85149;
+        }
+
+        .console {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .console-line.success {
+            color: #3fb950;
+        }
+
+        .console-line.error {
+            color: #f85149;
+        }
+
+        .console-line.warning {
+            color: #d29922;
+        }
+
+        .console-line.info {
+            color: #58a6ff;
+        }
+
+        .console-line.debug {
+            color: #8b949e;
+        }
+
+        .timestamp {
+            color: #6e7681;
+            margin-right: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        pre {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+            overflow-x: auto;
+            color: #c9d1d9;
+            font-size: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge.success {
+            background: #2ea043;
+            color: #fff;
+        }
+
+        .badge.error {
+            background: #f85149;
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161b22;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Astegni Server Debug Console</h1>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-card">
+                <h2>Backend Server</h2>
+                <div class="status-value" id="backendStatus">Checking...</div>
+            </div>
+            <div class="status-card">
+                <h2>Frontend Server</h2>
+                <div class="status-value" id="frontendStatus">Checking...</div>
+            </div>
+            <div class="status-card">
+                <h2>Database</h2>
+                <div class="status-value" id="databaseStatus">Checking...</div>
+            </div>
+            <div class="status-card">
+                <h2>Active Requests</h2>
+                <div class="status-value" id="activeRequests">0</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <h2>Quick Actions</h2>
+            <div class="btn-group">
+                <button onclick="checkAllServers()">🔄 Check All Servers</button>
+                <button onclick="testBackend()" class="secondary">📡 Test Backend API</button>
+                <button onclick="testDatabase()" class="secondary">🗄️ Test Database</button>
+                <button onclick="testRoleReactivation()" class="secondary">👤 Test Role Reactivation</button>
+                <button onclick="clearConsole()" class="danger">🗑️ Clear Console</button>
+            </div>
+        </div>
+
+        <!-- API Tester -->
+        <div class="section">
+            <h2>API Endpoint Tester</h2>
+            <div class="input-group">
+                <select id="apiMethod">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+                <input type="text" id="apiEndpoint" placeholder="Enter endpoint (e.g., /api/tutors)" value="/api/tutors">
+                <button onclick="testApiEndpoint()">Send Request</button>
+            </div>
+            <div>
+                <textarea id="apiBody" placeholder='Request body (JSON) - optional' style="width: 100%; height: 80px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px; color: #c9d1d9; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+        </div>
+
+        <!-- Server Console -->
+        <div class="section">
+            <h2>Console Output</h2>
+            <div class="console" id="console">
+                <div class="console-line info">
+                    <span class="timestamp">[Ready]</span>
+                    Debug console initialized. Ready to test Astegni servers.
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Info -->
+        <div class="grid-2">
+            <div class="section">
+                <h2>Backend Info</h2>
+                <pre id="backendInfo">Not available</pre>
+            </div>
+            <div class="section">
+                <h2>Environment</h2>
+                <pre id="envInfo">Loading...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:8000';
+        const FRONTEND_URL = 'http://localhost:8081';
+
+        let requestCount = 0;
+
+        // Logging functions
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+            log('Console cleared', 'info');
+        }
+
+        // Server status checks
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/docs`, { method: 'HEAD' });
+                if (response.ok) {
+                    document.getElementById('backendStatus').innerHTML = 'Online <span class="badge success">✓</span>';
+                    document.getElementById('backendStatus').className = 'status-value online';
+                    log('✅ Backend server is online at ' + BACKEND_URL, 'success');
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('backendStatus').innerHTML = 'Offline <span class="badge error">✗</span>';
+                document.getElementById('backendStatus').className = 'status-value offline';
+                log('❌ Backend server is offline. Start with: python app.py', 'error');
+                return false;
+            }
+        }
+
+        async function checkFrontend() {
+            try {
+                const response = await fetch(`${FRONTEND_URL}`, { method: 'HEAD' });
+                if (response.ok) {
+                    document.getElementById('frontendStatus').innerHTML = 'Online <span class="badge success">✓</span>';
+                    document.getElementById('frontendStatus').className = 'status-value online';
+                    log('✅ Frontend server is online at ' + FRONTEND_URL, 'success');
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('frontendStatus').innerHTML = 'Offline <span class="badge error">✗</span>';
+                document.getElementById('frontendStatus').className = 'status-value offline';
+                log('❌ Frontend server is offline. Start with: python dev-server.py', 'error');
+                return false;
+            }
+        }
+
+        async function checkDatabase() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/tutors?limit=1`);
+                if (response.ok) {
+                    document.getElementById('databaseStatus').innerHTML = 'Connected <span class="badge success">✓</span>';
+                    document.getElementById('databaseStatus').className = 'status-value online';
+                    log('✅ Database is connected and responding', 'success');
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('databaseStatus').innerHTML = 'Error <span class="badge error">✗</span>';
+                document.getElementById('databaseStatus').className = 'status-value offline';
+                log('❌ Database connection error: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        async function checkAllServers() {
+            log('🔄 Checking all servers...', 'info');
+            await Promise.all([
+                checkBackend(),
+                checkFrontend(),
+                checkDatabase()
+            ]);
+            log('✅ Server check complete', 'success');
+        }
+
+        // API Testing
+        async function testApiEndpoint() {
+            const method = document.getElementById('apiMethod').value;
+            const endpoint = document.getElementById('apiEndpoint').value;
+            const bodyText = document.getElementById('apiBody').value;
+
+            log(`📡 Testing ${method} ${endpoint}...`, 'info');
+            requestCount++;
+            document.getElementById('activeRequests').textContent = requestCount;
+
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (bodyText && (method === 'POST' || method === 'PUT')) {
+                    options.body = bodyText;
+                }
+
+                // Add token if available
+                const token = localStorage.getItem('token');
+                if (token) {
+                    options.headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`✅ ${method} ${endpoint} - Status: ${response.status}`, 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'debug');
+                } else {
+                    log(`⚠️ ${method} ${endpoint} - Status: ${response.status}`, 'warning');
+                    log(`Error: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ ${method} ${endpoint} failed: ${error.message}`, 'error');
+            } finally {
+                requestCount--;
+                document.getElementById('activeRequests').textContent = requestCount;
+            }
+        }
+
+        async function testBackend() {
+            log('🧪 Running backend API tests...', 'info');
+
+            const tests = [
+                { name: 'Health Check', endpoint: '/docs' },
+                { name: 'Tutors API', endpoint: '/api/tutors?limit=5' },
+                { name: 'Statistics API', endpoint: '/api/statistics' }
+            ];
+
+            for (const test of tests) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}${test.endpoint}`);
+                    if (response.ok) {
+                        log(`✅ ${test.name} - OK`, 'success');
+                    } else {
+                        log(`⚠️ ${test.name} - Status: ${response.status}`, 'warning');
+                    }
+                } catch (error) {
+                    log(`❌ ${test.name} - Failed: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testDatabase() {
+            log('🗄️ Testing database connection...', 'info');
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/tutors?limit=1`);
+                const data = await response.json();
+
+                if (response.ok && data.tutors) {
+                    log(`✅ Database query successful - Found ${data.total_tutors} tutors`, 'success');
+                    log(`Sample tutor: ${JSON.stringify(data.tutors[0], null, 2)}`, 'debug');
+                } else {
+                    log(`⚠️ Database query returned unexpected data`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ Database test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRoleReactivation() {
+            log('👤 Testing role reactivation flow...', 'info');
+
+            // Check localStorage state
+            const userRole = localStorage.getItem('userRole');
+            const currentUser = localStorage.getItem('currentUser');
+            const token = localStorage.getItem('token');
+
+            log(`Current userRole: ${userRole || 'None'}`, 'debug');
+            log(`Current token: ${token ? 'Present' : 'Missing'}`, 'debug');
+
+            if (currentUser) {
+                try {
+                    const user = JSON.parse(currentUser);
+                    log(`Current user active_role: ${user.active_role || 'None'}`, 'debug');
+                    log(`Current user roles: ${JSON.stringify(user.roles)}`, 'debug');
+                } catch (e) {
+                    log(`Failed to parse currentUser: ${e.message}`, 'error');
+                }
+            } else {
+                log('No currentUser in localStorage', 'warning');
+            }
+
+            // Check sessionStorage
+            const switchInProgress = sessionStorage.getItem('role_switch_in_progress');
+            const targetRole = sessionStorage.getItem('target_role');
+            log(`Session storage - role_switch_in_progress: ${switchInProgress || 'Not set'}`, 'debug');
+            log(`Session storage - target_role: ${targetRole || 'Not set'}`, 'debug');
+
+            // Test /api/my-roles endpoint
+            if (token) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/my-roles`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        log(`✅ User has roles: ${JSON.stringify(data.roles)}`, 'success');
+                        log(`Active role: ${data.active_role}`, 'info');
+                    } else {
+                        log(`⚠️ Failed to fetch roles: ${data.detail}`, 'warning');
+                    }
+                } catch (error) {
+                    log(`❌ Role fetch failed: ${error.message}`, 'error');
+                }
+            } else {
+                log('⚠️ No token found - user not logged in', 'warning');
+            }
+        }
+
+        // Get environment info
+        function getEnvInfo() {
+            const info = {
+                'Backend URL': BACKEND_URL,
+                'Frontend URL': FRONTEND_URL,
+                'Current URL': window.location.href,
+                'Protocol': window.location.protocol,
+                'Browser': navigator.userAgent.split(' ').slice(-2).join(' '),
+                'Token Present': !!localStorage.getItem('token'),
+                'User Logged In': !!localStorage.getItem('currentUser')
+            };
+
+            document.getElementById('envInfo').textContent = JSON.stringify(info, null, 2);
+        }
+
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 Astegni Debug Console initialized', 'success');
+            getEnvInfo();
+            await checkAllServers();
+
+            // Auto-refresh status every 10 seconds
+            setInterval(checkAllServers, 10000);
+        });
+    </script>
+</body>
+</html>

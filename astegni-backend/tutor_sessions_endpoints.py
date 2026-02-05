@@ -99,6 +99,7 @@ class TutoringSessionResponse(BaseModel):
     student_name: Optional[str] = None
     tutor_name: Optional[str] = None
     course_name: Optional[str] = None
+    parent_id: Optional[int] = None  # Parent ID from student_profiles.parent_id array (first element)
     # Session planning
     topics: Optional[list] = []  # Topics planned for this session
     topics_covered: Optional[list] = []  # Topics actually covered
@@ -531,15 +532,18 @@ async def get_tutor_sessions(
             tutor_profile_id = tutor_row[0]
 
             # Build query with optional filters
-            # Join sessions -> enrolled_students -> student_profiles/users to get student name
-            # Join enrolled_students -> tutor_profiles -> users to get tutor name
-            # Join with enrolled_courses table (not enrolled_students)
-            # enrolled_courses has: tutor_id, package_id, students_id (array)
+            # Chain: sessions -> enrolled_courses -> students_id (array) -> unnest -> student_profiles -> parent_id
+            # Use DISTINCT ON to get one row per session (handles multiple students in students_id array)
             query = """
-                SELECT s.id, s.enrolled_courses_id,
-                       'Student' as student_name,
-                       COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown') as tutor_name,
+                SELECT DISTINCT ON (s.id)
+                       s.id, s.enrolled_courses_id,
+                       COALESCE(su.first_name || ' ' || COALESCE(su.father_name, ''), 'Unknown Student') as student_name,
+                       COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown Tutor') as tutor_name,
                        COALESCE(pkg.name, 'Unknown Course') as course_name,
+                       (CASE WHEN sp.parent_id IS NOT NULL AND array_length(sp.parent_id, 1) > 0
+                             THEN sp.parent_id[1]
+                             ELSE NULL
+                        END) as parent_id,
                        s.topics, s.topics_covered,
                        s.session_date, s.start_time, s.end_time, s.duration,
                        s.session_mode, s.location, s.whiteboard_id,
@@ -549,10 +553,13 @@ async def get_tutor_sessions(
                        s.notification_enabled, s.alarm_enabled, s.alarm_before_minutes, s.is_featured,
                        s.status, s.created_at, s.updated_at
                 FROM sessions s
-                LEFT JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                INNER JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
                 LEFT JOIN tutor_packages pkg ON ec.package_id = pkg.id
                 LEFT JOIN tutor_profiles tp ON ec.tutor_id = tp.id
                 LEFT JOIN users tu ON tp.user_id = tu.id
+                LEFT JOIN LATERAL unnest(ec.students_id) AS student_id_val ON true
+                LEFT JOIN student_profiles sp ON sp.id = student_id_val
+                LEFT JOIN users su ON sp.user_id = su.id
                 WHERE ec.tutor_id = %s
             """
             params = [tutor_profile_id]
@@ -571,7 +578,7 @@ async def get_tutor_sessions(
                 query += " AND s.session_date <= %s"
                 params.append(date_to)
 
-            query += " ORDER BY s.created_at DESC"
+            query += " ORDER BY s.id, s.created_at DESC"
 
             cur.execute(query, params)
             rows = cur.fetchall()
@@ -584,28 +591,29 @@ async def get_tutor_sessions(
                     student_name=row[2],
                     tutor_name=row[3],
                     course_name=row[4],
-                    topics=row[5] or [],
-                    topics_covered=row[6] or [],
-                    session_date=row[7],
-                    start_time=row[8],
-                    end_time=row[9],
-                    duration=row[10],
-                    session_mode=row[11] or 'online',
-                    location=row[12],
-                    whiteboard_id=row[13],
-                    student_review_id=row[14],
-                    tutor_review_id=row[15],
-                    parent_review_id=row[16],
-                    tutor_attendance_status=row[17] or 'present',
-                    student_attendance_status=row[18] or 'present',
-                    priority_level=row[19] or 'medium',
-                    notification_enabled=row[20] or False,
-                    alarm_enabled=row[21] or False,
-                    alarm_before_minutes=row[22] or 15,
-                    is_featured=row[23] or False,
-                    status=row[24] or 'scheduled',
-                    created_at=row[25],
-                    updated_at=row[26]
+                    parent_id=row[5],  # parent_id from student_profiles
+                    topics=row[6] or [],
+                    topics_covered=row[7] or [],
+                    session_date=row[8],
+                    start_time=row[9],
+                    end_time=row[10],
+                    duration=row[11],
+                    session_mode=row[12] or 'online',
+                    location=row[13],
+                    whiteboard_id=row[14],
+                    student_review_id=row[15],
+                    tutor_review_id=row[16],
+                    parent_review_id=row[17],
+                    tutor_attendance_status=row[18] or 'present',
+                    student_attendance_status=row[19] or 'present',
+                    priority_level=row[20] or 'medium',
+                    notification_enabled=row[21] or False,
+                    alarm_enabled=row[22] or False,
+                    alarm_before_minutes=row[23] or 15,
+                    is_featured=row[24] or False,
+                    status=row[25] or 'scheduled',
+                    created_at=row[26],
+                    updated_at=row[27]
                 ))
 
             return sessions
@@ -654,10 +662,15 @@ async def get_session(
 
             # Get session with joined data via enrolled_courses
             cur.execute("""
-                SELECT s.id, s.enrolled_courses_id,
-                       'Student' as student_name,
-                       COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown') as tutor_name,
+                SELECT DISTINCT ON (s.id)
+                       s.id, s.enrolled_courses_id,
+                       COALESCE(su.first_name || ' ' || COALESCE(su.father_name, ''), 'Unknown Student') as student_name,
+                       COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown Tutor') as tutor_name,
                        COALESCE(pkg.name, 'Unknown Course') as course_name,
+                       (CASE WHEN sp.parent_id IS NOT NULL AND array_length(sp.parent_id, 1) > 0
+                             THEN sp.parent_id[1]
+                             ELSE NULL
+                        END) as parent_id,
                        s.topics, s.topics_covered,
                        s.session_date, s.start_time, s.end_time, s.duration,
                        s.session_mode, s.location, s.whiteboard_id,
@@ -667,11 +680,15 @@ async def get_session(
                        s.notification_enabled, s.alarm_enabled, s.alarm_before_minutes, s.is_featured,
                        s.status, s.created_at, s.updated_at
                 FROM sessions s
-                LEFT JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                INNER JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
                 LEFT JOIN tutor_packages pkg ON ec.package_id = pkg.id
                 LEFT JOIN tutor_profiles tp ON ec.tutor_id = tp.id
                 LEFT JOIN users tu ON tp.user_id = tu.id
+                LEFT JOIN LATERAL unnest(ec.students_id) AS student_id_val ON true
+                LEFT JOIN student_profiles sp ON sp.id = student_id_val
+                LEFT JOIN users su ON sp.user_id = su.id
                 WHERE s.id = %s AND ec.tutor_id = %s
+                ORDER BY s.id
             """, (session_id, tutor_profile_id))
 
             row = cur.fetchone()
@@ -688,28 +705,29 @@ async def get_session(
                 student_name=row[2],
                 tutor_name=row[3],
                 course_name=row[4],
-                topics=row[5] or [],
-                topics_covered=row[6] or [],
-                session_date=row[7],
-                start_time=row[8],
-                end_time=row[9],
-                duration=row[10],
-                session_mode=row[11] or 'online',
-                location=row[12],
-                whiteboard_id=row[13],
-                student_review_id=row[14],
-                tutor_review_id=row[15],
-                parent_review_id=row[16],
-                tutor_attendance_status=row[17] or 'present',
-                student_attendance_status=row[18] or 'present',
-                priority_level=row[19] or 'medium',
-                notification_enabled=row[20] or False,
-                alarm_enabled=row[21] or False,
-                alarm_before_minutes=row[22] or 15,
-                is_featured=row[23] or False,
-                status=row[24] or 'scheduled',
-                created_at=row[25],
-                updated_at=row[26]
+                parent_id=row[5],
+                topics=row[6] or [],
+                topics_covered=row[7] or [],
+                session_date=row[8],
+                start_time=row[9],
+                end_time=row[10],
+                duration=row[11],
+                session_mode=row[12] or 'online',
+                location=row[13],
+                whiteboard_id=row[14],
+                student_review_id=row[15],
+                tutor_review_id=row[16],
+                parent_review_id=row[17],
+                tutor_attendance_status=row[18] or 'present',
+                student_attendance_status=row[19] or 'present',
+                priority_level=row[20] or 'medium',
+                notification_enabled=row[21] or False,
+                alarm_enabled=row[22] or False,
+                alarm_before_minutes=row[23] or 15,
+                is_featured=row[24] or False,
+                status=row[25] or 'scheduled',
+                created_at=row[26],
+                updated_at=row[27]
             )
 
     except psycopg.Error as e:

@@ -317,7 +317,7 @@ async def get_event(event_id: int):
                        WHEN e.creator_type = 'admin' THEN ap.father_name
                    END as creator_father_name,
                    CASE
-                       WHEN e.creator_type = 'tutor' THEN tp.profile_picture
+                       WHEN e.creator_type = 'tutor' THEN u.profile_picture  -- NOTE: profile_picture now read from users table
                        WHEN e.creator_type = 'admin' THEN ap.profile_picture
                    END as creator_profile_picture
             FROM events e
@@ -545,10 +545,11 @@ async def get_events_by_parent(parent_id: int):
             )
 
         # Get events where created_by = parent_id and creator_type = 'parent'
+        # NOTE: profile_picture now read from users table
         cur.execute("""
             SELECT e.*,
                    COALESCE(u.first_name || ' ' || COALESCE(u.father_name, ''), pp.username, 'Unknown') as creator_name,
-                   COALESCE(pp.profile_picture, u.profile_picture) as creator_picture
+                   u.profile_picture as creator_picture
             FROM events e
             LEFT JOIN parent_profiles pp ON e.created_by = pp.id AND e.creator_type = 'parent'
             LEFT JOIN users u ON pp.user_id = u.id
@@ -840,7 +841,7 @@ async def get_club(club_id: int):
                        WHEN c.creator_type = 'admin' THEN ap.father_name
                    END as creator_father_name,
                    CASE
-                       WHEN c.creator_type = 'tutor' THEN tp.profile_picture
+                       WHEN c.creator_type = 'tutor' THEN u.profile_picture  -- NOTE: profile_picture now read from users table
                        WHEN c.creator_type = 'admin' THEN ap.profile_picture
                    END as creator_profile_picture
             FROM clubs c
@@ -1067,11 +1068,12 @@ async def get_clubs_by_parent(parent_id: int):
 
         # Get clubs where created_by = parent_id and creator_type = 'parent'
         cur.execute("""
+            -- NOTE: profile_picture now read from users table
             SELECT c.*,
                    pp.bio as creator_bio,
                    u.first_name as creator_first_name,
                    u.father_name as creator_father_name,
-                   pp.profile_picture as creator_profile_picture
+                   u.profile_picture as creator_profile_picture
             FROM clubs c
             LEFT JOIN parent_profiles pp ON c.created_by = pp.id AND c.creator_type = 'parent'
             LEFT JOIN users u ON pp.user_id = u.id

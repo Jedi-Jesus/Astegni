@@ -5,6 +5,7 @@
 .profile-dropdown-container {
     position: relative;
     display: inline-flex;
+    z-index: 20000; /* Above debug panel (9999) */
 }
 
 .profile-dropdown-toggle {
@@ -59,6 +60,9 @@
     right: 0;
     min-width: 280px;
     max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: var(--card-bg);
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(245, 158, 11, 0.1);
@@ -67,9 +71,35 @@
     visibility: hidden;
     transform: translateY(-10px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
+    z-index: 20001; /* Above debug panel and profile container */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+/* Custom scrollbar for dropdown menu */
+.profile-dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-dropdown-menu::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.profile-dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.3);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.profile-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.5);
+}
+
+/* Firefox scrollbar */
+.profile-dropdown-menu {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 158, 11, 0.3) transparent;
 }
 
 .profile-dropdown-menu.show {
@@ -438,4 +468,112 @@
 
 [data-theme="dark"] .add-role-option .role-name {
     color: #FFD54F;
+}
+
+/* Dark theme scrollbar */
+[data-theme="dark"] .profile-dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 213, 79, 0.3);
+}
+
+[data-theme="dark"] .profile-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 213, 79, 0.5);
+}
+
+[data-theme="dark"] .profile-dropdown-menu {
+    scrollbar-color: rgba(255, 213, 79, 0.3) transparent;
+}
+
+/* ============================================
+   DELETION COUNTDOWN BANNER
+   ============================================ */
+
+.deletion-countdown-banner {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border: 2px solid #FF9800;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 8px 12px;
+    animation: pulse-orange 2s ease-in-out infinite;
+}
+
+@keyframes pulse-orange {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.1);
+    }
+}
+
+.countdown-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.countdown-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 152, 0, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #E65100;
+}
+
+.countdown-text {
+    flex: 1;
+}
+
+.countdown-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #E65100;
+    margin-bottom: 4px;
+}
+
+.countdown-details {
+    font-size: 0.75rem;
+    color: #EF6C00;
+    line-height: 1.4;
+}
+
+.countdown-restore-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.countdown-restore-btn:hover {
+    background: #F57C00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+
+/* Dark theme */
+[data-theme="dark"] .deletion-countdown-banner {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+    border-color: #FF9800;
+}
+
+[data-theme="dark"] .countdown-icon {
+    background: rgba(255, 152, 0, 0.3);
+}
+
+[data-theme="dark"] .countdown-title {
+    color: #FFB74D;
+}
+
+[data-theme="dark"] .countdown-details {
+    color: #FFA726;
 }

@@ -335,7 +335,7 @@ window.addNewPackageEntry = function() {
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Hourly Rate (ETB)</label>
+                <label class="form-label">Hourly Rate (${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'})</label>
                 <input type="number" class="hourly-rate form-input" placeholder="Enter hourly rate" min="0" required>
             </div>
             <div class="form-group">
@@ -657,7 +657,7 @@ function createPackageDisplayCard(pkg, index) {
             </div>
             <div class="package-info-item">
                 <div class="package-info-label">Hourly Rate</div>
-                <div class="package-info-value">${hourlyRate} ETB</div>
+                <div class="package-info-value">${hourlyRate} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
             </div>
             <div class="package-info-item">
                 <div class="package-info-label">1 Month Discount</div>
@@ -750,19 +750,19 @@ function calculateAndDisplayFeesForPackage(pkg) {
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">Base ${fees.paymentFrequency === '2-weeks' ? '2-Week' : 'Monthly'} Fee</span>
-                <span class="package-calc-value">${fees.basePayment.toFixed(2)} ETB</span>
+                <span class="package-calc-value">${fees.basePayment.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">3 Months Total (${discounts.threeMonths}% off)</span>
-                <span class="package-calc-value">${fees.threeMonths.toFixed(2)} ETB</span>
+                <span class="package-calc-value">${fees.threeMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">6 Months Total (${discounts.sixMonths}% off)</span>
-                <span class="package-calc-value">${fees.sixMonths.toFixed(2)} ETB</span>
+                <span class="package-calc-value">${fees.sixMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
             </div>
             <div class="package-calc-row total">
                 <span class="package-calc-label">Yearly Total (${discounts.yearly}% off)</span>
-                <span class="package-calc-value">${fees.yearly.toFixed(2)} ETB</span>
+                <span class="package-calc-value">${fees.yearly.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
             </div>
         `;
     }
@@ -839,9 +839,9 @@ document.addEventListener('keydown', (e) => {
  * Shows/hides the left sidebar with package list
  */
 window.togglePackageSidebar = function() {
-    const sidebar = document.getElementById('packageSidebar');
+    const sidebar = document.getElementById('packageManagementSidebar');
     const layout = document.querySelector('#package-management-modal .package-layout');
-    const toggleBtn = document.querySelector('#package-management-modal .modal-header .package-sidebar-toggle');
+    const toggleBtn = document.querySelector('#package-management-modal .modal-header .sidebar-toggle');
 
     if (sidebar && layout) {
         sidebar.classList.toggle('collapsed');

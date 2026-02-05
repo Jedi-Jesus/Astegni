@@ -1,6 +1,6 @@
 """
 Student Documents Endpoints
-Handles achievements, academic certificates, and extracurricular activities
+Handles achievements and academic certificates
 """
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
@@ -57,7 +57,6 @@ class DocumentResponse(BaseModel):
 class DocumentStats(BaseModel):
     total_achievements: int
     total_academics: int
-    total_extracurricular: int
     total_documents: int
 
 # ============================================
@@ -96,37 +95,19 @@ async def upload_student_document(
     current_user = Depends(get_current_user)
 ):
     """
-    Upload a student document (achievement, academics, or extracurricular)
+    Upload a student document (achievement or academic certificate)
     """
     try:
         # Validate user is a student
         if 'student' not in current_user.roles:
             raise HTTPException(status_code=403, detail="Only students can upload documents")
 
-        # Get student profile ID from role_ids or query database
-        student_id = None
-        if hasattr(current_user, 'role_ids') and current_user.role_ids:
-            student_id = current_user.role_ids.get('student')
-
-        # Fallback: Query student_profiles table if role_ids not available
-        if not student_id:
-            conn = get_db_connection()
-            try:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT id FROM student_profiles WHERE user_id = %s
-                    """, (current_user.id,))
-                    result = cur.fetchone()
-                    if result:
-                        student_id = result['id']
-            finally:
-                conn.close()
-
-        if not student_id:
-            raise HTTPException(status_code=404, detail="Student profile not found")
+        # USER-BASED: Use current_user.id directly (credentials belong to the person, not the role)
+        user_id = current_user.id
+        print(f"[Student Upload] Using user_id: {user_id} (uploader_role: 'student')")
 
         # Validate document type
-        valid_types = ['achievement', 'academic_certificate', 'extracurricular']
+        valid_types = ['achievement', 'academic']
         if document_type not in valid_types:
             raise HTTPException(status_code=400, detail=f"Invalid document type. Must be one of: {', '.join(valid_types)}")
 
@@ -149,7 +130,7 @@ async def upload_student_document(
             file_data=file_content,
             file_name=file.filename,
             file_type=file_type_folder,
-            user_id=student_id  # Use student profile ID instead of user table ID
+            user_id=user_id  # Use user_id instead of student_id
         )
 
         # Extract URL from the result dictionary
@@ -170,17 +151,17 @@ async def upload_student_document(
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid expiry_date format. Use YYYY-MM-DD")
 
-        # Insert into database
+        # Insert into unified credentials table
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO student_documents
-                    (student_id, document_type, title, description, issued_by, date_of_issue,
-                     expiry_date, document_url, file_name, file_type, file_size, is_featured)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO credentials
+                    (uploader_id, uploader_role, document_type, title, description, issued_by, date_of_issue,
+                     expiry_date, document_url, file_name, file_type, file_size, verification_status, is_verified, is_featured)
+                    VALUES (%s, 'student', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', FALSE, %s)
                     RETURNING *
                 """, (
-                    student_id,
+                    user_id,
                     document_type,
                     title,
                     description,
@@ -197,7 +178,11 @@ async def upload_student_document(
                 document = cur.fetchone()
                 conn.commit()
 
-        return DocumentResponse(**document)
+        # Map uploader_id to student_id for backward compatibility
+        document_dict = dict(document)
+        document_dict['student_id'] = document_dict['uploader_id']
+
+        return DocumentResponse(**document_dict)
 
     except HTTPException:
         raise
@@ -312,7 +297,6 @@ async def get_document_stats(
                     SELECT
                         COUNT(*) FILTER (WHERE document_type = 'achievement') as total_achievements,
                         COUNT(*) FILTER (WHERE document_type = 'academic_certificate') as total_academics,
-                        COUNT(*) FILTER (WHERE document_type = 'extracurricular') as total_extracurricular,
                         COUNT(*) as total_documents
                     FROM student_documents
                     WHERE student_id = %s
@@ -402,50 +386,30 @@ async def get_student_documents(
             print(f"[DEBUG GET DOCS] ERROR: User is not a student")
             raise HTTPException(status_code=403, detail="Only students can view documents")
 
-        # Get student profile ID from role_ids or query database
-        student_id = None
-        if hasattr(current_user, 'role_ids') and current_user.role_ids:
-            student_id = current_user.role_ids.get('student')
-            print(f"[DEBUG GET DOCS] Got student_id from role_ids: {student_id}")
+        # USER-BASED: Use current_user.id directly
+        user_id = current_user.id
+        print(f"[DEBUG] Using user_id: {user_id}, document_type: {document_type}")
 
-        # Fallback: Query student_profiles table if role_ids not available
-        if not student_id:
-            print(f"[DEBUG GET DOCS] Querying database for student profile with user_id={current_user.id}")
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT id FROM student_profiles WHERE user_id = %s
-                    """, (current_user.id,))
-                    result = cur.fetchone()
-                    print(f"[DEBUG GET DOCS] Database query result: {result}")
-                    if result:
-                        student_id = result['id']
-                        print(f"[DEBUG GET DOCS] Got student_id from database: {student_id}")
-
-        if not student_id:
-            raise HTTPException(status_code=404, detail="Student profile not found")
-
-        print(f"[DEBUG] Final student_id: {student_id}, document_type: {document_type}")
-
+        # Query unified credentials table
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 if document_type:
                     # Validate document type
-                    valid_types = ['achievement', 'academic_certificate', 'extracurricular']
+                    valid_types = ['achievement', 'academic']
                     if document_type not in valid_types:
                         raise HTTPException(status_code=400, detail=f"Invalid document type")
 
                     cur.execute("""
-                        SELECT * FROM student_documents
-                        WHERE student_id = %s AND document_type = %s
+                        SELECT * FROM credentials
+                        WHERE uploader_id = %s AND uploader_role = 'student' AND document_type = %s
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (student_id, document_type))
+                    """, (user_id, document_type))
                 else:
                     cur.execute("""
-                        SELECT * FROM student_documents
-                        WHERE student_id = %s
+                        SELECT * FROM credentials
+                        WHERE uploader_id = %s AND uploader_role = 'student'
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (student_id,))
+                    """, (user_id,))
 
                 documents = cur.fetchall()
                 print(f"[DEBUG] Found {len(documents)} documents")
@@ -462,7 +426,11 @@ async def get_student_documents(
             for i, doc in enumerate(documents):
                 print(f"[DEBUG GET DOCS] Processing document {i+1}/{len(documents)}")
                 try:
-                    doc_response = DocumentResponse(**doc)
+                    # Map uploader_id to student_id for backward compatibility
+                    doc_dict = dict(doc)
+                    doc_dict['student_id'] = doc_dict['uploader_id']
+
+                    doc_response = DocumentResponse(**doc_dict)
                     result.append(doc_response)
                     print(f"[DEBUG GET DOCS] Document {i+1} validated successfully")
                 except Exception as e:
@@ -646,11 +614,12 @@ async def get_view_student_credentials(
     """
     PUBLIC endpoint to get student credentials for view-student.html
 
-    - Used by view-student.html to display student's achievements, certifications, extracurricular
+    - Used by view-student.html to display student's achievements and academic credentials
     - No authentication required (public profile view)
-    - Uses the 'credentials' table with uploader_role='student'
-    - uploader_id in credentials table = student_profiles.id (NOT user_id)
-    - Optional filter by document_type: 'achievement', 'academic_certificate', 'extracurricular'
+    - Flow: student_profile_id -> student_profiles.user_id -> credentials.uploader_id
+    - credentials.uploader_id = users.id (NOT student_profiles.id)
+    - Optional filter by document_type: 'achievement', 'academic_certificate'
+    - Returns only verified AND featured credentials (public-safe)
     - Returns empty list if student not found (graceful handling)
     """
     try:
@@ -658,15 +627,26 @@ async def get_view_student_credentials(
 
         with get_db_connection() as conn:
             with conn.cursor() as cur:
-                # Fetch credentials from the credentials table
-                # uploader_id = student_profiles.id (student profile ID, NOT user_id)
+                # Step 1: Get user_id from student_profiles
+                cur.execute("""
+                    SELECT user_id FROM student_profiles WHERE id = %s
+                """, (student_profile_id,))
+
+                student_result = cur.fetchone()
+                if not student_result:
+                    print(f"[VIEW STUDENT CREDENTIALS] Student profile {student_profile_id} not found")
+                    return []
+
+                user_id = student_result['user_id']
+                print(f"[VIEW STUDENT CREDENTIALS] Found user_id: {user_id} for student_profile_id: {student_profile_id}")
+
+                # Step 2: Fetch credentials from the credentials table
+                # credentials.uploader_id = users.id (the user who uploaded)
+                # credentials.uploader_role = 'student' (indicates this is student credential)
                 if document_type:
-                    valid_types = ['achievement', 'academic_certificate', 'extracurricular', 'certification']
+                    valid_types = ['achievement', 'academic']
                     if document_type not in valid_types:
                         raise HTTPException(status_code=400, detail=f"Invalid document type")
-
-                    # Map 'certification' to 'academic_certificate' for backwards compatibility
-                    db_doc_type = 'academic_certificate' if document_type == 'certification' else document_type
 
                     cur.execute("""
                         SELECT id, uploader_id, document_type, title, description,
@@ -675,9 +655,9 @@ async def get_view_student_credentials(
                                verification_status, is_verified, is_featured
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = 'student' AND document_type = %s
-                              AND is_featured = true
+                              AND is_featured = TRUE AND is_verified = TRUE
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (student_profile_id, db_doc_type))
+                    """, (user_id, document_type))
                 else:
                     cur.execute("""
                         SELECT id, uploader_id, document_type, title, description,
@@ -686,12 +666,12 @@ async def get_view_student_credentials(
                                verification_status, is_verified, is_featured
                         FROM credentials
                         WHERE uploader_id = %s AND uploader_role = 'student'
-                              AND is_featured = true
+                              AND is_featured = TRUE AND is_verified = TRUE
                         ORDER BY date_of_issue DESC NULLS LAST, created_at DESC
-                    """, (student_profile_id,))
+                    """, (user_id,))
 
                 documents = cur.fetchall()
-                print(f"[VIEW STUDENT CREDENTIALS] Found {len(documents)} credentials")
+                print(f"[VIEW STUDENT CREDENTIALS] Found {len(documents)} credentials for user_id: {user_id}")
 
         if not documents:
             return []
@@ -749,11 +729,11 @@ async def get_view_student_parents(student_profile_id: int):
                         p.bio,
                         p.quote,
                         p.relationship_type,
-                        p.location,
+                        u.location,
                         p.total_children,
                         u.is_verified,
                         p.is_active,
-                        p.profile_picture,
+                        u.profile_picture,
                         p.cover_image,
                         u.first_name,
                         u.father_name,

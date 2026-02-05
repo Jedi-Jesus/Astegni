@@ -29,7 +29,7 @@ function createAdPlaceholder(adIndex) {
     const ad = adVariations[adIndex % adVariations.length];
 
     div.innerHTML = `
-        <div class="inline-ad-container" style="background: ${ad.color};" onclick="openAdAnalyticsModal()">
+        <div class="inline-ad-container" style="background: ${ad.color};" onclick="openComingSoonModal('Advertising')">
             <div class="inline-ad-content">
                 <span class="inline-ad-label">Ad</span>
                 <h3 class="inline-ad-title">${ad.title}</h3>

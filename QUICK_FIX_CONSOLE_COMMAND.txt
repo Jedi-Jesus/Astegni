@@ -1,0 +1,34 @@
+============================================
+QUICK FIX - COPY & PASTE INTO BROWSER CONSOLE
+============================================
+
+STEP 1: Open Console
+- Press F12 (or Ctrl+Shift+I)
+- Click "Console" tab
+
+STEP 2: Copy & Paste This Code:
+--------------------------------------------
+(function(){const oldScript=document.querySelector('script[src*="schedule-manager.js"]');if(oldScript)oldScript.remove();const newScript=document.createElement('script');newScript.src='../js/student-profile/schedule-manager.js?v='+Date.now();newScript.onload=function(){console.log(typeof window.filterSchedulesByRole==='function'?'✅ FIX WORKING! Click filter buttons now.':'❌ Still not working. Try hard refresh (Ctrl+Shift+R)')};document.head.appendChild(newScript);})();
+--------------------------------------------
+
+STEP 3: Press Enter
+
+STEP 4: Look for success message:
+✅ FIX WORKING! Click filter buttons now.
+
+If you see ❌ error, try:
+- Hard refresh: Ctrl + Shift + R (Windows) or Cmd + Shift + R (Mac)
+- Or close ALL browser tabs and restart browser
+
+============================================
+ALTERNATIVE: SIMPLE HARD REFRESH
+============================================
+
+Just press one of these:
+- Windows/Linux: Ctrl + Shift + R
+- Mac: Cmd + Shift + R
+- Or: Ctrl + F5 (Windows)
+
+This will force reload all cached files.
+
+============================================

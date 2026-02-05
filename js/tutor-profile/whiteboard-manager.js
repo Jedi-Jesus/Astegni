@@ -133,6 +133,9 @@ class WhiteboardManager {
             { minute: 41, title: 'Did You Know?', icon: 'fa-info-circle', message: 'You can invite parents to view session recordings.', cta: 'Invite Parents' },
             { minute: 55, title: 'Session Ending Soon', icon: 'fa-clock', message: 'Your session is approaching 1 hour. Consider scheduling a follow-up!', cta: 'Schedule Next' }
         ];
+
+        // Event listener setup tracking (prevents duplicate setup)
+        this._eventListenersSetup = false;
     }
 
     /**
@@ -319,8 +322,14 @@ class WhiteboardManager {
 
         this.ws = new WebSocket(wsUrl);
 
-        this.ws.onopen = () => {
+        this.ws.onopen = async () => {
             console.log(`✅ WebSocket connected as ${role} profile ${profileId}`);
+
+            // Track attendance connection
+            await this.trackAttendanceConnection('connect');
+
+            // Start attendance heartbeat (every 15 seconds)
+            this.startAttendanceHeartbeat();
         };
 
         this.ws.onmessage = (event) => {
@@ -336,9 +345,15 @@ class WhiteboardManager {
             console.error('❌ WebSocket error:', error);
         };
 
-        this.ws.onclose = (event) => {
+        this.ws.onclose = async (event) => {
             console.log('🔌 WebSocket closed:', event.code, event.reason, 'wasClean:', event.wasClean);
             console.log('🔌 WebSocket close - isVideoSessionActive:', this.isVideoSessionActive);
+
+            // Track attendance disconnection
+            await this.trackAttendanceConnection('disconnect');
+
+            // Stop attendance heartbeat
+            this.stopAttendanceHeartbeat();
 
             // Attempt to reconnect - faster if in active video call
             const reconnectDelay = this.isVideoSessionActive ? 1000 : 5000;
@@ -855,7 +870,7 @@ class WhiteboardManager {
         });
 
         // Stroke width - requires draw or write permission
-        document.getElementById('strokeWidth').addEventListener('input', (e) => {
+        document.getElementById('strokeWidth')?.addEventListener('input', (e) => {
             if (!this.canUserChangeColor()) {
                 this.showNotification('You need draw or write permission to change stroke width', 'error');
                 return;
@@ -865,13 +880,13 @@ class WhiteboardManager {
         });
 
         // Page navigation - permission checked inside each method
-        document.getElementById('prevPageBtn').addEventListener('click', () => this.previousPage());
-        document.getElementById('nextPageBtn').addEventListener('click', () => this.nextPage());
-        document.getElementById('addPageBtn').addEventListener('click', () => this.addNewPage());
+        document.getElementById('prevPageBtn')?.addEventListener('click', () => this.previousPage());
+        document.getElementById('nextPageBtn')?.addEventListener('click', () => this.nextPage());
+        document.getElementById('addPageBtn')?.addEventListener('click', () => this.addNewPage());
 
         // Actions - permission checked inside each method
-        document.getElementById('undoBtn').addEventListener('click', () => this.undo());
-        document.getElementById('clearBtn').addEventListener('click', () => this.clearPage());
+        document.getElementById('undoBtn')?.addEventListener('click', () => this.undo());
+        document.getElementById('clearBtn')?.addEventListener('click', () => this.clearPage());
         document.getElementById('allowInteractionBtn')?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleInteractionDropdown();
@@ -897,10 +912,10 @@ class WhiteboardManager {
         // Request Interaction button (participant view)
         document.getElementById('requestInteractionBtn')?.addEventListener('click', () => this.requestDrawPermission());
 
-        document.getElementById('saveBtn').addEventListener('click', () => this.saveSession());
+        document.getElementById('saveBtn')?.addEventListener('click', () => this.saveSession());
 
         // Recording
-        document.getElementById('recordBtn').addEventListener('click', () => this.toggleRecording());
+        document.getElementById('recordBtn')?.addEventListener('click', () => this.toggleRecording());
 
         // Start Video Session
         document.getElementById('startVideoSessionBtn')?.addEventListener('click', () => this.startVideoSession());
@@ -916,8 +931,8 @@ class WhiteboardManager {
         document.getElementById('toggleCameraBtn')?.addEventListener('click', () => this.toggleVideo());
 
         // Chat
-        document.getElementById('whiteboardSendBtn').addEventListener('click', () => this.sendChatMessage());
-        document.getElementById('whiteboardChatInput').addEventListener('keypress', (e) => {
+        document.getElementById('whiteboardSendBtn')?.addEventListener('click', () => this.sendChatMessage());
+        document.getElementById('whiteboardChatInput')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.sendChatMessage();
             }
@@ -12490,6 +12505,117 @@ class WhiteboardManager {
             }
         });
     }
+
+    // ============================================
+    // ATTENDANCE TRACKING METHODS
+    // ============================================
+
+    /**
+     * Track attendance connection/disconnection via API
+     * @param {string} action - 'connect' or 'disconnect'
+     */
+    async trackAttendanceConnection(action) {
+        if (!this.currentSession || !this.currentSession.id) {
+            console.log('⏭️ Skipping attendance tracking - no active session');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                console.warn('⚠️ No auth token for attendance tracking');
+                return;
+            }
+
+            // Determine user type (tutor or student)
+            const userType = this.userRole || 'tutor'; // Default to tutor if not set
+
+            const endpoint = `${this.API_BASE}/../whiteboard/sessions/${this.currentSession.id}/${action}`;
+            console.log(`📊 Tracking attendance ${action} for ${userType}`);
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: this.currentSession.id,
+                    user_type: userType
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log(`✅ Attendance ${action} tracked:`, result);
+            } else {
+                console.warn(`⚠️ Failed to track attendance ${action}:`, response.status);
+            }
+        } catch (error) {
+            console.error(`❌ Error tracking attendance ${action}:`, error);
+        }
+    }
+
+    /**
+     * Start sending attendance heartbeat every 15 seconds
+     */
+    startAttendanceHeartbeat() {
+        // Clear existing interval if any
+        this.stopAttendanceHeartbeat();
+
+        if (!this.currentSession || !this.currentSession.id) {
+            return;
+        }
+
+        console.log('💓 Starting attendance heartbeat (every 15s)');
+
+        this.attendanceHeartbeatInterval = setInterval(async () => {
+            if (!this.currentSession || !this.currentSession.id) {
+                this.stopAttendanceHeartbeat();
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                if (!token) return;
+
+                const userType = this.userRole || 'tutor';
+                const endpoint = `${this.API_BASE}/../whiteboard/sessions/${this.currentSession.id}/heartbeat`;
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: this.currentSession.id,
+                        user_type: userType,
+                        activity_type: 'heartbeat'
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('💓 Attendance heartbeat sent');
+                } else {
+                    console.warn('⚠️ Attendance heartbeat failed:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Error sending attendance heartbeat:', error);
+            }
+        }, 15000); // Every 15 seconds
+    }
+
+    /**
+     * Stop attendance heartbeat
+     */
+    stopAttendanceHeartbeat() {
+        if (this.attendanceHeartbeatInterval) {
+            clearInterval(this.attendanceHeartbeatInterval);
+            this.attendanceHeartbeatInterval = null;
+            console.log('🛑 Attendance heartbeat stopped');
+        }
+    }
 }
 
 // Initialize whiteboard manager
@@ -12503,8 +12629,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also listen for modalsLoaded event
 // ModalLoader might finish loading after DOMContentLoaded
 document.addEventListener('modalsLoaded', () => {
-    // If modal now exists and event listeners weren't set up yet, do it now
+    // If modal now exists, force re-setup of event listeners
+    // This handles the case where modal HTML was replaced by modal-loader
     if (document.getElementById('whiteboardModal')) {
+        console.log('🎨 modalsLoaded event: Re-setting up whiteboard event listeners');
+        // Reset flag to force re-setup
+        whiteboardManager._eventListenersSetup = false;
         whiteboardManager.setupEventListeners();
     }
 });
@@ -12515,18 +12645,22 @@ function openWhiteboardModal(sessionId = null, studentId = null, context = 'teac
         whiteboardManager.openWhiteboard(sessionId, studentId, context);
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 
 // Open whiteboard from Teaching Tools (all students)
 function openWhiteboardFromTeachingTools() {
-    if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
-        whiteboardManager.openWhiteboardFromTeachingTools();
-    } else {
-        console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
-    }
+    // Always show coming soon modal
+    openComingSoonModal('Digital Whiteboard');
+
+    // Original implementation (disabled):
+    // if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
+    //     whiteboardManager.openWhiteboardFromTeachingTools();
+    // } else {
+    //     console.error('WhiteboardManager not initialized');
+    //     openComingSoonModal('Digital Whiteboard');
+    // }
 }
 
 // Open whiteboard for a specific student (from Student Details Modal)
@@ -12535,7 +12669,7 @@ function openWhiteboardForStudent(studentProfileId) {
         whiteboardManager.openWhiteboardForStudent(studentProfileId);
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 
@@ -12561,7 +12695,7 @@ function openWhiteboardForCurrentStudent() {
         whiteboardManager.openWhiteboardForStudent(studentProfileId);
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 
@@ -12571,7 +12705,7 @@ function openWhiteboardFromLearningTools() {
         whiteboardManager.openWhiteboardFromLearningTools();
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 
@@ -12581,7 +12715,7 @@ function openWhiteboardForTutor(tutorProfileId) {
         whiteboardManager.openWhiteboardForTutor(tutorProfileId);
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 
@@ -12607,7 +12741,7 @@ function openWhiteboardForCurrentTutor() {
         whiteboardManager.openWhiteboardForTutor(tutorProfileId);
     } else {
         console.error('WhiteboardManager not initialized');
-        alert('Whiteboard is not available. Please refresh the page.');
+        openComingSoonModal('Digital Whiteboard');
     }
 }
 

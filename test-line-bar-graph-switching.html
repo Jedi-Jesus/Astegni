@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Line/Bar Graph Switching</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .success {
+            color: #16a34a;
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #16a34a;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Line/Bar Graph Switching Test</h1>
+    <p>This test verifies that clicking Line Graph and Bar Graph cards properly switches the chart type.</p>
+
+    <div class="test-section">
+        <h2>✅ Expected Behavior</h2>
+        <ol>
+            <li><strong>Line Graph card clicked:</strong>
+                <ul>
+                    <li>Card gets 'active' class</li>
+                    <li>toggleMarketView('line-graph') is called</li>
+                    <li>updateMarketGraph() is called</li>
+                    <li>Chart.js type is set to 'line'</li>
+                    <li>Points are visible (pointRadius: 6)</li>
+                    <li>Line has smooth curve (tension: 0.3)</li>
+                </ul>
+            </li>
+            <li><strong>Bar Graph card clicked:</strong>
+                <ul>
+                    <li>Card gets 'active' class</li>
+                    <li>toggleMarketView('bar-graph') is called</li>
+                    <li>updateMarketGraph() is called</li>
+                    <li>Chart.js type is set to 'bar'</li>
+                    <li>Points are hidden (pointRadius: 0)</li>
+                    <li>No line tension (tension: 0)</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Manual Test Steps</h2>
+        <ol>
+            <li>Open Package Management Modal on tutor profile</li>
+            <li>Click "Market Trend" to open the market trend panel</li>
+            <li>Observe the default view (should be Line Graph - active)</li>
+            <li>Click "Bar Graph" card</li>
+            <li>Verify:
+                <ul>
+                    <li>✅ Bar Graph card becomes active (highlighted)</li>
+                    <li>✅ Chart changes to bar chart</li>
+                    <li>✅ Bars are visible instead of line</li>
+                </ul>
+            </li>
+            <li>Click "Line Graph" card</li>
+            <li>Verify:
+                <ul>
+                    <li>✅ Line Graph card becomes active</li>
+                    <li>✅ Chart changes back to line chart</li>
+                    <li>✅ Line with points is visible</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Code Flow Analysis</h2>
+
+        <h3>1. User clicks "Line Graph" card</h3>
+        <div class="code">
+&lt;div class="market-view-card active" data-type="line" onclick="changeGraphType('line')"&gt;
+    &lt;i class="fas fa-chart-line"&gt;&lt;/i&gt;
+    &lt;h4&gt;Line Graph&lt;/h4&gt;
+&lt;/div&gt;
+        </div>
+
+        <h3>2. changeGraphType('line') executes</h3>
+        <div class="code">
+window.changeGraphType = function(type) {  // type = 'line'
+    // Update card states
+    const cards = document.querySelectorAll('.market-view-card');
+    cards.forEach(card => {
+        if (card.getAttribute('data-type') === type) {
+            card.classList.add('active');  // Line card gets 'active'
+        } else {
+            card.classList.remove('active');  // Others lose 'active'
+        }
+    });
+
+    // Switch view
+    if (type === 'line') {
+        toggleMarketView('line-graph');  // ← Called here
+    }
+}
+        </div>
+
+        <h3>3. toggleMarketView('line-graph') executes</h3>
+        <div class="code">
+window.toggleMarketView = function(view) {  // view = 'line-graph'
+    // Hide all containers
+    graphContainer.classList.add('hidden');
+    tableContainer.classList.add('hidden');
+    priceContainer.classList.add('hidden');
+
+    // Show graph container
+    if (view === 'line-graph' || view === 'bar-graph') {
+        graphContainer.classList.remove('hidden');
+        updateMarketGraph();  // ← Called here
+    }
+}
+        </div>
+
+        <h3>4. updateMarketGraph() executes</h3>
+        <div class="code">
+window.updateMarketGraph = async function() {
+    // Get graph type from active card
+    const activeCard = document.querySelector('.market-view-card.active');
+
+    if (activeCard) {
+        const cardType = activeCard.getAttribute('data-type');
+        if (cardType === 'line' || cardType === 'bar') {
+            currentGraphType = cardType;  // currentGraphType = 'line'
+        }
+    }
+
+    const graphType = currentGraphType;  // graphType = 'line'
+
+    // ... fetch data ...
+
+    // Create chart
+    marketChartInstance = new Chart(ctx.getContext('2d'), {
+        type: graphType,  // ← 'line' for line graph, 'bar' for bar graph
+        data: {
+            datasets: [{
+                tension: graphType === 'line' ? 0.3 : 0,         // 0.3 for line, 0 for bar
+                pointRadius: graphType === 'line' ? 6 : 0,       // 6 for line, 0 for bar
+                pointHoverRadius: graphType === 'line' ? 8 : 0   // 8 for line, 0 for bar
+            }]
+        }
+    });
+}
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Visual Differences</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #e5e7eb;">
+                <tr>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #d1d5db;">Property</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #d1d5db;">Line Graph</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #d1d5db;">Bar Graph</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><code>type</code></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>'line'</strong></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>'bar'</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><code>tension</code></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">0.3 (smooth curve)</td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">0 (no curve)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><code>pointRadius</code></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">6 (visible points)</td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">0 (no points)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><code>pointHoverRadius</code></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">8 (larger on hover)</td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">0 (no hover effect)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Visual</strong></td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">📈 Smooth line with dots</td>
+                    <td style="padding: 10px; border: 1px solid #d1d5db;">📊 Vertical bars</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>🐛 Potential Issues to Check</h2>
+        <div id="issues"></div>
+        <button onclick="runDiagnostics()">Run Diagnostics in Browser Console</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function runDiagnostics() {
+            console.clear();
+            console.log('🔍 Running Line/Bar Graph Diagnostics...\n');
+
+            // Check 1: Are the view cards present?
+            const lineCard = document.querySelector('.market-view-card[data-type="line"]');
+            const barCard = document.querySelector('.market-view-card[data-type="bar"]');
+
+            console.log('✅ Check 1: View Cards Present');
+            console.log('  Line card:', lineCard ? '✅ Found' : '❌ Not found');
+            console.log('  Bar card:', barCard ? '✅ Found' : '❌ Not found');
+
+            // Check 2: Does changeGraphType function exist?
+            console.log('\n✅ Check 2: changeGraphType Function');
+            console.log('  Exists:', typeof window.changeGraphType === 'function' ? '✅ Yes' : '❌ No');
+
+            // Check 3: Does toggleMarketView function exist?
+            console.log('\n✅ Check 3: toggleMarketView Function');
+            console.log('  Exists:', typeof window.toggleMarketView === 'function' ? '✅ Yes' : '❌ No');
+
+            // Check 4: Does updateMarketGraph function exist?
+            console.log('\n✅ Check 4: updateMarketGraph Function');
+            console.log('  Exists:', typeof window.updateMarketGraph === 'function' ? '✅ Yes' : '❌ No');
+
+            // Check 5: Is Chart.js loaded?
+            console.log('\n✅ Check 5: Chart.js Library');
+            console.log('  Loaded:', typeof Chart !== 'undefined' ? '✅ Yes' : '❌ No');
+
+            // Check 6: Does market chart canvas exist?
+            const canvas = document.getElementById('marketChart');
+            console.log('\n✅ Check 6: Chart Canvas');
+            console.log('  Canvas element:', canvas ? '✅ Found' : '❌ Not found');
+
+            console.log('\n📋 To manually test:');
+            console.log('1. Open Package Management Modal');
+            console.log('2. Click "Market Trend"');
+            console.log('3. Click "Bar Graph" card');
+            console.log('4. Run: console.log(window.currentGraphType)');
+            console.log('   Expected: "bar"');
+            console.log('5. Click "Line Graph" card');
+            console.log('6. Run: console.log(window.currentGraphType)');
+            console.log('   Expected: "line"');
+
+            alert('✅ Diagnostics complete! Check browser console for results.');
+        }
+    </script>
+</body>
+</html>

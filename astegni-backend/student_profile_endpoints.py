@@ -34,6 +34,7 @@ class StudentProfileUpdate(BaseModel):
     hero_subtitle: Optional[List[str]] = Field(default_factory=list)
     username: Optional[str] = None
     location: Optional[str] = None
+    display_location: Optional[bool] = None
     studying_at: Optional[str] = None
     grade_level: Optional[str] = None
     interested_in: Optional[List[str]] = Field(default_factory=list)
@@ -104,26 +105,31 @@ def get_db_psycopg():
 
 @router.get("/api/student/profile/{user_id}", response_model=StudentProfileResponse)
 async def get_student_profile(user_id: int):
-    """Get student profile by user ID"""
+    """Get student profile by user ID - hobbies now fetched from users table"""
     try:
         with get_db_psycopg() as conn:
             with conn.cursor() as cur:
+                # Join with users table to get hobbies, languages, location, profile_picture
                 cur.execute("""
                     SELECT
-                        id, user_id,
-                        COALESCE(hero_title, '{}') as hero_title,
-                        COALESCE(hero_subtitle, '{}') as hero_subtitle,
-                        username, location,
-                        studying_at, grade_level,
-                        COALESCE(interested_in, '{}') as interested_in,
-                        COALESCE(learning_method, '{}') as learning_method,
-                        COALESCE(languages, '{}') as languages,
-                        COALESCE(hobbies, '{}') as hobbies,
-                        COALESCE(quote, '{}') as quote,
-                        about, profile_picture, cover_image,
-                        created_at, updated_at
-                    FROM student_profiles
-                    WHERE user_id = %s
+                        sp.id, sp.user_id,
+                        COALESCE(sp.hero_title, '{}') as hero_title,
+                        COALESCE(sp.hero_subtitle, '{}') as hero_subtitle,
+                        sp.username,
+                        COALESCE(u.location, '') as location,
+                        sp.studying_at, sp.grade_level,
+                        COALESCE(sp.interested_in, '{}') as interested_in,
+                        COALESCE(sp.learning_method, '{}') as learning_method,
+                        COALESCE(u.languages, '[]') as languages,
+                        COALESCE(u.hobbies, '[]') as hobbies,
+                        COALESCE(sp.quote, '{}') as quote,
+                        sp.about,
+                        COALESCE(u.profile_picture, '') as profile_picture,
+                        sp.cover_image,
+                        sp.created_at, sp.updated_at
+                    FROM student_profiles sp
+                    JOIN users u ON sp.user_id = u.id
+                    WHERE sp.user_id = %s
                 """, (user_id,))
 
                 profile = cur.fetchone()
@@ -205,6 +211,23 @@ async def update_student_profile(
                     print(f"career_aspirations_val: {career_aspirations_val}")
                     print("="*80 + "\n")
 
+                    # Update users table (location, display_location, languages, hobbies)
+                    cur.execute("""
+                        UPDATE users
+                        SET
+                            location = COALESCE(%s, location),
+                            display_location = COALESCE(%s, display_location),
+                            languages = %s,
+                            hobbies = %s
+                        WHERE id = %s
+                    """, (
+                        location_val,
+                        profile_data.display_location,
+                        profile_data.languages or [],
+                        profile_data.hobbies or [],
+                        current_user_id
+                    ))
+
                     # Note: profile_picture and cover_image are NOT updated here
                     # They are handled by separate upload endpoints
                     cur.execute("""
@@ -213,13 +236,10 @@ async def update_student_profile(
                             hero_title = %s,
                             hero_subtitle = %s,
                             username = COALESCE(%s, username),
-                            location = COALESCE(%s, location),
                             studying_at = COALESCE(%s, studying_at),
                             grade_level = COALESCE(%s, grade_level),
                             interested_in = %s,
                             learning_method = %s,
-                            languages = %s,
-                            hobbies = %s,
                             quote = %s,
                             about = COALESCE(%s, about),
                             career_aspirations = COALESCE(%s, career_aspirations),
@@ -230,13 +250,10 @@ async def update_student_profile(
                         profile_data.hero_title or [],
                         profile_data.hero_subtitle or [],
                         username_val,
-                        location_val,
                         studying_at_val,
                         grade_level_val,
                         profile_data.interested_in or [],
                         profile_data.learning_method or [],
-                        profile_data.languages or [],
-                        profile_data.hobbies or [],
                         profile_data.quote or [],
                         about_val,
                         career_aspirations_val,
@@ -244,15 +261,30 @@ async def update_student_profile(
                     ))
                 else:
                     # Create new profile
+                    # Update users table (location, languages, hobbies)
+                    cur.execute("""
+                        UPDATE users
+                        SET
+                            location = COALESCE(%s, location),
+                            languages = %s,
+                            hobbies = %s
+                        WHERE id = %s
+                    """, (
+                        profile_data.location,
+                        profile_data.languages or [],
+                        profile_data.hobbies or [],
+                        current_user_id
+                    ))
+
                     # Note: profile_picture and cover_image are handled by separate upload endpoints
                     cur.execute("""
                         INSERT INTO student_profiles (
-                            user_id, hero_title, hero_subtitle, username, location,
+                            user_id, hero_title, hero_subtitle, username,
                             studying_at, grade_level, interested_in,
-                            learning_method, languages, hobbies, quote, about,
+                            learning_method, quote, about,
                             career_aspirations
                         ) VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                         )
                         RETURNING *
                     """, (
@@ -260,13 +292,10 @@ async def update_student_profile(
                         profile_data.hero_title or [],
                         profile_data.hero_subtitle or [],
                         profile_data.username,
-                        profile_data.location,
                         profile_data.studying_at,
                         profile_data.grade_level,
                         profile_data.interested_in or [],
                         profile_data.learning_method or [],
-                        profile_data.languages or [],
-                        profile_data.hobbies or [],
                         profile_data.quote or [],
                         profile_data.about,
                         profile_data.career_aspirations

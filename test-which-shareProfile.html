@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which shareProfile() Function Is Being Called?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 { color: #333; margin-top: 0; }
+        h2 { color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .result {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .good { background: #d4edda; border-left: 4px solid #28a745; }
+        .bad { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .info { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #764ba2; }
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .highlight { color: #ff6b6b; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Which shareProfile() Function Is Running?</h1>
+
+        <p>This test will tell you if the OLD function (from global-functions.js) or the NEW function (from share-profile-manager.js) is being called.</p>
+
+        <h2>Step 1: Check Function Source</h2>
+        <button onclick="checkFunctionSource()">Check Function Source</button>
+        <div id="sourceResult"></div>
+
+        <h2>Step 2: Check Script Versions</h2>
+        <button onclick="checkScriptVersions()">Check Script Versions</button>
+        <div id="versionResult"></div>
+
+        <h2>Step 3: Test Function Behavior</h2>
+        <button onclick="testFunctionBehavior()">Test Function Behavior</button>
+        <div id="behaviorResult"></div>
+
+        <h2>Step 4: Visual Comparison</h2>
+        <div class="result info">
+            <h3>OLD Function (WRONG) looks like:</h3>
+            <div class="code">
+function shareProfile() {<br>
+&nbsp;&nbsp;const profileUrl = window.location.href;<br>
+&nbsp;&nbsp;if (navigator.share) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;navigator.share({ title: ..., url: profileUrl })<br>
+&nbsp;&nbsp;} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fallbackShare(profileUrl);<br>
+&nbsp;&nbsp;}<br>
+}
+            </div>
+            <p>⚠️ This is a simple function that just shares the URL</p>
+
+            <h3>NEW Function (CORRECT) looks like:</h3>
+            <div class="code">
+async function shareProfile() {<br>
+&nbsp;&nbsp;try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const userStr = localStorage.getItem('currentUser')...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;await ensureShareModalLoaded();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const modal = document.getElementById('shareProfileModal');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;modal.style.display = 'block';<br>
+&nbsp;&nbsp;}<br>
+}
+            </div>
+            <p>✅ This function opens a modal with referral system</p>
+        </div>
+    </div>
+
+    <script>
+        function checkFunctionSource() {
+            const result = document.getElementById('sourceResult');
+            result.innerHTML = '<p>Checking...</p>';
+
+            if (typeof shareProfile === 'undefined') {
+                result.innerHTML = `
+                    <div class="result bad">
+                        <strong>❌ PROBLEM:</strong> shareProfile() function does not exist!<br>
+                        <strong>Solution:</strong> Make sure share-profile-manager.js is loaded.
+                    </div>
+                `;
+                return;
+            }
+
+            const functionCode = shareProfile.toString();
+
+            // Check for telltale signs
+            const isOldFunction = functionCode.includes('fallbackShare') ||
+                                 (functionCode.includes('navigator.share') &&
+                                  functionCode.includes('window.location.href') &&
+                                  !functionCode.includes('ensureShareModalLoaded'));
+
+            const isNewFunction = functionCode.includes('ensureShareModalLoaded') ||
+                                 functionCode.includes('shareProfileModal') ||
+                                 functionCode.includes('currentReferralData');
+
+            if (isNewFunction) {
+                result.innerHTML = `
+                    <div class="result good">
+                        <strong>✅ CORRECT:</strong> The NEW shareProfile() function is active!<br>
+                        <strong>Source:</strong> js/common-modals/share-profile-manager.js<br>
+                        <strong>Behavior:</strong> Opens share-profile-modal with referral system<br><br>
+                        <details>
+                            <summary>View function code (first 300 chars)</summary>
+                            <div class="code">${functionCode.substring(0, 300)}...</div>
+                        </details>
+                    </div>
+                `;
+            } else if (isOldFunction) {
+                result.innerHTML = `
+                    <div class="result bad">
+                        <strong>❌ PROBLEM:</strong> The OLD shareProfile() function is still active!<br>
+                        <strong>Source:</strong> js/*-profile/global-functions.js<br>
+                        <strong>Behavior:</strong> Simple URL share (not the referral modal)<br><br>
+                        <span class="highlight">YOU NEED TO CLEAR YOUR BROWSER CACHE!</span><br><br>
+                        <strong>How to fix:</strong><br>
+                        1. Press Ctrl+Shift+Delete (or Cmd+Shift+Delete on Mac)<br>
+                        2. Select "Cached images and files"<br>
+                        3. Select "All time"<br>
+                        4. Click "Clear data"<br>
+                        5. Reload this page<br><br>
+                        <details>
+                            <summary>View function code</summary>
+                            <div class="code">${functionCode}</div>
+                        </details>
+                    </div>
+                `;
+            } else {
+                result.innerHTML = `
+                    <div class="result info">
+                        <strong>ℹ️ UNKNOWN:</strong> Can't determine which function this is.<br>
+                        <details>
+                            <summary>View function code</summary>
+                            <div class="code">${functionCode}</div>
+                        </details>
+                    </div>
+                `;
+            }
+        }
+
+        function checkScriptVersions() {
+            const result = document.getElementById('versionResult');
+            result.innerHTML = '<p>Checking scripts...</p>';
+
+            const scripts = Array.from(document.querySelectorAll('script[src]'));
+
+            // Check global-functions.js
+            const globalFunctions = scripts.find(s => s.src.includes('global-functions.js'));
+            const shareManager = scripts.find(s => s.src.includes('share-profile-manager.js'));
+
+            let html = '<div class="result info">';
+
+            if (globalFunctions) {
+                const version = globalFunctions.src.match(/v=([^&]+)/);
+                const versionStr = version ? version[1] : 'NO VERSION';
+                const isOld = ['20251230', '20260129-role-fix'].includes(versionStr);
+
+                html += `<strong>${isOld ? '❌' : '✅'} global-functions.js:</strong> ${globalFunctions.src}<br>`;
+                html += `<strong>Version:</strong> <span class="${isOld ? 'highlight' : ''}">${versionStr}</span><br>`;
+
+                if (isOld) {
+                    html += `<span class="highlight">⚠️ OLD VERSION DETECTED! Clear cache!</span><br>`;
+                } else if (versionStr === 'NO VERSION') {
+                    html += `<span class="highlight">⚠️ No version parameter! May be cached!</span><br>`;
+                } else {
+                    html += `✅ Version looks correct<br>`;
+                }
+                html += '<br>';
+            }
+
+            if (shareManager) {
+                const version = shareManager.src.match(/v=([^&]+)/);
+                html += `<strong>✅ share-profile-manager.js:</strong> ${shareManager.src}<br>`;
+                html += `<strong>Version:</strong> ${version ? version[1] : 'NO VERSION'}<br>`;
+            } else {
+                html += `<strong>❌ share-profile-manager.js:</strong> NOT LOADED!<br>`;
+            }
+
+            html += '</div>';
+            result.innerHTML = html;
+        }
+
+        function testFunctionBehavior() {
+            const result = document.getElementById('behaviorResult');
+            result.innerHTML = '<p>Testing...</p>';
+
+            if (typeof shareProfile === 'undefined') {
+                result.innerHTML = `
+                    <div class="result bad">
+                        <strong>❌ FAIL:</strong> shareProfile() function does not exist
+                    </div>
+                `;
+                return;
+            }
+
+            // Check if it's async (new function is async)
+            const isAsync = shareProfile.constructor.name === 'AsyncFunction';
+
+            // Check for modal element
+            const modal = document.getElementById('shareProfileModal');
+
+            let html = '<div class="result ' + (isAsync ? 'good' : 'bad') + '">';
+            html += `<strong>Function Type:</strong> ${isAsync ? 'async (NEW ✅)' : 'sync (OLD ❌)'}<br>`;
+            html += `<strong>Modal in DOM:</strong> ${modal ? 'Yes ✅' : 'No ❌'}<br>`;
+
+            if (isAsync && modal) {
+                html += '<br><strong>✅ EVERYTHING LOOKS GOOD!</strong><br>';
+                html += 'The correct function should be called when you click Share Profile.';
+            } else if (!isAsync) {
+                html += '<br><span class="highlight">❌ OLD FUNCTION ACTIVE!</span><br>';
+                html += 'Clear your browser cache completely!';
+            } else if (!modal) {
+                html += '<br><span class="highlight">⚠️ Modal not loaded yet</span><br>';
+                html += 'Modal should be preloaded by modal-loader.js';
+            }
+
+            html += '</div>';
+            result.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

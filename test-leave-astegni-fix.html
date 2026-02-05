@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Leave Astegni Modal Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Test: Leave Astegni Modal Fix</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-xl font-semibold mb-4">Diagnostic Information</h2>
+            <div class="space-y-2 text-sm">
+                <div id="modal-container-status" class="p-3 bg-gray-100 rounded"></div>
+                <div id="modal-html-status" class="p-3 bg-gray-100 rounded"></div>
+                <div id="function-status" class="p-3 bg-gray-100 rounded"></div>
+                <div id="console-output" class="p-3 bg-gray-100 rounded font-mono text-xs"></div>
+            </div>
+        </div>
+
+        <!-- Test Card (Same as in user-profile.html) -->
+        <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
+            onclick="openLeaveAstegniModal()">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                    <span class="text-3xl">🚪</span>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
+                <p class="text-sm text-gray-600">Click to test modal (should open immediately)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container (THE FIX) -->
+    <div id="modal-container"></div>
+
+    <!-- Load JavaScript -->
+    <script src="js/common-modals/leave-astegni-modal.js?v=20260127"></script>
+
+    <!-- Load Modal HTML -->
+    <script>
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        // Override console to show in UI
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.innerHTML += `[LOG] ${args.join(' ')}<br>`;
+        };
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleOutput.innerHTML += `<span class="text-red-600">[ERROR] ${args.join(' ')}</span><br>`;
+        };
+
+        // Check if modal container exists
+        const containerExists = !!document.getElementById('modal-container');
+        document.getElementById('modal-container-status').innerHTML =
+            `<strong>Modal Container:</strong> ${containerExists ? '✅ Found' : '❌ NOT FOUND'}`;
+
+        // Check if function exists
+        const functionExists = typeof openLeaveAstegniModal === 'function';
+        document.getElementById('function-status').innerHTML =
+            `<strong>openLeaveAstegniModal():</strong> ${functionExists ? '✅ Defined' : '❌ NOT DEFINED'}`;
+
+        // Load leave-astegni-modal
+        fetch('modals/common-modals/leave-astegni-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('modal-container');
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[OK] Leave Astegni Modal loaded');
+
+                // Check if modal HTML is in DOM
+                const modalExists = !!document.getElementById('leave-astegni-modal');
+                document.getElementById('modal-html-status').innerHTML =
+                    `<strong>Modal HTML in DOM:</strong> ${modalExists ? '✅ Loaded' : '❌ NOT LOADED'}`;
+
+                // Test function call
+                setTimeout(() => {
+                    console.log('Testing modal can be found...');
+                    const testModal = document.getElementById('leave-astegni-modal');
+                    if (testModal) {
+                        console.log('✅ SUCCESS: Modal element found! Click "Leave Astegni" card to test.');
+                    } else {
+                        console.error('❌ FAILED: Modal element not found even after loading!');
+                    }
+                }, 100);
+            })
+            .catch(error => {
+                console.error('Failed to load leave-astegni-modal:', error);
+                document.getElementById('modal-html-status').innerHTML =
+                    `<strong>Modal HTML in DOM:</strong> <span class="text-red-600">❌ LOAD FAILED</span>`;
+            });
+    </script>
+</body>
+</html>

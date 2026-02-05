@@ -124,8 +124,8 @@ async def get_student_reviews_for_view(
                     ELSE 'Unknown'
                 END as reviewer_name,
                 CASE
-                    WHEN sr.reviewer_role = 'tutor' THEN tp.profile_picture
-                    WHEN sr.reviewer_role = 'parent' THEN pp.profile_picture
+                    WHEN sr.reviewer_role = 'tutor' THEN tu.profile_picture  -- NOTE: profile_picture now read from users table
+                    WHEN sr.reviewer_role = 'parent' THEN pu.profile_picture  -- NOTE: profile_picture now read from users table
                     ELSE NULL
                 END as reviewer_profile_picture
             FROM student_reviews sr
@@ -221,8 +221,8 @@ async def get_student_reviews(
                     ELSE 'Unknown'
                 END as reviewer_name,
                 CASE
-                    WHEN sr.reviewer_role = 'tutor' THEN tp.profile_picture
-                    WHEN sr.reviewer_role = 'parent' THEN pp.profile_picture
+                    WHEN sr.reviewer_role = 'tutor' THEN tu.profile_picture  -- NOTE: profile_picture now read from users table
+                    WHEN sr.reviewer_role = 'parent' THEN pu.profile_picture  -- NOTE: profile_picture now read from users table
                     ELSE NULL
                 END as reviewer_profile_picture
             FROM student_reviews sr

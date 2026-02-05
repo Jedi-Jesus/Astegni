@@ -175,9 +175,9 @@ def get_suspended_tutors_corrected(
             "id": tutor_profile.id,
             "user_id": tutor_profile.user_id,
             "name": f"{user.first_name} {user.father_name}" if user else "Unknown",
-            "profile_picture": tutor_profile.profile_picture,
+            "profile_picture": user.profile_picture if user else None,  # From users table (centralized)
             "teaches_at": None,  # Column removed
-            "location": tutor_profile.location,
+            "location": user.location if user else None,
             "courses": [],  # Column removed
             "suspension_reason": user.suspension_reason if user else tutor_profile.rejection_reason,  # From users table
             "suspended_at": user.suspended_at.isoformat() if user and user.suspended_at else tutor_profile.updated_at.isoformat() if tutor_profile.updated_at else None,  # From users table

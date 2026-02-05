@@ -1,0 +1,150 @@
+<!--
+  Modal: view-schedule-modal
+  Purpose: Display detailed schedule information with edit and delete options
+-->
+
+<div id="viewScheduleModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeViewScheduleModal()"></div>
+    <div class="modal-content view-schedule-content">
+        <div class="modal-header">
+            <h2 id="view-schedule-title">
+                <i class="fas fa-calendar-alt"></i> Schedule Details
+            </h2>
+            <button class="modal-close" onclick="closeViewScheduleModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Schedule Title and Priority -->
+            <div class="schedule-header-section">
+                <div>
+                    <h3 id="view-schedule-name" class="schedule-view-title">Schedule Title</h3>
+                    <p id="view-schedule-description" class="schedule-view-description">Description here</p>
+                </div>
+                <span id="view-schedule-priority-badge" class="priority-badge priority-medium">
+                    MEDIUM
+                </span>
+            </div>
+
+            <!-- Schedule Type -->
+            <div class="schedule-info-section">
+                <div class="info-label">
+                    <i class="fas fa-sync-alt"></i>
+                    Schedule Type
+                </div>
+                <div id="view-schedule-type" class="info-value">Recurring</div>
+            </div>
+
+            <!-- Time Information -->
+            <div class="schedule-info-row">
+                <div class="schedule-info-section">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        Start Time
+                    </div>
+                    <div id="view-schedule-start-time" class="info-value">09:00</div>
+                </div>
+                <div class="schedule-info-section">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        End Time
+                    </div>
+                    <div id="view-schedule-end-time" class="info-value">11:00</div>
+                </div>
+            </div>
+
+            <!-- Year -->
+            <div class="schedule-info-section">
+                <div class="info-label">
+                    <i class="fas fa-calendar"></i>
+                    Year
+                </div>
+                <div id="view-schedule-year" class="info-value">2026</div>
+            </div>
+
+            <!-- Recurring: Months and Days -->
+            <div id="view-recurring-section" class="recurring-section hidden">
+                <div class="schedule-info-section">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-check"></i>
+                        Months
+                    </div>
+                    <div id="view-schedule-months" class="tags-container"></div>
+                </div>
+
+                <div class="schedule-info-section">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-week"></i>
+                        Days
+                    </div>
+                    <div id="view-schedule-days" class="tags-container"></div>
+                </div>
+            </div>
+
+            <!-- Specific Dates -->
+            <div id="view-specific-dates-section" class="schedule-info-section hidden">
+                <div class="info-label">
+                    <i class="fas fa-calendar-day"></i>
+                    Specific Dates
+                </div>
+                <div id="view-schedule-specific-dates" class="tags-container"></div>
+            </div>
+
+            <!-- Notes -->
+            <div id="view-notes-section" class="schedule-info-section hidden">
+                <div class="info-label">
+                    <i class="fas fa-sticky-note"></i>
+                    Notes
+                </div>
+                <div id="view-schedule-notes" class="info-value notes-text"></div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="schedule-info-section">
+                <div class="info-label">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </div>
+                <div class="notification-badges">
+                    <span id="view-alarm-badge" class="notification-badge hidden">
+                        <i class="fas fa-alarm-clock"></i>
+                        <span id="view-alarm-minutes">15</span> min before
+                    </span>
+                    <span id="view-browser-notification-badge" class="notification-badge hidden">
+                        <i class="fas fa-desktop"></i> Browser
+                    </span>
+                    <span id="view-sound-notification-badge" class="notification-badge hidden">
+                        <i class="fas fa-volume-up"></i> Sound
+                    </span>
+                    <span id="view-featured-badge" class="notification-badge hidden">
+                        <i class="fas fa-star"></i> Featured
+                    </span>
+                    <span id="view-no-notifications" class="text-gray-500">No notifications enabled</span>
+                </div>
+            </div>
+
+            <!-- Metadata -->
+            <div class="schedule-metadata">
+                <div class="metadata-item">
+                    <i class="fas fa-user"></i>
+                    <span>Created by: <strong id="view-schedule-role">Student</strong></span>
+                </div>
+                <div class="metadata-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Status: <strong id="view-schedule-status">Active</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeViewScheduleModal()">
+                <i class="fas fa-times"></i> Close
+            </button>
+            <button type="button" id="view-schedule-edit-btn" class="btn btn-warning hidden" onclick="openEditScheduleFromView()">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+            <button type="button" id="view-schedule-delete-btn" class="btn btn-danger hidden" onclick="openDeleteScheduleConfirmation()">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>

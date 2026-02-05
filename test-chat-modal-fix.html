@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chat Modal Fix</title>
+    <script src="js/config.js"></script>
+    <!-- Safe wrapper -->
+    <script>
+        function openChatModal(targetUser = null) {
+            if (typeof window.openChatModal === 'function' && window.openChatModal !== arguments.callee) {
+                return window.openChatModal(targetUser);
+            } else if (typeof ChatModalManager !== 'undefined') {
+                return ChatModalManager.open(targetUser);
+            } else {
+                console.log('Chat modal not loaded yet, queuing call...');
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(function() {
+                        if (typeof window.openChatModal === 'function') {
+                            window.openChatModal(targetUser);
+                        } else if (typeof ChatModalManager !== 'undefined') {
+                            ChatModalManager.open(targetUser);
+                        } else {
+                            console.error('Chat modal still not available');
+                            alert('Chat modal could not be loaded. Please refresh the page.');
+                        }
+                    }, 1000);
+                });
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4F46E5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #4338CA;
+        }
+        .status {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Chat Modal Fix Test</h1>
+
+    <div class="status">
+        <h3>Test Status:</h3>
+        <p id="status">Waiting for test...</p>
+    </div>
+
+    <h2>Test Scenarios:</h2>
+
+    <div>
+        <h3>1. Click BEFORE ChatModalManager loads</h3>
+        <p>This button can be clicked immediately. It should queue the call if ChatModalManager isn't ready yet.</p>
+        <button onclick="openChatModal()">
+            💬 Open Chat Modal (Early Click Test)
+        </button>
+    </div>
+
+    <div>
+        <h3>2. Click AFTER ChatModalManager loads</h3>
+        <p>Wait 2 seconds for scripts to load, then click this button.</p>
+        <button onclick="openChatModal()">
+            💬 Open Chat Modal (Normal Click Test)
+        </button>
+    </div>
+
+    <div>
+        <h3>3. Open chat with specific user</h3>
+        <button onclick="openChatModal({user_id: 2, name: 'Test User', avatar: null})">
+            💬 Open Chat with Test User
+        </button>
+    </div>
+
+    <h2>Console Log:</h2>
+    <div id="console" style="background: #000; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: auto;">
+        <div>Initializing test...</div>
+    </div>
+
+    <script>
+        // Capture console logs
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleDiv.innerHTML += '<div>' + args.join(' ') + '</div>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleDiv.innerHTML += '<div style="color: red;">ERROR: ' + args.join(' ') + '</div>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        // Update status
+        function updateStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = message;
+            statusEl.className = isError ? 'error' : 'success';
+        }
+
+        console.log('✅ Test page loaded');
+        console.log('⏳ Waiting for ChatModalManager to load...');
+        updateStatus('⏳ Waiting for ChatModalManager to load...');
+
+        // Check if ChatModalManager loads
+        let checkInterval = setInterval(() => {
+            if (typeof ChatModalManager !== 'undefined') {
+                console.log('✅ ChatModalManager loaded successfully!');
+                updateStatus('✅ ChatModalManager loaded! You can now click any button safely.');
+                clearInterval(checkInterval);
+            }
+        }, 100);
+
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            if (typeof ChatModalManager === 'undefined') {
+                console.error('❌ ChatModalManager did not load after 5 seconds');
+                updateStatus('❌ ChatModalManager did not load. Check if chat-modal.js is included below.', true);
+                clearInterval(checkInterval);
+            }
+        }, 5000);
+    </script>
+
+    <!-- Load chat modal HTML -->
+    <script>
+        fetch('modals/common-modals/chat-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.body.insertAdjacentHTML('beforeend', html);
+                console.log('✅ Chat modal HTML loaded');
+            })
+            .catch(err => {
+                console.error('❌ Failed to load chat-modal.html:', err);
+            });
+    </script>
+
+    <!-- Load chat modal JS -->
+    <link rel="stylesheet" href="css/common-modals/chat-modal.css">
+    <script src="js/common-modals/chat-modal.js"></script>
+
+    <script>
+        // Initialize chat modal after scripts load
+        setTimeout(() => {
+            if (typeof ChatModalManager !== 'undefined') {
+                console.log('🔧 Initializing ChatModalManager...');
+                ChatModalManager.init();
+                console.log('✅ ChatModalManager initialized!');
+            }
+        }, 500);
+    </script>
+</body>
+</html>

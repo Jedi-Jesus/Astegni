@@ -14,6 +14,14 @@ const FindTutorsController = {
         // Initialize UI
         FindTutorsUI.init();
 
+        // Initialize currency manager (if available)
+        if (window.CurrencyManager && !window.CurrencyManager.initialized) {
+            await window.CurrencyManager.initialize();
+        }
+
+        // Update price filter label with user's currency
+        this.updatePriceFilterLabel();
+
         // Load user's connections first (if logged in)
         await this.loadUserConnections();
 
@@ -24,6 +32,22 @@ const FindTutorsController = {
         this.initWebSocket();
 
         console.log('✅ Find Tutors page initialized');
+    },
+
+    updatePriceFilterLabel() {
+        // Update the "Price Range (ETB/hr)" label to show user's currency
+        const priceFilterLabel = document.querySelector('.filter-section h3');
+        if (priceFilterLabel && priceFilterLabel.textContent.includes('Price Range')) {
+            const currency = window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB';
+            priceFilterLabel.innerHTML = `
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+                Price Range (${currency}/hr)
+            `;
+        }
     },
 
     async loadUserConnections() {
@@ -87,21 +111,28 @@ const FindTutorsController = {
         try {
             FindTutorsUI.showLoading();
 
+            console.log('[Controller] === LOAD TUTORS START ===');
+            console.log('[Controller] Current state filters:', FindTutorsState.filters);
+
             const params = {
                 page: FindTutorsState.currentPage,
                 limit: FindTutorsState.itemsPerPage,
                 ...FindTutorsState.filters
             };
 
+            console.log('[Controller] Params BEFORE cleanup:', params);
+
             // Remove empty parameters (but keep boolean false values)
             Object.keys(params).forEach(key => {
                 if (params[key] === '' || params[key] === null || params[key] === undefined) {
+                    console.log(`[Controller] Removing empty param: ${key} = ${params[key]}`);
                     delete params[key];
                 }
                 // Keep false boolean values for preference filters
             });
 
-            console.log('Loading tutors with params:', params);
+            console.log('[Controller] Params AFTER cleanup:', params);
+            console.log('[Controller] === Calling FindTutorsAPI.getTutors ===');
             const response = await FindTutorsAPI.getTutors(params);
             console.log('API response:', response);
 
@@ -172,6 +203,26 @@ const FindTutorsController = {
                 const tutorIds = tutors.map(t => t.id);
                 PreferencesManager.addSearchToHistory(params.search.trim(), tutorIds);
                 console.log(`📝 Recorded search history: "${params.search}" with ${tutorIds.length} tutors`);
+            }
+
+            // Track tutor views for trending rankings
+            if (tutors.length > 0 && typeof TrendingTracker !== 'undefined') {
+                const tutorIds = tutors.map(t => t.id);
+                // Use debounced tracking to avoid excessive API calls
+                TrendingTracker.queueTutorViews(tutorIds);
+                console.log(`📈 Queued ${tutorIds.length} tutors for trending tracking`);
+            }
+
+            // Track course and school views for trending rankings
+            if (tutors.length > 0 && typeof CourseSchoolTracker !== 'undefined') {
+                const { courseIds, schoolIds } = CourseSchoolTracker.extractFromTutors(tutors, params);
+                if (courseIds.length > 0 || schoolIds.length > 0) {
+                    CourseSchoolTracker.queueViews(courseIds, schoolIds);
+                    console.log(`📚 Queued ${courseIds.length} courses, ${schoolIds.length} schools for trending tracking`);
+                }
+
+                // Also track from filters (subject filter = course search)
+                CourseSchoolTracker.trackFromFilters(params);
             }
 
             console.log(`Showing ${FindTutorsState.tutors.length} tutors after client-side filtering`);

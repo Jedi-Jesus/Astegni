@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Affiliate Business Types</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #4f46e5;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .tier-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9fafb;
+        }
+        .tier-card h4 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        .tier-card .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .badge-tutoring { background: #dbeafe; color: #1e40af; }
+        .badge-subscription { background: #ede9fe; color: #6d28d9; }
+        .badge-advertisement { background: #fed7aa; color: #c2410c; }
+    </style>
+</head>
+<body>
+    <h1>Affiliate Business Types - Test Page</h1>
+
+    <div class="section">
+        <h2>1. Test API Endpoints</h2>
+        <button onclick="testGetAllTiers()">Get All Tiers</button>
+        <button onclick="testGetTutoringTiers()">Get Tutoring Tiers</button>
+        <button onclick="testGetSubscriptionTiers()">Get Subscription Tiers</button>
+        <button onclick="testGetAdvertisementTiers()">Get Advertisement Tiers</button>
+        <div id="endpoint-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Create Test Tiers</h2>
+        <button onclick="createTestTiers()">Create Sample Tiers for All Types</button>
+        <div id="create-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Display Tiers by Business Type</h2>
+        <div id="tiers-display"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function displayResult(elementId, content, isError = false) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${content}</pre>`;
+        }
+
+        async function testGetAllTiers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin-db/affiliate-program`);
+                const data = await response.json();
+                displayResult('endpoint-result', JSON.stringify(data, null, 2));
+                displayTiers(data.tiers || []);
+            } catch (error) {
+                displayResult('endpoint-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testGetTutoringTiers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin-db/affiliate-program?business_type=tutoring`);
+                const data = await response.json();
+                displayResult('endpoint-result', JSON.stringify(data, null, 2));
+                displayTiers(data.tiers || [], 'tutoring');
+            } catch (error) {
+                displayResult('endpoint-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testGetSubscriptionTiers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin-db/affiliate-program?business_type=subscription`);
+                const data = await response.json();
+                displayResult('endpoint-result', JSON.stringify(data, null, 2));
+                displayTiers(data.tiers || [], 'subscription');
+            } catch (error) {
+                displayResult('endpoint-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testGetAdvertisementTiers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin-db/affiliate-program?business_type=advertisement`);
+                const data = await response.json();
+                displayResult('endpoint-result', JSON.stringify(data, null, 2));
+                displayTiers(data.tiers || [], 'advertisement');
+            } catch (error) {
+                displayResult('endpoint-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function createTestTiers() {
+            const testTiers = [
+                // Tutoring tiers
+                { tier_level: 1, tier_name: "Direct Tutoring Referral", commission_rate: 10, duration_months: 12, business_type: "tutoring" },
+                { tier_level: 2, tier_name: "2nd Level Tutoring", commission_rate: 5, duration_months: 12, business_type: "tutoring" },
+                { tier_level: 3, tier_name: "3rd Level Tutoring", commission_rate: 2, duration_months: 6, business_type: "tutoring" },
+                { tier_level: 4, tier_name: "4th Level Tutoring", commission_rate: 1, duration_months: 6, business_type: "tutoring" },
+
+                // Subscription tiers
+                { tier_level: 1, tier_name: "Direct Subscription Referral", commission_rate: 15, duration_months: 24, business_type: "subscription" },
+                { tier_level: 2, tier_name: "2nd Level Subscription", commission_rate: 8, duration_months: 12, business_type: "subscription" },
+                { tier_level: 3, tier_name: "3rd Level Subscription", commission_rate: 3, duration_months: 6, business_type: "subscription" },
+
+                // Advertisement tiers
+                { tier_level: 1, tier_name: "Direct Ad Referral", commission_rate: 20, duration_months: 12, business_type: "advertisement" },
+                { tier_level: 2, tier_name: "2nd Level Ad", commission_rate: 10, duration_months: 6, business_type: "advertisement" }
+            ];
+
+            let results = [];
+            for (const tier of testTiers) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/admin-db/affiliate-tiers`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...tier, is_active: true })
+                    });
+                    const data = await response.json();
+                    results.push({ success: true, tier: tier.tier_name, business_type: tier.business_type });
+                } catch (error) {
+                    results.push({ success: false, tier: tier.tier_name, error: error.message });
+                }
+            }
+
+            displayResult('create-result', JSON.stringify(results, null, 2));
+
+            // Refresh the display
+            await testGetAllTiers();
+        }
+
+        function displayTiers(tiers, filterType = null) {
+            const display = document.getElementById('tiers-display');
+
+            if (tiers.length === 0) {
+                display.innerHTML = '<p>No tiers found. Click "Create Sample Tiers" to add some.</p>';
+                return;
+            }
+
+            // Group by business type
+            const grouped = {
+                tutoring: tiers.filter(t => t.business_type === 'tutoring'),
+                subscription: tiers.filter(t => t.business_type === 'subscription'),
+                advertisement: tiers.filter(t => t.business_type === 'advertisement')
+            };
+
+            let html = '';
+
+            // Display each group
+            Object.keys(grouped).forEach(type => {
+                if (filterType && type !== filterType) return;
+
+                const typeTiers = grouped[type];
+                if (typeTiers.length === 0) return;
+
+                const icon = type === 'tutoring' ? '🎓' : type === 'subscription' ? '👑' : '📢';
+                html += `<h3>${icon} ${type.charAt(0).toUpperCase() + type.slice(1)} Tiers (${typeTiers.length})</h3>`;
+
+                typeTiers.forEach(tier => {
+                    html += `
+                        <div class="tier-card">
+                            <h4>
+                                <span class="badge badge-${type}">Level ${tier.tier_level}</span>
+                                ${tier.tier_name}
+                            </h4>
+                            <p><strong>Commission:</strong> ${tier.commission_rate}%</p>
+                            <p><strong>Max Duration:</strong> ${tier.duration_months} months</p>
+                            <p><strong>Status:</strong> ${tier.is_active ? '✅ Active' : '❌ Inactive'}</p>
+                        </div>
+                    `;
+                });
+            });
+
+            display.innerHTML = html;
+        }
+
+        // Load tiers on page load
+        window.onload = testGetAllTiers;
+    </script>
+</body>
+</html>

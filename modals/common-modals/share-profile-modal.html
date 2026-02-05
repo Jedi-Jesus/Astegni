@@ -1,0 +1,252 @@
+<!-- Share Profile Modal -->
+<div id="shareProfileModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100000;">
+    <div class="modal-overlay">
+        <div class="modal-container" style="max-width: 550px;">
+            <!-- Modal Header -->
+            <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-share-alt" style="margin-right: 8px;"></i>
+                Share Profile
+            </h2>
+            <button class="modal-close-btn" onclick="closeShareModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" style="padding: 24px;">
+            <!-- Profile Info Section -->
+            <div id="shareProfileInfo" style="margin-bottom: 24px; padding: 16px; background: var(--surface-secondary); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img id="shareProfilePic" src="" alt="Profile"
+                         style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
+                    <div style="flex: 1;">
+                        <div id="shareProfileName" style="font-weight: 600; font-size: 16px; color: var(--text);"></div>
+                        <div id="shareProfileType" style="font-size: 14px; color: var(--text-secondary); text-transform: capitalize;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referral Code Section -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text);">
+                    Your Referral Code
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input
+                        type="text"
+                        id="shareReferralCode"
+                        readonly
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface-secondary); font-family: 'Courier New', monospace; font-size: 16px; font-weight: 600; letter-spacing: 1px; text-align: center; color: var(--text);"
+                        placeholder="Loading..."
+                    >
+                    <button
+                        onclick="copyReferralCode()"
+                        class="btn-primary"
+                        style="padding: 12px 20px; min-width: auto; white-space: nowrap;">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Share Link Section -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text);">
+                    Share Link
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input
+                        type="text"
+                        id="shareProfileLink"
+                        readonly
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface-secondary); font-size: 14px; color: var(--text);"
+                        placeholder="Loading..."
+                    >
+                    <button
+                        onclick="copyShareLink()"
+                        class="btn-primary"
+                        style="padding: 12px 20px; min-width: auto; white-space: nowrap;">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Share Options -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 12px; color: var(--text);">
+                    Share via
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
+                    <!-- Native Share (Mobile) -->
+                    <button onclick="shareViaNative()" class="share-option-btn" id="nativeShareBtn" style="display: none;">
+                        <i class="fas fa-share-alt" style="font-size: 24px; margin-bottom: 8px; color: var(--primary);"></i>
+                        <span style="font-size: 12px; color: var(--text);">Share</span>
+                    </button>
+
+                    <!-- WhatsApp -->
+                    <button onclick="shareViaWhatsApp()" class="share-option-btn">
+                        <i class="fab fa-whatsapp" style="font-size: 24px; margin-bottom: 8px; color: #25D366;"></i>
+                        <span style="font-size: 12px; color: var(--text);">WhatsApp</span>
+                    </button>
+
+                    <!-- Facebook -->
+                    <button onclick="shareViaFacebook()" class="share-option-btn">
+                        <i class="fab fa-facebook" style="font-size: 24px; margin-bottom: 8px; color: #1877F2;"></i>
+                        <span style="font-size: 12px; color: var(--text);">Facebook</span>
+                    </button>
+
+                    <!-- Twitter/X -->
+                    <button onclick="shareViaTwitter()" class="share-option-btn">
+                        <i class="fab fa-twitter" style="font-size: 24px; margin-bottom: 8px; color: #1DA1F2;"></i>
+                        <span style="font-size: 12px; color: var(--text);">Twitter</span>
+                    </button>
+
+                    <!-- Telegram -->
+                    <button onclick="shareViaTelegram()" class="share-option-btn">
+                        <i class="fab fa-telegram" style="font-size: 24px; margin-bottom: 8px; color: #0088cc;"></i>
+                        <span style="font-size: 12px; color: var(--text);">Telegram</span>
+                    </button>
+
+                    <!-- Email -->
+                    <button onclick="shareViaEmail()" class="share-option-btn">
+                        <i class="fas fa-envelope" style="font-size: 24px; margin-bottom: 8px; color: var(--primary);"></i>
+                        <span style="font-size: 12px; color: var(--text);">Email</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Referral Stats Summary -->
+            <div id="shareStatsSection" style="padding: 16px; background: var(--surface-secondary); border-radius: 12px; border-left: 4px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; gap: 16px; text-align: center;">
+                    <div style="flex: 1;">
+                        <div id="shareTotalReferrals" style="font-size: 24px; font-weight: 700; color: var(--primary);">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Total Referrals</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="shareActiveReferrals" style="font-size: 24px; font-weight: 700; color: var(--success);">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Active</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="shareTotalClicks" style="font-size: 24px; font-weight: 700; color: var(--text);">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Link Clicks</div>
+                    </div>
+                </div>
+                <button
+                    onclick="viewReferralDashboard()"
+                    class="btn-secondary"
+                    style="width: 100%; margin-top: 16px; padding: 10px; font-size: 14px;">
+                    <i class="fas fa-chart-line"></i> View Detailed Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<style>
+    .share-option-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 8px;
+        background: var(--surface-secondary);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .share-option-btn:hover {
+        background: var(--surface-tertiary);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .share-option-btn:active {
+        transform: translateY(0);
+    }
+
+    #shareProfileModal .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    #shareProfileModal .modal-container {
+        background: #ffffff !important;
+        border-radius: 16px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        opacity: 1 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Dark mode support */
+    [data-theme="dark"] #shareProfileModal .modal-container {
+        background: #1e1e1e !important;
+    }
+
+    #shareProfileModal .modal-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-direction: row !important;
+        padding: 20px 24px !important;
+        border-bottom: 1px solid var(--border) !important;
+        background: transparent !important;
+    }
+
+    #shareProfileModal .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    #shareProfileModal .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: color 0.2s ease;
+    }
+
+    #shareProfileModal .modal-close-btn:hover {
+        color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        #shareProfileModal .modal-container {
+            max-width: 100%;
+            margin: 0;
+            border-radius: 16px 16px 0 0;
+            max-height: 95vh;
+        }
+
+        .share-option-btn {
+            padding: 12px 6px;
+        }
+
+        .share-option-btn i {
+            font-size: 20px !important;
+        }
+    }
+</style>

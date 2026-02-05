@@ -44,17 +44,47 @@
         <!-- Personal Info Tab Content -->
         <div id="personalInfoContent" class="tab-content">
             <form id="verifyPersonalInfoForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
-                    <input type="text" id="modalFirstName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your first name" required>
+                <!-- Naming System Toggle -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Naming System</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="namingSystem" value="ethiopian" id="ethiopianNaming" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500" checked onchange="toggleNamingSystem()">
+                            <span class="text-sm text-gray-700">Ethiopian (First/Father/Grandfather)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="namingSystem" value="international" id="internationalNaming" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500" onchange="toggleNamingSystem()">
+                            <span class="text-sm text-gray-700">International (First/Last Name)</span>
+                        </label>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Father Name *</label>
-                    <input type="text" id="modalFatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your father's name" required>
+
+                <!-- Ethiopian Naming Fields -->
+                <div id="ethiopianNameFields">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                        <input type="text" id="modalFirstName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your first name" required>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Father Name *</label>
+                        <input type="text" id="modalFatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your father's name" required>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Grandfather Name *</label>
+                        <input type="text" id="modalGrandfatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your grandfather's name" required>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Grandfather Name *</label>
-                    <input type="text" id="modalGrandfatherName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your grandfather's name" required>
+
+                <!-- International Naming Fields -->
+                <div id="internationalNameFields" style="display: none;">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                        <input type="text" id="modalFirstNameIntl" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your first name" required>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                        <input type="text" id="modalLastName" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Enter your last name" required>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
@@ -92,24 +122,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                         Changing email requires OTP verification
-                    </p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Numbers</label>
-                    <div id="modalPhoneContainer" class="space-y-2 mb-3">
-                        <!-- Dynamically populated -->
-                    </div>
-                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium" onclick="addModalPhone()">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Add Phone Number
-                    </button>
-                    <p class="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                        Changing phone requires OTP verification
                     </p>
                 </div>
             </form>

@@ -1,4 +1,27 @@
 /* ============================================ */
+/* UTILITY CLASSES */
+/* ============================================ */
+
+/* Hidden utility class for panels and elements */
+.hidden {
+    display: none !important;
+}
+
+/* Panel Visibility Control - CRITICAL */
+.panel-content {
+    display: none !important;
+}
+
+.panel-content.active {
+    display: block !important;
+    overflow: visible !important;
+}
+
+.panel-content.hidden {
+    display: none !important;
+}
+
+/* ============================================ */
 /* CAMPAIGN MANAGEMENT STYLES */
 /* ============================================ */
 

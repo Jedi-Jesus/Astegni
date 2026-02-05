@@ -41,7 +41,13 @@ function openComingSoonModalInternal(feature, message) {
         'market': 'Our marketplace and trading platform is being developed to provide real-time market insights and trading capabilities!',
         'gamestore': 'Our gamestore is being developed with exciting educational games to make learning fun and interactive!',
         'Create Event': 'Event creation is coming soon! You\'ll be able to create and manage your own educational events.',
-        'Create Club': 'Club creation is coming soon! You\'ll be able to create and manage your own learning clubs.'
+        'Create Club': 'Club creation is coming soon! You\'ll be able to create and manage your own learning clubs.',
+        'Digital Whiteboard': 'Our Digital Whiteboard is being developed with advanced interactive tools for real-time collaborative learning!',
+        'Earnings & Investments': 'Our comprehensive earnings and investment tracking system is being developed to help you manage your financial growth on Astegni!',
+        'Advertising': 'Our advanced advertising platform is being developed to help you reach the right audience with powerful analytics and targeting tools!',
+        'Subscription & Storage': 'Our premium subscription plans with advanced storage management features are being developed to provide you with enhanced capabilities!',
+        'Language Preferences': 'Multi-language support is being developed to make Astegni accessible to users worldwide in their preferred language!',
+        'Export Data': 'Our comprehensive data export feature is being developed to give you full control over your information with easy-to-use export options!'
     };
 
     message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
@@ -249,6 +255,15 @@ window.handleNavLinkClick = function (e, link) {
 
 // Use the global openModal/closeModal functions from init-modals.js
 // No need to redefine them here
+
+// Close function specifically for coming soon modal (used by onclick in HTML)
+function closeComingSoonModal() {
+    closeModal('coming-soon-modal');
+}
+
+// Expose globally for HTML onclick handlers
+window.openComingSoonModal = openComingSoonModal;
+window.closeComingSoonModal = closeComingSoonModal;
 
 // Toast notification function
 function showToast(message, type = 'info') {

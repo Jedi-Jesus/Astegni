@@ -26,8 +26,47 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Hobbies & Interests</label>
+                        <div id="hobbies-container"></div>
+                        <button type="button" class="btn-add" onclick="addHobby()">+ Add Hobby</button>
+                    </div>
+
+                    <div class="form-group">
                         <label>Location</label>
                         <input type="text" id="editLocation" class="form-input" placeholder="e.g., Addis Ababa, Ethiopia">
+
+                        <!-- GPS Location Detection -->
+                        <div class="flex items-center gap-2 mt-2">
+                            <input type="checkbox" id="editAllowLocation" onchange="handleAllowLocationChange(this)"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editAllowLocation" class="text-sm text-gray-700">
+                                Enable GPS location detection
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Uses GPS/WiFi positioning to detect your physical location (not affected by VPN)</p>
+
+                        <!-- Change Location Button (shown when location exists) -->
+                        <button type="button" id="changeLocationBtn" onclick="handleChangeLocation()"
+                            class="hidden mt-2 text-sm bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 flex items-center gap-1">
+                            <i class="fas fa-edit mr-1"></i> Change Location
+                        </button>
+
+                        <!-- Detect Location Button (shown when checkbox is checked) -->
+                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
+                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
+                        </button>
+                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
+
+                        <!-- Display Location Checkbox -->
+                        <div class="flex items-center gap-2 mt-3">
+                            <input type="checkbox" id="editDisplayLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editDisplayLocation" class="text-sm text-gray-700">
+                                Display location on my public profile
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible to others viewing your profile</p>
                     </div>
 
                     <div class="form-group">

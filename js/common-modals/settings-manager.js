@@ -36,15 +36,7 @@ let loginActivityData = { activeSessions: [], loginHistory: [] };
 let reviewRatings = { overall: 0, ease: 0, features: 0, support: 0, value: 0 };
 let selectedFeatureSuggestions = [];
 let recommendsAstegni = null;
-let appearanceSettings = {
-    theme: 'light',
-    fontSize: 16,
-    density: 'comfortable',
-    accentColor: 'indigo',
-    animations: true,
-    reduceMotion: false,
-    sidebarPosition: 'left'
-};
+// Note: appearanceSettings moved to appearance-manager.js
 
 // ==========================================
 // TWO-FACTOR AUTHENTICATION
@@ -730,38 +722,83 @@ function closeConnectedAccountsModal() {
 
 async function loadConnectedAccounts() {
     try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const googleConnected = user.google_id || user.oauth_provider === 'google';
-        const hasPassword = user.has_password !== false;
+        const token = getValidToken();
+        if (!token) {
+            console.log('[ConnectedAccounts] No valid token');
+            return;
+        }
 
-        if (googleConnected) {
+        // Fetch connected accounts status from API
+        const response = await fetch(`${API_BASE_URL}/api/user/connected-accounts`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load connected accounts');
+        }
+
+        const data = await response.json();
+        console.log('[ConnectedAccounts] Status:', data);
+
+        // Update Google connection status
+        if (data.google_connected) {
             document.getElementById('google-connect-btn').classList.add('hidden');
             document.getElementById('google-connected-actions').classList.remove('hidden');
-            document.getElementById('google-account-email').textContent = user.email || 'Connected';
+            document.getElementById('google-account-email').textContent = data.google_email || 'Connected';
         } else {
             document.getElementById('google-connect-btn').classList.remove('hidden');
             document.getElementById('google-connected-actions').classList.add('hidden');
+            document.getElementById('google-account-email').textContent = 'Not connected';
         }
 
         // Password status
-        if (hasPassword) {
+        if (data.has_password) {
             document.getElementById('password-status-text').textContent = 'Password set';
             document.getElementById('google-only-warning').classList.add('hidden');
-        } else if (googleConnected) {
+        } else if (data.google_connected) {
             document.getElementById('password-status-text').textContent = 'No password set';
             document.getElementById('google-only-warning').classList.remove('hidden');
         }
     } catch (error) {
         console.error('Error loading connected accounts:', error);
+        // Fallback: show connect button
+        document.getElementById('google-connect-btn')?.classList.remove('hidden');
+        document.getElementById('google-connected-actions')?.classList.add('hidden');
     }
 }
 
 async function linkGoogleAccount() {
-    // Trigger Google OAuth flow
-    if (typeof handleGoogleSignIn === 'function') {
-        handleGoogleSignIn();
+    console.log('[ConnectedAccounts] Linking Google account...');
+
+    // Close the connected accounts modal
+    closeConnectedAccountsModal();
+
+    // Check if googleSignIn function is available (from google-oauth.js)
+    if (typeof window.googleSignIn === 'function') {
+        try {
+            // Get current user's active role (or default to student)
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const role = user.active_role || 'student';
+
+            console.log('[ConnectedAccounts] Triggering Google sign-in for role:', role);
+
+            // Trigger Google sign-in using the global function
+            await window.googleSignIn(role);
+
+            // After successful sign-in, reload connected accounts
+            setTimeout(() => {
+                console.log('[ConnectedAccounts] Reopening modal after OAuth');
+                loadConnectedAccounts();
+                openConnectedAccountsModal();
+            }, 2000);
+        } catch (error) {
+            console.error('[ConnectedAccounts] Error linking Google:', error);
+            showNotification('Failed to link Google account', 'error');
+        }
     } else {
-        showNotification('Google sign-in not available', 'error');
+        console.error('[ConnectedAccounts] googleSignIn function not available');
+        console.log('[ConnectedAccounts] Available on window:', Object.keys(window).filter(k => k.toLowerCase().includes('google')));
+        showNotification('Google sign-in is not available. Please refresh the page and try again.', 'error');
     }
 }
 
@@ -1220,141 +1257,8 @@ function shareReviewOn(platform) {
 // ==========================================
 // APPEARANCE
 // ==========================================
-
-function openAppearanceModal() {
-    console.log('[Settings] openAppearanceModal called');
-    loadModalAndShow('appearance-modal.html', 'appearance-modal', () => {
-        console.log('[Settings] Appearance modal callback executing');
-        loadAppearanceSettings();
-    });
-}
-
-function closeAppearanceModal() {
-    const modal = document.getElementById('appearance-modal');
-    if (modal) hideModal(modal);
-}
-
-function loadAppearanceSettings() {
-    // Load saved settings
-    const saved = JSON.parse(localStorage.getItem('appearance_settings') || '{}');
-    appearanceSettings = { ...appearanceSettings, ...saved };
-
-    // Apply current settings to UI
-    setThemePreference(appearanceSettings.theme, false);
-    setDisplayDensity(appearanceSettings.density, false);
-    setAccentColor(appearanceSettings.accentColor, false);
-    setSidebarPosition(appearanceSettings.sidebarPosition, false);
-
-    document.getElementById('font-size-slider').value = appearanceSettings.fontSize;
-    document.getElementById('font-size-value').textContent = `${appearanceSettings.fontSize}px`;
-    document.getElementById('enable-animations').checked = appearanceSettings.animations;
-    document.getElementById('reduce-motion').checked = appearanceSettings.reduceMotion;
-
-    previewFontSize(appearanceSettings.fontSize);
-}
-
-function setThemePreference(theme, save = true) {
-    appearanceSettings.theme = theme;
-
-    // Update UI
-    document.querySelectorAll('.theme-option').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'bg-indigo-50');
-        btn.classList.add('border-gray-200');
-    });
-    document.getElementById(`theme-${theme}-btn`)?.classList.add('border-indigo-500', 'bg-indigo-50');
-    document.getElementById(`theme-${theme}-btn`)?.classList.remove('border-gray-200');
-
-    if (save) {
-        // Apply theme immediately
-        if (theme === 'system') {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        } else {
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-        localStorage.setItem('theme', theme);
-    }
-}
-
-function previewFontSize(size) {
-    document.getElementById('font-size-value').textContent = `${size}px`;
-    const preview = document.querySelector('.preview-text');
-    if (preview) {
-        preview.style.fontSize = `${size}px`;
-    }
-    appearanceSettings.fontSize = parseInt(size);
-}
-
-function setDisplayDensity(density, save = true) {
-    appearanceSettings.density = density;
-
-    // Update UI
-    document.querySelectorAll('.density-option').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'bg-indigo-50');
-        btn.classList.add('border-gray-200');
-    });
-    document.getElementById(`density-${density}-btn`)?.classList.add('border-indigo-500', 'bg-indigo-50');
-    document.getElementById(`density-${density}-btn`)?.classList.remove('border-gray-200');
-}
-
-function setAccentColor(color, save = true) {
-    appearanceSettings.accentColor = color;
-
-    // Update UI
-    document.querySelectorAll('.accent-color-btn').forEach(btn => {
-        btn.classList.remove('ring-4');
-    });
-    document.querySelector(`.accent-color-btn[data-color="${color}"]`)?.classList.add('ring-4');
-}
-
-function setSidebarPosition(position, save = true) {
-    appearanceSettings.sidebarPosition = position;
-
-    // Update UI
-    document.querySelectorAll('.sidebar-option').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'bg-indigo-50');
-        btn.classList.add('border-gray-200');
-    });
-    document.getElementById(`sidebar-${position}-btn`)?.classList.add('border-indigo-500', 'bg-indigo-50');
-    document.getElementById(`sidebar-${position}-btn`)?.classList.remove('border-gray-200');
-}
-
-function resetAppearanceDefaults() {
-    appearanceSettings = {
-        theme: 'light',
-        fontSize: 16,
-        density: 'comfortable',
-        accentColor: 'indigo',
-        animations: true,
-        reduceMotion: false,
-        sidebarPosition: 'left'
-    };
-    loadAppearanceSettings();
-    showNotification('Reset to default settings', 'success');
-}
-
-function saveAppearanceSettings() {
-    // Get toggle values
-    appearanceSettings.animations = document.getElementById('enable-animations').checked;
-    appearanceSettings.reduceMotion = document.getElementById('reduce-motion').checked;
-
-    // Save to localStorage
-    localStorage.setItem('appearance_settings', JSON.stringify(appearanceSettings));
-
-    // Apply settings
-    document.documentElement.style.setProperty('--base-font-size', `${appearanceSettings.fontSize}px`);
-    document.documentElement.setAttribute('data-density', appearanceSettings.density);
-    document.documentElement.setAttribute('data-accent', appearanceSettings.accentColor);
-
-    if (appearanceSettings.reduceMotion) {
-        document.documentElement.classList.add('reduce-motion');
-    } else {
-        document.documentElement.classList.remove('reduce-motion');
-    }
-
-    showNotification('Appearance settings saved', 'success');
-    closeAppearanceModal();
-}
+// Note: Appearance functionality moved to appearance-manager.js
+// For backward compatibility, we keep the global function exports at the bottom
 
 // ==========================================
 // UTILITY FUNCTIONS
@@ -1553,5 +1457,4 @@ window.openExportDataModal = openExportDataModal;
 window.closeExportDataModal = closeExportDataModal;
 window.openReviewAstegniModal = openReviewAstegniModal;
 window.closeReviewAstegniModal = closeReviewAstegniModal;
-window.openAppearanceModal = openAppearanceModal;
-window.closeAppearanceModal = closeAppearanceModal;
+// Note: Appearance modal exports moved to appearance-manager.js

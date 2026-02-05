@@ -9,6 +9,10 @@ const FindTutorsAPI = {
     // Ensure baseUrl ends with /api for consistent endpoint paths
     baseUrl: window.API_BASE_URL ? `${window.API_BASE_URL}/api` : 'http://localhost:8000/api',
 
+    // User currency (fetched from backend)
+    userCurrency: null,
+    userCurrencySymbol: null,
+
     getHeaders() {
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('access_token');
@@ -16,6 +20,80 @@ const FindTutorsAPI = {
             headers['Authorization'] = `Bearer ${token}`;
         }
         return headers;
+    },
+
+    // Fetch current user's currency from backend
+    async fetchUserCurrency() {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+            console.log('[Currency] User not logged in, using default ETB');
+            this.userCurrency = 'ETB';
+            this.userCurrencySymbol = 'Br';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${this.baseUrl}/me`, {
+                headers: this.getHeaders()
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                this.userCurrency = userData.currency || 'ETB';
+                this.userCurrencySymbol = this.getCurrencySymbol(this.userCurrency);
+                console.log(`[Currency] User currency set to: ${this.userCurrency} (${this.userCurrencySymbol})`);
+            } else {
+                console.warn('[Currency] Failed to fetch user data, using default ETB');
+                this.userCurrency = 'ETB';
+                this.userCurrencySymbol = 'Br';
+            }
+        } catch (error) {
+            console.error('[Currency] Error fetching user currency:', error);
+            this.userCurrency = 'ETB';
+            this.userCurrencySymbol = 'Br';
+        }
+    },
+
+    // Get currency symbol from currency code
+    // Comprehensive mapping for 120+ currencies worldwide
+    getCurrencySymbol(currencyCode) {
+        const symbols = {
+            // Major currencies
+            'ETB': 'Br', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'CNY': '¥',
+            'INR': '₹', 'CAD': 'C$', 'AUD': 'A$', 'CHF': 'CHF',
+            // African currencies
+            'NGN': '₦', 'ZAR': 'R', 'KES': 'KSh', 'GHS': 'GH₵', 'EGP': 'E£',
+            'TZS': 'TSh', 'UGX': 'USh', 'MAD': 'DH', 'DZD': 'DA', 'TND': 'DT',
+            'RWF': 'RF', 'XOF': 'CFA', 'XAF': 'FCFA', 'AOA': 'Kz', 'BWP': 'P',
+            'MUR': '₨', 'ZMW': 'ZK', 'ZWL': 'Z$', 'MWK': 'MK', 'MZN': 'MT',
+            'NAD': 'N$', 'GNF': 'FG', 'LRD': 'L$', 'SLE': 'Le', 'GMD': 'D',
+            // Americas
+            'BRL': 'R$', 'MXN': '$', 'ARS': '$', 'COP': '$', 'CLP': '$',
+            'PEN': 'S/', 'VES': 'Bs', 'BOB': 'Bs', 'PYG': '₲', 'UYU': '$U',
+            'CRC': '₡', 'PAB': 'B/.', 'GTQ': 'Q', 'HNL': 'L', 'NIO': 'C$',
+            'DOP': 'RD$', 'JMD': 'J$', 'TTD': 'TT$', 'BBD': 'Bds$', 'BSD': 'B$',
+            'HTG': 'G', 'CUP': '$',
+            // European currencies
+            'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr', 'PLN': 'zł', 'CZK': 'Kč',
+            'HUF': 'Ft', 'RON': 'lei', 'BGN': 'лв', 'RSD': 'дин', 'ISK': 'kr',
+            'UAH': '₴', 'TRY': '₺', 'RUB': '₽', 'BYN': 'Br', 'MDL': 'L',
+            'ALL': 'L', 'MKD': 'ден', 'BAM': 'KM',
+            // Asian currencies
+            'KRW': '₩', 'SGD': 'S$', 'MYR': 'RM', 'THB': '฿', 'VND': '₫',
+            'PHP': '₱', 'IDR': 'Rp', 'PKR': '₨', 'BDT': '৳', 'LKR': 'Rs',
+            'MMK': 'K', 'KHR': '៛', 'LAK': '₭', 'NPR': '₨', 'BTN': 'Nu',
+            'MVR': 'Rf', 'AFN': '؋', 'KZT': '₸', 'UZS': 'soʻm', 'TMT': 'm',
+            'KGS': 'с', 'TJS': 'ЅМ', 'MNT': '₮', 'HKD': 'HK$', 'MOP': 'MOP$',
+            'TWD': 'NT$',
+            // Middle East
+            'SAR': 'SR', 'AED': 'DH', 'ILS': '₪', 'IQD': 'ID', 'IRR': '﷼',
+            'JOD': 'JD', 'KWD': 'KD', 'LBP': 'LL', 'OMR': 'OMR', 'QAR': 'QR',
+            'BHD': 'BD', 'YER': 'YR', 'SYP': 'LS',
+            // Oceania
+            'NZD': 'NZ$', 'PGK': 'K', 'FJD': 'FJ$', 'SBD': 'SI$', 'VUV': 'VT',
+            'WST': 'WS$', 'TOP': 'T$'
+        };
+        return symbols[currencyCode] || currencyCode;
     },
 
     // Get current user's ID from localStorage or JWT token
@@ -69,43 +147,104 @@ const FindTutorsAPI = {
     },
 
     async getTutors(params = {}) {
+        // Check if tiered mode is enabled
+        const useTieredMode = params.tiered || false;
+
         // Map frontend filter names to backend parameter names
         const backendParams = {};
+
+        // ALL FILTERS - work for both standard and tiered endpoints
+        console.log('[API] Building backend params from:', params);
 
         if (params.search) backendParams.search = params.search;
         if (params.subject) backendParams.subject = params.subject;
         if (params.gender) backendParams.gender = params.gender;
-        if (params.courseType) backendParams.courseType = params.courseType;
-        if (params.gradeLevel) backendParams.gradeLevel = params.gradeLevel;
+
+        // Grade Level filters
+        if (params.minGradeLevel !== undefined && params.minGradeLevel !== '') {
+            backendParams.min_grade_level = params.minGradeLevel;
+            console.log('[API] Adding min_grade_level:', params.minGradeLevel);
+        }
+        if (params.maxGradeLevel !== undefined && params.maxGradeLevel !== '') {
+            backendParams.max_grade_level = params.maxGradeLevel;
+            console.log('[API] Adding max_grade_level:', params.maxGradeLevel);
+        }
+
         if (params.sessionFormat) backendParams.sessionFormat = params.sessionFormat;
-        if (params.minPrice) backendParams.min_price = params.minPrice;
-        if (params.maxPrice) backendParams.max_price = params.maxPrice;
-        if (params.minRating) backendParams.min_rating = params.minRating;
-        if (params.maxRating) backendParams.max_rating = params.maxRating;
+        if (params.sessionFormatExclusive) backendParams.sessionFormatExclusive = params.sessionFormatExclusive;
+
+        // Price filters
+        if (params.minPrice !== undefined && params.minPrice !== '') {
+            backendParams.min_price = params.minPrice;
+            console.log('[API] Adding min_price:', params.minPrice);
+        }
+        if (params.maxPrice !== undefined && params.maxPrice !== '') {
+            backendParams.max_price = params.maxPrice;
+            console.log('[API] Adding max_price:', params.maxPrice);
+        }
+
+        // Rating filters - CRITICAL DEBUG
+        console.log('[API] === RATING FILTER CHECK ===');
+        console.log('[API] params.minRating:', params.minRating, 'type:', typeof params.minRating);
+        console.log('[API] params.maxRating:', params.maxRating, 'type:', typeof params.maxRating);
+        console.log('[API] minRating !== undefined:', params.minRating !== undefined);
+        console.log('[API] minRating !== "":', params.minRating !== '');
+
+        if (params.minRating !== undefined && params.minRating !== '') {
+            backendParams.min_rating = params.minRating;
+            console.log('[API] ✅ ADDED min_rating to backendParams:', params.minRating);
+        } else {
+            console.log('[API] ❌ SKIPPED min_rating - condition failed');
+        }
+
+        if (params.maxRating !== undefined && params.maxRating !== '') {
+            backendParams.max_rating = params.maxRating;
+            console.log('[API] ✅ ADDED max_rating to backendParams:', params.maxRating);
+        } else {
+            console.log('[API] ❌ SKIPPED max_rating - condition failed');
+        }
+
         if (params.sortBy) backendParams.sort_by = params.sortBy;
+
+        // Preference filters (handled client-side for standard, ignored by tiered)
         if (params.favorite) backendParams.favorite = params.favorite;
         if (params.saved) backendParams.saved = params.saved;
         if (params.searchHistory) backendParams.searchHistory = params.searchHistory;
+
+        // Pagination
         if (params.page) backendParams.page = params.page;
         if (params.limit) backendParams.limit = params.limit;
 
-        // Send search history IDs to backend for smart ranking
-        const searchHistoryIds = PreferencesManager.getSearchHistoryTutorIds();
-        if (searchHistoryIds.length > 0) {
-            backendParams.search_history_ids = searchHistoryIds.join(',');
+        // Send search history IDs to backend for smart ranking (only for non-tiered mode)
+        if (!useTieredMode) {
+            const searchHistoryIds = PreferencesManager.getSearchHistoryTutorIds();
+            if (searchHistoryIds.length > 0) {
+                backendParams.search_history_ids = searchHistoryIds.join(',');
+            }
         }
 
-        // Exclude current user from results (tutor should not see their own card)
-        const currentUserId = this.getCurrentUserId();
-        if (currentUserId) {
-            backendParams.exclude_user_id = currentUserId;
+        // Location filter - single dropdown with hierarchical options
+        if (params.locationFilter) {
+            backendParams.user_location = params.locationFilter;
+            console.log('[API] Adding location filter:', backendParams.user_location);
         }
+
+        // Note: We intentionally allow users to see their own tutor card
+        // so they can verify how their profile appears to others
 
         const queryString = new URLSearchParams(backendParams).toString();
-        console.log('API call params:', backendParams);
+        console.log(`[API] === FINAL API CALL ===`);
+        console.log(`[API] Mode: ${useTieredMode ? 'TIERED' : 'STANDARD'}`);
+        console.log(`[API] Backend params object:`, backendParams);
+        console.log(`[API] Query string:`, queryString);
+        console.log(`[API] Full URL will be:`, `${this.baseUrl}${useTieredMode ? '/tutors/tiered' : '/tutors'}?${queryString}`);
 
         try {
-            const response = await this.fetch(`/tutors?${queryString}`);
+            // Use tiered endpoint if enabled, otherwise standard
+            const endpoint = useTieredMode ? '/tutors/tiered' : '/tutors';
+            const fullUrl = `${endpoint}?${queryString}`;
+            console.log(`[API] Fetching from:`, fullUrl);
+            const response = await this.fetch(fullUrl);
             // Normalize tutor data to handle redundant fields
             if (response.tutors && Array.isArray(response.tutors)) {
                 response.tutors = response.tutors.map(tutor => this.normalizeTutorForFiltering({...tutor}));
@@ -171,12 +310,38 @@ const FindTutorsAPI = {
         return {};
     },
 
+    /**
+     * Get the logged-in user's location from localStorage or user data
+     * Returns the user's location string or null if not available
+     */
+    getUserLocation() {
+        try {
+            // Try to get user data from localStorage
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user.location) {
+                    return user.location;
+                }
+            }
+
+            // Fallback: try to get from global user object if available
+            if (window.user && window.user.location) {
+                return window.user.location;
+            }
+
+            console.warn('[API] User location not found in localStorage or global user object');
+            return null;
+        } catch (error) {
+            console.error('[API] Error getting user location:', error);
+            return null;
+        }
+    },
+
     // Helper function to normalize redundant fields
     normalizeTutorForFiltering(tutor) {
-        // Backend now only sends sessionFormat, ensure it exists
-        if (!tutor.sessionFormat) {
-            tutor.sessionFormat = 'Online';  // Default to Online
-        }
+        // Backend now only sends sessionFormat, no default needed
+        // Let the tutor card creator handle the fallback display
 
         // Consolidate redundant course type fields
         if (!tutor.courseType && tutor.course_type) {
@@ -931,23 +1096,29 @@ const FindTutorsState = {
     filters: {
         search: '',
         subject: '',
-        gradeLevel: '',
-        courseType: '',
+        minGradeLevel: '',
+        maxGradeLevel: '',
         gender: '',
         sessionFormat: '',
         minRating: '',
         maxRating: '',
         minPrice: '',
         maxPrice: '',
+        locationFilter: '',
         nearMe: '',
         favorite: '',
         saved: '',
         searchHistory: '',
-        sortBy: 'rating'
+        sortBy: 'smart',  // DEFAULT: Smart ranking (matches HTML active button)
+        tiered: true  // DEFAULT: Always enable interest/hobby-based tiered matching
     },
 
     updateFilter(key, value) {
+        console.log(`[State] updateFilter called: ${key} = ${value} (type: ${typeof value})`);
+        console.log(`[State] Previous value: ${this.filters[key]}`);
         this.filters[key] = value;
+        console.log(`[State] New value stored: ${this.filters[key]}`);
+        console.log(`[State] Complete filters object:`, this.filters);
         this.currentPage = 1; // Reset to first page on filter change
     },
 
@@ -962,19 +1133,21 @@ const FindTutorsState = {
         this.filters = {
             search: '',
             subject: '',
-            gradeLevel: '',
-            courseType: '',
+            minGradeLevel: '',
+            maxGradeLevel: '',
             gender: '',
             sessionFormat: '',
             minRating: '',
             maxRating: '',
             minPrice: '',
             maxPrice: '',
+            locationFilter: '',
             nearMe: '',
             favorite: '',
             saved: '',
             searchHistory: '',
-            sortBy: 'smart'  // Default to smart ranking
+            sortBy: 'smart',  // Default to smart ranking
+            tiered: true  // Always keep tiered matching enabled
         };
     }
 };

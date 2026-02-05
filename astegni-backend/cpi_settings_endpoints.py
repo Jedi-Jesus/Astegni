@@ -49,6 +49,7 @@ class CpiSettingsResponse(BaseModel):
 
 class CpiSettingsUpdate(BaseModel):
     baseRate: float
+    country: str = 'all'  # Country code (ET, US, etc.) or 'all' for global
     audiencePremiums: dict  # {tutor: float, student: float, parent: float, advertiser: float, user: float}
     locationPremiums: dict  # {national: float}
     regionExclusionPremiums: dict = {}  # {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}}
@@ -462,6 +463,7 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 UPDATE cpi_settings
                 SET
                     base_rate = %s,
+                    country = %s,
                     tutor_premium = %s,
                     student_premium = %s,
                     parent_premium = %s,
@@ -477,6 +479,7 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 WHERE id = %s
             """, (
                 settings.baseRate,
+                getattr(settings, 'country', 'all'),
                 settings.audiencePremiums.get('tutor', 0),
                 settings.audiencePremiums.get('student', 0),
                 settings.audiencePremiums.get('parent', 0),
@@ -495,6 +498,7 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
             cursor.execute("""
                 INSERT INTO cpi_settings (
                     base_rate,
+                    country,
                     tutor_premium,
                     student_premium,
                     parent_premium,
@@ -506,9 +510,10 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     popup_premium,
                     insession_premium,
                     region_exclusion_premiums
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 settings.baseRate,
+                getattr(settings, 'country', 'all'),
                 settings.audiencePremiums.get('tutor', 0),
                 settings.audiencePremiums.get('student', 0),
                 settings.audiencePremiums.get('parent', 0),

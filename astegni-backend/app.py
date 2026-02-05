@@ -78,7 +78,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS middleware - Allow production domains and localhost for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://astegni.com", "https://www.astegni.com", "http://localhost:8080", "http://localhost:8081"],
+    allow_origins=["https://astegni.com", "https://www.astegni.com", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082"],
     allow_credentials=True,  # Allow cookies and auth headers
     allow_methods=["*"],
     allow_headers=["*"],
@@ -133,6 +133,10 @@ if os.path.exists("../pictures"):
 from google_oauth_endpoints import router as google_oauth_router
 app.include_router(google_oauth_router)
 
+# Include Connected Accounts routes
+from connected_accounts_endpoints import router as connected_accounts_router
+app.include_router(connected_accounts_router)
+
 # Include Two-Factor Authentication routes
 from tfa_endpoints import router as tfa_router
 app.include_router(tfa_router)
@@ -141,6 +145,14 @@ app.include_router(tfa_router)
 from tutor_packages_endpoints import router as tutor_packages_router
 app.include_router(tutor_packages_router)
 
+# Include market pricing routes (AI-powered price suggestions based on real market data)
+from market_pricing_endpoints import router as market_pricing_router
+app.include_router(market_pricing_router)
+
+# Include universal schedule routes (works for all roles)
+from schedule_endpoints import router as schedule_router
+app.include_router(schedule_router)
+
 # Include tutor schedule routes (must be before routes.py to avoid /api/tutor/{tutor_id} conflict)
 from tutor_schedule_endpoints import router as tutor_schedule_router
 app.include_router(tutor_schedule_router)
@@ -148,6 +160,10 @@ app.include_router(tutor_schedule_router)
 # Include tutor sessions routes (actual tutoring sessions with students)
 from tutor_sessions_endpoints import router as tutor_sessions_router
 app.include_router(tutor_sessions_router)
+
+# Tutor subscription endpoints (subscriptions with performance metrics)
+from tutor_subscription_endpoints import router as tutor_subscription_router
+app.include_router(tutor_subscription_router)
 
 # Include view tutor routes (comprehensive endpoints for view-tutor.html)
 from view_tutor_endpoints import router as view_tutor_router
@@ -167,6 +183,10 @@ app.include_router(credentials_router)
 # IMPORTANT: Must be BEFORE routes.py to avoid /api/student/{student_id} conflict
 from student_requests_endpoints import router as student_requests_router
 app.include_router(student_requests_router)
+
+# Student subscription endpoints
+from student_subscription_endpoints import router as student_subscription_router
+app.include_router(student_subscription_router)
 
 # IMPORTANT: Must be BEFORE routes.py to avoid /api/parent/{parent_id} conflict
 # Parent invitation endpoints has /api/parent/pending-invitations which must come before
@@ -258,6 +278,14 @@ app.include_router(admin_auth_router)
 from pricing_settings_endpoints import router as pricing_router
 app.include_router(pricing_router)
 
+# Include debug endpoints (development only)
+from debug_endpoints import router as debug_router
+app.include_router(debug_router)
+
+# Include base price rules routes (starting prices for new tutors)
+from base_price_endpoints import router as base_price_router
+app.include_router(base_price_router)
+
 # Include campaign packages routes
 from campaign_packages_endpoints import router as campaign_packages_router
 app.include_router(campaign_packages_router)
@@ -308,6 +336,14 @@ app.include_router(coursework_router)
 from whiteboard_endpoints import router as whiteboard_router
 app.include_router(whiteboard_router)
 
+# Include whiteboard connection tracking routes (WebSocket-based attendance tracking)
+from whiteboard_connection_tracking_endpoints import router as whiteboard_tracking_router
+app.include_router(whiteboard_tracking_router)
+
+# Include attendance suggestion and marking routes (AI-powered attendance)
+from attendance_suggestion_endpoints import router as attendance_router
+app.include_router(attendance_router)
+
 # Include session request routes
 from session_request_endpoints import router as session_request_router
 app.include_router(session_request_router)
@@ -338,6 +374,10 @@ app.include_router(student_profile_router)
 from student_credentials_endpoints import router as student_credentials_router
 app.include_router(student_credentials_router)
 
+# Include referral system routes (share tracking and analytics)
+from referral_endpoints import router as referral_router
+app.include_router(referral_router)
+
 # Include blog routes
 from blog_endpoints import router as blog_router
 app.include_router(blog_router)
@@ -352,6 +392,14 @@ app.include_router(teaching_documents_router)
 # Include admin database routes (reads from astegni_admin_db)
 from admin_db_endpoints import router as admin_db_router
 app.include_router(admin_db_router)
+
+# Include subscription features endpoints (role-based features for subscription plans)
+from subscription_features_endpoints import router as subscription_features_router
+app.include_router(subscription_features_router)
+
+# Include admin subscription plan endpoints (create/update plans with features)
+from admin_subscription_plan_endpoints import router as admin_subscription_plan_router
+app.include_router(admin_subscription_plan_router)
 
 # Include admin courses routes (dual database: admin_db for profile/reviews, user_db for courses)
 from admin_courses_endpoints import router as admin_courses_router
@@ -407,6 +455,10 @@ app.include_router(translation_router)
 from user_settings_endpoints import router as user_settings_router
 app.include_router(user_settings_router)
 
+# Include Appearance Settings routes (Theme, Color Palette, Font Size, Display Density)
+from appearance_settings_endpoints import router as appearance_settings_router
+app.include_router(appearance_settings_router, tags=["Appearance Settings"])
+
 # Include Account Deletion routes (Leave Astegni flow with 90-day grace period)
 from account_deletion_endpoints import router as account_deletion_router
 app.include_router(account_deletion_router)
@@ -418,6 +470,23 @@ app.include_router(payment_methods_router)
 # Include Notes routes (rich text notes with voice/video recording support)
 from notes_endpoints import router as notes_router
 app.include_router(notes_router)
+
+# Include Trending/Popularity Tracking routes
+from trending_endpoints import router as trending_router
+app.include_router(trending_router)
+
+from course_school_trending_endpoints import router as course_school_trending_router
+app.include_router(course_school_trending_router)
+
+from schools_public_endpoints import router as schools_public_router
+app.include_router(schools_public_router)
+
+from payment_endpoints import router as payment_router
+app.include_router(payment_router)
+
+# Role Management Routes
+from role_management_endpoints import router as role_management_router
+app.include_router(role_management_router)
 
 # Student documents routes already included above (before student reviews to avoid route conflicts)
 
@@ -446,11 +515,14 @@ def read_root():
     }
 
 @app.get("/health")
+@app.get("/api/health")
 def health_check():
     """Health check endpoint"""
+    from datetime import datetime
     return {
         "status": "healthy",
-        "timestamp": "2024-01-01T00:00:00Z"
+        "version": "2.1.0",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
 # ============================================
@@ -460,6 +532,77 @@ def health_check():
 from fastapi import WebSocket, WebSocketDisconnect
 from websocket_manager import manager, handle_chat_message, handle_session_message, handle_video_call_message, handle_get_online_users, handle_whiteboard_message
 import json
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint_user_based(websocket: WebSocket, user_id: int):
+    """
+    User-based WebSocket endpoint for real-time communication.
+
+    Args:
+        user_id: The user ID from the users table
+
+    Handles: chat messages, session updates, video call signaling, online status
+    """
+    # Create a unique connection key using user_id
+    connection_key = f"user_{user_id}"
+
+    # Get database session for online status tracking
+    db = SessionLocal()
+
+    try:
+        # Connect and mark user online
+        await manager.connect(websocket, connection_key, db)
+        print(f"🔌 WebSocket connected: user {user_id} (key: {connection_key})")
+
+        while True:
+            # Receive message from client
+            data = await websocket.receive_text()
+
+            try:
+                message = json.loads(data)
+                message_type = message.get("type", "")
+
+                # Route to appropriate handler based on message type
+                if message_type in ["private_message", "room_message", "typing"]:
+                    await handle_chat_message(message, connection_key, None)
+
+                elif message_type in ["join_session", "leave_session", "screen_share", "whiteboard_update"]:
+                    await handle_session_message(message, connection_key, None)
+
+                elif message_type in ["video_call_invitation", "video_offer", "video_answer",
+                                      "ice_candidate", "video_call_declined", "video_call_ended",
+                                      "video_call_cancelled", "video_call_participant_left",
+                                      "call_invitation", "call_answer", "call_declined", "call_ended", "call_cancelled",
+                                      "call_mode_switched", "webrtc_offer"]:
+                    await handle_video_call_message(message, connection_key, db)
+
+                elif message_type == "get_online_users":
+                    # Get list of online users
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "online_users",
+                            "users": list(manager.active_connections.keys())
+                        }),
+                        connection_key
+                    )
+
+                else:
+                    print(f"⚠️ Unknown message type: {message_type}")
+
+            except json.JSONDecodeError:
+                print(f"❌ Invalid JSON received: {data}")
+            except Exception as e:
+                print(f"❌ Error handling WebSocket message: {e}")
+
+    except WebSocketDisconnect:
+        await manager.disconnect(connection_key, db)
+        print(f"🔌 WebSocket disconnected: user {user_id}")
+    except Exception as e:
+        print(f"❌ WebSocket error for user {user_id}: {e}")
+        await manager.disconnect(connection_key, db)
+    finally:
+        db.close()
+
 
 @app.websocket("/ws/{profile_id}/{role}")
 async def websocket_endpoint(websocket: WebSocket, profile_id: int, role: str):
@@ -472,6 +615,9 @@ async def websocket_endpoint(websocket: WebSocket, profile_id: int, role: str):
 
     Handles: chat messages, session updates, video call signaling, online status
     """
+    # Normalize role to lowercase to ensure consistent connection keys
+    role = role.lower()
+
     # Create a unique connection key using profile_id and role
     connection_key = f"{role}_{profile_id}"
 

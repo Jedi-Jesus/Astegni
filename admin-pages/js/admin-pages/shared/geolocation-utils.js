@@ -279,36 +279,84 @@ async function reverseGeocode(latitude, longitude) {
  * @returns {string}
  */
 function formatAddress(address, displayName) {
+    console.log('[Geolocation] Raw address data:', address);
+
     // Try to build a concise address
     const parts = [];
 
-    // Add neighborhood/suburb if available
-    if (address.neighbourhood) parts.push(address.neighbourhood);
-    else if (address.suburb) parts.push(address.suburb);
+    // Add neighborhood/suburb/subcity if available (most specific)
+    if (address.neighbourhood) {
+        parts.push(address.neighbourhood);
+        console.log('[Geolocation] Added neighbourhood:', address.neighbourhood);
+    } else if (address.suburb) {
+        parts.push(address.suburb);
+        console.log('[Geolocation] Added suburb:', address.suburb);
+    } else if (address.quarter) {
+        parts.push(address.quarter);
+        console.log('[Geolocation] Added quarter:', address.quarter);
+    }
 
-    // Add city/town
-    if (address.city) parts.push(address.city);
-    else if (address.town) parts.push(address.town);
-    else if (address.village) parts.push(address.village);
-    else if (address.county) parts.push(address.county);
+    // Add city subcity (Ethiopian specific)
+    if (address.city_district) {
+        parts.push(address.city_district);
+        console.log('[Geolocation] Added city_district:', address.city_district);
+    }
 
-    // Add state/region for clarity
-    if (address.state) parts.push(address.state);
+    // Add city/town (main city)
+    if (address.city) {
+        parts.push(address.city);
+        console.log('[Geolocation] Added city:', address.city);
+    } else if (address.town) {
+        parts.push(address.town);
+        console.log('[Geolocation] Added town:', address.town);
+    } else if (address.village) {
+        parts.push(address.village);
+        console.log('[Geolocation] Added village:', address.village);
+    } else if (address.municipality) {
+        parts.push(address.municipality);
+        console.log('[Geolocation] Added municipality:', address.municipality);
+    } else if (address.county) {
+        parts.push(address.county);
+        console.log('[Geolocation] Added county:', address.county);
+    }
 
-    // Add country
-    if (address.country) parts.push(address.country);
+    // Add state/region (optional for clarity)
+    if (address.state && parts.length > 0) {
+        // Only add state if we already have other location info
+        // and if state is different from city (avoid duplication)
+        const cityName = address.city || address.town || address.village || '';
+        if (address.state !== cityName) {
+            parts.push(address.state);
+            console.log('[Geolocation] Added state:', address.state);
+        }
+    }
 
-    // If we got meaningful parts, use them; otherwise use display_name
-    if (parts.length >= 2) {
-        return parts.join(', ');
+    // Add country (always include if available)
+    if (address.country) {
+        parts.push(address.country);
+        console.log('[Geolocation] Added country:', address.country);
+    }
+
+    console.log('[Geolocation] Final parts array:', parts);
+
+    // If we got at least one meaningful part, use them
+    if (parts.length >= 1) {
+        const result = parts.join(', ');
+        console.log('[Geolocation] Formatted address:', result);
+        return result;
     }
 
     // Fallback to display_name but truncate if too long
-    if (displayName && displayName.length > 100) {
-        return displayName.substring(0, 100) + '...';
+    if (displayName) {
+        console.log('[Geolocation] Using display_name fallback:', displayName);
+        if (displayName.length > 150) {
+            return displayName.substring(0, 150) + '...';
+        }
+        return displayName;
     }
 
-    return displayName || 'Unknown location';
+    console.warn('[Geolocation] No address data available');
+    return 'Unknown location';
 }
 
 /**

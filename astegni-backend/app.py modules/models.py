@@ -30,27 +30,36 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    first_name = Column(String, nullable=False)
-    father_name = Column(String, nullable=False)  # Changed from last_name to father_name
-    grandfather_name = Column(String, nullable=False)  # Ethiopian naming convention - REQUIRED
+    first_name = Column(String, nullable=True)
+    father_name = Column(String, nullable=True)  # Ethiopian naming convention - OPTIONAL
+    grandfather_name = Column(String, nullable=True)  # Ethiopian naming convention - OPTIONAL
+    last_name = Column(String, nullable=True)  # International naming convention - OPTIONAL
     # username removed - now stored in role-specific profile tables (tutor_profiles, student_profiles, etc.)
     email = Column(String, unique=True, index=True, nullable=True)
     phone = Column(String, unique=True, index=True, nullable=True)
     password_hash = Column(String, nullable=False)
 
-    # Multi-role support
-    roles = Column(JSON, default=["user"])
-    active_role = Column(String, default="user")
+    # Multi-role support - NO DEFAULT (users register without roles, add roles later)
+    roles = Column(JSON, nullable=True)
+    active_role = Column(String, nullable=True)
 
     # Shared Profile Fields - Required for full platform access
     gender = Column(String)  # Required for full access
     date_of_birth = Column(Date, nullable=True)  # Required for full access
     digital_id_no = Column(String(50), nullable=True)  # Ethiopian Digital ID, required for full access
 
+    # Shared Media & Social Fields (CANONICAL - Use these instead of role-specific tables)
+    profile_picture = Column(String, nullable=True)  # User's profile picture URL
+    location = Column(String, nullable=True)  # User's location (city, country)
+    display_location = Column(Boolean, default=False)  # Show location on public profile (default: hidden for privacy)
+    country_code = Column(String(10), nullable=True)  # ISO country code (e.g., 'ET', 'US', 'GB') - auto-detected from GPS
+    currency = Column(String(10), nullable=True)  # Currency code (e.g., 'ETB', 'USD', 'EUR') - auto-detected from country
+    social_links = Column(JSON, default={}, nullable=True)  # {"facebook": "url", "twitter": "url", etc.}
+    languages = Column(JSON, default=[], nullable=True)  # Array of languages spoken ["English", "Amharic", etc.]
+    hobbies = Column(JSON, default=[], nullable=True)  # Array of hobbies/interests ["Reading", "Sports", etc.]
+
     # DEPRECATED - Keep for backward compatibility but don't use in new code
-    # Use profile_picture and bio from tutor_profiles/student_profiles instead
-    profile_picture = Column(String)  # DEPRECATED - use role-specific tables
-    bio = Column(Text)  # DEPRECATED - use role-specific tables
+    bio = Column(Text)  # DEPRECATED - use role-specific tables for role-specific bios
 
     # Status
     is_active = Column(Boolean, default=True)
@@ -86,6 +95,10 @@ class User(Base):
     export_verification_code = Column(String, nullable=True)
     export_verification_expiry = Column(DateTime, nullable=True)
 
+    # OAuth/Social Login Fields
+    google_email = Column(String, nullable=True)  # Email used for Google OAuth (can differ from primary email)
+    oauth_provider = Column(String(20), nullable=True)  # 'google', 'facebook', 'apple', etc.
+
     # Account Deletion
     account_status = Column(String, default='active')  # 'active', 'pending_deletion', 'deleted'
     deactivated_at = Column(DateTime, nullable=True)
@@ -93,6 +106,23 @@ class User(Base):
 
     # Account Balance (for payments)
     account_balance = Column(Numeric(10, 2), default=0.00)  # User's account balance in ETB
+
+    # Subscription (User-based, not role-based)
+    # References subscription_plans.id in admin database
+    subscription_plan_id = Column(Integer, nullable=True)  # ID from subscription_plans table in admin_db
+    subscription_started_at = Column(DateTime, nullable=True)  # When subscription started
+    subscription_expires_at = Column(DateTime, nullable=True)  # When subscription expires
+
+    # Appearance Settings (User preferences for UI customization)
+    theme = Column(String(20), default='light')  # light/dark/system
+    color_palette = Column(String(50), default='emerald-gold-charcoal')  # Color palette selection
+    font_family = Column(String(50), default='patrick-hand')  # system/inter/roboto/open-sans/comic-neue/caveat/patrick-hand/dancing-script
+    font_size = Column(Integer, default=16)  # Font size in pixels (12-20)
+    display_density = Column(String(20), default='comfortable')  # compact/comfortable/spacious
+    accent_color = Column(String(20), default='indigo')  # Accent color selection
+    enable_animations = Column(Boolean, default=True)  # Enable UI animations
+    reduce_motion = Column(Boolean, default=False)  # Reduce motion for accessibility
+    sidebar_position = Column(String(20), default='left')  # left/right
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -153,9 +183,9 @@ class TutorProfile(Base):
     quote = Column(Text)
     # Note: gender is now in users table (shared across roles)
 
-    # Professional Info
-    location = Column(String)
-    languages = Column(JSON, default=[])
+    # NOTE: Professional Info moved to users table
+    # location moved to users.location
+    # languages moved to users.languages
 
     # Experience & Qualifications
     expertise_badge = Column(String, default='Tutor')  # Expert, Intermediate, Beginner, Tutor
@@ -169,18 +199,16 @@ class TutorProfile(Base):
     # NOTE: Suspension columns moved to users table (users.is_suspended, users.suspension_reason, etc.)
     is_active = Column(Boolean, default=True)
     is_basic = Column(Boolean, default=False)  # Basic tutor status
+    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
 
-    # Subscription Plan (references subscription_plans in admin_db)
-    subscription_plan_id = Column(Integer, nullable=True)  # ID from subscription_plans table
-    subscription_started_at = Column(DateTime, nullable=True)
-    subscription_expires_at = Column(DateTime, nullable=True)
+    # NOTE: Subscription fields moved to users table (users.subscription_plan_id, etc.)
+    # Subscriptions are now user-based, not role-based
 
     # Media
-    profile_picture = Column(String)
+    # NOTE: profile_picture moved to users.profile_picture
     cover_image = Column(String)
 
-    # Social Media Links
-    social_links = Column(JSON, default={})  # {"facebook": "url", "twitter": "url", etc.}
+    # NOTE: Social Media Links moved to users table (users.social_links)
 
     # Two-Factor Authentication (2FA) - Role-specific
     two_factor_enabled = Column(Boolean, default=False)
@@ -197,6 +225,11 @@ class TutorProfile(Base):
     # Online Status (for whiteboard video calls)
     is_online = Column(Boolean, default=False)  # Whether tutor is currently online
     last_seen = Column(DateTime, nullable=True)  # Last time tutor was seen online
+
+    # Trending/Popularity Tracking
+    search_count = Column(Integer, default=0)  # Total number of times searched/viewed
+    trending_score = Column(Float, default=0.0)  # Time-weighted trending score
+    last_search_increment = Column(DateTime, nullable=True)  # Last search increment timestamp
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -218,7 +251,7 @@ class UserProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
 
     # Profile Display Fields
-    profile_picture = Column(String)
+    # NOTE: profile_picture moved to users.profile_picture
     cover_image = Column(String)
     username = Column(String, unique=True, index=True)
     hero_title = Column(Text)
@@ -228,12 +261,13 @@ class UserProfile(Base):
 
     # Personal Information
     interested_in = Column(ARRAY(String), default=[])  # Array of interests
-    location = Column(String)
-    languages = Column(ARRAY(String), default=[])  # Array of languages
-    social_links = Column(JSON, default={})  # {twitter: "", linkedin: "", etc.}
+    # NOTE: location moved to users.location
+    # NOTE: languages moved to users.languages (JSON)
+    # NOTE: social_links moved to users.social_links (JSON)
 
     # Status Fields
     is_active = Column(Boolean, default=True)
+    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
     is_online = Column(Boolean, default=False)
     last_seen = Column(DateTime, nullable=True)
 
@@ -249,10 +283,8 @@ class UserProfile(Base):
     two_factor_verification_expiry = Column(DateTime, nullable=True)  # Token expiry
     two_factor_protected_panels = Column(JSON, nullable=True)  # Which panels require 2FA
 
-    # Subscription Fields
-    subscription_plan_id = Column(Integer, nullable=True)
-    subscription_started_at = Column(DateTime, nullable=True)
-    subscription_expires_at = Column(DateTime, nullable=True)
+    # NOTE: Subscription fields moved to users table (users.subscription_plan_id, etc.)
+    # Subscriptions are now user-based, not role-based
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -269,14 +301,14 @@ class StudentProfile(Base):
 
     # Basic Info
     username = Column(String, unique=True, index=True)  # Role-specific username
-    location = Column(String)
+    # NOTE: location moved to users.location
 
     # Hero Section (NEW)
     hero_title = Column(ARRAY(String), default=[])  # Multiple hero titles
     hero_subtitle = Column(ARRAY(String), default=[])  # Multiple hero subtitles
 
     # Media
-    profile_picture = Column(String)
+    # NOTE: profile_picture moved to users.profile_picture
     cover_image = Column(String)
 
     # Academic Info
@@ -286,8 +318,8 @@ class StudentProfile(Base):
 
     # Subjects & Interests (restructured as arrays)
     interested_in = Column(ARRAY(String), default=[])  # Renamed from subjects
-    hobbies = Column(ARRAY(String), default=[])  # Renamed from interests
-    languages = Column(ARRAY(String), default=[])  # Renamed from preferred_languages
+    # NOTE: hobbies moved to users.hobbies
+    # NOTE: languages moved to users.languages
 
     # Learning Preferences
     learning_method = Column(ARRAY(String), default=[])  # Renamed from learning_style, now array
@@ -301,6 +333,7 @@ class StudentProfile(Base):
 
     # Status
     is_active = Column(Boolean, default=True)
+    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
 
     # Two-Factor Authentication (2FA) - Role-specific
     two_factor_enabled = Column(Boolean, default=False)
@@ -338,8 +371,7 @@ class ParentProfile(Base):
     quote = Column(Text)
     relationship_type = Column(String, default="Parent")  # Father, Mother, Guardian, Co-parent, Other
 
-    # Contact & Location
-    location = Column(String)
+    # NOTE: location moved to users table (users.location)
 
     # Children References (NEW - Array of student profile IDs)
     children_ids = Column(ARRAY(Integer), default=[])  # Array of student_profile.id (not user.id) for better performance
@@ -361,11 +393,12 @@ class ParentProfile(Base):
     # Status & Verification
     # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
     is_active = Column(Boolean, default=True)
+    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
     profile_complete = Column(Boolean, default=False)
     profile_completion = Column(Float, default=0.0)
 
     # Media
-    profile_picture = Column(String)
+    # NOTE: profile_picture moved to users table (users.profile_picture)
     cover_image = Column(String)
 
     # Hero Section
@@ -407,14 +440,11 @@ class AdvertiserProfile(Base):
     bio = Column(Text)
     quote = Column(Text)
 
-    # Location (array of locations)
-    location = Column(ARRAY(String), default=[])
-
-    # Social links (JSONB for flexible social media URLs)
-    socials = Column(JSON, default={})  # {"website": "", "facebook": "", "twitter": "", etc.}
+    # NOTE: location moved to users.location (VARCHAR)
+    # NOTE: socials moved to users.social_links (JSON)
 
     # Media
-    profile_picture = Column(String)
+    # NOTE: profile_picture moved to users.profile_picture
     cover_image = Column(String)
 
     # Hero section content (arrays for multiple lines)
@@ -424,6 +454,7 @@ class AdvertiserProfile(Base):
     # Status & Verification
     # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
     is_active = Column(Boolean, default=True)
+    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
 
     # Membership date
     joined_in = Column(Date)
@@ -881,16 +912,17 @@ class KYCVerificationAttempt(Base):
 # ============================================
 
 class UserRegister(BaseModel):
-    first_name: str
-    father_name: str
-    grandfather_name: str  # REQUIRED for Ethiopian naming convention
+    first_name: Optional[str] = None
+    father_name: Optional[str] = None
+    grandfather_name: Optional[str] = None  # OPTIONAL for Ethiopian naming convention
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     password: str
     date_of_birth: Optional[date] = None  # Optional at registration, required for full access
     gender: Optional[str] = None  # Optional at registration, required for full access
-    role: str = "student"
+    role: Optional[str] = None  # NO DEFAULT - users register without roles, add roles later
     department: Optional[str] = None  # For admin role: manage-campaigns, manage-schools, etc.
+    referral_code: Optional[str] = None  # Referral code from shared link
 
     @validator('phone', always=True)
     def check_email_or_phone(cls, v, values):
@@ -926,6 +958,8 @@ class UserResponse(BaseModel):
     first_name: str
     father_name: str
     grandfather_name: str  # REQUIRED
+    last_name: Optional[str] = None  # For international naming convention
+    name: Optional[str] = None  # Display name (Ethiopian: first+father+grandfather, International: first+last)
     username: Optional[str]
     email: str
     phone: Optional[str]
@@ -935,13 +969,15 @@ class UserResponse(BaseModel):
     profile_complete: bool = False  # True if DOB, gender, and digital_id_no are set
     kyc_verified: bool = False  # True if identity verified via liveliness check
     roles: List[str]
-    active_role: str
+    active_role: Optional[str] = None
     profile_picture: Optional[str]
     created_at: datetime
     is_active: bool
     email_verified: bool
     role_ids: Optional[dict] = None  # Include role-specific profile IDs
     account_balance: float = 0.0  # User's account balance for payments
+    location: Optional[str] = None  # User's location for location-based filtering
+    social_links: Optional[dict] = None  # Social media links (TikTok, Instagram, etc.)
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -1309,25 +1345,34 @@ class ParentProfileUpdate(BaseModel):
     bio: Optional[str] = None
     quote: Optional[str] = None
     relationship_type: Optional[str] = None
-    location: Optional[str] = None
+    location: Optional[str] = None  # Will be saved to users table
+    display_location: Optional[bool] = None  # Will be saved to users table
     children_ids: Optional[List[int]] = None  # Array of student_profile.id
     coparent_ids: Optional[List[int]] = None  # Array of co-parent user.id
     email: Optional[str] = None
     phone: Optional[str] = None
-    profile_picture: Optional[str] = None
+    profile_picture: Optional[str] = None  # Will be saved to users table
     cover_image: Optional[str] = None
     hero_title: Optional[List[str]] = None  # Array of hero title lines
     hero_subtitle: Optional[str] = None  # Single hero subtitle
+    social_links: Optional[dict] = None  # Will be saved to users table
+    languages: Optional[List[str]] = None  # Will be saved to users table
 
 class ParentProfileResponse(BaseModel):
     id: int
     user_id: int
     username: Optional[str] = None
     name: Optional[str] = None
+    first_name: Optional[str] = None
+    father_name: Optional[str] = None
+    grandfather_name: Optional[str] = None
+    last_name: Optional[str] = None
     bio: Optional[str] = None
     quote: Optional[str] = None
     relationship_type: Optional[str] = None
-    location: Optional[str] = None
+    location: Optional[str] = None  # From users table
+    social_links: Optional[dict] = {}  # From users table
+    languages: Optional[List[str]] = []  # From users table
     children_ids: List[int] = []  # Array of student_profile.id
     coparent_ids: List[int] = []  # Array of co-parent user.id
     email: Optional[str] = None
@@ -1336,7 +1381,7 @@ class ParentProfileResponse(BaseModel):
     rating: Optional[float] = 0.0
     rating_count: Optional[int] = 0
     is_verified: Optional[bool] = False
-    profile_picture: Optional[str] = None
+    profile_picture: Optional[str] = None  # From users table
     cover_image: Optional[str] = None
     hero_title: List[str] = []  # Array of hero title lines
     hero_subtitle: Optional[str] = None  # Single hero subtitle
@@ -1404,6 +1449,7 @@ class AdvertiserProfileUpdate(BaseModel):
     bio: Optional[str] = None
     quote: Optional[str] = None
     location: Optional[List[str]] = None  # Array of locations
+    display_location: Optional[bool] = None  # Will be saved to users table
     socials: Optional[dict] = None  # {"website": "", "facebook": "", "twitter": "", etc.}
     profile_picture: Optional[str] = None
     cover_image: Optional[str] = None
@@ -1606,6 +1652,11 @@ class School(Base):
     status = Column(String(50), default='Verified')
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Trending/Search Tracking
+    search_count = Column(Integer, default=0)
+    trending_score = Column(Float, default=0.0)
+    last_search_increment = Column(DateTime, nullable=True)
 
 
 # ============================================
@@ -2913,6 +2964,50 @@ class CallLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class UserReferralCode(Base):
+    """User referral codes for tracking shared profile links"""
+    __tablename__ = "user_referral_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    referral_code = Column(String(20), unique=True, nullable=False, index=True)
+    profile_type = Column(String(20), nullable=False)  # 'tutor', 'student', 'parent', 'advertiser'
+    total_referrals = Column(Integer, default=0)
+    active_referrals = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ReferralRegistration(Base):
+    """Track users who registered via referral links"""
+    __tablename__ = "referral_registrations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    referrer_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    referrer_profile_type = Column(String(20), nullable=False)
+    referral_code = Column(String(20), nullable=False)
+    referred_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    referred_user_email = Column(String(255), nullable=False)
+    referred_user_name = Column(String(255), nullable=True)
+    registration_date = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+    last_activity = Column(DateTime, nullable=True)
+    notes = Column(Text, nullable=True)
+
+
+class ReferralClick(Base):
+    """Track clicks on referral links for analytics"""
+    __tablename__ = "referral_clicks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    referral_code = Column(String(20), nullable=False, index=True)
+    clicked_at = Column(DateTime, default=datetime.utcnow)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    converted = Column(Boolean, default=False)
+    converted_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+
 # Create all tables
 Base.metadata.create_all(bind=engine)
 
@@ -2923,3 +3018,46 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# ============================================
+# PYDANTIC MODELS - REFERRAL SYSTEM
+# ============================================
+
+class ReferralCodeResponse(BaseModel):
+    """Response model for referral code"""
+    referral_code: str
+    profile_type: str
+    total_referrals: int
+    active_referrals: int
+    share_url: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ReferredUserResponse(BaseModel):
+    """Response model for referred user"""
+    id: int
+    referred_user_id: int
+    referred_user_email: str
+    referred_user_name: Optional[str]
+    registration_date: datetime
+    is_active: bool
+    last_activity: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class ReferralStatsResponse(BaseModel):
+    """Response model for referral statistics"""
+    total_clicks: int
+    total_registrations: int
+    active_referrals: int
+    conversion_rate: float
+    recent_referrals: List[ReferredUserResponse]
+
+    class Config:
+        from_attributes = True

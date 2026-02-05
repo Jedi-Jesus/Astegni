@@ -66,18 +66,18 @@
     transform: scale(1.1);
 }
 
-/* Theme-based hover colors for sidebar toggle - orange in light mode, yellow in dark mode */
+/* Theme-based hover colors for sidebar toggle - uses primary color from palette */
 [data-theme="light"] .sidebar-toggle:hover {
-    background: rgba(245, 158, 11, 0.15); /* Orange tint for light theme */
+    background: rgba(var(--primary-rgb), 0.15);
 }
 
 [data-theme="dark"] .sidebar-toggle:hover {
-    background: rgba(255, 213, 79, 0.15); /* Yellow tint for dark theme */
+    background: rgba(var(--primary-rgb), 0.15);
 }
 
-/* Ensure sidebar toggle hamburger spans inherit the correct color */
+/* Ensure sidebar toggle hamburger spans inherit the primary color from palette */
 .sidebar-toggle .hamburger span {
-    background: #F59E0B !important; /* Orange by default (light theme) */
+    background: var(--primary-color) !important;
 }
 
 .nav-brand {
@@ -231,7 +231,7 @@
 .logo-text {
     font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #F59E0B, #D97706);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -252,7 +252,7 @@
 
 .logo-badge {
     padding: 0.2rem 0.5rem;
-    background: linear-gradient(135deg, #F59E0B, #D97706);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: white;
     font-size: 0.6rem;
     font-weight: 700;
@@ -262,35 +262,35 @@
     align-self: flex-start;
 }
 
-/* Theme-based colors for nav-brand logo - orange in light mode, yellow in dark mode */
+/* Theme-based colors for nav-brand logo - uses primary color from palette */
 [data-theme="light"] .logo-text {
-    background: linear-gradient(135deg, #F59E0B, #D97706); /* Orange gradient for light theme */
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 [data-theme="light"] .logo-sub {
-    color: #92400E; /* Dark orange for light theme */
+    color: var(--primary-active);
 }
 
 [data-theme="light"] .logo-badge {
-    background: linear-gradient(135deg, #F59E0B, #D97706); /* Orange gradient for light theme */
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
 }
 
 [data-theme="dark"] .logo-text {
-    background: linear-gradient(135deg, #FFD54F, #FBC02D); /* Yellow gradient for dark theme */
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 [data-theme="dark"] .logo-sub {
-    color: #FFD54F; /* Yellow for dark theme */
+    color: var(--primary-color);
 }
 
 [data-theme="dark"] .logo-badge {
-    background: linear-gradient(135deg, #FFD54F, #FBC02D); /* Yellow gradient for dark theme */
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: #1E1E1E; /* Dark text for contrast */
 }
 
@@ -476,25 +476,25 @@ body.index-page .hamburger {
     left: 0;
     width: 100%;
     height: 3px;
-    background: #F59E0B; /* Orange by default (light theme) */
+    background: var(--primary-color);
     border-radius: 3px;
     transition: all 0.3s ease;
 }
 
-/* Theme-based colors for ALL hamburger spans - orange in light mode, yellow in dark mode */
+/* Theme-based colors for ALL hamburger spans - uses primary color from palette */
 /* High specificity selectors to override any conflicting styles */
 [data-theme="light"] .hamburger span,
 [data-theme="light"] .sidebar-toggle .hamburger span,
 [data-theme="light"] button .hamburger span,
 [data-theme="light"] .sidebar-toggle > .hamburger > span {
-    background: #F59E0B !important; /* Orange for light theme */
+    background: var(--primary-color) !important;
 }
 
 [data-theme="dark"] .hamburger span,
 [data-theme="dark"] .sidebar-toggle .hamburger span,
 [data-theme="dark"] button .hamburger span,
 [data-theme="dark"] .sidebar-toggle > .hamburger > span {
-    background: #FFD54F !important; /* Yellow for dark theme */
+    background: var(--primary-color) !important;
 }
 
 .hamburger span:nth-child(1) { top: 0; }
@@ -652,7 +652,7 @@ body.index-page .hamburger {
 }
 
 .mobile-dropdown-user-info:hover {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
 }
 
 .mobile-dropdown-pic {
@@ -718,12 +718,12 @@ body.index-page .hamburger {
 }
 
 .mobile-role-options .mobile-role-btn:hover {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
     color: var(--button-bg);
 }
 
 .mobile-role-options .mobile-role-btn.active {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(var(--primary-rgb), 0.15);
     color: var(--button-bg);
 }
 
@@ -758,29 +758,29 @@ body.index-page .hamburger {
 
 /* Dark theme adjustments for mobile profile section */
 [data-theme="dark"] .mobile-profile-header {
-    background: rgba(255, 213, 79, 0.08);
+    background: rgba(var(--primary-rgb), 0.08);
 }
 
 [data-theme="dark"] .mobile-profile-header:hover {
-    background: rgba(255, 213, 79, 0.15);
+    background: rgba(var(--primary-rgb), 0.15);
 }
 
 [data-theme="dark"] .mobile-profile-role {
-    color: #FFD54F;
+    color: var(--primary-color);
 }
 
 [data-theme="dark"] .mobile-dropdown-user-info:hover {
-    background: rgba(255, 213, 79, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
 }
 
 [data-theme="dark"] .mobile-role-options .mobile-role-btn:hover {
-    background: rgba(255, 213, 79, 0.1);
-    color: #FFD54F;
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary-color);
 }
 
 [data-theme="dark"] .mobile-role-options .mobile-role-btn.active {
-    background: rgba(255, 213, 79, 0.15);
-    color: #FFD54F;
+    background: rgba(var(--primary-rgb), 0.15);
+    color: var(--primary-color);
 }
 
 /* Mobile-specific nav actions */
@@ -829,12 +829,12 @@ body.index-page .hamburger {
 /* Hover effect for mobile button */
 .mobile-menu-btn:hover,
 #mobileMenuBtn:hover {
-    background: rgba(245, 158, 11, 0.1); /* Light orange background on hover */
+    background: rgba(var(--primary-rgb), 0.1);
 }
 
 [data-theme="dark"] .mobile-menu-btn:hover,
 [data-theme="dark"] #mobileMenuBtn:hover {
-    background: rgba(255, 213, 79, 0.1); /* Light yellow background on hover in dark mode */
+    background: rgba(var(--primary-rgb), 0.1);
 }
 
 .mobile-hamburger {
@@ -848,29 +848,29 @@ body.index-page .hamburger {
     display: block !important;
     width: 100% !important;
     height: 2px !important;
-    background: #F59E0B !important; /* Orange for light theme */
-    background-color: #F59E0B !important;
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
     border-radius: 2px;
     transition: all 0.3s ease;
 }
 
-/* Dark theme - yellow hamburger */
+/* Dark theme - uses primary color from palette */
 [data-theme="dark"] .mobile-hamburger span {
-    background: #FFD54F !important; /* Yellow for dark theme */
-    background-color: #FFD54F !important;
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
 }
 
 /* Extra specificity for the button's hamburger spans */
 #mobileMenuBtn .mobile-hamburger span,
 .mobile-menu-btn .mobile-hamburger span {
-    background: #F59E0B !important;
-    background-color: #F59E0B !important;
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
 }
 
 [data-theme="dark"] #mobileMenuBtn .mobile-hamburger span,
 [data-theme="dark"] .mobile-menu-btn .mobile-hamburger span {
-    background: #FFD54F !important;
-    background-color: #FFD54F !important;
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
 }
 
 .mobile-menu-btn.active .mobile-hamburger span:nth-child(1),
@@ -1099,7 +1099,7 @@ body.index-page .hamburger {
 
 .mobile-menu-link:hover,
 .mobile-menu-link:active {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
     color: var(--button-bg);
 }
 
@@ -1131,7 +1131,7 @@ body.index-page .hamburger {
 }
 
 #mobile-register-btn:hover {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
 }
 
 /* Mobile Notification Badge */
@@ -1179,12 +1179,12 @@ body.index-page .hamburger {
 }
 
 .mobile-role-options .mobile-role-btn:hover {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--primary-rgb), 0.1);
     color: var(--button-bg);
 }
 
 .mobile-role-options .mobile-role-btn.active {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(var(--primary-rgb), 0.15);
     color: var(--button-bg);
 }
 

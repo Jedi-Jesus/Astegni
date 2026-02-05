@@ -434,13 +434,14 @@ async def save_verification_fee(data: dict):
             with conn.cursor() as cur:
                 import json
                 cur.execute("""
-                    INSERT INTO verification_fee (type, display_name, features, price, currency)
-                    VALUES (%s, %s, %s::jsonb, %s, %s)
+                    INSERT INTO verification_fee (type, display_name, features, price, currency, country)
+                    VALUES (%s, %s, %s::jsonb, %s, %s, %s)
                     ON CONFLICT (type) DO UPDATE SET
                         display_name = EXCLUDED.display_name,
                         features = EXCLUDED.features,
                         price = EXCLUDED.price,
                         currency = EXCLUDED.currency,
+                        country = EXCLUDED.country,
                         updated_at = CURRENT_TIMESTAMP
                     RETURNING *
                 """, (
@@ -448,7 +449,8 @@ async def save_verification_fee(data: dict):
                     data.get('display_name', data.get('type', '').replace('_', ' ').title()),
                     json.dumps(data.get('features', [])),
                     data.get('price'),
-                    data.get('currency', 'ETB')
+                    data.get('currency', 'ETB'),
+                    data.get('country', 'all')
                 ))
                 result = cur.fetchone()
                 conn.commit()
@@ -494,29 +496,56 @@ async def delete_verification_fee(fee_type: str):
 # ============================================================
 
 @router.get("/subscription-plans")
-async def get_subscription_plans(active_only: bool = True, subscription_type: str = None):
-    """Get all subscription plans from admin database, optionally filtered by subscription_type"""
+async def get_subscription_plans(active_only: bool = True, user_role: str = None, subscription_type: str = None):
+    """
+    Get all subscription plans from admin database with role-based features
+
+    Parameters:
+    - active_only: Only return active plans (default: True)
+    - user_role: Filter plans by role (tutor, student, parent, advertiser)
+    - subscription_type: Alias for user_role (backward compatibility)
+
+    Returns only plans that have features for the specified role
+    """
+    # Backward compatibility: subscription_type is an alias for user_role
+    role = user_role or subscription_type
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
-                query = """
-                    SELECT id, package_title, package_price, currency, is_base_package, features,
-                           discount_3_months, discount_6_months, discount_yearly,
-                           is_active, display_order, label, duration_days, subscription_type,
-                           created_at, updated_at
-                    FROM subscription_plans
-                    WHERE 1=1
-                """
-                params = []
+                # Build query with optional role filter
+                if role:
+                    # Get all plans, then filter features by role in the feature query
+                    # This ensures plans without features are still returned
+                    query = """
+                        SELECT id, package_title, package_price, currency, is_base_package,
+                               discount_3_months, discount_6_months, discount_yearly,
+                               is_active, display_order, label, duration_days,
+                               created_at, updated_at
+                        FROM subscription_plans
+                        WHERE 1=1
+                    """
+                    params = []
 
-                if active_only:
-                    query += " AND is_active = TRUE"
+                    if active_only:
+                        query += " AND is_active = TRUE"
 
-                if subscription_type:
-                    query += " AND subscription_type = %s"
-                    params.append(subscription_type)
+                    query += " ORDER BY display_order ASC, id ASC"
+                else:
+                    # Get all plans (no role filter)
+                    query = """
+                        SELECT id, package_title, package_price, currency, is_base_package,
+                               discount_3_months, discount_6_months, discount_yearly,
+                               is_active, display_order, label, duration_days,
+                               created_at, updated_at
+                        FROM subscription_plans
+                        WHERE 1=1
+                    """
+                    params = []
 
-                query += " ORDER BY display_order ASC, id ASC"
+                    if active_only:
+                        query += " AND is_active = TRUE"
+
+                    query += " ORDER BY display_order ASC, id ASC"
 
                 cur.execute(query, params)
                 rows = cur.fetchall()
@@ -524,11 +553,55 @@ async def get_subscription_plans(active_only: bool = True, subscription_type: st
                 plans = []
                 for row in rows:
                     plan = dict(row)
+                    plan_id = plan['id']
+
+                    # Get features from subscription_features table, filtered by role if provided
+                    if role:
+                        features_query = """
+                            SELECT user_role, feature_name, feature_description, is_enabled, feature_value
+                            FROM subscription_features
+                            WHERE subscription_plan_id = %s AND user_role = %s AND is_enabled = TRUE
+                            ORDER BY user_role, feature_name
+                        """
+                        cur.execute(features_query, (plan_id, role))
+                    else:
+                        features_query = """
+                            SELECT user_role, feature_name, feature_description, is_enabled, feature_value
+                            FROM subscription_features
+                            WHERE subscription_plan_id = %s AND is_enabled = TRUE
+                            ORDER BY user_role, feature_name
+                        """
+                        cur.execute(features_query, (plan_id,))
+                    feature_rows = cur.fetchall()
+
+                    # Group features by role
+                    features_by_role = {}
+                    all_features = []  # For backward compatibility
+                    for feature_row in feature_rows:
+                        feature_role = feature_row['user_role']
+                        if feature_role not in features_by_role:
+                            features_by_role[feature_role] = []
+
+                        feature_data = {
+                            'name': feature_row['feature_name'],
+                            'description': feature_row['feature_description'],
+                            'enabled': feature_row['is_enabled'],
+                            'value': feature_row['feature_value']
+                        }
+                        features_by_role[feature_role].append(feature_data)
+                        # Also add to flat list (backward compatibility)
+                        all_features.append(feature_row['feature_description'])
+
                     # Add aliases for frontend compatibility
                     plan['name'] = plan.get('package_title')
                     plan['monthly_price'] = plan.get('package_price')
                     plan['storage_gb'] = plan.get('duration_days', 64)  # Repurposed as storage
                     plan['isBase'] = plan.get('is_base_package', False)  # Alias for frontend
+
+                    # Features: both formats for compatibility
+                    plan['features'] = all_features  # Flat list for backward compatibility
+                    plan['features_by_role'] = features_by_role  # New role-based format
+
                     # Build discounts object for tier pricing (upfront payments)
                     plan['discounts'] = {
                         'quarterly': plan.get('discount_3_months', 5),
@@ -546,12 +619,13 @@ async def get_subscription_plans(active_only: bool = True, subscription_type: st
 
 @router.get("/subscription-plans/{plan_id}")
 async def get_subscription_plan(plan_id: int):
-    """Get specific subscription plan by ID"""
+    """Get specific subscription plan by ID with role-based features"""
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
+                # Get plan (WITHOUT features column - it's been removed)
                 cur.execute("""
-                    SELECT id, package_title, package_price, currency, is_base_package, features,
+                    SELECT id, package_title, package_price, currency, is_base_package,
                            discount_3_months, discount_6_months, discount_yearly,
                            is_active, display_order, label, duration_days, subscription_type,
                            created_at, updated_at
@@ -563,10 +637,40 @@ async def get_subscription_plan(plan_id: int):
                     raise HTTPException(status_code=404, detail="Plan not found")
 
                 plan = dict(result)
+
+                # Get features from subscription_features table, grouped by role
+                features_query = """
+                    SELECT user_role, feature_name, feature_description, is_enabled, feature_value
+                    FROM subscription_features
+                    WHERE subscription_plan_id = %s AND is_enabled = TRUE
+                    ORDER BY user_role, feature_name
+                """
+                cur.execute(features_query, (plan_id,))
+                feature_rows = cur.fetchall()
+
+                # Group features by role
+                features_by_role = {}
+                all_features = []  # For backward compatibility
+                for feature_row in feature_rows:
+                    role = feature_row['user_role']
+                    if role not in features_by_role:
+                        features_by_role[role] = []
+
+                    feature_data = {
+                        'name': feature_row['feature_name'],
+                        'description': feature_row['feature_description'],
+                        'enabled': feature_row['is_enabled'],
+                        'value': feature_row['feature_value']
+                    }
+                    features_by_role[role].append(feature_data)
+                    all_features.append(feature_row['feature_description'])
+
                 plan['name'] = plan.get('package_title')
                 plan['monthly_price'] = plan.get('package_price')
                 plan['storage_gb'] = plan.get('duration_days', 64)
                 plan['isBase'] = plan.get('is_base_package', False)
+                plan['features'] = all_features  # Flat list for backward compatibility
+                plan['features_by_role'] = features_by_role  # New role-based format
                 plan['discounts'] = {
                     'quarterly': plan.get('discount_3_months', 5),
                     'biannual': plan.get('discount_6_months', 10),
@@ -582,7 +686,10 @@ async def get_subscription_plan(plan_id: int):
 
 @router.post("/subscription-plans")
 async def create_subscription_plan(data: dict):
-    """Create a new storage-based subscription plan in admin database"""
+    """
+    DEPRECATED: Use POST /api/admin/subscription-plans instead
+    This endpoint still exists for backward compatibility but does NOT support role-based features
+    """
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
@@ -600,20 +707,19 @@ async def create_subscription_plan(data: dict):
                 if is_base_package:
                     cur.execute("UPDATE subscription_plans SET is_base_package = FALSE WHERE is_base_package = TRUE")
 
-                # Storage-based subscription with TWO discount types
+                # Storage-based subscription (features column removed, use subscription_features table)
                 cur.execute("""
                     INSERT INTO subscription_plans
-                    (package_title, package_price, currency, is_base_package, features,
+                    (package_title, package_price, currency, is_base_package,
                      discount_3_months, discount_6_months, discount_yearly,
-                     label, display_order, duration_days, subscription_type, is_active)
-                    VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s)
+                     label, display_order, duration_days, subscription_type, is_active, country)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     data.get('package_title'),
                     data.get('package_price', 0),
                     data.get('currency', 'ETB'),
                     is_base_package,
-                    json.dumps(data.get('features', [])),
                     data.get('discount_3_months', 5),
                     data.get('discount_6_months', 10),
                     data.get('discount_yearly', 20),
@@ -621,7 +727,8 @@ async def create_subscription_plan(data: dict):
                     max_order + 1,
                     data.get('duration_days', 64),  # Repurposed as storage_gb, default 64GB
                     subscription_type,
-                    data.get('is_active', True)
+                    data.get('is_active', True),
+                    data.get('country', 'all')
                 ))
                 result = cur.fetchone()
                 conn.commit()
@@ -632,7 +739,10 @@ async def create_subscription_plan(data: dict):
 
 @router.put("/subscription-plans/{plan_id}")
 async def update_subscription_plan(plan_id: int, data: dict):
-    """Update storage-based subscription plan in admin database"""
+    """
+    DEPRECATED: Use PUT /api/admin/subscription-plans/{plan_id} instead
+    This endpoint still exists for backward compatibility but does NOT support role-based features
+    """
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
@@ -657,24 +767,21 @@ async def update_subscription_plan(plan_id: int, data: dict):
                     'package_price': 'package_price',
                     'currency': 'currency',
                     'is_base_package': 'is_base_package',  # For package-based discount calculation
-                    'features': 'features',
+                    # 'features': removed - use subscription_features table instead
                     'discount_3_months': 'discount_3_months',
                     'discount_6_months': 'discount_6_months',
                     'discount_yearly': 'discount_yearly',
                     'label': 'label',
                     'is_active': 'is_active',
                     'duration_days': 'duration_days',  # Repurposed as storage_gb
-                    'subscription_type': 'subscription_type'
+                    'subscription_type': 'subscription_type',
+                    'country': 'country'
                 }
 
                 for key, db_field in field_mappings.items():
                     if key in data:
-                        if key == 'features':
-                            update_fields.append(f"{db_field} = %s::jsonb")
-                            values.append(json.dumps(data[key]))
-                        else:
-                            update_fields.append(f"{db_field} = %s")
-                            values.append(data[key])
+                        update_fields.append(f"{db_field} = %s")
+                        values.append(data[key])
 
                 if update_fields:
                     update_fields.append("updated_at = CURRENT_TIMESTAMP")
@@ -764,8 +871,12 @@ async def set_base_subscription_plan(plan_id: int):
 # ============================================================
 
 @router.get("/affiliate-program")
-async def get_affiliate_program():
-    """Get affiliate program global settings and tiers from admin database"""
+async def get_affiliate_program(business_type: str = None):
+    """Get affiliate program global settings and tiers from admin database
+
+    Args:
+        business_type: Optional filter for business type (tutoring, subscription, advertisement)
+    """
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
@@ -778,13 +889,21 @@ async def get_affiliate_program():
                 """)
                 program = cur.fetchone()
 
-                # Get all tiers
-                cur.execute("""
-                    SELECT id, tier_level, tier_name, commission_rate, duration_months, is_active, created_at, updated_at
-                    FROM affiliate_tiers
-                    WHERE is_active = TRUE
-                    ORDER BY tier_level ASC
-                """)
+                # Get all tiers (optionally filtered by business_type)
+                if business_type:
+                    cur.execute("""
+                        SELECT id, tier_level, tier_name, commission_rate, duration_months, is_active, business_type, created_at, updated_at
+                        FROM affiliate_tiers
+                        WHERE is_active = TRUE AND business_type = %s
+                        ORDER BY tier_level ASC
+                    """, (business_type,))
+                else:
+                    cur.execute("""
+                        SELECT id, tier_level, tier_name, commission_rate, duration_months, is_active, business_type, created_at, updated_at
+                        FROM affiliate_tiers
+                        WHERE is_active = TRUE
+                        ORDER BY business_type, tier_level ASC
+                    """)
                 tiers = cur.fetchall()
 
                 if program:
@@ -868,22 +987,34 @@ async def save_affiliate_program(data: dict):
 # ============================================================
 
 @router.get("/affiliate-tiers")
-async def get_affiliate_tiers(program_id: int = None):
-    """Get all affiliate tiers from admin database, optionally filtered by program_id"""
+async def get_affiliate_tiers(program_id: int = None, business_type: str = None):
+    """Get all affiliate tiers from admin database, optionally filtered by program_id and business_type
+
+    Args:
+        program_id: Optional filter by program ID
+        business_type: Optional filter by business type (tutoring, subscription, advertisement)
+    """
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
+                query = "SELECT * FROM affiliate_tiers WHERE 1=1"
+                params = []
+
                 if program_id:
-                    cur.execute("""
-                        SELECT * FROM affiliate_tiers
-                        WHERE program_id = %s
-                        ORDER BY tier_level ASC
-                    """, (program_id,))
+                    query += " AND program_id = %s"
+                    params.append(program_id)
+
+                if business_type:
+                    query += " AND business_type = %s"
+                    params.append(business_type)
+
+                query += " ORDER BY business_type, tier_level ASC"
+
+                if params:
+                    cur.execute(query, tuple(params))
                 else:
-                    cur.execute("""
-                        SELECT * FROM affiliate_tiers
-                        ORDER BY program_id, tier_level ASC
-                    """)
+                    cur.execute(query)
+
                 tiers = cur.fetchall()
                 return {"success": True, "tiers": [dict(t) for t in tiers]}
     except Exception as e:
@@ -914,7 +1045,19 @@ async def get_affiliate_tier(program_id: int, tier_level: int):
 
 @router.post("/affiliate-tiers")
 async def save_affiliate_tier(data: dict):
-    """Save or update affiliate tier in admin database"""
+    """Save or update affiliate tier in admin database
+
+    Required fields:
+        - tier_level: Tier level (1-4)
+        - tier_name: Name of the tier
+        - commission_rate: Commission percentage (0-100)
+        - business_type: Type of business (tutoring, subscription, advertisement)
+
+    Optional fields:
+        - program_id: Program ID (defaults to first program)
+        - duration_months: Duration in months (defaults to 12)
+        - is_active: Active status (defaults to True)
+    """
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
@@ -925,10 +1068,12 @@ async def save_affiliate_tier(data: dict):
                     result = cur.fetchone()
                     program_id = result['id'] if result else 1
 
+                business_type = data.get('business_type', 'tutoring')
+
                 cur.execute("""
-                    INSERT INTO affiliate_tiers (program_id, tier_level, tier_name, commission_rate, duration_months, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (program_id, tier_level) DO UPDATE SET
+                    INSERT INTO affiliate_tiers (program_id, tier_level, tier_name, commission_rate, duration_months, is_active, business_type)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (program_id, tier_level, business_type) DO UPDATE SET
                         tier_name = EXCLUDED.tier_name,
                         commission_rate = EXCLUDED.commission_rate,
                         duration_months = EXCLUDED.duration_months,
@@ -941,7 +1086,8 @@ async def save_affiliate_tier(data: dict):
                     data.get('tier_name'),
                     data.get('commission_rate', 0),
                     data.get('duration_months', 12),
-                    data.get('is_active', True)
+                    data.get('is_active', True),
+                    business_type
                 ))
                 result = cur.fetchone()
                 conn.commit()
@@ -950,15 +1096,15 @@ async def save_affiliate_tier(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/affiliate-tiers/{program_id}/{tier_level}")
-async def delete_affiliate_tier(program_id: int, tier_level: int):
-    """Delete affiliate tier by program_id and level from admin database"""
+@router.delete("/affiliate-tiers/{program_id}/{tier_level}/{business_type}")
+async def delete_affiliate_tier(program_id: int, tier_level: int, business_type: str):
+    """Delete affiliate tier by program_id, tier_level, and business_type from admin database"""
     try:
         with get_admin_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "DELETE FROM affiliate_tiers WHERE program_id = %s AND tier_level = %s RETURNING *",
-                    (program_id, tier_level)
+                    "DELETE FROM affiliate_tiers WHERE program_id = %s AND tier_level = %s AND business_type = %s RETURNING *",
+                    (program_id, tier_level, business_type)
                 )
                 result = cur.fetchone()
                 conn.commit()

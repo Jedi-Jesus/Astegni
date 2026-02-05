@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Extracurricular Upload</title>
+</head>
+<body>
+    <h1>Test Extracurricular Credential Upload</h1>
+    <button onclick="testUpload()">Test Upload</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testUpload() {
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            const resultDiv = document.getElementById('result');
+
+            if (!token) {
+                resultDiv.textContent = 'ERROR: No auth token found. Please login first.';
+                return;
+            }
+
+            // Create test FormData
+            const formData = new FormData();
+            formData.append('document_type', 'extracurricular');
+            formData.append('title', 'Test Extracurricular Activity');
+            formData.append('issued_by', 'Test Organization');
+            formData.append('date_of_issue', '2024-01-01');
+            formData.append('is_featured', 'true');
+
+            // Create a dummy file
+            const dummyFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+            formData.append('file', dummyFile);
+
+            resultDiv.textContent = 'Sending request...\n';
+
+            try {
+                const response = await fetch('http://localhost:8000/api/tutor/documents/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                resultDiv.textContent += `Status: ${response.status}\n\n`;
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    resultDiv.textContent += `ERROR RESPONSE:\n${errorText}`;
+                } else {
+                    const data = await response.json();
+                    resultDiv.textContent += `SUCCESS:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.textContent += `EXCEPTION: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

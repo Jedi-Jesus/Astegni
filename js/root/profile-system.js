@@ -328,18 +328,19 @@ const ProfileSystem = (function() {
                     father_name: userData.father_name,
                     email: userData.email,
                     phone: userData.phone,
-                    role: userData.role,
+                    role: userData.active_role,  // FIXED: Use active_role from API
+                    active_role: userData.active_role,  // Include both for compatibility
                     profile_picture: userData.profile_picture,
                     created_at: userData.created_at,
                     is_active: userData.is_active,
                     email_verified: userData.email_verified
                 };
-                userRole = userData.role;
+                userRole = userData.active_role;  // FIXED: Use active_role instead of role
 
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 // Only store userRole if it has a valid value (prevent storing "undefined" string)
-                if (userData.role && userData.role !== 'undefined') {
-                    localStorage.setItem('userRole', userData.role);
+                if (userData.active_role && userData.active_role !== 'undefined') {
+                    localStorage.setItem('userRole', userData.active_role);  // FIXED: Use active_role
                 }
 
                 await fetchUserRoles();
@@ -552,6 +553,13 @@ function updateProfilePictures() {
         const token = getStoredAuthToken();
         if (!token) return;
 
+        // CRITICAL: Re-read userRole from localStorage to get latest value
+        // This ensures we have the most up-to-date role after deactivation/removal
+        const latestRole = localStorage.getItem('userRole');
+        if (latestRole && latestRole !== 'undefined' && latestRole !== 'null') {
+            userRole = latestRole;
+        }
+
         await fetchCurrentUserData();
 
         if (!currentUser) return;
@@ -572,7 +580,8 @@ function updateProfilePictures() {
         } else if (elements.email) {
             elements.email.textContent = currentUser.email || '';
         }
-        if (elements.role) elements.role.textContent = formatRoleName(userRole);
+        // CRITICAL FIX: Don't set role here - will be set below based on validity check
+        // if (elements.role) elements.role.textContent = formatRoleName(userRole);
         if (elements.profileName) elements.profileName.textContent = userName;
 
         updateProfilePictures();
@@ -582,15 +591,32 @@ function updateProfilePictures() {
         if (dropdownProfileLink) {
             // CRITICAL FIX: Check if userRole is valid before generating URL
             if (!userRole || userRole === 'undefined' || userRole === 'null') {
-                console.warn('[profile-system] userRole is invalid, using fallback');
-                dropdownProfileLink.href = '/index.html';
+                console.warn('[profile-system] No active role, showing "Add Role" action');
+                dropdownProfileLink.href = '#';
+                dropdownProfileLink.onclick = (e) => {
+                    e.preventDefault();
+                    closeProfileDropdown();
+                    if (typeof openAddRoleModal === 'function') {
+                        openAddRoleModal();
+                    } else {
+                        console.error('openAddRoleModal function not found');
+                    }
+                };
+                // Update text to show "No role selected"
+                if (elements.role) {
+                    elements.role.textContent = 'No role selected';
+                }
             } else {
+                // User has valid active role
+                if (elements.role) {
+                    elements.role.textContent = formatRoleName(userRole);
+                }
                 const profileUrl = getProfileUrl(userRole);
                 dropdownProfileLink.href = profileUrl;
+                dropdownProfileLink.onclick = (e) => {
+                    closeProfileDropdown();
+                };
             }
-            dropdownProfileLink.onclick = (e) => {
-                closeProfileDropdown();
-            };
         }
 
         await setupRoleSwitcher();
@@ -659,14 +685,29 @@ function updateProfilePictures() {
             // Filter out admin roles - admins should only access through admin-index.html
             const userFacingRoles = userRoles.filter(role => role !== 'admin');
 
-            if (userFacingRoles.length === 1) {
+            if (userFacingRoles.length === 0) {
+                // No roles at all - show message
+                const noRoleMessage = document.createElement('div');
+                noRoleMessage.className = 'role-option disabled';
+                noRoleMessage.style.cssText = 'text-align: center; color: var(--text-muted); font-style: italic;';
+                noRoleMessage.innerHTML = `
+                    <span class="role-name">No roles yet</span>
+                `;
+                roleOptions.appendChild(noRoleMessage);
+            } else if (userFacingRoles.length === 1) {
                 // Single role with Add Role option
                 const currentRoleOption = document.createElement('div');
-                currentRoleOption.className = 'role-option active disabled';
+                currentRoleOption.className = 'role-option active';
                 currentRoleOption.innerHTML = `
                     <span class="role-name">${formatRoleName(userFacingRoles[0])}</span>
                     <span class="role-badge">CURRENT</span>
                 `;
+                // Make single role clickable to navigate to profile page
+                currentRoleOption.onclick = () => {
+                    const profileUrl = getProfileUrl(userFacingRoles[0]);
+                    closeProfileDropdown();
+                    window.location.href = profileUrl;
+                };
                 roleOptions.appendChild(currentRoleOption);
             } else if (userFacingRoles.length > 1) {
                 // Multiple roles
@@ -684,13 +725,17 @@ function updateProfilePictures() {
                     `;
 
                     roleOption.onclick = () => {
+                        console.log('[roleOption.onclick] Clicked role:', role, 'Active role:', activeRole);
+
                         if (role === activeRole) {
                             // If clicking current role, just navigate to profile page
+                            console.log('[roleOption.onclick] Same role - navigating to profile page');
                             const profileUrl = getProfileUrl(role);
                             closeProfileDropdown();
                             window.location.href = profileUrl;
                         } else {
                             // Switch to different role
+                            console.log('[roleOption.onclick] Different role - calling switchToRole()');
                             switchToRole(role);
                         }
                     };
@@ -711,10 +756,12 @@ function updateProfilePictures() {
             };
             roleOptions.appendChild(addRoleOption);
 
+            // Update dropdown-user-role only if there's an active role
             const dropdownUserRole = document.getElementById('dropdown-user-role');
-            if (dropdownUserRole) {
+            if (dropdownUserRole && activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
                 dropdownUserRole.textContent = formatRoleName(activeRole);
             }
+            // If no active role, leave it as "No role selected" (set in updateProfileDropdown)
 
             // Also update mobile role switcher
             updateMobileRoleSwitcher(userFacingRoles, activeRole);
@@ -791,14 +838,21 @@ function updateProfilePictures() {
                 const avatarUrl = fixImageUrl(userData.profile_picture_url || userData.profile_picture || userData.profilePicture);
                 const name = userData.name || userData.full_name || `${userData.first_name || ''} ${userData.father_name || ''}`.trim() || 'User';
                 const email = userData.email || '';
-                const role = localStorage.getItem('userRole') || localStorage.getItem('active_role') || userData.role || userData.active_role || 'user';
+                let role = localStorage.getItem('userRole') || localStorage.getItem('active_role') || userData.role || userData.active_role;
+
+                // Check if role is valid (not null, undefined, or the string versions)
+                if (!role || role === 'null' || role === 'undefined') {
+                    role = null;
+                }
 
                 if (profilePic) {
                     profilePic.src = avatarUrl;
                     profilePic.onerror = function() { this.src = defaultPicture; };
                 }
                 if (profileName) profileName.textContent = name;
-                if (profileRole) profileRole.textContent = formatRoleName(role);
+                if (profileRole) {
+                    profileRole.textContent = role ? formatRoleName(role) : 'No role selected';
+                }
                 if (dropdownPic) {
                     dropdownPic.src = avatarUrl;
                     dropdownPic.onerror = function() { this.src = defaultPicture; };
@@ -808,8 +862,19 @@ function updateProfilePictures() {
 
                 // Set profile link
                 if (profileLink) {
-                    const profilePage = getProfileUrl(role);
-                    profileLink.href = profilePage;
+                    if (role) {
+                        const profilePage = getProfileUrl(role);
+                        profileLink.href = profilePage;
+                    } else {
+                        // No role - link to add role action
+                        profileLink.href = '#';
+                        profileLink.onclick = (e) => {
+                            e.preventDefault();
+                            if (typeof openAddRoleModal === 'function') {
+                                openAddRoleModal();
+                            }
+                        };
+                    }
                 }
             }
 
@@ -845,7 +910,18 @@ function updateProfilePictures() {
                 ${isActive ? '<span class="active-badge">Active</span>' : ''}
             `;
 
-            if (!isActive) {
+            if (isActive) {
+                // If active role, clicking navigates to profile page
+                roleOption.onclick = () => {
+                    const profileUrl = getProfileUrl(role);
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (mobileMenu) mobileMenu.classList.add('hidden');
+                    const mobileMenuAlt = document.getElementById('mobileMenu');
+                    if (mobileMenuAlt) mobileMenuAlt.classList.add('hidden');
+                    window.location.href = profileUrl;
+                };
+            } else {
+                // If inactive role, switch to it
                 roleOption.onclick = () => switchToRole(role);
             }
 
@@ -927,11 +1003,18 @@ function updateProfilePictures() {
         const btnText = document.querySelector('#add-role-form .btn-text');
         if (btnText) btnText.textContent = 'Verify & Continue';
 
+        // Hide deactivated message
+        const deactivatedMsg = document.getElementById('role-deactivated-message');
+        if (deactivatedMsg) deactivatedMsg.style.display = 'none';
+
         // Clear stored data
-        addRoleData = { role: null, password: null };
+        addRoleData = { role: null, password: null, isReactivation: false };
 
         // Populate user info in modal header
         populateAddRoleUserInfo();
+
+        // Setup role selection change listener
+        setupRoleSelectionListener();
 
         // Show modal - DON'T send OTP yet, wait for password verification
         if (window.openModal) {
@@ -939,6 +1022,53 @@ function updateProfilePictures() {
         } else {
             modal.classList.remove('hidden');
         }
+    }
+
+    // Setup listener for role selection changes
+    function setupRoleSelectionListener() {
+        const roleSelect = document.getElementById('add-role-type');
+        if (!roleSelect || roleSelect.dataset.listenerAttached) return;
+
+        roleSelect.addEventListener('change', async function() {
+            const selectedRole = this.value;
+            const deactivatedMsg = document.getElementById('role-deactivated-message');
+            const btnText = document.getElementById('add-role-btn-text');
+
+            if (!selectedRole || !deactivatedMsg || !btnText) return;
+
+            // Check role status
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/check-role-status?role=${selectedRole}`, {
+                    headers: {
+                        'Authorization': `Bearer ${getStoredAuthToken()}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.is_deactivated) {
+                        // Role exists but is deactivated
+                        deactivatedMsg.style.display = 'block';
+                        btnText.textContent = 'Activate Role';
+                        addRoleData.isReactivation = true;
+                    } else {
+                        // Role doesn't exist or is already active
+                        deactivatedMsg.style.display = 'none';
+                        btnText.textContent = 'Verify & Continue';
+                        addRoleData.isReactivation = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking role status:', error);
+                // On error, assume it's a new role
+                deactivatedMsg.style.display = 'none';
+                btnText.textContent = 'Verify & Continue';
+                addRoleData.isReactivation = false;
+            }
+        });
+
+        roleSelect.dataset.listenerAttached = 'true';
     }
 
     function populateAddRoleUserInfo() {
@@ -1037,6 +1167,14 @@ function updateProfilePictures() {
         const form = document.getElementById('add-role-form');
         if (form) form.reset();
 
+        // Hide success panel and show form
+        const successPanel = document.getElementById('add-role-success-panel');
+        if (successPanel) successPanel.style.display = 'none';
+        if (form) form.style.display = 'block';
+
+        // Clear pending role switch data
+        window.pendingRoleSwitch = null;
+
         // Clear timer
         if (otpResendTimer) {
             clearInterval(otpResendTimer);
@@ -1049,6 +1187,11 @@ function updateProfilePictures() {
 
         // Clear stored data
         addRoleData = { role: null, password: null };
+
+        // Refresh deletion countdown banner in case a role was restored
+        if (window.DeletionCountdownBanner) {
+            window.DeletionCountdownBanner.checkAndShowBanner();
+        }
     }
 
     async function sendAddRoleOTP() {
@@ -1236,7 +1379,9 @@ function updateProfilePictures() {
                 if (step2) step2.style.display = 'block';
 
                 // Update button text for step 2
-                if (btnText) btnText.textContent = 'Add Role';
+                if (btnText) {
+                    btnText.textContent = addRoleData.isReactivation ? 'Activate Role' : 'Add Role';
+                }
 
                 // Show selected role
                 const roleDisplay = document.getElementById('selected-role-display');
@@ -1289,32 +1434,105 @@ function updateProfilePictures() {
                 const data = await response.json();
 
                 if (response.ok) {
+                    const successMessage = data.role_reactivated
+                        ? `${formatRoleName(addRoleData.role)} role reactivated successfully!`
+                        : `${formatRoleName(addRoleData.role)} role added successfully!`;
+
                     if (window.showToast) {
-                        window.showToast(`${formatRoleName(addRoleData.role)} role added successfully!`, 'success');
+                        window.showToast(successMessage, 'success');
                     }
 
-                    // Update current user data
+                    // CRITICAL FIX: Update JWT tokens ONLY (backend keeps current active_role)
+                    // DO NOT update active_role here - user must explicitly choose to switch
+                    if (data.access_token) {
+                        localStorage.setItem('token', data.access_token);
+                        localStorage.setItem('access_token', data.access_token);
+                        console.log('[handleAddRoleSubmit] Updated access token (active_role unchanged)');
+                    }
+
+                    if (data.refresh_token) {
+                        localStorage.setItem('refresh_token', data.refresh_token);
+                        console.log('[handleAddRoleSubmit] Updated refresh token');
+                    }
+
+                    // Update AuthManager with new token (but NOT the active role)
+                    if (window.AuthManager && data.access_token) {
+                        window.AuthManager.token = data.access_token;
+                        // DO NOT update active_role - user hasn't chosen to switch yet
+                    }
+
+                    // Update current user data - ADD the new role to roles list, but DON'T change active_role
+                    // CRITICAL: Always load from localStorage if currentUser is not in memory
+                    if (!currentUser) {
+                        const storedUser = localStorage.getItem('currentUser');
+                        if (storedUser) {
+                            currentUser = JSON.parse(storedUser);
+                        }
+                    }
+
                     if (currentUser) {
+                        // Update roles list to include the new role
                         currentUser.roles = data.user_roles || [...(currentUser.roles || []), addRoleData.role];
+                        // DO NOT update active_role or role - user hasn't chosen to switch yet
+                        // currentUser.active_role = data.active_role;  // REMOVED
+                        // currentUser.role = data.active_role;  // REMOVED
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    }
-
-                    // Close modal
-                    if (window.closeModal) {
-                        window.closeModal('add-role-modal');
                     } else {
-                        document.getElementById('add-role-modal')?.classList.add('hidden');
+                        // Fallback: Create minimal currentUser object if it doesn't exist
+                        console.warn('[handleAddRoleSubmit] currentUser not found, creating minimal object');
+                        const minimalUser = {
+                            id: window.AuthManager?.user?.id,
+                            role: userRole,  // Keep current role
+                            active_role: userRole,  // Keep current role
+                            roles: data.user_roles || [addRoleData.role]
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(minimalUser));
                     }
 
-                    // Refresh role switcher
+                    // DO NOT update userRole variable or localStorage - user hasn't chosen to switch yet
+                    // userRole = data.active_role;  // REMOVED
+                    // localStorage.setItem('userRole', data.active_role);  // REMOVED
+
+                    // Refresh role switcher to show the newly added role in dropdown
                     await setupRoleSwitcher();
 
-                    // Ask user if they want to switch to the new role
-                    setTimeout(() => {
-                        if (confirm(`Switch to your new ${formatRoleName(addRoleData.role)} role now?`)) {
-                            switchToRole(addRoleData.role);
-                        }
-                    }, 500);
+                    // Refresh deletion countdown banner if role was restored
+                    if (window.DeletionCountdownBanner && data.role_reactivated) {
+                        await window.DeletionCountdownBanner.checkAndShowBanner();
+                    }
+
+                    // Store the new role data for the confirmation panel
+                    // IMPORTANT: Use the newly ADDED role, not the current active_role from backend
+                    window.pendingRoleSwitch = {
+                        role: addRoleData.role,
+                        active_role: addRoleData.role,  // The role we just added (not data.active_role which is the old role)
+                        role_reactivated: data.role_reactivated
+                    };
+
+                    // Hide the form and show the success panel
+                    document.getElementById('add-role-form').style.display = 'none';
+                    const successPanel = document.getElementById('add-role-success-panel');
+                    const roleNameElement = document.getElementById('add-role-success-role-name');
+                    const successTitle = document.getElementById('add-role-success-title');
+                    const switchBtnText = document.getElementById('switch-to-new-role-text');
+
+                    if (roleNameElement) {
+                        roleNameElement.textContent = formatRoleName(addRoleData.role);
+                    }
+
+                    if (successTitle) {
+                        successTitle.textContent = data.role_reactivated
+                            ? 'Role Reactivated Successfully!'
+                            : 'Role Added Successfully!';
+                    }
+
+                    if (switchBtnText) {
+                        switchBtnText.textContent = `Switch to ${formatRoleName(addRoleData.role)} Account`;
+                    }
+
+                    if (successPanel) {
+                        successPanel.style.display = 'block';
+                    }
                 } else {
                     if (window.showToast) {
                         window.showToast(data.detail || 'Failed to add role', 'error');
@@ -1335,7 +1553,18 @@ function updateProfilePictures() {
     }
 
     async function switchToRole(newRole) {
-        if (newRole === userRole) return;
+        console.log('[switchToRole] Called with newRole:', newRole);
+        console.log('[switchToRole] Current userRole:', userRole);
+        console.log('[switchToRole] Current AuthManager.user.active_role:', window.AuthManager?.user?.active_role);
+        console.log('[switchToRole] localStorage.userRole:', localStorage.getItem('userRole'));
+
+        // REMOVED: The early return check was preventing role switches when the frontend state
+        // didn't match the database state. Always make the API call to ensure database is updated.
+        // The backend will handle checking if the role is already active.
+        // if (newRole === userRole) {
+        //     console.warn('[switchToRole] newRole === userRole, returning early (no switch needed)');
+        //     return;
+        // }
 
         closeProfileDropdown();
         if (window.showToast) {
@@ -1343,23 +1572,33 @@ function updateProfilePictures() {
         }
 
         try {
+            console.log('[switchToRole] Making API call to /api/switch-role...');
             const response = await fetch(`${API_BASE_URL}/api/switch-role`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${getStoredAuthToken()}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
                 },
-                body: JSON.stringify({ role: newRole })
+                body: JSON.stringify({ role: newRole }),
+                cache: 'no-cache'
             });
+
+            console.log('[switchToRole] API response status:', response.status);
 
             if (response.ok) {
                 const data = await response.json();
+                console.log('[switchToRole] API response data:', data);
+                console.log('[switchToRole] Role switch successful, updating all state...');
 
                 // CRITICAL: Update tokens with new JWT that has updated role information
                 if (data.access_token) {
                     localStorage.setItem('token', data.access_token);
                     localStorage.setItem('access_token', data.access_token);
                     console.log('[switchToRole] Updated access token with new role');
+                    console.log('[switchToRole] New token (first 50 chars):', data.access_token.substring(0, 50));
                 }
 
                 if (data.refresh_token) {
@@ -1367,21 +1606,74 @@ function updateProfilePictures() {
                     console.log('[switchToRole] Updated refresh token');
                 }
 
-                // Update AuthManager token if available
+                // FIX 1: Update AuthManager COMPLETELY (both token AND user object)
                 if (window.AuthManager) {
                     window.AuthManager.token = data.access_token;
+
+                    // CRITICAL: Update AuthManager's user object with new active_role
+                    if (window.AuthManager.user) {
+                        window.AuthManager.user.active_role = data.active_role;
+                        window.AuthManager.user.role = data.active_role;
+                        console.log('[switchToRole] Updated AuthManager.user.active_role to:', data.active_role);
+                    }
                 }
 
+                // FIX 2: Update profile-system's userRole variable
                 userRole = data.active_role;
                 // Only store userRole if it has a valid value (prevent storing "undefined" string)
                 if (data.active_role && data.active_role !== 'undefined') {
                     localStorage.setItem('userRole', data.active_role);
+                    console.log('[switchToRole] Updated localStorage.userRole to:', data.active_role);
+                }
+
+                // FIX 3: Update currentUser object with active_role field
+                // CRITICAL: Always load from localStorage if currentUser is not in memory
+                if (!currentUser) {
+                    const storedUser = localStorage.getItem('currentUser');
+                    if (storedUser) {
+                        currentUser = JSON.parse(storedUser);
+                    }
                 }
 
                 if (currentUser) {
                     currentUser.role = data.active_role;
+                    currentUser.active_role = data.active_role; // Add active_role field explicitly
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    console.log('[switchToRole] Updated currentUser object with new role');
+                } else {
+                    // Fallback: Create minimal currentUser object if it doesn't exist
+                    console.warn('[switchToRole] currentUser not found in memory or localStorage, creating minimal object');
+                    const minimalUser = {
+                        id: window.AuthManager?.user?.id,
+                        role: data.active_role,
+                        active_role: data.active_role,
+                        roles: data.user_roles || []
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(minimalUser));
+                    console.log('[switchToRole] Created minimal currentUser object');
                 }
+
+                // FIX 4: Set localStorage flag to prevent bounce-back on next page
+                // Use timestamp-based approach: valid for 5 seconds after role switch
+                const switchTimestamp = Date.now();
+                localStorage.setItem('role_switch_timestamp', switchTimestamp.toString());
+                localStorage.setItem('role_switch_target', data.active_role);
+                console.log('[switchToRole] Set role_switch_timestamp:', switchTimestamp, 'for role:', data.active_role);
+
+                // CRITICAL FIX: Force localStorage sync before navigation
+                // Some browsers may delay localStorage writes, so verify the token is actually stored
+                const storedToken = localStorage.getItem('access_token');
+                if (storedToken !== data.access_token) {
+                    console.error('[switchToRole] WARNING: Token not properly stored! Retrying...');
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                }
+
+                console.log('[switchToRole] Final verification before navigation:');
+                console.log('  - localStorage.access_token matches:', localStorage.getItem('access_token') === data.access_token);
+                console.log('  - localStorage.userRole:', localStorage.getItem('userRole'));
+                console.log('  - localStorage.role_switch_timestamp:', localStorage.getItem('role_switch_timestamp'));
+                console.log('  - localStorage.role_switch_target:', localStorage.getItem('role_switch_target'));
 
                 updateUI();
                 updateProfileDropdown();
@@ -1390,10 +1682,23 @@ function updateProfilePictures() {
                     window.showToast(`Switched to ${formatRoleName(data.active_role)} role`, 'success');
                 }
 
+                // FIX 5: Navigate after ensuring all state is updated
                 setTimeout(() => {
                     const profileUrl = getProfileUrl(data.active_role);
+
+                    // FINAL DEBUG: Verify flags are set before navigation
+                    console.log('[switchToRole] ========== PRE-NAVIGATION STATE ==========');
+                    console.log('  Target URL:', profileUrl);
+                    console.log('  localStorage.role_switch_timestamp:', localStorage.getItem('role_switch_timestamp'));
+                    console.log('  localStorage.role_switch_target:', localStorage.getItem('role_switch_target'));
+                    console.log('  localStorage.userRole:', localStorage.getItem('userRole'));
+                    console.log('  Time until expiry:', 10000 - (Date.now() - parseInt(localStorage.getItem('role_switch_timestamp'))), 'ms');
+                    console.log('  Timestamp age:', Date.now() - parseInt(localStorage.getItem('role_switch_timestamp')), 'ms');
+                    console.log('  Current time:', Date.now());
+                    console.log('============================================');
+
                     window.location.href = profileUrl;
-                }, 500);
+                }, 100);
             } else {
                 const error = await response.json();
                 if (window.showToast) {
@@ -1425,10 +1730,52 @@ function updateProfilePictures() {
 
     // Main UI Update Function
     function updateUI() {
-        // Show profile container
+        // Show profile container and hide login/register buttons
         const profileContainer = document.getElementById('profile-container');
         const notificationBell = document.getElementById('notification-bell');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const mobileAuthSection = document.getElementById('mobile-auth-section');
+        const mobileLoginBtn = document.getElementById('mobile-login-btn');
+        const mobileRegisterBtn = document.getElementById('mobile-register-btn');
+        const heroLoginBtn = document.getElementById('hero-login-btn');
+        const heroRegisterBtn = document.getElementById('hero-register-btn');
 
+        // Hide login/register buttons for authenticated users (desktop nav)
+        if (loginBtn) {
+            loginBtn.classList.add('hidden');
+            loginBtn.style.display = 'none';
+        }
+        if (registerBtn) {
+            registerBtn.classList.add('hidden');
+            registerBtn.style.display = 'none';
+        }
+
+        // Hide login/register buttons for authenticated users (mobile nav)
+        if (mobileAuthSection) {
+            mobileAuthSection.classList.add('hidden');
+            mobileAuthSection.style.display = 'none';
+        }
+        if (mobileLoginBtn) {
+            mobileLoginBtn.classList.add('hidden');
+            mobileLoginBtn.style.display = 'none';
+        }
+        if (mobileRegisterBtn) {
+            mobileRegisterBtn.classList.add('hidden');
+            mobileRegisterBtn.style.display = 'none';
+        }
+
+        // Hide login/register buttons for authenticated users (hero section)
+        if (heroLoginBtn) {
+            heroLoginBtn.classList.add('hidden');
+            heroLoginBtn.style.display = 'none';
+        }
+        if (heroRegisterBtn) {
+            heroRegisterBtn.classList.add('hidden');
+            heroRegisterBtn.style.display = 'none';
+        }
+
+        // Show profile container
         if (profileContainer) {
             profileContainer.classList.remove('hidden');
             profileContainer.style.display = 'flex';
@@ -1456,6 +1803,58 @@ function updateProfilePictures() {
     // Check if current page matches user's active role
     let hasRedirected = false; // Prevent multiple redirects
     function checkRolePageMismatch() {
+        console.log('[profile-system.checkRolePageMismatch] ========== FUNCTION CALLED ==========');
+        console.log('[profile-system.checkRolePageMismatch] Current time:', Date.now());
+        console.log('[profile-system.checkRolePageMismatch] URL:', window.location.pathname);
+        console.log('[profile-system.checkRolePageMismatch] userRole variable:', userRole);
+
+        // CRITICAL FIX: Check grace period FIRST before doing ANY checks
+        // This prevents interference with role switching flow
+        const switchTimestamp = localStorage.getItem('role_switch_timestamp');
+        const targetRole = localStorage.getItem('role_switch_target');
+
+        console.log('[profile-system.checkRolePageMismatch] localStorage.role_switch_timestamp:', switchTimestamp);
+        console.log('[profile-system.checkRolePageMismatch] localStorage.role_switch_target:', targetRole);
+
+        if (switchTimestamp) {
+            const timeSinceSwitch = Date.now() - parseInt(switchTimestamp);
+            const isWithinGracePeriod = timeSinceSwitch < 10000; // 10 seconds grace period
+
+            console.log('[profile-system.checkRolePageMismatch] Timestamp age:', timeSinceSwitch, 'ms');
+            console.log('[profile-system.checkRolePageMismatch] Is within grace period?', isWithinGracePeriod);
+
+            if (isWithinGracePeriod) {
+                console.log('[profile-system.checkRolePageMismatch] ✅ Role switch in progress to:', targetRole, '- COMPLETELY SKIPPING all checks (within 10s grace period)');
+                console.log('[profile-system.checkRolePageMismatch] Time since switch:', timeSinceSwitch, 'ms');
+                console.log('[profile-system.checkRolePageMismatch] Grace period expires in:', 10000 - timeSinceSwitch, 'ms');
+                console.log('[profile-system.checkRolePageMismatch] ========== EARLY RETURN ==========');
+                return; // IMMEDIATELY RETURN - Don't do ANY checks during grace period
+            } else {
+                // Grace period expired - Check if role switch completed successfully
+                console.log('[profile-system.checkRolePageMismatch] ⏰ Grace period expired (', timeSinceSwitch, 'ms > 10000ms)');
+                console.log('[profile-system.checkRolePageMismatch] Checking if role switch completed...');
+                console.log('[profile-system.checkRolePageMismatch] Target role:', targetRole, 'Current userRole:', userRole);
+
+                if (userRole === targetRole) {
+                    // SUCCESS! Role switch completed
+                    console.log('[profile-system.checkRolePageMismatch] ✅ Role switch SUCCESS! Clearing flags.');
+                    localStorage.removeItem('role_switch_timestamp');
+                    localStorage.removeItem('role_switch_target');
+                    return; // Don't redirect, role is correct
+                } else {
+                    // FAILURE! Force update userRole to target
+                    console.log('[profile-system.checkRolePageMismatch] ❌ Role reverted! Forcing userRole from', userRole, 'to', targetRole);
+                    userRole = targetRole;
+                    localStorage.setItem('userRole', targetRole);
+                    localStorage.removeItem('role_switch_timestamp');
+                    localStorage.removeItem('role_switch_target');
+                    return; // Don't redirect, we fixed it
+                }
+            }
+        } else {
+            console.log('[profile-system.checkRolePageMismatch] No timestamp found - not a role switch');
+        }
+
         // Don't check if already redirected
         if (hasRedirected) return;
 
@@ -1517,14 +1916,34 @@ function updateProfilePictures() {
         const savedRole = localStorage.getItem("userRole");
         const savedToken = getStoredAuthToken(); // Check both 'token' and 'access_token'
 
-        if (savedUser && savedRole && savedToken) {
+        // CRITICAL FIX: Check token and user, NOT role
+        // User can be authenticated (have token) without having a role
+        if (savedUser && savedToken) {
             try {
                 currentUser = JSON.parse(savedUser);
-                userRole = savedRole;
 
-                // Check if current page matches active role
-                checkRolePageMismatch();
+                // CRITICAL: Always sync userRole from localStorage
+                // Ensures we get the latest role after deactivation/removal
+                if (savedRole && savedRole !== 'undefined' && savedRole !== 'null') {
+                    userRole = savedRole;
 
+                    // Also sync with currentUser object if mismatch
+                    if (currentUser.role !== savedRole || currentUser.active_role !== savedRole) {
+                        currentUser.role = savedRole;
+                        currentUser.active_role = savedRole;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                } else {
+                    // No valid role - clear the userRole variable
+                    userRole = null;
+                }
+
+                // Check if current page matches active role (only if we have a role)
+                if (userRole) {
+                    checkRolePageMismatch();
+                }
+
+                // ALWAYS update UI for authenticated users (even without a role)
                 updateUI();
                 updateProfileDropdown();
             } catch (error) {
@@ -1593,6 +2012,28 @@ if (document.readyState === 'loading') {
     ProfileSystem.initialize();
 }
 
+// Listen for role updates from AuthManager (triggered after grace period role switch)
+window.addEventListener('userRoleUpdated', function(event) {
+    console.log('[profile-system] userRoleUpdated event received:', event.detail);
+
+    // Reload currentUser from localStorage (AuthManager already updated it)
+    const updatedUser = localStorage.getItem('currentUser');
+    if (updatedUser) {
+        try {
+            const user = JSON.parse(updatedUser);
+            console.log('[profile-system] Refreshing UI with updated user:', user);
+
+            // Call updateUI to refresh the profile display
+            if (ProfileSystem && ProfileSystem.updateUI) {
+                ProfileSystem.updateUI();
+                console.log('[profile-system] UI refreshed after role switch');
+            }
+        } catch (error) {
+            console.error('[profile-system] Error parsing updated user:', error);
+        }
+    }
+});
+
 // Toggle mobile profile dropdown (for mobile menu)
 window.toggleMobileProfileDropdown = function() {
     const dropdown = document.querySelector('.mobile-profile-dropdown');
@@ -1641,3 +2082,76 @@ window.goBackToStep1 = ProfileSystem.goBackToStep1;
 window.handleResendOTP = ProfileSystem.handleResendOTP;
 window.handleAddRoleSubmit = ProfileSystem.handleAddRoleSubmit;
 window.handleOTPDestinationChange = ProfileSystem.handleOTPDestinationChange;
+
+// ============================================
+// ADD ROLE SUCCESS PANEL HANDLERS
+// ============================================
+
+/**
+ * Confirm switch to the newly added role
+ * Called when user clicks "Switch to Account" button in success panel
+ */
+window.confirmSwitchToNewRole = async function() {
+    if (!window.pendingRoleSwitch) {
+        console.error('[confirmSwitchToNewRole] No pending role switch data found');
+        return;
+    }
+
+    const { role, active_role } = window.pendingRoleSwitch;
+
+    console.log('[confirmSwitchToNewRole] Switching to newly added role:', active_role);
+
+    // Close the modal first
+    if (window.closeModal) {
+        window.closeModal('add-role-modal');
+    } else {
+        document.getElementById('add-role-modal')?.classList.add('hidden');
+    }
+
+    // Use the switchToRole function to properly switch to the newly added role
+    // This will update all state and navigate to the profile page
+    await ProfileSystem.switchToRole(active_role);
+};
+
+/**
+ * Stay with current role and close the modal
+ * Called when user clicks "Stay Here" button in success panel
+ */
+window.stayWithCurrentRole = function() {
+    console.log('[stayWithCurrentRole] User chose to stay with current role');
+
+    // Clear pending role switch data
+    window.pendingRoleSwitch = null;
+
+    // Reset the modal state
+    const successPanel = document.getElementById('add-role-success-panel');
+    const form = document.getElementById('add-role-form');
+
+    if (successPanel) {
+        successPanel.style.display = 'none';
+    }
+
+    if (form) {
+        form.style.display = 'block';
+        form.reset();
+    }
+
+    // Reset to step 1
+    const step1 = document.getElementById('add-role-step1');
+    const step2 = document.getElementById('add-role-step2');
+
+    if (step1) step1.style.display = 'block';
+    if (step2) step2.style.display = 'none';
+
+    // Close the modal
+    if (window.closeModal) {
+        window.closeModal('add-role-modal');
+    } else {
+        document.getElementById('add-role-modal')?.classList.add('hidden');
+    }
+
+    // Show success toast
+    if (window.showToast) {
+        window.showToast('Role added successfully! You can switch to it anytime from the profile dropdown.', 'success');
+    }
+};

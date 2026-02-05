@@ -91,11 +91,24 @@ async def update_parent_profile(
     if not parent_profile:
         raise HTTPException(status_code=404, detail="Parent profile not found")
 
+    # Get the user object to update user-level fields
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     # Update fields
     update_data = profile_data.dict(exclude_unset=True)
 
+    # Fields that belong to users table
+    user_fields = ['location', 'display_location', 'profile_picture', 'social_links', 'languages']
+
     for key, value in update_data.items():
-        if hasattr(parent_profile, key):
+        if key in user_fields:
+            # Update user table
+            if hasattr(user, key):
+                setattr(user, key, value)
+        elif hasattr(parent_profile, key):
+            # Update parent_profile table
             setattr(parent_profile, key, value)
 
     # Calculate profile completion
@@ -105,8 +118,8 @@ async def update_parent_profile(
     if parent_profile.bio: completion += 1
     if parent_profile.quote: completion += 1
     if parent_profile.relationship_type: completion += 1
-    if parent_profile.location: completion += 1
-    if parent_profile.profile_picture: completion += 1
+    if user.location: completion += 1  # Read from users table
+    if user.profile_picture: completion += 1  # Read from users table
     if parent_profile.cover_image: completion += 1
 
     parent_profile.profile_completion = (completion / total_fields) * 100
@@ -114,6 +127,7 @@ async def update_parent_profile(
 
     db.commit()
     db.refresh(parent_profile)
+    db.refresh(user)
 
     return {"message": "Profile updated successfully", "profile": parent_profile}
 
@@ -173,17 +187,17 @@ async def get_parent_children(
                         "email": child_user.email,
                         "phone": child_user.phone,
                         "gender": child_user.gender,
-                        "profile_picture": student_profile.profile_picture,
-                        "cover_image": student_profile.cover_image,
+                        "profile_picture": child_user.profile_picture,  # From users table (centralized)
+                        "cover_image": student_profile.cover_image,  # From student_profiles table (role-specific)
                         "username": student_profile.username,
                         "grade_level": student_profile.grade_level,
                         "studying_at": student_profile.studying_at,
-                        "location": student_profile.location,
+                        "location": child_user.location,  # From users table (centralized)
                         "about": student_profile.about,
                         "career_aspirations": student_profile.career_aspirations,
                         "interested_in": student_profile.interested_in or [],
-                        "hobbies": student_profile.hobbies or [],
-                        "languages": student_profile.languages or [],
+                        "hobbies": child_user.hobbies or [],  # From users table (centralized)
+                        "languages": child_user.languages or [],  # From users table (centralized)
                         "learning_method": student_profile.learning_method or [],
                         "created_at": student_profile.created_at,
                         "updated_at": student_profile.updated_at
@@ -259,15 +273,22 @@ async def get_coparents(
                 ParentProfile.user_id == coparent_user_id
             ).first()
 
+            # Build name based on naming convention
+            if parent_user.last_name:
+                coparent_name = f"{parent_user.first_name or ''} {parent_user.last_name or ''}".strip()
+            else:
+                name_parts = [parent_user.first_name, parent_user.father_name, parent_user.grandfather_name]
+                coparent_name = " ".join(part for part in name_parts if part)
+
             coparents.append({
                 "user_id": parent_user.id,
                 "parent_id": coparent_profile.id if coparent_profile else None,
-                "name": f"{parent_user.first_name} {parent_user.father_name} {parent_user.grandfather_name}",
+                "name": coparent_name or "Parent",
                 "email": parent_user.email,
                 "phone": parent_user.phone,
                 "gender": parent_user.gender,
                 "relationship_type": coparent_profile.relationship_type if coparent_profile else None,
-                "profile_picture": coparent_profile.profile_picture if coparent_profile else None,
+                "profile_picture": parent_user.profile_picture,  # Read from users table
                 "created_at": parent_user.created_at,
                 "status": "accepted"
             })
@@ -613,12 +634,12 @@ async def get_parent_tutors(
             tp.username as tutor_username,
             tp.bio,
             tp.quote,
-            tp.location,
+            u.location,  -- NOTE: location now read from users table
             u.is_verified,
-            tp.verification_status,
-            tp.profile_picture,
+            u.verification_status,  -- NOTE: verification_status now read from users table
+            u.profile_picture as tp_profile_picture,  -- NOTE: profile_picture now read from users table
             tp.cover_image,
-            tp.languages,
+            u.languages,  -- NOTE: languages now read from users table
             tp.expertise_badge,
             tp.hero_titles,
             tp.hero_subtitle,
@@ -702,7 +723,7 @@ async def get_parent_tutors(
                 "location": row.location,
                 "is_verified": row.is_verified,
                 "verification_status": row.verification_status,
-                "profile_picture": row.profile_picture,
+                "profile_picture": row.tp_profile_picture,
                 "cover_image": row.cover_image,
                 "gender": row.gender,
                 "email": row.tutor_email,
@@ -757,12 +778,12 @@ async def get_tutors_for_specific_student(
             tp.username as tutor_username,
             tp.bio,
             tp.quote,
-            tp.location,
+            u.location,  -- NOTE: location now read from users table
             u.is_verified,
-            tp.verification_status,
-            tp.profile_picture,
+            u.verification_status,  -- NOTE: verification_status now read from users table
+            u.profile_picture as tp_profile_picture,  -- NOTE: profile_picture now read from users table
             tp.cover_image,
-            tp.languages,
+            u.languages,  -- NOTE: languages now read from users table
             tp.expertise_badge,
             tp.hero_titles,
             tp.hero_subtitle,
@@ -836,7 +857,7 @@ async def get_tutors_for_specific_student(
             "location": row.location,
             "is_verified": row.is_verified,
             "verification_status": row.verification_status,
-            "profile_picture": row.profile_picture,
+            "profile_picture": row.tp_profile_picture,
             "cover_image": row.cover_image,
             "gender": row.gender,
             "email": row.tutor_email,
@@ -1505,19 +1526,11 @@ async def get_parent_requested_courses(
     db: Session = Depends(get_db)
 ):
     """
-    Get all courses requested/uploaded by the parent.
-    Reads from the courses table where uploader_id matches the parent's profile_id.
+    Get all courses requested/uploaded by the parent (user-based).
+    Reads from the courses table where uploader_id matches the user's ID.
     """
     if "parent" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile to get the profile_id
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
 
     courses = db.execute(text("""
         SELECT
@@ -1526,9 +1539,9 @@ async def get_parent_requested_courses(
             c.language, c.rating, c.rating_count, c.created_at, c.updated_at,
             c.status, c.status_by, c.status_reason, c.status_at
         FROM courses c
-        WHERE c.uploader_id = :profile_id
+        WHERE c.uploader_id = :user_id
         ORDER BY c.created_at DESC
-    """), {"profile_id": parent_profile.id}).fetchall()
+    """), {"user_id": current_user.id}).fetchall()
 
     result = []
     for course in courses:
@@ -1563,19 +1576,11 @@ async def get_parent_requested_schools(
     db: Session = Depends(get_db)
 ):
     """
-    Get all schools requested by the parent.
-    Reads from the schools table where requester_id matches the parent's profile_id.
+    Get all schools requested by the parent (user-based).
+    Reads from the schools table where requester_id matches the user's ID.
     """
     if "parent" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile to get the profile_id
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
 
     schools = db.execute(text("""
         SELECT
@@ -1586,9 +1591,9 @@ async def get_parent_requested_schools(
             s.status, s.status_by, s.status_at, s.status_reason,
             s.created_at, s.updated_at
         FROM schools s
-        WHERE s.requester_id = :profile_id
+        WHERE s.requester_id = :user_id
         ORDER BY s.created_at DESC
-    """), {"profile_id": parent_profile.id}).fetchall()
+    """), {"user_id": current_user.id}).fetchall()
 
     result = []
     for school in schools:
@@ -1618,6 +1623,119 @@ async def get_parent_requested_schools(
         })
 
     return {"schools": result, "total": len(result)}
+
+
+# ============================================
+# PARENT DASHBOARD STATS ENDPOINT
+# ============================================
+
+@router.get("/api/parent/dashboard-stats")
+async def get_parent_dashboard_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all dashboard statistics for parent profile.
+
+    Returns:
+    - children_enrolled: Count of children linked to parent
+    - active_tutors: Count of distinct tutors teaching the parent's children
+    - total_study_hours: Sum of completed session durations (in hours)
+    - sessions_this_month: Count of sessions scheduled/completed this month
+    - tutor_satisfaction: Average rating from parent_reviews (parent's rating from tutors)
+    - attendance_rate: Percentage of sessions where children were present (0-100%)
+    - family_progress: Coming soon (no data source available)
+    - monthly_investment: Coming soon (implementation pending)
+    """
+    if "parent" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="User does not have parent role")
+
+    parent_profile = db.query(ParentProfile).filter(
+        ParentProfile.user_id == current_user.id
+    ).first()
+
+    if not parent_profile:
+        raise HTTPException(status_code=404, detail="Parent profile not found")
+
+    children_ids = parent_profile.children_ids if parent_profile.children_ids else []
+
+    # 1. Children Enrolled (already tracked)
+    children_enrolled = len(children_ids)
+
+    # 2. Active Tutors (from enrolled_students)
+    active_tutors = 0
+    if children_ids:
+        result = db.execute(text("""
+            SELECT COUNT(DISTINCT tutor_id)
+            FROM enrolled_students
+            WHERE student_id = ANY(:children_ids)
+        """), {"children_ids": children_ids}).fetchone()
+        active_tutors = result[0] if result else 0
+
+    # 3. Total Study Hours (from sessions table)
+    total_study_hours = 0.0
+    if children_ids:
+        result = db.execute(text("""
+            SELECT COALESCE(SUM(s.duration), 0)
+            FROM sessions s
+            JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+            WHERE ec.students_id && CAST(:children_ids AS integer[])
+            AND s.status = 'completed'
+        """), {"children_ids": children_ids}).fetchone()
+        total_minutes = result[0] if result else 0
+        total_study_hours = round(total_minutes / 60.0, 1)  # Convert minutes to hours
+
+    # 4. Sessions This Month (from sessions table)
+    sessions_this_month = 0
+    if children_ids:
+        result = db.execute(text("""
+            SELECT COUNT(*)
+            FROM sessions s
+            JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+            WHERE ec.students_id && CAST(:children_ids AS integer[])
+            AND EXTRACT(MONTH FROM s.session_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+            AND EXTRACT(YEAR FROM s.session_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+        """), {"children_ids": children_ids}).fetchone()
+        sessions_this_month = result[0] if result else 0
+
+    # 5. Tutor Satisfaction (parent's rating from tutors in parent_reviews)
+    tutor_satisfaction = parent_profile.rating if parent_profile.rating else 0.0
+
+    # 6. Attendance Rate (from sessions table)
+    attendance_rate = 0.0
+    if children_ids:
+        result = db.execute(text("""
+            SELECT
+                COUNT(*) FILTER (WHERE s.student_attendance_status = 'present') as present_count,
+                COUNT(*) as total_sessions
+            FROM sessions s
+            JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+            WHERE ec.students_id && CAST(:children_ids AS integer[])
+            AND s.status IN ('completed', 'in-progress')
+            AND s.student_attendance_status IS NOT NULL
+        """), {"children_ids": children_ids}).fetchone()
+
+        if result and result[1] > 0:  # total_sessions > 0
+            present_count = result[0] if result[0] else 0
+            total_sessions = result[1]
+            attendance_rate = round((present_count / total_sessions) * 100, 1)
+
+    # 7. Family Progress - Coming Soon (no proper data source)
+    family_progress = None  # Will show "Coming Soon" in UI
+
+    # 8. Monthly Investment - Coming Soon (implementation pending)
+    monthly_investment = None  # Will show "Coming Soon" in UI
+
+    return {
+        "children_enrolled": children_enrolled,
+        "active_tutors": active_tutors,
+        "total_study_hours": total_study_hours,
+        "sessions_this_month": sessions_this_month,
+        "tutor_satisfaction": tutor_satisfaction,
+        "attendance_rate": attendance_rate,
+        "family_progress": family_progress,
+        "monthly_investment": monthly_investment
+    }
 
 
 # ============================================
@@ -1711,34 +1829,53 @@ async def get_parent_by_id(
                         "name": f"{child_user.first_name or ''} {child_user.father_name or ''}".strip() or "Student",
                         "first_name": child_user.first_name,
                         "father_name": child_user.father_name,
-                        "profile_picture": child_student.profile_picture,
+                        "profile_picture": child_user.profile_picture,
                         "cover_image": child_student.cover_image,
                         "grade_level": child_student.grade_level,
                         "studying_at": child_student.studying_at,
-                        "location": child_student.location,
+                        "location": child_user.location,
                         "username": child_student.username,
                         "gender": child_user.gender,
                         "about": child_student.about,
                         "interested_in": child_student.interested_in or [],
-                        "hobbies": child_student.hobbies or [],
-                        "languages": child_student.languages or []
+                        "hobbies": child_user.hobbies or [],
+                        "languages": child_user.languages or []
                     })
+
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if user.last_name:
+        # International naming convention
+        display_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [user.first_name, user.father_name, user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
 
     return {
         "id": parent_profile.id,
         "user_id": parent_profile.user_id,
         "username": parent_profile.username,
-        "name": f"{user.first_name} {user.father_name} {user.grandfather_name}",
+        "name": display_name or "Parent",
+        "first_name": user.first_name,
+        "father_name": user.father_name,
+        "grandfather_name": user.grandfather_name,
+        "last_name": user.last_name,
         "bio": parent_profile.bio,
         "quote": parent_profile.quote,
         "relationship_type": parent_profile.relationship_type,
-        "location": parent_profile.location,
+        "location": user.location,  # Read from users table
+        "social_links": user.social_links or {},  # Read from users table
+        "languages": user.languages or [],  # Read from users table
+        "hobbies": user.hobbies or [],  # Read from users table
+        "gender": user.gender,  # Read from users table
         "children_ids": parent_profile.children_ids or [],
         "children_info": children_info,
         "rating": parent_profile.rating,
         "rating_count": parent_profile.rating_count,
-        "is_verified": user.is_verified if user else False,  # FIXED: is_verified is in users table, not parent_profiles
-        "profile_picture": parent_profile.profile_picture,
+        "is_verified": user.is_verified if user else False,
+        "profile_picture": user.profile_picture,  # Read from users table
         "cover_image": parent_profile.cover_image,
         "total_children": parent_profile.total_children,
         "total_sessions_booked": parent_profile.total_sessions_booked,

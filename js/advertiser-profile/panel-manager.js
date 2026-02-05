@@ -89,7 +89,16 @@ async function switchPanel(panelName) {
     // Initialize panel-specific managers when switching
     if (panelName === 'brands' && typeof BrandsManager !== 'undefined') {
         console.log('🏷️ Initializing BrandsManager for brands panel...');
+        // Always initialize to ensure brands are loaded and rendered
         BrandsManager.initialize();
+
+        // Force a render after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            console.log('🏷️ Force rendering brands after panel switch...');
+            if (typeof BrandsManager.renderBrands === 'function') {
+                BrandsManager.renderBrands();
+            }
+        }, 100);
     }
 }
 

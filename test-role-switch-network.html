@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Switch Network Diagnostic</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #4CAF50;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 18px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+        .log-entry.info { color: #4FC3F7; }
+        .log-entry.success { color: #66BB6A; }
+        .log-entry.error { color: #EF5350; }
+        .log-entry.warning { color: #FFA726; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.ok { background: #4CAF50; color: white; }
+        .status.fail { background: #f44336; color: white; }
+        .status.pending { background: #FFC107; color: black; }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px;
+        }
+        .info-box {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Role Switch Network Diagnostic</h1>
+        <p class="subtitle">This tool diagnoses why /api/switch-role requests might not be reaching the backend</p>
+
+        <div class="info-box">
+            <strong>📋 Instructions:</strong>
+            <ol style="margin: 10px 0 0 20px;">
+                <li>Click "Run Full Diagnostic" to test all scenarios</li>
+                <li>Watch the backend terminal for logs starting with <code>[switch-role]</code></li>
+                <li>Compare what appears in the log below vs backend terminal</li>
+                <li>If logs appear here but NOT in backend terminal = browser is caching or not reaching backend</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Quick Actions</h2>
+            <button onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+            <button onclick="testSwitchRole()">Test Switch Role API</button>
+            <button onclick="checkBackendConnection()">Check Backend Connection</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="section">
+            <h2>📊 Diagnostic Results</h2>
+            <div id="status-summary">
+                <div>Backend Connection: <span class="status pending" id="status-backend">Pending</span></div>
+                <div>Authentication: <span class="status pending" id="status-auth">Pending</span></div>
+                <div>Switch Role API: <span class="status pending" id="status-switch">Pending</span></div>
+                <div>Cache Headers: <span class="status pending" id="status-cache">Pending</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Diagnostic Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 Browser Network Inspector</h2>
+            <div class="warning-box">
+                <strong>⚠️ IMPORTANT:</strong> Open your browser DevTools (F12) → Network tab → Switch roles → Look for:
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>POST request to <code>/api/switch-role</code></li>
+                    <li>Status code (should be 200)</li>
+                    <li>Check if it says "(from cache)" or "(from disk cache)"</li>
+                    <li>Look at Response Headers for Cache-Control</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let diagnosticResults = {};
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 });
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log cleared', 'info');
+        }
+
+        function updateStatus(id, status) {
+            const statusEl = document.getElementById(id);
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status === 'ok' ? 'OK' : status === 'fail' ? 'FAIL' : 'Pending';
+        }
+
+        async function checkBackendConnection() {
+            log('━━━━━ CHECKING BACKEND CONNECTION ━━━━━', 'info');
+            log(`Testing connection to ${API_BASE_URL}...`, 'info');
+
+            try {
+                const start = Date.now();
+                const response = await fetch(`${API_BASE_URL}/api/health`, {
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                const elapsed = Date.now() - start;
+
+                if (response.ok) {
+                    log(`✅ Backend is reachable (${elapsed}ms)`, 'success');
+                    log(`   Status: ${response.status}`, 'info');
+                    log(`   URL: ${response.url}`, 'info');
+                    updateStatus('status-backend', 'ok');
+                    diagnosticResults.backend = 'ok';
+                    return true;
+                } else {
+                    log(`❌ Backend returned error: ${response.status}`, 'error');
+                    updateStatus('status-backend', 'fail');
+                    diagnosticResults.backend = 'fail';
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Cannot reach backend: ${error.message}`, 'error');
+                log(`   Make sure backend is running on port 8000`, 'warning');
+                updateStatus('status-backend', 'fail');
+                diagnosticResults.backend = 'fail';
+                return false;
+            }
+        }
+
+        async function testSwitchRole() {
+            log('━━━━━ TESTING ROLE SWITCH API ━━━━━', 'info');
+
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                log('❌ No access token found. Please login first.', 'error');
+                updateStatus('status-auth', 'fail');
+                return;
+            }
+
+            log('✅ Found access token', 'success');
+            updateStatus('status-auth', 'ok');
+
+            // Get current user to find available roles
+            log('Fetching current user data...', 'info');
+            try {
+                const meResponse = await fetch(`${API_BASE_URL}/api/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    cache: 'no-cache'
+                });
+
+                if (!meResponse.ok) {
+                    log(`❌ Failed to get user data: ${meResponse.status}`, 'error');
+                    updateStatus('status-auth', 'fail');
+                    return;
+                }
+
+                const userData = await meResponse.json();
+                const currentRole = userData.active_role || userData.role;
+                const availableRoles = userData.roles || [];
+
+                log(`Current role: ${currentRole}`, 'info');
+                log(`Available roles: ${availableRoles.join(', ')}`, 'info');
+
+                // Find a different role to switch to
+                const targetRole = availableRoles.find(r => r !== currentRole);
+                if (!targetRole) {
+                    log('❌ User only has one role. Cannot test role switching.', 'error');
+                    return;
+                }
+
+                log(`Target role: ${targetRole}`, 'info');
+                log('', 'info');
+                log('⚠️ WATCH THE BACKEND TERMINAL NOW!', 'warning');
+                log('You should see logs like:', 'warning');
+                log(`   [switch-role] BEFORE update: user ${userData.id} active_role = ${currentRole}`, 'warning');
+                log(`   [switch-role] AFTER update: user ${userData.id} active_role = ${targetRole}`, 'warning');
+                log(`   [switch-role] ✅ COMMIT SUCCESSFUL`, 'warning');
+                log('', 'info');
+
+                // Test role switch with cache-busting headers
+                log(`Making POST request to ${API_BASE_URL}/api/switch-role...`, 'info');
+                log(`   Headers: Authorization, Content-Type, Cache-Control`, 'info');
+                log(`   Body: { role: "${targetRole}" }`, 'info');
+                log(`   Cache: no-cache`, 'info');
+
+                const start = Date.now();
+                const switchResponse = await fetch(`${API_BASE_URL}/api/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    body: JSON.stringify({ role: targetRole }),
+                    cache: 'no-cache'
+                });
+                const elapsed = Date.now() - start;
+
+                log(`Response received in ${elapsed}ms`, 'info');
+                log(`Status: ${switchResponse.status}`, 'info');
+
+                // Check response headers for caching
+                const cacheControl = switchResponse.headers.get('Cache-Control');
+                const etag = switchResponse.headers.get('ETag');
+                const xCacheStatus = switchResponse.headers.get('X-Cache');
+
+                log(`Response Headers:`, 'info');
+                log(`   Cache-Control: ${cacheControl || 'none'}`, 'info');
+                log(`   ETag: ${etag || 'none'}`, 'info');
+                log(`   X-Cache: ${xCacheStatus || 'none'}`, 'info');
+
+                if (cacheControl && cacheControl.includes('no-cache')) {
+                    log('✅ Response has proper no-cache headers', 'success');
+                    updateStatus('status-cache', 'ok');
+                } else {
+                    log('⚠️ Response may be cacheable', 'warning');
+                    updateStatus('status-cache', 'fail');
+                }
+
+                if (switchResponse.ok) {
+                    const switchData = await switchResponse.json();
+                    log(`✅ API call succeeded`, 'success');
+                    log(`   Returned active_role: ${switchData.active_role}`, 'success');
+                    log(`   New token provided: ${switchData.access_token ? 'Yes' : 'No'}`, 'info');
+                    updateStatus('status-switch', 'ok');
+
+                    log('', 'info');
+                    log('━━━━━ CRITICAL CHECK ━━━━━', 'warning');
+                    log('Did you see [switch-role] logs in backend terminal?', 'warning');
+                    log('  YES = Backend is working, issue is elsewhere', 'warning');
+                    log('  NO  = Request not reaching backend (cache/network issue)', 'warning');
+                } else {
+                    const errorData = await switchResponse.text();
+                    log(`❌ API call failed: ${switchResponse.status}`, 'error');
+                    log(`   Response: ${errorData}`, 'error');
+                    updateStatus('status-switch', 'fail');
+                }
+
+            } catch (error) {
+                log(`❌ Error during role switch test: ${error.message}`, 'error');
+                log(`   ${error.stack}`, 'error');
+                updateStatus('status-switch', 'fail');
+            }
+        }
+
+        async function runFullDiagnostic() {
+            clearLog();
+            log('🚀 Starting full diagnostic...', 'info');
+            log('', 'info');
+
+            // Step 1: Check backend
+            const backendOk = await checkBackendConnection();
+            log('', 'info');
+
+            if (!backendOk) {
+                log('⚠️ Cannot proceed - backend is not reachable', 'error');
+                return;
+            }
+
+            // Step 2: Test role switch
+            await testSwitchRole();
+
+            log('', 'info');
+            log('━━━━━ DIAGNOSTIC COMPLETE ━━━━━', 'success');
+            log('', 'info');
+            log('📋 Next Steps:', 'info');
+            log('1. Check if backend logs appeared in terminal', 'info');
+            log('2. If NO backend logs:', 'warning');
+            log('   - Browser is caching responses', 'warning');
+            log('   - OR multiple backend servers running', 'warning');
+            log('   - OR network interception (proxy/extension)', 'warning');
+            log('3. If YES backend logs but role still reverts:', 'warning');
+            log('   - Database not committing', 'warning');
+            log('   - OR frontend using stale data', 'warning');
+        }
+
+        // Auto-run on load if user is logged in
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                log('✅ User is logged in', 'success');
+                log('Ready to run diagnostics', 'info');
+            } else {
+                log('⚠️ No access token found. Please login first:', 'warning');
+                log('   1. Go to http://localhost:8081', 'info');
+                log('   2. Login with your credentials', 'info');
+                log('   3. Come back to this page', 'info');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -493,17 +493,14 @@ async function loadAndOpenCourseRequestModal() {
 }
 
 function openRequestSchoolModal() {
-    console.log('openRequestSchoolModal called, manager:', requestModalsManager);
-    if (requestModalsManager) {
-        requestModalsManager.openSchoolModal();
+    console.log('openRequestSchoolModal called - delegating to school-request-manager');
+    // Use the new school-request-modal from common-modals (handled by school-request-manager.js)
+    // Note: school-request-manager.js defines window.openSchoolRequestModal (different word order)
+    if (typeof window.openSchoolRequestModal === 'function') {
+        window.openSchoolRequestModal();
     } else {
-        console.error('RequestModalsManager not initialized yet');
-        // Try to open modal directly as fallback
-        const modal = document.getElementById('requestSchoolModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
+        console.error('openSchoolRequestModal function not available from school-request-manager.js');
+        alert('School request modal is not available. Please refresh the page.');
     }
 }
 

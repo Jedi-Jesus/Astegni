@@ -1,0 +1,287 @@
+/* ============================================
+   SORT BAR STYLES
+   ============================================ */
+
+.sort-bar {
+    background: var(--card-background, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+/* Main Sort Bar Content */
+.sort-bar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+}
+
+/* Quick Sort Actions (Left) */
+.sort-quick-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--background, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    color: var(--text, #374151);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    border-color: var(--primary-color, #3b82f6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.sort-btn.active {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    border-color: var(--primary-color, #3b82f6);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.sort-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* View Options (Center) */
+.view-options {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.view-option-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+}
+
+.view-toggle-group {
+    display: flex;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.view-toggle-btn {
+    padding: 0.5rem 0.75rem;
+    background: var(--background, #f9fafb);
+    border: none;
+    border-right: 1px solid var(--border-color, #e5e7eb);
+    color: var(--text-secondary, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn:last-child {
+    border-right: none;
+}
+
+.view-toggle-btn:hover {
+    background: var(--hover-background, #f3f4f6);
+    color: var(--text, #374151);
+}
+
+.view-toggle-btn.active {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+}
+
+.view-toggle-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Advanced Sort Dropdown (Right) */
+.sort-advanced {
+    display: flex;
+    align-items: center;
+}
+
+.sort-dropdown {
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    background: var(--background, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    color: var(--text, #374151);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.25rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.sort-dropdown:hover {
+    border-color: var(--primary-color, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sort-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Secondary Bar */
+.sort-bar-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--background, #f9fafb);
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* Active Filters Display */
+.active-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.filter-chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.filter-chip-remove:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.filter-chip-remove svg {
+    width: 0.625rem;
+    height: 0.625rem;
+}
+
+/* Results Info */
+.results-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.results-count-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 500;
+}
+
+/* Dark Mode Support */
+html[data-theme="dark"] .sort-bar {
+    background: var(--card-background, #1f2937);
+    border-color: var(--border-color, #374151);
+}
+
+html[data-theme="dark"] .sort-btn {
+    background: var(--background, #111827);
+    border-color: var(--border-color, #374151);
+    color: var(--text, #e5e7eb);
+}
+
+html[data-theme="dark"] .sort-btn:hover {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+}
+
+html[data-theme="dark"] .sort-dropdown {
+    background: var(--background, #111827);
+    border-color: var(--border-color, #374151);
+    color: var(--text, #e5e7eb);
+}
+
+html[data-theme="dark"] .view-toggle-btn {
+    background: var(--background, #111827);
+    border-color: var(--border-color, #374151);
+    color: var(--text-secondary, #9ca3af);
+}
+
+html[data-theme="dark"] .sort-bar-secondary {
+    background: var(--background, #111827);
+    border-color: var(--border-color, #374151);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sort-bar-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sort-quick-actions,
+    .view-options,
+    .sort-advanced {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sort-dropdown {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .sort-btn span {
+        display: none;
+    }
+
+    .sort-btn {
+        padding: 0.5rem;
+    }
+
+    .view-option-label {
+        display: none;
+    }
+
+    .sort-bar-secondary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

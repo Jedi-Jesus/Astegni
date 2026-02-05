@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating Filter Debug Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="number"] {
+            width: 200px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+        }
+        .log-entry.ui { color: #4EC9B0; }
+        .log-entry.state { color: #DCDCAA; }
+        .log-entry.controller { color: #C586C0; }
+        .log-entry.api { color: #569CD6; }
+        .log-entry.success { color: #4CAF50; }
+        .log-entry.error { color: #F44336; }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .instructions ol {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Rating Filter Debug Test</h1>
+        <p class="subtitle">Test the rating filter debug logging system</p>
+
+        <div class="instructions">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Open your browser's Developer Console (F12)</li>
+                <li>Enter a minimum or maximum rating below</li>
+                <li>Watch both the console and the output panel below</li>
+                <li>Check that values flow through all layers correctly</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Rating Filter Input</h2>
+
+            <div class="input-group">
+                <label for="testMinRating">Minimum Rating (0-5):</label>
+                <input type="number" id="testMinRating" name="minRating"
+                       min="0" max="5" step="0.1" placeholder="e.g., 4.0">
+            </div>
+
+            <div class="input-group">
+                <label for="testMaxRating">Maximum Rating (0-5):</label>
+                <input type="number" id="testMaxRating" name="maxRating"
+                       min="0" max="5" step="0.1" placeholder="e.g., 5.0">
+            </div>
+
+            <button onclick="testRatingFilter()">Test Filter</button>
+            <button onclick="clearLogs()" style="background: #666; margin-left: 10px;">Clear Logs</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Output Log</h2>
+            <div class="output" id="outputLog">
+                <div class="log-entry">Waiting for test...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+
+        function addLog(message, type = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            logEntries.push({ message, type, timestamp });
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const logEl = document.getElementById('outputLog');
+            logEl.innerHTML = logEntries.map(entry =>
+                `<div class="log-entry ${entry.type}">[${entry.timestamp}] ${entry.message}</div>`
+            ).join('');
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function clearLogs() {
+            logEntries = [];
+            updateLogDisplay();
+        }
+
+        function testRatingFilter() {
+            clearLogs();
+            addLog('=== RATING FILTER TEST STARTED ===', 'success');
+
+            // Simulate UI layer
+            const minRatingInput = document.getElementById('testMinRating');
+            const maxRatingInput = document.getElementById('testMaxRating');
+            const minValue = minRatingInput.value.trim();
+            const maxValue = maxRatingInput.value.trim();
+
+            addLog(`[UI] minRating filter changed: ${minValue}`, 'ui');
+            addLog(`[UI] Raw value (not trimmed): ${minRatingInput.value}`, 'ui');
+            addLog(`[UI] maxRating filter changed: ${maxValue}`, 'ui');
+            addLog(`[UI] Raw value (not trimmed): ${maxRatingInput.value}`, 'ui');
+
+            console.log('[TEST UI] minRating:', minValue, 'type:', typeof minValue);
+            console.log('[TEST UI] maxRating:', maxValue, 'type:', typeof maxValue);
+
+            // Simulate State layer
+            const mockState = {
+                minRating: minValue,
+                maxRating: maxValue,
+                tiered: true,
+                sortBy: 'smart'
+            };
+
+            addLog(`[State] updateFilter called: minRating = ${minValue} (type: ${typeof minValue})`, 'state');
+            addLog(`[State] updateFilter called: maxRating = ${maxValue} (type: ${typeof maxValue})`, 'state');
+            addLog(`[State] Complete filters object: ${JSON.stringify(mockState)}`, 'state');
+
+            console.log('[TEST State]', mockState);
+
+            // Simulate Controller layer
+            const params = {
+                page: 1,
+                limit: 12,
+                ...mockState
+            };
+
+            // Remove empty params
+            Object.keys(params).forEach(key => {
+                if (params[key] === '' || params[key] === null || params[key] === undefined) {
+                    addLog(`[Controller] Removing empty param: ${key} = ${params[key]}`, 'controller');
+                    delete params[key];
+                }
+            });
+
+            addLog(`[Controller] Params AFTER cleanup: ${JSON.stringify(params)}`, 'controller');
+            console.log('[TEST Controller]', params);
+
+            // Simulate API layer
+            const backendParams = {};
+
+            addLog('[API] === RATING FILTER CHECK ===', 'api');
+            addLog(`[API] params.minRating: ${params.minRating} type: ${typeof params.minRating}`, 'api');
+            addLog(`[API] params.maxRating: ${params.maxRating} type: ${typeof params.maxRating}`, 'api');
+
+            if (params.minRating !== undefined && params.minRating !== '') {
+                backendParams.min_rating = params.minRating;
+                addLog(`[API] ✅ ADDED min_rating to backendParams: ${params.minRating}`, 'success');
+            } else {
+                addLog('[API] ❌ SKIPPED min_rating - condition failed', 'error');
+            }
+
+            if (params.maxRating !== undefined && params.maxRating !== '') {
+                backendParams.max_rating = params.maxRating;
+                addLog(`[API] ✅ ADDED max_rating to backendParams: ${params.maxRating}`, 'success');
+            } else {
+                addLog('[API] ❌ SKIPPED max_rating - condition failed', 'error');
+            }
+
+            addLog('[API] === FINAL API CALL ===', 'api');
+            addLog(`[API] Backend params object: ${JSON.stringify(backendParams)}`, 'api');
+
+            const queryString = new URLSearchParams(backendParams).toString();
+            addLog(`[API] Query string: ${queryString}`, 'api');
+            addLog(`[API] Full URL: http://localhost:8000/api/tutors/tiered?${queryString}`, 'api');
+
+            console.log('[TEST API] backendParams:', backendParams);
+            console.log('[TEST API] queryString:', queryString);
+
+            addLog('=== TEST COMPLETE ===', 'success');
+            addLog('Check browser console for detailed logs', 'success');
+        }
+
+        // Auto-test on input change with debounce
+        let debounceTimer;
+        document.getElementById('testMinRating').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                addLog('⏱️ Debounced input triggered (300ms delay)', 'ui');
+            }, 300);
+        });
+
+        document.getElementById('testMaxRating').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                addLog('⏱️ Debounced input triggered (300ms delay)', 'ui');
+            }, 300);
+        });
+    </script>
+</body>
+</html>

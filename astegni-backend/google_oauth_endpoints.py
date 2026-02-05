@@ -286,18 +286,81 @@ async def google_oauth_login(
 
     if not existing_user:
         # ============================================
-        # NO ACCOUNT FOUND - RETURN ERROR
+        # NO ACCOUNT FOUND - CREATE NEW USER (REGISTRATION)
         # ============================================
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No account found with this email. Please register first."
+        print(f"[GoogleOAuth] Creating new user for email: {email}")
+
+        # Parse name into Ethiopian naming convention
+        parsed_name = parse_ethiopian_name(
+            google_user.get("name"),
+            google_user.get("given_name"),
+            google_user.get("family_name")
         )
 
-    # ============================================
-    # EXISTING USER - LOGIN
-    # ============================================
+        # Create new user with role-optional registration
+        new_user = User(
+            first_name=parsed_name["first_name"],
+            father_name=parsed_name["father_name"],
+            grandfather_name=parsed_name["grandfather_name"],
+            email=email,
+            password_hash=hash_password(secrets.token_urlsafe(32)),  # Random secure password
+            profile_picture=google_user.get("picture"),
+            email_verified=True,  # Google already verified the email
+            has_password=False,  # OAuth user - no password login
+            roles=None,  # NO ROLE - role-optional registration
+            active_role=None,  # NO ROLE - user will add roles later
+            google_email=email,  # Save Google email for connected accounts
+            oauth_provider="google"  # Mark as Google OAuth user
+        )
 
-    user = existing_user
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        print(f"[GoogleOAuth] New user created: ID={new_user.id}, Email={email}")
+        user = new_user
+
+    else:
+        # ============================================
+        # EXISTING USER - LOGIN
+        # ============================================
+        print(f"[GoogleOAuth] Existing user logged in: {existing_user.email}")
+        user = existing_user
+
+        # Check if account is scheduled for deletion (same as regular login)
+        if user.account_status == 'pending_deletion':
+            from sqlalchemy import text
+
+            # Get deletion details
+            deletion_request = db.execute(
+                text("""
+                SELECT scheduled_deletion_at, reasons, deletion_fee
+                FROM account_deletion_requests
+                WHERE user_id = :user_id AND status = 'pending'
+                ORDER BY requested_at DESC
+                LIMIT 1
+                """),
+                {"user_id": user.id}
+            ).fetchone()
+
+            if deletion_request:
+                scheduled_at = deletion_request[0]
+                days_remaining = (scheduled_at - datetime.utcnow()).days if scheduled_at else 0
+
+                # Return special response indicating pending deletion
+                # Frontend will show restoration confirmation modal
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "error_code": "ACCOUNT_PENDING_DELETION",
+                        "message": "Your account is scheduled for deletion",
+                        "days_remaining": days_remaining,
+                        "scheduled_deletion_at": scheduled_at.isoformat() if scheduled_at else None,
+                        "reasons": deletion_request[1] if deletion_request[1] else [],
+                        "deletion_fee": float(deletion_request[2]) if deletion_request[2] else 200.00,
+                        "email": user.email
+                    }
+                )
 
     # Update profile picture if changed
     if google_user.get("picture") and not user.profile_picture:
@@ -307,26 +370,31 @@ async def google_oauth_login(
     if google_user.get("email_verified") and not user.email_verified:
         user.email_verified = True
 
+    # Save Google OAuth connection info (for connected accounts modal)
+    if not user.google_email:
+        user.google_email = email
+    if not user.oauth_provider:
+        user.oauth_provider = "google"
+
     db.commit()
 
-    print(f"[GoogleOAuth] Existing user logged in: {user.email}")
-
-    # Step 3: Get role-specific IDs
+    # Step 3: Get role-specific IDs (handle NULL roles)
     role_ids = {}
+    user_roles = user.roles or []  # Handle NULL roles
 
-    if "student" in user.roles:
+    if "student" in user_roles:
         student = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
         role_ids["student"] = student.id if student else None
 
-    if "tutor" in user.roles:
+    if "tutor" in user_roles:
         tutor = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
         role_ids["tutor"] = tutor.id if tutor else None
 
-    if "parent" in user.roles:
+    if "parent" in user_roles:
         parent = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
         role_ids["parent"] = parent.id if parent else None
 
-    if "advertiser" in user.roles:
+    if "advertiser" in user_roles:
         advertiser = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
         role_ids["advertiser"] = advertiser.id if advertiser else None
 

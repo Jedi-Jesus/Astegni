@@ -210,7 +210,9 @@ const BrandsManager = {
         container.innerHTML = '';
 
         // Add new brand card first
-        container.innerHTML = this.createNewBrandCard();
+        const newBrandCardHTML = this.createNewBrandCard();
+        console.log('🏷️ Creating new brand card, HTML length:', newBrandCardHTML.length);
+        container.innerHTML = newBrandCardHTML;
 
         // Add brand cards
         const filteredBrands = this.filterBrands(this.brands);
@@ -487,7 +489,7 @@ const BrandsManager = {
                     <span class="campaign-card-small-status ${statusClass}">${this.capitalizeFirst(statusClass)}</span>
                 </div>
                 <div class="campaign-card-small-meta">
-                    <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ETB</span>
+                    <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
                     <span><i class="fas fa-eye"></i> ${this.formatNumber(campaign.impressions || 0)}</span>
                 </div>
             </div>
@@ -1646,9 +1648,9 @@ const BrandsManager = {
                 <strong style="color: #ff9800;">Budget Already Used</strong>
             </div>
             <div style="color: var(--text-secondary);">
-                Original budget: <strong>${campaign.campaign_budget.toLocaleString()} ETB</strong><br>
-                Already spent: <strong>${campaign.amount_used.toLocaleString()} ETB</strong> (non-refundable)<br>
-                Remaining: <strong>${campaign.remaining_balance.toLocaleString()} ETB</strong>
+                Original budget: <strong>${campaign.campaign_budget.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong><br>
+                Already spent: <strong>${campaign.amount_used.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong> (non-refundable)<br>
+                Remaining: <strong>${campaign.remaining_balance.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong>
             </div>
         `;
 
@@ -1723,7 +1725,7 @@ const BrandsManager = {
                 regionExclusionPremiums: {},  // Will be empty until loaded
                 countryRegions: {},
                 placementPremiums: { placeholder: 0.01, widget: 0.02, popup: 0.05, insession: 0.10 },
-                currency: 'ETB'
+                currency: window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'
             };
             badge.classList.remove('loading');
             this.updateCpiDisplay();
@@ -2634,7 +2636,7 @@ const BrandsManager = {
                     await this.loadBrandCampaigns(this.currentBrand.id);
 
                     if (typeof showNotification === 'function') {
-                        showNotification(`Campaign created! Please complete ${result.payment.deposit_amount} ETB deposit payment.`, 'success');
+                        showNotification(`Campaign created! Please complete ${result.payment.deposit_amount} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} deposit payment.`, 'success');
                     }
 
                     // In production, redirect to payment gateway:
@@ -2668,7 +2670,7 @@ const BrandsManager = {
 
         if (!estimateEl || !budgetValue || budgetValue <= 0) {
             if (estimateEl) {
-                estimateEl.textContent = 'Estimated: ~0 impressions at 0.00 ETB/impression';
+                estimateEl.textContent = `Estimated: ~0 impressions at 0.00 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}/impression`;
             }
             return;
         }
@@ -3014,7 +3016,7 @@ const BrandsManager = {
         return new Intl.NumberFormat('en-ET', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }).format(amount) + ' ETB';
+        }).format(amount) + ` ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
     },
 
     // ============================================
@@ -3467,19 +3469,19 @@ const BrandsManager = {
         const calcEl = document.getElementById('finance-cancellation-calculation');
         if (calcEl) {
             const feePercent = cancellation.final_fee_percent || cancellation.base_fee_percent;
-            calcEl.textContent = `Remaining: ${finances.remaining_balance.toFixed(2)} ETB × ${feePercent}% = ${cancellation.fee_amount.toFixed(2)} ETB fee`;
+            calcEl.textContent = `Remaining: ${finances.remaining_balance.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} × ${feePercent}% = ${cancellation.fee_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} fee`;
         }
 
         // Update refund amount
         const refundEl = document.getElementById('finance-refund-amount');
         if (refundEl) {
-            refundEl.textContent = `${cancellation.refund_amount.toFixed(2)} ETB`;
+            refundEl.textContent = `${cancellation.refund_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
         }
 
         // Update used amount in note
         const usedNoteEl = document.getElementById('finance-used-in-note');
         if (usedNoteEl) {
-            usedNoteEl.textContent = `${finances.amount_used.toFixed(2)} ETB`;
+            usedNoteEl.textContent = `${finances.amount_used.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
         }
     },
 
@@ -3513,7 +3515,7 @@ const BrandsManager = {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                alert(`Campaign paused successfully!\n\nNo fee charged. Your budget (${data.finances.remaining_balance.toFixed(2)} ETB) remains locked.\n\nYou can resume this campaign anytime or cancel to get a refund (minus cancellation fee).`);
+                alert(`Campaign paused successfully!\n\nNo fee charged. Your budget (${data.finances.remaining_balance.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}) remains locked.\n\nYou can resume this campaign anytime or cancel to get a refund (minus cancellation fee).`);
 
                 // Refresh campaign list
                 this.loadBrands();
@@ -3560,17 +3562,17 @@ const BrandsManager = {
 
             // Confirmation message
             let confirmMsg = `Are you sure you want to CANCEL this campaign?\n\n`;
-            confirmMsg += `Campaign Budget: ${breakdown.total_budget.toFixed(2)} ETB\n`;
-            confirmMsg += `Amount Used (non-refundable): ${breakdown.non_refundable_used.toFixed(2)} ETB\n`;
-            confirmMsg += `Remaining Balance: ${breakdown.remaining.toFixed(2)} ETB\n\n`;
+            confirmMsg += `Campaign Budget: ${breakdown.total_budget.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
+            confirmMsg += `Amount Used (non-refundable): ${breakdown.non_refundable_used.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
+            confirmMsg += `Remaining Balance: ${breakdown.remaining.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
 
             if (cancellation.within_grace_period) {
                 confirmMsg += `🎉 GRACE PERIOD ACTIVE!\n`;
-                confirmMsg += `Cancellation Fee: 0.00 ETB (0%)\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ETB\n\n`;
+                confirmMsg += `Cancellation Fee: 0.00 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} (0%)\n`;
+                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
             } else {
-                confirmMsg += `Cancellation Fee (${feePercent}%): ${breakdown.cancellation_fee.toFixed(2)} ETB\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ETB\n\n`;
+                confirmMsg += `Cancellation Fee (${feePercent}%): ${breakdown.cancellation_fee.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
+                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
                 confirmMsg += `💡 TIP: Use "Pause" instead to avoid fees!\n\n`;
             }
 
@@ -3597,11 +3599,11 @@ const BrandsManager = {
             if (cancelResponse.ok && cancelData.success) {
                 const summary = cancelData.cancellation_summary;
                 let successMsg = `Campaign cancelled successfully!\n\n`;
-                successMsg += `Refund: ${summary.refund_amount.toFixed(2)} ETB\n`;
+                successMsg += `Refund: ${summary.refund_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
                 if (summary.cancellation_fee_amount > 0) {
-                    successMsg += `Cancellation Fee (${summary.final_fee_percent}%): ${summary.cancellation_fee_amount.toFixed(2)} ETB\n`;
+                    successMsg += `Cancellation Fee (${summary.final_fee_percent}%): ${summary.cancellation_fee_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
                 }
-                successMsg += `\nYour new balance: ${cancelData.advertiser_balance.balance_after.toFixed(2)} ETB`;
+                successMsg += `\nYour new balance: ${cancelData.advertiser_balance.balance_after.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
 
                 alert(successMsg);
 
@@ -4333,7 +4335,37 @@ window.BrandsManager = BrandsManager;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('brandsGrid')) {
+    console.log('🏷️ [BrandsManager] DOMContentLoaded fired');
+    const brandsGrid = document.getElementById('brandsGrid');
+
+    if (brandsGrid) {
+        console.log('🏷️ [BrandsManager] brandsGrid found in DOM, initializing...');
         BrandsManager.initialize();
+    } else {
+        console.warn('🏷️ [BrandsManager] brandsGrid not found in DOM yet');
+    }
+});
+
+// Also listen for panel switch events to re-initialize when brands panel is shown
+window.addEventListener('panelSwitch', (event) => {
+    if (event.detail && event.detail.panelName === 'brands') {
+        console.log('🏷️ [BrandsManager] Panel switched to brands, ensuring initialization...');
+        setTimeout(() => {
+            if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.renderBrands === 'function') {
+                console.log('🏷️ [BrandsManager] Force rendering brands after panel switch...');
+                const brandsGrid = document.getElementById('brandsGrid');
+                if (brandsGrid) {
+                    console.log('🏷️ [BrandsManager] brandsGrid found, current innerHTML length:', brandsGrid.innerHTML.length);
+                }
+                BrandsManager.renderBrands();
+
+                // Double-check after render
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.brand-card');
+                    const newBrandCard = document.querySelector('.brand-card.new-brand');
+                    console.log('🏷️ [BrandsManager] After render - Total cards:', cards.length, '| New brand card:', newBrandCard ? 'FOUND' : 'MISSING');
+                }, 100);
+            }
+        }, 150);
     }
 });

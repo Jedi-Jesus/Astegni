@@ -564,11 +564,12 @@ async def get_student_courseworks(current_user: User = Depends(get_current_user)
 
         # All coursework tables use student_profiles.id for student_id
         cursor.execute("""
+            -- NOTE: profile_picture now read from users table
             SELECT
                 c.id, c.title, c.course_name, c.coursework_type, c.time_limit,
                 c.due_date, c.status as coursework_status, c.enrolled_courses_id,
                 COALESCE(u.first_name || ' ' || u.father_name, tp.username, 'Unknown Tutor') as tutor_name,
-                COALESCE(tp.profile_picture, u.profile_picture) as tutor_picture,
+                u.profile_picture as tutor_picture,
                 COUNT(cq.id) as question_count,
                 cs.status as submission_status,
                 cs.scored_points, cs.total_points, cs.grade_percentage
@@ -578,7 +579,7 @@ async def get_student_courseworks(current_user: User = Depends(get_current_user)
             LEFT JOIN coursework_questions cq ON c.id = cq.coursework_id
             LEFT JOIN coursework_submissions cs ON c.id = cs.coursework_id AND cs.student_id = %s
             WHERE c.student_id = %s AND c.status = 'posted'
-            GROUP BY c.id, u.first_name, u.father_name, tp.username, tp.profile_picture, u.profile_picture, cs.status, cs.scored_points, cs.total_points, cs.grade_percentage
+            GROUP BY c.id, u.first_name, u.father_name, tp.username, u.profile_picture, cs.status, cs.scored_points, cs.total_points, cs.grade_percentage
             ORDER BY c.due_date ASC
         """, (student_profile_id, student_profile_id))
 
@@ -778,11 +779,12 @@ async def get_coursework_results(coursework_id: str, current_user: User = Depend
         student_profile_id = student_row['id']
 
         # Get coursework with tutor info
+        # NOTE: profile_picture now read from users table
         cursor.execute("""
             SELECT
                 c.*,
                 COALESCE(u.first_name || ' ' || u.father_name, tp.username, 'Unknown Tutor') as tutor_name,
-                COALESCE(tp.profile_picture, u.profile_picture) as tutor_picture
+                u.profile_picture as tutor_picture
             FROM courseworks c
             JOIN users u ON c.tutor_id = u.id
             LEFT JOIN tutor_profiles tp ON u.id = tp.user_id

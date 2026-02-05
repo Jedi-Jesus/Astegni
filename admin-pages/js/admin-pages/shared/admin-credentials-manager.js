@@ -23,9 +23,18 @@
 
     /**
      * Get admin ID from page/authentication
+     * Uses global auth helpers if available
      */
     function getAdminIdFromPage() {
-        // Method 1: Check if authManager has current user
+        // Use global getCurrentAdminId if available (from auth-helpers.js)
+        if (typeof window.getCurrentAdminId === 'function') {
+            const adminId = window.getCurrentAdminId();
+            if (adminId) {
+                return adminId;
+            }
+        }
+
+        // Fallback: Check if authManager has current user
         if (typeof authManager !== 'undefined' && authManager && authManager.getCurrentUser) {
             const user = authManager.getCurrentUser();
             if (user && user.id) {
@@ -33,7 +42,7 @@
             }
         }
 
-        // Method 2: Check localStorage for currentUser
+        // Fallback: Check localStorage for currentUser
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
             try {
@@ -46,7 +55,7 @@
             }
         }
 
-        // Method 3: Try to decode JWT token
+        // Fallback: Try to decode JWT token
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (token) {
             try {
@@ -57,8 +66,8 @@
                 }).join(''));
 
                 const payload = JSON.parse(jsonPayload);
-                if (payload.sub || payload.user_id || payload.id) {
-                    return payload.sub || payload.user_id || payload.id;
+                if (payload.sub || payload.user_id || payload.id || payload.admin_id) {
+                    return payload.sub || payload.user_id || payload.id || payload.admin_id;
                 }
             } catch (e) {
                 console.error('Error decoding token:', e);

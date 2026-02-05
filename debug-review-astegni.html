@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Astegni Modal - Debug Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-entry {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 4px solid #ccc;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .log-info { border-left-color: #3b82f6; background: #dbeafe; }
+        .log-success { border-left-color: #10b981; background: #d1fae5; }
+        .log-error { border-left-color: #ef4444; background: #fee2e2; }
+        .log-warning { border-left-color: #f59e0b; background: #fef3c7; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Review Astegni Modal - Debug Console</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Tests -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Test Controls</h2>
+
+                <!-- Test Buttons -->
+                <div class="space-y-4 mb-6">
+                    <button onclick="testModalExists()" class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        1. Check if Modal Element Exists
+                    </button>
+
+                    <button onclick="testScriptLoaded()" class="w-full py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        2. Check if Script is Loaded
+                    </button>
+
+                    <button onclick="testOpenFunction()" class="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        3. Test openReviewAstegniModal()
+                    </button>
+
+                    <button onclick="testModalContainer()" class="w-full py-3 px-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                        4. Check Modal Container
+                    </button>
+
+                    <button onclick="loadModalManually()" class="w-full py-3 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                        5. Force Load Modal Manually
+                    </button>
+
+                    <button onclick="openReviewAstegniModal()" class="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-bold">
+                        🌟 CLICK HERE TO OPEN MODAL
+                    </button>
+                </div>
+
+                <!-- Simulation Card (like in profile pages) -->
+                <div class="border-t pt-4">
+                    <h3 class="font-semibold mb-3">Simulated Settings Panel Card:</h3>
+                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500 bg-gradient-to-br from-yellow-50 to-orange-50"
+                        onclick="openReviewAstegniModal()">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                <span class="text-3xl">⭐</span>
+                            </div>
+                            <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
+                            <p class="text-sm text-gray-600">Share your feedback with us</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear Log -->
+                <button onclick="clearLog()" class="w-full mt-4 py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    Clear Debug Log
+                </button>
+            </div>
+
+            <!-- Right Column: Debug Log -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Debug Log</h2>
+                <div id="debug-log" class="bg-gray-50 rounded-lg p-4 h-[600px] overflow-y-auto">
+                    <div class="log-entry log-info">Debug console ready. Click tests to begin...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Panel -->
+        <div class="mt-6 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Current Status</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-1">Modal Element</div>
+                    <div id="status-modal" class="font-bold text-gray-400">Unknown</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-1">Script Loaded</div>
+                    <div id="status-script" class="font-bold text-gray-400">Unknown</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-1">Function Exists</div>
+                    <div id="status-function" class="font-bold text-gray-400">Unknown</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-1">Container</div>
+                    <div id="status-container" class="font-bold text-gray-400">Unknown</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the actual modal HTML -->
+    <div id="modal-container"></div>
+
+    <!-- Load Review Astegni Manager Script -->
+    <script src="js/common-modals/review-astegni-manager.js"></script>
+
+    <!-- Debug Script -->
+    <script>
+        const debugLog = document.getElementById('debug-log');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        function clearLog() {
+            debugLog.innerHTML = '<div class="log-entry log-info">Debug log cleared.</div>';
+        }
+
+        function updateStatus(statusId, value, isGood) {
+            const element = document.getElementById(statusId);
+            if (element) {
+                element.textContent = value;
+                element.className = `font-bold ${isGood ? 'text-green-600' : 'text-red-600'}`;
+            }
+        }
+
+        // Test 1: Check if modal element exists
+        function testModalExists() {
+            log('Testing if modal element exists in DOM...', 'info');
+            const modal = document.getElementById('review-astegni-modal');
+
+            if (modal) {
+                log('✅ SUCCESS: Modal element found!', 'success');
+                log(`   - Element ID: ${modal.id}`, 'info');
+                log(`   - Classes: ${modal.className}`, 'info');
+                log(`   - Display: ${window.getComputedStyle(modal).display}`, 'info');
+                updateStatus('status-modal', '✅ Found', true);
+            } else {
+                log('❌ ERROR: Modal element NOT found in DOM!', 'error');
+                log('   - This means the modal HTML has not been loaded yet', 'warning');
+                updateStatus('status-modal', '❌ Not Found', false);
+            }
+
+            // Check modal container
+            const container = document.getElementById('modal-container');
+            if (container) {
+                log(`   - Modal container exists (innerHTML length: ${container.innerHTML.length})`, 'info');
+            } else {
+                log('   - Modal container NOT found', 'warning');
+            }
+        }
+
+        // Test 2: Check if script is loaded
+        function testScriptLoaded() {
+            log('Testing if review-astegni-manager.js is loaded...', 'info');
+
+            // Check for the global functions
+            const functions = ['openReviewAstegniModal', 'closeReviewAstegniModal', 'setCategoryRating', 'setRecommendation', 'submitAstegniReview'];
+            let allFound = true;
+
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    log(`   ✅ ${funcName} found`, 'success');
+                } else {
+                    log(`   ❌ ${funcName} NOT found`, 'error');
+                    allFound = false;
+                }
+            });
+
+            if (allFound) {
+                log('✅ SUCCESS: All functions found! Script is loaded correctly.', 'success');
+                updateStatus('status-script', '✅ Loaded', true);
+                updateStatus('status-function', '✅ Exists', true);
+            } else {
+                log('❌ ERROR: Some functions missing! Script may not be loaded.', 'error');
+                updateStatus('status-script', '❌ Missing', false);
+                updateStatus('status-function', '❌ Missing', false);
+            }
+        }
+
+        // Test 3: Test openReviewAstegniModal function
+        function testOpenFunction() {
+            log('Testing openReviewAstegniModal() function call...', 'info');
+
+            if (typeof window.openReviewAstegniModal !== 'function') {
+                log('❌ ERROR: openReviewAstegniModal is not a function!', 'error');
+                return;
+            }
+
+            log('   - Function exists, checking modal state...', 'info');
+            const modal = document.getElementById('review-astegni-modal');
+
+            if (!modal) {
+                log('❌ ERROR: Modal element not found. Cannot test open.', 'error');
+                log('   - The function will try to open a non-existent modal', 'warning');
+            } else {
+                log('✅ Modal element exists, ready to test open', 'success');
+            }
+
+            // Try to call it
+            try {
+                log('   - Calling openReviewAstegniModal()...', 'info');
+                window.openReviewAstegniModal();
+                log('✅ Function executed without throwing errors', 'success');
+
+                // Check if modal is visible after a short delay
+                setTimeout(() => {
+                    const modalAfter = document.getElementById('review-astegni-modal');
+                    if (modalAfter && modalAfter.classList.contains('flex')) {
+                        log('✅ SUCCESS: Modal is now visible!', 'success');
+                    } else if (modalAfter && !modalAfter.classList.contains('flex')) {
+                        log('⚠️ WARNING: Modal exists but not visible (retry mechanism may be running)', 'warning');
+                    } else {
+                        log('❌ Modal still not found after function call', 'error');
+                    }
+                }, 100);
+            } catch (error) {
+                log(`❌ ERROR: Function threw an error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 4: Check modal container
+        function testModalContainer() {
+            log('Testing modal container structure...', 'info');
+
+            const container = document.getElementById('modal-container');
+            if (container) {
+                log('✅ Modal container found', 'success');
+                log(`   - Container innerHTML length: ${container.innerHTML.length}`, 'info');
+                log(`   - Child elements: ${container.children.length}`, 'info');
+
+                if (container.innerHTML.trim() === '') {
+                    log('⚠️ WARNING: Container is empty!', 'warning');
+                    updateStatus('status-container', '⚠️ Empty', false);
+                } else {
+                    log('✅ Container has content', 'success');
+                    updateStatus('status-container', '✅ Has Content', true);
+
+                    // Check for modal inside
+                    const modalInside = container.querySelector('#review-astegni-modal');
+                    if (modalInside) {
+                        log('✅ Modal found inside container', 'success');
+                    } else {
+                        log('⚠️ Modal not found inside container', 'warning');
+                    }
+                }
+            } else {
+                log('❌ Modal container NOT found', 'error');
+                updateStatus('status-container', '❌ Not Found', false);
+            }
+        }
+
+        // Test 5: Force load modal manually
+        function loadModalManually() {
+            log('Force loading modal HTML manually...', 'info');
+
+            fetch('modals/common-modals/review-astegni-modal.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    log('✅ Fetch successful, response received', 'success');
+                    return response.text();
+                })
+                .then(html => {
+                    log(`✅ HTML received (${html.length} characters)`, 'success');
+
+                    let container = document.getElementById('modal-container');
+                    if (!container) {
+                        log('   - Creating modal-container div...', 'info');
+                        container = document.createElement('div');
+                        container.id = 'modal-container';
+                        document.body.appendChild(container);
+                    }
+
+                    container.insertAdjacentHTML('beforeend', html);
+                    log('✅ Modal HTML inserted into container', 'success');
+
+                    // Verify modal exists now
+                    setTimeout(() => {
+                        const modal = document.getElementById('review-astegni-modal');
+                        if (modal) {
+                            log('✅ SUCCESS: Modal now exists in DOM!', 'success');
+                            updateStatus('status-modal', '✅ Found', true);
+                        } else {
+                            log('❌ ERROR: Modal still not found after insertion', 'error');
+                        }
+                    }, 100);
+                })
+                .catch(error => {
+                    log(`❌ ERROR loading modal: ${error.message}`, 'error');
+                    log('   - Check if the file path is correct', 'warning');
+                    log('   - Current path: modals/common-modals/review-astegni-modal.html', 'info');
+                });
+        }
+
+        // Override console methods to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            if (message.includes('Review Astegni')) {
+                log(`[Console] ${message}`, 'info');
+            }
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            if (message.includes('Review Astegni') || message.includes('review-astegni')) {
+                log(`[Console Error] ${message}`, 'error');
+            }
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            if (message.includes('Review Astegni')) {
+                log(`[Console Warning] ${message}`, 'warning');
+            }
+        };
+
+        // Auto-load modal on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, attempting to load modal...', 'info');
+            setTimeout(() => {
+                loadModalManually();
+            }, 500);
+        });
+
+        // Initial status check
+        setTimeout(() => {
+            log('Running initial status checks...', 'info');
+            testScriptLoaded();
+            setTimeout(testModalExists, 1000);
+        }, 1500);
+    </script>
+</body>
+</html>

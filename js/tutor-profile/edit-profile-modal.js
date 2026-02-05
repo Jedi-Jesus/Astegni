@@ -5,6 +5,7 @@
         let locationsList = [];
         let socialLinksList = [];
         let heroTitlesList = [];
+        let hobbiesList = [];
 
         /**
          * Add a new hero title field
@@ -313,6 +314,95 @@
         }
 
         /**
+         * Add a new hobby field
+         */
+        function addHobby() {
+            const container = document.getElementById('hobbiesContainer');
+            if (!container) return;
+
+            const index = hobbiesList.length;
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center mb-2';
+            div.innerHTML = `
+                <input type="text"
+                    id="hobby${index}"
+                    class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                    style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+                    placeholder="Hobby (e.g., Reading, Sports)">
+                <button type="button"
+                    class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    onclick="removeHobby(${index})">
+                    🗑️
+                </button>
+            `;
+            container.appendChild(div);
+            hobbiesList.push('');
+        }
+
+        /**
+         * Remove a hobby field
+         */
+        function removeHobby(index) {
+            const container = document.getElementById('hobbiesContainer');
+            if (!container) return;
+
+            const children = Array.from(container.children);
+            if (children[index]) {
+                children[index].remove();
+                hobbiesList.splice(index, 1);
+            }
+        }
+
+        /**
+         * Load hobbies
+         */
+        function loadHobbies(hobbiesArray) {
+            const container = document.getElementById('hobbiesContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+            hobbiesList = [];
+
+            if (hobbiesArray && hobbiesArray.length > 0) {
+                hobbiesArray.forEach((hobby, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex gap-2 items-center mb-2';
+                    div.innerHTML = `
+                        <input type="text"
+                            id="hobby${index}"
+                            class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                            style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+                            placeholder="Hobby (e.g., Reading, Sports)"
+                            value="${hobby}">
+                        <button type="button"
+                            class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            onclick="removeHobby(${index})">
+                            🗑️
+                        </button>
+                    `;
+                    container.appendChild(div);
+                    hobbiesList.push(hobby);
+                });
+            } else {
+                // Add one empty field by default
+                addHobby();
+            }
+        }
+
+        /**
+         * Collect hobbies when saving
+         */
+        function getHobbies() {
+            const container = document.getElementById('hobbiesContainer');
+            if (!container) return [];
+
+            const hobbyInputs = container.querySelectorAll('input[id^="hobby"]');
+            return Array.from(hobbyInputs)
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+        }
+
+        /**
          * Open Edit Profile Modal
          * Now fetches fresh data from database instead of using stale localStorage
          */
@@ -391,6 +481,31 @@
                     locationInput.value = user.location || '';
                 }
 
+                // Load display_location checkbox (show/hide location on public profile)
+                const displayLocationCheckbox = document.getElementById('editDisplayLocation');
+                if (displayLocationCheckbox) {
+                    displayLocationCheckbox.checked = user.display_location === true;
+                    console.log('[Edit Profile] display_location loaded:', user.display_location);
+                }
+
+                // Disable GPS checkbox if location exists (require "Change Location" button click to enable)
+                const allowLocationCheckbox = document.getElementById('editAllowLocation');
+                const changeLocationBtn = document.getElementById('changeLocationBtn');
+                if (allowLocationCheckbox && user.location) {
+                    allowLocationCheckbox.checked = false;
+                    allowLocationCheckbox.disabled = true; // Make unselectable
+                    // Show "Change Location" button
+                    if (changeLocationBtn) {
+                        changeLocationBtn.classList.remove('hidden');
+                    }
+                    console.log('[Edit Profile] GPS checkbox disabled (location exists, click Change Location to modify)');
+                } else if (allowLocationCheckbox) {
+                    allowLocationCheckbox.disabled = false;
+                    if (changeLocationBtn) {
+                        changeLocationBtn.classList.add('hidden');
+                    }
+                }
+
                 // Load quote
                 const quoteInput = document.getElementById('profileQuote');
                 if (quoteInput) {
@@ -415,6 +530,10 @@
                 // Load social links
                 const socialLinks = user.social_links || {};
                 loadSocialLinks(socialLinks);
+
+                // Load hobbies
+                const hobbies = user.hobbies || [];
+                loadHobbies(hobbies);
 
                 console.log('✅ Edit modal populated with fresh database data');
 
@@ -537,22 +656,28 @@
                 .map(select => select.value)
                 .filter(value => value !== '');
             const location = document.getElementById('editLocation')?.value?.trim();
+            const displayLocation = document.getElementById('editDisplayLocation')?.checked || false;
             const quote = document.getElementById('profileQuote')?.value?.trim();
             const aboutUs = document.getElementById('aboutUs')?.value?.trim();
             const heroTitles = getHeroTitles();
             const heroSubtitle = document.getElementById('heroSubtitle')?.value?.trim();
             const socialLinks = getSocialLinks();
+            const hobbies = getHobbies();
+
+            console.log('[Save Profile] display_location value:', displayLocation);
 
             // Prepare update data based on user role
             const updateData = {
                 username: username,  // Saves to tutor_profiles.username (NOT users.username)
                 languages: languages,
                 location: location,  // Saves to tutor_profiles.location
+                display_location: displayLocation,  // Saves to users.display_location
                 quote: quote,
                 bio: aboutUs,  // FIXED: Backend expects bio, not about
                 hero_titles: heroTitles,  // Array of hero titles
                 hero_subtitle: heroSubtitle,
-                social_links: socialLinks  // Saves to tutor_profiles.social_links (JSONB)
+                social_links: socialLinks,  // Saves to tutor_profiles.social_links (JSONB)
+                hobbies: hobbies  // Array of hobbies
             };
 
             try {
@@ -607,11 +732,30 @@
         window.addLanguage = addLanguage;
         window.removeLanguage = removeLanguage;
         window.addLocation = addLocation;
+        // Handle "Change Location" button click
+        function handleChangeLocation() {
+            const allowLocationCheckbox = document.getElementById('editAllowLocation');
+            const changeLocationBtn = document.getElementById('changeLocationBtn');
+
+            if (allowLocationCheckbox) {
+                allowLocationCheckbox.disabled = false; // Enable the checkbox
+                allowLocationCheckbox.checked = false; // Uncheck it
+                console.log('[Edit Profile] GPS checkbox enabled for location change');
+            }
+
+            if (changeLocationBtn) {
+                changeLocationBtn.classList.add('hidden'); // Hide the button
+            }
+        }
+
         window.removeLocation = removeLocation;
         window.addSocialLink = addSocialLink;
         window.removeSocialLink = removeSocialLink;
         window.addHeroTitle = addHeroTitle;
         window.removeHeroTitle = removeHeroTitle;
+        window.addHobby = addHobby;
+        window.removeHobby = removeHobby;
+        window.handleChangeLocation = handleChangeLocation;
         window.saveEditProfile = saveEditProfile;
         window.saveProfile = saveProfile;
 

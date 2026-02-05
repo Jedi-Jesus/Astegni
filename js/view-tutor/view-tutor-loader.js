@@ -107,6 +107,9 @@ class ViewTutorLoader {
         // Update contact information (email, phone, experience)
         this.updateContactInfo(data);
 
+        // Update social links
+        this.populateSocialLinks(data.social_links || {});
+
         // Update badges based on verification and experience
         this.updateBadges(data);
     }
@@ -147,14 +150,15 @@ class ViewTutorLoader {
 
     /**
      * Update tutor name
+     * Uses the 'name' field which intelligently handles both Ethiopian and International naming conventions
      */
     updateTutorName(data) {
         const nameElement = document.getElementById('tutorName');
         if (nameElement) {
-            const firstName = data.first_name || 'Unknown';
-            const fatherName = data.father_name || '';
-            const tutorName = `${firstName} ${fatherName}`.trim();
-            nameElement.textContent = tutorName || 'Tutor Profile';
+            // Use the 'name' field built by backend based on naming convention
+            // International: first_name + last_name
+            // Ethiopian: first_name + father_name + grandfather_name
+            nameElement.textContent = data.name || 'Tutor Profile';
         }
     }
 
@@ -338,6 +342,25 @@ class ViewTutorLoader {
 
         // Update Languages in profile-subjects-methods-grid
         this.updateSubjectsLanguagesGrades(data);
+
+        // Hobbies & Interests - always show, with "No hobbies yet" if empty
+        const hobbiesEl = document.getElementById('tutor-hobbies');
+        if (hobbiesEl) {
+            if (data.hobbies && Array.isArray(data.hobbies) && data.hobbies.length > 0) {
+                const hobbiesText = data.hobbies.join(', ');
+                hobbiesEl.textContent = hobbiesText;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else if (data.hobbies && typeof data.hobbies === 'string' && data.hobbies.trim() !== '') {
+                hobbiesEl.textContent = data.hobbies;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else {
+                hobbiesEl.textContent = 'No hobbies yet';
+                hobbiesEl.style.color = 'var(--text-muted)';
+                hobbiesEl.style.fontStyle = 'italic';
+            }
+        }
 
         // Load Teaching Methods and Grade Levels from packages/courses
         this.loadTeachingMethodsAndGradeLevels();
@@ -728,6 +751,76 @@ class ViewTutorLoader {
         if (profileHeader) {
             profileHeader.style.opacity = '1';
             profileHeader.style.pointerEvents = 'auto';
+        }
+    }
+
+    /**
+     * Populate social links
+     */
+    populateSocialLinks(socialLinks) {
+        const container = document.getElementById('social-links-container');
+        if (!container) {
+            console.error('❌ Social links container not found!');
+            return;
+        }
+
+        const iconMap = {
+            facebook: 'fab fa-facebook-f',
+            twitter: 'fab fa-twitter',
+            linkedin: 'fab fa-linkedin-in',
+            instagram: 'fab fa-instagram',
+            youtube: 'fab fa-youtube',
+            telegram: 'fab fa-telegram-plane',
+            website: 'fas fa-globe'
+        };
+
+        const titleMap = {
+            facebook: 'Facebook',
+            twitter: 'Twitter',
+            linkedin: 'LinkedIn',
+            instagram: 'Instagram',
+            youtube: 'YouTube',
+            telegram: 'Telegram',
+            website: 'Website'
+        };
+
+        console.log('📱 Populating social links. Raw data:', socialLinks);
+        console.log('📱 Type:', typeof socialLinks, 'IsObject:', socialLinks && typeof socialLinks === 'object');
+
+        // Handle both object and array formats
+        let entries = [];
+        if (socialLinks && typeof socialLinks === 'object') {
+            if (Array.isArray(socialLinks)) {
+                // Array format: [{platform: 'facebook', url: 'https://...'}]
+                entries = socialLinks.map(item => [item.platform, item.url]);
+            } else {
+                // Object format: {facebook: 'https://...', twitter: 'https://...'}
+                entries = Object.entries(socialLinks);
+            }
+        }
+
+        console.log('📱 Parsed entries:', entries);
+
+        // Only show platforms that have URLs
+        const html = entries
+            .filter(([platform, url]) => url && url.trim() !== '')
+            .map(([platform, url]) => {
+                console.log(`  ✓ Adding ${platform}: ${url}`);
+                return `
+            <a href="${url}" class="social-link" title="${titleMap[platform] || platform}"
+               onclick="event.preventDefault(); window.open('${url}', '_blank');" target="_blank" rel="noopener noreferrer">
+                <i class="${iconMap[platform] || 'fas fa-link'}"></i>
+            </a>
+        `;
+            }).join('');
+
+        if (html) {
+            container.innerHTML = html;
+            const count = entries.filter(([_, url]) => url && url.trim() !== '').length;
+            console.log(`✅ ${count} social link(s) populated successfully`);
+        } else {
+            container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">No social links added</p>';
+            console.log('ℹ️ No social links to display');
         }
     }
 

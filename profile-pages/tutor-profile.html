@@ -12,6 +12,37 @@
     <script src="../js/fix-loading-screen.js"></script>
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v=20251217"></script>
+    <!-- Safe wrapper for openChatModal - waits for function to be available -->
+    <script>
+        // Temporary stub - will be replaced by chat-modal.js when it loads
+        if (!window.openChatModal) {
+            window.openChatModal = function(targetUser = null) {
+                if (typeof ChatModalManager !== 'undefined') {
+                    ChatModalManager.open(targetUser);
+                } else {
+                    console.log('Chat modal not loaded yet, waiting...');
+                    // Wait for chat modal to load
+                    const checkInterval = setInterval(function() {
+                        if (typeof ChatModalManager !== 'undefined') {
+                            clearInterval(checkInterval);
+                            ChatModalManager.open(targetUser);
+                        }
+                    }, 100);
+                    // Stop checking after 10 seconds
+                    setTimeout(function() {
+                        clearInterval(checkInterval);
+                    }, 10000);
+                }
+            };
+        }
+    </script>
+    <!-- Active Role Guard - Prevents access to deactivated roles -->
+    <script src="../js/root/active-role-guard.js"></script>
+    <!-- Preconnect for faster font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts - For Appearance Modal Font Selection -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Animate.css for animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
@@ -25,7 +56,8 @@
     <link rel="stylesheet" href="../css/tutor-profile/right-widgets.css">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
     <link rel="stylesheet" href="../css/view-tutor/view-tutor.css">
-    <link rel="stylesheet" href="../css/tutor-profile/package-modal-enhanced.css">
+    <!-- Package Modal Unified Styles (consolidated from enhanced, fix, and responsive) -->
+    <link rel="stylesheet" href="../css/tutor-profile/package-modal-unified.css?v=20260204k">
     <link rel="stylesheet" href="../css/tutor-profile/whiteboard-modal.css">
     <!-- Quiz Modal Styles -->
     <link rel="stylesheet" href="../css/tutor-profile/coursework-modal.css">
@@ -35,6 +67,8 @@
     <link rel="stylesheet" href="../css/tutor-profile/reviews-panel.css">
     <!-- Credentials Panel Styles -->
     <link rel="stylesheet" href="../css/tutor-profile/credentials-panel.css">
+    <!-- Requests Panel Styles -->
+    <link rel="stylesheet" href="../css/tutor-profile/requests-panel.css">
     <!-- Quill.js Rich Text Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
@@ -43,6 +77,9 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/appearance-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/upload-document-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/delete-credential-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/root/testimonials-widget.css">
@@ -53,15 +90,13 @@
     <!-- Standalone Chat Call Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-schedule-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/confirm-delete-schedule-modal.css">
     <link rel="stylesheet" href="../css/common-modals/digital-lab-modal.css">
     <!-- Advanced Notes Styles -->
     <link rel="stylesheet" href="../css/common-modals/advanced-notes.css">
-    <!-- Package Modal Fix - MUST be loaded LAST to override all conflicts -->
-    <link rel="stylesheet" href="../css/tutor-profile/package-modal-fix.css">
     <!-- Market Trend Styles -->
     <link rel="stylesheet" href="../css/tutor-profile/market-trend-styles.css">
-    <!-- Package Modal Responsive Styles -->
-    <link rel="stylesheet" href="../css/tutor-profile/package-modal-responsive.css">
 
     <!-- Minimal inline styles - only for profile-specific fixes -->
     <link rel="stylesheet" href="../css/tutor-profile/profile-specific-fix.css">
@@ -74,6 +109,21 @@
     
     <!-- Debug Script for Rating Tooltip -->
     <script src="../js/tutor-profile/debug-rating-tooltip.js"></script>
+
+    <!-- Role Switch Debugger (DEVELOPMENT ONLY - Press Ctrl+Shift+D to toggle) -->
+    <script src="../js/utils/role-switch-debugger.js"></script>
+
+    <!-- Sessions Panel Manager - Load early to ensure functions are available for onclick handlers -->
+    <script src="../js/tutor-profile/sessions-panel-manager.js?v=20260130h"></script>
+
+    <!-- Schedule Panel Manager - Load early to ensure filterSchedulesByRole is available for onclick handlers -->
+    <script src="../js/tutor-profile/schedule-panel-manager-NEW.js?v=20260204y"></script>
+
+    <!-- Today's Schedule Widget -->
+    <script src="../js/tutor-profile/today-schedule-widget.js?v=20260205"></script>
+
+    <!-- This Week's Schedule Widget -->
+    <script src="../js/tutor-profile/week-schedule-widget.js?v=20260205"></script>
 </head>
 
 <body class="font-sans">
@@ -89,7 +139,7 @@
                         <span></span>
                     </span>
                 </button>
-                <a href="../profile-pages/tutor-profile.html" class="logo-container">
+                <a href="../index.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">Tutor Profile</span>
@@ -102,17 +152,14 @@
             <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
                 <!-- Navigation Links -->
                 <div class="nav-items" style="display: flex; gap: 0.25rem;">
-                    <a class="nav-link" href="../index.html">
-                        <span class="nav-icon">🏠</span> Home
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
                     </a>
                     <a class="nav-link" href="../branch/find-tutors.html">
                         <span class="nav-icon">👨‍🏫</span> Find Tutors
                     </a>
-                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
-                        <span class="nav-icon">📰</span> News
-                    </a>
-                    <a class="nav-link" href="../branch/reels.html">
-                        <span class="nav-icon">🎬</span> Reels
+                    <a class="nav-link" href="../branch/videos.html">
+                        <span class="nav-icon">🎬</span> Videos
                     </a>
                     <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
                         <span class="nav-icon">📚</span> Bookstore
@@ -151,6 +198,29 @@
                         </a>
 
                         <div class="dropdown-divider"></div>
+
+                        <!-- Deletion Countdown Banner (shown when role is scheduled for deletion) -->
+                        <div id="deletion-countdown-banner" class="deletion-countdown-banner hidden">
+                            <div class="countdown-content">
+                                <div class="countdown-icon">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="countdown-text">
+                                    <div class="countdown-title">Role Scheduled for Deletion</div>
+                                    <div class="countdown-details">
+                                        Your <span id="countdown-role-name" class="font-semibold"></span> role will be deleted in
+                                        <span id="countdown-days" class="font-bold text-orange-600"></span> days
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openAddRoleModal()" class="countdown-restore-btn">
+                                Restore Role
+                            </button>
+                        </div>
+
+                        <div class="dropdown-divider" id="countdown-divider" style="display: none;"></div>
 
                         <!-- Role switcher (shown only if user has multiple roles) -->
                         <div id="role-switcher-section" class="role-switcher-section hidden">
@@ -223,17 +293,14 @@
             <div class="mobile-menu-divider"></div>
 
             <!-- Navigation Links -->
-            <a class="mobile-menu-link" href="../index.html">
-                <span class="nav-icon">🏠</span> Home
+            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'news'); closeMobileMenu();">
+                <span class="nav-icon">📰</span> News
             </a>
             <a class="mobile-menu-link" href="../branch/find-tutors.html">
                 <span class="nav-icon">👨‍🏫</span> Find Tutors
             </a>
-            <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'news'); closeMobileMenu();">
-                <span class="nav-icon">📰</span> News
-            </a>
-            <a class="mobile-menu-link" href="../branch/reels.html">
-                <span class="nav-icon">🎬</span> Reels
+            <a class="mobile-menu-link" href="../branch/videos.html">
+                <span class="nav-icon">🎬</span> Videos
             </a>
             <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'store'); closeMobileMenu();">
                 <span class="nav-icon">📚</span> Bookstore
@@ -317,7 +384,7 @@
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
     <div class="ad-container premium-ad" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -326,7 +393,7 @@
                 <span class="ad-label">Ad 1</span>
                 <h3 class="ad-title">Grow Your Tutoring Business</h3>
                 <p class="ad-text">Reach more students with Astegni</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -338,7 +405,7 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -347,7 +414,7 @@
                 <span class="ad-label">Ad 2</span>
                 <h3 class="ad-title">Upgrade to Premium</h3>
                 <p class="ad-text">Unlock advanced tutor features</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Premium</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Premium</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -359,7 +426,7 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -368,7 +435,7 @@
                 <span class="ad-label">Ad 3</span>
                 <h3 class="ad-title">Teaching Resources</h3>
                 <p class="ad-text">Access premium learning materials</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Now</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Browse Now</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -380,7 +447,7 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -389,7 +456,7 @@
                 <span class="ad-label">Ad 4</span>
                 <h3 class="ad-title">Your Ad Space</h3>
                 <p class="ad-text">Reach tutors across Ethiopia</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Advertise</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -425,17 +492,17 @@
                     <span class="sidebar-icon">📋</span>
                     <span>Notes</span>
                 </a>
-                <a href="#" onclick="switchPanel('schedule'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🗓️</span>
-                    <span>My Schedule</span>
-                </a>
                 <a href="#" onclick="switchPanel('packages'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📦</span>
                     <span>Packages</span>
                 </a>
-                <a href="#" onclick="switchPanel('requests'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">📮</span>
-                    <span>Requests</span>
+                <a href="#" onclick="switchPanel('schedule'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🗓️</span>
+                    <span>My Schedule</span>
+                </a>
+                <a href="#" onclick="switchPanel('sessions'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">👨‍🏫</span>
+                    <span>My Sessions</span>
                 </a>
                 <a href="#" onclick="switchPanel('my-students'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">👥</span>
@@ -445,15 +512,23 @@
                     <span class="sidebar-icon">🛠️</span>
                     <span>Teaching Tools</span>
                 </a>
-                <a href="#" onclick="switchPanel('tutor-community'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">👥</span>
-                    <span>Community</span>
-                </a> 
                 <a href="#" onclick="switchPanel('documents'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📚</span>
                     <span>Documents</span>
                 </a>
                 <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('requests'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📮</span>
+                    <span>Requests</span>
+                </a>
+                <a href="#" onclick="switchPanel('community'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">👥</span>
+                    <span>Community</span>
+                </a>
+                <a href="#" onclick="switchPanel('events'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📅</span>
+                    <span>Events</span>
+                </a>
                 <a href="#" onclick="switchPanel('blog'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📝</span>
                     <span>Blog Posts</span>
@@ -469,7 +544,7 @@
                     <span>My Videos</span>
                 </a>
                 <hr class="my-4 border-gray-300">               
-                <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
+                <a href="#" onclick="openComingSoonModal('Earnings & Investments'); return false;" class="sidebar-link">
                     <span class="sidebar-icon"
                         style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 1.1rem;">ℰ</span>
                     <span>Earnings & Investments</span>
@@ -725,6 +800,20 @@
                                                 </div>
                                             </div>
 
+                                            <!-- Hobbies & Interests -->
+                                            <div id="hobbies-display-container"
+                                                style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; margin-bottom: 0.75rem;">
+                                                <span style="font-size: 1.25rem;">🎨</span>
+                                                <div style="flex: 1;">
+                                                    <div
+                                                        style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                        Hobbies & Interests</div>
+                                                    <div id="tutor-hobbies"
+                                                        style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; font-style: italic;">
+                                                        No hobbies yet</div>
+                                                </div>
+                                            </div>
+
                                             <!-- Social Links -->
                                             <div class="profile-social-links" id="social-links-container"
                                                 style="display: flex; gap: 0.75rem; margin-top: 1.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0;">
@@ -741,34 +830,35 @@
                                             <div class="profile-connections" style="margin-top: 1.5rem;">
                                                 <div class="connections-header"
                                                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                                    <h4
-                                                        style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
-                                                        <span style="margin-right: 0.5rem;">👥</span>Connections
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
+                                                        <span style="margin-right: 0.5rem;">📊</span>Activity Stats
                                                     </h4>
-                                                    <button onclick="openCommunityModal()" class="btn-sm"
-                                                        style="font-size: 0.75rem; padding: 0.25rem 0.75rem;">
-                                                        View All
-                                                    </button>
                                                 </div>
                                                 <div class="connections-stats"
-                                                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
-                                                    <div class="stat-box"
-                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer;"
-                                                        onclick="openCommunityModal('requests')">
+                                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                                                    <!-- Connections Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('connections')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="profile-header-requests-count">0</div>
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                            Requests</div>
-                                                    </div>
-                                                    <div class="stat-box"
-                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer;"
-                                                        onclick="openCommunityModal('connections')">
-                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="profile-header-connections-count">0</div>
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            id="connections-count">0</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                                             Connections</div>
+                                                    </div>
+                                                    <!-- Pending Requests Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('pending')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="pending-requests-count">0</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Pending Requests</div>
+                                                    </div>
+                                                    <!-- Received Requests Card -->
+                                                    <div class="stat-box" onclick="openCommunityModalTab('received')"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="received-requests-count">0</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Received Requests</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -782,7 +872,7 @@
                                                     <span class="mr-2">💬</span>
                                                     Message
                                                 </button>
-                                                <button onclick="shareProfile()" class="btn-secondary ml-2">
+                                                <button onclick="shareProfile(event)" class="btn-secondary ml-2">
                                                     <span class="mr-2">🔗</span>
                                                     Share Profile
                                                 </button>
@@ -869,8 +959,20 @@
                     <!-- Requests Panel -->
                     <div id="requests-panel" class="panel-content hidden">
                         <div class="mb-8">
-                            <h1 class="text-3xl font-bold mb-2">My Requests</h1>
-                            <p class="text-gray-600">Manage your courses, schools, sessions, and parenting requests</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h1 class="text-3xl font-bold mb-2">My Requests</h1>
+                                    <p class="text-gray-600">Manage your courses, schools, sessions, and parenting requests</p>
+                                </div>
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <button id="request-course-btn" onclick="openCourseRequestModal()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2" style="display: none;">
+                                        <i class="fas fa-plus"></i> Request Course
+                                    </button>
+                                    <button id="request-school-btn" onclick="openSchoolRequestModal()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2" style="display: none;">
+                                        <i class="fas fa-plus"></i> Request School
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Request Type Filter Cards -->
@@ -882,10 +984,6 @@
                                     <div>
                                         <h3 class="font-bold text-lg">Requested Courses</h3>
                                         <p class="text-sm text-gray-600">View course requests</p>
-                                        <button class="mt-2 text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition"
-                                            onclick="event.stopPropagation(); openCourseRequestModal()">
-                                            <i class="fas fa-plus"></i> Request Course
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -936,7 +1034,20 @@
                             </div>
                         </div>
 
-                        <!-- Request Status Sub-Tabs (for courses, schools, sessions) -->
+                        <!-- Request Direction Tabs (Received vs Sent) - Only shown for Session Requests -->
+                        <div id="tutor-session-direction-tabs" class="request-direction-tabs mb-4 hidden"
+                            style="display: none; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+                            <button class="direction-tab active"
+                                onclick="filterRequestDirection('received')" data-direction="received">
+                                <i class="fas fa-inbox"></i> Received
+                            </button>
+                            <button class="direction-tab"
+                                onclick="filterRequestDirection('sent')" data-direction="sent">
+                                <i class="fas fa-paper-plane"></i> Sent
+                            </button>
+                        </div>
+
+                        <!-- Request Status Sub-Tabs (for filtering within request type) -->
                         <div class="status-tabs mb-6"
                             style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
                             <button class="status-tab active"
@@ -958,14 +1069,6 @@
                                 data-status="rejected">
                                 Rejected
                             </button>
-                        </div>
-
-                        <!-- Parenting Direction Tabs - REMOVED: Tutors only receive invitations, they don't send them -->
-                        <!-- The parenting-direction-tabs div is hidden for tutors since they can't send parent invitations -->
-                        <div id="parenting-direction-tabs" class="mb-6 hidden" style="display: none;">
-                            <!-- Keeping minimal structure for JS compatibility but not rendering tabs -->
-                            <span id="parenting-invited-count" class="hidden">0</span>
-                            <span id="parenting-invites-count" class="hidden">0</span>
                         </div>
 
                         <!-- Requests List Container -->
@@ -1034,27 +1137,11 @@
                     <div id="schedule-panel" class="panel-content hidden">
                         <div class="mb-8">
                             <h1 class="text-3xl font-bold mb-2">My Schedule</h1>
-                            <p class="text-gray-600">Manage your teaching schedule and sessions</p>
+                            <p class="text-gray-600">Manage your teaching availability and time blocks</p>
                         </div>
 
-                        <!-- Tab Navigation -->
-                        <div class="mb-6 border-b border-gray-200">
-                            <div class="flex gap-2">
-                                <button id="tab-schedules"
-                                    class="schedule-tab active px-6 py-3 font-semibold border-b-2 border-blue-500 text-blue-500 transition"
-                                    onclick="switchScheduleTab('schedules')">
-                                    <i class="fas fa-calendar-alt mr-2"></i>Schedules
-                                </button>
-                                <button id="tab-sessions"
-                                    class="schedule-tab px-6 py-3 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition"
-                                    onclick="switchScheduleTab('sessions')">
-                                    <i class="fas fa-users mr-2"></i>Sessions
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Schedules Tab Content -->
-                        <div id="schedules-tab-content" class="schedule-tab-content">
+                        <!-- Schedules Content -->
+                        <div id="schedules-content">
                             <!-- Create Schedule Button and Search Bar in One Row -->
                             <div class="card p-6 mb-6">
                                 <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
@@ -1068,9 +1155,29 @@
                                         <input type="text" id="schedule-search"
                                             class="w-full p-3 pl-12 border-2 rounded-lg"
                                             placeholder="Search schedules by title, priority level, or role..."
-                                            oninput="searchSchedules(this.value)">
+                                            oninput="if(typeof searchSchedules === 'function') searchSchedules(this.value)">
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Role-based Filters -->
+                            <div id="schedule-role-filters" class="mb-6 flex gap-4 flex-wrap">
+                                <button class="px-4 py-2 rounded-full bg-blue-500 text-white"
+                                    onclick="filterSchedulesByRole('all')">
+                                    <i class="fas fa-users mr-2"></i>All Schedules
+                                </button>
+                                <button class="px-4 py-2 rounded-full bg-gray-200"
+                                    onclick="filterSchedulesByRole('tutor')">
+                                    <i class="fas fa-chalkboard-teacher mr-2"></i>As Tutor
+                                </button>
+                                <button class="px-4 py-2 rounded-full bg-gray-200"
+                                    onclick="filterSchedulesByRole('student')">
+                                    <i class="fas fa-user-graduate mr-2"></i>As Student
+                                </button>
+                                <button class="px-4 py-2 rounded-full bg-gray-200"
+                                    onclick="filterSchedulesByRole('parent')">
+                                    <i class="fas fa-user-friends mr-2"></i>As Parent
+                                </button>
                             </div>
 
                             <!-- Schedules Table -->
@@ -1080,23 +1187,23 @@
                                     <!-- Schedule Priority Filters -->
                                     <div class="flex gap-2 flex-wrap">
                                         <button class="px-4 py-2 rounded-full bg-blue-500 text-white text-sm"
-                                            onclick="filterSchedules('all')">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('all')">
                                             All
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="filterSchedules('urgent')" title="Critical tasks requiring immediate attention">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('urgent')" title="Critical tasks requiring immediate attention">
                                             🔴 Urgent
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="filterSchedules('high')" title="Important tasks with high priority">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('high')" title="Important tasks with high priority">
                                             🟠 High
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="filterSchedules('medium')" title="Regular scheduled tasks">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('medium')" title="Regular scheduled tasks">
                                             🔵 Medium
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="filterSchedules('low')" title="Optional or flexible tasks">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('low')" title="Optional or flexible tasks">
                                             🟢 Low
                                         </button>
                                     </div>
@@ -1109,52 +1216,76 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Sessions Tab Content -->
-                        <div id="sessions-tab-content" class="schedule-tab-content hidden">
-                            <!-- Search Bar -->
-                            <div class="card p-6 mb-6">
-                                <div class="relative mb-3">
-                                    <i
-                                        class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    <input type="text" id="sessions-search" class="w-full p-3 pl-12 border-2 rounded-lg"
-                                        placeholder="Search sessions by subject, student, or topic..."
-                                        oninput="searchSessions(this.value)">
-                                </div>
+                    <!-- My Sessions Panel -->
+                    <div id="sessions-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">My Sessions</h1>
+                            <p class="text-gray-600">View and manage your tutoring sessions with students</p>
+                        </div>
+
+                        <!-- Session Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="card p-6 text-center">
+                                <div class="text-3xl mb-2">📊</div>
+                                <div class="text-2xl font-bold" id="session-stat-total">0</div>
+                                <div class="text-sm text-gray-600">Total Sessions</div>
                             </div>
-
-                            <!-- Session Filters -->
-                            <div class="mb-6 flex gap-4 flex-wrap">
-                                <button class="px-4 py-2 rounded-full bg-blue-500 text-white"
-                                    onclick="filterSessions('all')">
-                                    All Sessions
-                                </button>
-                                <button class="px-4 py-2 rounded-full bg-gray-200"
-                                    onclick="filterSessions('scheduled')">
-                                    Scheduled
-                                </button>
-                                <button class="px-4 py-2 rounded-full bg-gray-200"
-                                    onclick="filterSessions('in-progress')">
-                                    In Progress
-                                </button>
-                                <button class="px-4 py-2 rounded-full bg-gray-200"
-                                    onclick="filterSessions('completed')">
-                                    Completed
-                                </button>
-                                <button class="px-4 py-2 rounded-full bg-gray-200"
-                                    onclick="filterSessions('cancelled')">
-                                    Cancelled
-                                </button>
+                            <div class="card p-6 text-center">
+                                <div class="text-3xl mb-2">✅</div>
+                                <div class="text-2xl font-bold" id="session-stat-completed">0</div>
+                                <div class="text-sm text-gray-600">Completed</div>
                             </div>
+                            <div class="card p-6 text-center">
+                                <div class="text-3xl mb-2">⏰</div>
+                                <div class="text-2xl font-bold" id="session-stat-hours">0</div>
+                                <div class="text-sm text-gray-600">Total Hours</div>
+                            </div>
+                            <div class="card p-6 text-center">
+                                <div class="text-3xl mb-2">🔔</div>
+                                <div class="text-2xl font-bold" id="session-stat-earnings">0</div>
+                                <div class="text-sm text-gray-600">Active Sessions</div>
+                            </div>
+                        </div>
 
-                            <!-- Sessions Table -->
-                            <div class="card p-6 mb-6">
-                                <h3 class="text-2xl font-bold mb-4">My Tutoring Sessions</h3>
-                                <div id="sessions-table-container">
-                                    <div class="text-center py-8 text-gray-500">
-                                        <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
-                                        <p>Loading sessions...</p>
-                                    </div>
+                        <!-- Search Bar -->
+                        <div class="card p-6 mb-6">
+                            <div class="relative mb-3">
+                                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="sessions-search" class="w-full p-3 pl-12 border-2 rounded-lg"
+                                    placeholder="Search sessions by subject, student, or topic..."
+                                    oninput="if(typeof searchSessions === 'function') searchSessions(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Session Filters (Role-based) -->
+                        <div class="mb-6 flex gap-4 flex-wrap">
+                            <button class="px-4 py-2 rounded-full bg-blue-500 text-white"
+                                onclick="filterSessionsByRole('all', event)">
+                                <i class="fas fa-users mr-2"></i>All Sessions
+                            </button>
+                            <button class="px-4 py-2 rounded-full bg-gray-200"
+                                onclick="filterSessionsByRole('tutor', event)">
+                                <i class="fas fa-chalkboard-teacher mr-2"></i>As Tutor
+                            </button>
+                            <button class="px-4 py-2 rounded-full bg-gray-200"
+                                onclick="filterSessionsByRole('student', event)">
+                                <i class="fas fa-user-graduate mr-2"></i>As Student
+                            </button>
+                            <button class="px-4 py-2 rounded-full bg-gray-200"
+                                onclick="filterSessionsByRole('parent', event)">
+                                <i class="fas fa-user-friends mr-2"></i>As Parent
+                            </button>
+                        </div>
+
+                        <!-- Sessions Table -->
+                        <div class="card p-6 mb-6">
+                            <h3 class="text-2xl font-bold mb-4">My Tutoring Sessions</h3>
+                            <div id="sessions-table-container">
+                                <div class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                                    <p>Loading sessions...</p>
                                 </div>
                             </div>
                         </div>
@@ -1226,7 +1357,7 @@
                                     <input type="text" id="folders-search"
                                         class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Search folders..."
-                                        oninput="searchFolders(this.value)">
+                                        oninput="if(typeof searchFolders === 'function') searchFolders(this.value)">
                                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                             </div>
@@ -1285,7 +1416,7 @@
                                     <input type="text" id="documents-search"
                                         class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Search documents..."
-                                        oninput="searchDocuments(this.value)">
+                                        oninput="if(typeof searchDocuments === 'function') searchDocuments(this.value)">
                                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 <!-- Sort Dropdown - pushed to the right -->
@@ -2269,7 +2400,7 @@
 
                     </div>
 
-                    <!-- Credentials Panel (Academic Certificates, Achievements, Experience) -->
+                    <!-- Credentials Panel (Academic Credentials, Awards and Honors, Experience) -->
                     <div id="credentials-panel" class="panel-content hidden">
                         <div class="mb-8 flex justify-between items-center">
                             <div>
@@ -2293,8 +2424,8 @@
                                         class="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full"
                                         id="achievement-count">0</span>
                                 </div>
-                                <h3 class="text-lg font-bold text-gray-800 mb-1">Achievements</h3>
-                                <p class="text-sm text-gray-600">Awards, honors & milestones</p>
+                                <h3 class="text-lg font-bold text-gray-800 mb-1">Awards and Honors</h3>
+                                <p class="text-sm text-gray-600">Competition wins & recognitions</p>
                             </div>
 
                             <!-- Academic Card -->
@@ -2305,8 +2436,8 @@
                                     <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full"
                                         id="academic-count">0</span>
                                 </div>
-                                <h3 class="text-lg font-bold text-gray-800 mb-1">Academic</h3>
-                                <p class="text-sm text-gray-600">Degrees & certifications</p>
+                                <h3 class="text-lg font-bold text-gray-800 mb-1">Academic Credentials</h3>
+                                <p class="text-sm text-gray-600">Degrees, certificates & diplomas</p>
                             </div>
 
                             <!-- Experience Card -->
@@ -2319,7 +2450,7 @@
                                         id="experience-count">0</span>
                                 </div>
                                 <h3 class="text-lg font-bold text-gray-800 mb-1">Experience</h3>
-                                <p class="text-sm text-gray-600">Work history & credentials</p>
+                                <p class="text-sm text-gray-600">Work history & teaching positions</p>
                             </div>
                         </div>
 
@@ -2560,405 +2691,84 @@
                         <!-- Investments Tab Content -->
                         <div id="investments-tab-content" class="earnings-tab-content hidden">
                             <!-- Investment Summary Cards -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <!-- Subscriptions Card -->
+                                <div class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-blue-400"
+                                    onclick="toggleSubscriptionsSection()">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-blue-600 text-2xl">💼</span>
-                                        <span class="text-xs text-blue-600 font-semibold">INVESTED</span>
+                                        <span class="text-blue-600 text-2xl">📋</span>
+                                        <span class="text-xs text-blue-600 font-semibold">SUBSCRIPTIONS</span>
                                     </div>
-                                    <p class="text-sm text-gray-600 mb-1">Total Investment</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="total-invested">0 ETB</h3>
+                                    <p class="text-sm text-gray-600 mb-1">Active Subscriptions</p>
+                                    <h3 class="text-2xl font-bold text-gray-800" id="total-subscriptions">0</h3>
+                                    <p class="text-xs text-gray-500 mt-2">Click to view subscription history</p>
                                 </div>
-                                <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+
+                                <!-- Purchase History Card -->
+                                <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-purple-400"
+                                    onclick="togglePurchaseHistorySection()">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-purple-600 text-2xl">👁️</span>
-                                        <span class="text-xs text-purple-600 font-semibold">IMPRESSIONS</span>
+                                        <span class="text-purple-600 text-2xl">🛒</span>
+                                        <span class="text-xs text-purple-600 font-semibold">PURCHASES</span>
                                     </div>
-                                    <p class="text-sm text-gray-600 mb-1">Total Impressions</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="total-impressions">0</h3>
-                                </div>
-                                <div class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-green-600 text-2xl">📊</span>
-                                        <span class="text-xs text-green-600 font-semibold">CPM</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-1">Cost Per Mille</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="average-cpm">0 ETB</h3>
+                                    <p class="text-sm text-gray-600 mb-1">Purchase History</p>
+                                    <h3 class="text-2xl font-bold text-gray-800">
+                                        <span class="text-base text-gray-500">Coming Soon</span>
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-2">Click to view purchase history</p>
                                 </div>
                             </div>
 
-                            <!-- Investments List -->
-                            <div class="card p-6">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 class="text-xl font-bold flex items-center gap-2">
-                                        <span class="text-blue-600">💰</span>
-                                        Investment Portfolio
-                                    </h3>
-                                    <button
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                        + Add Investment
-                                    </button>
+                            <!-- Subscriptions List Section -->
+                            <div id="subscriptions-section" class="mb-8 hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-xl font-bold text-gray-800">Subscription History</h2>
                                 </div>
-                                <div id="investments-list" class="space-y-4">
-                                    <!-- Purchase Card 1: Mathematics Advanced Course -->
-                                    <div
-                                        class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-4 flex-1">
-                                                <div
-                                                    class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-2xl">
-                                                    📚
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-lg text-gray-800 mb-1">Mathematics
-                                                        Advanced Course</h4>
-                                                    <p class="text-sm text-gray-600">Grade 12 - Advanced Calculus &
-                                                        Algebra</p>
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <span
-                                                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Completed</span>
-                                                        <span
-                                                            class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">Course</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-blue-600">850 ETB</div>
-                                                <div class="text-xs text-gray-500 mt-1">Jan 15, 2024</div>
-                                            </div>
-                                        </div>
 
-                                        <div
-                                            class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Amount</div>
-                                                <div class="font-semibold text-gray-800">850 ETB</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Date</div>
-                                                <div class="font-semibold text-gray-800">Jan 15, 2024</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Status</div>
-                                                <div class="font-semibold text-green-600">Completed</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Payment Method</div>
-                                                <div class="font-semibold text-gray-800">Chapa Pay</div>
-                                            </div>
-                                        </div>
+                                <!-- Loading State -->
+                                <div id="subscriptions-loading" class="hidden text-center py-16">
+                                    <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+                                    <p class="text-gray-600 text-lg">Loading subscriptions...</p>
+                                </div>
 
-                                        <div class="flex gap-2">
-                                            <button
-                                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                                                View Certificate
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Download Invoice
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Leave Review
-                                            </button>
-                                        </div>
-                                    </div>
+                                <!-- Empty State -->
+                                <div id="subscriptions-empty" class="hidden text-center py-16">
+                                    <div class="text-6xl mb-4">📭</div>
+                                    <h3 class="text-2xl font-bold text-gray-800 mb-2">No Subscriptions Yet</h3>
+                                    <p class="text-gray-600">You haven't subscribed to any plans yet.</p>
+                                </div>
 
-                                    <!-- Purchase Card 2: Physics Tutoring Session Package -->
-                                    <div
-                                        class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-purple-500">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-4 flex-1">
-                                                <div
-                                                    class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-2xl">
-                                                    🎯
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-lg text-gray-800 mb-1">Physics Tutoring
-                                                        Session Package</h4>
-                                                    <p class="text-sm text-gray-600">10 Sessions with Dr. Abebe Kebede
-                                                    </p>
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <span
-                                                            class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-semibold">In
-                                                            Progress</span>
-                                                        <span
-                                                            class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold">Tutoring</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-purple-600">1,200 ETB</div>
-                                                <div class="text-xs text-gray-500 mt-1">Feb 3, 2024</div>
-                                            </div>
-                                        </div>
+                                <!-- Subscriptions List Container -->
+                                <div id="subscriptions-list" class="space-y-4">
+                                    <!-- Dynamically populated subscription cards will appear here -->
+                                </div>
+                            </div>
 
-                                        <div
-                                            class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Amount</div>
-                                                <div class="font-semibold text-gray-800">1,200 ETB</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Date</div>
-                                                <div class="font-semibold text-gray-800">Feb 3, 2024</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Status</div>
-                                                <div class="font-semibold text-yellow-600">In Progress</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Payment Method</div>
-                                                <div class="font-semibold text-gray-800">M-Pesa</div>
-                                            </div>
-                                        </div>
+                            <!-- Purchase History Section (Coming Soon) -->
+                            <div id="purchase-history-section" class="mb-8 hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-xl font-bold text-gray-800">Purchase History</h2>
+                                </div>
 
-                                        <div class="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                            <div class="flex items-center gap-2 text-sm">
-                                                <span class="font-semibold text-blue-800">Progress:</span>
-                                                <span class="text-blue-600">6 of 10 sessions completed</span>
-                                            </div>
-                                            <div class="w-full bg-blue-200 rounded-full h-2 mt-2">
-                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex gap-2">
-                                            <button
-                                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-                                                View Schedule
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Download Invoice
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Contact Tutor
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Purchase Card 3: Chemistry Study Materials Bundle -->
-                                    <div
-                                        class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-4 flex-1">
-                                                <div
-                                                    class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-white text-2xl">
-                                                    🧪
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-lg text-gray-800 mb-1">Chemistry Study
-                                                        Materials Bundle</h4>
-                                                    <p class="text-sm text-gray-600">Grade 11 - Organic Chemistry (3
-                                                        PDFs + 5 Videos)</p>
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <span
-                                                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Delivered</span>
-                                                        <span
-                                                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Materials</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-green-600">350 ETB</div>
-                                                <div class="text-xs text-gray-500 mt-1">Jan 28, 2024</div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Amount</div>
-                                                <div class="font-semibold text-gray-800">350 ETB</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Date</div>
-                                                <div class="font-semibold text-gray-800">Jan 28, 2024</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Status</div>
-                                                <div class="font-semibold text-green-600">Delivered</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Payment Method</div>
-                                                <div class="font-semibold text-gray-800">Telebirr</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex gap-2">
-                                            <button
-                                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                                                Access Materials
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Download Invoice
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Leave Review
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Purchase Card 4: Biology Lab Access Subscription -->
-                                    <div
-                                        class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-orange-500">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-4 flex-1">
-                                                <div
-                                                    class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white text-2xl">
-                                                    🔬
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-lg text-gray-800 mb-1">Biology Lab Access
-                                                        Subscription</h4>
-                                                    <p class="text-sm text-gray-600">3-Month Premium Digital Lab Access
-                                                    </p>
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <span
-                                                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Active</span>
-                                                        <span
-                                                            class="bg-orange-100 text-orange-800 text-xs px-3 py-1 rounded-full font-semibold">Subscription</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-orange-600">600 ETB</div>
-                                                <div class="text-xs text-gray-500 mt-1">Feb 10, 2024</div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Amount</div>
-                                                <div class="font-semibold text-gray-800">600 ETB</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Date</div>
-                                                <div class="font-semibold text-gray-800">Feb 10, 2024</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Status</div>
-                                                <div class="font-semibold text-green-600">Active</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Payment Method</div>
-                                                <div class="font-semibold text-gray-800">Bank Transfer</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                                            <div class="flex items-center justify-between text-sm">
-                                                <span class="font-semibold text-orange-800">Subscription:</span>
-                                                <span class="text-orange-600">Expires May 10, 2024 (60 days left)</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex gap-2">
-                                            <button
-                                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
-                                                Access Lab
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Renew Now
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Download Invoice
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Purchase Card 5: SAT Prep Course with Mock Tests -->
-                                    <div
-                                        class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-indigo-500">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-4 flex-1">
-                                                <div
-                                                    class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-2xl">
-                                                    📝
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-lg text-gray-800 mb-1">SAT Prep Course
-                                                        with Mock Tests</h4>
-                                                    <p class="text-sm text-gray-600">Complete SAT Preparation (Math +
-                                                        English + 10 Mock Tests)</p>
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <span
-                                                            class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">Scheduled</span>
-                                                        <span
-                                                            class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-semibold">Exam
-                                                            Prep</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-indigo-600">1,500 ETB</div>
-                                                <div class="text-xs text-gray-500 mt-1">Feb 15, 2024</div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Amount</div>
-                                                <div class="font-semibold text-gray-800">1,500 ETB</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Date</div>
-                                                <div class="font-semibold text-gray-800">Feb 15, 2024</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Status</div>
-                                                <div class="font-semibold text-blue-600">Scheduled</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-gray-500 mb-1">Payment Method</div>
-                                                <div class="font-semibold text-gray-800">Chapa Pay</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                                            <div class="flex items-center gap-2 text-sm">
-                                                <span class="font-semibold text-indigo-800">Course Start:</span>
-                                                <span class="text-indigo-600">March 1, 2024 at 9:00 AM</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex gap-2">
-                                            <button
-                                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
-                                                View Details
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Add to Calendar
-                                            </button>
-                                            <button
-                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
-                                                Download Invoice
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="text-center py-16 card">
+                                    <div class="text-6xl mb-4">🚧</div>
+                                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Coming Soon</h3>
+                                    <p class="text-gray-600 mb-4">Purchase history for materials and resources will be available soon.</p>
+                                    <p class="text-sm text-gray-500">Stay tuned for updates!</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Tutor Community Panel (Restructured to match Earnings-Investments pattern) -->
-                    <div class="panel-content hidden" id="tutor-community-panel">
+                    <!-- Community Panel (Restructured to match Earnings-Investments pattern) -->
+                    <div class="panel-content hidden" id="community-panel">
                         <div class="mb-8">
                             <h1 class="text-3xl font-bold mb-2">Community</h1>
-                            <p class="text-gray-600">Connect with students, parents, tutors, and join events & clubs</p>
+                            <p class="text-gray-600">Connect with students, parents, and fellow tutors</p>
                         </div>
 
                         <!-- Main Section Cards (Clickable Cards instead of Tabs) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                             <div onclick="switchCommunityMainTab('connections')" id="connections-main-tab"
                                 class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200 community-main-card active-community-card"
                                 style="display: flex; flex-direction: column; min-height: 140px; overflow: visible;">
@@ -2971,41 +2781,31 @@
                                     your network</p>
                                 <p class="text-xs text-blue-600 font-medium" style="margin-top: auto;">Click to open</p>
                             </div>
-                            <div onclick="switchCommunityMainTab('requests')" id="requests-main-tab"
-                                class="card p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 cursor-pointer hover:shadow-lg transition-all duration-200 community-main-card"
+                            <div onclick="switchCommunityMainTab('requests-sent')" id="requests-sent-main-tab"
+                                class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200 community-main-card"
                                 style="display: flex; flex-direction: column; min-height: 140px; overflow: visible;">
                                 <div class="flex items-center justify-between mb-3">
-                                    <span class="text-orange-600" style="font-size: 2.5rem; line-height: 1;">📬</span>
+                                    <span class="text-blue-600" style="font-size: 2.5rem; line-height: 1;">📤</span>
+                                    <span class="text-xs text-blue-600 font-semibold">SENT</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests</h3>
-                                <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">Pending
-                                    requests</p>
-                                <p class="text-xs text-orange-600 font-medium" style="margin-top: auto;">Click to open
+                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests Sent</h3>
+                                <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">
+                                    <span class="text-2xl font-bold" id="sent-requests-count-main">0</span> pending
                                 </p>
+                                <p class="text-xs text-blue-600 font-medium" style="margin-top: auto;">Click to open</p>
                             </div>
-                            <div onclick="switchCommunityMainTab('events')" id="events-main-tab"
+                            <div onclick="switchCommunityMainTab('requests-received')" id="requests-received-main-tab"
                                 class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 cursor-pointer hover:shadow-lg transition-all duration-200 community-main-card"
                                 style="display: flex; flex-direction: column; min-height: 140px; overflow: visible;">
                                 <div class="flex items-center justify-between mb-3">
-                                    <span class="text-green-600" style="font-size: 2.5rem; line-height: 1;">📅</span>
+                                    <span class="text-green-600" style="font-size: 2.5rem; line-height: 1;">📥</span>
+                                    <span class="text-xs text-green-600 font-semibold">RECEIVED</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Events</h3>
-                                <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">Join &
-                                    discover events</p>
-                                <p class="text-xs text-green-600 font-medium" style="margin-top: auto;">Click to open
+                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests Received</h3>
+                                <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">
+                                    <span class="text-2xl font-bold" id="received-requests-count-main">0</span> pending
                                 </p>
-                            </div>
-                            <div onclick="switchCommunityMainTab('clubs')" id="clubs-main-tab"
-                                class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all duration-200 community-main-card"
-                                style="display: flex; flex-direction: column; min-height: 140px; overflow: visible;">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-purple-600" style="font-size: 2.5rem; line-height: 1;">🎭</span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Clubs</h3>
-                                <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">Explore &
-                                    join clubs</p>
-                                <p class="text-xs text-purple-600 font-medium" style="margin-top: auto;">Click to open
-                                </p>
+                                <p class="text-xs text-green-600 font-medium" style="margin-top: auto;">Click to open</p>
                             </div>
                         </div>
 
@@ -3048,7 +2848,7 @@
                                             <input type="text" id="all-connections-search"
                                                 placeholder="Search connections..."
                                                 class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchAllConnections(this.value)">
+                                                oninput="if(typeof searchAllConnections === 'function') searchAllConnections(this.value)">
                                         </div>
                                     </div>
                                     <!-- Connections Grid -->
@@ -3072,7 +2872,7 @@
                                         <div class="flex items-center gap-3">
                                             <input type="text" id="student-connections-search"
                                                 placeholder="Search students..." class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchStudentConnections(this.value)">
+                                                oninput="if(typeof searchStudentConnections === 'function') searchStudentConnections(this.value)">
                                         </div>
                                     </div>
                                     <div id="students-connections-grid"
@@ -3094,7 +2894,7 @@
                                         <div class="flex items-center gap-3">
                                             <input type="text" id="parent-connections-search"
                                                 placeholder="Search parents..." class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchParentConnections(this.value)">
+                                                oninput="if(typeof searchParentConnections === 'function') searchParentConnections(this.value)">
                                         </div>
                                     </div>
                                     <div id="parents-connections-grid"
@@ -3116,7 +2916,7 @@
                                         <div class="flex items-center gap-3">
                                             <input type="text" id="tutor-connections-search"
                                                 placeholder="Search tutors..." class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchTutorConnections(this.value)">
+                                                oninput="if(typeof searchTutorConnections === 'function') searchTutorConnections(this.value)">
                                         </div>
                                     </div>
                                     <div id="tutors-connections-grid"
@@ -3129,30 +2929,6 @@
 
                         <!-- Requests Tab Content (NEW) -->
                         <div id="requests-main-tab-content" class="community-main-tab-content hidden">
-                            <!-- Request Summary Cards -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                <div onclick="toggleRequestsSubSection('sent')"
-                                    class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200 active-requests-card">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-blue-600 text-2xl">📤</span>
-                                        <span class="text-xs text-blue-600 font-semibold">SENT</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-1">Requests Sent</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="sent-requests-count">0</h3>
-                                    <p class="text-xs text-blue-600 mt-2 font-medium">Click to view</p>
-                                </div>
-                                <div onclick="toggleRequestsSubSection('received')"
-                                    class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 cursor-pointer hover:shadow-lg transition-all duration-200">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-green-600 text-2xl">📥</span>
-                                        <span class="text-xs text-green-600 font-semibold">RECEIVED</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-1">Requests Received</p>
-                                    <h3 class="text-2xl font-bold text-gray-800" id="received-requests-count">0</h3>
-                                    <p class="text-xs text-green-600 mt-2 font-medium">Click to view</p>
-                                </div>
-                            </div>
-
                             <!-- Requests Sub-Sections -->
                             <div class="space-y-8">
                                 <!-- Requests Sent Section -->
@@ -3228,291 +3004,99 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Events Tab Content -->
-                        <div id="events-main-tab-content" class="community-main-tab-content hidden">
-                            <!-- Sub-Section Tabs (Regular Tabs like Connections) -->
-                            <div class="flex gap-4 mb-6 border-b border-gray-200">
-                                <button onclick="toggleEventsSubSection('all')" id="all-events-tab"
-                                    class="events-sub-tab px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 transition-all">
-                                    All Events
-                                </button>
-                                <button onclick="toggleEventsSubSection('my-events')" id="my-events-events-tab"
-                                    class="events-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    My Events
-                                </button>
-                                <button onclick="toggleEventsSubSection('discover')" id="discover-events-tab"
-                                    class="events-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Discover Events
-                                </button>
-                                <button onclick="toggleEventsSubSection('joined')" id="joined-events-tab"
-                                    class="events-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Joined Events
-                                </button>
-                                <button onclick="toggleEventsSubSection('upcoming')" id="upcoming-events-tab"
-                                    class="events-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Upcoming Events
-                                </button>
-                            </div>
+                    </div>
 
-                            <!-- Events Sub-Sections -->
-                            <div class="space-y-8">
-                                <!-- All Events Section -->
-                                <div id="all-events-subsection" class="card p-6 events-subsection">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-blue-600">📅</span>
-                                                All Events
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">View all events in one place</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="all-events-search" placeholder="Search events..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchAllEvents(this.value)">
-                                        </div>
+                    <!-- Events Panel -->
+                    <div class="panel-content hidden" id="events-panel">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Events</h1>
+                            <p class="text-gray-600">Discover and join events created by advertisers</p>
+                        </div>
+
+                        <!-- Events Tabs -->
+                        <div class="flex gap-4 mb-6 border-b border-gray-200">
+                            <button onclick="switchEventsTab('past')" id="past-events-tab"
+                                class="events-tab px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 transition-all">
+                                Past Events
+                            </button>
+                            <button onclick="switchEventsTab('upcoming')" id="upcoming-events-panel-tab"
+                                class="events-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
+                                Upcoming Events
+                            </button>
+                            <button onclick="switchEventsTab('joined')" id="joined-events-panel-tab"
+                                class="events-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
+                                Joined Events
+                            </button>
+                        </div>
+
+                        <!-- Past Events Tab -->
+                        <div id="past-events-tab-content" class="events-tab-content">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="text-xl font-bold flex items-center gap-2">
+                                            <span class="text-gray-600">🕐</span>
+                                            Past Events
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined that already happened</p>
                                     </div>
-                                    <div id="all-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
+                                    <div class="flex items-center gap-3">
+                                        <input type="text" id="past-events-search" placeholder="Search past events..."
+                                            class="p-2 border-2 rounded-lg text-sm"
+                                            oninput="if(typeof searchPastEvents === 'function') searchPastEvents(this.value)">
                                     </div>
                                 </div>
-
-                                <!-- My Events Section -->
-                                <div id="my-events-events-subsection" class="card p-6 events-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-green-600">🎯</span>
-                                                My Events
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Events you created and manage</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <button onclick="openModal('create-event-modal')"
-                                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                                                ➕ Create Event
-                                            </button>
-                                            <input type="text" id="my-events-search"
-                                                placeholder="Search my events..." class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchMyEvents(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="my-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Discover Events Section -->
-                                <div id="discover-events-subsection" class="card p-6 events-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-purple-600">🔍</span>
-                                                Discover Events
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Explore and join new events</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="discover-events-search" placeholder="Search events..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchDiscoverEvents(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="discover-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Joined Events Section -->
-                                <div id="joined-events-subsection" class="card p-6 events-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-blue-600">✅</span>
-                                                Joined Events
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Events you've registered for</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="joined-events-search" placeholder="Search events..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchJoinedEvents(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="joined-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Upcoming Events Section -->
-                                <div id="upcoming-events-subsection" class="card p-6 events-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-green-600">📅</span>
-                                                Upcoming Events
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Upcoming events happening soon</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="upcoming-events-search" placeholder="Search events..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchUpcomingEvents(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="upcoming-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
+                                <div id="past-events-grid"
+                                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Will be populated by JS -->
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Clubs Tab Content -->
-                        <div id="clubs-main-tab-content" class="community-main-tab-content hidden">
-                            <!-- Sub-Section Tabs (Regular Tabs like Connections) -->
-                            <div class="flex gap-4 mb-6 border-b border-gray-200">
-                                <button onclick="toggleClubsSubSection('all')" id="all-clubs-tab"
-                                    class="clubs-sub-tab px-6 py-3 font-semibold text-purple-600 border-b-2 border-purple-600 transition-all">
-                                    All Clubs
-                                </button>
-                                <button onclick="toggleClubsSubSection('my-clubs')" id="my-clubs-clubs-tab"
-                                    class="clubs-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    My Clubs
-                                </button>
-                                <button onclick="toggleClubsSubSection('discover')" id="discover-clubs-tab"
-                                    class="clubs-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Discover Clubs
-                                </button>
-                                <button onclick="toggleClubsSubSection('joined')" id="joined-clubs-tab"
-                                    class="clubs-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Joined Clubs
-                                </button>
-                                <button onclick="toggleClubsSubSection('upcoming')" id="upcoming-clubs-tab"
-                                    class="clubs-sub-tab px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
-                                    Upcoming Clubs
-                                </button>
+                        <!-- Upcoming Events Tab -->
+                        <div id="upcoming-events-panel-tab-content" class="events-tab-content hidden">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="text-xl font-bold flex items-center gap-2">
+                                            <span class="text-green-600">📅</span>
+                                            Upcoming Events
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined yet that are scheduled for the future</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <input type="text" id="upcoming-events-panel-search" placeholder="Search upcoming events..."
+                                            class="p-2 border-2 rounded-lg text-sm"
+                                            oninput="if(typeof searchUpcomingPanelEvents === 'function') searchUpcomingPanelEvents(this.value)">
+                                    </div>
+                                </div>
+                                <div id="upcoming-events-panel-grid"
+                                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Will be populated by JS -->
+                                </div>
                             </div>
+                        </div>
 
-                            <!-- Clubs Sub-Sections -->
-                            <div class="space-y-8">
-                                <!-- All Clubs Section -->
-                                <div id="all-clubs-subsection" class="card p-6 clubs-subsection">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-purple-600">🎭</span>
-                                                All Clubs
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">View all clubs in one place</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="all-clubs-search" placeholder="Search clubs..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchAllClubs(this.value)">
-                                        </div>
+                        <!-- Joined Events Tab -->
+                        <div id="joined-events-panel-tab-content" class="events-tab-content hidden">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="text-xl font-bold flex items-center gap-2">
+                                            <span class="text-blue-600">✅</span>
+                                            Joined Events
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">All events you have joined (past and upcoming)</p>
                                     </div>
-                                    <div id="all-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
+                                    <div class="flex items-center gap-3">
+                                        <input type="text" id="joined-events-panel-search" placeholder="Search joined events..."
+                                            class="p-2 border-2 rounded-lg text-sm"
+                                            oninput="if(typeof searchJoinedPanelEvents === 'function') searchJoinedPanelEvents(this.value)">
                                     </div>
                                 </div>
-
-                                <!-- My Clubs Section -->
-                                <div id="my-clubs-clubs-subsection" class="card p-6 clubs-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-green-600">🎯</span>
-                                                My Clubs
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Clubs you created and manage</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <button onclick="openModal('create-club-modal')"
-                                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                                                ➕ Create Club
-                                            </button>
-                                            <input type="text" id="my-clubs-search" placeholder="Search my clubs..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchMyClubs(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="my-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-                                
-                                <!-- Discover Clubs Section -->
-                                <div id="discover-clubs-subsection" class="card p-6 clubs-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-blue-600">🔍</span>
-                                                Discover Clubs
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Explore and join new clubs</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="discover-clubs-search" placeholder="Search clubs..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchDiscoverClubs(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="discover-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Joined Clubs Section -->
-                                <div id="joined-clubs-subsection" class="card p-6 clubs-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-blue-600">✅</span>
-                                                Joined Clubs
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Clubs you've joined</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="joined-clubs-search" placeholder="Search clubs..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchJoinedClubs(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="joined-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Upcoming Clubs Section -->
-                                <div id="upcoming-clubs-subsection" class="card p-6 clubs-subsection hidden">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div>
-                                            <h3 class="text-xl font-bold flex items-center gap-2">
-                                                <span class="text-green-600">📅</span>
-                                                Upcoming Clubs
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mt-1">New clubs launching soon</p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <input type="text" id="upcoming-clubs-search" placeholder="Search clubs..."
-                                                class="p-2 border-2 rounded-lg text-sm"
-                                                oninput="searchUpcomingClubs(this.value)">
-                                        </div>
-                                    </div>
-                                    <div id="upcoming-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <!-- Will be populated by JS -->
-                                    </div>
+                                <div id="joined-events-panel-grid"
+                                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Will be populated by JS -->
                                 </div>
                             </div>
                         </div>
@@ -3612,7 +3196,7 @@
 
                                 <!-- Subscription Card -->
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
-                                    onclick="openSubscriptionModal()">
+                                    onclick="openComingSoonModal('Subscription & Storage')">
                                     <div class="flex flex-col items-center text-center">
                                         <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">⭐</span>
@@ -3648,7 +3232,7 @@
 
                                 <!-- Language Preferences Card -->
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
-                                    onclick="openLanguagePreferencesModal()">
+                                    onclick="openComingSoonModal('Language Preferences')">
                                     <div class="flex flex-col items-center text-center">
                                         <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🌐</span>
@@ -3672,7 +3256,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <!-- Export Data Card -->
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
-                                    onclick="openExportDataModal()">
+                                    onclick="openComingSoonModal('Export Data')">
                                     <div class="flex flex-col items-center text-center">
                                         <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">📦</span>
@@ -3718,6 +3302,18 @@
                             </h2>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Manage Roles Card -->
+                                <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-rose-500"
+                                    onclick="openManageRoleModal()">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                            <span class="text-3xl">🗑️</span>
+                                        </div>
+                                        <h3 class="text-lg font-bold mb-2 text-gray-800">Manage Roles</h3>
+                                        <p class="text-sm text-gray-600">Deactivate or remove your role</p>
+                                    </div>
+                                </div>
+
                                 <!-- Leave Astegni Card -->
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
                                     onclick="openLeaveAstegniModal()">
@@ -3815,7 +3411,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <div class="text-3xl font-bold mb-1">ETB <span id="current-month-earnings">0</span></div>
+                            <div class="text-3xl font-bold mb-1"><span id="earnings-currency-symbol"></span> <span id="current-month-earnings">0</span></div>
                             <div class="flex items-center gap-2 text-sm">
                                 <span id="earnings-change" class="text-green-300">+0%</span>
                                 <span id="change-label" style="opacity: 0.8;">vs last month</span>
@@ -3834,111 +3430,33 @@
                         </div>
 
                         <!-- View Details Button -->
-                        <button onclick="switchPanel('earnings-investments'); return false;"
+                        <button onclick="openComingSoonModal('Earnings & Investments'); return false;"
                             class="mt-4 w-full py-2 px-4 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors shadow-md">
                             View Details →
                         </button>
                     </div>
                     
-                    <!-- Quick Stats Widget -->
-                    <div class="widget-card">
-                        <h3 class="text-lg font-semibold mb-4">📊 This Week</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Sessions Completed</span>
-                                <span class="font-semibold text-green-600">18/20</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 90%"></div>
-                            </div>
-
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Hours Taught</span>
-                                <span class="font-semibold text-blue-600">24h</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
-                            </div>
-
-                            <!-- Fire Streak for Weekly Goals -->
-                            <div class="mt-4 pt-3" style="border-top: 1px solid rgba(0,0,0,0.1);">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm text-gray-600 font-semibold">🔥 Weekly Streak</span>
-                                    <span class="font-bold text-orange-600">6 days</span>
-                                </div>
-                                <div class="flex gap-1 justify-between">
-                                    <!-- Monday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Monday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">M</span>
-                                    </div>
-                                    <!-- Tuesday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Tuesday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">T</span>
-                                    </div>
-                                    <!-- Wednesday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Wednesday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">W</span>
-                                    </div>
-                                    <!-- Thursday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Thursday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">T</span>
-                                    </div>
-                                    <!-- Friday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Friday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">F</span>
-                                    </div>
-                                    <!-- Saturday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl" title="Saturday - Goal Achieved">🔥</span>
-                                        <span class="text-xs text-gray-500">S</span>
-                                    </div>
-                                    <!-- Sunday -->
-                                    <div class="flex flex-col items-center gap-1" style="flex: 1;">
-                                        <span class="text-2xl opacity-30" title="Sunday - No Goal Yet">⚪</span>
-                                        <span class="text-xs text-gray-500">S</span>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-center text-gray-500 mt-2">
-                                    Keep the streak alive! 🚀
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Today's Schedule Widget -->
                     <div class="widget-card">
                         <h3 class="text-lg font-semibold mb-4">📅 Today's Schedule</h3>
-                        <div class="space-y-3">
-                            <div class="p-3 bg-blue-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-semibold">Mathematics</span>
-                                    <span class="text-xs text-gray-600">10:00 AM</span>
-                                </div>
-                                <div class="text-xs text-gray-600">Grade 10 - Online</div>
+                        <div id="today-schedule-widget-content">
+                            <!-- Dynamic content loaded by today-schedule-widget.js -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                                <p class="text-sm text-gray-500 mt-2">Loading...</p>
                             </div>
-                            <div class="p-3 bg-green-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-semibold">Physics</span>
-                                    <span class="text-xs text-gray-600">2:00 PM</span>
-                                </div>
-                                <div class="text-xs text-gray-600">Grade 11 - In-person</div>
+                        </div>
+                    </div>
+                    
+                    <!-- This Week's Schedule Widget -->
+                    <div class="widget-card">
+                        <h3 class="text-lg font-semibold mb-4">📅 This Week's Schedule</h3>
+                        <div id="week-schedule-widget-content">
+                            <!-- Dynamic content loaded by week-schedule-widget.js -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                                <p class="text-sm text-gray-500 mt-2">Loading...</p>
                             </div>
-                            <div class="p-3 bg-purple-50 rounded-lg">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-semibold">Chemistry</span>
-                                    <span class="text-xs text-gray-600">4:30 PM</span>
-                                </div>
-                                <div class="text-xs text-gray-600">Grade 12 - Online</div>
-                            </div>
-                            <button
-                                class="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                View Full Schedule
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -4357,7 +3875,8 @@
     <script src="../js/root/default-avatar.js?v=20260118"></script>
     <script src="../js/root/app.js?v=20260118"></script>
     <script src="../js/root/nav.js?v=20260118"></script>
-    <script src="../js/root/auth.js?v=20251217"></script>
+    <script src="../js/root/auth.js?v=20260124"></script>
+    <script src="../js/root/google-oauth.js"></script>
     <script src="../js/common-modals/access-restricted-modal.js?v=20251229"></script>
     <script src="../js/root/profile-completion-guard.js?v=20251224"></script>
     <script src="../js/root/theme-toggle.js?v=20260118"></script>
@@ -4379,7 +3898,10 @@
     <script src="../js/page-structure/profileFunctionsManager.js?v=20260118"></script>
 
     <!-- Navigation -->
-    <script src="../js/page-structure/navigationManager.js?v=20260118"></script>
+    <script src="../js/page-structure/navigationManager.js?v=20260204k"></script>
+
+    <!-- Share Profile Manager (Must load early for onclick handlers) -->
+    <script src="../js/common-modals/share-profile-manager.js?v=20260204k"></script>
 
     <!-- Content Actions (For content management) -->
     <script src="../js/page-structure/contentActionsManager.js?v=20260118"></script>
@@ -4394,12 +3916,12 @@
     <script src="../js/page-structure/initializationManager.js?v=20260118"></script>
 
     <!-- Profile System -->
-    <script src="../js/root/profile-system.js?v=20251217"></script>
+    <script src="../js/root/profile-system.js?v=20260124"></script>
 
     <!-- Common Modals -->
     <script src="../js/index/init-modals.js?v=20260118"></script>
-    <script src="../js/common-modals/coming-soon-modal.js?v=20260118"></script>
-    <script src="../js/common-modals/ad-modal.js?v=20260118"></script>
+    <script src="../js/common-modals/coming-soon-modal.js?v=20260205"></script>
+    <script src="../js/common-modals/ad-modal.js?v=20260205-comingsoon"></script>
     <script src="../js/common-modals/ad-rotation-manager.js?v=20260118"></script>
 
     <!-- Stats Counter for Hero Section -->
@@ -4447,16 +3969,17 @@
     <script src="../js/tutor-profile/panel-manager.js?v=20260118"></script>
 
     <!-- 6.75. Modal Loader (MUST load before global-functions.js) -->
-    <script src="../modals/tutor-profile/modal-loader.js?v=20260118"></script>
+    <script src="../modals/tutor-profile/modal-loader.js?v=20260204g"></script>
 
     <!-- 6.8. Child Invitation Manager (MUST load before global-functions.js) -->
     <script src="../js/common-modals/child-invitation-manager.js?v=20260118"></script>
 
     <!-- 7. Global Functions (for HTML onclick handlers) -->
-    <script src="../js/tutor-profile/global-functions.js?v=20251230"></script>
+    <script src="../js/tutor-profile/global-functions.js?v=20260204h"></script>
 
-    <!-- 7.5 Schedule Tab Manager (3-tab interface for schedule panel) -->
-    <script src="../js/tutor-profile/schedule-tab-manager.js?v=20251218"></script>
+    <!-- 7.5 Schedule Tab Manager - Already loaded in <head> for early availability -->
+
+    <!-- 7.6 Sessions Panel Manager - Already loaded in <head> for early availability -->
 
     <!-- 8. Additional Features -->
 
@@ -4468,6 +3991,7 @@
     <script src="../js/tutor-profile/profile-edit-handler.js?v=20260118"></script>
     <script src="../js/tutor-profile/package-manager-clean.js?v=20260118"></script>
     <script src="../js/tutor-profile/course-request-manager.js?v=20260118"></script>
+    <script src="../js/common-modals/school-request-manager.js"></script>
     <script src="../js/tutor-profile/market-trend-functions.js?v=20260118"></script>
     <script src="../js/tutor-profile/reviews-panel-manager.js?v=20251122"></script>
 
@@ -4478,13 +4002,6 @@
     <script src="../js/shared/folder-manager.js?v=20260118"></script>
 
     <script src="../js/root/testimonials-widget.js?v=20260118"></script>
-    <script>
-        TestimonialsWidget.init('testimonials', 'parent-profile', 6);
-    </script>
-
-    <!-- Whiteboard System -->
-    <script src="../js/tutor-profile/whiteboard-manager.js?v=20260109"></script>
-
     <!-- Quill.js Rich Text Editor -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
@@ -4494,8 +4011,8 @@
     <!-- Profile Extensions Manager (Certifications, Achievements, Experience) -->
     <script src="../js/tutor-profile/profile-extensions-manager.js?v=20260118"></script>
 
-    <!-- Credential Manager (Academic Certificates, Achievements, Experience) -->
-    <script src="../js/tutor-profile/credential-manager.js?v=20260118"></script>
+    <!-- Credential Manager (Role-Aware - Common Modal) -->
+    <script src="../js/common-modals/credential-manager.js?v=20260130-roleaware"></script>
 
     <!-- Earnings & Investments Manager -->
     <script src="../js/tutor-profile/earnings-investments-manager.js?v=20260118"></script>
@@ -4503,6 +4020,9 @@
     <!-- Student-Specific Managers for Teaching Panel -->
     <!-- Note: StudentWhiteboardManager is now included in whiteboard-manager.js -->
     <!-- Note: StudentCourseworkManager is now included in coursework-manager.js -->
+
+    <!-- Whiteboard Manager (for Digital Whiteboard feature) -->
+    <script src="../js/tutor-profile/whiteboard-manager.js?v=20260205b"></script>
 
     <!-- 11. Initialize (MUST BE LAST) -->
     <!-- Events and Clubs Manager -->
@@ -4520,6 +4040,9 @@
     <!-- Tutor Community Panel Manager (NEW: Handles Community panel with database integration) -->
     <script src="../js/tutor-profile/community-panel-manager.js?v=20251122"></script>
 
+    <!-- Events Panel Manager (NEW: Handles standalone Events panel) -->
+    <script src="../js/tutor-profile/events-panel-manager.js?v=20260130"></script>
+
     <!-- Community Search & Filter Functions -->
     <script src="../js/tutor-profile/community-search-filter.js?v=20260118"></script>
 
@@ -4532,10 +4055,14 @@
 
     <!-- Settings Panel & Verify Personal Info Modal JavaScript -->
     <script src="../js/tutor-profile/settings-panel-personal-verification.js?v=20251218"></script>
+    <!-- Appearance Manager (Theme, Font Size, Display Density, etc.) -->
+    <script src="../js/common-modals/appearance-manager.js?v=20260128-fix"></script>
     <!-- Extended Settings Manager (2FA, Login Activity, Connected Accounts, etc.) -->
     <script src="../js/common-modals/settings-manager.js?v=20251225"></script>
     <!-- Two-Factor Authentication Manager -->
     <script src="../js/common-modals/tfa-manager.js?v=20251227"></script>
+    <!-- Role Manager -->
+    <script src="../js/common-modals/role-manager.js?v=20260126"></script>
 
     <!-- Edit Profile Modal JavaScript (Grade Levels, Languages, Locations, Courses) -->
     <script src="../js/tutor-profile/edit-profile-modal.js?v=20251218"></script>
@@ -4545,13 +4072,10 @@
 
     <!-- Profile Header Data Loading JavaScript -->
      <script src="../js/tutor-profile/profile-data-loader.js"></script>
-    <script>
-        // Initialize profile data loader
-        document.addEventListener("DOMContentLoaded", () => {
-            if (typeof TutorProfileDataLoader !== "undefined") {
-                TutorProfileDataLoader.init();
-            }
 
+    <!-- Initialize Folder Manager and Parenting Invitations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
             // Initialize folder manager for tutor profile
             if (typeof initializeFolderManager === 'function') {
                 initializeFolderManager('tutor');
@@ -4582,7 +4106,7 @@
     <script src="../js/common-modals/subscription-modal.js"></script>
 
     <!-- Leave Astegni Modal JavaScript -->
-    <script src="../js/tutor-profile/leave-astegni-modal.js"></script>
+    <script src="../js/common-modals/leave-astegni-modal.js?v=20260127"></script>
 
     <!-- Review Astegni Modal JavaScript -->
     <script src="../js/common-modals/review-astegni-manager.js"></script>
@@ -4623,19 +4147,24 @@
     <!-- Notes Modal Container (loaded dynamically) -->
     <div id="notes-modal-container"></div>
 
+    <!-- Performance Metrics Modal Container (loaded dynamically) -->
+    <div id="performance-metrics-modal-container"></div>
+
     <!-- Chat Modal JavaScript -->
     <script src="../js/common-modals/chat-modal.js"></script>
     <!-- Standalone Chat Call Modal JavaScript -->
     <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
     <script src="../js/common-modals/view-request-modal.js"></script>
+
+    <!-- Dynamic Modal Loaders -->
     <script>
-        // Load chat modal HTML dynamically
+        // Load chat-modal HTML dynamically
         (function loadChatModal() {
             fetch('../modals/common-modals/chat-modal.html')
                 .then(response => response.text())
                 .then(html => {
-                    document.getElementById('chat-modal-container').innerHTML = html;
+                    document.body.insertAdjacentHTML('beforeend', html);
                     console.log('✅ Chat Modal HTML loaded for tutor-profile');
                     // Re-initialize chat modal after HTML is loaded
                     if (typeof ChatModalManager !== 'undefined') {
@@ -4660,12 +4189,12 @@
                         if (typeof ChatModalManager !== 'undefined') {
                             console.log('[Call Init] Silently connecting chat WebSocket for calls...');
 
-                            // Check if ChatModalManager has profile loaded
-                            if (ChatModalManager.state && ChatModalManager.state.currentProfile) {
-                                console.log('[Call Init] Profile already loaded, connecting WebSocket...');
+                            // Check if ChatModalManager has user loaded
+                            if (ChatModalManager.state && ChatModalManager.state.currentUser) {
+                                console.log('[Call Init] User already loaded, connecting WebSocket...');
                                 ChatModalManager.connectWebSocket();
                             } else {
-                                console.log('[Call Init] Profile not loaded yet, loading and connecting...');
+                                console.log('[Call Init] User not loaded yet, loading and connecting...');
                                 // Load current user first, then connect
                                 ChatModalManager.loadCurrentUser();
                                 // Give it a moment to load, then connect
@@ -4704,6 +4233,17 @@
                 })
                 .catch(err => console.log('Notes modal will load on demand:', err.message));
         })();
+
+        // Load performance-metrics-modal HTML dynamically
+        (function loadPerformanceMetricsModal() {
+            fetch('../modals/common-modals/performance-metrics-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('performance-metrics-modal-container').innerHTML = html;
+                    console.log('✅ Performance Metrics Modal loaded for tutor-profile');
+                })
+                .catch(err => console.log('Performance metrics modal will load on demand:', err.message));
+        })();
     </script>
 
     <!-- Advanced Notes Manager -->
@@ -4715,6 +4255,57 @@
 
     <!-- Ad Rotation Manager -->
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
+
+    <!-- Geolocation Utilities for GPS-based location detection -->
+    <script src="../js/utils/geolocation-utils.js"></script>
+
+    <!-- Currency Utilities for dynamic currency display -->
+    <script src="../js/utils/currency-utils.js"></script>
+
+    <!-- Helper Functions and Review Modal Loader -->
+    <script>
+        // Helper function to get current location value
+        window.getLocations = function() {
+            const locationInput = document.getElementById('editLocation');
+            return locationInput ? [locationInput.value.trim()].filter(v => v) : [];
+        };
+
+        // Load review-astegni-modal HTML dynamically
+        (function loadReviewAstegniModal() {
+            fetch('../modals/common-modals/review-astegni-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    let container = document.getElementById('modal-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = 'modal-container';
+                        document.body.appendChild(container);
+                    }
+                    container.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Review Astegni Modal loaded for tutor-profile');
+                })
+                .catch(error => console.error('Failed to load review-astegni-modal:', error));
+        })();
+    </script>
+
+    <!-- Share Profile Manager - MOVED EARLIER (after navigationManager.js) to ensure onclick handlers work -->
+
+    <!-- Referral Dashboard Manager -->
+    <script src="../js/common-modals/referral-dashboard-manager.js"></script>
+
+    <!-- Whiteboard Initialization -->
+    <script>
+        // Verify whiteboard manager is loaded (event listeners will be set up when modal opens)
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎨 Checking Whiteboard availability...');
+
+            if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
+                console.log('✅ WhiteboardManager is ready');
+            } else {
+                console.error('❌ WhiteboardManager not found - check if whiteboard-manager.js is loaded');
+            }
+        });
+    </script>
 
 </body>
 </html>

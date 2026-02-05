@@ -345,6 +345,13 @@ function openAdAnalyticsModal(event) {
         event.preventDefault();
     }
 
+    // Open coming soon modal instead
+    if (typeof openComingSoonModal === 'function') {
+        openComingSoonModal('Advertising');
+    }
+    return; // Don't open ad analytics modal
+
+    // OLD CODE (disabled):
     const modal = document.getElementById('adAnalyticsModal');
     if (modal) {
         modal.style.display = 'flex';
@@ -536,13 +543,6 @@ function openScheduleModal() {
         submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Schedule';
     }
 
-    // Set default year to current year for recurring schedules
-    const currentYear = new Date().getFullYear();
-    const yearFromInput = document.getElementById('schedule-year-from');
-    if (yearFromInput) {
-        yearFromInput.value = currentYear;
-    }
-
     const otherGradeGroup = document.getElementById('other-grade-group');
     if (otherGradeGroup) {
         otherGradeGroup.style.display = 'none';
@@ -571,6 +571,14 @@ function openScheduleModal() {
         recurringRadio.checked = true;
     }
     toggleScheduleType();
+
+    // Set default year to current year for recurring schedules (AFTER toggleScheduleType)
+    const currentYear = new Date().getFullYear();
+    const yearFromInput = document.getElementById('schedule-year-from');
+    if (yearFromInput) {
+        yearFromInput.value = currentYear;
+        console.log(`✅ Set default year to ${currentYear} in schedule-year-from field`);
+    }
 
     // Open the modal
     if (typeof TutorModalManager !== 'undefined') {
@@ -1047,38 +1055,23 @@ function createPlaylist() {
 }
 
 // Profile actions
-function shareProfile() {
-    const profileUrl = window.location.href;
+// DEPRECATED: Old shareProfile() function removed
+// Now using shareProfile() from js/common-modals/share-profile-manager.js
+// which provides full referral system with modal, social sharing, and tracking
 
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out my Astegni Tutor Profile',
-            text: 'I\'m a tutor on Astegni. Check out my profile!',
-            url: profileUrl
-        }).then(() => {
-            console.log('Profile shared successfully');
-        }).catch((error) => {
-            console.error('Error sharing profile:', error);
-            fallbackShare(profileUrl);
-        });
-    } else {
-        fallbackShare(profileUrl);
-    }
-}
-
-function fallbackShare(url) {
-    // Fallback to copying URL to clipboard
-    navigator.clipboard.writeText(url).then(() => {
-        if (typeof TutorProfileUI !== 'undefined') {
-            TutorProfileUI.showNotification('Profile link copied to clipboard!', 'success');
-        }
-    }).catch((error) => {
-        console.error('Error copying to clipboard:', error);
-        if (typeof TutorProfileUI !== 'undefined') {
-            TutorProfileUI.showNotification('Failed to copy link', 'error');
-        }
-    });
-}
+// Old fallbackShare function also deprecated
+// function fallbackShare(url) {
+//     navigator.clipboard.writeText(url).then(() => {
+//         if (typeof TutorProfileUI !== 'undefined') {
+//             TutorProfileUI.showNotification('Profile link copied to clipboard!', 'success');
+//         }
+//     }).catch((error) => {
+//         console.error('Error copying to clipboard:', error);
+//         if (typeof TutorProfileUI !== 'undefined') {
+//             TutorProfileUI.showNotification('Failed to copy link', 'error');
+//         }
+//     });
+// }
 
 // Social media links
 function openSocialLink(event, platform) {
@@ -1642,7 +1635,7 @@ window.openQuizMaker = openQuizMaker;
 window.openResourceLibrary = openResourceLibrary;
 window.goLive = goLive;
 window.createPlaylist = createPlaylist;
-window.shareProfile = shareProfile;
+// window.shareProfile = shareProfile; // REMOVED: Now defined in share-profile-manager.js
 window.openSocialLink = openSocialLink;
 window.switchCommunitySection = switchCommunitySection;
 window.switchStudentSection = switchStudentSection;
@@ -5171,10 +5164,11 @@ async function saveSchedule() {
 console.log('=== FORM VALUES DEBUG ===');
 console.log('title:', title);
 console.log('priority:', priority);
-console.log('year:', year);
 console.log('scheduleType:', scheduleType);
 console.log('startTime:', startTime);
 console.log('endTime:', endTime);
+console.log('yearFrom:', yearFrom);
+console.log('yearTo:', yearTo);
 console.log('selectedMonths:', selectedMonths);
 console.log('selectedDays:', selectedDays);
 console.log('specificDates:', specificDates);
@@ -5200,7 +5194,7 @@ console.log('=== END DEBUG ===');
         };
 
         // Validation
-        if (!title || !priority || !year || !startTime || !endTime) {
+        if (!title || !priority || !startTime || !endTime) {
             showValidationError('Please fill in all required fields');
             return;
         }
@@ -5232,6 +5226,32 @@ console.log('=== END DEBUG ===');
                 showValidationError('Please add at least one specific date');
                 return;
             }
+
+            // Warn if too many dates (> 100 dates should use recurring)
+            if (specificDates.length > 100) {
+                const confirmLarge = confirm(
+                    `⚠️ You're scheduling ${specificDates.length} specific dates.\n\n` +
+                    `For this many dates, we recommend using "Recurring Schedule" instead.\n\n` +
+                    `Click OK to continue with specific dates, or Cancel to go back.`
+                );
+                if (!confirmLarge) {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Schedule';
+                    }
+                    return;
+                }
+            }
+
+            // Hard limit at 365 dates to prevent database issues
+            if (specificDates.length > 365) {
+                showValidationError(
+                    `Cannot schedule more than 365 specific dates. ` +
+                    `You selected ${specificDates.length} dates. ` +
+                    `Please use "Recurring Schedule" for year-long schedules.`
+                );
+                return;
+            }
         }
 
         // Validate time range
@@ -5240,36 +5260,52 @@ console.log('=== END DEBUG ===');
             return;
         }
 
-        // Map priority number to priority name
+        // Map priority number to priority level for new schedules table
         const priorityMap = {
-            '1': 'Low Priority',
-            '2': 'Normal',
-            '3': 'Important',
-            '4': 'Very Important',
-            '5': 'Highly Critical'
+            '1': 'low',
+            '2': 'medium',
+            '3': 'high',
+            '4': 'urgent',
+            '5': 'urgent'
         };
 
-        // Build schedule data
+        // Build schedule data for new schedules table
+        // Determine year based on schedule type
+        let finalYear;
+        if (scheduleType === 'recurring') {
+            // For recurring: use yearFrom (should be set by modal)
+            finalYear = yearFrom ? parseInt(yearFrom) : new Date().getFullYear();
+        } else if (scheduleType === 'specific') {
+            // For specific dates: extract year from first date, or use current year
+            if (specificDates.length > 0) {
+                const firstDate = new Date(specificDates[0]);
+                finalYear = firstDate.getFullYear();
+            } else {
+                finalYear = new Date().getFullYear();
+            }
+        } else {
+            // Fallback to current year
+            finalYear = new Date().getFullYear();
+        }
+
         const scheduleData = {
             title,
             description: description || '',
-            grade_level: priorityMap[priority] || 'Normal',
-            year: parseInt(year),
-            year_from: scheduleType === 'recurring' && yearFrom ? parseInt(yearFrom) : null,
-            year_to: scheduleType === 'recurring' && yearTo ? parseInt(yearTo) : null,
+            priority_level: priorityMap[priority] || 'medium',  // Changed from grade_level
+            year: finalYear,  // Year from yearFrom (recurring) or first specific date
             schedule_type: scheduleType,
             months: scheduleType === 'recurring' ? selectedMonths : [],
             days: scheduleType === 'recurring' ? selectedDays : [],
             specific_dates: scheduleType === 'specific' ? specificDates : [],
             start_time: startTime,
             end_time: endTime,
-            notes,
-            is_featured: isFeatured,
+            notes: notes || '',
+            status: 'active',  // New field for schedules table
+            is_featured: isFeatured,  // Feature on profile checkbox
             alarm_enabled: enableAlarm,
             alarm_before_minutes: enableAlarm ? parseInt(alarmBefore) : null,
             notification_browser: enableAlarm ? notificationBrowser : false,
-            notification_sound: enableAlarm ? notificationSound : false,
-            created_at: new Date().toISOString()
+            notification_sound: enableAlarm ? notificationSound : false
         };
 
         // Check if this is an edit or create operation (scheduleIdInput already declared at top)
@@ -5293,10 +5329,15 @@ console.log('=== END DEBUG ===');
         }
 
         const url = isEdit
-            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}`
-            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules`;
+            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}`
+            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules`;
 
         const method = isEdit ? 'PUT' : 'POST';
+
+        console.log('🌐 About to send request...');
+        console.log('📍 URL:', url);
+        console.log('📝 Method:', method);
+        console.log('📦 Payload:', JSON.stringify(scheduleData, null, 2));
 
         const response = await fetch(url, {
             method: method,
@@ -5306,6 +5347,10 @@ console.log('=== END DEBUG ===');
             },
             body: JSON.stringify(scheduleData)
         });
+
+        console.log('📥 Response received!');
+        console.log('Status:', response.status);
+        console.log('OK:', response.ok);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -5344,6 +5389,13 @@ console.log('=== END DEBUG ===');
         }
         selectedSpecificDates = [];
         updateSelectedDatesList();
+
+        // Reload schedules to show the new/updated schedule
+        setTimeout(() => {
+            if (typeof loadSchedules === 'function') {
+                loadSchedules();
+            }
+        }, 300);
 
         // Hide alarm details if shown
         const otherGradeGroup = document.getElementById('other-grade-group');
@@ -6116,7 +6168,7 @@ async function loadSchedules(page = 1) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6321,31 +6373,17 @@ async function viewSchedule(scheduleId) {
     console.log('🔍 viewSchedule called with ID:', scheduleId);
 
     const modal = document.getElementById('viewScheduleModal');
-    const content = document.getElementById('viewScheduleContent');
-
-    console.log('Modal element:', modal);
-    console.log('Content element:', content);
-
-    if (!modal || !content) {
-        console.error('❌ Modal or content element not found!');
+    if (!modal) {
+        console.error('❌ Modal element not found!');
         return;
     }
 
     // Store schedule ID for edit/delete operations
     currentViewingScheduleId = scheduleId;
 
-    // Open modal - remove hidden and add show class
+    // Open modal
     modal.classList.remove('hidden');
     modal.classList.add('show');
-    console.log('✅ Modal classes after opening:', modal.className);
-
-    // Show loading
-    content.innerHTML = `
-        <div class="text-center py-8 text-gray-500">
-            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
-            <p>Loading schedule details...</p>
-        </div>
-    `;
 
     try {
         const token = localStorage.getItem('token');
@@ -6364,132 +6402,136 @@ async function viewSchedule(scheduleId) {
         }
 
         const schedule = await response.json();
+        console.log('Schedule data:', schedule);
 
-        // Display schedule details
-        const detailsHTML = `
-            <div style="padding: 20px;">
-                <!-- Title -->
-                <div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--border-color);">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">${schedule.title}</h3>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <span class="badge" style="background: #6c757d; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.875rem; text-transform: capitalize;">
-                            <i class="fas fa-user-tag"></i> ${schedule.scheduler_role || 'tutor'}
-                        </span>
-                        <span class="badge" style="background: ${
-                            schedule.priority_level === 'urgent' ? '#DC2626' :
-                            schedule.priority_level === 'high' ? '#F59E0B' :
-                            schedule.priority_level === 'low' ? '#10B981' :
-                            '#3B82F6'
-                        }; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.875rem; text-transform: capitalize;">
-                            <i class="fas fa-flag"></i> ${schedule.priority_level || 'medium'} Priority
-                        </span>
-                        <span class="badge" style="background: ${schedule.status === 'active' ? '#10B981' : '#F59E0B'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.875rem; text-transform: capitalize;">
-                            <i class="fas fa-circle"></i> ${schedule.status || 'active'}
-                        </span>
-                    </div>
-                </div>
+        // Populate modal fields
+        document.getElementById('view-schedule-name').textContent = schedule.title || 'Untitled Schedule';
+        document.getElementById('view-schedule-description').textContent = schedule.description || 'No description provided';
 
-                <!-- Description -->
-                ${schedule.description ? `
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-align-left"></i> Description
-                    </div>
-                    <p style="color: var(--text-secondary); line-height: 1.6;">${schedule.description}</p>
-                </div>
-                ` : ''}
+        // Priority badge
+        const priorityBadge = document.getElementById('view-schedule-priority-badge');
+        const priorityColors = {
+            'low': 'priority-low',
+            'medium': 'priority-medium',
+            'high': 'priority-high',
+            'important': 'priority-high',
+            'urgent': 'priority-urgent'
+        };
+        priorityBadge.className = `priority-badge ${priorityColors[schedule.priority_level] || 'priority-medium'}`;
+        priorityBadge.textContent = (schedule.priority_level || 'medium').toUpperCase();
 
-                <!-- Schedule Type & Time -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-calendar-alt"></i> Schedule Information
-                    </div>
-                    <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
-                        <div style="margin-bottom: 12px;">
-                            <strong>Type:</strong>
-                            <span class="badge" style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 8px;">
-                                ${schedule.schedule_type === 'recurring' ? 'Recurring' : 'Specific Dates'}
-                            </span>
-                        </div>
-                        ${schedule.schedule_type === 'recurring' ? `
-                        <div style="margin-bottom: 12px;">
-                            <strong>Months:</strong> ${schedule.months.join(', ')}
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <strong>Days:</strong> ${schedule.days.join(', ')}
-                        </div>
-                        ` : `
-                        <div style="margin-bottom: 12px;">
-                            <strong>Dates:</strong> ${schedule.specific_dates.join(', ')}
-                        </div>
-                        `}
-                        <div style="margin-bottom: 12px;">
-                            <strong>Time:</strong> ${schedule.start_time} - ${schedule.end_time}
-                        </div>
-                        <div>
-                            <strong>Year:</strong> ${schedule.year}
-                        </div>
-                    </div>
-                </div>
+        // Schedule type
+        document.getElementById('view-schedule-type').textContent = schedule.schedule_type === 'recurring' ? 'Recurring' : 'Specific Dates';
 
-                <!-- Alarm & Notifications -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-bell"></i> Alarm & Notifications
-                    </div>
-                    <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
-                        ${schedule.alarm_enabled ? `
-                        <div style="color: green; margin-bottom: 8px;">
-                            <i class="fas fa-check-circle"></i> Alarm Enabled
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <strong>Reminder:</strong> ${schedule.alarm_before_minutes} minutes before
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <strong>Browser Notification:</strong> ${schedule.notification_browser ? 'Enabled' : 'Disabled'}
-                        </div>
-                        <div>
-                            <strong>Sound Alert:</strong> ${schedule.notification_sound ? 'Enabled' : 'Disabled'}
-                        </div>
-                        ` : `
-                        <div style="color: var(--text-secondary);">
-                            <i class="fas fa-bell-slash"></i> No alarm set
-                        </div>
-                        `}
-                    </div>
-                </div>
+        // Time
+        document.getElementById('view-schedule-start-time').textContent = schedule.start_time || '';
+        document.getElementById('view-schedule-end-time').textContent = schedule.end_time || '';
+        document.getElementById('view-schedule-year').textContent = schedule.year || new Date().getFullYear();
 
-                <!-- Notes -->
-                ${schedule.notes ? `
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-sticky-note"></i> Additional Notes
-                    </div>
-                    <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
-                        <p style="color: var(--text-secondary); line-height: 1.6;">${schedule.notes}</p>
-                    </div>
-                </div>
-                ` : ''}
+        // Show/hide recurring or specific dates sections
+        const recurringSection = document.getElementById('view-recurring-section');
+        const specificDatesSection = document.getElementById('view-specific-dates-section');
 
-                <!-- Timestamps -->
-                <div style="padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 0.875rem; color: var(--text-secondary);">
-                    <div>Created: ${new Date(schedule.created_at).toLocaleString()}</div>
-                    ${schedule.updated_at ? `<div>Updated: ${new Date(schedule.updated_at).toLocaleString()}</div>` : ''}
-                </div>
-            </div>
-        `;
+        if (schedule.schedule_type === 'recurring') {
+            recurringSection.classList.remove('hidden');
+            specificDatesSection.classList.add('hidden');
 
-        content.innerHTML = detailsHTML;
+            // Populate months
+            const monthsContainer = document.getElementById('view-schedule-months');
+            monthsContainer.innerHTML = schedule.months && schedule.months.length > 0
+                ? schedule.months.map(m => `<span class="tag month-tag">${m}</span>`).join('')
+                : '<span class="text-gray-500">No months selected</span>';
+
+            // Populate days
+            const daysContainer = document.getElementById('view-schedule-days');
+            daysContainer.innerHTML = schedule.days && schedule.days.length > 0
+                ? schedule.days.map(d => `<span class="tag day-tag">${d}</span>`).join('')
+                : '<span class="text-gray-500">No days selected</span>';
+        } else {
+            recurringSection.classList.add('hidden');
+            specificDatesSection.classList.remove('hidden');
+
+            // Populate specific dates
+            const datesContainer = document.getElementById('view-schedule-specific-dates');
+            datesContainer.innerHTML = schedule.specific_dates && schedule.specific_dates.length > 0
+                ? schedule.specific_dates.map(d => `<span class="tag date-tag">${d}</span>`).join('')
+                : '<span class="text-gray-500">No dates selected</span>';
+        }
+
+        // Notes section
+        const notesSection = document.getElementById('view-notes-section');
+        const notesText = document.getElementById('view-schedule-notes');
+        if (schedule.notes) {
+            notesSection.classList.remove('hidden');
+            notesText.textContent = schedule.notes;
+        } else {
+            notesSection.classList.add('hidden');
+        }
+
+        // Notification badges
+        const alarmBadge = document.getElementById('view-alarm-badge');
+        const browserBadge = document.getElementById('view-browser-notification-badge');
+        const soundBadge = document.getElementById('view-sound-notification-badge');
+        const featuredBadge = document.getElementById('view-featured-badge');
+        const noNotifications = document.getElementById('view-no-notifications');
+
+        let hasNotifications = false;
+
+        if (schedule.alarm_enabled) {
+            alarmBadge.classList.remove('hidden');
+            document.getElementById('view-alarm-minutes').textContent = schedule.alarm_before_minutes || 15;
+            hasNotifications = true;
+        } else {
+            alarmBadge.classList.add('hidden');
+        }
+
+        if (schedule.notification_browser) {
+            browserBadge.classList.remove('hidden');
+            hasNotifications = true;
+        } else {
+            browserBadge.classList.add('hidden');
+        }
+
+        if (schedule.notification_sound) {
+            soundBadge.classList.remove('hidden');
+            hasNotifications = true;
+        } else {
+            soundBadge.classList.add('hidden');
+        }
+
+        if (schedule.is_featured) {
+            featuredBadge.classList.remove('hidden');
+            hasNotifications = true;
+        } else {
+            featuredBadge.classList.add('hidden');
+        }
+
+        noNotifications.style.display = hasNotifications ? 'none' : 'inline';
+
+        // Metadata
+        document.getElementById('view-schedule-role').textContent = (schedule.scheduler_role || 'tutor').charAt(0).toUpperCase() + (schedule.scheduler_role || 'tutor').slice(1);
+        document.getElementById('view-schedule-status').textContent = (schedule.status || 'active').charAt(0).toUpperCase() + (schedule.status || 'active').slice(1);
+
+        // Show/hide Edit and Delete buttons based on scheduler_role
+        const editBtn = document.getElementById('view-schedule-edit-btn');
+        const deleteBtn = document.getElementById('view-schedule-delete-btn');
+        const currentActiveRole = localStorage.getItem('active_role');
+
+        // Only show Edit and Delete buttons if schedule was created as a tutor
+        if (schedule.scheduler_role === 'tutor') {
+            editBtn.classList.remove('hidden');
+            deleteBtn.classList.remove('hidden');
+        } else {
+            editBtn.classList.add('hidden');
+            deleteBtn.classList.add('hidden');
+        }
+
+        console.log('✅ Schedule details populated successfully');
 
     } catch (error) {
         console.error('Error loading schedule details:', error);
-        content.innerHTML = `
-            <div class="text-center py-8 text-red-500">
-                <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
-                <p>Failed to load schedule details</p>
-                <p class="text-sm mt-2">${error.message}</p>
-            </div>
-        `;
+        alert('Failed to load schedule details: ' + error.message);
+        closeViewScheduleModal();
     }
 }
 
@@ -6568,11 +6610,11 @@ ${session.notes ? 'Notes: ' + session.notes : 'No additional notes'}
 }
 
 // ============================================
-// EDIT SCHEDULE FROM VIEW MODAL
+// OPEN EDIT SCHEDULE FROM VIEW MODAL
 // ============================================
 
-async function editScheduleFromView() {
-    console.log('✏️ editScheduleFromView called');
+async function openEditScheduleFromView() {
+    console.log('✏️ openEditScheduleFromView called');
     console.log('Current schedule ID:', currentViewingScheduleId);
 
     if (!currentViewingScheduleId) {
@@ -6596,7 +6638,7 @@ async function editScheduleFromView() {
         console.log('📡 Fetching schedule details...');
 
         // Fetch the schedule details again to ensure we have the latest data
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleIdToEdit}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleIdToEdit}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6629,10 +6671,14 @@ async function editScheduleFromView() {
         modal.classList.add('show');
         console.log('Modal classes:', modal.className);
 
-        // Populate form fields (using hyphenated IDs)
-        document.getElementById('schedule-title').value = schedule.title || '';
-        document.getElementById('schedule-description').value = schedule.description || '';
-        document.getElementById('schedule-year').value = schedule.year || new Date().getFullYear();
+        // Populate form fields (using hyphenated IDs) - check if elements exist first
+        const titleInput = document.getElementById('schedule-title');
+        const descInput = document.getElementById('schedule-description');
+        const yearInput = document.getElementById('schedule-year');
+
+        if (titleInput) titleInput.value = schedule.title || '';
+        if (descInput) descInput.value = schedule.description || '';
+        if (yearInput) yearInput.value = schedule.year || new Date().getFullYear();
 
         // Set is_featured (checkbox)
         const isFeaturedCheckbox = document.getElementById('schedule-is-featured');
@@ -6682,21 +6728,32 @@ async function editScheduleFromView() {
         }
 
         // Set times
-        document.getElementById('schedule-start-time').value = schedule.start_time || '';
-        document.getElementById('schedule-end-time').value = schedule.end_time || '';
+        const startTimeInput = document.getElementById('schedule-start-time');
+        const endTimeInput = document.getElementById('schedule-end-time');
+        if (startTimeInput) startTimeInput.value = schedule.start_time || '';
+        if (endTimeInput) endTimeInput.value = schedule.end_time || '';
 
         // Set notes
-        document.getElementById('schedule-notes').value = schedule.notes || '';
+        const notesInput = document.getElementById('schedule-notes');
+        if (notesInput) notesInput.value = schedule.notes || '';
 
         // Set alarm settings
-        document.getElementById('enable-alarm').checked = schedule.alarm_enabled || false;
-        if (schedule.alarm_enabled) {
-            document.getElementById('alarm-settings-details').style.display = 'block';
-            document.getElementById('alarm-before').value = schedule.alarm_before_minutes || 15;
-            document.querySelector('input[name="notification-browser"]').checked = schedule.notification_browser || false;
-            document.querySelector('input[name="notification-sound"]').checked = schedule.notification_sound || false;
-        } else {
-            document.getElementById('alarm-settings-details').style.display = 'none';
+        const enableAlarmCheckbox = document.getElementById('enable-alarm');
+        if (enableAlarmCheckbox) {
+            enableAlarmCheckbox.checked = schedule.alarm_enabled || false;
+            const alarmDetailsDiv = document.getElementById('alarm-settings-details');
+            if (schedule.alarm_enabled && alarmDetailsDiv) {
+                alarmDetailsDiv.style.display = 'block';
+                const alarmBeforeInput = document.getElementById('alarm-before');
+                if (alarmBeforeInput) alarmBeforeInput.value = schedule.alarm_before_minutes || 15;
+
+                const browserNotifCheckbox = document.querySelector('input[name="notification-browser"]');
+                const soundNotifCheckbox = document.querySelector('input[name="notification-sound"]');
+                if (browserNotifCheckbox) browserNotifCheckbox.checked = schedule.notification_browser || false;
+                if (soundNotifCheckbox) soundNotifCheckbox.checked = schedule.notification_sound || false;
+            } else if (alarmDetailsDiv) {
+                alarmDetailsDiv.style.display = 'none';
+            }
         }
 
         // Store schedule ID for update in hidden input field
@@ -6745,17 +6802,62 @@ async function editScheduleFromView() {
 }
 
 // ============================================
-// DELETE SCHEDULE FROM VIEW MODAL
+// OPEN DELETE SCHEDULE CONFIRMATION MODAL
 // ============================================
 
-async function deleteScheduleFromView() {
+async function openDeleteScheduleConfirmation() {
+    console.log('🗑️ openDeleteScheduleConfirmation called');
+
     if (!currentViewingScheduleId) {
         alert('No schedule selected');
         return;
     }
 
-    // Confirm deletion
-    if (!confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
+    try {
+        // Fetch schedule details to show in confirmation modal
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${currentViewingScheduleId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load schedule details');
+        }
+
+        const schedule = await response.json();
+
+        // Populate confirmation modal
+        document.getElementById('confirm-delete-schedule-title').textContent = schedule.title || 'Untitled Schedule';
+        document.getElementById('confirm-delete-schedule-type').textContent = schedule.schedule_type === 'recurring' ? 'Recurring' : 'Specific Dates';
+        document.getElementById('confirm-delete-schedule-year').textContent = schedule.year || new Date().getFullYear();
+
+        // Open confirmation modal
+        const confirmModal = document.getElementById('confirmDeleteScheduleModal');
+        if (confirmModal) {
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error loading schedule for deletion:', error);
+        alert('Failed to load schedule details');
+    }
+}
+
+// Close confirmation modal
+function closeConfirmDeleteScheduleModal() {
+    const modal = document.getElementById('confirmDeleteScheduleModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('show');
+    }
+}
+
+// Confirm and delete schedule
+async function confirmDeleteSchedule() {
+    if (!currentViewingScheduleId) {
+        alert('No schedule selected');
         return;
     }
 
@@ -6766,7 +6868,7 @@ async function deleteScheduleFromView() {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${currentViewingScheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${currentViewingScheduleId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -6777,14 +6879,21 @@ async function deleteScheduleFromView() {
             throw new Error('Failed to delete schedule');
         }
 
-        // Close modal
+        // Close both modals
+        closeConfirmDeleteScheduleModal();
         closeViewScheduleModal();
 
         // Show success message
-        alert('Schedule deleted successfully!');
+        if (typeof TutorProfileUI !== 'undefined') {
+            TutorProfileUI.showNotification('Schedule deleted successfully!', 'success');
+        } else {
+            alert('Schedule deleted successfully!');
+        }
 
         // Reload schedules table
-        loadSchedules();
+        if (typeof loadSchedules === 'function') {
+            loadSchedules();
+        }
 
     } catch (error) {
         console.error('Error deleting schedule:', error);
@@ -6819,8 +6928,10 @@ window.loadSchedules = loadSchedules;
 window.viewSchedule = viewSchedule;
 window.closeViewScheduleModal = closeViewScheduleModal;
 window.viewSession = viewSession;
-window.editScheduleFromView = editScheduleFromView;
-window.deleteScheduleFromView = deleteScheduleFromView;
+window.openEditScheduleFromView = openEditScheduleFromView;
+window.openDeleteScheduleConfirmation = openDeleteScheduleConfirmation;
+window.closeConfirmDeleteScheduleModal = closeConfirmDeleteScheduleModal;
+window.confirmDeleteSchedule = confirmDeleteSchedule;
 
 // ============================================
 // VERIFICATION WORKFLOW FUNCTIONS
@@ -6979,7 +7090,7 @@ async function toggleScheduleNotification(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-notification`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}/toggle-notification`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -7013,7 +7124,7 @@ async function toggleScheduleAlarm(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-alarm`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}/toggle-alarm`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -7047,7 +7158,7 @@ async function toggleScheduleFeatured(scheduleId, feature) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-featured`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}/toggle-featured`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -7708,6 +7819,7 @@ window.updateStudentReview = updateStudentReview;
 // Current filter state for tutor requests
 let currentTutorRequestType = 'courses';
 let currentTutorRequestStatus = 'all';
+let currentTutorRequestDirection = 'received'; // 'received' or 'sent'
 
 // Filter by request type (courses, schools, sessions, parenting)
 function filterTutorRequestType(type) {
@@ -7725,6 +7837,17 @@ function filterTutorRequestType(type) {
             card.style.background = 'rgba(139, 92, 246, 0.05)';
         }
     });
+
+    // Show/hide request buttons based on type
+    const requestCourseBtn = document.getElementById('request-course-btn');
+    const requestSchoolBtn = document.getElementById('request-school-btn');
+
+    if (requestCourseBtn) {
+        requestCourseBtn.style.display = type === 'courses' ? 'flex' : 'none';
+    }
+    if (requestSchoolBtn) {
+        requestSchoolBtn.style.display = type === 'schools' ? 'flex' : 'none';
+    }
 
     // Get tab elements
     const statusTabs = document.querySelector('.status-tabs');
@@ -7797,6 +7920,18 @@ function filterTutorRequestType(type) {
         parentingTabs.style.display = 'none';
     }
 
+    // Show/hide session direction tabs (only for sessions request type)
+    const sessionDirectionTabs = document.getElementById('tutor-session-direction-tabs');
+    if (sessionDirectionTabs) {
+        if (type === 'sessions') {
+            sessionDirectionTabs.classList.remove('hidden');
+            sessionDirectionTabs.style.display = 'flex';
+        } else {
+            sessionDirectionTabs.classList.add('hidden');
+            sessionDirectionTabs.style.display = 'none';
+        }
+    }
+
     // Load requests based on type and status
     loadTutorRequests();
 }
@@ -7835,6 +7970,35 @@ function filterParentingDirection(direction) {
 // Make function globally accessible
 window.filterParentingDirection = filterParentingDirection;
 
+// Filter by request direction (received vs sent)
+function filterRequestDirection(direction) {
+    currentTutorRequestDirection = direction;
+
+    // Update tab active states
+    const tabs = document.querySelectorAll('.direction-tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.color = 'var(--text-secondary)';
+        tab.style.fontWeight = '500';
+        tab.style.borderBottomColor = 'transparent';
+        if (tab.dataset.direction === direction) {
+            tab.classList.add('active');
+            tab.style.color = 'var(--primary-color)';
+            tab.style.fontWeight = '600';
+            tab.style.borderBottomColor = 'var(--primary-color)';
+        }
+    });
+
+    // For sessions, use SessionRequestManager if available
+    if (currentTutorRequestType === 'sessions' && typeof SessionRequestManager !== 'undefined') {
+        SessionRequestManager.loadRequests(currentTutorRequestStatus === 'all' ? 'all' : currentTutorRequestStatus, direction);
+        return;
+    }
+
+    // Load requests based on current filters
+    loadTutorRequests();
+}
+
 // Filter by request status (all, pending, accepted, rejected)
 function filterTutorRequestStatus(status) {
     currentTutorRequestStatus = status;
@@ -7856,7 +8020,7 @@ function filterTutorRequestStatus(status) {
 
     // For sessions, use SessionRequestManager if available
     if (currentTutorRequestType === 'sessions' && typeof SessionRequestManager !== 'undefined') {
-        SessionRequestManager.loadRequests(status === 'all' ? null : status);
+        SessionRequestManager.loadRequests(status, currentTutorRequestDirection);
         return;
     }
 
@@ -8558,6 +8722,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Make tutor request functions globally accessible
 window.filterTutorRequestType = filterTutorRequestType;
 window.filterTutorRequestStatus = filterTutorRequestStatus;
+window.filterRequestDirection = filterRequestDirection;
 window.loadTutorRequests = loadTutorRequests;
 window.viewSessionRequestDetails = viewSessionRequestDetails;
 window.showSessionRequestModal = showSessionRequestModal;

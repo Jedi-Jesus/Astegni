@@ -357,7 +357,7 @@
         console.log('✅ [Tutor Panel] Community Panel Manager initialized');
 
         // Listen for panel switches
-        const communityMenuItem = document.querySelector('.sidebar-item[data-panel="tutor-community"]');
+        const communityMenuItem = document.querySelector('.sidebar-item[data-panel="community"]');
         if (communityMenuItem) {
             communityMenuItem.addEventListener('click', function() {
                 console.log('🎯 [Tutor Panel] Community panel opened from sidebar');

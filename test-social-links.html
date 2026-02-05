@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Social Links Display</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔗 Social Links Display Test</h1>
+
+        <div class="test-section">
+            <h2>Test 1: All Social Platforms</h2>
+            <div id="social-links-test-1" style="display: flex; gap: 0.75rem; margin-top: 1rem;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2: Only Twitter & LinkedIn</h2>
+            <div id="social-links-test-2" style="display: flex; gap: 0.75rem; margin-top: 1rem;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3: No Social Links (Should be hidden)</h2>
+            <div id="social-links-test-3" style="display: flex; gap: 0.75rem; margin-top: 1rem;"></div>
+            <p id="test-3-result" style="margin-top: 10px; color: #666; font-size: 14px;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Copy the displaySocialLinks function from user-profile.js
+        function displaySocialLinks(socialLinks, containerId) {
+            console.log('[displaySocialLinks] Rendering social links:', socialLinks);
+            const container = document.getElementById(containerId);
+
+            if (!container) {
+                console.warn('[displaySocialLinks] Container not found');
+                return;
+            }
+
+            // Clear existing content
+            container.innerHTML = '';
+
+            // If no social links, hide container
+            if (!socialLinks || Object.keys(socialLinks).length === 0) {
+                console.log('[displaySocialLinks] No social links to display');
+                container.style.display = 'none';
+                return;
+            }
+
+            // Social media platform configurations
+            const platforms = {
+                twitter: {
+                    name: 'Twitter',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                    </svg>`,
+                    color: '#1DA1F2',
+                    hoverColor: '#1a91da'
+                },
+                linkedin: {
+                    name: 'LinkedIn',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                        <circle cx="4" cy="4" r="2"></circle>
+                    </svg>`,
+                    color: '#0A66C2',
+                    hoverColor: '#004182'
+                },
+                facebook: {
+                    name: 'Facebook',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                    </svg>`,
+                    color: '#1877F2',
+                    hoverColor: '#165ed0'
+                },
+                instagram: {
+                    name: 'Instagram',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>`,
+                    color: '#E4405F',
+                    hoverColor: '#d32f4f'
+                },
+                youtube: {
+                    name: 'YouTube',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path>
+                    </svg>`,
+                    color: '#FF0000',
+                    hoverColor: '#cc0000'
+                },
+                github: {
+                    name: 'GitHub',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
+                    </svg>`,
+                    color: '#333333',
+                    hoverColor: '#24292e'
+                },
+                tiktok: {
+                    name: 'TikTok',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"></path>
+                    </svg>`,
+                    color: '#000000',
+                    hoverColor: '#2b2b2b'
+                },
+                telegram: {
+                    name: 'Telegram',
+                    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path>
+                    </svg>`,
+                    color: '#0088cc',
+                    hoverColor: '#006699'
+                }
+            };
+
+            // Build social links HTML
+            let hasLinks = false;
+
+            for (const [platform, url] of Object.entries(socialLinks)) {
+                if (url && url.trim() !== '') {
+                    hasLinks = true;
+                    const config = platforms[platform.toLowerCase()];
+
+                    if (config) {
+                        const linkEl = document.createElement('a');
+                        linkEl.href = url;
+                        linkEl.target = '_blank';
+                        linkEl.rel = 'noopener noreferrer';
+                        linkEl.title = config.name;
+                        linkEl.style.cssText = `
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            background-color: ${config.color};
+                            color: white;
+                            transition: all 0.3s ease;
+                            text-decoration: none;
+                        `;
+
+                        // Hover effect
+                        linkEl.addEventListener('mouseenter', function() {
+                            this.style.backgroundColor = config.hoverColor;
+                            this.style.transform = 'translateY(-3px) scale(1.1)';
+                            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                        });
+
+                        linkEl.addEventListener('mouseleave', function() {
+                            this.style.backgroundColor = config.color;
+                            this.style.transform = 'translateY(0) scale(1)';
+                            this.style.boxShadow = 'none';
+                        });
+
+                        linkEl.innerHTML = config.icon;
+                        container.appendChild(linkEl);
+                    }
+                }
+            }
+
+            // Show/hide container based on whether we have links
+            if (hasLinks) {
+                container.style.display = 'flex';
+                console.log('[displaySocialLinks] Displayed social links successfully');
+            } else {
+                container.style.display = 'none';
+                console.log('[displaySocialLinks] No valid social links found');
+            }
+        }
+
+        // Test 1: All platforms
+        displaySocialLinks({
+            twitter: 'https://twitter.com/astegni',
+            linkedin: 'https://linkedin.com/company/astegni',
+            facebook: 'https://facebook.com/astegni',
+            instagram: 'https://instagram.com/astegni',
+            youtube: 'https://youtube.com/@astegni',
+            github: 'https://github.com/astegni',
+            tiktok: 'https://tiktok.com/@astegni',
+            telegram: 'https://t.me/astegni'
+        }, 'social-links-test-1');
+
+        // Test 2: Only Twitter & LinkedIn
+        displaySocialLinks({
+            twitter: 'https://twitter.com/astegni',
+            linkedin: 'https://linkedin.com/company/astegni'
+        }, 'social-links-test-2');
+
+        // Test 3: No links (should hide)
+        displaySocialLinks({}, 'social-links-test-3');
+        const test3Container = document.getElementById('social-links-test-3');
+        const test3Result = document.getElementById('test-3-result');
+        if (test3Container.style.display === 'none') {
+            test3Result.textContent = '✅ Container correctly hidden when no links provided';
+            test3Result.style.color = 'green';
+        } else {
+            test3Result.textContent = '❌ Container should be hidden but is visible';
+            test3Result.style.color = 'red';
+        }
+
+        console.log('✅ Social Links Test Page Loaded');
+    </script>
+</body>
+</html>

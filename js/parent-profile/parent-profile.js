@@ -97,27 +97,71 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        // Check if user has parent role
-        const userRole = window.AuthManager.getUserRole();
-        const user = window.AuthManager.getUser();
+        // FIX: Check if role switch is in progress FIRST (before getting userRole)
+        // Use localStorage with timestamp - valid for 10 seconds after switch
+        const switchTimestamp = localStorage.getItem('role_switch_timestamp');
+        const targetRole = localStorage.getItem('role_switch_target');
 
-        // DEBUG: Log detailed role information
-        console.log('🔍 [ParentProfile] Role Check Debug:', {
-            userRole: userRole,
-            user_active_role: user?.active_role,
-            user_role: user?.role,
-            user_roles: user?.roles,
-            localStorage_userRole: localStorage.getItem('userRole')
+        console.log('🔍 [ParentProfile] Grace Period Check:', {
+            switchTimestamp: switchTimestamp,
+            targetRole: targetRole,
+            currentTime: Date.now(),
+            timeSinceSwitch: switchTimestamp ? Date.now() - parseInt(switchTimestamp) : 'N/A'
         });
 
-        // More defensive role check - handle undefined, null, and string "undefined"
-        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+        if (switchTimestamp && targetRole === 'parent') {
+            const timeSinceSwitch = Date.now() - parseInt(switchTimestamp);
+            const isWithinGracePeriod = timeSinceSwitch < 10000; // 10 seconds grace period
 
-        if (normalizedRole !== 'parent') {
-            console.warn(`⚠️ [ParentProfile] User role is '${normalizedRole}', not 'parent'. Redirecting...`);
-            alert(`This page is for parents only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your parent role or log in with a parent account.`);
-            window.location.href = '../index.html';
-            return;
+            console.log(`🔍 [ParentProfile] Time since switch: ${timeSinceSwitch}ms, Grace period valid: ${isWithinGracePeriod}`);
+
+            if (isWithinGracePeriod) {
+                // DON'T clear the flags here - let them expire naturally
+                // This ensures any subsequent checks within the grace period still pass
+                // The flags will be cleared by AuthManager.restoreSession() when they expire
+                console.log('✅ [ParentProfile] Role switch detected (within 10s grace period) - allowing page load');
+                console.log('✅ [ParentProfile] Skipping role validation (user just switched roles)');
+                console.log(`✅ [ParentProfile] Grace period will expire in ${10000 - timeSinceSwitch}ms`);
+                // Continue to initialize the page - skip role validation entirely
+            } else {
+                // Grace period expired, clear flags and perform normal check
+                console.log(`⚠️ [ParentProfile] Role switch grace period expired (${timeSinceSwitch}ms > 10000ms), performing normal role check`);
+                localStorage.removeItem('role_switch_timestamp');
+                localStorage.removeItem('role_switch_target');
+
+                // Fall through to normal role check below
+                performNormalRoleCheck();
+            }
+        } else {
+            // No role switch in progress - perform normal check
+            console.log('🔍 [ParentProfile] No active role switch detected, performing normal role check');
+            performNormalRoleCheck();
+        }
+
+        function performNormalRoleCheck() {
+            const userRole = window.AuthManager.getUserRole();
+            const user = window.AuthManager.getUser();
+
+            // DEBUG: Log detailed role information
+            console.log('🔍 [ParentProfile] Role Check Debug:', {
+                userRole: userRole,
+                user_active_role: user?.active_role,
+                user_role: user?.role,
+                user_roles: user?.roles,
+                localStorage_userRole: localStorage.getItem('userRole'),
+                localStorage_switchTimestamp: localStorage.getItem('role_switch_timestamp'),
+                localStorage_switchTarget: localStorage.getItem('role_switch_target')
+            });
+
+            // More defensive role check - handle undefined, null, and string "undefined"
+            const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+            if (normalizedRole !== 'parent') {
+                console.warn(`⚠️ [ParentProfile] User role is '${normalizedRole}', not 'parent'. Redirecting...`);
+                alert(`This page is for parents only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your parent role or log in with a parent account.`);
+                window.location.href = '../index.html';
+                return;
+            }
         }
 
         console.log('✅ [ParentProfile] Authentication verified for parent role');
@@ -363,6 +407,88 @@ async function loadConnectionStats() {
     }
 }
 
+// Load dashboard stats from database
+async function loadDashboardStats() {
+    try {
+        const stats = await ParentProfileAPI.getDashboardStats();
+        console.log('[ParentProfile] Dashboard stats:', stats);
+
+        // Update hero stats
+        const heroStatsItems = document.querySelectorAll('.hero-stats .stat-item .stat-number');
+        if (heroStatsItems.length >= 3) {
+            // Children (first stat)
+            heroStatsItems[0].setAttribute('data-target', stats.children_enrolled || 0);
+            heroStatsItems[0].textContent = stats.children_enrolled || 0;
+
+            // Active Tutors (second stat)
+            heroStatsItems[1].setAttribute('data-target', stats.active_tutors || 0);
+            heroStatsItems[1].textContent = stats.active_tutors || 0;
+
+            // Monthly Investment (third stat)
+            if (stats.monthly_investment !== null) {
+                heroStatsItems[2].setAttribute('data-target', stats.monthly_investment);
+                heroStatsItems[2].textContent = stats.monthly_investment;
+            } else {
+                heroStatsItems[2].textContent = 'Coming Soon';
+                heroStatsItems[2].setAttribute('data-target', 0);
+            }
+        }
+
+        // Update dashboard panel stat cards
+        const statChildrenEl = document.getElementById('stat-children');
+        if (statChildrenEl) {
+            statChildrenEl.textContent = stats.children_enrolled || 0;
+        }
+
+        const statTutorsEl = document.getElementById('stat-tutors');
+        if (statTutorsEl) {
+            statTutorsEl.textContent = stats.active_tutors || 0;
+        }
+
+        const statStudyHoursEl = document.getElementById('stat-study-hours');
+        if (statStudyHoursEl) {
+            statStudyHoursEl.textContent = stats.total_study_hours || 0;
+        }
+
+        const statSessionsEl = document.getElementById('stat-sessions');
+        if (statSessionsEl) {
+            statSessionsEl.textContent = stats.sessions_this_month || 0;
+        }
+
+        const statSatisfactionEl = document.getElementById('stat-satisfaction');
+        if (statSatisfactionEl) {
+            statSatisfactionEl.textContent = stats.tutor_satisfaction ? stats.tutor_satisfaction.toFixed(1) : '0.0';
+        }
+
+        const statAttendanceEl = document.getElementById('stat-attendance');
+        if (statAttendanceEl) {
+            statAttendanceEl.textContent = stats.attendance_rate !== undefined ? stats.attendance_rate : '0';
+        }
+
+        const statFamilyProgressEl = document.getElementById('stat-family-progress');
+        if (statFamilyProgressEl) {
+            if (stats.family_progress !== null) {
+                statFamilyProgressEl.textContent = `${stats.family_progress}%`;
+            } else {
+                statFamilyProgressEl.innerHTML = '<span class="text-sm text-gray-500">Coming Soon</span>';
+            }
+        }
+
+        const statInvestmentEl = document.getElementById('stat-investment');
+        if (statInvestmentEl) {
+            if (stats.monthly_investment !== null) {
+                statInvestmentEl.textContent = stats.monthly_investment.toLocaleString();
+            } else {
+                statInvestmentEl.innerHTML = '<span class="text-sm text-gray-500">Coming Soon</span>';
+            }
+        }
+
+    } catch (error) {
+        console.error('[ParentProfile] Error loading dashboard stats:', error);
+        // Don't set to 0 on error - keep existing values or show error
+    }
+}
+
 async function loadUserProfile() {
     try {
         // Load profile from API
@@ -373,11 +499,25 @@ async function loadUserProfile() {
             // Store profile data globally for edit modal
             window.parentProfileData = profile;
 
-            // Update profile name - Use full name from users table
+            // Update profile name - Handle both Ethiopian and International naming conventions
             const profileNameEl = document.getElementById('parentName');
             if (profileNameEl) {
-                const displayName = profile.name || `${profile.first_name || ''} ${profile.father_name || ''}`.trim() || 'Parent Name';
-                profileNameEl.textContent = displayName;
+                // Use pre-built name from API, or construct it if needed
+                let displayName = profile.name;
+
+                if (!displayName) {
+                    // Fallback: Build name based on naming convention
+                    if (profile.last_name) {
+                        // International naming convention
+                        displayName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+                    } else {
+                        // Ethiopian naming convention
+                        const nameParts = [profile.first_name, profile.father_name, profile.grandfather_name].filter(part => part);
+                        displayName = nameParts.join(' ');
+                    }
+                }
+
+                profileNameEl.textContent = displayName || 'Parent Name';
             }
 
             // Update username
@@ -465,6 +605,25 @@ async function loadUserProfile() {
                 phoneEl.textContent = profile.phone || 'Phone not set';
             }
 
+            // Update hobbies
+            const hobbiesEl = document.getElementById('parent-hobbies');
+            if (hobbiesEl) {
+                if (profile.hobbies && Array.isArray(profile.hobbies) && profile.hobbies.length > 0) {
+                    const hobbiesText = profile.hobbies.join(', ');
+                    hobbiesEl.textContent = hobbiesText;
+                    hobbiesEl.style.color = 'var(--text)';
+                    hobbiesEl.style.fontStyle = 'normal';
+                } else if (profile.hobbies && typeof profile.hobbies === 'string') {
+                    hobbiesEl.textContent = profile.hobbies;
+                    hobbiesEl.style.color = 'var(--text)';
+                    hobbiesEl.style.fontStyle = 'normal';
+                } else {
+                    hobbiesEl.textContent = 'No hobbies yet';
+                    hobbiesEl.style.color = 'var(--text-muted)';
+                    hobbiesEl.style.fontStyle = 'italic';
+                }
+            }
+
             // Update relationship type
             const relationshipEl = document.getElementById('parent-relationship');
             if (relationshipEl) {
@@ -486,17 +645,17 @@ async function loadUserProfile() {
             // Load connection stats from database
             loadConnectionStats();
 
-            // Update stats
-            const statChildrenEl = document.getElementById('stat-children');
-            if (statChildrenEl) {
-                statChildrenEl.textContent = profile.total_children || 0;
-            }
+            // Load dashboard stats from database
+            loadDashboardStats();
 
             // Update occupation if exists
             const occupationEl = document.getElementById('parent-occupation');
             if (occupationEl) {
                 occupationEl.textContent = profile.occupation || 'Not specified';
             }
+
+            // Update social links
+            populateSocialLinks(profile.social_links || {});
 
             // Update rating tooltip metrics if they exist
             updateRatingTooltip(profile);
@@ -571,47 +730,7 @@ function updateRatingTooltip(profile) {
 // Share Modal Functions
 // ===========================
 
-function openShareModal() {
-    const modal = document.getElementById('share-modal');
-    const shareImage = document.getElementById('share-image');
-    
-    // Select image based on user gender
-    const imagePath = currentUser.gender === 'female' 
-        ? '../pictures/share_woman.png' 
-        : '../pictures/share_man.png';
-    
-    shareImage.src = imagePath;
-    
-    showModal(modal);
-}
-
-function closeShareModal() {
-    const modal = document.getElementById('share-modal');
-    hideModal(modal);
-}
-
-function copyShareLink() {
-    // Generate a share link (you can customize this)
-    const shareLink = window.location.origin + '/profile/' + currentUser.id;
-    
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareLink).then(() => {
-        showNotification('Link copied to clipboard!', 'success');
-        
-        // Change button text temporarily
-        const copyBtn = document.querySelector('.copy-link-btn');
-        const originalHTML = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copied!';
-        
-        setTimeout(() => {
-            copyBtn.innerHTML = originalHTML;
-        }, 2000);
-    }).catch(err => {
-        showNotification('Failed to copy link', 'error');
-    });
-}
-
-
+// Share modal functions are now handled by share-profile-manager.js
 
 // Improved handleNavLinkClick function for coming soon features
 window.handleNavLinkClick = function(e, link) {
@@ -1274,6 +1393,74 @@ function logout() {
     }
 }
 
+// Populate social links
+function populateSocialLinks(socialLinks) {
+    const container = document.getElementById('social-links-container');
+    if (!container) {
+        console.error('❌ Social links container not found!');
+        return;
+    }
+
+    const iconMap = {
+        facebook: 'fab fa-facebook-f',
+        twitter: 'fab fa-twitter',
+        linkedin: 'fab fa-linkedin-in',
+        instagram: 'fab fa-instagram',
+        youtube: 'fab fa-youtube',
+        telegram: 'fab fa-telegram-plane',
+        website: 'fas fa-globe'
+    };
+
+    const titleMap = {
+        facebook: 'Facebook',
+        twitter: 'Twitter',
+        linkedin: 'LinkedIn',
+        instagram: 'Instagram',
+        youtube: 'YouTube',
+        telegram: 'Telegram',
+        website: 'Website'
+    };
+
+    console.log('📱 Populating social links. Raw data:', socialLinks);
+    console.log('📱 Type:', typeof socialLinks, 'IsObject:', socialLinks && typeof socialLinks === 'object');
+
+    // Handle both object and array formats
+    let entries = [];
+    if (socialLinks && typeof socialLinks === 'object') {
+        if (Array.isArray(socialLinks)) {
+            // Array format: [{platform: 'facebook', url: 'https://...'}]
+            entries = socialLinks.map(item => [item.platform, item.url]);
+        } else {
+            // Object format: {facebook: 'https://...', twitter: 'https://...'}
+            entries = Object.entries(socialLinks);
+        }
+    }
+
+    console.log('📱 Parsed entries:', entries);
+
+    // Only show platforms that have URLs
+    const html = entries
+        .filter(([platform, url]) => url && url.trim() !== '')
+        .map(([platform, url]) => {
+            console.log(`  ✓ Adding ${platform}: ${url}`);
+            return `
+            <a href="${url}" class="social-link" title="${titleMap[platform] || platform}"
+               onclick="event.preventDefault(); window.open('${url}', '_blank');" target="_blank" rel="noopener noreferrer">
+                <i class="${iconMap[platform] || 'fas fa-link'}"></i>
+            </a>
+        `;
+        }).join('');
+
+    if (html) {
+        container.innerHTML = html;
+        const count = entries.filter(([_, url]) => url && url.trim() !== '').length;
+        console.log(`✅ ${count} social link(s) populated successfully`);
+    } else {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">No social links added</p>';
+        console.log('ℹ️ No social links to display');
+    }
+}
+
 // ===========================
 // Animation Styles
 // ===========================
@@ -1349,6 +1536,17 @@ function filterParentRequestType(type) {
             card.style.background = 'var(--card-bg)';
         }
     });
+
+    // Show/hide request buttons based on type
+    const requestCourseBtn = document.getElementById('request-course-btn');
+    const requestSchoolBtn = document.getElementById('request-school-btn');
+
+    if (requestCourseBtn) {
+        requestCourseBtn.style.display = type === 'courses' ? 'flex' : 'none';
+    }
+    if (requestSchoolBtn) {
+        requestSchoolBtn.style.display = type === 'schools' ? 'flex' : 'none';
+    }
 
     // Show/hide parenting direction tabs
     const parentingDirectionTabs = document.getElementById('parent-parenting-direction-tabs');
@@ -3532,6 +3730,284 @@ function changeAttendanceMonth(month) {
     showNotification(`Loading attendance for ${month}...`, 'info');
 }
 
+// ============================================
+// EDIT PROFILE MODAL - DYNAMIC FIELDS
+// ============================================
+
+// Global arrays for dynamic fields
+let languagesList = [];
+let hobbiesList = [];
+let socialLinksList = [];
+
+/**
+ * Add new language field
+ */
+function addLanguage() {
+    const container = document.getElementById('languages-container');
+    if (!container) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '0.5rem';
+    wrapper.style.marginBottom = '0.5rem';
+
+    const languageSelect = document.createElement('select');
+    languageSelect.className = 'form-input language-select';
+    languageSelect.style.flex = '1';
+    languageSelect.innerHTML = `
+        <option value="">Select Language</option>
+        <option value="English">English</option>
+        <option value="Amharic">Amharic</option>
+        <option value="Oromo">Oromo</option>
+        <option value="Tigrinya">Tigrinya</option>
+        <option value="Somali">Somali</option>
+        <option value="Gurage">Gurage</option>
+        <option value="French">French</option>
+        <option value="Arabic">Arabic</option>
+    `;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'btn-secondary';
+    removeBtn.style.padding = '0.5rem 1rem';
+    removeBtn.style.minWidth = 'auto';
+    removeBtn.onclick = () => wrapper.remove();
+
+    wrapper.appendChild(languageSelect);
+    wrapper.appendChild(removeBtn);
+
+    container.appendChild(wrapper);
+}
+
+/**
+ * Load existing languages into form
+ */
+function loadLanguages(languagesArray) {
+    const container = document.getElementById('languages-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (languagesArray && languagesArray.length > 0) {
+        languagesArray.forEach(language => {
+            addLanguage();
+            const wrappers = container.querySelectorAll('div');
+            const lastWrapper = wrappers[wrappers.length - 1];
+            if (lastWrapper) {
+                const languageSelect = lastWrapper.querySelector('.language-select');
+                if (languageSelect) languageSelect.value = language;
+            }
+        });
+    }
+
+    // Add one empty field if no languages exist
+    if (!container.children.length) {
+        addLanguage();
+    }
+}
+
+/**
+ * Collect languages from form
+ */
+function collectLanguages() {
+    const container = document.getElementById('languages-container');
+    if (!container) return [];
+
+    const languages = [];
+    const selects = container.querySelectorAll('.language-select');
+
+    selects.forEach(select => {
+        const value = select.value.trim();
+        if (value) {
+            languages.push(value);
+        }
+    });
+
+    return languages;
+}
+
+/**
+ * Add new hobby field
+ */
+function addHobby() {
+    const container = document.getElementById('hobbies-container');
+    if (!container) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '0.5rem';
+    wrapper.style.marginBottom = '0.5rem';
+
+    const hobbyInput = document.createElement('input');
+    hobbyInput.type = 'text';
+    hobbyInput.className = 'form-input hobby-input';
+    hobbyInput.placeholder = 'Enter hobby';
+    hobbyInput.style.flex = '1';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'btn-secondary';
+    removeBtn.style.padding = '0.5rem 1rem';
+    removeBtn.style.minWidth = 'auto';
+    removeBtn.onclick = () => wrapper.remove();
+
+    wrapper.appendChild(hobbyInput);
+    wrapper.appendChild(removeBtn);
+
+    container.appendChild(wrapper);
+}
+
+/**
+ * Load existing hobbies into form
+ */
+function loadHobbies(hobbiesArray) {
+    const container = document.getElementById('hobbies-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (hobbiesArray && hobbiesArray.length > 0) {
+        hobbiesArray.forEach(hobby => {
+            addHobby();
+            const wrappers = container.querySelectorAll('div');
+            const lastWrapper = wrappers[wrappers.length - 1];
+            if (lastWrapper) {
+                const hobbyInput = lastWrapper.querySelector('.hobby-input');
+                if (hobbyInput) hobbyInput.value = hobby;
+            }
+        });
+    }
+
+    // Add one empty field if no hobbies exist
+    if (!container.children.length) {
+        addHobby();
+    }
+}
+
+/**
+ * Collect hobbies from form
+ */
+function collectHobbies() {
+    const container = document.getElementById('hobbies-container');
+    if (!container) return [];
+
+    const hobbies = [];
+    const inputs = container.querySelectorAll('.hobby-input');
+
+    inputs.forEach(input => {
+        const value = input.value.trim();
+        if (value) {
+            hobbies.push(value);
+        }
+    });
+
+    return hobbies;
+}
+
+/**
+ * Add new social link field
+ */
+function addSocialLink() {
+    const container = document.getElementById('social-media-container');
+    if (!container) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '0.5rem';
+    wrapper.style.marginBottom = '0.5rem';
+
+    const platformSelect = document.createElement('select');
+    platformSelect.className = 'form-input social-platform-select';
+    platformSelect.style.minWidth = '150px';
+    platformSelect.innerHTML = `
+        <option value="">Select Platform</option>
+        <option value="facebook">Facebook</option>
+        <option value="twitter">Twitter</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="instagram">Instagram</option>
+        <option value="youtube">YouTube</option>
+        <option value="telegram">Telegram</option>
+        <option value="website">Website</option>
+    `;
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.className = 'form-input social-url-input';
+    urlInput.placeholder = 'URL (e.g., https://facebook.com/yourpage)';
+    urlInput.style.flex = '1';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'btn-secondary';
+    removeBtn.style.padding = '0.5rem 1rem';
+    removeBtn.style.minWidth = 'auto';
+    removeBtn.onclick = () => wrapper.remove();
+
+    wrapper.appendChild(platformSelect);
+    wrapper.appendChild(urlInput);
+    wrapper.appendChild(removeBtn);
+
+    container.appendChild(wrapper);
+}
+
+/**
+ * Load existing social links into form
+ */
+function loadSocialLinks(socialLinks) {
+    const container = document.getElementById('social-media-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (socialLinks && typeof socialLinks === 'object') {
+        Object.entries(socialLinks).forEach(([platform, url]) => {
+            if (platform && url) {
+                addSocialLink();
+                const wrappers = container.querySelectorAll('div');
+                const lastWrapper = wrappers[wrappers.length - 1];
+                if (lastWrapper) {
+                    const platformSelect = lastWrapper.querySelector('.social-platform-select');
+                    const urlInput = lastWrapper.querySelector('.social-url-input');
+                    if (platformSelect) platformSelect.value = platform;
+                    if (urlInput) urlInput.value = url;
+                }
+            }
+        });
+    }
+
+    // Add one empty field if no links exist
+    if (!container.children.length) {
+        addSocialLink();
+    }
+}
+
+/**
+ * Collect social links from form
+ */
+function collectSocialLinks() {
+    const container = document.getElementById('social-media-container');
+    if (!container) return {};
+
+    const socialLinks = {};
+    const wrappers = container.querySelectorAll('div');
+
+    wrappers.forEach(wrapper => {
+        const platformSelect = wrapper.querySelector('.social-platform-select');
+        const urlInput = wrapper.querySelector('.social-url-input');
+        const platform = platformSelect?.value?.trim();
+        const url = urlInput?.value?.trim();
+
+        if (platform && url) {
+            socialLinks[platform] = url;
+        }
+    });
+
+    return socialLinks;
+}
+
 // Make helper functions available globally
 window.closeStudentDetailsModal = closeStudentDetailsModal;
 window.switchSection = switchSection;
@@ -3548,3 +4024,6 @@ window.sendReminder = sendReminder;
 window.followUp = followUp;
 window.addNewAssignment = addNewAssignment;
 window.changeAttendanceMonth = changeAttendanceMonth;
+window.addLanguage = addLanguage;
+window.addHobby = addHobby;
+window.addSocialLink = addSocialLink;

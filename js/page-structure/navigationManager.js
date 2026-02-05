@@ -7,20 +7,22 @@ window.navigateToStore = function() {
     window.location.href = "../branch/store.html";
 };
 
-window.shareProfile = function() {
-    const profileUrl = window.location.href;
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out my profile',
-            url: profileUrl
-        }).catch(err => console.log('Share failed:', err));
-    } else {
-        navigator.clipboard.writeText(profileUrl);
-        if (window.Utils) {
-            Utils.showToast('📋 Profile link copied to clipboard!', 'success');
-        }
-    }
-};
+// REMOVED: shareProfile is now defined in share-profile-manager.js
+// This was causing conflicts by overwriting the centralized share modal function
+// window.shareProfile = function() {
+//     const profileUrl = window.location.href;
+//     if (navigator.share) {
+//         navigator.share({
+//             title: 'Check out my profile',
+//             url: profileUrl
+//         }).catch(err => console.log('Share failed:', err));
+//     } else {
+//         navigator.clipboard.writeText(profileUrl);
+//         if (window.Utils) {
+//             Utils.showToast('📋 Profile link copied to clipboard!', 'success');
+//         }
+//     }
+// };
 
 window.toggleSidebar = function() {
     const sidebar = document.getElementById('leftSidebar');

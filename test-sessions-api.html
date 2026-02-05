@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Sessions API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .session { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .parent { background: #f3e8ff; }
+        .direct { background: #dbeafe; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .active { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Sessions Panel Test</h1>
+
+    <div>
+        <button id="btn-all" class="active" onclick="filterSessions('all')">All Sessions</button>
+        <button id="btn-tutor" onclick="filterSessions('tutor')">As Tutor</button>
+        <button id="btn-student" onclick="filterSessions('student')">As Student</button>
+        <button id="btn-parent" onclick="filterSessions('parent')">As Parent</button>
+    </div>
+
+    <h2>Stats</h2>
+    <div id="stats"></div>
+
+    <h2>Sessions</h2>
+    <div id="sessions"></div>
+
+    <script>
+        let allSessions = [];
+
+        // Get token from localStorage
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+        if (!token) {
+            document.getElementById('sessions').innerHTML = '<p style="color: red;">Not logged in! Please log in first.</p>';
+        } else {
+            loadSessions();
+        }
+
+        async function loadSessions() {
+            try {
+                const response = await fetch('http://localhost:8000/api/tutor/sessions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                allSessions = await response.json();
+                console.log('Loaded sessions:', allSessions);
+
+                displayStats();
+                filterSessions('all');
+            } catch (error) {
+                document.getElementById('sessions').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayStats() {
+            const withParent = allSessions.filter(s => s.parent_id).length;
+            const withoutParent = allSessions.filter(s => !s.parent_id).length;
+
+            document.getElementById('stats').innerHTML = `
+                <p>Total: <strong>${allSessions.length}</strong></p>
+                <p>With Parent: <strong>${withParent}</strong></p>
+                <p>Direct (no parent): <strong>${withoutParent}</strong></p>
+            `;
+        }
+
+        function filterSessions(role) {
+            // Update button styles
+            document.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${role}`).classList.add('active');
+
+            // Filter sessions
+            let filtered = allSessions;
+
+            if (role === 'student') {
+                filtered = allSessions.filter(s => !s.parent_id);
+            } else if (role === 'parent') {
+                filtered = allSessions.filter(s => s.parent_id);
+            }
+            // 'tutor' and 'all' show all sessions
+
+            // Display
+            const html = filtered.map(session => {
+                const enrollmentType = session.parent_id ? 'Parent Enrollment' : 'Direct Enrollment';
+                const cssClass = session.parent_id ? 'parent' : 'direct';
+
+                return `
+                    <div class="session ${cssClass}">
+                        <strong>${session.student_name}</strong> - ${session.course_name}<br>
+                        Date: ${session.session_date} ${session.start_time} - ${session.end_time}<br>
+                        Type: <strong>${enrollmentType}</strong><br>
+                        Parent ID: ${session.parent_id || 'NULL'}<br>
+                        Status: ${session.status}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('sessions').innerHTML = html || '<p>No sessions found for this filter.</p>';
+        }
+    </script>
+</body>
+</html>

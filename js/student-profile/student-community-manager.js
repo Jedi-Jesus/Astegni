@@ -30,6 +30,43 @@ let currentPage = {
 function switchCommunityMainTab(section) {
   console.log('Switching to main section:', section);
 
+  // Handle direct requests cards
+  if (section === 'requests-sent' || section === 'requests-received') {
+    // Hide all main tab content sections
+    const mainTabContents = document.querySelectorAll('.community-main-tab-content');
+    mainTabContents.forEach(content => {
+      content.classList.add('hidden');
+    });
+
+    // Show requests content
+    const requestsContent = document.getElementById('requests-main-tab-content');
+    if (requestsContent) {
+      requestsContent.classList.remove('hidden');
+    }
+
+    // Update active state on cards
+    const mainCards = document.querySelectorAll('.community-main-card');
+    mainCards.forEach(card => {
+      card.classList.remove('active-community-card');
+      card.style.transform = '';
+      card.style.boxShadow = '';
+    });
+
+    // Add active state to clicked card
+    const activeCard = document.getElementById(`${section}-main-tab`);
+    if (activeCard) {
+      activeCard.classList.add('active-community-card');
+      activeCard.style.transform = 'translateY(-4px)';
+      activeCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+    }
+
+    // IMPORTANT: Fetch data when card is clicked
+    const subsection = section === 'requests-sent' ? 'sent' : 'received';
+    console.log(`📥 Fetching ${subsection} requests on click...`);
+    toggleRequestsSubSection(subsection);
+    return;
+  }
+
   // Hide all main tab content sections
   const mainTabContents = document.querySelectorAll('.community-main-tab-content');
   mainTabContents.forEach(content => {
@@ -891,7 +928,7 @@ function displayClubsInGrid(gridId, clubs, type, page = 1) {
           </div>
           <div class="club-detail-item">
             <span>💰</span>
-            <span>${club.is_paid ? `${club.membership_fee} ETB` : 'Free to join'}</span>
+            <span>${club.is_paid ? `${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}` : 'Free to join'}</span>
           </div>
         </div>
         <p class="club-description">${club.description || 'No description available'}</p>
@@ -1019,9 +1056,11 @@ async function loadRequestsPanel() {
       cachedReceivedRequests = await receivedResponse.json();
     }
 
-    // Update counts
+    // Update counts (both in filter buttons and main cards)
     updateElement('sent-requests-count', cachedSentRequests.length);
     updateElement('received-requests-count', cachedReceivedRequests.length);
+    updateElement('sent-requests-count-main', cachedSentRequests.length);
+    updateElement('received-requests-count-main', cachedReceivedRequests.length);
 
     // Display based on current filter (default: received)
     filterRequestsPanelBy(currentRequestsFilter);
@@ -1875,6 +1914,45 @@ async function cancelConnectionRequest(connectionId) {
   }
 }
 
+// Load request counts for the main cards (async, doesn't block UI)
+async function loadRequestCounts() {
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+  if (!token) return;
+
+  // Get active role from JWT token
+  let activeRole = 'student';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
+  try {
+    // Fetch sent requests count
+    const sentResponse = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (sentResponse.ok) {
+      const sentRequests = await sentResponse.json();
+      updateElement('sent-requests-count-main', sentRequests.length);
+    }
+
+    // Fetch received requests count
+    const receivedResponse = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (receivedResponse.ok) {
+      const receivedRequests = await receivedResponse.json();
+      updateElement('received-requests-count-main', receivedRequests.length);
+    }
+  } catch (error) {
+    console.warn('Could not load request counts:', error);
+  }
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   // Only initialize if we're on the student profile page with community panel
@@ -1890,6 +1968,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!communityPanel.classList.contains('hidden')) {
               // Load connections by default when panel is shown
               loadAllConnectionsPanel();
+              loadRequestCounts(); // Load counts for request cards
               panelObserver.disconnect();
             }
           }
@@ -1901,6 +1980,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // If panel is already visible, load immediately
       if (!communityPanel.classList.contains('hidden')) {
         loadAllConnectionsPanel();
+        loadRequestCounts(); // Load counts for request cards
       }
     }
 

@@ -448,11 +448,51 @@
     }
 
     // ============================================
+    // UTILITY FUNCTIONS FOR PROFILE CARDS
+    // ============================================
+
+    /**
+     * Open Community Modal with specific tab
+     * Maps profile card clicks to the appropriate modal section and tab
+     * @param {string} tab - Tab to open ('connections', 'pending', 'received')
+     */
+    function openCommunityModalTab(tab) {
+        console.log(`🔗 Opening community modal tab: ${tab}`);
+
+        // Map tab names to sections and request tabs
+        const tabMapping = {
+            'connections': { section: 'connections', requestTab: null },
+            'pending': { section: 'requests', requestTab: 'sent' },  // Pending requests = Sent requests
+            'received': { section: 'requests', requestTab: 'received' }  // Received requests
+        };
+
+        const mapping = tabMapping[tab];
+
+        if (!mapping) {
+            console.warn(`Unknown tab: ${tab}, opening connections by default`);
+            openCommunityModal('connections');
+            return;
+        }
+
+        // Open the modal with the appropriate section
+        openCommunityModal(mapping.section);
+
+        // If it's a request section, switch to the specific request tab
+        if (mapping.requestTab) {
+            // Small delay to ensure modal is fully opened before switching tabs
+            setTimeout(() => {
+                switchRequestTab(mapping.requestTab);
+            }, 100);
+        }
+    }
+
+    // ============================================
     // EXPORT TO WINDOW (for HTML onclick handlers)
     // ============================================
 
     // Community Modal Functions
     window.openCommunityModal = openCommunityModal;
+    window.openCommunityModalTab = openCommunityModalTab;
     window.closeCommunityModal = closeCommunityModal;
     window.switchCommunitySection = switchCommunitySection;
     window.switchCommunityMainSection = switchCommunityMainSection; // Sidebar compatibility

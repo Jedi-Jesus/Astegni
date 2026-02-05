@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Schedule Script Loading</title>
+</head>
+<body>
+    <h1>Testing Schedule Panel Manager Script Loading</h1>
+
+    <div id="test-results"></div>
+
+    <script>
+        console.log('🧪 Test page loaded');
+
+        // Test if script will load
+        const script = document.createElement('script');
+        script.src = '../js/tutor-profile/schedule-panel-manager.js?v=20260201fix4';
+
+        script.onload = function() {
+            console.log('✅ Script loaded successfully!');
+            document.getElementById('test-results').innerHTML = `
+                <p style="color: green;">✅ Script loaded successfully!</p>
+                <p>filterSchedulesByRole exists: ${typeof filterSchedulesByRole === 'function'}</p>
+                <p>loadSchedules exists: ${typeof loadSchedules === 'function'}</p>
+            `;
+        };
+
+        script.onerror = function(e) {
+            console.error('❌ Script failed to load!', e);
+            document.getElementById('test-results').innerHTML = `
+                <p style="color: red;">❌ Script failed to load!</p>
+                <p>Error: ${e.message || 'Unknown error'}</p>
+                <p>Check console for details</p>
+            `;
+        };
+
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

@@ -47,28 +47,21 @@ const FindTutorsUI = {
             clearFiltersBtn.addEventListener('click', this.handleClearFilters.bind(this));
         }
 
-        // Individual filter inputs with debouncing
-        const gradeLevelInput = document.getElementById('gradeLevelInput');
-        if (gradeLevelInput) {
-            gradeLevelInput.addEventListener('input', this.debounce(this.handleFilterChange.bind(this, 'gradeLevel'), 300));
-        }
-
-        // Course type dropdown
-        const courseTypeSelect = document.getElementById('courseTypeSelect');
-        if (courseTypeSelect) {
-            courseTypeSelect.addEventListener('change', this.handleFilterChange.bind(this, 'courseType'));
-        }
-
         // Session format dropdown (renamed from learning method)
         const sessionFormatSelect = document.querySelector('select[name="sessionFormat"]');
         if (sessionFormatSelect) {
             sessionFormatSelect.addEventListener('change', this.handleFilterChange.bind(this, 'sessionFormat'));
         }
 
-        // Grade level dropdown
-        const gradeLevelSelect = document.getElementById('gradeLevelSelect');
-        if (gradeLevelSelect) {
-            gradeLevelSelect.addEventListener('change', this.handleFilterChange.bind(this, 'gradeLevel'));
+        // Grade level range selects
+        const minGradeLevelSelect = document.getElementById('minGradeLevel');
+        if (minGradeLevelSelect) {
+            minGradeLevelSelect.addEventListener('change', this.handleFilterChange.bind(this, 'minGradeLevel'));
+        }
+
+        const maxGradeLevelSelect = document.getElementById('maxGradeLevel');
+        if (maxGradeLevelSelect) {
+            maxGradeLevelSelect.addEventListener('change', this.handleFilterChange.bind(this, 'maxGradeLevel'));
         }
 
         // Price range inputs
@@ -99,7 +92,13 @@ const FindTutorsUI = {
             checkbox.addEventListener('change', this.handleGenderFilter.bind(this));
         });
 
-        // Other checkboxes
+        // Location filter dropdown (dynamically populated by LocationFilterManager)
+        const locationFilterSelect = document.getElementById('locationFilter');
+        if (locationFilterSelect) {
+            locationFilterSelect.addEventListener('change', this.handleFilterChange.bind(this, 'locationFilter'));
+        }
+
+        // Other checkboxes (tiered mode is now always enabled by default)
         const otherCheckboxes = document.querySelectorAll('input[name="trainingCenter"], input[name="nearMe"], input[name="favorite"], input[name="saved"], input[name="searchHistory"]');
         otherCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', this.handleCheckboxFilter.bind(this));
@@ -140,9 +139,12 @@ const FindTutorsUI = {
 
     handleFilterChange(filterKey, event) {
         const value = event.target.value.trim();
-        console.log(`${filterKey} filter:`, value);
+        console.log(`[UI] ${filterKey} filter changed:`, value);
+        console.log(`[UI] Input element:`, event.target);
+        console.log(`[UI] Raw value (not trimmed):`, event.target.value);
 
         FindTutorsState.updateFilter(filterKey, value);
+        console.log(`[UI] State after update:`, FindTutorsState.filters);
         FindTutorsController.loadTutors();
     },
 
@@ -226,11 +228,29 @@ const FindTutorsUI = {
                     </div>
                 </div>
             `;
+
+            // Update results count to show 0 tutors
+            if (window.sortBarManager) {
+                window.sortBarManager.updateResultsCount(0, FindTutorsState.totalTutors || 0);
+            }
+
             return;
         }
 
         const tutorCards = tutors.map((tutor, index) => TutorCardCreator.createTutorCard(tutor, index)).join('');
         this.elements.tutorGrid.innerHTML = tutorCards;
+
+        // Update results count
+        if (window.sortBarManager) {
+            const displayedCount = tutors.length;
+            const totalCount = FindTutorsState.totalTutors || tutors.length;
+            window.sortBarManager.updateResultsCount(displayedCount, totalCount);
+        }
+
+        // Reapply the current view preference (grid/list) after rendering tutors
+        if (window.sortBarManager) {
+            window.sortBarManager.reapplyCurrentView();
+        }
     },
 
     renderPagination() {

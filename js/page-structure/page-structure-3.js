@@ -462,7 +462,7 @@ window.closeEditProfileModal = () => app.modals.close("edit-profile-modal"); // 
     window.publishBlog = () => app.blog.publishBlog();
     window.openCommentsModal = () => app.comments.open();
     window.closeCommentsModal = () => app.comments.close();
-    window.openAdAnalyticsModal = () => app.modals.open("adAnalyticsModal");
+    // window.openAdAnalyticsModal = () => app.modals.open("adAnalyticsModal"); // DISABLED - Now opens coming soon modal (defined elsewhere)
     window.closeAdAnalyticsModal = () => app.modals.close("adAnalyticsModal");
     window.openAllEventsModal = () => app.events.viewAllEvents();
     window.openAnalyticsModal = () => app.analytics.openModal();
@@ -503,19 +503,21 @@ window.closeEditProfileModal = () => app.modals.close("edit-profile-modal"); // 
 
 
     // Add missing global functions
-window.shareProfile = function() {
-    const profileUrl = window.location.href;
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out my tutor profile',
-            url: profileUrl
-        }).catch(err => console.log('Share failed:', err));
-    } else {
-        // Fallback - copy to clipboard
-        navigator.clipboard.writeText(profileUrl);
-        Utils.showToast('📋 Profile link copied to clipboard!', 'success');
-    }
-};
+// REMOVED: shareProfile is now defined in share-profile-manager.js
+// This was causing conflicts by overwriting the centralized share modal function
+// window.shareProfile = function() {
+//     const profileUrl = window.location.href;
+//     if (navigator.share) {
+//         navigator.share({
+//             title: 'Check out my tutor profile',
+//             url: profileUrl
+//         }).catch(err => console.log('Share failed:', err));
+//     } else {
+//         // Fallback - copy to clipboard
+//         navigator.clipboard.writeText(profileUrl);
+//         Utils.showToast('📋 Profile link copied to clipboard!', 'success');
+//     }
+// };
 
 window.toggleSidebar = function() {
     const sidebar = document.getElementById('leftSidebar');

@@ -22,13 +22,14 @@ let affiliateProgram = {
     payout_schedule: 'monthly'
 };
 let affiliateTiers = [];
+let currentBusinessType = 'tutoring'; // Default to tutoring tab
 
 // ============================================
 // LOAD FUNCTIONS
 // ============================================
 
-async function loadAffiliateProgram() {
-    console.log('loadAffiliateProgram() called');
+async function loadAffiliateProgram(businessType = null) {
+    console.log('loadAffiliateProgram() called with businessType:', businessType);
 
     try {
         const token = getAuthToken();
@@ -36,10 +37,12 @@ async function loadAffiliateProgram() {
             console.warn('No auth token found, loading defaults');
             affiliateTiers = getDefaultTiers();
             renderAffiliateTiers();
+            updateTabCounts();
             return;
         }
 
         const apiUrl = getApiBaseUrl();
+        // Fetch all tiers regardless of business type for tab counts
         console.log('Fetching affiliate program from API...', apiUrl);
         const response = await fetch(`${apiUrl}/api/admin-db/affiliate-program`, {
             headers: {
@@ -64,7 +67,7 @@ async function loadAffiliateProgram() {
                 populateGlobalSettings();
             }
 
-            // Load tiers
+            // Load all tiers
             if (data.tiers && data.tiers.length > 0) {
                 affiliateTiers = data.tiers;
             } else {
@@ -72,6 +75,7 @@ async function loadAffiliateProgram() {
             }
 
             console.log(`Loaded ${affiliateTiers.length} tiers`);
+            updateTabCounts();
             renderAffiliateTiers();
         } else {
             throw new Error('Invalid response format');
@@ -80,6 +84,7 @@ async function loadAffiliateProgram() {
         console.error('Error loading affiliate program:', error);
         affiliateTiers = getDefaultTiers();
         renderAffiliateTiers();
+        updateTabCounts();
     }
 }
 
@@ -90,14 +95,16 @@ function getDefaultTiers() {
             tier_name: 'Direct Referral',
             commission_rate: 10,
             duration_months: 12,
-            is_active: true
+            is_active: true,
+            business_type: 'tutoring'
         },
         {
             tier_level: 2,
             tier_name: '2nd Level',
             commission_rate: 5,
             duration_months: 6,
-            is_active: true
+            is_active: true,
+            business_type: 'tutoring'
         }
     ];
 }
@@ -119,23 +126,6 @@ function populateGlobalSettings() {
 function renderAffiliateTiers() {
     console.log('renderAffiliateTiers() called with', affiliateTiers.length, 'tiers');
 
-    const grid = document.getElementById('affiliate-tiers-grid');
-    if (!grid) {
-        console.error('affiliate-tiers-grid element NOT FOUND');
-        return;
-    }
-
-    if (affiliateTiers.length === 0) {
-        grid.innerHTML = `
-            <div class="col-span-full text-center py-12 text-gray-500">
-                <i class="fas fa-layer-group text-4xl mb-4"></i>
-                <p class="text-lg font-semibold">No affiliate tiers yet</p>
-                <p class="text-sm">Click "Add Tier" to create your first commission tier</p>
-            </div>
-        `;
-        return;
-    }
-
     const colors = [
         { border: 'emerald-300', bg: 'emerald-50', text: 'emerald-700', icon: 'emerald-600' },
         { border: 'blue-300', bg: 'blue-50', text: 'blue-700', icon: 'blue-600' },
@@ -145,50 +135,119 @@ function renderAffiliateTiers() {
         { border: 'cyan-300', bg: 'cyan-50', text: 'cyan-700', icon: 'cyan-600' }
     ];
 
-    grid.innerHTML = affiliateTiers.map((tier, index) => {
-        const color = colors[index % colors.length];
-        const commission = parseFloat(tier.commission_rate) || 0;
-        const duration = tier.duration_months || 12;
-        const isActive = tier.is_active !== false;
+    // Render for each business type
+    const businessTypes = ['tutoring', 'subscription', 'advertisement'];
 
-        return `
-            <div class="border-2 border-${color.border} rounded-xl p-5 bg-${color.bg} hover:shadow-xl transition-all relative cursor-pointer group ${!isActive ? 'opacity-60' : ''}"
-                onclick="editAffiliateTier(${tier.tier_level})" title="Click to edit">
+    businessTypes.forEach(businessType => {
+        const grid = document.querySelector(`.affiliate-tiers-grid[data-business-type="${businessType}"]`);
+        if (!grid) {
+            console.warn(`Grid for business type ${businessType} not found`);
+            return;
+        }
 
-                <button onclick="event.stopPropagation(); deleteAffiliateTier(${tier.tier_level})"
-                    class="absolute top-2 left-2 w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    title="Delete tier">
-                    <i class="fas fa-times"></i>
-                </button>
+        // Filter tiers for this business type
+        const filteredTiers = affiliateTiers.filter(t => t.business_type === businessType);
 
-                ${!isActive ? `
-                <span class="absolute top-2 right-2 px-2 py-0.5 bg-gray-400 text-white text-xs rounded-full">
-                    Inactive
-                </span>
-                ` : ''}
+        if (filteredTiers.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-12 text-gray-500">
+                    <i class="fas fa-layer-group text-4xl mb-4"></i>
+                    <p class="text-lg font-semibold">No tiers for ${businessType}</p>
+                    <p class="text-sm">Click "Add Tier" to create your first commission tier</p>
+                </div>
+            `;
+            return;
+        }
 
-                <div class="text-center mb-4">
-                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
-                        <span class="text-2xl font-bold text-${color.icon}">${tier.tier_level}</span>
+        grid.innerHTML = filteredTiers.map((tier, index) => {
+            const color = colors[index % colors.length];
+            const commission = parseFloat(tier.commission_rate) || 0;
+            const duration = tier.duration_months || 12;
+            const isActive = tier.is_active !== false;
+            const businessTypeDisplay = tier.business_type || 'tutoring';
+
+            return `
+                <div class="border-2 border-${color.border} rounded-xl p-5 bg-${color.bg} hover:shadow-xl transition-all relative cursor-pointer group ${!isActive ? 'opacity-60' : ''}"
+                    onclick="editAffiliateTier(${tier.tier_level}, '${businessTypeDisplay}')" title="Click to edit">
+
+                    <button onclick="event.stopPropagation(); deleteAffiliateTier(${tier.tier_level}, '${businessTypeDisplay}')"
+                        class="absolute top-2 left-2 w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        title="Delete tier">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    ${!isActive ? `
+                    <span class="absolute top-2 right-2 px-2 py-0.5 bg-gray-400 text-white text-xs rounded-full">
+                        Inactive
+                    </span>
+                    ` : ''}
+
+                    <div class="text-center mb-4">
+                        <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
+                            <span class="text-2xl font-bold text-${color.icon}">${tier.tier_level}</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-${color.text}">${tier.tier_name}</h4>
+                        <p class="text-xs text-gray-500">Level ${tier.tier_level} Referral</p>
                     </div>
-                    <h4 class="text-lg font-bold text-${color.text}">${tier.tier_name}</h4>
-                    <p class="text-xs text-gray-500">Level ${tier.tier_level} Referral</p>
-                </div>
 
-                <div class="text-center mb-4 py-3 bg-white/50 rounded-lg">
-                    <div class="text-3xl font-bold text-${color.text}">${commission}%</div>
-                    <div class="text-sm text-gray-600">Commission Rate</div>
-                </div>
+                    <div class="text-center mb-4 py-3 bg-white/50 rounded-lg">
+                        <div class="text-3xl font-bold text-${color.text}">${commission}%</div>
+                        <div class="text-sm text-gray-600">Commission Rate</div>
+                    </div>
 
-                <div class="text-center py-2 bg-white/30 rounded-lg">
-                    <div class="text-lg font-semibold text-gray-700">Valid Max ${duration} months</div>
-                    <div class="text-xs text-gray-500">Duration</div>
+                    <div class="text-center py-2 bg-white/30 rounded-lg">
+                        <div class="text-lg font-semibold text-gray-700">Valid Max ${duration} months</div>
+                        <div class="text-xs text-gray-500">Duration</div>
+                    </div>
                 </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
 
-    console.log(`Rendered ${affiliateTiers.length} tier cards`);
+        console.log(`Rendered ${filteredTiers.length} tier cards for ${businessType}`);
+    });
+}
+
+// ============================================
+// TAB FUNCTIONS
+// ============================================
+
+function switchAffiliateBusinessTab(businessType) {
+    console.log('Switching to business type:', businessType);
+    currentBusinessType = businessType;
+
+    // Update tab buttons
+    const tabs = document.querySelectorAll('.affiliate-business-tab');
+    tabs.forEach(tab => {
+        if (tab.dataset.tab === businessType) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
+    // Update tab panels
+    const panels = document.querySelectorAll('.affiliate-business-tab-panel');
+    panels.forEach(panel => {
+        if (panel.id === `affiliate-business-tab-${businessType}`) {
+            panel.classList.remove('hidden');
+            panel.classList.add('active');
+        } else {
+            panel.classList.add('hidden');
+            panel.classList.remove('active');
+        }
+    });
+}
+
+function updateTabCounts() {
+    const businessTypes = ['tutoring', 'subscription', 'advertisement'];
+
+    businessTypes.forEach(businessType => {
+        const count = affiliateTiers.filter(t => t.business_type === businessType).length;
+        const tab = document.querySelector(`.affiliate-business-tab[data-tab="${businessType}"] .tab-count`);
+        if (tab) {
+            tab.textContent = count;
+        }
+    });
 }
 
 // ============================================
@@ -207,9 +266,14 @@ function openAddAffiliateTierModal() {
     document.getElementById('affiliate-tier-form').reset();
     document.getElementById('affiliate-tier-level').value = '';
     document.getElementById('affiliate-tier-original-level').value = '';
+    document.getElementById('affiliate-tier-original-business-type').value = '';
 
-    // Set default tier level (next available)
-    const nextLevel = affiliateTiers.length + 1;
+    // Set business type to current tab
+    document.getElementById('affiliate-tier-business-type').value = currentBusinessType;
+
+    // Set default tier level (next available for this business type)
+    const tiersForType = affiliateTiers.filter(t => t.business_type === currentBusinessType);
+    const nextLevel = tiersForType.length + 1;
     document.getElementById('affiliate-tier-level').value = nextLevel;
 
     // Set default values
@@ -221,10 +285,10 @@ function openAddAffiliateTierModal() {
     modal.classList.remove('hidden');
 }
 
-function editAffiliateTier(tierLevel) {
-    const tier = affiliateTiers.find(t => t.tier_level === tierLevel);
+function editAffiliateTier(tierLevel, businessType) {
+    const tier = affiliateTiers.find(t => t.tier_level === tierLevel && t.business_type === businessType);
     if (!tier) {
-        console.error('Tier not found:', tierLevel);
+        console.error('Tier not found:', tierLevel, businessType);
         return;
     }
 
@@ -232,6 +296,8 @@ function editAffiliateTier(tierLevel) {
         '<i class="fas fa-layer-group mr-2"></i>Edit Affiliate Tier';
     document.getElementById('affiliate-tier-level').value = tier.tier_level;
     document.getElementById('affiliate-tier-original-level').value = tier.tier_level;
+    document.getElementById('affiliate-tier-business-type').value = tier.business_type || 'tutoring';
+    document.getElementById('affiliate-tier-original-business-type').value = tier.business_type || 'tutoring';
     document.getElementById('affiliate-tier-name').value = tier.tier_name;
     document.getElementById('affiliate-tier-commission').value = tier.commission_rate;
     document.getElementById('affiliate-tier-duration').value = tier.duration_months;
@@ -262,6 +328,7 @@ async function saveAffiliateTier(event) {
     const commissionRate = parseFloat(document.getElementById('affiliate-tier-commission').value);
     const durationMonths = parseInt(document.getElementById('affiliate-tier-duration').value);
     const isActive = document.getElementById('affiliate-tier-active').checked;
+    const businessType = document.getElementById('affiliate-tier-business-type').value;
 
     // Validation
     if (!tierLevel || tierLevel < 1) {
@@ -280,6 +347,10 @@ async function saveAffiliateTier(event) {
         alert('Please enter a valid max duration (1 month or more)');
         return;
     }
+    if (!businessType) {
+        alert('Please select a business type');
+        return;
+    }
 
     try {
         const token = getAuthToken();
@@ -293,7 +364,8 @@ async function saveAffiliateTier(event) {
             tier_name: tierName,
             commission_rate: commissionRate,
             duration_months: durationMonths,
-            is_active: isActive
+            is_active: isActive,
+            business_type: businessType
         };
 
         console.log('Saving affiliate tier:', tierData);
@@ -329,11 +401,11 @@ async function saveAffiliateTier(event) {
     }
 }
 
-async function deleteAffiliateTier(tierLevel) {
-    const tier = affiliateTiers.find(t => t.tier_level === tierLevel);
+async function deleteAffiliateTier(tierLevel, businessType) {
+    const tier = affiliateTiers.find(t => t.tier_level === tierLevel && t.business_type === businessType);
     if (!tier) return;
 
-    if (!confirm(`Are you sure you want to delete "${tier.tier_name}"?\n\nRemaining tiers will be re-ordered automatically.`)) {
+    if (!confirm(`Are you sure you want to delete "${tier.tier_name}" (${businessType})?\n\nThis action cannot be undone.`)) {
         return;
     }
 
@@ -345,7 +417,7 @@ async function deleteAffiliateTier(tierLevel) {
 
         const programId = affiliateProgram.id || tier.program_id;
         const apiUrl = getApiBaseUrl();
-        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-tiers/${programId}/${tierLevel}`, {
+        const response = await fetch(`${apiUrl}/api/admin-db/affiliate-tiers/${programId}/${tierLevel}/${businessType}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -461,6 +533,8 @@ async function saveAffiliateProgramSettings(event) {
 // Export functions to window
 window.loadAffiliateProgram = loadAffiliateProgram;
 window.renderAffiliateTiers = renderAffiliateTiers;
+window.switchAffiliateBusinessTab = switchAffiliateBusinessTab;
+window.updateTabCounts = updateTabCounts;
 window.openAddAffiliateTierModal = openAddAffiliateTierModal;
 window.editAffiliateTier = editAffiliateTier;
 window.closeAffiliateTierModal = closeAffiliateTierModal;

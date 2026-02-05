@@ -3,15 +3,21 @@
 // ============================================
 
 window.viewTutorProfile = function(tutorId) {
+    console.log('🔍 viewTutorProfile called with tutorId:', tutorId);
+
     // Track search history when viewing a tutor
     const searchTerm = document.getElementById('searchBar')?.value?.trim();
     if (searchTerm) {
         PreferencesManager.addTutorViewToHistory(searchTerm, tutorId);
     }
 
-    // Navigate to tutor profile page in new tab
+    // Navigate to tutor profile page in same tab
+    // Use window.location.assign for proper navigation with history
     const url = `../view-profiles/view-tutor.html?id=${tutorId}`;
-    window.open(url, '_blank');
+    console.log('🔗 Navigating to:', url);
+    console.log('📍 Current location:', window.location.href);
+
+    window.location.assign(url);
 }
 
 window.connectWithTutor = async function(tutorProfileId, tutorName) {
@@ -43,11 +49,11 @@ window.connectWithTutor = async function(tutorProfileId, tutorName) {
 
     try {
         // Use the correct API base URL and endpoint
-        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
         // Use recipient_profile_id (tutor profile ID) instead of recipient_id (user ID)
         // The backend will look up the user_id from the tutor_profiles table
-        const response = await fetch(`${API_BASE_URL}/connections`, {
+        const response = await fetch(`${API_BASE_URL}/api/connections`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -142,14 +148,17 @@ window.acceptConnectionRequest = async function(connectionId, tutorName) {
     if (!confirmed) return;
 
     try {
-        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
-        const response = await fetch(`${API_BASE_URL}/connections/${connectionId}/accept`, {
+        const response = await fetch(`${API_BASE_URL}/api/connections/${connectionId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            body: JSON.stringify({
+                status: 'accepted'
+            })
         });
 
         const data = await response.json();
@@ -579,3 +588,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial update of mobile profile section
     updateMobileProfileSection();
 });
+
+// ============================================
+// MARKET PRICE FILTER HANDLER (v2.2)
+// ============================================
+
+/**
+ * Handles market-price filter changes
+ * - "all": Show all tutors regardless of market pricing
+ * - "market-priced": Show only tutors with market-based pricing
+ *
+ * NOTE: Session format filtering (Online/In-person/Hybrid) is handled separately
+ * by the Session Format dropdown in the filter section.
+ */
+window.handleMarketPriceFilter = function() {
+    const selectedRadio = document.querySelector('input[name="marketPriceFilter"]:checked');
+    const filterValue = selectedRadio ? selectedRadio.value : 'all';
+
+    console.log('📊 Market-price filter changed:', filterValue);
+
+    // Update market price filter state
+    if (filterValue === 'all') {
+        // Show all tutors (clear market price filter)
+        FindTutorsState.updateFilter('marketPriced', '');
+    } else if (filterValue === 'market-priced') {
+        // Show only market-priced tutors
+        FindTutorsState.updateFilter('marketPriced', 'true');
+    }
+
+    // Reload tutors with new filter
+    FindTutorsController.loadTutors();
+};

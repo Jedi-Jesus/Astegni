@@ -8,15 +8,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         const savedRole = localStorage.getItem("userRole");
         const savedToken = localStorage.getItem("token") || localStorage.getItem("access_token");
 
-        if (savedUser && savedRole && savedToken) {
+        // UPDATED: Allow users with no active role (savedRole can be null if role was deactivated)
+        if (savedUser && savedToken) {
             try {
                 APP_STATE.currentUser = JSON.parse(savedUser);
-                APP_STATE.userRole = savedRole;
+                APP_STATE.userRole = savedRole; // Can be null
                 APP_STATE.isLoggedIn = true;
 
-                // Update UI immediately with cached data
+                // Update UI immediately with cached data (handles null role)
                 updateUIForLoggedInUser();
-                updateProfileLink(savedRole);
+
+                // Only update profile link if there's a role
+                if (savedRole) {
+                    updateProfileLink(savedRole);
+                }
 
                 // Verify token in background (don't block UI)
                 window.AuthManager.verifyToken().then(isValid => {

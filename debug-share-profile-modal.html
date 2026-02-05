@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Share Profile Modal</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .debug-section {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .debug-title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        .debug-item {
+            margin: 8px 0;
+            padding: 5px;
+            background: #0a0a0a;
+        }
+        .label {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .value {
+            color: #00ff00;
+            margin-left: 10px;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .warning {
+            color: #ff9900;
+        }
+        .success {
+            color: #00ff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .css-rule {
+            background: #1a1a2e;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #00ff00;
+        }
+        .specificity {
+            color: #ff00ff;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #00ffff;">🔍 Share Profile Modal Debug Console</h1>
+
+    <div class="debug-section">
+        <div class="debug-title">Quick Actions</div>
+        <button onclick="openShareModal()">Open Share Modal</button>
+        <button onclick="analyzeModal()">Analyze Modal Styles</button>
+        <button onclick="checkCSSConflicts()">Check CSS Conflicts</button>
+        <button onclick="testFix()">Apply Test Fix</button>
+        <button onclick="clearCache()">Clear Cache & Reload</button>
+    </div>
+
+    <div id="output" class="debug-section">
+        <div class="debug-title">Debug Output</div>
+        <div id="outputContent">Click a button to start debugging...</div>
+    </div>
+
+    <div id="styleAnalysis" class="debug-section">
+        <div class="debug-title">Style Analysis</div>
+        <div id="styleContent">Waiting for analysis...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('outputContent');
+            const color = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'value';
+            output.innerHTML += `<div class="${color}">[${new Date().toLocaleTimeString()}] ${message}</div>`;
+        }
+
+        function openShareModal() {
+            log('Opening share profile modal...', 'info');
+
+            // Check if modal exists in current page
+            let modal = document.getElementById('shareProfileModal');
+
+            if (!modal) {
+                log('Modal not found in current page, loading it...', 'warning');
+
+                // Try to load the modal
+                fetch('../modals/common-modals/share-profile-modal.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        document.body.insertAdjacentHTML('beforeend', html);
+                        modal = document.getElementById('shareProfileModal');
+
+                        if (modal) {
+                            log('Modal loaded successfully!', 'success');
+                            modal.style.display = 'block';
+                            setTimeout(() => analyzeModal(), 500);
+                        } else {
+                            log('Failed to find modal after loading HTML', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        log(`Error loading modal: ${error.message}`, 'error');
+                    });
+            } else {
+                log('Modal found, displaying...', 'success');
+                modal.style.display = 'block';
+                setTimeout(() => analyzeModal(), 500);
+            }
+        }
+
+        function analyzeModal() {
+            log('Analyzing modal styles...', 'info');
+
+            const modal = document.getElementById('shareProfileModal');
+            if (!modal) {
+                log('Modal not found! Please open it first.', 'error');
+                return;
+            }
+
+            const overlay = modal.querySelector('.modal-overlay');
+            const container = modal.querySelector('.modal-container');
+
+            const styleContent = document.getElementById('styleContent');
+            styleContent.innerHTML = '';
+
+            if (!overlay && !container) {
+                log('Modal structure not found. Looking for alternative selectors...', 'warning');
+                log(`Modal HTML: ${modal.innerHTML.substring(0, 200)}...`, 'info');
+
+                // Check the actual structure
+                const children = modal.children;
+                log(`Modal has ${children.length} direct children`, 'info');
+                for (let i = 0; i < children.length; i++) {
+                    log(`Child ${i}: ${children[i].tagName} class="${children[i].className}"`, 'info');
+                }
+                return;
+            }
+
+            // Analyze overlay
+            if (overlay) {
+                log('Analyzing .modal-overlay...', 'info');
+                const overlayStyles = window.getComputedStyle(overlay);
+
+                styleContent.innerHTML += `<div class="css-rule">
+                    <strong>Modal Overlay Computed Styles:</strong><br>
+                    <span class="label">backdrop-filter:</span> <span class="value">${overlayStyles.backdropFilter}</span><br>
+                    <span class="label">-webkit-backdrop-filter:</span> <span class="value">${overlayStyles.webkitBackdropFilter}</span><br>
+                    <span class="label">background:</span> <span class="value">${overlayStyles.background}</span><br>
+                    <span class="label">opacity:</span> <span class="value">${overlayStyles.opacity}</span><br>
+                    <span class="label">position:</span> <span class="value">${overlayStyles.position}</span><br>
+                    <span class="label">z-index:</span> <span class="value">${overlayStyles.zIndex}</span>
+                </div>`;
+
+                // Check for blur
+                if (overlayStyles.backdropFilter.includes('blur') &&
+                    (overlayStyles.backdropFilter.includes('8px') || overlayStyles.backdropFilter.includes('20px'))) {
+                    log('⚠️ ISSUE FOUND: Overlay has inherited blur from global styles!', 'error');
+                    log(`backdrop-filter: ${overlayStyles.backdropFilter}`, 'warning');
+                }
+            }
+
+            // Analyze container
+            if (container) {
+                log('Analyzing .modal-container...', 'info');
+                const containerStyles = window.getComputedStyle(container);
+
+                styleContent.innerHTML += `<div class="css-rule">
+                    <strong>Modal Container Computed Styles:</strong><br>
+                    <span class="label">backdrop-filter:</span> <span class="value">${containerStyles.backdropFilter}</span><br>
+                    <span class="label">-webkit-backdrop-filter:</span> <span class="value">${containerStyles.webkitBackdropFilter}</span><br>
+                    <span class="label">background:</span> <span class="value">${containerStyles.background}</span><br>
+                    <span class="label">opacity:</span> <span class="value">${containerStyles.opacity}</span><br>
+                    <span class="label">border-radius:</span> <span class="value">${containerStyles.borderRadius}</span><br>
+                    <span class="label">box-shadow:</span> <span class="value">${containerStyles.boxShadow}</span>
+                </div>`;
+
+                // Check for unwanted blur on container
+                if (containerStyles.backdropFilter !== 'none' && containerStyles.backdropFilter.includes('blur')) {
+                    log('⚠️ ISSUE FOUND: Container has blur filter applied!', 'error');
+                    log(`backdrop-filter: ${containerStyles.backdropFilter}`, 'warning');
+                }
+
+                // Check for transparency issues
+                if (parseFloat(containerStyles.opacity) < 1) {
+                    log('⚠️ WARNING: Container opacity is less than 1', 'warning');
+                }
+
+                // Check background
+                if (containerStyles.background.includes('rgba') && !containerStyles.background.includes('rgb(')) {
+                    log('⚠️ POTENTIAL ISSUE: Background may be transparent', 'warning');
+                }
+            }
+
+            log('Analysis complete!', 'success');
+        }
+
+        function checkCSSConflicts() {
+            log('Checking for CSS conflicts...', 'info');
+
+            const styleSheets = document.styleSheets;
+            const conflicts = [];
+            const modalOverlayRules = [];
+            const modalContainerRules = [];
+
+            try {
+                for (let i = 0; i < styleSheets.length; i++) {
+                    const sheet = styleSheets[i];
+                    const href = sheet.href ? sheet.href.substring(sheet.href.lastIndexOf('/') + 1) : 'inline-styles';
+
+                    try {
+                        const rules = sheet.cssRules || sheet.rules;
+                        if (rules) {
+                            for (let j = 0; j < rules.length; j++) {
+                                const rule = rules[j];
+                                if (rule.selectorText) {
+                                    if (rule.selectorText.includes('modal-overlay')) {
+                                        modalOverlayRules.push({
+                                            selector: rule.selectorText,
+                                            source: href,
+                                            backdropFilter: rule.style.backdropFilter || rule.style.webkitBackdropFilter,
+                                            background: rule.style.background
+                                        });
+                                    }
+                                    if (rule.selectorText.includes('modal-container')) {
+                                        modalContainerRules.push({
+                                            selector: rule.selectorText,
+                                            source: href,
+                                            backdropFilter: rule.style.backdropFilter || rule.style.webkitBackdropFilter,
+                                            background: rule.style.background
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        log(`Cannot access stylesheet: ${href} (CORS)`, 'warning');
+                    }
+                }
+
+                const styleContent = document.getElementById('styleContent');
+                styleContent.innerHTML += '<div class="css-rule"><strong>Modal Overlay CSS Rules Found:</strong></div>';
+
+                modalOverlayRules.forEach(rule => {
+                    styleContent.innerHTML += `<div class="css-rule">
+                        <span class="specificity">${rule.selector}</span><br>
+                        <span class="label">Source:</span> <span class="value">${rule.source}</span><br>
+                        ${rule.backdropFilter ? `<span class="label">backdrop-filter:</span> <span class="value">${rule.backdropFilter}</span><br>` : ''}
+                        ${rule.background ? `<span class="label">background:</span> <span class="value">${rule.background}</span><br>` : ''}
+                    </div>`;
+                });
+
+                styleContent.innerHTML += '<div class="css-rule"><strong>Modal Container CSS Rules Found:</strong></div>';
+
+                modalContainerRules.forEach(rule => {
+                    styleContent.innerHTML += `<div class="css-rule">
+                        <span class="specificity">${rule.selector}</span><br>
+                        <span class="label">Source:</span> <span class="value">${rule.source}</span><br>
+                        ${rule.backdropFilter ? `<span class="label">backdrop-filter:</span> <span class="value">${rule.backdropFilter}</span><br>` : ''}
+                        ${rule.background ? `<span class="label">background:</span> <span class="value">${rule.background}</span><br>` : ''}
+                    </div>`;
+                });
+
+                log(`Found ${modalOverlayRules.length} modal-overlay rules`, 'info');
+                log(`Found ${modalContainerRules.length} modal-container rules`, 'info');
+
+            } catch (error) {
+                log(`Error checking CSS: ${error.message}`, 'error');
+            }
+        }
+
+        function testFix() {
+            log('Applying test fix...', 'info');
+
+            const modal = document.getElementById('shareProfileModal');
+            if (!modal) {
+                log('Modal not found!', 'error');
+                return;
+            }
+
+            const overlay = modal.querySelector('.modal-overlay');
+            const container = modal.querySelector('.modal-container');
+
+            if (overlay) {
+                overlay.style.setProperty('backdrop-filter', 'blur(4px)', 'important');
+                overlay.style.setProperty('-webkit-backdrop-filter', 'blur(4px)', 'important');
+                overlay.style.setProperty('background', 'rgba(0, 0, 0, 0.6)', 'important');
+                log('Applied fix to overlay', 'success');
+            }
+
+            if (container) {
+                container.style.setProperty('backdrop-filter', 'none', 'important');
+                container.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+                container.style.setProperty('background', 'var(--surface)', 'important');
+                container.style.setProperty('opacity', '1', 'important');
+                log('Applied fix to container', 'success');
+            }
+
+            setTimeout(() => {
+                log('Analyzing after fix...', 'info');
+                analyzeModal();
+            }, 500);
+        }
+
+        function clearCache() {
+            log('Clearing cache and reloading...', 'info');
+            window.location.reload(true);
+        }
+
+        // Auto-load CSS from parent/user profile for testing
+        window.addEventListener('load', () => {
+            log('Debug console loaded', 'success');
+            log('Ready to debug share profile modal', 'info');
+
+            // Load necessary CSS files
+            const cssFiles = [
+                '../css/root.css',
+                '../css/root/theme.css',
+                '../css/root/modals.css'
+            ];
+
+            cssFiles.forEach(file => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = file;
+                document.head.appendChild(link);
+                log(`Loading CSS: ${file}`, 'info');
+            });
+        });
+    </script>
+</body>
+</html>

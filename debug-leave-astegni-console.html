@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Astegni Debug Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-entry {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border-left: 4px solid;
+        }
+        .log-info { background: #e0f2fe; border-color: #0ea5e9; color: #075985; }
+        .log-success { background: #dcfce7; border-color: #22c55e; color: #166534; }
+        .log-warning { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+        .log-error { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+
+        #floating-console {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 450px;
+            max-height: 80vh;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 999999;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        #console-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        #console-body {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 12px;
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-ok { background: #22c55e; color: white; }
+        .status-fail { background: #ef4444; color: white; }
+        .status-pending { background: #f59e0b; color: white; }
+
+        .test-button {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .dragging {
+            opacity: 0.8;
+            cursor: grabbing !important;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
+
+    <!-- Floating Debug Console -->
+    <div id="floating-console">
+        <div id="console-header">
+            <div>
+                <span style="font-weight: 700; font-size: 14px;">🔍 Leave Astegni Debugger</span>
+                <span id="status-indicator" class="status-badge status-pending ml-2">Checking...</span>
+            </div>
+            <button onclick="clearConsole()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Clear</button>
+        </div>
+        <div id="console-body">
+            <div class="log-info">🚀 Debug console initialized...</div>
+        </div>
+    </div>
+
+    <!-- Main Test Area -->
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
+            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Leave Astegni Debug Console
+            </h1>
+            <p class="text-gray-600 mb-6">Real-time debugging for modal loading and click handlers</p>
+
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="border-2 border-gray-200 rounded-xl p-4">
+                    <div class="text-sm text-gray-600 mb-1">Modal Container</div>
+                    <div id="container-status" class="text-lg font-bold">Checking...</div>
+                </div>
+                <div class="border-2 border-gray-200 rounded-xl p-4">
+                    <div class="text-sm text-gray-600 mb-1">Modal HTML Loaded</div>
+                    <div id="modal-html-status" class="text-lg font-bold">Checking...</div>
+                </div>
+                <div class="border-2 border-gray-200 rounded-xl p-4">
+                    <div class="text-sm text-gray-600 mb-1">Function Available</div>
+                    <div id="function-status" class="text-lg font-bold">Checking...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Buttons -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
+            <h2 class="text-2xl font-bold mb-4">🧪 Interactive Tests</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="testModalContainer()" class="test-button">
+                    Test #1: Check Modal Container
+                </button>
+                <button onclick="testModalHTML()" class="test-button">
+                    Test #2: Check Modal HTML
+                </button>
+                <button onclick="testFunction()" class="test-button">
+                    Test #3: Check Function
+                </button>
+                <button onclick="testClickSimulation()" class="test-button">
+                    Test #4: Simulate Click
+                </button>
+                <button onclick="reloadModal()" class="test-button">
+                    🔄 Reload Modal HTML
+                </button>
+                <button onclick="runAllTests()" class="test-button" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    ⚡ Run All Tests
+                </button>
+            </div>
+        </div>
+
+        <!-- Leave Astegni Card (Test Target) -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold mb-4">🎯 Test Target: Leave Astegni Card</h2>
+            <p class="text-gray-600 mb-6">Click this card to test if the modal opens:</p>
+
+            <!-- Exact replica of the card from user-profile.html -->
+            <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500 rounded-xl"
+                onclick="openLeaveAstegniModal()"
+                style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                        <span class="text-3xl">🚪</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
+                    <p class="text-sm text-gray-600">Delete account permanently</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container (Must exist) -->
+    <div id="modal-container"></div>
+
+    <!-- Load Leave Astegni JS -->
+    <script src="js/common-modals/leave-astegni-modal.js?v=20260127"></script>
+
+    <!-- Debug Console Script -->
+    <script>
+        // Logging System
+        const logs = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = { message, type, timestamp };
+            logs.push(logEntry);
+
+            const consoleBody = document.getElementById('console-body');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log-entry log-${type}`;
+
+            const icon = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            }[type] || 'ℹ️';
+
+            logDiv.innerHTML = `<span style="opacity: 0.6;">[${timestamp}]</span> ${icon} ${message}`;
+            consoleBody.appendChild(logDiv);
+            consoleBody.scrollTop = consoleBody.scrollHeight;
+
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearConsole() {
+            document.getElementById('console-body').innerHTML = '<div class="log-info">🔄 Console cleared</div>';
+            logs.length = 0;
+        }
+
+        function updateStatus(elementId, status, isOk) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = status;
+                element.className = isOk ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+            }
+        }
+
+        function updateOverallStatus(isOk) {
+            const indicator = document.getElementById('status-indicator');
+            if (indicator) {
+                indicator.className = isOk ? 'status-badge status-ok ml-2' : 'status-badge status-fail ml-2';
+                indicator.textContent = isOk ? 'Ready' : 'Issues Found';
+            }
+        }
+
+        // Test Functions
+        function testModalContainer() {
+            addLog('🔍 Testing modal container...', 'info');
+            const container = document.getElementById('modal-container');
+
+            if (container) {
+                addLog('✅ SUCCESS: #modal-container found in DOM', 'success');
+                addLog(`   → Tag: ${container.tagName}`, 'info');
+                addLog(`   → Children: ${container.children.length} elements`, 'info');
+                updateStatus('container-status', '✅ Found', true);
+                return true;
+            } else {
+                addLog('❌ FAIL: #modal-container NOT FOUND', 'error');
+                addLog('   → This will cause the modal to fail!', 'error');
+                updateStatus('container-status', '❌ Missing', false);
+                return false;
+            }
+        }
+
+        function testModalHTML() {
+            addLog('🔍 Testing modal HTML element...', 'info');
+            const modal = document.getElementById('leave-astegni-modal');
+
+            if (modal) {
+                addLog('✅ SUCCESS: #leave-astegni-modal found in DOM', 'success');
+                addLog(`   → Display: ${window.getComputedStyle(modal).display}`, 'info');
+                addLog(`   → Visibility: ${window.getComputedStyle(modal).visibility}`, 'info');
+                addLog(`   → Z-index: ${window.getComputedStyle(modal).zIndex}`, 'info');
+                addLog(`   → Classes: ${modal.className}`, 'info');
+                updateStatus('modal-html-status', '✅ Loaded', true);
+                return true;
+            } else {
+                addLog('❌ FAIL: #leave-astegni-modal NOT FOUND', 'error');
+                addLog('   → Modal HTML not loaded yet or fetch failed', 'error');
+                updateStatus('modal-html-status', '❌ Not Loaded', false);
+                return false;
+            }
+        }
+
+        function testFunction() {
+            addLog('🔍 Testing openLeaveAstegniModal() function...', 'info');
+
+            if (typeof openLeaveAstegniModal === 'function') {
+                addLog('✅ SUCCESS: openLeaveAstegniModal is defined', 'success');
+                addLog(`   → Type: ${typeof openLeaveAstegniModal}`, 'info');
+                addLog(`   → Available on window: ${window.openLeaveAstegniModal ? 'Yes' : 'No'}`, 'info');
+                updateStatus('function-status', '✅ Available', true);
+                return true;
+            } else {
+                addLog('❌ FAIL: openLeaveAstegniModal is NOT defined', 'error');
+                addLog(`   → Type: ${typeof openLeaveAstegniModal}`, 'error');
+                updateStatus('function-status', '❌ Undefined', false);
+                return false;
+            }
+        }
+
+        function testClickSimulation() {
+            addLog('🎯 Simulating click on Leave Astegni card...', 'info');
+
+            // First check all prerequisites
+            const containerOk = testModalContainer();
+            const modalOk = testModalHTML();
+            const functionOk = testFunction();
+
+            if (!containerOk || !modalOk || !functionOk) {
+                addLog('⚠️ WARNING: Prerequisites not met, click will likely fail', 'warning');
+            }
+
+            try {
+                addLog('🖱️ Calling openLeaveAstegniModal()...', 'info');
+                openLeaveAstegniModal();
+
+                // Check if modal is now visible
+                setTimeout(() => {
+                    const modal = document.getElementById('leave-astegni-modal');
+                    if (modal) {
+                        const isVisible = modal.style.display === 'flex' && !modal.classList.contains('hidden');
+                        if (isVisible) {
+                            addLog('✅ SUCCESS: Modal is now visible!', 'success');
+                            addLog('   → Modal opened successfully', 'success');
+                        } else {
+                            addLog('❌ FAIL: Modal exists but is not visible', 'error');
+                            addLog(`   → display: ${modal.style.display}`, 'error');
+                            addLog(`   → classes: ${modal.className}`, 'error');
+                        }
+                    } else {
+                        addLog('❌ FAIL: Modal still not in DOM', 'error');
+                    }
+                }, 200);
+            } catch (error) {
+                addLog(`❌ ERROR: Exception thrown: ${error.message}`, 'error');
+                addLog(`   → Stack: ${error.stack}`, 'error');
+            }
+        }
+
+        function reloadModal() {
+            addLog('🔄 Reloading modal HTML...', 'info');
+
+            // Clear existing modal
+            const existingModal = document.getElementById('leave-astegni-modal');
+            if (existingModal) {
+                existingModal.remove();
+                addLog('🗑️ Removed existing modal from DOM', 'info');
+            }
+
+            // Fetch modal HTML
+            fetch('modals/common-modals/leave-astegni-modal.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    addLog(`📥 Fetched modal HTML (${response.status})`, 'success');
+                    return response.text();
+                })
+                .then(html => {
+                    const container = document.getElementById('modal-container');
+                    if (!container) {
+                        addLog('❌ ERROR: Modal container not found!', 'error');
+                        return;
+                    }
+
+                    container.insertAdjacentHTML('beforeend', html);
+                    addLog('✅ Modal HTML inserted into container', 'success');
+
+                    // Verify
+                    setTimeout(() => {
+                        const modal = document.getElementById('leave-astegni-modal');
+                        if (modal) {
+                            addLog('✅ Verification: Modal element found in DOM', 'success');
+                            testModalHTML();
+                        } else {
+                            addLog('❌ Verification: Modal element NOT found', 'error');
+                        }
+                    }, 100);
+                })
+                .catch(error => {
+                    addLog(`❌ ERROR: Failed to load modal HTML: ${error.message}`, 'error');
+                });
+        }
+
+        function runAllTests() {
+            addLog('⚡ Running all tests...', 'info');
+            clearConsole();
+            addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+
+            const results = [];
+
+            // Test 1: Container
+            addLog('', 'info');
+            addLog('TEST 1: Modal Container', 'info');
+            addLog('─────────────────────────', 'info');
+            results.push(testModalContainer());
+
+            // Test 2: Modal HTML
+            addLog('', 'info');
+            addLog('TEST 2: Modal HTML Element', 'info');
+            addLog('───────────────────────────', 'info');
+            results.push(testModalHTML());
+
+            // Test 3: Function
+            addLog('', 'info');
+            addLog('TEST 3: Function Definition', 'info');
+            addLog('────────────────────────────', 'info');
+            results.push(testFunction());
+
+            // Summary
+            addLog('', 'info');
+            addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            const allPassed = results.every(r => r);
+            if (allPassed) {
+                addLog('✅ ALL TESTS PASSED - Modal should work!', 'success');
+                addLog('   → Click the "Leave Astegni" card to verify', 'success');
+                updateOverallStatus(true);
+            } else {
+                addLog('❌ SOME TESTS FAILED - Modal will NOT work', 'error');
+                const failedCount = results.filter(r => !r).length;
+                addLog(`   → ${failedCount} out of ${results.length} tests failed`, 'error');
+                updateOverallStatus(false);
+            }
+        }
+
+        // Make console draggable
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        const consoleElement = document.getElementById('floating-console');
+        const headerElement = document.getElementById('console-header');
+
+        headerElement.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === headerElement || headerElement.contains(e.target)) {
+                isDragging = true;
+                consoleElement.classList.add('dragging');
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                setTranslate(currentX, currentY, consoleElement);
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+            consoleElement.classList.remove('dragging');
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        }
+
+        // Override console.log and console.error to capture messages
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            if (message.includes('[OK]')) {
+                addLog(message, 'success');
+            } else if (message.includes('✅')) {
+                addLog(message, 'success');
+            } else if (message.includes('Opening Leave Astegni Modal')) {
+                addLog(message, 'info');
+            } else if (message.includes('Navigated to panel')) {
+                addLog(message, 'info');
+            }
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.join(' ');
+            addLog(message, 'error');
+        };
+
+        // Auto-run initial checks on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('🚀 Page loaded, starting initial checks...', 'info');
+            setTimeout(runAllTests, 500);
+        });
+
+        // Load modal HTML
+        addLog('📥 Loading leave-astegni-modal.html...', 'info');
+        fetch('modals/common-modals/leave-astegni-modal.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                const container = document.getElementById('modal-container');
+                if (container) {
+                    container.insertAdjacentHTML('beforeend', html);
+                    addLog('✅ Leave Astegni Modal HTML loaded successfully', 'success');
+                } else {
+                    addLog('❌ Modal container not found!', 'error');
+                }
+            })
+            .catch(error => {
+                addLog(`❌ Failed to load modal: ${error.message}`, 'error');
+            });
+    </script>
+</body>
+</html>

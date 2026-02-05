@@ -1,0 +1,1249 @@
+/* ============================================
+   COLOR PALETTES SYSTEM
+   23 Educational & Classroom Themes
+   ============================================
+
+   Usage: Add data-palette attribute to <html>
+   Example: <html data-theme="light" data-palette="emerald-gold">
+
+   Categories:
+   - Psychology-Based (10 themes) - Science-backed for learning
+   - Industry Standards (10 themes) - Market-proven platforms
+   - Classroom Experience (3 themes) - Nostalgic learning environments
+   ============================================ */
+
+
+/* ==========================================
+   PSYCHOLOGY-BASED THEMES (Science-First)
+   ========================================== */
+
+/* 0. Astegni Classic - Original Amber/Orange Theme (DEFAULT) */
+:root[data-palette="astegni-classic"] {
+    --primary-color: #F59E0B;
+    --primary-hover: #D97706;
+    --primary-active: #92400E;
+    --primary-rgb: 245, 158, 11;
+
+    --secondary-color: #8b5cf6;
+    --secondary-hover: #7c3aed;
+
+    --accent: #8b5cf6;
+    --accent-rgb: 139, 92, 246;
+
+    --text: #7b3811;
+    --text-muted: #6b7280;
+    --heading: #F59E0B;
+
+    --button-bg: #F59E0B;
+    --button-text: #FFFFFF;
+    --button-hover: #D97706;
+    --button-active: #92400E;
+
+    --badge-bg: rgba(245, 158, 11, 0.1);
+    --badge-border: rgba(245, 158, 11, 0.3);
+
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+}
+
+/* 1. Blue + White + Light Green - Focus & Clarity */
+:root[data-palette="blue-white-green"] {
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --primary-active: #1d4ed8;
+    --primary-rgb: 59, 130, 246;
+
+    --secondary-color: #10b981;
+    --secondary-hover: #059669;
+
+    --accent: #ffffff;
+    --accent-rgb: 255, 255, 255;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #3b82f6;
+
+    --button-bg: #3b82f6;
+    --button-text: #FFFFFF;
+    --button-hover: #2563eb;
+    --button-active: #1d4ed8;
+
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+}
+
+/* 2. Teal + Cream + Coral - Long-term Engagement */
+:root[data-palette="teal-cream-coral"] {
+    --primary-color: #14b8a6;
+    --primary-hover: #0d9488;
+    --primary-active: #0f766e;
+    --primary-rgb: 20, 184, 166;
+
+    --secondary-color: #fef3c7;
+    --secondary-hover: #fde68a;
+
+    --accent: #ff6b6b;
+    --accent-rgb: 255, 107, 107;
+
+    --text: #2c3e50;
+    --text-muted: #6b7280;
+    --heading: #14b8a6;
+
+    --background: #fffef9;
+    --card-bg: #ffffff;
+    --hover-bg: #f0fdfa;
+
+    --button-bg: #14b8a6;
+    --button-text: #FFFFFF;
+    --button-hover: #0d9488;
+
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+/* 3. Navy + Soft Yellow + White - Memory Retention */
+:root[data-palette="navy-yellow-white"] {
+    --primary-color: #1e3a8a;
+    --primary-hover: #1e40af;
+    --primary-active: #1d4ed8;
+    --primary-rgb: 30, 58, 138;
+
+    --secondary-color: #fde047;
+    --secondary-hover: #facc15;
+
+    --accent: #ffffff;
+    --accent-rgb: 255, 255, 255;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #1e3a8a;
+
+    --button-bg: #1e3a8a;
+    --button-text: #FFFFFF;
+    --button-hover: #1e40af;
+
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+/* 4. Sage Green + Beige + Dark Brown - Stress Reduction */
+:root[data-palette="sage-beige-brown"] {
+    --primary-color: #8b9f87;
+    --primary-hover: #738574;
+    --primary-active: #5a6b5b;
+    --primary-rgb: 139, 159, 135;
+
+    --secondary-color: #f5f1e8;
+    --secondary-hover: #e8e2d5;
+
+    --accent: #4a3f35;
+    --accent-rgb: 74, 63, 53;
+
+    --text: #2d2926;
+    --text-muted: #6b6560;
+    --heading: #4a3f35;
+
+    --background: #fafaf8;
+    --card-bg: #ffffff;
+    --hover-bg: #f5f1e8;
+
+    --button-bg: #8b9f87;
+    --button-text: #FFFFFF;
+    --button-hover: #738574;
+
+    --success: #8b9f87;
+    --error: #a85751;
+}
+
+/* 5. Light Blue + Lavender + White - Creativity */
+:root[data-palette="lightblue-lavender-white"] {
+    --primary-color: #93c5fd;
+    --primary-hover: #60a5fa;
+    --primary-active: #3b82f6;
+    --primary-rgb: 147, 197, 253;
+
+    --secondary-color: #c4b5fd;
+    --secondary-hover: #a78bfa;
+
+    --accent: #ffffff;
+    --accent-rgb: 255, 255, 255;
+
+    --text: #374151;
+    --text-muted: #6b7280;
+    --heading: #93c5fd;
+
+    --button-bg: #93c5fd;
+    --button-text: #1f2937;
+    --button-hover: #60a5fa;
+
+    --success: #a78bfa;
+    --error: #f87171;
+}
+
+/* 6. Emerald Green + Gold + Charcoal - Growth Mindset */
+:root[data-palette="emerald-gold-charcoal"] {
+    --primary-color: #00a676;
+    --primary-hover: #008c63;
+    --primary-active: #006b4a;
+    --primary-rgb: 0, 166, 118;
+
+    --secondary-color: #f7b801;
+    --secondary-hover: #d9a601;
+
+    --accent: #2c3e50;
+    --accent-rgb: 44, 62, 80;
+
+    --text: #1a202c;
+    --text-muted: #6b7280;
+    --heading: #00a676;
+
+    --button-bg: #00a676;
+    --button-text: #FFFFFF;
+    --button-hover: #008c63;
+
+    --badge-bg: rgba(247, 184, 1, 0.1);
+    --badge-border: rgba(247, 184, 1, 0.3);
+
+    --success: #00a676;
+    --error: #ef4444;
+    --warning: #f7b801;
+}
+
+/* 7. Warm Gray + Soft Orange + Teal - Active Learning */
+:root[data-palette="gray-orange-teal"] {
+    --primary-color: #6b7280;
+    --primary-hover: #4b5563;
+    --primary-active: #374151;
+    --primary-rgb: 107, 114, 128;
+
+    --secondary-color: #ff9800;
+    --secondary-hover: #f57c00;
+
+    --accent: #14b8a6;
+    --accent-rgb: 20, 184, 166;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #ff9800;
+
+    --button-bg: #ff9800;
+    --button-text: #FFFFFF;
+    --button-hover: #f57c00;
+
+    --success: #14b8a6;
+    --error: #ef4444;
+}
+
+/* 8. Powder Blue + Mint + Coral - Young Learners */
+:root[data-palette="powder-mint-coral"] {
+    --primary-color: #bfdbfe;
+    --primary-hover: #93c5fd;
+    --primary-active: #60a5fa;
+    --primary-rgb: 191, 219, 254;
+
+    --secondary-color: #a7f3d0;
+    --secondary-hover: #6ee7b7;
+
+    --accent: #ff6b6b;
+    --accent-rgb: 255, 107, 107;
+
+    --text: #374151;
+    --text-muted: #6b7280;
+    --heading: #60a5fa;
+
+    --button-bg: #93c5fd;
+    --button-text: #1f2937;
+    --button-hover: #60a5fa;
+
+    --success: #a7f3d0;
+    --error: #ff6b6b;
+}
+
+/* 9. Deep Purple + Silver + White - Advanced Learning */
+:root[data-palette="purple-silver-white"] {
+    --primary-color: #6b21a8;
+    --primary-hover: #7e22ce;
+    --primary-active: #9333ea;
+    --primary-rgb: 107, 33, 168;
+
+    --secondary-color: #e5e7eb;
+    --secondary-hover: #d1d5db;
+
+    --accent: #ffffff;
+    --accent-rgb: 255, 255, 255;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #6b21a8;
+
+    --button-bg: #6b21a8;
+    --button-text: #FFFFFF;
+    --button-hover: #7e22ce;
+
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+/* 10. Forest Green + Warm Beige + Burnt Orange - All-Day Learning */
+:root[data-palette="forest-beige-orange"] {
+    --primary-color: #2d6a4f;
+    --primary-hover: #1b4332;
+    --primary-active: #081c15;
+    --primary-rgb: 45, 106, 79;
+
+    --secondary-color: #f5e6d3;
+    --secondary-hover: #e8d4ba;
+
+    --accent: #d9603b;
+    --accent-rgb: 217, 96, 59;
+
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --heading: #2d6a4f;
+
+    --background: #fafaf8;
+    --card-bg: #ffffff;
+    --hover-bg: #f5e6d3;
+
+    --button-bg: #2d6a4f;
+    --button-text: #FFFFFF;
+    --button-hover: #1b4332;
+
+    --success: #2d6a4f;
+    --error: #d9603b;
+}
+
+
+/* ==========================================
+   INDUSTRY STANDARD THEMES (Market-Proven)
+   ========================================== */
+
+/* 11. Classic Academic Blue - Coursera/edX Style */
+:root[data-palette="classic-blue"] {
+    --primary-color: #1e88e5;
+    --primary-hover: #1976d2;
+    --primary-active: #1565c0;
+    --primary-rgb: 30, 136, 229;
+
+    --secondary-color: #43a047;
+    --secondary-hover: #388e3c;
+
+    --accent: #ff6f00;
+    --accent-rgb: 255, 111, 0;
+
+    --text: #424242;
+    --text-muted: #757575;
+    --heading: #1e88e5;
+
+    --button-bg: #1e88e5;
+    --button-text: #FFFFFF;
+    --button-hover: #1976d2;
+
+    --success: #43a047;
+    --error: #e53935;
+}
+
+/* 12. Growth & Learning Green - Khan Academy Style */
+:root[data-palette="growth-green"] {
+    --primary-color: #00a896;
+    --primary-hover: #028f81;
+    --primary-active: #02756c;
+    --primary-rgb: 0, 168, 150;
+
+    --secondary-color: #02c39a;
+    --secondary-hover: #02a87f;
+
+    --accent: #f0b429;
+    --accent-rgb: 240, 180, 41;
+
+    --text: #2d3142;
+    --text-muted: #6b7280;
+    --heading: #00a896;
+
+    --button-bg: #00a896;
+    --button-text: #FFFFFF;
+    --button-hover: #028f81;
+
+    --success: #02c39a;
+    --error: #ef4444;
+    --warning: #f0b429;
+}
+
+/* 13. Creative Purple Scholar - Udemy/Skillshare Style */
+:root[data-palette="creative-purple"] {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-active: #4338ca;
+    --primary-rgb: 99, 102, 241;
+
+    --secondary-color: #8b5cf6;
+    --secondary-hover: #7c3aed;
+
+    --accent: #ec4899;
+    --accent-rgb: 236, 72, 153;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #6366f1;
+
+    --button-bg: #6366f1;
+    --button-text: #FFFFFF;
+    --button-hover: #4f46e5;
+
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+/* 14. Warm Scholar - Codecademy Style */
+:root[data-palette="warm-scholar"] {
+    --primary-color: #ff6b35;
+    --primary-hover: #e85d2f;
+    --primary-active: #d14f29;
+    --primary-rgb: 255, 107, 53;
+
+    --secondary-color: #004e89;
+    --secondary-hover: #003d6b;
+
+    --accent: #f7b801;
+    --accent-rgb: 247, 184, 1;
+
+    --text: #2c3e50;
+    --text-muted: #6b7280;
+    --heading: #ff6b35;
+
+    --button-bg: #ff6b35;
+    --button-text: #FFFFFF;
+    --button-hover: #e85d2f;
+
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f7b801;
+}
+
+/* 15. Scandinavian Minimal - FutureLearn Style */
+:root[data-palette="scandinavian"] {
+    --primary-color: #0066cc;
+    --primary-hover: #0052a3;
+    --primary-active: #003d7a;
+    --primary-rgb: 0, 102, 204;
+
+    --secondary-color: #00d4aa;
+    --secondary-hover: #00b890;
+
+    --accent: #ff6b6b;
+    --accent-rgb: 255, 107, 107;
+
+    --text: #2b2d42;
+    --text-muted: #6b7280;
+    --heading: #0066cc;
+
+    --button-bg: #0066cc;
+    --button-text: #FFFFFF;
+    --button-hover: #0052a3;
+
+    --success: #00d4aa;
+    --error: #ff6b6b;
+}
+
+/* 16. Vibrant Learner - Quizlet/Kahoot Style */
+:root[data-palette="vibrant-learner"] {
+    --primary-color: #5e60ce;
+    --primary-hover: #4d4fb8;
+    --primary-active: #3d3ea2;
+    --primary-rgb: 94, 96, 206;
+
+    --secondary-color: #ffbe0b;
+    --secondary-hover: #e6ab00;
+
+    --accent: #ff006e;
+    --accent-rgb: 255, 0, 110;
+
+    --text: #3a0ca3;
+    --text-muted: #6b7280;
+    --heading: #5e60ce;
+
+    --button-bg: #5e60ce;
+    --button-text: #FFFFFF;
+    --button-hover: #4d4fb8;
+
+    --success: #06ffa5;
+    --error: #ff006e;
+    --warning: #ffbe0b;
+}
+
+/* 17. Professional Slate - Pluralsight Style */
+:root[data-palette="professional-slate"] {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-active: #1e40af;
+    --primary-rgb: 37, 99, 235;
+
+    --secondary-color: #475569;
+    --secondary-hover: #334155;
+
+    --accent: #10b981;
+    --accent-rgb: 16, 185, 129;
+
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --heading: #2563eb;
+
+    --button-bg: #2563eb;
+    --button-text: #FFFFFF;
+    --button-hover: #1d4ed8;
+
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+/* 18. Sunset Scholar - MasterClass Style */
+:root[data-palette="sunset-scholar"] {
+    --primary-color: #fb8500;
+    --primary-hover: #dc7500;
+    --primary-active: #bd6500;
+    --primary-rgb: 251, 133, 0;
+
+    --secondary-color: #023047;
+    --secondary-hover: #012534;
+
+    --accent: #ffb703;
+    --accent-rgb: 255, 183, 3;
+
+    --text: #212529;
+    --text-muted: #6b7280;
+    --heading: #fb8500;
+
+    --button-bg: #fb8500;
+    --button-text: #FFFFFF;
+    --button-hover: #dc7500;
+
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #ffb703;
+}
+
+/* 19. Nature & Growth - Google Classroom Style */
+:root[data-palette="nature-growth"] {
+    --primary-color: #2d6a4f;
+    --primary-hover: #1b4332;
+    --primary-active: #081c15;
+    --primary-rgb: 45, 106, 79;
+
+    --secondary-color: #52b788;
+    --secondary-hover: #40916c;
+
+    --accent: #ee6c4d;
+    --accent-rgb: 238, 108, 77;
+
+    --text: #1b263b;
+    --text-muted: #6b7280;
+    --heading: #2d6a4f;
+
+    --button-bg: #2d6a4f;
+    --button-text: #FFFFFF;
+    --button-hover: #1b4332;
+
+    --success: #52b788;
+    --error: #ee6c4d;
+}
+
+/* 20. Ethiopian Heritage - Cultural Pride */
+:root[data-palette="ethiopian-heritage"] {
+    --primary-color: #fcb900;
+    --primary-hover: #e3a700;
+    --primary-active: #ca9500;
+    --primary-rgb: 252, 185, 0;
+
+    --secondary-color: #009e49;
+    --secondary-hover: #008539;
+
+    --accent: #ed1c24;
+    --accent-rgb: 237, 28, 36;
+
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --heading: #fcb900;
+
+    --button-bg: #fcb900;
+    --button-text: #1a1a1a;
+    --button-hover: #e3a700;
+
+    --badge-bg: rgba(252, 185, 0, 0.1);
+    --badge-border: rgba(252, 185, 0, 0.3);
+
+    --success: #009e49;
+    --error: #ed1c24;
+    --warning: #fcb900;
+}
+
+
+/* ==========================================
+   CLASSROOM EXPERIENCE THEMES (Nostalgic)
+   ========================================== */
+
+/* 21. Classroom Board Theme - Whiteboard (Light) / Blackboard (Dark) */
+/* Light Mode: Modern Whiteboard with Markers */
+:root[data-palette="classroom-board"] {
+    --background: #fafbfc;
+    --background-rgb: 250, 251, 252;
+    --card-bg: #ffffff;
+    --canvas-bg: #f8f9fa;
+
+    /* Marker Colors - Available for accent selection */
+    --marker-blue: #2563eb;
+    --marker-red: #dc2626;
+    --marker-green: #16a34a;
+    --marker-black: #1f2937;
+    --marker-orange: #ea580c;
+    --marker-purple: #9333ea;
+
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-active: #1e40af;
+    --primary-rgb: 37, 99, 235;
+
+    --secondary-color: #16a34a;
+    --secondary-hover: #15803d;
+
+    --accent: #ea580c;
+    --accent-rgb: 234, 88, 12;
+
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --heading: #1f2937;
+
+    --border-color: #e5e7eb;
+    --hover-bg: #f3f4f6;
+
+    --button-bg: #2563eb;
+    --button-text: #FFFFFF;
+    --button-hover: #1d4ed8;
+
+    --success: #16a34a;
+    --error: #dc2626;
+    --warning: #ea580c;
+}
+
+/* 22. Classic Greenboard - Chalk & Green Board */
+:root[data-palette="greenboard"] {
+    --background: #fafaf8;
+    --background-rgb: 250, 250, 248;
+    --card-bg: #2d5016;  /* Green board for cards */
+    --canvas-bg: #2d5016;  /* Green board for canvas */
+
+    /* Chalk Colors */
+    --chalk-white: #f5f5dc;
+    --chalk-yellow: #fef08a;
+    --chalk-pink: #fda4af;
+    --chalk-blue: #93c5fd;
+    --chalk-orange: #fed7aa;
+
+    --primary-color: #2d5016;  /* Dark green for primary elements */
+    --primary-hover: #1b4332;
+    --primary-active: #081c15;
+    --primary-rgb: 45, 80, 22;
+
+    --secondary-color: #52b788;  /* Lighter green for secondary */
+    --secondary-hover: #40916c;
+
+    --accent: #fef08a;  /* Chalk yellow accent */
+    --accent-rgb: 254, 240, 138;
+
+    --text: #1a1a1a;  /* Dark text for light background */
+    --text-muted: #6b7280;
+    --heading: #2d5016;  /* Dark green headings */
+
+    --border-color: #e5e7eb;
+    --hover-bg: #f3f4f6;
+    --input-bg: #f9fafb;
+
+    --button-bg: #2d5016;
+    --button-text: #ffffff;
+    --button-hover: #1b4332;
+
+    --success: #52b788;
+    --error: #ef4444;
+    --warning: #fef08a;
+}
+
+
+/* ==========================================
+   CLASSROOM THEME ENHANCEMENTS
+   ========================================== */
+
+/* Classroom Board - Light Mode (Whiteboard) - Marker stroke effects */
+:root[data-palette="classroom-board"] h1,
+:root[data-palette="classroom-board"] h2,
+:root[data-palette="classroom-board"] h3,
+:root[data-palette="classroom-board"] h4 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+:root[data-palette="classroom-board"] a {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+:root[data-palette="classroom-board"] mark,
+:root[data-palette="classroom-board"] .highlight {
+    background: rgba(234, 88, 12, 0.2);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Classroom Board - Dark Mode (Blackboard) - Chalk on slate effects */
+[data-theme="dark"][data-palette="classroom-board"] body {
+    background: radial-gradient(circle at 20% 50%, transparent 0%, rgba(0, 0, 0, 0.3) 100%),
+                radial-gradient(circle at 80% 80%, transparent 0%, rgba(0, 0, 0, 0.3) 100%),
+                #1a1a1a;
+    background-attachment: fixed;
+}
+
+[data-theme="dark"][data-palette="classroom-board"] h1,
+[data-theme="dark"][data-palette="classroom-board"] h2,
+[data-theme="dark"][data-palette="classroom-board"] h3,
+[data-theme="dark"][data-palette="classroom-board"] h4 {
+    font-weight: 400;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8), 0 0 5px rgba(254, 243, 199, 0.4);
+    letter-spacing: 1.5px;
+}
+
+[data-theme="dark"][data-palette="classroom-board"] p,
+[data-theme="dark"][data-palette="classroom-board"] span,
+[data-theme="dark"][data-palette="classroom-board"] div {
+    text-shadow: 0 0 2px rgba(232, 232, 232, 0.2);
+}
+
+[data-theme="dark"][data-palette="classroom-board"] a {
+    border-bottom: 1px solid var(--chalk-cyan);
+    text-shadow: 0 0 3px rgba(165, 243, 252, 0.3);
+}
+
+[data-theme="dark"][data-palette="classroom-board"] mark,
+[data-theme="dark"][data-palette="classroom-board"] .highlight {
+    background: transparent;
+    border: 2px solid var(--chalk-yellow);
+    border-radius: 4px;
+    padding: 2px 6px;
+    box-shadow: 0 0 5px rgba(254, 243, 199, 0.3);
+}
+
+[data-theme="dark"][data-palette="classroom-board"] .card {
+    background: rgba(36, 36, 36, 0.8);
+    border: 1px solid rgba(232, 232, 232, 0.1);
+    box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.02);
+}
+
+/* Greenboard - Card elements have green board with chalk effects */
+:root[data-palette="greenboard"] .card {
+    background: linear-gradient(180deg, #2d5016 0%, #2f5318 50%, #2d5016 100%);
+    color: #f5f5dc;
+}
+
+:root[data-palette="greenboard"] .card h1,
+:root[data-palette="greenboard"] .card h2,
+:root[data-palette="greenboard"] .card h3,
+:root[data-palette="greenboard"] .card h4 {
+    color: #fef08a;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), 0 0 3px rgba(254, 240, 138, 0.5);
+    letter-spacing: 1px;
+}
+
+:root[data-palette="greenboard"] .card a {
+    color: #93c5fd;
+    border-bottom: 1px dashed var(--chalk-blue);
+}
+
+:root[data-palette="greenboard"] .card mark,
+:root[data-palette="greenboard"] .card .highlight {
+    background: transparent;
+    border-bottom: 3px solid var(--chalk-yellow);
+    padding-bottom: 2px;
+    color: #fef08a;
+}
+
+
+/* ==========================================
+   DARK MODE VARIANTS FOR ALL PALETTES
+   ========================================== */
+
+/* Dark mode adjustments: lighter primary colors, adjusted text, darker backgrounds */
+
+/* 0. Astegni Classic - Dark Mode */
+[data-theme="dark"][data-palette="astegni-classic"] {
+    --primary-color: #FFD54F;
+    --primary-hover: #FBC02D;
+    --primary-active: #F9A825;
+    --primary-rgb: 255, 213, 79;
+
+    --secondary-color: #a78bfa;
+    --secondary-hover: #8b5cf6;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #FFD54F;
+}
+
+/* 1. Blue + White + Green - Dark Mode */
+[data-theme="dark"][data-palette="blue-white-green"] {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-active: #2563eb;
+    --primary-rgb: 96, 165, 250;
+
+    --secondary-color: #34d399;
+    --secondary-hover: #10b981;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #60a5fa;
+}
+
+/* 2. Teal + Cream + Coral - Dark Mode */
+[data-theme="dark"][data-palette="teal-cream-coral"] {
+    --primary-color: #2dd4bf;
+    --primary-hover: #14b8a6;
+    --primary-active: #0d9488;
+    --primary-rgb: 45, 212, 191;
+
+    --secondary-color: #fcd34d;
+    --secondary-hover: #fbbf24;
+
+    --accent: #fb7185;
+    --accent-rgb: 251, 113, 133;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #2dd4bf;
+}
+
+/* 3. Navy + Soft Yellow + White - Dark Mode */
+[data-theme="dark"][data-palette="navy-yellow-white"] {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-active: #2563eb;
+    --primary-rgb: 96, 165, 250;
+
+    --secondary-color: #fde047;
+    --secondary-hover: #facc15;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #60a5fa;
+}
+
+/* 4. Sage Green + Beige + Dark Brown - Dark Mode */
+[data-theme="dark"][data-palette="sage-beige-brown"] {
+    --primary-color: #a3c199;
+    --primary-hover: #8b9f87;
+    --primary-active: #738574;
+    --primary-rgb: 163, 193, 153;
+
+    --secondary-color: #e8dcc8;
+    --secondary-hover: #d4cbb8;
+
+    --accent: #c9b8a8;
+    --accent-rgb: 201, 184, 168;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #a3c199;
+}
+
+/* 5. Light Blue + Lavender + White - Dark Mode */
+[data-theme="dark"][data-palette="lightblue-lavender-white"] {
+    --primary-color: #93c5fd;
+    --primary-hover: #60a5fa;
+    --primary-active: #3b82f6;
+    --primary-rgb: 147, 197, 253;
+
+    --secondary-color: #c4b5fd;
+    --secondary-hover: #a78bfa;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #93c5fd;
+
+    --button-text: #1a1a1a;
+}
+
+/* 6. Emerald Green + Gold + Charcoal - Dark Mode */
+[data-theme="dark"][data-palette="emerald-gold-charcoal"] {
+    --primary-color: #34d399;
+    --primary-hover: #10b981;
+    --primary-active: #059669;
+    --primary-rgb: 52, 211, 153;
+
+    --secondary-color: #fbbf24;
+    --secondary-hover: #f59e0b;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #34d399;
+}
+
+/* 7. Warm Gray + Soft Orange + Teal - Dark Mode */
+[data-theme="dark"][data-palette="gray-orange-teal"] {
+    --primary-color: #9ca3af;
+    --primary-hover: #6b7280;
+    --primary-active: #4b5563;
+    --primary-rgb: 156, 163, 175;
+
+    --secondary-color: #fb923c;
+    --secondary-hover: #f97316;
+
+    --accent: #2dd4bf;
+    --accent-rgb: 45, 212, 191;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #fb923c;
+}
+
+/* 8. Powder Blue + Mint + Coral - Dark Mode */
+[data-theme="dark"][data-palette="powder-mint-coral"] {
+    --primary-color: #93c5fd;
+    --primary-hover: #60a5fa;
+    --primary-active: #3b82f6;
+    --primary-rgb: 147, 197, 253;
+
+    --secondary-color: #6ee7b7;
+    --secondary-hover: #34d399;
+
+    --accent: #fb7185;
+    --accent-rgb: 251, 113, 133;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #93c5fd;
+
+    --button-text: #1a1a1a;
+}
+
+/* 9. Deep Purple + Silver + White - Dark Mode */
+[data-theme="dark"][data-palette="purple-silver-white"] {
+    --primary-color: #a78bfa;
+    --primary-hover: #8b5cf6;
+    --primary-active: #7c3aed;
+    --primary-rgb: 167, 139, 250;
+
+    --secondary-color: #d1d5db;
+    --secondary-hover: #9ca3af;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #a78bfa;
+}
+
+/* 10. Forest Green + Warm Beige + Burnt Orange - Dark Mode */
+[data-theme="dark"][data-palette="forest-beige-orange"] {
+    --primary-color: #52b788;
+    --primary-hover: #40916c;
+    --primary-active: #2d6a4f;
+    --primary-rgb: 82, 183, 136;
+
+    --secondary-color: #e8d4ba;
+    --secondary-hover: #d9c4a4;
+
+    --accent: #f4a261;
+    --accent-rgb: 244, 162, 97;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #52b788;
+}
+
+/* 11. Classic Academic Blue - Dark Mode */
+[data-theme="dark"][data-palette="classic-blue"] {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-active: #2563eb;
+    --primary-rgb: 96, 165, 250;
+
+    --secondary-color: #4ade80;
+    --secondary-hover: #22c55e;
+
+    --accent: #fb923c;
+    --accent-rgb: 251, 146, 60;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #60a5fa;
+}
+
+/* 12. Growth & Learning Green - Dark Mode */
+[data-theme="dark"][data-palette="growth-green"] {
+    --primary-color: #2dd4bf;
+    --primary-hover: #14b8a6;
+    --primary-active: #0d9488;
+    --primary-rgb: 45, 212, 191;
+
+    --secondary-color: #5eead4;
+    --secondary-hover: #2dd4bf;
+
+    --accent: #fbbf24;
+    --accent-rgb: 251, 191, 36;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #2dd4bf;
+}
+
+/* 13. Creative Purple Scholar - Dark Mode */
+[data-theme="dark"][data-palette="creative-purple"] {
+    --primary-color: #818cf8;
+    --primary-hover: #6366f1;
+    --primary-active: #4f46e5;
+    --primary-rgb: 129, 140, 248;
+
+    --secondary-color: #a78bfa;
+    --secondary-hover: #8b5cf6;
+
+    --accent: #f472b6;
+    --accent-rgb: 244, 114, 182;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #818cf8;
+}
+
+/* 14. Warm Scholar - Dark Mode */
+[data-theme="dark"][data-palette="warm-scholar"] {
+    --primary-color: #fb923c;
+    --primary-hover: #f97316;
+    --primary-active: #ea580c;
+    --primary-rgb: 251, 146, 60;
+
+    --secondary-color: #3b82f6;
+    --secondary-hover: #2563eb;
+
+    --accent: #fbbf24;
+    --accent-rgb: 251, 191, 36;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #fb923c;
+}
+
+/* 15. Scandinavian Minimal - Dark Mode */
+[data-theme="dark"][data-palette="scandinavian"] {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-active: #2563eb;
+    --primary-rgb: 96, 165, 250;
+
+    --secondary-color: #5eead4;
+    --secondary-hover: #2dd4bf;
+
+    --accent: #fb7185;
+    --accent-rgb: 251, 113, 133;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #60a5fa;
+}
+
+/* 16. Vibrant Learner - Dark Mode */
+[data-theme="dark"][data-palette="vibrant-learner"] {
+    --primary-color: #818cf8;
+    --primary-hover: #6366f1;
+    --primary-active: #4f46e5;
+    --primary-rgb: 129, 140, 248;
+
+    --secondary-color: #fde047;
+    --secondary-hover: #facc15;
+
+    --accent: #f472b6;
+    --accent-rgb: 244, 114, 182;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #818cf8;
+}
+
+/* 17. Professional Slate - Dark Mode */
+[data-theme="dark"][data-palette="professional-slate"] {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-active: #2563eb;
+    --primary-rgb: 96, 165, 250;
+
+    --secondary-color: #64748b;
+    --secondary-hover: #475569;
+
+    --accent: #34d399;
+    --accent-rgb: 52, 211, 153;
+
+    --text: #E0E0E0;
+    --text-muted: #94a3b8;
+    --heading: #60a5fa;
+}
+
+/* 18. Sunset Scholar - Dark Mode */
+[data-theme="dark"][data-palette="sunset-scholar"] {
+    --primary-color: #fb923c;
+    --primary-hover: #f97316;
+    --primary-active: #ea580c;
+    --primary-rgb: 251, 146, 60;
+
+    --secondary-color: #38bdf8;
+    --secondary-hover: #0ea5e9;
+
+    --accent: #fbbf24;
+    --accent-rgb: 251, 191, 36;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #fb923c;
+}
+
+/* 19. Nature & Growth - Dark Mode */
+[data-theme="dark"][data-palette="nature-growth"] {
+    --primary-color: #52b788;
+    --primary-hover: #40916c;
+    --primary-active: #2d6a4f;
+    --primary-rgb: 82, 183, 136;
+
+    --secondary-color: #74c69d;
+    --secondary-hover: #52b788;
+
+    --accent: #fb8500;
+    --accent-rgb: 251, 133, 0;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #52b788;
+}
+
+/* 20. Ethiopian Heritage - Dark Mode */
+[data-theme="dark"][data-palette="ethiopian-heritage"] {
+    --primary-color: #fde047;
+    --primary-hover: #facc15;
+    --primary-active: #eab308;
+    --primary-rgb: 253, 224, 71;
+
+    --secondary-color: #22c55e;
+    --secondary-hover: #16a34a;
+
+    --accent: #f87171;
+    --accent-rgb: 248, 113, 113;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #fde047;
+
+    --button-text: #1a1a1a;
+}
+
+/* 21. Classroom Board - Dark Mode (Blackboard with Chalk) */
+[data-theme="dark"][data-palette="classroom-board"] {
+    --background: #1a1a1a;
+    --background-rgb: 26, 26, 26;
+    --card-bg: #242424;
+    --canvas-bg: #1a1a1a;
+
+    /* Chalk Colors - Available for accent selection */
+    --chalk-white: #e8e8e8;
+    --chalk-yellow: #fef3c7;
+    --chalk-red: #fecaca;
+    --chalk-cyan: #a5f3fc;
+    --chalk-green: #bbf7d0;
+    --chalk-orange: #fed7aa;
+
+    --primary-color: #e8e8e8;
+    --primary-hover: #d4d4d4;
+    --primary-active: #c0c0c0;
+    --primary-rgb: 232, 232, 232;
+
+    --secondary-color: #fef3c7;
+    --secondary-hover: #fde68a;
+
+    --accent: #a5f3fc;
+    --accent-rgb: 165, 243, 252;
+
+    --text: #e8e8e8;
+    --text-muted: #a3a3a3;
+    --heading: #fef3c7;
+
+    --border-color: #404040;
+    --hover-bg: #2a2a2a;
+    --input-bg: #242424;
+
+    --button-bg: #e8e8e8;
+    --button-text: #1a1a1a;
+    --button-hover: #d4d4d4;
+
+    --success: #bbf7d0;
+    --error: #fecaca;
+    --warning: #fed7aa;
+}
+
+/* 22. Classic Greenboard - Dark mode with neutral background */
+[data-theme="dark"][data-palette="greenboard"] {
+    --background: #1a1a1a;
+    --background-rgb: 26, 26, 26;
+    --card-bg: #2d5016;  /* Keep green for cards */
+
+    --primary-color: #52b788;  /* Lighter green for dark mode */
+    --primary-hover: #40916c;
+    --primary-active: #2d6a4f;
+    --primary-rgb: 82, 183, 136;
+
+    --text: #E0E0E0;
+    --text-muted: #9ca3af;
+    --heading: #52b788;
+
+    --chalk-white: #ffffff;
+    --chalk-yellow: #fde047;
+}
+
+
+/* ==========================================
+   PALETTE-SPECIFIC ADJUSTMENTS
+   ========================================== */
+
+/* Ensure good contrast for Ethiopian Heritage */
+:root[data-palette="ethiopian-heritage"] .btn-primary {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+[data-theme="dark"][data-palette="ethiopian-heritage"] .btn-primary {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* Vibrant Learner - Ensure text readability */
+:root[data-palette="vibrant-learner"] .text-primary {
+    color: #3a0ca3;
+}
+
+[data-theme="dark"][data-palette="vibrant-learner"] .text-primary {
+    color: #818cf8;
+}
+
+/* Powder/Mint/Coral - Softer buttons */
+:root[data-palette="powder-mint-coral"] .btn-primary {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+[data-theme="dark"][data-palette="powder-mint-coral"] .btn-primary {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* Light Blue/Lavender - Button contrast */
+:root[data-palette="lightblue-lavender-white"] .btn-primary {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+[data-theme="dark"][data-palette="lightblue-lavender-white"] .btn-primary {
+    color: #1a1a1a;
+    font-weight: 600;
+}

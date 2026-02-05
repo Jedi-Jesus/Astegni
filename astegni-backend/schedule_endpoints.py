@@ -109,6 +109,7 @@ class ScheduleCreate(BaseModel):
     notes: Optional[str] = None
     priority_level: str = "medium"  # low, medium, high, urgent
     status: str = "active"  # active or draft
+    is_featured: bool = False  # Added missing field
     alarm_enabled: bool = False
     alarm_before_minutes: Optional[int] = None
     notification_browser: bool = False

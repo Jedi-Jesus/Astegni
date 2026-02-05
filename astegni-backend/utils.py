@@ -100,6 +100,53 @@ def hash_password(password: str) -> str:
     """Hash password using bcrypt"""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+def get_first_active_role(user: User, db: Session) -> Optional[str]:
+    """
+    Get the first ACTIVE role for a user.
+    Checks each role profile to verify it's active (is_active=True).
+
+    Priority order: student, tutor, parent, advertiser, user
+
+    Returns:
+        - First active role found, or
+        - None if no active roles exist
+    """
+    from models import StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile, UserProfile
+
+    # Define role priority order
+    role_priority = ['student', 'tutor', 'parent', 'advertiser', 'user']
+
+    for role in role_priority:
+        if role not in user.roles:
+            continue
+
+        # Check if this role's profile is active
+        is_active = False
+
+        if role == 'student':
+            profile = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
+            is_active = profile and getattr(profile, 'is_active', True)
+        elif role == 'tutor':
+            profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+            is_active = profile and getattr(profile, 'is_active', True)
+        elif role == 'parent':
+            profile = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
+            is_active = profile and getattr(profile, 'is_active', True)
+        elif role == 'advertiser':
+            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            is_active = profile and getattr(profile, 'is_active', True)
+        elif role == 'user':
+            profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
+            is_active = profile and getattr(profile, 'is_active', True)
+
+        # If role is active, return it
+        if is_active:
+            return role
+
+    # No active roles found
+    return None
+
+
 def get_role_ids_from_user(user: User, db: Session) -> dict:
     """Get all role-specific IDs for a user from the database
 
@@ -178,6 +225,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         print(f"[get_current_user] User not found: {user_id}")
         raise credentials_exception
+
+    # CRITICAL FIX: Expire and refresh user object to get fresh data from database
+    # This prevents SQLAlchemy session cache from returning stale active_role data
+    # after role switches (fixes role reversion bug after grace period expires)
+    db.expire(user)
+    db.refresh(user)
+    print(f"[get_current_user] Refreshed user {user.id} from database - active_role: {user.active_role}")
 
     # Attach role_ids to user object for easy access
     user.role_ids = payload.get("role_ids", {})
@@ -453,3 +507,57 @@ def require_2fa_verification(verification_token: Optional[str] = None):
         return True
 
     return check_verification
+
+
+# Admin authentication dependency
+async def get_current_admin(token: str = Depends(oauth2_scheme)):
+    """
+    Dependency to verify admin user from token
+    For now, checks if user is admin based on email or role
+    TODO: Implement proper admin table authentication
+    """
+    try:
+        # Decode token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("user_id")
+
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials"
+            )
+
+        # Get user from database
+        db = get_db().__next__()
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+
+            # Check if user is admin
+            # TODO: Replace with proper admin_users table check
+            admin_emails = [
+                "jediael.s.abebe@gmail.com",
+                "admin@astegni.com"
+            ]
+
+            if user.email not in admin_emails:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Admin access required"
+                )
+
+            return user
+
+        finally:
+            db.close()
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials"
+        )

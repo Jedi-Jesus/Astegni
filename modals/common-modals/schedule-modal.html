@@ -332,26 +332,23 @@
                             </div>
                             <p
                                 style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 12px; padding: 8px 12px; background: var(--bg-secondary); border-left: 3px solid var(--primary-color); border-radius: 4px;">
-                                💡 <strong>Note:</strong> Dates are added on-the-fly. Select <strong>From Date</strong>
-                                to add a single date, then optionally select <strong>To Date</strong> to expand it into
-                                a date range. Use the <strong style="color: var(--primary-color);">+</strong> button
-                                below to add more dates/ranges.
+                                💡 <strong>Note:</strong> Select <strong>From Date</strong> to add a single date,
+                                then optionally select <strong>To Date</strong> to expand it into a date range.
+                                Click <strong style="color: var(--primary-color);">+ Add Another Date/Range</strong>
+                                to continue adding more dates.
                             </p>
 
-                            <!-- Add Additional Date Range Button -->
-                            <button type="button" class="btn-primary" onclick="addAnotherDateRange()"
-                                title="Click to add another date or date range"
-                                style="padding: 10px 24px; font-size: 1rem; margin-bottom: 12px;">
-                                <i class="fas fa-plus"></i> Add Another Date/Range
-                            </button>
-
-                            <!-- Container for additional date range inputs -->
-                            <div id="additional-date-ranges"></div>
-
-                            <!-- Selected Dates List -->
-                            <div id="selected-dates-list" class="selected-dates-container" style="margin-top: 16px;">
+                            <!-- Selected Dates List (moved above button) -->
+                            <div id="selected-dates-list" class="selected-dates-container" style="margin-bottom: 12px; max-height: 250px; overflow-y: auto;">
                                 <!-- Selected dates will appear here -->
                             </div>
+
+                            <!-- Add Another Date/Range Button -->
+                            <button type="button" class="btn-primary" onclick="addAnotherDateRange()"
+                                title="Click to add another date or date range"
+                                style="padding: 10px 24px; font-size: 1rem; width: 100%;">
+                                <i class="fas fa-plus"></i> Add Another Date/Range
+                            </button>
                         </div>
                     </div>
 

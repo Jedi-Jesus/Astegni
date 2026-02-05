@@ -16,6 +16,249 @@ function getAuthToken() {
 
 // Verification Fees State
 let verificationFees = [];
+let verificationFeeDetectedCurrency = 'ETB';  // Store detected currency based on GPS location
+
+// Format country label for display
+function formatCountryLabel(country) {
+    if (country === 'all') return 'Global (All Countries)';
+
+    const countries = {
+        // Africa
+        'ET': 'Ethiopia', 'CM': 'Cameroon', 'KE': 'Kenya', 'NG': 'Nigeria', 'GH': 'Ghana',
+        'ZA': 'South Africa', 'EG': 'Egypt', 'TZ': 'Tanzania', 'UG': 'Uganda', 'MA': 'Morocco',
+        'DZ': 'Algeria', 'TN': 'Tunisia', 'RW': 'Rwanda', 'SN': 'Senegal', 'CI': 'Ivory Coast',
+        // Americas
+        'MX': 'Mexico', 'US': 'United States', 'CA': 'Canada', 'BR': 'Brazil', 'AR': 'Argentina',
+        'CO': 'Colombia', 'CL': 'Chile', 'PE': 'Peru',
+        // Europe
+        'GB': 'United Kingdom', 'DE': 'Germany', 'FR': 'France', 'ES': 'Spain', 'IT': 'Italy',
+        'NL': 'Netherlands', 'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria', 'PL': 'Poland',
+        // Asia
+        'CN': 'China', 'IN': 'India', 'JP': 'Japan', 'KR': 'South Korea', 'SG': 'Singapore',
+        'MY': 'Malaysia', 'TH': 'Thailand', 'VN': 'Vietnam', 'PH': 'Philippines', 'ID': 'Indonesia',
+        // Middle East
+        'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates', 'IL': 'Israel', 'TR': 'Turkey',
+        // Oceania
+        'AU': 'Australia', 'NZ': 'New Zealand'
+    };
+
+    return countries[country] || country;
+}
+
+// Map country names to ISO codes
+function getCountryCode(countryName) {
+    const countryNameToCode = {
+        // Africa
+        'Ethiopia': 'ET', 'Cameroon': 'CM', 'Kenya': 'KE', 'Nigeria': 'NG', 'Ghana': 'GH',
+        'South Africa': 'ZA', 'Egypt': 'EG', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Morocco': 'MA',
+        'Algeria': 'DZ', 'Tunisia': 'TN', 'Rwanda': 'RW', 'Senegal': 'SN',
+        'Ivory Coast': 'CI', 'Côte d\'Ivoire': 'CI',
+        // Americas
+        'Mexico': 'MX', 'United States': 'US', 'United States of America': 'US', 'Canada': 'CA',
+        'Brazil': 'BR', 'Argentina': 'AR', 'Colombia': 'CO', 'Chile': 'CL', 'Peru': 'PE',
+        // Europe
+        'United Kingdom': 'GB', 'Germany': 'DE', 'France': 'FR', 'Spain': 'ES', 'Italy': 'IT',
+        'Netherlands': 'NL', 'Belgium': 'BE', 'Switzerland': 'CH', 'Austria': 'AT', 'Poland': 'PL',
+        // Asia
+        'China': 'CN', 'India': 'IN', 'Japan': 'JP', 'South Korea': 'KR', 'Singapore': 'SG',
+        'Malaysia': 'MY', 'Thailand': 'TH', 'Vietnam': 'VN', 'Philippines': 'PH', 'Indonesia': 'ID',
+        // Middle East
+        'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE', 'UAE': 'AE',
+        'Israel': 'IL', 'Turkey': 'TR',
+        // Oceania
+        'Australia': 'AU', 'New Zealand': 'NZ'
+    };
+
+    return countryNameToCode[countryName] || null;
+}
+
+// Map country code to currency
+function getCurrencyForCountry(countryCode) {
+    const countryToCurrency = {
+        // Africa
+        'ET': 'ETB',  // Ethiopia - Ethiopian Birr
+        'KE': 'KES',  // Kenya - Kenyan Shilling
+        'NG': 'NGN',  // Nigeria - Nigerian Naira
+        'GH': 'GHS',  // Ghana - Ghanaian Cedi
+        'ZA': 'ZAR',  // South Africa - South African Rand
+        'EG': 'EGP',  // Egypt - Egyptian Pound
+        'TZ': 'TZS',  // Tanzania - Tanzanian Shilling
+        'UG': 'UGX',  // Uganda - Ugandan Shilling
+        'MA': 'MAD',  // Morocco - Moroccan Dirham
+        'DZ': 'DZD',  // Algeria - Algerian Dinar
+        'TN': 'TND',  // Tunisia - Tunisian Dinar
+        'RW': 'RWF',  // Rwanda - Rwandan Franc
+        'SN': 'XOF',  // Senegal - West African CFA Franc
+        'CI': 'XOF',  // Ivory Coast - West African CFA Franc
+        'CM': 'XAF',  // Cameroon - Central African CFA Franc
+
+        // Americas
+        'US': 'USD',  // United States - US Dollar
+        'CA': 'CAD',  // Canada - Canadian Dollar
+        'MX': 'MXN',  // Mexico - Mexican Peso
+        'BR': 'BRL',  // Brazil - Brazilian Real
+        'AR': 'ARS',  // Argentina - Argentine Peso
+        'CO': 'COP',  // Colombia - Colombian Peso
+        'CL': 'CLP',  // Chile - Chilean Peso
+        'PE': 'PEN',  // Peru - Peruvian Sol
+
+        // Europe (Eurozone countries use EUR)
+        'DE': 'EUR',  // Germany - Euro
+        'FR': 'EUR',  // France - Euro
+        'ES': 'EUR',  // Spain - Euro
+        'IT': 'EUR',  // Italy - Euro
+        'NL': 'EUR',  // Netherlands - Euro
+        'BE': 'EUR',  // Belgium - Euro
+        'AT': 'EUR',  // Austria - Euro
+        'GB': 'GBP',  // United Kingdom - British Pound
+        'CH': 'CHF',  // Switzerland - Swiss Franc
+        'PL': 'PLN',  // Poland - Polish Zloty
+
+        // Asia
+        'CN': 'CNY',  // China - Chinese Yuan
+        'IN': 'INR',  // India - Indian Rupee
+        'JP': 'JPY',  // Japan - Japanese Yen
+        'KR': 'KRW',  // South Korea - Korean Won
+        'SG': 'SGD',  // Singapore - Singapore Dollar
+        'MY': 'MYR',  // Malaysia - Malaysian Ringgit
+        'TH': 'THB',  // Thailand - Thai Baht
+        'VN': 'VND',  // Vietnam - Vietnamese Dong
+        'PH': 'PHP',  // Philippines - Philippine Peso
+        'ID': 'IDR',  // Indonesia - Indonesian Rupiah
+
+        // Middle East
+        'SA': 'SAR',  // Saudi Arabia - Saudi Riyal
+        'AE': 'AED',  // United Arab Emirates - UAE Dirham
+        'IL': 'ILS',  // Israel - Israeli Shekel
+        'TR': 'TRY',  // Turkey - Turkish Lira
+
+        // Oceania
+        'AU': 'AUD',  // Australia - Australian Dollar
+        'NZ': 'NZD',  // New Zealand - New Zealand Dollar
+
+        // Default
+        'all': 'USD'  // Global - US Dollar as default
+    };
+
+    return countryToCurrency[countryCode] || 'USD';  // Default to USD if country not found
+}
+
+// Detect country from GPS for verification fees
+async function detectVerificationFeeCountryFromGPS() {
+    const countryField = document.getElementById('verification-fee-country');
+    const countryDisplay = document.getElementById('verification-fee-country-display');
+    const countryStatusDiv = document.getElementById('verification-fee-country-status');
+
+    if (!countryField || !countryDisplay) {
+        console.error('[GPS-VerificationFee] Country field or display not found');
+        return;
+    }
+
+    try {
+        // Show loading state
+        countryDisplay.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...';
+        if (countryStatusDiv) {
+            countryStatusDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin mr-1"></i>Detecting your GPS location...</span>';
+        }
+
+        // Check if geolocation is supported
+        if (!navigator.geolocation) {
+            console.warn('[GPS-VerificationFee] Geolocation not supported, defaulting to Global');
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-info-circle mr-1"></i>GPS not available. Using global pricing.</span>';
+            }
+            return;
+        }
+
+        // Get GPS position
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000  // 5 minutes cache
+            });
+        });
+
+        const { latitude, longitude } = position.coords;
+        console.log(`[GPS-VerificationFee] Coordinates: ${latitude}, ${longitude}`);
+
+        // Reverse geocode to get country
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
+
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'Astegni-Admin-Verification-Fee-Manager/1.0'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Geocoding request failed');
+        }
+
+        const data = await response.json();
+        console.log('[GPS-VerificationFee] Geocoding data:', data);
+
+        if (data && data.address) {
+            const countryName = data.address.country;
+            let countryCode = data.address.country_code ? data.address.country_code.toUpperCase() : null;
+
+            console.log(`[GPS-VerificationFee] Country detected: ${countryName} (${countryCode})`);
+
+            if (!countryCode && countryName) {
+                countryCode = getCountryCode(countryName);
+            }
+
+            if (countryCode) {
+                countryField.value = countryCode;
+                countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-green-500"></i>${countryName}`;
+
+                // Set currency based on country
+                verificationFeeDetectedCurrency = getCurrencyForCountry(countryCode);
+                console.log(`[GPS-VerificationFee] Currency set to: ${verificationFeeDetectedCurrency} for ${countryName}`);
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Detected: ${countryName} (${verificationFeeDetectedCurrency})</span>`;
+                }
+
+                console.log(`[GPS-VerificationFee] Country set to: ${countryName} (${countryCode})`);
+            } else {
+                countryField.value = 'all';
+                countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country code. Using global pricing.</span>`;
+                }
+            }
+        } else {
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country. Using global pricing.</span>`;
+            }
+        }
+
+    } catch (error) {
+        console.error('[GPS-VerificationFee] Error detecting country:', error);
+
+        countryField.value = 'all';
+        countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+        if (countryStatusDiv) {
+            if (error.code === 1) {
+                countryStatusDiv.innerHTML = '<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>Location permission denied. Using global pricing.</span>';
+            } else if (error.code === 2) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>Location unavailable. Using global pricing.</span>';
+            } else if (error.code === 3) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-clock mr-1"></i>Location timeout. Using global pricing.</span>';
+            } else {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>Location unavailable. Using global pricing.</span>';
+            }
+        }
+    }
+}
 
 // Load Verification Fees from API
 async function loadVerificationFees() {
@@ -131,6 +374,7 @@ function renderVerificationFees() {
     grid.innerHTML = verificationFees.map((fee, index) => {
         const color = colors[index % colors.length];
         const price = parseFloat(fee.price) || 0;
+        const currency = fee.currency || 'ETB';
         const displayName = fee.display_name || formatTypeName(fee.type);
         const icon = typeIcons[fee.type.toLowerCase()] || 'fa-certificate';
 
@@ -158,7 +402,7 @@ function renderVerificationFees() {
                 </div>
 
                 <div class="text-center mb-4 py-3 bg-white/50 rounded-lg">
-                    <div class="text-3xl font-bold text-${color.text}">${price.toLocaleString()} ETB</div>
+                    <div class="text-3xl font-bold text-${color.text}">${price.toLocaleString()} ${currency}</div>
                     <div class="text-sm text-gray-600">One-time fee</div>
                 </div>
 
@@ -188,7 +432,7 @@ function formatTypeName(type) {
 }
 
 // Open Modal for Adding Fee
-function openAddVerificationFeeModal() {
+async function openAddVerificationFeeModal() {
     const modal = document.getElementById('verification-fee-modal');
     if (!modal) {
         console.error('Verification fee modal not found');
@@ -211,6 +455,11 @@ function openAddVerificationFeeModal() {
     }
 
     modal.classList.remove('hidden');
+
+    // Auto-detect country from GPS (non-blocking)
+    detectVerificationFeeCountryFromGPS().catch(err => {
+        console.warn('[GPS-VerificationFee] Auto-detection failed:', err);
+    });
 }
 
 // Edit Fee
@@ -227,6 +476,14 @@ function editVerificationFee(type) {
     document.getElementById('verification-fee-type').value = fee.type;
     document.getElementById('verification-fee-name').value = fee.display_name || formatTypeName(fee.type);
     document.getElementById('verification-fee-price').value = fee.price;
+
+    // Set country (hidden field and display)
+    const countryCode = fee.country || 'all';
+    document.getElementById('verification-fee-country').value = countryCode;
+    const countryDisplay = document.getElementById('verification-fee-country-display');
+    if (countryDisplay) {
+        countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>${formatCountryLabel(countryCode)}`;
+    }
 
     // Load features
     const featuresContainer = document.getElementById('verification-features-container');
@@ -263,6 +520,7 @@ async function saveVerificationFee(event) {
     const feeType = document.getElementById('verification-fee-type').value.trim().toLowerCase().replace(/\s+/g, '_');
     const displayName = document.getElementById('verification-fee-name').value.trim();
     const price = parseFloat(document.getElementById('verification-fee-price').value);
+    const country = document.getElementById('verification-fee-country').value || 'all';
 
     // Collect features
     const features = [];
@@ -299,7 +557,8 @@ async function saveVerificationFee(event) {
             display_name: displayName,
             features: features,
             price: price,
-            currency: 'ETB'
+            currency: verificationFeeDetectedCurrency,
+            country: country
         };
 
         console.log('Saving verification fee:', feeData);

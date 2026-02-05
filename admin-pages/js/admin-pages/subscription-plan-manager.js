@@ -20,6 +20,234 @@ function getAuthToken() {
 // Subscription Plans State
 let subscriptionPlans = [];
 let currentSubscriptionTab = 'tutor'; // Currently active subscription type tab
+let subscriptionPlanDetectedCurrency = 'ETB';  // Store detected currency based on GPS location
+
+// Format country label for display
+function formatCountryLabel(country) {
+    if (country === 'all') return 'Global (All Countries)';
+
+    const countries = {
+        'ET': 'Ethiopia', 'CM': 'Cameroon', 'KE': 'Kenya', 'NG': 'Nigeria', 'GH': 'Ghana',
+        'ZA': 'South Africa', 'EG': 'Egypt', 'TZ': 'Tanzania', 'UG': 'Uganda', 'MA': 'Morocco',
+        'DZ': 'Algeria', 'TN': 'Tunisia', 'RW': 'Rwanda', 'SN': 'Senegal', 'CI': 'Ivory Coast',
+        'MX': 'Mexico', 'US': 'United States', 'CA': 'Canada', 'BR': 'Brazil', 'AR': 'Argentina',
+        'CO': 'Colombia', 'CL': 'Chile', 'PE': 'Peru',
+        'GB': 'United Kingdom', 'DE': 'Germany', 'FR': 'France', 'ES': 'Spain', 'IT': 'Italy',
+        'NL': 'Netherlands', 'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria', 'PL': 'Poland',
+        'CN': 'China', 'IN': 'India', 'JP': 'Japan', 'KR': 'South Korea', 'SG': 'Singapore',
+        'MY': 'Malaysia', 'TH': 'Thailand', 'VN': 'Vietnam', 'PH': 'Philippines', 'ID': 'Indonesia',
+        'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates', 'IL': 'Israel', 'TR': 'Turkey',
+        'AU': 'Australia', 'NZ': 'New Zealand'
+    };
+
+    return countries[country] || country;
+}
+
+// Map country names to ISO codes
+function getCountryCode(countryName) {
+    const countryNameToCode = {
+        'Ethiopia': 'ET', 'Cameroon': 'CM', 'Kenya': 'KE', 'Nigeria': 'NG', 'Ghana': 'GH',
+        'South Africa': 'ZA', 'Egypt': 'EG', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Morocco': 'MA',
+        'Algeria': 'DZ', 'Tunisia': 'TN', 'Rwanda': 'RW', 'Senegal': 'SN',
+        'Ivory Coast': 'CI', 'Côte d\'Ivoire': 'CI',
+        'Mexico': 'MX', 'United States': 'US', 'United States of America': 'US', 'Canada': 'CA',
+        'Brazil': 'BR', 'Argentina': 'AR', 'Colombia': 'CO', 'Chile': 'CL', 'Peru': 'PE',
+        'United Kingdom': 'GB', 'Germany': 'DE', 'France': 'FR', 'Spain': 'ES', 'Italy': 'IT',
+        'Netherlands': 'NL', 'Belgium': 'BE', 'Switzerland': 'CH', 'Austria': 'AT', 'Poland': 'PL',
+        'China': 'CN', 'India': 'IN', 'Japan': 'JP', 'South Korea': 'KR', 'Singapore': 'SG',
+        'Malaysia': 'MY', 'Thailand': 'TH', 'Vietnam': 'VN', 'Philippines': 'PH', 'Indonesia': 'ID',
+        'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE', 'UAE': 'AE',
+        'Israel': 'IL', 'Turkey': 'TR',
+        'Australia': 'AU', 'New Zealand': 'NZ'
+    };
+
+    return countryNameToCode[countryName] || null;
+}
+
+// Map country codes to currencies
+function getCurrencyForCountry(countryCode) {
+    const countryToCurrency = {
+        // Africa (15 countries)
+        'ET': 'ETB',  // Ethiopia - Ethiopian Birr
+        'KE': 'KES',  // Kenya - Kenyan Shilling
+        'NG': 'NGN',  // Nigeria - Nigerian Naira
+        'ZA': 'ZAR',  // South Africa - South African Rand
+        'EG': 'EGP',  // Egypt - Egyptian Pound
+        'GH': 'GHS',  // Ghana - Ghanaian Cedi
+        'TZ': 'TZS',  // Tanzania - Tanzanian Shilling
+        'UG': 'UGX',  // Uganda - Ugandan Shilling
+        'MA': 'MAD',  // Morocco - Moroccan Dirham
+        'DZ': 'DZD',  // Algeria - Algerian Dinar
+        'TN': 'TND',  // Tunisia - Tunisian Dinar
+        'RW': 'RWF',  // Rwanda - Rwandan Franc
+        'SN': 'XOF',  // Senegal - West African CFA Franc
+        'CI': 'XOF',  // Ivory Coast - West African CFA Franc
+        'CM': 'XAF',  // Cameroon - Central African CFA Franc
+
+        // Americas (8 countries)
+        'US': 'USD',  // United States - US Dollar
+        'CA': 'CAD',  // Canada - Canadian Dollar
+        'MX': 'MXN',  // Mexico - Mexican Peso
+        'BR': 'BRL',  // Brazil - Brazilian Real
+        'AR': 'ARS',  // Argentina - Argentine Peso
+        'CO': 'COP',  // Colombia - Colombian Peso
+        'CL': 'CLP',  // Chile - Chilean Peso
+        'PE': 'PEN',  // Peru - Peruvian Sol
+
+        // Europe (11 countries)
+        'GB': 'GBP',  // United Kingdom - British Pound
+        'CH': 'CHF',  // Switzerland - Swiss Franc
+        'PL': 'PLN',  // Poland - Polish Zloty
+        // Euro countries
+        'DE': 'EUR',  // Germany - Euro
+        'FR': 'EUR',  // France - Euro
+        'ES': 'EUR',  // Spain - Euro
+        'IT': 'EUR',  // Italy - Euro
+        'NL': 'EUR',  // Netherlands - Euro
+        'BE': 'EUR',  // Belgium - Euro
+        'AT': 'EUR',  // Austria - Euro
+        'TR': 'TRY',  // Turkey - Turkish Lira
+
+        // Asia (10 countries)
+        'CN': 'CNY',  // China - Chinese Yuan
+        'IN': 'INR',  // India - Indian Rupee
+        'JP': 'JPY',  // Japan - Japanese Yen
+        'KR': 'KRW',  // South Korea - South Korean Won
+        'SG': 'SGD',  // Singapore - Singapore Dollar
+        'MY': 'MYR',  // Malaysia - Malaysian Ringgit
+        'TH': 'THB',  // Thailand - Thai Baht
+        'VN': 'VND',  // Vietnam - Vietnamese Dong
+        'PH': 'PHP',  // Philippines - Philippine Peso
+        'ID': 'IDR',  // Indonesia - Indonesian Rupiah
+
+        // Middle East (4 countries)
+        'SA': 'SAR',  // Saudi Arabia - Saudi Riyal
+        'AE': 'AED',  // UAE - UAE Dirham
+        'IL': 'ILS',  // Israel - Israeli Shekel
+
+        // Oceania (2 countries)
+        'AU': 'AUD',  // Australia - Australian Dollar
+        'NZ': 'NZD',  // New Zealand - New Zealand Dollar
+
+        // Default
+        'all': 'USD'  // Global - US Dollar as default
+    };
+
+    return countryToCurrency[countryCode] || 'USD';
+}
+
+// Detect country from GPS for subscription plans
+async function detectSubscriptionPlanCountryFromGPS() {
+    const countryField = document.getElementById('subscription-plan-country');
+    const countryDisplay = document.getElementById('subscription-plan-country-display');
+    const countryStatusDiv = document.getElementById('subscription-plan-country-status');
+
+    if (!countryField || !countryDisplay) {
+        console.error('[GPS-SubscriptionPlan] Country field or display not found');
+        return;
+    }
+
+    try {
+        countryDisplay.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...';
+        if (countryStatusDiv) {
+            countryStatusDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin mr-1"></i>Detecting your GPS location...</span>';
+        }
+
+        if (!navigator.geolocation) {
+            console.warn('[GPS-SubscriptionPlan] Geolocation not supported, defaulting to Global');
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-info-circle mr-1"></i>GPS not available. Using global pricing.</span>';
+            }
+            return;
+        }
+
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            });
+        });
+
+        const { latitude, longitude } = position.coords;
+        console.log(`[GPS-SubscriptionPlan] Coordinates: ${latitude}, ${longitude}`);
+
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
+
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'Astegni-Admin-Subscription-Plan-Manager/1.0'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Geocoding request failed');
+        }
+
+        const data = await response.json();
+        console.log('[GPS-SubscriptionPlan] Geocoding data:', data);
+
+        if (data && data.address) {
+            const countryName = data.address.country;
+            let countryCode = data.address.country_code ? data.address.country_code.toUpperCase() : null;
+
+            console.log(`[GPS-SubscriptionPlan] Country detected: ${countryName} (${countryCode})`);
+
+            if (!countryCode && countryName) {
+                countryCode = getCountryCode(countryName);
+            }
+
+            if (countryCode) {
+                countryField.value = countryCode;
+                countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-green-500"></i>${countryName}`;
+
+                // Set currency based on country
+                subscriptionPlanDetectedCurrency = getCurrencyForCountry(countryCode);
+                console.log(`[GPS-SubscriptionPlan] Currency set to: ${subscriptionPlanDetectedCurrency} for ${countryName}`);
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Detected: ${countryName} (${subscriptionPlanDetectedCurrency})</span>`;
+                }
+
+                console.log(`[GPS-SubscriptionPlan] Country set to: ${countryName} (${countryCode})`);
+            } else {
+                countryField.value = 'all';
+                countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+                if (countryStatusDiv) {
+                    countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country code. Using global pricing.</span>`;
+                }
+            }
+        } else {
+            countryField.value = 'all';
+            countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+            if (countryStatusDiv) {
+                countryStatusDiv.innerHTML = `<span class="text-yellow-600"><i class="fas fa-exclamation-triangle mr-1"></i>Could not determine country. Using global pricing.</span>`;
+            }
+        }
+
+    } catch (error) {
+        console.error('[GPS-SubscriptionPlan] Error detecting country:', error);
+
+        countryField.value = 'all';
+        countryDisplay.innerHTML = '<i class="fas fa-globe mr-2 text-gray-500"></i>Global (All Countries)';
+
+        if (countryStatusDiv) {
+            if (error.code === 1) {
+                countryStatusDiv.innerHTML = '<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>Location permission denied. Using global pricing.</span>';
+            } else if (error.code === 2) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>Location unavailable. Using global pricing.</span>';
+            } else if (error.code === 3) {
+                countryStatusDiv.innerHTML = '<span class="text-yellow-500"><i class="fas fa-clock mr-1"></i>Location timeout. Using global pricing.</span>';
+            } else {
+                countryStatusDiv.innerHTML = '<span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>Location unavailable. Using global pricing.</span>';
+            }
+        }
+    }
+}
 
 // Load Subscription Plans from API
 async function loadSubscriptionPlans() {
@@ -198,6 +426,7 @@ function renderSubscriptionPlans() {
         grid.innerHTML = typePlans.map((plan, index) => {
             const color = colors[index % colors.length];
             const monthlyPrice = parseFloat(plan.monthly_price) || 0;
+            const currency = plan.currency || 'ETB';  // Read currency from database
 
             // Calculate tier prices (upfront payment discounts)
             const discountYearly = plan.discount_yearly || 20;
@@ -239,9 +468,9 @@ function renderSubscriptionPlans() {
 
                     <!-- Monthly Price -->
                     <div class="text-center mb-4 p-3 bg-white/50 rounded-lg border">
-                        <div class="text-3xl font-bold text-${color.text}">${monthlyPrice.toLocaleString()} ETB</div>
+                        <div class="text-3xl font-bold text-${color.text}">${monthlyPrice.toLocaleString()} ${currency}</div>
                         <div class="text-sm text-gray-600">/month</div>
-                        <div class="text-xs text-gray-500 mt-2">Pay yearly: ${yearlyPrice.toLocaleString()} ETB (${discountYearly}% off)</div>
+                        <div class="text-xs text-gray-500 mt-2">Pay yearly: ${yearlyPrice.toLocaleString()} ${currency} (${discountYearly}% off)</div>
                     </div>
 
                     <!-- Features -->
@@ -263,7 +492,7 @@ function renderSubscriptionPlans() {
 }
 
 // Open Modal for Adding Plan
-function openAddSubscriptionPlanModal() {
+async function openAddSubscriptionPlanModal() {
     const modal = document.getElementById('subscription-plan-modal');
     if (!modal) {
         console.error('Subscription plan modal not found');
@@ -293,20 +522,15 @@ function openAddSubscriptionPlanModal() {
         radio.checked = radio.value === 'none';
     });
 
-    // Clear features container and show empty state
-    const featuresContainer = document.getElementById('subscription-features-container');
-    const emptyState = document.getElementById('subscription-features-empty-state');
-    if (featuresContainer) {
-        featuresContainer.innerHTML = '';
-    }
-    if (emptyState) {
-        emptyState.style.display = 'block';
-    }
-
     // Reset preview
     calculateSubscriptionPreview();
 
     modal.classList.remove('hidden');
+
+    // Auto-detect country from GPS (non-blocking)
+    detectSubscriptionPlanCountryFromGPS().catch(err => {
+        console.warn('[GPS-SubscriptionPlan] Auto-detection failed:', err);
+    });
 }
 
 // Edit Plan
@@ -341,18 +565,19 @@ function editSubscriptionPlan(id) {
         radio.checked = plan.is_popular ? radio.value === 'popular' : radio.value === 'none';
     });
 
-    // Load features
-    const featuresContainer = document.getElementById('subscription-features-container');
-    const emptyState = document.getElementById('subscription-features-empty-state');
-    if (featuresContainer) {
-        featuresContainer.innerHTML = '';
-        if (plan.features && plan.features.length > 0) {
-            plan.features.forEach(feature => addSubscriptionPlanFeature(feature));
-            if (emptyState) emptyState.style.display = 'none';
-        } else {
-            if (emptyState) emptyState.style.display = 'block';
-        }
+    // Set country (hidden field and display) - no GPS detection for edits
+    const countryCode = plan.country || 'all';
+    const countryField = document.getElementById('subscription-plan-country');
+    const countryDisplay = document.getElementById('subscription-plan-country-display');
+    if (countryField) {
+        countryField.value = countryCode;
     }
+    if (countryDisplay) {
+        countryDisplay.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>${formatCountryLabel(countryCode)}`;
+    }
+
+    // Set currency based on existing plan's currency or derive from country
+    subscriptionPlanDetectedCurrency = plan.currency || getCurrencyForCountry(countryCode);
 
     // Update preview
     calculateSubscriptionPreview();
@@ -386,7 +611,7 @@ function calculateSubscriptionPreview() {
     const priceYearly = Math.round(monthlyPrice * 12 * (1 - discountYearly / 100));
 
     // Format helpers
-    const formatPrice = (price) => monthlyPrice > 0 ? `${Math.round(price).toLocaleString()} ETB` : '-- ETB';
+    const formatPrice = (price) => monthlyPrice > 0 ? `${Math.round(price).toLocaleString()} ${subscriptionPlanDetectedCurrency}` : `-- ${subscriptionPlanDetectedCurrency}`;
 
     // Monthly price display
     const monthlyEl = document.getElementById('preview-monthly-price');
@@ -429,6 +654,7 @@ async function saveSubscriptionPlan(event) {
     const planName = document.getElementById('subscription-plan-name').value.trim();
     const monthlyPrice = parseFloat(document.getElementById('subscription-plan-price').value);
     const subscriptionType = document.getElementById('subscription-plan-type')?.value || 'tutor';
+    const country = document.getElementById('subscription-plan-country')?.value || 'all';
 
     // Get upfront payment discount tier values
     const discount3Months = parseFloat(document.getElementById('subscription-discount-3-months')?.value) || 5;
@@ -438,16 +664,6 @@ async function saveSubscriptionPlan(event) {
     // Get label
     const selectedLabel = document.querySelector('input[name="subscription-plan-label"]:checked');
     const label = selectedLabel ? selectedLabel.value : 'none';
-
-    // Collect features
-    const features = [];
-    const featureInputs = document.querySelectorAll('.subscription-feature-input');
-    featureInputs.forEach(input => {
-        const value = input.value.trim();
-        if (value) {
-            features.push(value);
-        }
-    });
 
     // Validation
     if (!planName) {
@@ -467,15 +683,15 @@ async function saveSubscriptionPlan(event) {
 
         const apiUrl = getApiBaseUrl();
 
-        // Subscription plan data with upfront payment discounts
+        // Subscription plan data with upfront payment discounts (features removed - use Assign Features button)
         const planData = {
             package_title: planName,
             package_price: monthlyPrice,
             subscription_type: subscriptionType,
-            currency: 'ETB',
-            features: features,
+            currency: subscriptionPlanDetectedCurrency,  // Auto-detected currency based on GPS location
             label: label,
             is_active: true,
+            country: country,
             // Upfront payment discount tier values
             discount_3_months: discount3Months,
             discount_6_months: discount6Months,
@@ -487,7 +703,7 @@ async function saveSubscriptionPlan(event) {
         let response;
         if (id) {
             // Update existing plan
-            response = await fetch(`${apiUrl}/api/admin-db/subscription-plans/${id}`, {
+            response = await fetch(`${apiUrl}/api/admin/subscription-plans/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -497,7 +713,7 @@ async function saveSubscriptionPlan(event) {
             });
         } else {
             // Create new plan
-            response = await fetch(`${apiUrl}/api/admin-db/subscription-plans`, {
+            response = await fetch(`${apiUrl}/api/admin/subscription-plans`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -544,7 +760,7 @@ async function deleteSubscriptionPlan(id) {
         }
 
         const apiUrl = getApiBaseUrl();
-        const response = await fetch(`${apiUrl}/api/admin-db/subscription-plans/${id}`, {
+        const response = await fetch(`${apiUrl}/api/admin/subscription-plans/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -567,65 +783,10 @@ async function deleteSubscriptionPlan(id) {
 }
 
 // ============================================
-// PLAN FEATURES MANAGEMENT FUNCTIONS
+// PLAN FEATURES MANAGEMENT REMOVED
 // ============================================
-
-// Add Plan Feature
-function addSubscriptionPlanFeature(value = '') {
-    const featuresContainer = document.getElementById('subscription-features-container');
-    const emptyState = document.getElementById('subscription-features-empty-state');
-
-    if (!featuresContainer) {
-        console.error('Subscription features container not found');
-        return;
-    }
-
-    // Hide empty state when adding first item
-    if (emptyState) {
-        emptyState.style.display = 'none';
-    }
-
-    const featureId = 'sub-feature-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-    const featureItem = document.createElement('div');
-    featureItem.className = 'flex items-center gap-2';
-    featureItem.id = featureId;
-
-    featureItem.innerHTML = `
-        <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-            <i class="fas fa-check-circle text-purple-600"></i>
-            <input type="text" class="subscription-feature-input flex-1 bg-transparent border-0 focus:outline-none text-sm"
-                placeholder="e.g., Unlimited storage, Priority support" value="${value}">
-        </div>
-        <button type="button" onclick="removeSubscriptionPlanFeature('${featureId}')"
-            class="w-8 h-8 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center transition-colors shadow-sm"
-            title="Remove this feature">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-
-    featuresContainer.appendChild(featureItem);
-
-    // Auto-focus on the new input
-    const newInput = featureItem.querySelector('.subscription-feature-input');
-    if (newInput && !value) {
-        newInput.focus();
-    }
-}
-
-// Remove Plan Feature
-function removeSubscriptionPlanFeature(featureId) {
-    const featureItem = document.getElementById(featureId);
-    if (featureItem) {
-        featureItem.remove();
-    }
-
-    // Show empty state if no features remain
-    const featuresContainer = document.getElementById('subscription-features-container');
-    const emptyState = document.getElementById('subscription-features-empty-state');
-    if (featuresContainer && featuresContainer.children.length === 0 && emptyState) {
-        emptyState.style.display = 'block';
-    }
-}
+// Features are now managed separately via the "Assign Features" button
+// See feature-assignment-manager.js for feature management
 
 // Export functions to window for HTML onclick handlers
 window.openAddSubscriptionPlanModal = openAddSubscriptionPlanModal;
@@ -634,8 +795,6 @@ window.closeSubscriptionPlanModal = closeSubscriptionPlanModal;
 window.saveSubscriptionPlan = saveSubscriptionPlan;
 window.deleteSubscriptionPlan = deleteSubscriptionPlan;
 window.loadSubscriptionPlans = loadSubscriptionPlans;
-window.addSubscriptionPlanFeature = addSubscriptionPlanFeature;
-window.removeSubscriptionPlanFeature = removeSubscriptionPlanFeature;
 window.calculateSubscriptionPreview = calculateSubscriptionPreview;
 window.switchSubscriptionTab = switchSubscriptionTab;
 window.updateSubscriptionTabCounts = updateSubscriptionTabCounts;

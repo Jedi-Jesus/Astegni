@@ -1120,20 +1120,43 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 // SCHOOL REQUEST MODAL HANDLERS
 // ============================================
+// NOTE: These functions are now handled by school-request-manager.js
+// The implementations below are kept only for backwards compatibility
+// on pages that don't load the manager.
 
 function openSchoolRequestModal(source) {
+    // Check if the proper manager function exists
+    if (typeof window.openSchoolRequestModal !== 'undefined' && window.openSchoolRequestModal !== openSchoolRequestModal) {
+        window.openSchoolRequestModal(source);
+        return;
+    }
+
+    // Fallback implementation
     const modal = document.getElementById('school-request-modal');
     if (modal) {
         modal.classList.remove('hidden');
-        modal.dataset.source = source; // Store which form triggered this
+        modal.dataset.source = source;
     }
 }
 
-function closeSchoolRequestModal() {
+function closeSchoolRequestModal(event) {
+    // Check if the proper manager function exists
+    if (typeof window.closeSchoolRequestModal !== 'undefined' && window.closeSchoolRequestModal !== closeSchoolRequestModal) {
+        window.closeSchoolRequestModal(event);
+        return;
+    }
+
+    // Fallback implementation
     const modal = document.getElementById('school-request-modal');
     if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('visibility', 'hidden', 'important');
+        modal.style.setProperty('opacity', '0', 'important');
         modal.classList.add('hidden');
-        document.getElementById('school-request-form').reset();
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        const form = document.getElementById('school-request-form');
+        if (form) form.reset();
     }
 }
 

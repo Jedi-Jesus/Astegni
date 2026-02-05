@@ -5,24 +5,56 @@
 -->
 
 <div id="uploadDocumentModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-content" style="max-width: 650px; position: relative; overflow: visible;">
             <div class="modal-header">
                 <h2 class="text-2xl font-bold">📤 Upload Document</h2>
                 <button onclick="closeUploadDocumentModal()" class="close-modal">&times;</button>
             </div>
+            <!-- Status Panel (Slides from right inside modal) -->
+            <div id="doc-upload-status-panel" class="doc-status-panel-inline" style="display: none;">
+                <div class="doc-status-panel-content">
+                    <div class="doc-status-header">
+                        <span id="doc-status-icon" class="doc-status-icon">⏳</span>
+                        <div class="doc-status-text">
+                            <h3 id="doc-status-title" class="doc-status-title">Processing...</h3>
+                            <p id="doc-status-message" class="doc-status-message">Please wait...</p>
+                        </div>
+                    </div>
+                    <div id="doc-status-progress" class="doc-status-progress hidden">
+                        <div class="doc-status-progress-bar"></div>
+                    </div>
+                    <button onclick="closeDocStatusPanel()" class="doc-status-ok-btn hidden" id="doc-status-ok-btn">
+                        OK
+                    </button>
+                </div>
+            </div>
+
             <div class="modal-body">
+                <!-- Status Message Area -->
+                <div id="doc-upload-status" class="hidden mb-4 p-4 rounded-lg"></div>
+
                 <form id="uploadDocumentForm" enctype="multipart/form-data">
                     <div class="space-y-4">
                         <!-- Document Type -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Document Type *</label>
                             <select id="doc-type" name="document_type" required
-                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                onchange="handleCredentialTypeChange(this)">
                                 <option value="">Select document type...</option>
-                                <option value="academic">🎓 Academic Certificate</option>
-                                <option value="achievement">🏆 Achievement</option>
-                                <option value="experience">💼 Experience/Work History</option>
+                                <option value="achievement">🏆 Awards and Honors</option>
+                                <option value="academic">🎓 Academic Credentials</option>
+                                <option value="experience" id="doc-type-experience">💼 Experience</option>
                             </select>
+                        </div>
+
+                        <!-- Years of Experience (only shown for experience type) -->
+                        <div id="years-field" style="display: none;">
+                            <label class="block text-gray-700 font-semibold mb-2">Years of Experience *</label>
+                            <input type="number" id="doc-years" name="years" min="0" max="50"
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                placeholder="e.g., 5">
+                            <p class="text-xs text-gray-500 mt-1">Enter the number of years of experience</p>
                         </div>
 
                         <!-- Document Title -->
@@ -33,20 +65,20 @@
                                 placeholder="e.g., Master's Degree in Mathematics">
                         </div>
 
-                        <!-- Issued By -->
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Issued By *</label>
-                            <input type="text" id="doc-issued-by" name="issued_by" required
-                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                placeholder="e.g., Addis Ababa University, Ethiopian Ministry of Education">
-                        </div>
-
                         <!-- Description -->
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Description</label>
                             <textarea id="doc-description" name="description" rows="3"
                                 class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
                                 placeholder="Brief description of the document, achievement, or role..."></textarea>
+                        </div>
+                        
+                        <!-- Issued By -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Issued By *</label>
+                            <input type="text" id="doc-issued-by" name="issued_by" required
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                placeholder="e.g., Addis Ababa University, Ethiopian Ministry of Education">
                         </div>
 
                         <!-- Date Fields (2 columns) -->

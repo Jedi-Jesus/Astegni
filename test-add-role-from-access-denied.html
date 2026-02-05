@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Add Role Button from Access Denied Modal</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/common-modals/role-access-denied-modal.css">
+    <link rel="stylesheet" href="css/common-modals/add-role-modal.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .test-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        .log-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .log-entry {
+            margin-bottom: 0.25rem;
+        }
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff4444; }
+        .log-warning { color: #ffaa00; }
+        .log-info { color: #44aaff; }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1 class="text-3xl font-bold mb-4">🧪 Test: Add Role Button Fix</h1>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Purpose</h2>
+            <p class="text-gray-600">
+                This test verifies that the "Add Role" button in the role-access-denied-modal
+                properly opens the add-role-modal with correct z-index stacking.
+            </p>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Test Scenarios</h2>
+            <div class="space-y-3">
+                <button class="test-button w-full" onclick="testScenario1()">
+                    Scenario 1: Tutor trying to access (No student/parent role)
+                </button>
+                <button class="test-button w-full" onclick="testScenario2()">
+                    Scenario 2: Advertiser trying to access (No student/parent role)
+                </button>
+                <button class="test-button w-full" onclick="testScenario3()">
+                    Scenario 3: User with student role but not active (Switch role)
+                </button>
+                <button class="test-button w-full" onclick="testZIndex()">
+                    Test 4: Verify Z-Index Stacking
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Expected Behavior</h2>
+            <ul class="list-disc list-inside text-gray-600 space-y-1">
+                <li>Role access denied modal appears first</li>
+                <li>Clicking "Add Role" button closes the first modal</li>
+                <li>Add role modal opens on top (z-index: 100000)</li>
+                <li>No z-index conflicts - modal is fully visible</li>
+                <li>Proper animation and transition</li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-semibold mb-2">Console Output</h2>
+            <div id="log-output" class="log-output">
+                <div class="log-info">Waiting for test execution...</div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+            <button class="test-button ml-2" onclick="closeAllModals()">Close All Modals</button>
+        </div>
+    </div>
+
+    <!-- Load the actual modals -->
+    <div id="modal-container"></div>
+
+    <!-- Load scripts -->
+    <script src="modals/common-modals/common-modal-loader.js"></script>
+    <script src="js/root/profile-system.js"></script>
+
+    <script>
+        // Custom logger
+        const logger = {
+            logs: [],
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = { timestamp, message, type };
+                this.logs.push(logEntry);
+                this.render();
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            },
+            success(msg) { this.log(msg, 'success'); },
+            error(msg) { this.log(msg, 'error'); },
+            warning(msg) { this.log(msg, 'warning'); },
+            info(msg) { this.log(msg, 'info'); },
+            render() {
+                const output = document.getElementById('log-output');
+                output.innerHTML = this.logs.map(log =>
+                    `<div class="log-entry log-${log.type}">[${log.timestamp}] ${log.message}</div>`
+                ).join('');
+                output.scrollTop = output.scrollHeight;
+            },
+            clear() {
+                this.logs = [];
+                this.render();
+            }
+        };
+
+        // Test functions
+        function testScenario1() {
+            logger.info('🧪 Starting Scenario 1: Tutor without student/parent role');
+
+            // Simulate tutor user
+            const userData = {
+                id: 1,
+                name: 'Test Tutor',
+                email: 'tutor@example.com',
+                active_role: 'tutor',
+                roles: ['tutor']
+            };
+
+            logger.info('Setting up user data: ' + JSON.stringify(userData));
+            showRoleAccessDeniedModal('tutor', false);
+            logger.success('Role access denied modal should now be visible');
+            logger.info('Click "Add Role" button in the modal to test');
+        }
+
+        function testScenario2() {
+            logger.info('🧪 Starting Scenario 2: Advertiser without student/parent role');
+
+            const userData = {
+                id: 2,
+                name: 'Test Advertiser',
+                email: 'advertiser@example.com',
+                active_role: 'advertiser',
+                roles: ['advertiser']
+            };
+
+            logger.info('Setting up user data: ' + JSON.stringify(userData));
+            showRoleAccessDeniedModal('advertiser', false);
+            logger.success('Role access denied modal should now be visible');
+            logger.info('Click "Add Role" button in the modal to test');
+        }
+
+        function testScenario3() {
+            logger.info('🧪 Starting Scenario 3: User with student role but not active');
+
+            const userData = {
+                id: 3,
+                name: 'Multi-Role User',
+                email: 'multi@example.com',
+                active_role: 'tutor',
+                roles: ['tutor', 'student']
+            };
+
+            logger.info('Setting up user data: ' + JSON.stringify(userData));
+            showRoleAccessDeniedModal('tutor', true);
+            logger.success('Role access denied modal should now be visible');
+            logger.info('Should show "Switch to Student" button instead of "Add Role"');
+        }
+
+        function testZIndex() {
+            logger.info('🧪 Testing Z-Index Stacking');
+
+            setTimeout(() => {
+                const accessDeniedModal = document.getElementById('roleAccessDeniedModal');
+                const addRoleModal = document.getElementById('add-role-modal');
+
+                if (accessDeniedModal) {
+                    const zIndex1 = window.getComputedStyle(accessDeniedModal).zIndex;
+                    logger.info(`Role Access Denied Modal z-index: ${zIndex1}`);
+                }
+
+                if (addRoleModal) {
+                    const zIndex2 = window.getComputedStyle(addRoleModal).zIndex;
+                    logger.info(`Add Role Modal z-index: ${zIndex2}`);
+
+                    if (parseInt(zIndex2) > parseInt(zIndex1)) {
+                        logger.success('✅ Z-index stacking is correct! Add Role modal is on top');
+                    } else {
+                        logger.error('❌ Z-index issue! Add Role modal might be behind');
+                    }
+                } else {
+                    logger.warning('Add Role modal not yet loaded');
+                }
+            }, 1000);
+        }
+
+        async function showRoleAccessDeniedModal(currentRole, hasAllowedRole) {
+            // Load the modal if not already loaded
+            let modal = document.getElementById('roleAccessDeniedModal');
+
+            if (!modal) {
+                logger.info('Loading role-access-denied-modal.html...');
+                try {
+                    const response = await fetch('modals/common-modals/role-access-denied-modal.html');
+                    const html = await response.text();
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    modal = document.getElementById('roleAccessDeniedModal');
+                    logger.success('Modal loaded successfully');
+                } catch (error) {
+                    logger.error('Failed to load modal: ' + error.message);
+                    return;
+                }
+            }
+
+            // Populate modal content
+            const titleEl = document.getElementById('roleAccessDeniedTitle');
+            const messageEl = document.getElementById('roleAccessDeniedMessage');
+            const currentRoleText = document.getElementById('currentRoleText');
+            const suggestionEl = document.getElementById('roleAccessDeniedSuggestion');
+            const actionsEl = document.getElementById('roleAccessDeniedActions');
+
+            if (titleEl) titleEl.textContent = 'Access Restricted';
+            if (messageEl) messageEl.textContent = 'The tutor marketplace is only accessible to students, parents, and users.';
+            if (currentRoleText) currentRoleText.textContent = currentRole;
+
+            if (hasAllowedRole) {
+                // Show switch role button
+                if (suggestionEl) {
+                    suggestionEl.innerHTML = 'Please switch to your student role to access this page.';
+                }
+                if (actionsEl) {
+                    actionsEl.innerHTML = `
+                        <button onclick="logger.info('Go Back clicked'); closeRoleAccessDeniedModal();"
+                            class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
+                            Go Back
+                        </button>
+                        <button onclick="logger.info('Switch to Student clicked')"
+                            class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all">
+                            Switch to Student
+                        </button>
+                    `;
+                }
+            } else {
+                // Show add role button
+                if (suggestionEl) {
+                    suggestionEl.innerHTML = 'If you are a student, parent, or user, please add that role to your account.';
+                }
+                if (actionsEl) {
+                    actionsEl.innerHTML = `
+                        <button onclick="logger.info('Go Back clicked'); closeRoleAccessDeniedModal();"
+                            class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
+                            Go Back
+                        </button>
+                        <button onclick="openAddRoleModalFromGuard()"
+                            class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all">
+                            Add Role
+                        </button>
+                    `;
+                }
+            }
+
+            // Show modal
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            logger.success('Modal displayed');
+        }
+
+        function closeRoleAccessDeniedModal() {
+            const modal = document.getElementById('roleAccessDeniedModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                logger.info('Role access denied modal closed');
+            }
+        }
+
+        async function openAddRoleModalFromGuard() {
+            logger.info('🎯 openAddRoleModalFromGuard() called');
+
+            // Close access denied modal
+            closeRoleAccessDeniedModal();
+
+            // Wait for DOM to settle
+            logger.info('Waiting 350ms for DOM to settle...');
+            await new Promise(resolve => setTimeout(resolve, 350));
+
+            // Try to open add-role modal
+            if (typeof window.openAddRoleModal === 'function') {
+                logger.info('Attempting window.openAddRoleModal()');
+                window.openAddRoleModal();
+            } else {
+                logger.warning('window.openAddRoleModal not found, using direct method');
+                const modal = document.getElementById('add-role-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('show', 'active');
+                    modal.style.display = 'flex';
+                    modal.style.zIndex = '100000';
+                    document.body.style.overflow = 'hidden';
+                    logger.success('✅ Add role modal opened directly');
+
+                    // Verify z-index
+                    const computedZIndex = window.getComputedStyle(modal).zIndex;
+                    logger.info(`Add role modal z-index: ${computedZIndex}`);
+                } else {
+                    logger.error('❌ Add-role modal not found in DOM');
+                }
+            }
+        }
+
+        function closeAllModals() {
+            logger.info('Closing all modals...');
+
+            const accessDenied = document.getElementById('roleAccessDeniedModal');
+            if (accessDenied) {
+                accessDenied.classList.add('hidden');
+                accessDenied.style.display = 'none';
+            }
+
+            const addRole = document.getElementById('add-role-modal');
+            if (addRole) {
+                addRole.classList.remove('show', 'active');
+                addRole.classList.add('hidden');
+                addRole.style.display = 'none';
+            }
+
+            document.body.style.overflow = 'auto';
+            logger.success('All modals closed');
+        }
+
+        function clearLogs() {
+            logger.clear();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logger.success('Test page loaded successfully');
+            logger.info('Click a test scenario button to begin');
+        });
+    </script>
+</body>
+</html>

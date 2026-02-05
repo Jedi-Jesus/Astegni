@@ -182,13 +182,22 @@
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function () {
 
-        // Function to open ad analytics modal
+        // Function to open ad analytics modal - NOW OPENS COMING SOON MODAL
         window.openAdAnalyticsModal = function (event) {
             if (event) {
                 event.stopPropagation();
                 event.preventDefault();
             }
 
+            // Open coming soon modal instead of ad analytics
+            if (typeof openComingSoonModal === 'function') {
+                openComingSoonModal('Advertising');
+            } else {
+                console.error('openComingSoonModal function not found');
+            }
+            return; // Stop here - don't open ad analytics modal
+
+            // OLD CODE (disabled):
             const modal = document.getElementById('adAnalyticsModal');
             if (!modal) {
                 console.error('Ad Analytics Modal not found');
@@ -233,15 +242,23 @@
     });
 })();
 
-// Setup ad button event listeners
+// Setup ad button event listeners - NOW OPENS COMING SOON MODAL
 document.addEventListener('DOMContentLoaded', function () {
     // For the ad container (clicking anywhere on it)
     document.querySelectorAll('.ad-container').forEach(container => {
         container.style.cursor = 'pointer';
         container.addEventListener('click', function (e) {
-            // Don't trigger if clicking the button inside
-            if (!e.target.classList.contains('ad-cta') && !e.target.classList.contains('ad-primary-btn')) {
-                openAdModal();
+            // Don't trigger if clicking the button inside or ad-slide (which has its own onclick)
+            if (!e.target.classList.contains('ad-cta') &&
+                !e.target.classList.contains('ad-primary-btn') &&
+                !e.target.classList.contains('ad-slide') &&
+                !e.target.closest('.ad-slide')) {
+                // Open coming soon modal instead of ad analytics
+                if (typeof openComingSoonModal === 'function') {
+                    openComingSoonModal('Advertising');
+                } else {
+                    console.error('openComingSoonModal function not found');
+                }
             }
         });
     });
@@ -250,15 +267,23 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.ad-cta, .ad-primary-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
-            openAdModal();
+            // Open coming soon modal instead of ad analytics
+            if (typeof openComingSoonModal === 'function') {
+                openComingSoonModal('Advertising');
+            } else {
+                console.error('openComingSoonModal function not found');
+            }
         });
     });
 });
 
-// Wrapper function for opening ad modal
+// Wrapper function for opening ad modal - NOW OPENS COMING SOON MODAL
 function openAdModal() {
-    if (typeof window.openAdAnalyticsModal === 'function') {
-        window.openAdAnalyticsModal();
+    // Open coming soon modal instead of ad analytics
+    if (typeof openComingSoonModal === 'function') {
+        openComingSoonModal('Advertising');
+    } else {
+        console.error('openComingSoonModal function not found');
     }
 }
 // Initialize analytics when modal opens

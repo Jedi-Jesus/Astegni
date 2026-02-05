@@ -1,0 +1,290 @@
+<!-- Referral Dashboard Modal -->
+<div id="referralDashboardModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container" style="max-width: 900px;">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-users" style="margin-right: 8px;"></i>
+                My Referrals Dashboard
+            </h2>
+            <button class="modal-close-btn" onclick="closeReferralDashboard()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" style="padding: 24px;">
+            <!-- Stats Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <!-- Total Clicks Card -->
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary);">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-value" id="refDashTotalClicks">0</div>
+                        <div class="stats-label">Total Clicks</div>
+                    </div>
+                </div>
+
+                <!-- Total Registrations Card -->
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: rgba(var(--success-rgb), 0.1); color: var(--success);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-value" id="refDashTotalRegistrations">0</div>
+                        <div class="stats-label">Registrations</div>
+                    </div>
+                </div>
+
+                <!-- Active Referrals Card -->
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: rgba(var(--success-rgb), 0.1); color: var(--success);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-value" id="refDashActiveReferrals">0</div>
+                        <div class="stats-label">Active</div>
+                    </div>
+                </div>
+
+                <!-- Conversion Rate Card -->
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stats-content">
+                        <div class="stats-value" id="refDashConversionRate">0%</div>
+                        <div class="stats-label">Conversion</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div style="padding: 16px; background: var(--surface-secondary); border-radius: 12px; margin-bottom: 24px;">
+                <div style="font-weight: 600; margin-bottom: 12px; color: var(--text);">
+                    <i class="fas fa-share-alt"></i> Your Referral Link
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input
+                        type="text"
+                        id="refDashShareLink"
+                        readonly
+                        style="flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 14px; color: var(--text);"
+                        placeholder="Loading..."
+                    >
+                    <button onclick="copyReferralLinkDash()" class="btn-primary" style="padding: 10px 20px; min-width: auto;">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                    <button onclick="openShareModalFromDash()" class="btn-secondary" style="padding: 10px 20px; min-width: auto;">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Referrals Table Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin: 0;">
+                    Referred Users
+                </h3>
+                <div style="font-size: 14px; color: var(--text-secondary);">
+                    <span id="refDashTotalCount">0</span> total referrals
+                </div>
+            </div>
+
+            <!-- Referrals Table -->
+            <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 12px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--surface-secondary);">
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border);">User</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border);">Email</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border);">Registered</th>
+                            <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border);">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="referralsTableBody">
+                        <tr>
+                            <td colspan="4" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 8px;"></i>
+                                <div>Loading referrals...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyReferralsState" style="display: none; text-align: center; padding: 40px;">
+                <i class="fas fa-users" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+                <h3 style="font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px;">No referrals yet</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Share your referral link to start tracking registrations</p>
+                <button onclick="openShareModalFromDash()" class="btn-primary">
+                    <i class="fas fa-share-alt"></i> Share Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #referralDashboardModal .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    #referralDashboardModal .modal-container {
+        background: var(--surface);
+        border-radius: 16px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    #referralDashboardModal .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    #referralDashboardModal .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    #referralDashboardModal .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: color 0.2s ease;
+    }
+
+    #referralDashboardModal .modal-close-btn:hover {
+        color: var(--text);
+    }
+
+    .stats-card {
+        background: var(--surface-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .stats-content {
+        flex: 1;
+    }
+
+    .stats-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .stats-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    #referralDashboardModal tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+    }
+
+    #referralDashboardModal tbody tr:hover {
+        background: var(--surface-secondary);
+    }
+
+    #referralDashboardModal tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    #referralDashboardModal tbody td {
+        padding: 16px 12px;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(var(--success-rgb), 0.1);
+        color: var(--success);
+    }
+
+    .status-inactive {
+        background: rgba(var(--text-secondary-rgb), 0.1);
+        color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        #referralDashboardModal .modal-container {
+            max-width: 100%;
+            margin: 0;
+            border-radius: 16px 16px 0 0;
+            max-height: 95vh;
+        }
+
+        #referralDashboardModal table {
+            font-size: 12px;
+        }
+
+        #referralDashboardModal tbody td {
+            padding: 12px 8px;
+        }
+
+        .stats-card {
+            padding: 12px;
+        }
+
+        .stats-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+
+        .stats-value {
+            font-size: 20px;
+        }
+    }
+</style>

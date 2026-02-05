@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Profile Button - Debug Console</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+        }
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #3182ce;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .code-block .comment {
+            color: #68d391;
+        }
+        .instructions {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #c05621;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐛 Share Profile Button - Debug Console</h1>
+        <p>Comprehensive debugging tool for the Share Profile functionality</p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Quick Test</h2>
+        <p>Click this button to test the Share Profile functionality with debug logging:</p>
+        <div class="button-container">
+            <button onclick="shareProfile()" class="btn-secondary">
+                <span style="margin-right: 8px;">🔗</span>
+                Share Profile (Debug Mode)
+            </button>
+            <button onclick="window.open('chrome://inspect/#console', '_blank')" class="btn-primary">
+                📊 Open DevTools Console
+            </button>
+            <button onclick="clearConsole()" class="btn-danger">
+                🗑️ Clear Console
+            </button>
+        </div>
+        <div id="statusMessage"></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 What This Debug Console Monitors</h2>
+        <ul class="feature-list">
+            <li>Authentication state (localStorage tokens & user data)</li>
+            <li>Active role detection</li>
+            <li>Modal loading & visibility</li>
+            <li>DOM element presence & attributes</li>
+            <li>Modal content population (referral code, share link, stats)</li>
+            <li>Share button availability (WhatsApp, Facebook, Twitter, etc.)</li>
+            <li>Network API calls (referral code & stats endpoints)</li>
+            <li>Copy to clipboard actions</li>
+            <li>Social media share actions</li>
+            <li>Modal close events</li>
+            <li>Error handling & stack traces</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🔧 Setup Instructions</h2>
+        <div class="instructions">
+            <h3>For Real Profile Pages:</h3>
+            <ol>
+                <li>Open any profile page (tutor-profile.html, student-profile.html, etc.)</li>
+                <li>Open Browser DevTools (F12 or Right-click → Inspect)</li>
+                <li>Go to Console tab</li>
+                <li>Copy and paste the debug script (shown below)</li>
+                <li>Press Enter to inject</li>
+                <li>Click the "Share Profile" button on the page</li>
+                <li>Watch the detailed debug output in console</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📜 Debug Script to Inject</h2>
+        <p>Copy this entire script and paste it into the browser console:</p>
+        <div class="code-block">
+<span class="comment">// Load debug script from file</span>
+var script = document.createElement('script');
+script.src = '../debug-share-profile-button.js';
+document.head.appendChild(script);
+
+<span class="comment">// OR paste the entire debug-share-profile-button.js content here</span>
+        </div>
+        <button onclick="copyDebugScript()" class="btn-primary" style="margin-top: 10px;">
+            📋 Copy Debug Script Loader
+        </button>
+    </div>
+
+    <div class="section">
+        <h2>🔍 What to Look For in Console</h2>
+        <div class="status info">
+            <strong>Console Output Structure:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>STEP 1:</strong> Authentication checks (user, token, active_role)</li>
+                <li><strong>STEP 2:</strong> Original function execution</li>
+                <li><strong>STEP 3:</strong> Modal state verification (display, z-index, visibility)</li>
+                <li><strong>STEP 4:</strong> Network activity monitoring</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>⚠️ Common Issues to Debug</h2>
+        <ul class="feature-list">
+            <li><strong>Modal not visible:</strong> Check z-index, display, opacity values</li>
+            <li><strong>Empty referral code:</strong> Check network calls to /api/referrals/my-code</li>
+            <li><strong>Stats showing 0:</strong> Check network calls to /api/referrals/stats</li>
+            <li><strong>Authentication errors:</strong> Verify token and user in localStorage</li>
+            <li><strong>Modal not loading:</strong> Check fetch to share-profile-modal.html</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📊 Current Environment Status</h2>
+        <div id="envStatus"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/common-modals/share-profile-manager-v2.js"></script>
+    <script src="debug-share-profile-button.js"></script>
+
+    <script>
+        // Helper functions
+        function clearConsole() {
+            console.clear();
+            showStatus('Console cleared', 'info');
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+            setTimeout(() => {
+                statusEl.className = '';
+                statusEl.textContent = '';
+            }, 3000);
+        }
+
+        function copyDebugScript() {
+            const script = `var script = document.createElement('script');\nscript.src = '../debug-share-profile-button.js';\ndocument.head.appendChild(script);`;
+            navigator.clipboard.writeText(script).then(() => {
+                showStatus('Debug script loader copied to clipboard! Paste in console.', 'success');
+            }).catch(() => {
+                showStatus('Failed to copy. Please copy manually.', 'error');
+            });
+        }
+
+        // Check environment status
+        function checkEnvironmentStatus() {
+            const statusEl = document.getElementById('envStatus');
+            let html = '<ul class="feature-list">';
+
+            // Check if shareProfile exists
+            if (typeof shareProfile === 'function') {
+                html += '<li style="color: #38a169;">✓ shareProfile() function loaded</li>';
+            } else {
+                html += '<li style="color: #e53e3e;">✗ shareProfile() function not found</li>';
+            }
+
+            // Check if debug wrapper is active
+            if (window.shareProfile && window.shareProfile.toString().includes('[DEBUG]')) {
+                html += '<li style="color: #38a169;">✓ Debug wrapper active</li>';
+            } else {
+                html += '<li style="color: #ed8936;">⚠ Debug wrapper not active (script may not be loaded yet)</li>';
+            }
+
+            // Check localStorage
+            const token = localStorage.getItem('token');
+            if (token) {
+                html += '<li style="color: #38a169;">✓ Auth token present</li>';
+            } else {
+                html += '<li style="color: #ed8936;">⚠ No auth token (login required for full test)</li>';
+            }
+
+            const user = localStorage.getItem('currentUser') || localStorage.getItem('user');
+            if (user) {
+                html += '<li style="color: #38a169;">✓ User data present</li>';
+            } else {
+                html += '<li style="color: #ed8936;">⚠ No user data (login required)</li>';
+            }
+
+            const activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole');
+            if (activeRole) {
+                html += '<li style="color: #38a169;">✓ Active role: ' + activeRole + '</li>';
+            } else {
+                html += '<li style="color: #ed8936;">⚠ No active role set</li>';
+            }
+
+            html += '</ul>';
+            statusEl.innerHTML = html;
+        }
+
+        // Run environment check on load
+        checkEnvironmentStatus();
+
+        // Recheck every 2 seconds to catch dynamic changes
+        setInterval(checkEnvironmentStatus, 2000);
+    </script>
+</body>
+</html>

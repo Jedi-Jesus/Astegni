@@ -223,19 +223,19 @@ const EarningsInvestmentsManager = {
         // Total earnings
         const totalEarningsEl = document.getElementById('total-earnings');
         if (totalEarningsEl) {
-            totalEarningsEl.textContent = `${totalEarnings.toFixed(2)} ETB`;
+            totalEarningsEl.textContent = `${totalEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
         }
 
         // Combined affiliate earnings
         const affiliateEarningsEl = document.getElementById('affiliate-earnings');
         if (affiliateEarningsEl) {
-            affiliateEarningsEl.textContent = `${affiliateEarnings.toFixed(2)} ETB`;
+            affiliateEarningsEl.textContent = `${affiliateEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
         }
 
         // Tutoring earnings
         const tutoringEarningsEl = document.getElementById('tutoring-earnings');
         if (tutoringEarningsEl) {
-            tutoringEarningsEl.textContent = `${tutoringEarnings.toFixed(2)} ETB`;
+            tutoringEarningsEl.textContent = `${tutoringEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
         }
 
         // Update widget in sidebar
@@ -317,8 +317,8 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-blue-600">${item.amount?.toFixed(2) || '0.00'} ETB</p>
-                    <p class="text-xs text-gray-600">CPM: ${item.cpm?.toFixed(2) || '0.00'} ETB</p>
+                    <p class="text-xl font-bold text-blue-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xs text-gray-600">CPM: ${item.cpm?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }">${item.status || 'pending'}</span>
@@ -385,7 +385,7 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-purple-600">${item.amount?.toFixed(2) || '0.00'} ETB</p>
+                    <p class="text-xl font-bold text-purple-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                     <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -448,8 +448,8 @@ const EarningsInvestmentsManager = {
                     <p class="text-xs text-gray-500">${new Date(item.earned_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-green-600">${item.amount?.toFixed(2) || '0.00'} ETB</p>
-                    <p class="text-xs text-gray-600">${item.commission_rate || 0}% of ${item.transaction_amount?.toFixed(2) || '0.00'} ETB</p>
+                    <p class="text-xl font-bold text-green-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xs text-gray-600">${item.commission_rate || 0}% of ${item.transaction_amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }">${item.status || 'pending'}</span>
@@ -505,7 +505,7 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-orange-600">${item.amount.toFixed(2)} ETB</p>
+                    <p class="text-xl font-bold text-orange-600">${item.amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                     <p class="text-xs text-gray-600">${item.payment_method || 'Payment'}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -591,7 +591,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-blue-600">${(item.amount || 0).toFixed(2)} ETB</p>
+                            <p class="text-xl font-bold text-blue-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                             }">${item.status || 'pending'}</span>
@@ -610,7 +610,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-purple-600">${(item.amount || 0).toFixed(2)} ETB</p>
+                            <p class="text-xl font-bold text-purple-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                             <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -630,7 +630,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-green-600">${(item.amount || 0).toFixed(2)} ETB</p>
+                            <p class="text-xl font-bold text-green-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                             <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -653,7 +653,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-orange-600">${(item.amount || 0).toFixed(2)} ETB</p>
+                            <p class="text-xl font-bold text-orange-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                             <p class="text-xs text-gray-600">${item.payment_method || 'Payment'}</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -739,7 +739,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ETB' } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
                     }
                 }
             });
@@ -809,7 +809,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ETB' } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
                     }
                 }
             });
@@ -879,7 +879,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ETB' } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
                     }
                 }
             });
@@ -969,7 +969,7 @@ const EarningsInvestmentsManager = {
                             callbacks: {
                                 label: function(context) {
                                     if (context.parsed.y !== null) {
-                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ETB';
+                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
                                     }
                                     return '';
                                 }
@@ -981,7 +981,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ETB';
+                                    return value.toFixed(0) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
                                 },
                                 font: {
                                     size: 11
@@ -1071,7 +1071,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ETB';
+                                    return value.toFixed(0) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
                                 }
                             }
                         }
@@ -1106,12 +1106,23 @@ const EarningsInvestmentsManager = {
      * Update investments summary UI
      */
     updateInvestmentsSummaryUI(data) {
-        document.getElementById('total-invested').textContent = `${data.total_invested.toFixed(2)} ETB`;
-        document.getElementById('total-impressions').textContent = data.total_impressions || 0;
+        const totalInvestedEl = document.getElementById('total-invested');
+        const totalImpressionsEl = document.getElementById('total-impressions');
+        const avgCpmEl = document.getElementById('average-cpm');
 
-        // Calculate average CPM
-        const avgCpm = data.total_impressions > 0 ? (data.total_invested / data.total_impressions) * 1000 : 0;
-        document.getElementById('average-cpm').textContent = `${avgCpm.toFixed(2)} ETB`;
+        if (totalInvestedEl) {
+            totalInvestedEl.textContent = `${data.total_invested.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+        }
+
+        if (totalImpressionsEl) {
+            totalImpressionsEl.textContent = data.total_impressions || 0;
+        }
+
+        if (avgCpmEl) {
+            // Calculate average CPM
+            const avgCpm = data.total_impressions > 0 ? (data.total_invested / data.total_impressions) * 1000 : 0;
+            avgCpmEl.textContent = `${avgCpm.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+        }
     },
 
     /**
@@ -1149,14 +1160,314 @@ const EarningsInvestmentsManager = {
                     <div class="grid grid-cols-2 gap-6 mt-4">
                         <div>
                             <p class="text-xs text-gray-600 mb-1">Invested</p>
-                            <p class="text-2xl font-bold text-blue-600">${inv.amount.toFixed(2)} ETB</p>
+                            <p class="text-2xl font-bold text-blue-600">${inv.amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
                             <p class="text-xs text-gray-500 mt-1">${new Date(inv.investment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600 mb-1">Total Impressions</p>
                             <p class="text-2xl font-bold text-gray-800">${impressions.toLocaleString()}</p>
-                            <p class="text-xs text-gray-500 mt-1">CPM: <span class="font-semibold text-green-600">${cpm.toFixed(2)} ETB</span></p>
+                            <p class="text-xs text-gray-500 mt-1">CPM: <span class="font-semibold text-green-600">${cpm.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></p>
                         </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Load student subscriptions
+     */
+    async loadStudentSubscriptions() {
+        const container = document.getElementById('subscriptions-list');
+        const loading = document.getElementById('subscriptions-loading');
+        const empty = document.getElementById('subscriptions-empty');
+
+        if (!container) return;
+
+        try {
+            loading?.classList.remove('hidden');
+            container.classList.add('hidden');
+            empty?.classList.add('hidden');
+
+            // Determine endpoint based on current user role
+            const currentUserRole = localStorage.getItem('userRole');
+            const isTutor = currentUserRole === 'tutor';
+            const endpoint = isTutor
+                ? `${this.API_BASE_URL}/api/tutor/subscriptions`
+                : `${this.API_BASE_URL}/api/student/subscriptions`;
+
+            const response = await fetch(endpoint, {
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const subscriptions = Array.isArray(data) ? data : (data.subscriptions || []);
+
+            loading?.classList.add('hidden');
+
+            if (subscriptions.length === 0) {
+                container.classList.add('hidden');
+                empty?.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            this.renderSubscriptionsList(subscriptions);
+        } catch (error) {
+            console.error('Error loading subscriptions:', error);
+            loading?.classList.add('hidden');
+            empty?.classList.remove('hidden');
+        }
+    },
+
+    /**
+     * Render subscriptions list
+     */
+    renderSubscriptionsList(subscriptions) {
+        const container = document.getElementById('subscriptions-list');
+        if (!container) return;
+
+        const totalSubs = document.getElementById('total-subscriptions');
+        if (totalSubs) totalSubs.textContent = subscriptions.length;
+
+        // Get current role to determine which buttons to show
+        const currentUserRole = localStorage.getItem('userRole');
+        const isTutor = currentUserRole === 'tutor';
+
+        container.innerHTML = subscriptions.map((sub, index) => {
+            const startDate = new Date(sub.start_date || sub.created_at);
+            const endDate = sub.end_date ? new Date(sub.end_date) : null;
+            const isActive = sub.status === 'active';
+            const daysLeft = endDate ? Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+
+            // Calculate CPI (Cost Per Impression) for tutors
+            const totalImpressions = sub.total_impressions || 0;
+            const cpi = totalImpressions > 0 ? (sub.amount / totalImpressions) : 0;
+
+            return `
+                <div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 ${isActive ? 'border-green-500' : 'border-gray-400'}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-4 flex-1">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                                📋
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-lg text-gray-800 mb-1">${sub.plan_name || 'Subscription Plan'}</h4>
+                                <p class="text-sm text-gray-600">${sub.description || 'Premium access'}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="bg-${isActive ? 'green' : 'gray'}-100 text-${isActive ? 'green' : 'gray'}-800 text-xs px-3 py-1 rounded-full font-semibold">
+                                        ${isActive ? 'Active' : 'Expired'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="text-xs text-gray-500 mt-1">${startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Start Date</div>
+                            <div class="font-semibold text-gray-800">${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                        </div>
+                        ${endDate ? `
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">${isActive ? 'Days Remaining' : 'End Date'}</div>
+                                <div class="font-semibold ${isActive ? 'text-green-600' : 'text-gray-800'}">${isActive ? `${daysLeft} days` : endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                            </div>
+                        ` : ''}
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Status</div>
+                            <div class="font-semibold text-${isActive ? 'green' : 'gray'}-600">${sub.status || 'N/A'}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+                            <div class="font-semibold text-gray-800">${sub.payment_method || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        ${isTutor ? `
+                            <!-- Tutor: Show Performance Metrics and Invoice -->
+                            <button onclick="openPerformanceMetricsModal(${index})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Performance Metrics
+                            </button>
+                            <button onclick="downloadSubscriptionInvoice(${index})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Invoice
+                            </button>
+                        ` : `
+                            <!-- Student: Show View Details and Invoice -->
+                            <button onclick="viewSubscriptionDetails(${index})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                View Details
+                            </button>
+                            <button onclick="downloadSubscriptionInvoice(${index})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Invoice
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Store subscriptions data globally for modal access
+        window.currentSubscriptions = subscriptions;
+    },
+
+    /**
+     * Load student tutoring packages
+     */
+    async loadStudentTutoringPackages() {
+        const container = document.getElementById('investments-list');
+        const loading = document.getElementById('investments-loading');
+        const empty = document.getElementById('investments-empty');
+
+        if (!container) return;
+
+        try {
+            loading?.classList.remove('hidden');
+            container.classList.add('hidden');
+            empty?.classList.add('hidden');
+
+            const response = await fetch(`${this.API_BASE_URL}/api/student/tutoring-packages`, {
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const packages = Array.isArray(data) ? data : (data.packages || []);
+
+            loading?.classList.add('hidden');
+
+            if (packages.length === 0) {
+                container.classList.add('hidden');
+                empty?.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            this.renderTutoringPackagesList(packages);
+        } catch (error) {
+            console.error('Error loading tutoring packages:', error);
+            loading?.classList.add('hidden');
+            empty?.classList.remove('hidden');
+        }
+    },
+
+    /**
+     * Render tutoring packages list
+     */
+    renderTutoringPackagesList(packages) {
+        const container = document.getElementById('investments-list');
+        if (!container) return;
+
+        const totalPackages = document.getElementById('total-tutoring-packages');
+        if (totalPackages) totalPackages.textContent = packages.length;
+
+        container.innerHTML = packages.map(pkg => {
+            const purchaseDate = new Date(pkg.purchase_date || pkg.created_at);
+            const isInProgress = pkg.status === 'in_progress' || pkg.status === 'active';
+            const isCompleted = pkg.status === 'completed';
+            const sessionsCompleted = pkg.sessions_completed || 0;
+            const totalSessions = pkg.total_sessions || 10;
+            const progressPercent = (sessionsCompleted / totalSessions) * 100;
+
+            return `
+                <div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 ${isCompleted ? 'border-green-500' : isInProgress ? 'border-purple-500' : 'border-blue-500'}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-4 flex-1">
+                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                                🎯
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-lg text-gray-800 mb-1">${pkg.package_name || 'Tutoring Session Package'}</h4>
+                                <p class="text-sm text-gray-600">${totalSessions} Sessions${pkg.tutor_name ? ` with ${pkg.tutor_name}` : ''}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="bg-${isCompleted ? 'green' : isInProgress ? 'yellow' : 'blue'}-100 text-${isCompleted ? 'green' : isInProgress ? 'yellow' : 'blue'}-800 text-xs px-3 py-1 rounded-full font-semibold">
+                                        ${isCompleted ? 'Completed' : isInProgress ? 'In Progress' : 'Scheduled'}
+                                    </span>
+                                    <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold">
+                                        Tutoring
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-purple-600">${(pkg.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="text-xs text-gray-500 mt-1">${purchaseDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Amount</div>
+                            <div class="font-semibold text-gray-800">${(pkg.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Date</div>
+                            <div class="font-semibold text-gray-800">${purchaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Status</div>
+                            <div class="font-semibold text-${isCompleted ? 'green' : isInProgress ? 'yellow' : 'blue'}-600">${pkg.status || 'Active'}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+                            <div class="font-semibold text-gray-800">${pkg.payment_method || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    ${isInProgress ? `
+                        <div class="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="font-semibold text-blue-800">Progress:</span>
+                                <span class="text-blue-600">${sessionsCompleted} of ${totalSessions} sessions completed</span>
+                            </div>
+                            <div class="w-full bg-blue-200 rounded-full h-2 mt-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${progressPercent}%"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="flex gap-2">
+                        ${isInProgress ? `
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                                View Schedule
+                            </button>
+                        ` : `
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                View Details
+                            </button>
+                        `}
+                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+                            Download Invoice
+                        </button>
+                        ${isInProgress && pkg.tutor_id ? `
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+                                Contact Tutor
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -1188,6 +1499,15 @@ function switchEarningsTab(tab) {
         earningsTab.classList.add('text-gray-500');
         investmentsContent.classList.remove('hidden');
         earningsContent.classList.add('hidden');
+
+        // Show subscriptions section when investments tab is clicked
+        const subscriptionsSection = document.getElementById('subscriptions-section');
+        if (subscriptionsSection) {
+            subscriptionsSection.classList.remove('hidden');
+        }
+
+        // Load subscriptions when switching to investments tab
+        EarningsInvestmentsManager.loadStudentSubscriptions();
     }
 }
 
@@ -1303,6 +1623,452 @@ function toggleEarningsSection(section) {
     }
 }
 
+/**
+ * Show subscription history (filter investments list)
+ */
+function showSubscriptionHistory() {
+    const icon = document.getElementById('investments-list-icon');
+    const title = document.getElementById('investments-list-title');
+
+    if (icon) icon.textContent = '📅';
+    if (title) title.textContent = 'Subscription History';
+
+    EarningsInvestmentsManager.loadStudentSubscriptions();
+}
+
+/**
+ * Show tutoring packages (filter investments list)
+ * For students/parents only
+ */
+function showTutoringPackages() {
+    const icon = document.getElementById('investments-list-icon');
+    const title = document.getElementById('investments-list-title');
+
+    if (icon) icon.textContent = '👨‍🏫';
+    if (title) title.textContent = 'Tutoring Packages';
+
+    EarningsInvestmentsManager.loadStudentTutoringPackages();
+}
+
+/**
+ * Show course materials (filter investments list)
+ * For tutors only
+ */
+function showCourseMaterials() {
+    const icon = document.getElementById('investments-list-icon');
+    const title = document.getElementById('investments-list-title');
+    const container = document.getElementById('investments-list');
+    const loading = document.getElementById('investments-loading');
+    const empty = document.getElementById('investments-empty');
+
+    if (icon) icon.textContent = '📚';
+    if (title) title.textContent = 'Course Materials';
+
+    // For now, show coming soon message
+    // Later, this can be connected to an API endpoint
+    if (loading) loading.classList.add('hidden');
+    if (empty) empty.classList.add('hidden');
+
+    if (container) {
+        container.classList.remove('hidden');
+        container.innerHTML = `
+            <div class="text-center py-16">
+                <div class="text-6xl mb-4">📚</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Course Materials</h3>
+                <p class="text-gray-600 mb-4">Purchased teaching materials and resources will appear here.</p>
+                <p class="text-sm text-gray-500">This feature is coming soon!</p>
+            </div>
+        `;
+    }
+
+    // Update total count
+    const totalMaterials = document.getElementById('total-course-materials');
+    if (totalMaterials) totalMaterials.textContent = '0';
+}
+
+/**
+ * Show purchase history (Coming Soon)
+ */
+function showPurchaseHistory() {
+    const icon = document.getElementById('investments-list-icon');
+    const title = document.getElementById('investments-list-title');
+    const container = document.getElementById('investments-list');
+    const loading = document.getElementById('investments-loading');
+    const empty = document.getElementById('investments-empty');
+
+    if (icon) icon.textContent = '🛒';
+    if (title) title.textContent = 'Purchase History';
+
+    if (loading) loading.classList.add('hidden');
+    if (empty) empty.classList.add('hidden');
+
+    if (container) {
+        container.classList.remove('hidden');
+        container.innerHTML = `
+            <div class="text-center py-16">
+                <div class="text-6xl mb-4">🚧</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Coming Soon</h3>
+                <p class="text-gray-600 mb-4">Purchase history for materials and resources will be available soon.</p>
+                <p class="text-sm text-gray-500">Stay tuned for updates!</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Reset investment filter (show all)
+ */
+function resetInvestmentFilter() {
+    const icon = document.getElementById('investments-list-icon');
+    const title = document.getElementById('investments-list-title');
+    const container = document.getElementById('investments-list');
+    const loading = document.getElementById('investments-loading');
+    const empty = document.getElementById('investments-empty');
+
+    if (icon) icon.textContent = '💰';
+    if (title) title.textContent = 'All Investments';
+
+    // Show all investments - for students this would combine subscriptions and tutoring packages
+    // For now, let's show subscriptions by default
+    showSubscriptionHistory();
+}
+
+// ============================================
+// MODAL FUNCTIONS FOR SUBSCRIPTION DETAILS & PERFORMANCE METRICS
+// ============================================
+
+
+/**
+ * Populate Metrics Sidebar
+ */
+function populateMetricsSidebar(subscriptions, selectedIndex = 0) {
+    const sidebarList = document.getElementById('metrics-sidebar-list');
+    if (!sidebarList) return;
+
+    if (!subscriptions || subscriptions.length === 0) {
+        sidebarList.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <p class="text-sm">No subscriptions found</p>
+            </div>
+        `;
+        return;
+    }
+
+    sidebarList.innerHTML = subscriptions.map((sub, index) => {
+        const isActive = sub.status === 'active';
+        const isSelected = index === selectedIndex;
+        const startDate = new Date(sub.start_date || sub.created_at);
+
+        return `
+            <div onclick="switchMetricsView(${index})" class="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-all border-l-4 ${isSelected ? 'border-green-500 shadow-md' : 'border-gray-300'}">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold ${isActive ? 'text-green-600' : 'text-gray-500'}">${isActive ? 'ACTIVE' : 'EXPIRED'}</span>
+                    <span class="text-xs text-gray-500">${startDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-1 text-sm">${sub.plan_name || 'Subscription Plan'}</h4>
+                <p class="text-sm text-gray-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Switch Metrics View in Modal
+ */
+function switchMetricsView(subscriptionIndex) {
+    openPerformanceMetricsModal(subscriptionIndex);
+}
+
+
+/**
+ * Show Metrics Modal State
+ */
+function showMetricsModalState(state) {
+    const states = ['metrics-loading-state', 'metrics-empty-state', 'metrics-error-state', 'metrics-content'];
+    states.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.classList.add('hidden');
+    });
+
+    const activeState = document.getElementById(state);
+    if (activeState) activeState.classList.remove('hidden');
+}
+
+/**
+ * Retry Load Metrics
+ */
+async function retryLoadMetrics() {
+    window.currentSubscriptions = null;
+    await openPerformanceMetricsModal(0);
+}
+
+/**
+ * Open Performance Metrics Modal
+ */
+async function openPerformanceMetricsModal(subscriptionIndex = 0) {
+    const modal = document.getElementById('performance-metrics-modal');
+    if (!modal) {
+        console.error('Performance metrics modal not found');
+        return;
+    }
+
+    // Show modal immediately with loading state
+    modal.classList.remove('hidden');
+    showMetricsModalState('metrics-loading-state');
+
+    try {
+        // Load subscriptions if not already loaded
+        if (!window.currentSubscriptions) {
+            await EarningsInvestmentsManager.loadStudentSubscriptions();
+        }
+
+        const subscriptions = window.currentSubscriptions;
+        if (!subscriptions || subscriptions.length === 0) {
+            showMetricsModalState('metrics-empty-state');
+            populateMetricsSidebar([], 0);
+            return;
+        }
+
+        // Show content
+        showMetricsModalState('metrics-content');
+
+        // Use first subscription if index is out of bounds
+        const index = subscriptionIndex < subscriptions.length ? subscriptionIndex : 0;
+        const sub = subscriptions[index];
+
+        // Populate sidebar with all subscriptions
+        populateMetricsSidebar(subscriptions, index);
+
+    const startDate = new Date(sub.start_date || sub.created_at);
+    const endDate = sub.end_date ? new Date(sub.end_date) : null;
+
+    // Calculate metrics
+    const totalImpressions = sub.total_impressions || 0;
+    const clicks = sub.clicks || 0;
+    const profileViews = sub.profile_views || 0;
+    const studentConnections = sub.student_connections || 0;
+    const amount = sub.amount || 0;
+
+    const cpi = totalImpressions > 0 ? (amount / totalImpressions) : 0;
+    const cpc = clicks > 0 ? (amount / clicks) : 0;
+    const costPerConnection = studentConnections > 0 ? (amount / studentConnections) : 0;
+    const ctr = totalImpressions > 0 ? ((clicks / totalImpressions) * 100) : 0;
+    const conversionRate = profileViews > 0 ? ((studentConnections / profileViews) * 100) : 0;
+
+    // ROI calculation (assuming 100 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} estimated value per connection)
+    const valuePerConnection = 100;
+    const estimatedValue = studentConnections * valuePerConnection;
+    const netGain = estimatedValue - amount;
+    const roi = amount > 0 ? ((netGain / amount) * 100) : 0;
+
+    // Progress bars
+    const profileViewsPercent = clicks > 0 ? ((profileViews / clicks) * 100) : 0;
+    const connectionsPercent = profileViews > 0 ? ((studentConnections / profileViews) * 100) : 0;
+
+    // Populate modal header
+    document.getElementById('metrics-plan-name').textContent = sub.plan_name || 'Subscription Plan';
+    document.getElementById('metrics-amount').textContent = `${amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('metrics-period').textContent = endDate
+        ? `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    // Key metrics summary
+    document.getElementById('metrics-impressions').textContent = totalImpressions.toLocaleString();
+    document.getElementById('metrics-cpi').textContent = cpi.toFixed(4);
+    document.getElementById('metrics-clicks').textContent = clicks.toLocaleString();
+    document.getElementById('metrics-roi').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+
+    // Engagement metrics
+    document.getElementById('metrics-profile-views').textContent = profileViews.toLocaleString();
+    document.getElementById('metrics-connections').textContent = studentConnections.toLocaleString();
+    document.getElementById('metrics-ctr').textContent = `${ctr.toFixed(1)}%`;
+
+    document.getElementById('metrics-profile-views-bar').style.width = `${profileViewsPercent}%`;
+    document.getElementById('metrics-connections-bar').style.width = `${connectionsPercent}%`;
+    document.getElementById('metrics-ctr-bar').style.width = `${Math.min(ctr * 10, 100)}%`;
+
+    // ROI breakdown
+    document.getElementById('roi-investment').textContent = `${amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('roi-value').textContent = `${estimatedValue.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('roi-gain').textContent = `${netGain >= 0 ? '+' : ''}${netGain.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('roi-percentage').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+    document.getElementById('roi-per-connection').textContent = `${valuePerConnection} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+
+    // Cost analysis
+    document.getElementById('cost-cpi').textContent = `${cpi.toFixed(4)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('cost-cpc').textContent = `${cpc.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('cost-connection').textContent = `${costPerConnection.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+
+    // Performance tips
+    document.getElementById('tips-ctr').textContent = `${ctr.toFixed(1)}%`;
+    document.getElementById('tips-conversion').textContent = `${conversionRate.toFixed(1)}%`;
+
+    const ctrComparison = document.getElementById('tips-ctr-comparison');
+    if (ctr >= 2.0) {
+        ctrComparison.textContent = 'above average';
+        ctrComparison.className = 'font-semibold text-green-600';
+    } else {
+        ctrComparison.textContent = 'below average';
+        ctrComparison.className = 'font-semibold text-orange-600';
+    }
+
+        // Store current subscription for actions
+        window.currentMetricsSubscription = sub;
+
+    } catch (error) {
+        console.error('Error loading performance metrics:', error);
+        showMetricsModalState('metrics-error-state');
+    }
+}
+
+/**
+ * Close Performance Metrics Modal
+ */
+function closePerformanceMetricsModal() {
+    const modal = document.getElementById('performance-metrics-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+/**
+ * Download Subscription Invoice
+ */
+function downloadSubscriptionInvoice(subscriptionIndex) {
+    const subscriptions = window.currentSubscriptions;
+    if (!subscriptions || !subscriptions[subscriptionIndex]) {
+        console.error('Subscription not found');
+        return;
+    }
+
+    const sub = subscriptions[subscriptionIndex];
+    alert(`Invoice download feature coming soon for subscription: ${sub.plan_name}`);
+    // TODO: Implement invoice download API call
+}
+
+/**
+ * View Subscription Details (For Students)
+ * Shows detailed information about a subscription without performance metrics
+ */
+function viewSubscriptionDetails(subscriptionIndex) {
+    const subscriptions = window.currentSubscriptions;
+    if (!subscriptions || !subscriptions[subscriptionIndex]) {
+        console.error('Subscription not found');
+        return;
+    }
+
+    const sub = subscriptions[subscriptionIndex];
+    const startDate = new Date(sub.start_date || sub.created_at);
+    const endDate = sub.end_date ? new Date(sub.end_date) : null;
+    const isActive = sub.status === 'active';
+
+    // Create modal content
+    const modalHTML = `
+        <div id="subscription-details-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">📋</span>
+                        <div>
+                            <h3 class="text-2xl font-bold">Subscription Details</h3>
+                            <p class="text-blue-100 text-sm">View your subscription information</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSubscriptionDetailsModal()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div class="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">${sub.plan_name || 'Subscription Plan'}</h4>
+                                <p class="text-sm text-gray-600">${sub.description || 'Premium access'}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                                <span class="bg-${isActive ? 'green' : 'gray'}-100 text-${isActive ? 'green' : 'gray'}-800 text-xs px-3 py-1 rounded-full font-semibold">
+                                    ${isActive ? 'Active' : 'Expired'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="text-sm text-gray-500 mb-2">Start Date</div>
+                            <div class="text-lg font-semibold text-gray-800">${startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                        </div>
+                        ${endDate ? `
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <div class="text-sm text-gray-500 mb-2">End Date</div>
+                                <div class="text-lg font-semibold text-gray-800">${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                            </div>
+                        ` : ''}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="text-sm text-gray-500 mb-2">Status</div>
+                            <div class="text-lg font-semibold text-${isActive ? 'green' : 'gray'}-600">${sub.status || 'N/A'}</div>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="text-sm text-gray-500 mb-2">Amount Paid</div>
+                            <div class="text-lg font-semibold text-gray-800">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">ℹ️</span>
+                            <div>
+                                <h6 class="font-bold text-gray-800 mb-2">Subscription Information</h6>
+                                <p class="text-sm text-gray-700">This subscription gives you access to premium features and content across the platform. Enjoy enhanced learning resources and priority support!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="downloadSubscriptionInvoice(${subscriptionIndex})" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download Invoice
+                        </button>
+                        <button onclick="closeSubscriptionDetailsModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+/**
+ * Close Subscription Details Modal
+ */
+function closeSubscriptionDetailsModal() {
+    const modal = document.getElementById('subscription-details-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Export Metrics Report
+ */
+function exportMetricsReport() {
+    const sub = window.currentMetricsSubscription;
+    if (!sub) return;
+
+    alert(`Export metrics report feature coming soon for: ${sub.plan_name}`);
+    // TODO: Implement metrics export (PDF/CSV)
+}
+
 // Initialize when switching to earnings-investments panel
 document.addEventListener('DOMContentLoaded', () => {
     const originalSwitchPanel = window.switchPanel;
@@ -1317,3 +2083,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+
+/**
+ * Toggle subscriptions section visibility
+ */
+function toggleSubscriptionsSection() {
+    const subscriptionsSection = document.getElementById('subscriptions-section');
+    const purchaseHistorySection = document.getElementById('purchase-history-section');
+
+    if (subscriptionsSection) {
+        // Toggle subscriptions section
+        subscriptionsSection.classList.toggle('hidden');
+
+        // Hide purchase history section
+        if (purchaseHistorySection) {
+            purchaseHistorySection.classList.add('hidden');
+        }
+
+        // If showing subscriptions, load the data
+        if (!subscriptionsSection.classList.contains('hidden')) {
+            EarningsInvestmentsManager.loadStudentSubscriptions();
+        }
+    }
+}
+
+/**
+ * Toggle purchase history section visibility
+ */
+function togglePurchaseHistorySection() {
+    const purchaseHistorySection = document.getElementById('purchase-history-section');
+    const subscriptionsSection = document.getElementById('subscriptions-section');
+
+    if (purchaseHistorySection) {
+        // Toggle purchase history section
+        purchaseHistorySection.classList.toggle('hidden');
+
+        // Hide subscriptions section
+        if (subscriptionsSection) {
+            subscriptionsSection.classList.add('hidden');
+        }
+    }
+}

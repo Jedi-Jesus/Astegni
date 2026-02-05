@@ -493,8 +493,8 @@ async def send_otp_current_email(
         # Generate 6-digit OTP
         otp_code = str(random.randint(100000, 999999))
 
-        # Set expiration (5 minutes from now)
-        expires_at = datetime.now() + timedelta(minutes=5)
+        # Set expiration (10 minutes from now)
+        expires_at = datetime.now() + timedelta(minutes=10)
 
         # Save OTP to otps table
         save_otp_to_table(cursor, admin_id, current_email, otp_code, 'email_verification', expires_at)
@@ -643,8 +643,8 @@ async def send_admin_email_change_otp(
         # Generate 6-digit OTP
         otp_code = str(random.randint(100000, 999999))
 
-        # Set expiration (5 minutes from now)
-        expires_at = datetime.now() + timedelta(minutes=5)
+        # Set expiration (10 minutes from now)
+        expires_at = datetime.now() + timedelta(minutes=10)
 
         # Save OTP to otps table
         save_otp_to_table(cursor, admin_id, new_email, otp_code, 'email_change', expires_at)

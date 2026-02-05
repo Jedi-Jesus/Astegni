@@ -1,0 +1,281 @@
+<!-- Account Restoration Confirmation Modal with OTP -->
+<!-- Shows BEFORE login when user has pending deletion -->
+<!-- Two-panel system: Confirmation → OTP Verification -->
+<div id="account-restoration-confirm-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);">
+
+    <div class="modal-content" style="position: relative; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; overflow-x: hidden; background: white; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+
+        <!-- Close Button (Top Right) - Hidden initially -->
+        <button id="restoration-confirm-close-btn" onclick="closeRestorationConfirmModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-all duration-200 hidden" style="z-index: 100;">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Panels Container (Horizontal Slider) -->
+        <div id="restoration-panels-container" style="display: flex; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 200%; min-height: 100%;">
+
+            <!-- PANEL 1: Confirmation -->
+            <div class="restoration-panel" style="width: 50%; flex-shrink: 0; padding: 2rem;">
+
+                <!-- Warning Icon -->
+                <div class="flex flex-col items-center text-center mb-8 pt-4">
+                    <div class="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Account Scheduled for Deletion</h2>
+                    <p class="text-gray-600 text-base">Do you want to restore your account?</p>
+                </div>
+
+                <!-- Deletion Info -->
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 mb-6">
+                    <div class="flex items-start gap-3 mb-4">
+                        <svg class="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-amber-900 mb-1">Your account is scheduled to be deleted in:</p>
+                            <div class="text-3xl font-bold text-amber-600 mb-2" id="restore-confirm-days-remaining">-- days</div>
+                            <p class="text-sm text-amber-800">Deletion date: <span id="restore-confirm-deletion-date" class="font-semibold">--</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options Explanation -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-5 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-900 mb-2">What happens next?</p>
+                            <ul class="text-sm text-blue-800 space-y-1 ml-4">
+                                <li class="flex items-start">
+                                    <span class="text-blue-600 mr-2">•</span>
+                                    <span><strong>Restore:</strong> Verify with OTP and log in normally</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-blue-600 mr-2">•</span>
+                                    <span><strong>Cancel:</strong> Keep deletion scheduled (can't log in)</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Masked Email Display -->
+                <div class="bg-gray-50 rounded-xl p-4 mb-6 text-center">
+                    <p class="text-sm text-gray-600 mb-1">Logging in as:</p>
+                    <p class="text-base font-mono font-semibold text-gray-900" id="restore-confirm-email">y***@e******.com</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4">
+                    <button onclick="cancelRestorationAndCloseModal()"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm">
+                        Cancel
+                    </button>
+                    <button onclick="sendRestorationOTP()"
+                        id="send-otp-btn"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Send OTP
+                    </button>
+                </div>
+
+                <!-- Info Note -->
+                <div class="mt-6 text-center text-sm text-gray-500">
+                    <p>An OTP will be sent to your email for verification</p>
+                </div>
+            </div>
+
+            <!-- PANEL 2: OTP Verification -->
+            <div class="restoration-panel" style="width: 50%; flex-shrink: 0; padding: 2rem;">
+
+                <!-- Success Icon -->
+                <div class="flex flex-col items-center text-center mb-8 pt-4">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
+                    <p class="text-gray-600 text-base">Enter the 6-digit code sent to your email</p>
+                </div>
+
+                <!-- OTP Sent Confirmation -->
+                <div class="bg-green-50 border-2 border-green-300 rounded-2xl p-5 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-green-900 mb-1">OTP Sent Successfully!</p>
+                            <p class="text-sm text-green-800">Check your email: <span id="otp-sent-email" class="font-mono font-semibold">y***@e******.com</span></p>
+                            <p class="text-xs text-green-700 mt-2">The code will expire in <span id="otp-timer" class="font-semibold">5:00</span> minutes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTP Input -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Enter 6-Digit Code</label>
+                    <input
+                        type="text"
+                        id="restoration-otp-input"
+                        maxlength="6"
+                        placeholder="000000"
+                        class="w-full px-6 py-4 text-center text-3xl font-bold tracking-widest border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                        style="letter-spacing: 0.5em;"
+                    />
+                    <p id="otp-error-message" class="text-red-600 text-sm mt-2 hidden"></p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4 mb-4">
+                    <button onclick="goBackToPanel1()"
+                        class="flex-1 py-4 px-6 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back
+                    </button>
+                    <button onclick="verifyOTPAndRestore()"
+                        id="verify-otp-btn"
+                        class="flex-1 py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Verify & Restore
+                    </button>
+                </div>
+
+                <!-- Resend OTP -->
+                <div class="text-center">
+                    <button onclick="resendRestorationOTP()" id="resend-otp-btn" class="text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors">
+                        Didn't receive code? Resend OTP
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Account Restoration Confirmation Modal Styles */
+#account-restoration-confirm-modal.hidden {
+    display: none !important;
+}
+
+#account-restoration-confirm-modal.active {
+    display: flex !important;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+#account-restoration-confirm-modal.active .modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Scrollbar Styling */
+#account-restoration-confirm-modal .modal-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+#account-restoration-confirm-modal .modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#account-restoration-confirm-modal .modal-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#account-restoration-confirm-modal .modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+#account-restoration-confirm-modal .modal-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure panels container doesn't overflow */
+#restoration-panels-container {
+    overflow: visible;
+}
+
+/* Countdown Number Pulse */
+#restore-confirm-days-remaining {
+    animation: pulse-amber 2s ease-in-out infinite;
+}
+
+@keyframes pulse-amber {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+/* OTP Input Animation */
+#restoration-otp-input:focus {
+    transform: scale(1.02);
+}
+
+/* Button Hover Effects */
+#send-otp-btn:hover,
+#verify-otp-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    #account-restoration-confirm-modal .modal-content {
+        max-width: 100%;
+        margin: 0.5rem;
+        max-height: 95vh;
+    }
+
+    .restoration-panel {
+        padding: 1.5rem !important;
+    }
+
+    #account-restoration-confirm-modal h2 {
+        font-size: 1.75rem;
+    }
+
+    #restore-confirm-days-remaining {
+        font-size: 2rem;
+    }
+
+    #restoration-otp-input {
+        font-size: 1.5rem;
+        padding: 1rem;
+    }
+}
+
+/* Smooth scroll behavior */
+#account-restoration-confirm-modal .modal-content {
+    scroll-behavior: smooth;
+}
+</style>

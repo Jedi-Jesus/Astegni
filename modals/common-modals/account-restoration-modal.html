@@ -1,0 +1,212 @@
+<!-- Account Restoration Modal -->
+<!-- Shows when user logs in with scheduled account deletion -->
+<div id="account-restoration-modal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-content max-w-2xl">
+
+            <!-- Warning Icon -->
+            <div class="text-center mb-6">
+                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-2">Account Scheduled for Deletion</h3>
+                <p class="text-gray-600 text-lg">Your account is scheduled to be permanently deleted</p>
+            </div>
+
+            <!-- Countdown Information -->
+            <div class="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-6">
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-red-600 mb-2" id="restoration-days-remaining">--</div>
+                    <div class="text-gray-700 text-lg font-medium mb-1">Days Remaining</div>
+                    <div class="text-gray-600 text-sm">
+                        Deletion scheduled for: <span id="restoration-deletion-date" class="font-semibold">--</span>
+                    </div>
+                    <div class="text-gray-600 text-sm mt-1">
+                        Time remaining: <span id="restoration-time-remaining" class="font-semibold">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What Will Be Deleted -->
+            <div class="bg-gray-50 rounded-lg p-5 mb-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    What Will Be Deleted:
+                </h4>
+                <ul class="space-y-2 text-gray-600 text-sm ml-7">
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>All your profile data (student, tutor, parent, advertiser)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>All uploaded files (videos, documents, images)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>All chat messages and conversations</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>All connections, reviews, and ratings</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>All coursework, credentials, and educational content</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <span>Your entire account and login access</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Reason for Deletion (if available) -->
+            <div id="restoration-reasons-section" class="bg-blue-50 rounded-lg p-5 mb-6 hidden">
+                <h4 class="font-semibold text-gray-800 mb-2">Reason for Leaving:</h4>
+                <p id="restoration-reasons" class="text-gray-600 text-sm"></p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4">
+                <!-- Recover Account Button (Primary) -->
+                <button
+                    id="recover-account-btn"
+                    onclick="AccountRestorationModal.recoverAccount()"
+                    class="flex-1 bg-green-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-lg flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Recover My Account
+                </button>
+
+                <!-- Continue to Account (Secondary) -->
+                <button
+                    onclick="AccountRestorationModal.closeModal()"
+                    class="flex-1 bg-gray-200 text-gray-700 px-6 py-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                    Continue to Account
+                </button>
+            </div>
+
+            <!-- Warning Note -->
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    This deletion was requested on <span id="restoration-requested-date">--</span>
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+/* Account Restoration Modal Styles */
+#account-restoration-modal .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+#account-restoration-modal .modal-container {
+    width: 100%;
+    max-width: 42rem;
+    margin: 1rem;
+    max-height: 95vh;
+    overflow-y: auto;
+}
+
+#account-restoration-modal .modal-content {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+#account-restoration-modal.hidden {
+    display: none;
+}
+
+/* Countdown Animation */
+#restoration-days-remaining {
+    animation: pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        transform: scale(1);
+        color: #DC2626;
+    }
+    50% {
+        transform: scale(1.05);
+        color: #EF4444;
+    }
+}
+
+/* Button Hover Effects */
+#recover-account-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.4);
+}
+
+/* Dark Theme Support */
+html.dark #account-restoration-modal .modal-content {
+    background: #1F2937;
+}
+
+html.dark #account-restoration-modal h3,
+html.dark #account-restoration-modal h4 {
+    color: #F9FAFB;
+}
+
+html.dark #account-restoration-modal p,
+html.dark #account-restoration-modal li {
+    color: #D1D5DB;
+}
+
+html.dark #account-restoration-modal .bg-red-50 {
+    background: #7F1D1D;
+    border-color: #991B1B;
+}
+
+html.dark #account-restoration-modal .bg-gray-50 {
+    background: #374151;
+}
+
+html.dark #account-restoration-modal .bg-blue-50 {
+    background: #1E3A8A;
+}
+
+html.dark #account-restoration-modal #restoration-days-remaining {
+    color: #FCA5A5;
+}
+</style>

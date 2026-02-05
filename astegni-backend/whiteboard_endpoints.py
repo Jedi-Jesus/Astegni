@@ -332,7 +332,6 @@ async def get_sessions_by_student(
                 ws.actual_end,
                 ws.status,
                 ws.student_permissions,
-                ws.attendance_status,
                 ws.is_recording,
                 ws.has_recordings,
                 ws.created_at,
@@ -380,12 +379,11 @@ async def get_sessions_by_student(
                 "actual_end": row[6].isoformat() if row[6] else None,
                 "status": row[7] or "scheduled",
                 "student_permissions": row[8] if row[8] else {"can_draw": False, "can_write": False, "can_erase": False},
-                "attendance_status": row[9] or "pending",
-                "is_recording": row[10] or False,
-                "has_recordings": row[11] or False,
-                "created_at": row[12].isoformat() if row[12] else None,
-                "booking_id": row[13],
-                "participant_ids": row[14] or [],
+                "is_recording": row[9] or False,
+                "has_recordings": row[10] or False,
+                "created_at": row[11].isoformat() if row[11] else None,
+                "booking_id": row[12],
+                "participant_ids": row[13] or [],
                 "duration_minutes": duration_minutes
             })
 
@@ -1828,9 +1826,9 @@ async def get_enrolled_students_for_whiteboard(
                     sp.user_id as student_user_id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as student_name,
                     u.email as student_email,
-                    sp.profile_picture as profile_picture,
+                    u.profile_picture as profile_picture,  -- NOTE: profile_picture now read from users table
                     sp.grade_level,
-                    sp.location,
+                    u.location,  -- NOTE: location now read from users table
                     sp.studying_at as school,
                     es.status as enrollment_status,
                     es.enrolled_at,
@@ -1857,9 +1855,9 @@ async def get_enrolled_students_for_whiteboard(
                     sp.user_id as student_user_id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as student_name,
                     u.email as student_email,
-                    sp.profile_picture as profile_picture,
+                    u.profile_picture as profile_picture,  -- NOTE: profile_picture now read from users table
                     sp.grade_level,
-                    sp.location,
+                    u.location,  -- NOTE: location now read from users table
                     sp.studying_at as school,
                     es.status as enrollment_status,
                     es.enrolled_at,
@@ -1967,7 +1965,7 @@ async def get_coursework_for_whiteboard(
                 cw.student_id,
                 sp.user_id as student_user_id,
                 CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as student_name,
-                sp.profile_picture as student_profile_picture,
+                u.profile_picture as student_profile_picture,  -- NOTE: profile_picture now read from users table
                 (SELECT COUNT(*) FROM coursework_questions WHERE coursework_id = cw.id) as question_count,
                 (SELECT COUNT(*) FROM coursework_submissions WHERE coursework_id = cw.id) as submission_count
             FROM courseworks cw
@@ -2062,9 +2060,9 @@ async def get_tutor_info_for_whiteboard(current_user = Depends(get_current_user)
                 u.id as user_id,
                 CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
                 u.email,
-                tp.profile_picture,
+                u.profile_picture,
                 tp.bio,
-                tp.location,
+                u.location,
                 tp.expertise_badge,
                 u.is_verified,
                 tp.hero_subtitle
@@ -2174,9 +2172,9 @@ async def get_enrolled_tutors_for_whiteboard(
                     tp.user_id as tutor_user_id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as tutor_name,
                     u.email as tutor_email,
-                    tp.profile_picture as profile_picture,
+                    u.profile_picture as profile_picture,  -- NOTE: profile_picture now read from users table
                     tp.hero_subtitle,
-                    tp.location,
+                    u.location,
                     tp.expertise_badge,
                     u.is_verified,
                     es.status as enrollment_status,
@@ -2204,9 +2202,9 @@ async def get_enrolled_tutors_for_whiteboard(
                     tp.user_id as tutor_user_id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as tutor_name,
                     u.email as tutor_email,
-                    tp.profile_picture as profile_picture,
+                    u.profile_picture as profile_picture,  -- NOTE: profile_picture now read from users table
                     tp.hero_subtitle,
-                    tp.location,
+                    u.location,
                     tp.expertise_badge,
                     u.is_verified,
                     es.status as enrollment_status,
@@ -2326,7 +2324,7 @@ async def get_student_coursework_for_whiteboard(
                 cw.tutor_id,
                 tp.user_id as tutor_user_id,
                 CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as tutor_name,
-                tp.profile_picture as tutor_profile_picture,
+                u.profile_picture as tutor_profile_picture,  -- NOTE: profile_picture now read from users table
                 (SELECT COUNT(*) FROM coursework_questions WHERE coursework_id = cw.id) as question_count,
                 (SELECT COUNT(*) FROM coursework_submissions WHERE coursework_id = cw.id AND student_id = %s) as my_submission_count
             FROM courseworks cw
@@ -2420,9 +2418,9 @@ async def get_student_info_for_whiteboard(current_user = Depends(get_current_use
                 u.id as user_id,
                 CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
                 u.email,
-                sp.profile_picture,
+                u.profile_picture,
                 sp.about,
-                sp.location,
+                u.location,
                 sp.grade_level,
                 sp.studying_at
             FROM users u
@@ -2499,7 +2497,7 @@ async def get_session_participants(
                 SELECT
                     tp.id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
-                    tp.profile_picture
+                    u.profile_picture  -- NOTE: profile_picture now read from users table
                 FROM tutor_profiles tp
                 JOIN users u ON tp.user_id = u.id
                 WHERE tp.id = %s
@@ -2509,7 +2507,7 @@ async def get_session_participants(
                 SELECT
                     sp.id,
                     CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
-                    sp.profile_picture
+                    u.profile_picture  -- NOTE: profile_picture now read from users table
                 FROM student_profiles sp
                 JOIN users u ON sp.user_id = u.id
                 WHERE sp.id = %s
@@ -2533,7 +2531,7 @@ async def get_session_participants(
                     SELECT
                         tp.id as profile_id,
                         CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
-                        tp.profile_picture
+                        u.profile_picture  -- NOTE: profile_picture now read from users table
                     FROM tutor_profiles tp
                     JOIN users u ON tp.user_id = u.id
                     WHERE tp.id = %s
@@ -2543,7 +2541,7 @@ async def get_session_participants(
                     SELECT
                         sp.id as profile_id,
                         CONCAT(u.first_name, ' ', COALESCE(u.father_name, ''), ' ', COALESCE(u.grandfather_name, '')) as full_name,
-                        sp.profile_picture
+                        u.profile_picture  -- NOTE: profile_picture now read from users table
                     FROM student_profiles sp
                     JOIN users u ON sp.user_id = u.id
                     WHERE sp.id = %s

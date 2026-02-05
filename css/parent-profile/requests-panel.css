@@ -1,0 +1,43 @@
+/* ============================================
+   PARENT PROFILE - REQUESTS PANEL STYLES
+   Direction tabs (Received/Sent) for session requests only
+   ============================================ */
+
+/* Direction Tabs (Received/Sent) - Only for session requests */
+.request-direction-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.direction-tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.direction-tab:hover {
+    color: var(--primary-color);
+    background-color: var(--hover-bg);
+}
+
+.direction-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.direction-tab i {
+    font-size: 1rem;
+}

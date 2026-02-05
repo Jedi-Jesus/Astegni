@@ -37,6 +37,9 @@ class ViewTutorDBLoader {
     async init() {
         try {
             console.log('🔄 Loading tutor profile from database...');
+            console.log('📊 Tutor ID:', this.tutorId);
+            console.log('🔑 By User ID:', this.byUserId);
+            console.log('🌐 API Base URL:', window.API_BASE_URL || 'UNDEFINED!');
 
             // Load all data in parallel for better performance
             await Promise.all([
@@ -58,6 +61,7 @@ class ViewTutorDBLoader {
 
         } catch (error) {
             console.error('❌ Error loading tutor data:', error);
+            console.error('❌ Error details:', error.message, error.stack);
             this.showErrorMessage('Failed to load tutor profile. Please refresh the page.');
         }
     }
@@ -72,10 +76,20 @@ class ViewTutorDBLoader {
                 ? `${API_BASE_URL}/api/view-tutor/${this.tutorId}?by_user_id=true`
                 : `${API_BASE_URL}/api/view-tutor/${this.tutorId}`;
 
+            console.log('📡 Fetching tutor profile from:', url);
+
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to fetch profile');
+            console.log('📥 Response status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`Failed to fetch profile: ${response.status} ${response.statusText}`);
+            }
 
             const data = await response.json();
+            console.log('📦 Profile data received:', data);
+
             this.data.profile = data.profile;
             this.data.stats = data.stats;
 
@@ -84,7 +98,7 @@ class ViewTutorDBLoader {
 
             console.log('✓ Profile loaded:', data.profile);
         } catch (error) {
-            console.error('Error loading profile:', error);
+            console.error('❌ Error loading profile:', error);
             throw error;
         }
     }
@@ -198,19 +212,38 @@ class ViewTutorDBLoader {
     }
 
     /**
-     * Load week availability
+     * Load featured schedules and sessions for availability widget
      */
     async loadWeekAvailability() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/availability/week`);
-            if (!response.ok) throw new Error('Failed to fetch availability');
+            const byUserIdParam = this.byUserId ? '?by_user_id=true' : '';
+
+            // Fetch featured schedules and sessions
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/availability/featured${byUserIdParam}`);
+
+            if (!response.ok) {
+                console.warn('Featured availability endpoint not found, using fallback');
+                // Fallback to regular availability
+                const fallbackRes = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/availability/week${byUserIdParam}`);
+                if (fallbackRes.ok) {
+                    const data = await fallbackRes.json();
+                    this.data.weekAvailability = data.availability || [];
+                } else {
+                    this.data.weekAvailability = [];
+                }
+                return;
+            }
 
             const data = await response.json();
-            this.data.weekAvailability = data.availability;
+            this.data.featuredSchedules = data.schedules || [];
+            this.data.featuredSessions = data.sessions || [];
+            this.data.weekAvailability = [...(data.schedules || []), ...(data.sessions || [])];
 
-            console.log('✓ Loaded week availability');
+            console.log(`✓ Loaded ${this.data.featuredSchedules.length} featured schedules and ${this.data.featuredSessions.length} featured sessions`);
         } catch (error) {
             console.error('Error loading availability:', error);
+            this.data.featuredSchedules = [];
+            this.data.featuredSessions = [];
             this.data.weekAvailability = [];
         }
     }
@@ -259,7 +292,7 @@ class ViewTutorDBLoader {
         this.populateSubjectsWidget();
         this.populatePricingWidget();
         this.populateAvailabilityWidget();
-        this.populateAchievementsWidget();
+        // this.populateAchievementsWidget(); // Widget removed from HTML
         this.populateSimilarTutorsPanel();
         this.populateRelatedTutorsSection();
     }
@@ -430,13 +463,17 @@ class ViewTutorDBLoader {
         // Stars
         this.updateStars(profile.rating);
 
-        // Location
-        const locationEl = document.querySelector('.profile-location span:last-child');
+        // Location - target the nested span that contains the text
+        const locationEl = document.querySelector('.profile-location span span');
         if (locationEl) {
             const locationParts = [];
             if (profile.location) locationParts.push(profile.location);
-            if (profile.teaches_at) locationParts.push(profile.teaches_at);
-            locationEl.textContent = locationParts.length > 0 ? locationParts.join(' | ') : 'None';
+            locationEl.textContent = locationParts.length > 0 ? locationParts.join(', ') : 'Location not specified';
+            // Update styling for populated location
+            if (locationParts.length > 0) {
+                locationEl.style.color = 'var(--text)';
+                locationEl.style.fontStyle = 'normal';
+            }
         }
 
         // Profile Info Grid
@@ -522,6 +559,25 @@ class ViewTutorDBLoader {
                 languagesValue.textContent = languageArray.join(', ');
             } else {
                 languagesValue.textContent = 'Not specified';
+            }
+        }
+
+        // Hobbies & Interests - always show, with "No hobbies yet" if empty
+        const hobbiesEl = document.getElementById('tutor-hobbies');
+        if (hobbiesEl) {
+            if (profile.hobbies && Array.isArray(profile.hobbies) && profile.hobbies.length > 0) {
+                const hobbiesText = profile.hobbies.join(', ');
+                hobbiesEl.textContent = hobbiesText;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else if (profile.hobbies && typeof profile.hobbies === 'string' && profile.hobbies.trim() !== '') {
+                hobbiesEl.textContent = profile.hobbies;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+            } else {
+                hobbiesEl.textContent = 'No hobbies yet';
+                hobbiesEl.style.color = 'var(--text-muted)';
+                hobbiesEl.style.fontStyle = 'italic';
             }
         }
 
@@ -1222,12 +1278,13 @@ class ViewTutorDBLoader {
                 ? (typeof pkg.courses === 'string' ? pkg.courses.split(',').map(c => c.trim()) : pkg.courses)
                 : [];
 
-            // Get session format array
-            const sessionFormats = pkg.session_format
-                ? (typeof pkg.session_format === 'string'
-                    ? (pkg.session_format.toLowerCase() === 'both' ? ['Online', 'In-person'] : [pkg.session_format])
-                    : pkg.session_format)
-                : [];
+            // Get session format - normalize to display properly
+            let sessionFormats = [];
+            if (pkg.session_format) {
+                // Capitalize first letter of session format
+                const format = pkg.session_format.charAt(0).toUpperCase() + pkg.session_format.slice(1).toLowerCase();
+                sessionFormats = [format];
+            }
 
             // Build schedule info
             let scheduleInfo = 'Not specified';
@@ -1328,7 +1385,7 @@ class ViewTutorDBLoader {
                         <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
                             <div>
                                 <p style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px;">Per Session</p>
-                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">ETB</span></p>
+                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></p>
                             </div>
                             <div style="text-align: right;">
                                 <i class="fas fa-money-bill-wave" style="font-size: 2.5rem; color: rgba(255,255,255,0.3);"></i>
@@ -1429,15 +1486,30 @@ class ViewTutorDBLoader {
 
     /**
      * Populate Subjects Widget
+     * Now reads courses from tutor_packages table
      */
     populateSubjectsWidget() {
-        const profile = this.data.profile;
+        const packages = this.data.packages;
         const widget = document.querySelector('.subjects-ticker');
         const tickerContainer = widget?.closest('.success-ticker-container');
 
         if (!widget) return;
 
-        const courses = (profile && Array.isArray(profile.courses)) ? profile.courses : [];
+        // Extract unique courses from all packages
+        const allCourses = [];
+        if (packages && Array.isArray(packages)) {
+            packages.forEach(pkg => {
+                if (pkg.courses && Array.isArray(pkg.courses)) {
+                    pkg.courses.forEach(course => {
+                        if (course && !allCourses.includes(course)) {
+                            allCourses.push(course);
+                        }
+                    });
+                }
+            });
+        }
+
+        const courses = allCourses;
 
         if (courses.length === 0) {
             // Remove ticker animation when no subjects
@@ -1506,6 +1578,8 @@ class ViewTutorDBLoader {
                 </div>
             `;
         }).join('');
+
+        console.log(`✅ Subjects widget populated with ${courses.length} unique courses from ${packages.length} packages`);
     }
 
     /**
@@ -1526,11 +1600,11 @@ class ViewTutorDBLoader {
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
                 priceDisplay = minPrice === maxPrice ?
-                    `ETB ${minPrice}` :
-                    `ETB ${minPrice}-${maxPrice}`;
+                    `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${minPrice}` :
+                    `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${minPrice}-${maxPrice}`;
             }
         } else if (profile && profile.price && profile.price > 0) {
-            priceDisplay = `ETB ${profile.price}`;
+            priceDisplay = `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${profile.price}`;
         }
 
         // Generate styled HTML matching the beautiful design from HTML
@@ -1551,83 +1625,123 @@ class ViewTutorDBLoader {
 
     /**
      * Populate Availability Widget
+     * Now displays featured schedules and sessions from database
      */
     populateAvailabilityWidget() {
-        const availability = this.data.weekAvailability;
+        const schedules = this.data.featuredSchedules || [];
+        const sessions = this.data.featuredSessions || [];
         const widget = document.querySelector('.availability-schedule');
+
         if (!widget) return;
 
-        if (!availability || availability.length === 0) {
+        // Combine schedules and sessions
+        const allItems = [...schedules, ...sessions];
+
+        if (allItems.length === 0) {
             widget.innerHTML = `
                 <div style="text-align: center; padding: 1.5rem; color: var(--text-secondary); font-style: italic; font-size: 0.875rem;">
-                    No schedule set
+                    No featured schedule or sessions
                 </div>
             `;
             return;
         }
 
-        // Status styling configuration matching the beautiful HTML design
-        const statusConfig = {
-            'available': {
-                bg: 'rgba(34, 197, 94, 0.1)',
-                border: '#22c55e',
-                color: '#22c55e',
-                label: 'Available'
-            },
-            'limited': {
-                bg: 'rgba(251, 191, 36, 0.1)',
-                border: '#fbbf24',
-                color: '#fbbf24',
-                label: 'Limited'
-            },
-            'booked': {
-                bg: 'rgba(239, 68, 68, 0.1)',
-                border: '#ef4444',
-                color: '#ef4444',
-                label: 'Booked'
-            },
-            'unavailable': {
-                bg: 'rgba(156, 163, 175, 0.1)',
-                border: '#9ca3af',
-                color: '#9ca3af',
-                label: 'Unavailable'
-            }
+        // Helper function to format date/time
+        const formatDateTime = (dateStr) => {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('en-US', options);
         };
 
-        widget.innerHTML = availability.map(day => {
-            const shortDay = day.day.substring(0, 3);
-            const status = day.status || 'unavailable';
-            const config = statusConfig[status] || statusConfig['unavailable'];
+        // Helper function to format time only
+        const formatTime = (timeStr) => {
+            if (!timeStr) return '';
+            return timeStr.substring(0, 5); // Format HH:MM
+        };
 
-            return `
-                <div class="schedule-day"
-                    style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; background: ${config.bg}; border-left: 3px solid ${config.border};">
-                    <span style="font-weight: 600; color: var(--text);">${shortDay}</span>
-                    <span style="font-size: 0.875rem; color: ${config.color}; font-weight: 600;">${config.label}</span>
-                </div>
-            `;
-        }).join('');
+        // Display items as a list
+        widget.innerHTML = allItems.map((item) => {
+            // Determine if it's a schedule or session
+            const isSchedule = item.days || item.scheduler_role;
+            const isSession = item.session_title || item.student_id;
+
+            if (isSchedule) {
+                // Display schedule
+                const days = Array.isArray(item.days) ? item.days.join(', ') : item.days || 'Not specified';
+                const startTime = formatTime(item.start_time);
+                const endTime = formatTime(item.end_time);
+                const status = item.status || 'active';
+
+                return `
+                    <div style="padding: 0.875rem; margin-bottom: 0.5rem; background: var(--card-bg); border-left: 3px solid #3b82f6; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: var(--heading); font-size: 0.875rem;">📅 Schedule</span>
+                            <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px;">${status}</span>
+                        </div>
+                        <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div><strong>Days:</strong> ${days}</div>
+                            ${startTime && endTime ? `<div><strong>Time:</strong> ${startTime} - ${endTime}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else if (isSession) {
+                // Display session
+                const title = item.session_title || item.title || 'Tutoring Session';
+                const date = formatDateTime(item.scheduled_date || item.date);
+                const status = item.status || 'scheduled';
+
+                const statusColors = {
+                    'scheduled': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' },
+                    'completed': { bg: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' },
+                    'cancelled': { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' },
+                    'ongoing': { bg: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24' }
+                };
+                const statusColor = statusColors[status] || statusColors['scheduled'];
+
+                return `
+                    <div style="padding: 0.875rem; margin-bottom: 0.5rem; background: var(--card-bg); border-left: 3px solid #10b981; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: var(--heading); font-size: 0.875rem;">🎯 ${title}</span>
+                            <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${statusColor.bg}; color: ${statusColor.color}; border-radius: 4px;">${status}</span>
+                        </div>
+                        <div style="font-size: 0.8125rem; color: var(--text-secondary);">
+                            ${date ? `<div>📆 ${date}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return '';
+        }).filter(html => html).join('');
+
+        console.log(`✅ Availability widget populated with ${schedules.length} schedules and ${sessions.length} sessions`);
     }
 
     /**
      * Populate Achievements Widget (right sidebar)
-     * Shows max 2 achievements with "View All" button when achievements exist
+     * Now displays ALL credentials: achievements, academic, and experience
+     * Rotates through them with a carousel effect like the ad widget
      */
     populateAchievementsWidget() {
-        // Get max 2 achievements (prioritize featured ones)
-        const allAchievements = this.data.achievements;
-        const displayAchievements = allAchievements.slice(0, 2);
         const widgetContainer = document.querySelector('.achievements-sidebar-widget');
         const achievementsList = document.querySelector('.achievements-list');
 
         if (!widgetContainer || !achievementsList) return;
 
-        // If no achievements, show empty state
-        if (allAchievements.length === 0) {
+        // Combine all credentials from different sources
+        const allCredentials = [
+            ...(this.data.achievements || []).map(a => ({ ...a, credentialType: 'achievement' })),
+            ...(this.data.certificates || []).map(c => ({ ...c, credentialType: 'academic' })),
+            ...(this.data.experience || []).map(e => ({ ...e, credentialType: 'experience' }))
+        ];
+
+        // If no credentials, show empty state
+        if (allCredentials.length === 0) {
             achievementsList.innerHTML = `
                 <div style="text-align: center; padding: 1rem;">
                     <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; font-style: italic;">
-                        No achievements yet
+                        No credentials yet
                     </p>
                 </div>
             `;
@@ -1637,22 +1751,43 @@ class ViewTutorDBLoader {
             return;
         }
 
-        // Achievement icons with different colors
-        const achievementIcons = ['🥇', '🏅', '⭐', '🎖️', '👑'];
-        const iconBackgrounds = [
-            'rgba(255,215,0,0.3)',    // Gold
-            'rgba(59,130,246,0.3)',   // Blue
-            'rgba(139,92,246,0.3)',   // Purple
-            'rgba(34,197,94,0.3)',    // Green
-            'rgba(236,72,153,0.3)'    // Pink
-        ];
+        // Icons and backgrounds based on credential type
+        const credentialConfig = {
+            achievement: {
+                icons: ['🥇', '🏅', '⭐', '🎖️', '👑'],
+                backgrounds: ['rgba(255,215,0,0.3)', 'rgba(236,72,153,0.3)', 'rgba(139,92,246,0.3)']
+            },
+            academic: {
+                icons: ['🎓', '📜', '🏫', '📚', '🎯'],
+                backgrounds: ['rgba(59,130,246,0.3)', 'rgba(6,182,212,0.3)', 'rgba(139,92,246,0.3)']
+            },
+            experience: {
+                icons: ['💼', '🏢', '⚡', '🚀', '💡'],
+                backgrounds: ['rgba(34,197,94,0.3)', 'rgba(16,185,129,0.3)', 'rgba(52,211,153,0.3)']
+            }
+        };
 
-        const achievementsHTML = displayAchievements.map((ach, index) => {
-            const icon = ach.icon || achievementIcons[index % achievementIcons.length];
-            const bgColor = iconBackgrounds[index % iconBackgrounds.length];
+        // Build HTML for all credentials
+        const credentialsHTML = allCredentials.map((cred, index) => {
+            const config = credentialConfig[cred.credentialType] || credentialConfig.achievement;
+            const icon = config.icons[index % config.icons.length];
+            const bgColor = config.backgrounds[index % config.backgrounds.length];
+
+            // Format description based on credential type
+            let description = cred.description || '';
+            if (!description) {
+                if (cred.credentialType === 'academic') {
+                    description = cred.issued_by || 'Academic credential';
+                } else if (cred.credentialType === 'experience') {
+                    description = cred.company || cred.issued_by || 'Professional experience';
+                } else {
+                    description = cred.year ? `Achieved in ${cred.year}` : 'Achievement unlocked';
+                }
+            }
+
             return `
-                <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease; cursor: pointer;"
-                    onclick="viewAchievementDetails(${ach.id})"
+                <div class="credential-item" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease; cursor: pointer; display: none;"
+                    data-credential-index="${index}"
                     onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(5px)';"
                     onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(0)';">
                     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -1661,10 +1796,10 @@ class ViewTutorDBLoader {
                         </div>
                         <div style="flex: 1;">
                             <h4 style="color: white; font-size: 0.95rem; font-weight: 600; margin: 0 0 0.25rem 0;">
-                                ${ach.title}
+                                ${cred.title}
                             </h4>
                             <p style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0; line-height: 1.4;">
-                                ${ach.description || (ach.year ? `Achieved in ${ach.year}` : 'Achievement unlocked')}
+                                ${description.length > 80 ? description.substring(0, 80) + '...' : description}
                             </p>
                         </div>
                     </div>
@@ -1672,13 +1807,48 @@ class ViewTutorDBLoader {
             `;
         }).join('');
 
-        achievementsList.innerHTML = achievementsHTML;
+        achievementsList.innerHTML = credentialsHTML;
 
-        // Show "View All" button only if there are achievements
+        // Show "View All" button
         const viewAllBtn = widgetContainer.querySelector('button');
         if (viewAllBtn) {
-            viewAllBtn.style.display = allAchievements.length > 0 ? 'block' : 'none';
+            viewAllBtn.style.display = 'block';
         }
+
+        // Initialize rotating carousel if more than 1 credential
+        if (allCredentials.length > 1) {
+            let currentIndex = 0;
+            const credentialItems = achievementsList.querySelectorAll('.credential-item');
+
+            // Show first credential
+            if (credentialItems[0]) {
+                credentialItems[0].style.display = 'block';
+            }
+
+            // Rotate credentials every 5 seconds
+            setInterval(() => {
+                // Hide current
+                if (credentialItems[currentIndex]) {
+                    credentialItems[currentIndex].style.display = 'none';
+                }
+
+                // Move to next
+                currentIndex = (currentIndex + 1) % allCredentials.length;
+
+                // Show next
+                if (credentialItems[currentIndex]) {
+                    credentialItems[currentIndex].style.display = 'block';
+                }
+            }, 5000);
+        } else if (allCredentials.length === 1) {
+            // Just show the single credential
+            const credentialItems = achievementsList.querySelectorAll('.credential-item');
+            if (credentialItems[0]) {
+                credentialItems[0].style.display = 'block';
+            }
+        }
+
+        console.log(`✅ Credentials widget populated with ${allCredentials.length} credentials (${this.data.achievements.length} achievements, ${this.data.certificates.length} academic, ${this.data.experience.length} experience)`);
     }
 
     /**
@@ -1994,7 +2164,7 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
         const price = packageData.session_price || packageData.package_price || 0;
         const listedPriceDisplay = document.getElementById('listedPriceDisplay');
         if (listedPriceDisplay) {
-            listedPriceDisplay.textContent = `ETB ${Math.round(price)}`;
+            listedPriceDisplay.textContent = `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${Math.round(price)}`;
         }
 
         // Clear any previous counter-offer
@@ -2136,7 +2306,7 @@ function populatePackageDetails(pkg) {
                 </div>
                 <div style="text-align: right;">
                     <div style="background: var(--primary-color, #3b82f6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.3);">
-                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">ETB ${Math.round(price)}</div>
+                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${Math.round(price)}</div>
                         <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 2px;">per session</div>
                     </div>
                 </div>
@@ -2842,6 +3012,12 @@ window.submitPackageRequest = async function() {
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
+    // Hide any existing alerts
+    const existingAlert = document.getElementById('packageRequestAlert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/session-requests`, {
             method: 'POST',
@@ -2854,26 +3030,163 @@ window.submitPackageRequest = async function() {
 
         if (!response.ok) {
             const error = await response.json();
+
+            // Restore button first
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+
+            // Handle duplicate request error (409 Conflict)
+            if (response.status === 409) {
+                // Check if this is an accepted request (green) or pending request (yellow)
+                const isAccepted = error.detail.includes('✅ACCEPTED✅');
+                const isPending = error.detail.includes('⚠️PENDING⚠️');
+
+                // Remove the prefix markers from the message
+                let cleanMessage = error.detail.replace('✅ACCEPTED✅', '').replace('⚠️PENDING⚠️', '');
+
+                if (isAccepted) {
+                    // Show green success alert for accepted requests
+                    showPackageRequestAlert('success', cleanMessage, 'Already Enrolled!');
+                } else if (isPending) {
+                    // Show yellow warning alert for pending requests
+                    showPackageRequestAlert('warning', cleanMessage, 'Request Already Sent');
+                } else {
+                    // Fallback to warning for any other 409
+                    showPackageRequestAlert('warning', cleanMessage, 'Request Already Sent');
+                }
+                return;
+            }
+
             throw new Error(error.detail || 'Failed to send session request');
         }
 
         const result = await response.json();
 
-        // Show success message
-        alert(`✅ Session request sent successfully!\n\nThe tutor will review your request and respond soon. You can check the status in your profile.`);
+        // Restore button to original state
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
 
-        // Close modal
-        window.closePackageDetailsModal();
+        // Show success message in modal
+        showPackageRequestAlert('success', 'The tutor will review your request and respond soon. You can check the status in your profile.', 'Request Sent Successfully!');
 
     } catch (error) {
         console.error('Error submitting session request:', error);
-        alert(`❌ Failed to send session request:\n\n${error.message}\n\nPlease try again.`);
 
         // Restore button
         submitButton.disabled = false;
         submitButton.innerHTML = originalText;
+
+        // Show error message in modal
+        showPackageRequestAlert('error', error.message, 'Failed to Send Request');
     }
 };
+
+/**
+ * Show alert message inside package details modal
+ */
+function showPackageRequestAlert(type, message, title) {
+    // Remove existing alert if any
+    const existingAlert = document.getElementById('packageRequestAlert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    // Get modal content container
+    const modalContent = document.querySelector('#packageDetailsModal .modal-content');
+    if (!modalContent) return;
+
+    // Determine emoji and colors based on type
+    let emoji, bgColor, textColor, borderColor;
+    switch (type) {
+        case 'success':
+            emoji = '✅';
+            bgColor = '#d4edda';
+            textColor = '#155724';
+            borderColor = '#c3e6cb';
+            break;
+        case 'warning':
+            emoji = '⚠️';
+            bgColor = '#fff3cd';
+            textColor = '#856404';
+            borderColor = '#ffeaa7';
+            break;
+        case 'error':
+            emoji = '❌';
+            bgColor = '#f8d7da';
+            textColor = '#721c24';
+            borderColor = '#f5c6cb';
+            break;
+        default:
+            emoji = 'ℹ️';
+            bgColor = '#d1ecf1';
+            textColor = '#0c5460';
+            borderColor = '#bee5eb';
+    }
+
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.id = 'packageRequestAlert';
+    alert.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: ${bgColor};
+        color: ${textColor};
+        border: 2px solid ${borderColor};
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        z-index: 10001;
+        text-align: center;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    // Create onclick handler - for success, close modal after removing alert
+    const onclickHandler = type === 'success'
+        ? "document.getElementById('packageRequestAlert').remove(); if (typeof window.closePackageDetailsModal === 'function') window.closePackageDetailsModal();"
+        : "document.getElementById('packageRequestAlert').remove()";
+
+    alert.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 12px;">${emoji}</div>
+        <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">${title}</div>
+        <div style="font-size: 14px; line-height: 1.6; margin-bottom: 20px; white-space: pre-line;">${message}</div>
+        <button onclick="${onclickHandler}" style="
+            background: ${textColor};
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+            Alright
+        </button>
+    `;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Add to document
+    document.body.appendChild(alert);
+}
 
 // ============================================
 // VIEW-ONLY MODAL FUNCTIONS (No Edit/Delete buttons)

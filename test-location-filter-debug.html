@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Filter Debug - Astegni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-left: 3px solid #e5e7eb;
+            margin: 2px 0;
+        }
+        .log-info { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .log-success { border-left-color: #10b981; background-color: #d1fae5; }
+        .log-error { border-left-color: #ef4444; background-color: #fee2e2; }
+        .log-warn { border-left-color: #f59e0b; background-color: #fef3c7; }
+
+        #debugLog {
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        .test-section {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-success { background-color: #d1fae5; color: #065f46; }
+        .status-error { background-color: #fee2e2; color: #991b1b; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🔍 Location Filter Debug Tool</h1>
+            <p class="text-gray-600">Comprehensive debugging for location filter issues on find-tutors page</p>
+            <p class="text-sm text-gray-500 mt-2">Login as: <code class="bg-gray-100 px-2 py-1 rounded">jediael.s.abebe@gmail.com</code></p>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h2 class="text-xl font-bold mb-4">Test Controls</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="runAllTests()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                    ▶️ Run All Tests
+                </button>
+                <button onclick="clearLog()" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700">
+                    🗑️ Clear Log
+                </button>
+                <button onclick="testLocalStorage()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">
+                    💾 Test localStorage
+                </button>
+                <button onclick="testAPICall()" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    🌐 Test API Call
+                </button>
+                <button onclick="testLocationParsing()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700">
+                    🗺️ Test Location Parsing
+                </button>
+                <button onclick="testFilterPopulation()" class="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700">
+                    📋 Test Filter Population
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h2 class="text-xl font-bold mb-4">Test Results</h2>
+            <div id="testResults" class="space-y-2">
+                <div class="text-gray-500 italic">Run tests to see results...</div>
+            </div>
+        </div>
+
+        <!-- Live Location Filter Preview -->
+        <div class="test-section">
+            <h2 class="text-xl font-bold mb-4">Live Location Filter Preview</h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Location Filter Dropdown:</label>
+                <select id="locationFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    <option value="">All Locations</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+                <p id="locationFilterHint" class="text-xs text-gray-500 mt-2" style="display: none;"></p>
+            </div>
+            <button onclick="populateFilter()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                Populate Filter Now
+            </button>
+        </div>
+
+        <!-- Debug Log -->
+        <div class="test-section">
+            <h2 class="text-xl font-bold mb-4">Debug Log</h2>
+            <div id="debugLog" class="p-4"></div>
+        </div>
+
+        <!-- Raw Data Inspector -->
+        <div class="test-section">
+            <h2 class="text-xl font-bold mb-4">Raw Data Inspector</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-semibold mb-2">localStorage.currentUser</h3>
+                    <pre id="localStorageData" class="bg-gray-100 p-4 rounded text-xs overflow-x-auto">Loading...</pre>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-2">window.user</h3>
+                    <pre id="windowUserData" class="bg-gray-100 p-4 rounded text-xs overflow-x-auto">Loading...</pre>
+                </div>
+            </div>
+            <button onclick="refreshDataInspector()" class="mt-4 bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-700">
+                🔄 Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Location Filter Manager (original) -->
+    <script src="js/find-tutors/location-filter-manager.js"></script>
+
+    <!-- Debug Script -->
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let testResults = {};
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '';
+            log('Log cleared', 'info');
+        }
+
+        function updateTestResult(testName, status, message) {
+            testResults[testName] = { status, message };
+            renderTestResults();
+        }
+
+        function renderTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = Object.entries(testResults).map(([test, result]) => {
+                const statusClass = result.status === 'pass' ? 'status-success' :
+                                  result.status === 'fail' ? 'status-error' : 'status-pending';
+                const icon = result.status === 'pass' ? '✅' :
+                           result.status === 'fail' ? '❌' : '⏳';
+                return `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <span class="${statusClass} status-badge">${icon} ${test}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">${result.message}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function testLocalStorage() {
+            log('Testing localStorage...', 'info');
+            const userStr = localStorage.getItem('currentUser');
+
+            if (!userStr) {
+                log('❌ No currentUser in localStorage', 'error');
+                updateTestResult('localStorage', 'fail', 'No currentUser found');
+                return false;
+            }
+
+            try {
+                const user = JSON.parse(userStr);
+                log(`✅ Found user: ${user.first_name || 'Unknown'}`, 'success');
+                log(`   - User ID: ${user.id}`, 'info');
+                log(`   - Location: ${user.location || 'NOT SET'}`, user.location ? 'success' : 'error');
+                log(`   - Active Role: ${user.active_role || 'NOT SET'}`, 'info');
+
+                if (user.location) {
+                    updateTestResult('localStorage', 'pass', `Location found: ${user.location}`);
+                    return true;
+                } else {
+                    updateTestResult('localStorage', 'fail', 'Location field is empty or missing');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ Error parsing user data: ${e.message}`, 'error');
+                updateTestResult('localStorage', 'fail', `Parse error: ${e.message}`);
+                return false;
+            }
+        }
+
+        async function testAPICall() {
+            log('Testing API /me endpoint...', 'info');
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                log('❌ No access token found', 'error');
+                updateTestResult('API Call', 'fail', 'No token available');
+                return false;
+            }
+
+            log(`✅ Token found (length: ${token.length})`, 'success');
+
+            try {
+                log(`Making request to ${API_BASE_URL}/api/me`, 'info');
+                const response = await fetch(`${API_BASE_URL}/api/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log(`Response status: ${response.status}`, response.ok ? 'success' : 'error');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ API Error: ${errorText}`, 'error');
+                    updateTestResult('API Call', 'fail', `HTTP ${response.status}`);
+                    return false;
+                }
+
+                const userData = await response.json();
+                log(`✅ API Response received`, 'success');
+                log(`   - User ID: ${userData.id}`, 'info');
+                log(`   - First Name: ${userData.first_name}`, 'info');
+                log(`   - Location: ${userData.location || 'NOT SET'}`, userData.location ? 'success' : 'error');
+                log(`   - Location field in response: ${typeof userData.location}`, 'info');
+
+                if (userData.location) {
+                    updateTestResult('API Call', 'pass', `Location: ${userData.location}`);
+                    return true;
+                } else {
+                    updateTestResult('API Call', 'fail', 'Location field empty in API response');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ API Call failed: ${e.message}`, 'error');
+                updateTestResult('API Call', 'fail', `Error: ${e.message}`);
+                return false;
+            }
+        }
+
+        function testLocationParsing() {
+            log('Testing location parsing...', 'info');
+
+            const testCases = [
+                { input: 'Megenagna, Yeka, Addis Ababa, Ethiopia', expected: 4 },
+                { input: 'Bole, Addis Ababa, Ethiopia', expected: 3 },
+                { input: 'Addis Ababa, Ethiopia', expected: 2 },
+                { input: 'Ethiopia', expected: 1 },
+                { input: '', expected: 0 },
+                { input: null, expected: 0 }
+            ];
+
+            let allPassed = true;
+
+            testCases.forEach((testCase, index) => {
+                const result = LocationFilterManager.parseLocation(testCase.input);
+                const partsCount = result.parts.length;
+                const passed = partsCount === testCase.expected;
+
+                if (passed) {
+                    log(`✅ Test ${index + 1}: "${testCase.input}" → ${partsCount} parts`, 'success');
+                } else {
+                    log(`❌ Test ${index + 1}: "${testCase.input}" → Expected ${testCase.expected}, got ${partsCount}`, 'error');
+                    allPassed = false;
+                }
+
+                if (result.parts.length > 0) {
+                    log(`   Parsed: ${JSON.stringify(result)}`, 'info');
+                }
+            });
+
+            if (allPassed) {
+                updateTestResult('Location Parsing', 'pass', 'All test cases passed');
+            } else {
+                updateTestResult('Location Parsing', 'fail', 'Some test cases failed');
+            }
+
+            return allPassed;
+        }
+
+        async function testFilterPopulation() {
+            log('Testing filter population...', 'info');
+
+            const select = document.getElementById('locationFilter');
+            if (!select) {
+                log('❌ Location filter dropdown not found!', 'error');
+                updateTestResult('Filter Population', 'fail', 'Dropdown element not found');
+                return false;
+            }
+
+            log('✅ Dropdown element found', 'success');
+
+            // Get user location
+            const userLocation = await LocationFilterManager.getUserLocation();
+
+            if (!userLocation) {
+                log('❌ No user location available', 'error');
+                updateTestResult('Filter Population', 'fail', 'No location to populate');
+                return false;
+            }
+
+            log(`✅ User location: ${userLocation}`, 'success');
+
+            // Parse and populate
+            const location = LocationFilterManager.parseLocation(userLocation);
+            LocationFilterManager.populateLocationFilter(location);
+
+            // Count options
+            const optionCount = select.options.length;
+            log(`✅ Populated ${optionCount} options`, 'success');
+
+            for (let i = 0; i < select.options.length; i++) {
+                log(`   Option ${i}: ${select.options[i].text} = "${select.options[i].value}"`, 'info');
+            }
+
+            if (optionCount > 1) {
+                updateTestResult('Filter Population', 'pass', `${optionCount} options added`);
+                return true;
+            } else {
+                updateTestResult('Filter Population', 'fail', 'Only default option present');
+                return false;
+            }
+        }
+
+        async function populateFilter() {
+            log('Manual filter population triggered...', 'info');
+            await LocationFilterManager.init();
+        }
+
+        async function runAllTests() {
+            clearLog();
+            log('='.repeat(60), 'info');
+            log('🚀 RUNNING ALL TESTS', 'info');
+            log('='.repeat(60), 'info');
+
+            testResults = {}; // Reset results
+
+            await testLocalStorage();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await testAPICall();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            testLocationParsing();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await testFilterPopulation();
+
+            log('='.repeat(60), 'info');
+            log('✅ ALL TESTS COMPLETE', 'success');
+            log('='.repeat(60), 'info');
+
+            // Summary
+            const passed = Object.values(testResults).filter(r => r.status === 'pass').length;
+            const failed = Object.values(testResults).filter(r => r.status === 'fail').length;
+            log(`Summary: ${passed} passed, ${failed} failed`, failed === 0 ? 'success' : 'error');
+        }
+
+        function refreshDataInspector() {
+            // localStorage data
+            const userStr = localStorage.getItem('currentUser');
+            document.getElementById('localStorageData').textContent = userStr
+                ? JSON.stringify(JSON.parse(userStr), null, 2)
+                : 'No currentUser in localStorage';
+
+            // window.user data
+            document.getElementById('windowUserData').textContent = window.user
+                ? JSON.stringify(window.user, null, 2)
+                : 'window.user not set';
+
+            log('Data inspector refreshed', 'info');
+        }
+
+        // Auto-refresh data inspector every 2 seconds
+        setInterval(refreshDataInspector, 2000);
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded', 'info');
+            refreshDataInspector();
+
+            // Auto-run tests after 1 second to allow auth to initialize
+            setTimeout(() => {
+                log('Auto-running tests in 3 seconds...', 'warn');
+                setTimeout(runAllTests, 3000);
+            }, 1000);
+        });
+
+        // Monitor storage changes
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'currentUser') {
+                log('localStorage currentUser changed!', 'warn');
+                refreshDataInspector();
+            }
+        });
+
+        // Monitor userDataLoaded event
+        document.addEventListener('userDataLoaded', (e) => {
+            log('userDataLoaded event fired!', 'success');
+            if (e.detail && e.detail.location) {
+                log(`   Location from event: ${e.detail.location}`, 'success');
+            }
+            refreshDataInspector();
+        });
+    </script>
+</body>
+</html>

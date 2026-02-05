@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Leave Astegni Modal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            text-align: center;
+        }
+        .test-button {
+            padding: 20px 40px;
+            font-size: 18px;
+            background: linear-gradient(to right, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        #debug {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <h1>Leave Astegni Modal Test</h1>
+
+    <button class="test-button" onclick="testOpenModal()">
+        🚪 Click to Test Leave Astegni Modal
+    </button>
+
+    <div id="debug">
+        <h3>Debug Info:</h3>
+        <div id="status"></div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Load the JavaScript -->
+    <script src="js/common-modals/leave-astegni-modal.js?v=20260127"></script>
+
+    <!-- Load the Modal HTML -->
+    <script>
+        fetch('modals/common-modals/leave-astegni-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('modal-container');
+                container.innerHTML = html;
+                addStatus('✅ Modal HTML loaded successfully', 'success');
+            })
+            .catch(error => {
+                addStatus('❌ Failed to load modal HTML: ' + error.message, 'error');
+            });
+
+        function testOpenModal() {
+            addStatus('🔵 Attempting to open modal...', 'success');
+
+            if (typeof openLeaveAstegniModal === 'function') {
+                addStatus('✅ openLeaveAstegniModal function exists', 'success');
+                openLeaveAstegniModal();
+            } else {
+                addStatus('❌ openLeaveAstegniModal function NOT found!', 'error');
+                addStatus('Available window functions: ' + Object.keys(window).filter(k => k.includes('Leave')).join(', '), 'error');
+            }
+        }
+
+        function addStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = 'status ' + type;
+            div.textContent = message;
+            statusDiv.appendChild(div);
+        }
+
+        // Check when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof openLeaveAstegniModal === 'function') {
+                    addStatus('✅ JavaScript loaded - openLeaveAstegniModal is available', 'success');
+                } else {
+                    addStatus('❌ JavaScript loaded but openLeaveAstegniModal is NOT available', 'error');
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+/* ============================================
+   TUTOR REQUESTS PANEL - TAB STYLES ONLY
+   ============================================ */
+
+/* Direction Tabs (Received/Sent) - Only for session requests */
+.request-direction-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.direction-tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.direction-tab:hover {
+    color: var(--primary-color);
+    background: var(--hover-bg);
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.direction-tab.active {
+    color: var(--primary-color);
+    font-weight: 600;
+    border-bottom-color: var(--primary-color);
+}
+
+.direction-tab i {
+    font-size: 1.1rem;
+}
+
+/* Responsive Design for Tabs */
+@media (max-width: 640px) {
+    .request-direction-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .direction-tab {
+        flex-shrink: 0;
+    }
+}

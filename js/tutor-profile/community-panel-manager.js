@@ -165,10 +165,48 @@
 
     /**
      * Switch Community Main Tab (triggered by clicking cards in the panel)
-     * @param {string} section - Section name ('connections', 'requests', 'events', 'clubs')
+     * @param {string} section - Section name ('connections', 'requests-sent', 'requests-received', 'events', 'clubs')
      */
     window.switchCommunityMainTab = function(section) {
         console.log(`🔄 [Tutor Panel] Switching to main section: ${section}`);
+
+        // Handle direct requests cards
+        if (section === 'requests-sent' || section === 'requests-received') {
+            // Hide all main tab content sections
+            const mainTabContents = document.querySelectorAll('.community-main-tab-content');
+            mainTabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Show requests content
+            const requestsContent = document.getElementById('requests-main-tab-content');
+            if (requestsContent) {
+                requestsContent.classList.remove('hidden');
+                console.log(`✅ [Tutor Panel] Showing requests-main-tab-content`);
+            }
+
+            // Update active state on cards
+            const mainCards = document.querySelectorAll('.community-main-card');
+            mainCards.forEach(card => {
+                card.classList.remove('active-community-card');
+                card.style.transform = '';
+                card.style.boxShadow = '';
+            });
+
+            // Add active state to clicked card
+            const activeCard = document.getElementById(`${section}-main-tab`);
+            if (activeCard) {
+                activeCard.classList.add('active-community-card');
+                activeCard.style.transform = 'scale(1.02)';
+                activeCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+                console.log(`✅ [Tutor Panel] Activated ${section}-main-tab card`);
+            }
+
+            // Load appropriate requests subsection
+            const subsection = section === 'requests-sent' ? 'sent' : 'received';
+            toggleRequestsSubSection(subsection);
+            return;
+        }
 
         // Hide all main tab content sections
         const mainTabContents = document.querySelectorAll('.community-main-tab-content');
@@ -563,27 +601,6 @@
             return;
         }
 
-        // Update card active states
-        const requestCards = document.querySelectorAll('#requests-main-tab-content > div:first-child > div');
-
-        requestCards.forEach(card => {
-            card.classList.remove('active-requests-card');
-            card.style.transform = '';
-            card.style.boxShadow = '';
-        });
-
-        // Find and activate the clicked card
-        const clickedCard = Array.from(requestCards).find(card =>
-            card.getAttribute('onclick')?.includes(`'${subsection}'`)
-        );
-
-        if (clickedCard) {
-            clickedCard.classList.add('active-requests-card');
-            clickedCard.style.transform = 'scale(1.02)';
-            clickedCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)';
-            console.log(`✅ [Tutor Panel] Activated ${subsection} requests card`);
-        }
-
         // Load data for the subsection
         loadRequestsData(subsection);
     };
@@ -653,10 +670,10 @@
             console.log(`✅ [Tutor Panel] Fetched ${requests.length} ${type} requests from API`);
             console.log('🔍 [DEBUG] Raw requests from API:', requests);
 
-            // Update count in summary card
-            const countElement = document.getElementById(`${type}-requests-count`);
-            if (countElement) {
-                countElement.textContent = requests.length;
+            // Update count in main card (on community panel main view)
+            const mainCountElement = document.getElementById(`${type}-requests-count-main`);
+            if (mainCountElement) {
+                mainCountElement.textContent = requests.length;
             }
 
             // Display requests with pagination
@@ -1048,7 +1065,7 @@
                             ${event.price > 0 ? `
                             <div class="flex items-center gap-2 text-sm text-gray-600">
                                 <span>💰</span>
-                                <span>${event.price} ETB</span>
+                                <span>${event.price} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
                             </div>
                             ` : '<div class="flex items-center gap-2 text-sm text-green-600"><span>🎁</span><span>Free</span></div>'}
                         </div>
@@ -1306,7 +1323,7 @@
                             ${club.is_paid ? `
                             <div class="flex items-center gap-2 text-sm text-gray-600">
                                 <span>💰</span>
-                                <span>${club.membership_fee} ETB</span>
+                                <span>${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
                             </div>
                             ` : '<div class="flex items-center gap-2 text-sm text-green-600"><span>🎁</span><span>Free</span></div>'}
                         </div>
@@ -1512,12 +1529,57 @@
     // INITIALIZATION
     // ============================================
 
+    /**
+     * Load request counts for the main cards (async, doesn't block UI)
+     */
+    async function loadRequestCounts() {
+        try {
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) return;
+
+            // Get active role from JWT token
+            let activeRole = 'tutor';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                activeRole = payload.role || 'tutor';
+            } catch (e) {
+                console.warn('Could not parse role from token, defaulting to tutor');
+            }
+
+            // Fetch sent requests count
+            const sentResponse = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (sentResponse.ok) {
+                const sentRequests = await sentResponse.json();
+                const sentCountMain = document.getElementById('sent-requests-count-main');
+                if (sentCountMain) sentCountMain.textContent = sentRequests.length;
+            }
+
+            // Fetch received requests count
+            const receivedResponse = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (receivedResponse.ok) {
+                const receivedRequests = await receivedResponse.json();
+                const receivedCountMain = document.getElementById('received-requests-count-main');
+                if (receivedCountMain) receivedCountMain.textContent = receivedRequests.length;
+            }
+        } catch (error) {
+            console.warn('Could not load request counts:', error);
+        }
+    }
+
     // When the community panel is opened via sidebar, load connections by default
     document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ [Tutor Panel] Community Panel Manager (FIXED) initialized');
 
         // Listen for panel switches
-        const communityMenuItem = document.querySelector('.sidebar-item[data-panel="tutor-community"]');
+        const communityMenuItem = document.querySelector('.sidebar-item[data-panel="community"]');
         if (communityMenuItem) {
             communityMenuItem.addEventListener('click', function() {
                 console.log('🎯 [Tutor Panel] Community panel opened from sidebar');
@@ -1528,6 +1590,230 @@
             });
         }
     });
+
+    // ============================================
+    // REQUESTS SUBSECTION FUNCTIONS
+    // ============================================
+
+    window.toggleRequestsSubSection = function(subsection) {
+        console.log('Toggling requests subsection:', subsection);
+
+        // Hide all requests subsections
+        const subsections = document.querySelectorAll('.requests-subsection');
+        subsections.forEach(section => {
+            section.classList.add('hidden');
+        });
+
+        // Show selected subsection
+        const selectedSubsection = document.getElementById(`${subsection}-requests-subsection`);
+        if (selectedSubsection) {
+            selectedSubsection.classList.remove('hidden');
+        }
+
+        // IMPORTANT: Fetch data when subsection is toggled
+        console.log(`📥 Fetching ${subsection} requests data...`);
+        if (subsection === 'sent') {
+            window.loadSentRequests();
+        } else if (subsection === 'received') {
+            window.loadReceivedRequests();
+        }
+    };
+
+    // Filter sent requests by status
+    window.filterSentRequests = function(status) {
+        console.log('Filtering sent requests by status:', status);
+
+        // Update active tab styling
+        const tabs = document.querySelectorAll('.sent-requests-status-tab');
+        tabs.forEach(tab => {
+            const tabStatus = tab.getAttribute('data-status');
+            if (tabStatus === status) {
+                // Active tab
+                tab.classList.remove('border-transparent', 'text-gray-600');
+                tab.classList.add('border-blue-600', 'text-blue-600');
+            } else {
+                // Inactive tab
+                tab.classList.remove('border-blue-600', 'text-blue-600');
+                tab.classList.add('border-transparent', 'text-gray-600');
+            }
+        });
+
+        // Filter the list
+        const sentRequestsList = document.getElementById('sent-requests-list');
+        if (!sentRequestsList) return;
+
+        const allItems = sentRequestsList.querySelectorAll('[data-status]');
+        allItems.forEach(item => {
+            const itemStatus = item.getAttribute('data-status');
+            if (status === 'all' || itemStatus === status) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    };
+
+    // Filter received requests by status
+    window.filterReceivedRequests = function(status) {
+        console.log('Filtering received requests by status:', status);
+
+        // Update active tab styling
+        const tabs = document.querySelectorAll('.received-requests-status-tab');
+        tabs.forEach(tab => {
+            const tabStatus = tab.getAttribute('data-status');
+            if (tabStatus === status) {
+                // Active tab
+                tab.classList.remove('border-transparent', 'text-gray-600');
+                tab.classList.add('border-green-600', 'text-green-600');
+            } else {
+                // Inactive tab
+                tab.classList.remove('border-green-600', 'text-green-600');
+                tab.classList.add('border-transparent', 'text-gray-600');
+            }
+        });
+
+        // Filter the list
+        const receivedRequestsList = document.getElementById('received-requests-list');
+        if (!receivedRequestsList) return;
+
+        const allItems = receivedRequestsList.querySelectorAll('[data-status]');
+        allItems.forEach(item => {
+            const itemStatus = item.getAttribute('data-status');
+            if (status === 'all' || itemStatus === status) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    };
+
+    // Load sent requests from API
+    window.loadSentRequests = async function() {
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+        const token = localStorage.getItem('token');
+        const listElement = document.getElementById('sent-requests-list');
+
+        if (!listElement) return;
+        if (!token) {
+            listElement.innerHTML = '<p class="text-center text-gray-500 py-8">Please log in to view sent requests</p>';
+            return;
+        }
+
+        // Get active role from JWT token
+        let activeRole = 'tutor';
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            activeRole = payload.role || 'tutor';
+        } catch (e) {
+            console.warn('Could not parse role from token, defaulting to tutor');
+        }
+
+        listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading sent requests...</p></div>';
+
+        try {
+            // Get outgoing connection requests (status=pending, direction=outgoing - new schema, filtered by role)
+            const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const requests = await response.json();
+
+                // Update count in main card (on community panel main view)
+                const mainCountElement = document.getElementById('sent-requests-count-main');
+                if (mainCountElement) {
+                    mainCountElement.textContent = requests.length;
+                }
+
+                if (requests.length === 0) {
+                    listElement.innerHTML = '<div class="text-center py-8"><span class="text-4xl">📤</span><p class="text-gray-500 mt-2">No sent requests yet</p></div>';
+                    return;
+                }
+
+                // Display requests (using createRequestCard if available, otherwise placeholder)
+                if (typeof createRequestCard === 'function') {
+                    listElement.innerHTML = requests.map(req => createRequestCard(req, 'sent')).join('');
+                } else {
+                    listElement.innerHTML = requests.map(req => `
+                        <div class="card p-4" data-status="${req.status || 'pending'}">
+                            <p>${req.requester_name || 'Unknown'}</p>
+                            <p class="text-sm text-gray-600">${req.status || 'pending'}</p>
+                        </div>
+                    `).join('');
+                }
+                console.log(`✓ Loaded ${requests.length} sent requests`);
+            } else {
+                listElement.innerHTML = '<p class="text-center text-red-500 py-8">Failed to load sent requests</p>';
+            }
+        } catch (error) {
+            console.error('Error loading sent requests:', error);
+            listElement.innerHTML = '<p class="text-center text-red-500 py-8">Error loading sent requests</p>';
+        }
+    };
+
+    // Load received requests from API
+    window.loadReceivedRequests = async function() {
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+        const token = localStorage.getItem('token');
+        const listElement = document.getElementById('received-requests-list');
+
+        if (!listElement) return;
+        if (!token) {
+            listElement.innerHTML = '<p class="text-center text-gray-500 py-8">Please log in to view received requests</p>';
+            return;
+        }
+
+        // Get active role from JWT token
+        let activeRole = 'tutor';
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            activeRole = payload.role || 'tutor';
+        } catch (e) {
+            console.warn('Could not parse role from token, defaulting to tutor');
+        }
+
+        listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading received requests...</p></div>';
+
+        try {
+            // Get incoming connection requests (status=pending, direction=incoming - new schema, filtered by role)
+            const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const requests = await response.json();
+
+                // Update count in main card (on community panel main view)
+                const mainCountElement = document.getElementById('received-requests-count-main');
+                if (mainCountElement) {
+                    mainCountElement.textContent = requests.length;
+                }
+
+                if (requests.length === 0) {
+                    listElement.innerHTML = '<div class="text-center py-8"><span class="text-4xl">📥</span><p class="text-gray-500 mt-2">No received requests yet</p></div>';
+                    return;
+                }
+
+                // Display requests (using createRequestCard if available, otherwise placeholder)
+                if (typeof createRequestCard === 'function') {
+                    listElement.innerHTML = requests.map(req => createRequestCard(req, 'received')).join('');
+                } else {
+                    listElement.innerHTML = requests.map(req => `
+                        <div class="card p-4" data-status="${req.status || 'pending'}">
+                            <p>${req.requester_name || 'Unknown'}</p>
+                            <p class="text-sm text-gray-600">${req.status || 'pending'}</p>
+                        </div>
+                    `).join('');
+                }
+                console.log(`✓ Loaded ${requests.length} received requests`);
+            } else {
+                listElement.innerHTML = '<p class="text-center text-red-500 py-8">Failed to load received requests</p>';
+            }
+        } catch (error) {
+            console.error('Error loading received requests:', error);
+            listElement.innerHTML = '<p class="text-center text-red-500 py-8">Error loading received requests</p>';
+        }
+    };
 
     console.log('✅ Tutor Community Panel Manager (FIXED) loaded successfully');
 

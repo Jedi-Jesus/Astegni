@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Schedule Test</title>
+</head>
+<body>
+    <h1>Simple Schedule Test</h1>
+    <p>Open console and check results</p>
+    
+    <script>
+        // This should run AFTER all scripts load
+        window.addEventListener('load', () => {
+            console.log('=== SIMPLE SCHEDULE TEST ===');
+            console.log('1. filterSchedulesByRole:', typeof window.filterSchedulesByRole);
+            console.log('2. loadSchedules:', typeof window.loadSchedules);
+            console.log('3. allSchedules:', typeof window.allSchedules);
+            
+            if (typeof window.filterSchedulesByRole === 'undefined') {
+                console.error('❌ filterSchedulesByRole is NOT defined!');
+                console.log('Checking if schedule-panel-manager.js loaded...');
+                const script = document.querySelector('script[src*="schedule-panel-manager"]');
+                console.log('Script element:', script);
+                console.log('Script src:', script?.src);
+            } else {
+                console.log('✅ All functions loaded correctly!');
+            }
+        });
+    </script>
+</body>
+</html>

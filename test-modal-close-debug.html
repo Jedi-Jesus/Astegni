@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Close Debug Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <h1>Modal Close Button Test</h1>
+    <button onclick="openCourseRequestModal()" style="padding: 10px 20px; margin: 10px;">Open Course Modal</button>
+    <button onclick="openSchoolRequestModal()" style="padding: 10px 20px; margin: 10px;">Open School Modal</button>
+
+    <div id="modal-container"></div>
+
+    <!-- Load the managers -->
+    <script>
+        // Set up API URL
+        window.API_BASE_URL = 'http://localhost:8000';
+
+        // Add debug logging
+        console.log('[Debug] Page loaded, setting up window functions check...');
+
+        setInterval(() => {
+            console.log('[Debug] closeCourseRequestModal exists:', typeof window.closeCourseRequestModal);
+            console.log('[Debug] closeSchoolRequestModal exists:', typeof window.closeSchoolRequestModal);
+        }, 5000);
+    </script>
+    <script src="js/tutor-profile/course-request-manager.js"></script>
+    <script src="js/common-modals/school-request-manager.js"></script>
+
+    <script>
+        console.log('[Debug] After loading managers:');
+        console.log('[Debug] closeCourseRequestModal:', typeof window.closeCourseRequestModal);
+        console.log('[Debug] closeSchoolRequestModal:', typeof window.closeSchoolRequestModal);
+    </script>
+</body>
+</html>

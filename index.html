@@ -38,6 +38,11 @@
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdn.sheetjs.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Google Fonts - For Appearance Modal Font Selection -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,6 +77,9 @@
 
     <!-- Favicon -->
     <!-- <link rel="icon" type="image/png" href="/favicon.png"> -->
+
+    <!-- Role Switch Debugger (DEVELOPMENT ONLY - Press Ctrl+Shift+D to toggle) -->
+    <script src="js/utils/role-switch-debugger.js"></script>
 </head>
 
 <body class="font-sans">
@@ -110,9 +118,9 @@
                         onclick="handleNavLinkClick(event, 'find-tutors')">
                         <span class="nav-icon">👨‍🏫</span> Find Tutors
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
-                        onclick="handleNavLinkClick(event, 'reels')">
-                        <span class="nav-icon">🎬</span> Reels
+                    <a class="nav-link px-2 py-1 rounded" href="branch/videos.html"
+                        onclick="handleNavLinkClick(event, 'videos')">
+                        <span class="nav-icon">🎬</span> Videos
                     </a>
                     <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
                         <span class="nav-icon">📚</span> Bookstore
@@ -157,6 +165,29 @@
                             </a>
 
                             <div class="dropdown-divider"></div>
+
+                            <!-- Deletion Countdown Banner (shown when role is scheduled for deletion) -->
+                            <div id="deletion-countdown-banner" class="deletion-countdown-banner hidden">
+                                <div class="countdown-content">
+                                    <div class="countdown-icon">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="countdown-text">
+                                        <div class="countdown-title">Role Scheduled for Deletion</div>
+                                        <div class="countdown-details">
+                                            Your <span id="countdown-role-name" class="font-semibold"></span> role will be deleted in
+                                            <span id="countdown-days" class="font-bold text-orange-600"></span> days
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="openAddRoleModal()" class="countdown-restore-btn">
+                                    Restore Role
+                                </button>
+                            </div>
+
+                            <div class="dropdown-divider" id="countdown-divider" style="display: none;"></div>
 
                             <!-- Role switcher (shown only if user has multiple roles) -->
                             <div id="role-switcher-section" class="role-switcher-section hidden">
@@ -230,8 +261,8 @@
             <a class="mobile-menu-link" href="branch/find-tutors.html">
                 <span class="nav-icon">👨‍🏫</span> Find Tutors
             </a>
-            <a class="mobile-menu-link" href="branch/reels.html">
-                <span class="nav-icon">🎬</span> Reels
+            <a class="mobile-menu-link" href="branch/videos.html">
+                <span class="nav-icon">🎬</span> Videos
             </a>
             <a class="mobile-menu-link" href="#" onclick="handleNavLinkClick(event, 'store'); closeMobileMenu();">
                 <span class="nav-icon">📚</span> Bookstore
@@ -511,7 +542,7 @@
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
     <div class="ad-container premium-ad" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -520,7 +551,7 @@
                 <span class="ad-label">Ad 1</span>
                 <h3 class="ad-title">Premium Advertising Services</h3>
                 <p class="ad-text">Reach your target audience effectively</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -532,7 +563,7 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -541,7 +572,7 @@
                 <span class="ad-label">Ad 2</span>
                 <h3 class="ad-title">Boost Your Brand Visibility</h3>
                 <p class="ad-text">Connect with thousands of students and educators</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Started</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Started</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -553,7 +584,7 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -562,7 +593,7 @@
                 <span class="ad-label">Ad 3</span>
                 <h3 class="ad-title">Targeted Education Marketing</h3>
                 <p class="ad-text">Reach parents and students across Ethiopia</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise Now</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Advertise Now</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -574,7 +605,7 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -583,7 +614,7 @@
                 <span class="ad-label">Ad 4</span>
                 <h3 class="ad-title">Your Ad Could Be Here</h3>
                 <p class="ad-text">Premium placement for maximum visibility</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Start Campaign</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Start Campaign</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -724,7 +755,7 @@
     <!-- Rotating Ad Section 2 - 4 Placeholder Ads -->
     <div class="ad-container premium-ad" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -733,7 +764,7 @@
                 <span class="ad-label">Ad 1</span>
                 <h3 class="ad-title">Discover Top Tutors</h3>
                 <p class="ad-text">Find expert educators in your area</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Browse Tutors</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -745,7 +776,7 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -754,7 +785,7 @@
                 <span class="ad-label">Ad 2</span>
                 <h3 class="ad-title">Partner With Astegni</h3>
                 <p class="ad-text">Expand your educational business reach</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Partner Now</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Partner Now</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -766,7 +797,7 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -775,7 +806,7 @@
                 <span class="ad-label">Ad 3</span>
                 <h3 class="ad-title">School Management Solutions</h3>
                 <p class="ad-text">Streamline your institution's operations</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -787,7 +818,7 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -796,7 +827,7 @@
                 <span class="ad-label">Ad 4</span>
                 <h3 class="ad-title">Advertise With Us</h3>
                 <p class="ad-text">Premium placement for maximum impact</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Get Quote</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Quote</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1117,6 +1148,13 @@
     <script src="js/common-modals/coming-soon-modal.js"></script>
     <script src="js/common-modals/logout-modal.js"></script>
     <script src="js/common-modals/accept-team-invite-modal.js"></script>
+    <script src="js/common-modals/deletion-countdown-banner.js"></script>
+    <!-- Appearance Manager - Theme & Color Palette Sync -->
+    <script src="js/common-modals/appearance-manager.js?v=20260127"></script>
+    <!-- Account Restoration Modal JavaScript -->
+    <script src="js/common-modals/account-restoration-modal.js"></script>
+    <!-- Account Restoration Confirmation Modal JavaScript (BEFORE login) -->
+    <script src="js/common-modals/account-restoration-confirm-modal.js"></script>
     <!-- Standalone Chat Call Modal JavaScript -->
     <script src="js/common-modals/chat-call-modal.js"></script>
 
@@ -1131,6 +1169,24 @@
                     console.log('✅ Standalone Chat Call Modal loaded for index');
                 })
                 .catch(err => console.error('Failed to load chat-call-modal:', err));
+
+            // Load account restoration modal (AFTER login)
+            fetch('modals/common-modals/account-restoration-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Account Restoration Modal loaded for index');
+                })
+                .catch(err => console.error('Failed to load account-restoration-modal:', err));
+
+            // Load account restoration confirmation modal (BEFORE login)
+            fetch('modals/common-modals/account-restoration-confirm-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Account Restoration Confirmation Modal loaded for index');
+                })
+                .catch(err => console.error('Failed to load account-restoration-confirm-modal:', err));
         });
     </script>
 

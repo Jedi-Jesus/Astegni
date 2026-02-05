@@ -1,0 +1,117 @@
+<!-- Manual Attendance Marking Modal -->
+<div id="mark-attendance-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-clipboard-check"></i>
+                Mark Attendance
+            </h2>
+            <button class="modal-close" onclick="closeMarkAttendanceModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                Manually mark attendance for this session. This will override any automated suggestions.
+            </p>
+
+            <!-- Tutor Attendance -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-chalkboard-teacher"></i> Tutor Attendance
+                </label>
+                <div style="display: flex; gap: 12px;">
+                    <button
+                        class="attendance-option-btn"
+                        data-status="present"
+                        data-type="tutor"
+                        onclick="selectAttendanceStatus('tutor', 'present', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Present</div>
+                    </button>
+                    <button
+                        class="attendance-option-btn"
+                        data-status="late"
+                        data-type="tutor"
+                        onclick="selectAttendanceStatus('tutor', 'late', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-clock" style="color: #F59E0B; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Late</div>
+                    </button>
+                    <button
+                        class="attendance-option-btn"
+                        data-status="absent"
+                        data-type="tutor"
+                        onclick="selectAttendanceStatus('tutor', 'absent', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-times-circle" style="color: #EF4444; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Absent</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student Attendance -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-user-graduate"></i> Student Attendance
+                </label>
+                <div style="display: flex; gap: 12px;">
+                    <button
+                        class="attendance-option-btn"
+                        data-status="present"
+                        data-type="student"
+                        onclick="selectAttendanceStatus('student', 'present', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Present</div>
+                    </button>
+                    <button
+                        class="attendance-option-btn"
+                        data-status="late"
+                        data-type="student"
+                        onclick="selectAttendanceStatus('student', 'late', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-clock" style="color: #F59E0B; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Late</div>
+                    </button>
+                    <button
+                        class="attendance-option-btn"
+                        data-status="absent"
+                        data-type="student"
+                        onclick="selectAttendanceStatus('student', 'absent', this)"
+                        style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-times-circle" style="color: #EF4444; font-size: 1.5rem;"></i>
+                        <div style="margin-top: 8px; font-weight: 600;">Absent</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes (Optional) -->
+            <div class="form-group">
+                <label for="attendance-notes" style="display: block; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-sticky-note"></i> Notes (Optional)
+                </label>
+                <textarea
+                    id="attendance-notes"
+                    rows="3"
+                    placeholder="Add any notes about the attendance (e.g., 'Student had emergency')"
+                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-family: inherit; resize: vertical;">
+                </textarea>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="closeMarkAttendanceModal()">
+                Cancel
+            </button>
+            <button class="btn-primary" onclick="submitManualAttendance()" id="submit-attendance-btn">
+                <i class="fas fa-save"></i> Save Attendance
+            </button>
+        </div>
+    </div>
+</div>

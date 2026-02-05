@@ -73,29 +73,10 @@
                     console.log('User authenticated:', user?.email);
                     console.log('User role:', userRole);
 
-                    // Update UI with user info
+                    // Set global user for video player
+                    // NOTE: Profile UI updates are handled by profile-system.js
+                    // Don't update profile dropdown here to avoid conflicts with deletion-countdown-banner
                     if (user) {
-                        const profilePic = document.getElementById('profile-pic');
-                        const profileName = document.getElementById('profile-name');
-
-                        if (profilePic && user.profile_picture) {
-                            profilePic.src = user.profile_picture;
-                        } else if (profilePic) {
-                            // Use default avatar
-                            profilePic.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23667eea"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="white" font-size="14" font-family="Arial"%3EU%3C/text%3E%3C/svg%3E';
-                        }
-
-                        if (profileName) {
-                            profileName.textContent = user.first_name || user.name?.split(' ')[0] || "User";
-                        }
-
-                        // Show profile container
-                        const profileContainer = document.getElementById('profile-container');
-                        if (profileContainer) {
-                            profileContainer.classList.remove('hidden');
-                        }
-
-                        // Set global user for video player
                         window.currentUser = user;
                     }
                 }
@@ -114,20 +95,8 @@
             auth.logout();
         }
 
-        // Profile dropdown toggle
-        function toggleProfileDropdown() {
-            const dropdownMenu = document.getElementById('profile-dropdown-menu');
-            const toggleButton = document.getElementById('profile-dropdown-toggle');
-            if (dropdownMenu) {
-                dropdownMenu.classList.toggle('show');
-                // Also toggle active class on button for arrow animation
-                if (toggleButton) {
-                    toggleButton.classList.toggle('active');
-                }
-            }
-        }
-        // Expose to global scope for onclick handlers
-        window.toggleProfileDropdown = toggleProfileDropdown;
+        // Profile dropdown toggle is now handled by profile-system.js
+        // Removed duplicate function to prevent conflicts with deletion-countdown-banner.js
 
         // Show authentication modal
         function showAuthModal() {

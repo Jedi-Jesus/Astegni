@@ -1284,7 +1284,7 @@
             'achievement': 'Achievement',
             'experience': 'Experience',
             'certification': 'Certification',
-            'academic_certificate': 'Academic Certificate',
+            'academic': 'Academic',
             'extracurricular': 'Extracurricular'
         };
         return labels[type] || type || 'Unknown';
@@ -1296,7 +1296,7 @@
             'achievement': 'fa-trophy',
             'experience': 'fa-briefcase',
             'certification': 'fa-certificate',
-            'academic_certificate': 'fa-scroll',
+            'academic': 'fa-scroll',
             'extracurricular': 'fa-running'
         };
         return icons[type] || 'fa-file-alt';

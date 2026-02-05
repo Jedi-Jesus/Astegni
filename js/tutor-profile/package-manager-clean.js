@@ -6,6 +6,8 @@
  */
 
 const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+// Track last active panel for sidebar toggle
+let lastActivePanel = "packages";
 
 class PackageManagerClean {
     constructor() {
@@ -114,7 +116,7 @@ class PackageManagerClean {
                     grade_level: packageData.gradeLevel || null,
                     course_ids: packageData.courseIds || [],  // Array of course IDs (status from courses table)
                     description: packageData.description || null,
-                    session_format: Array.isArray(packageData.sessionFormat) ? packageData.sessionFormat.join(', ') : null,
+                    session_format: packageData.sessionFormat || null,  // Single value: 'Online' or 'In-person'
                     schedule_type: packageData.scheduleType || 'recurring',
                     schedule_days: Array.isArray(packageData.scheduleDays) ? packageData.scheduleDays.join(', ') : null,
                     start_time: packageData.startTime || null,
@@ -228,7 +230,7 @@ class PackageManagerClean {
                     name: data.name,
                     grade_level: data.gradeLevel || null,
                     course_ids: data.courseIds || [],  // Array of course IDs (status from courses table)
-                    session_format: Array.isArray(data.sessionFormat) ? data.sessionFormat.join(', ') : null,
+                    session_format: data.sessionFormat || null,  // Single value: 'Online' or 'In-person'
                     schedule_type: data.scheduleType || 'recurring',
                     schedule_days: Array.isArray(data.scheduleDays) ? data.scheduleDays.join(', ') : null,
                     start_time: data.startTime || null,
@@ -332,7 +334,7 @@ class PackageManagerClean {
             courseIds: backendPackage.course_ids || [],
             courses: backendPackage.courses || [],  // Approved course objects from courses table
             pendingCourses: backendPackage.pending_courses || [],  // Pending course objects (filtered by status)
-            sessionFormat: backendPackage.session_format ? backendPackage.session_format.split(', ').filter(f => f) : [],
+            session_format: backendPackage.session_format || null,  // Single value: 'Online' or 'In-person'
             scheduleType: backendPackage.schedule_type || 'recurring',
             scheduleDays: backendPackage.schedule_days ? backendPackage.schedule_days.split(', ').filter(d => d) : [],
             startTime: backendPackage.start_time || '09:00',
@@ -415,7 +417,7 @@ async function _openPackageModalInternal() {
         // Initialize sidebar state based on screen size
         const isDesktop = window.innerWidth >= 1024;
         const sidebarContent = document.getElementById('sidebarContent');
-        const sidebar = document.getElementById('packageSidebar');
+        const sidebar = document.getElementById('packageManagementSidebar');
 
         if (isDesktop && sidebarContent) {
             // Show sidebar content by default on desktop
@@ -505,7 +507,7 @@ function renderPackagesList() {
                 <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent); animation: shimmerContainer 3s infinite; pointer-events: none;"></div>
                 <div style="position: relative; z-index: 1; text-align: center;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: white; line-height: 1;">${pkg.hourlyRate}</div>
-                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-top: 0.25rem; font-weight: 500;">ETB/hr</div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-top: 0.25rem; font-weight: 500;">${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}/hr</div>
                 </div>
             </div>
 
@@ -588,7 +590,7 @@ window.createNewPackage = async function() {
  */
 
 window.togglePackageSidebar = function() {
-    const sidebar = document.getElementById('packageSidebar');
+    const sidebar = document.getElementById('packageManagementSidebar');
     const layout = document.querySelector('.package-layout');
     const backdrop = document.getElementById('sidebarBackdrop');
     const sidebarContent = document.getElementById('sidebarContent');
@@ -615,6 +617,47 @@ window.togglePackageSidebar = function() {
         if (sidebarContent) {
             if (isVisible) {
                 sidebarContent.classList.add('active');
+                sidebarContent.style.display = ''; // Reset display
+
+                // Restore last active panel instead of forcing packages
+                const packagesPanel = document.getElementById('packagesPanel');
+                const marketTrendPanel = document.getElementById('marketTrendPanel');
+
+                if (lastActivePanel === 'market-trend') {
+                    if (packagesPanel) packagesPanel.classList.remove('active');
+                    if (marketTrendPanel) marketTrendPanel.classList.add('active');
+                } else {
+                    if (packagesPanel) packagesPanel.classList.add('active');
+                    if (marketTrendPanel) marketTrendPanel.classList.remove('active');
+                }
+
+                // Set corresponding icon button as active
+                const iconButtons = document.querySelectorAll('.sidebar-icon-btn');
+                iconButtons.forEach(btn => {
+                    if (btn.getAttribute('data-panel') === lastActivePanel) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // Restore corresponding main view
+                const packageEditorContainer = document.getElementById('packageEditorContainer');
+                const marketTrendView = document.getElementById('marketTrendView');
+
+                if (lastActivePanel === 'market-trend') {
+                    if (packageEditorContainer) packageEditorContainer.classList.add('hidden');
+                    if (marketTrendView) {
+                        marketTrendView.classList.add('active');
+                        marketTrendView.style.display = 'flex';
+                    }
+                } else {
+                    if (packageEditorContainer) packageEditorContainer.classList.remove('hidden');
+                    if (marketTrendView) {
+                        marketTrendView.classList.remove('active');
+                        marketTrendView.style.display = 'none';
+                    }
+                }
             } else {
                 sidebarContent.classList.remove('active');
             }
@@ -635,13 +678,57 @@ window.togglePackageSidebar = function() {
                 sidebarContent.classList.remove('active');
             } else {
                 sidebarContent.classList.add('active');
-                // Also ensure packages panel is active
+                sidebarContent.style.display = ''; // Reset display
+
+                // Restore last active panel instead of forcing packages
                 const packagesPanel = document.getElementById('packagesPanel');
-                if (packagesPanel) {
-                    packagesPanel.classList.add('active');
+                const marketTrendPanel = document.getElementById('marketTrendPanel');
+
+                if (lastActivePanel === 'market-trend') {
+                    if (packagesPanel) packagesPanel.classList.remove('active');
+                    if (marketTrendPanel) marketTrendPanel.classList.add('active');
+                } else {
+                    if (packagesPanel) packagesPanel.classList.add('active');
+                    if (marketTrendPanel) marketTrendPanel.classList.remove('active');
+                }
+
+                // Set corresponding icon button as active
+                const iconButtons = document.querySelectorAll('.sidebar-icon-btn');
+                iconButtons.forEach(btn => {
+                    if (btn.getAttribute('data-panel') === lastActivePanel) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // Restore corresponding main view
+                const packageEditorContainer = document.getElementById('packageEditorContainer');
+                const marketTrendView = document.getElementById('marketTrendView');
+
+                if (lastActivePanel === 'market-trend') {
+                    if (packageEditorContainer) packageEditorContainer.classList.add('hidden');
+                    if (marketTrendView) {
+                        marketTrendView.classList.add('active');
+                        marketTrendView.style.display = 'flex';
+                    }
+                } else {
+                    if (packageEditorContainer) packageEditorContainer.classList.remove('hidden');
+                    if (marketTrendView) {
+                        marketTrendView.classList.remove('active');
+                        marketTrendView.style.display = 'none';
+                    }
                 }
             }
         }
+
+        // Resize chart if it exists (after sidebar toggle animation)
+        setTimeout(() => {
+            if (window.marketChartInstance && typeof window.marketChartInstance.resize === 'function') {
+                window.marketChartInstance.resize();
+                console.log('📊 Chart resized after sidebar toggle');
+            }
+        }, 450); // Wait for CSS transition to complete (0.4s + buffer)
 
         console.log(`🖥️ Desktop: Sidebar ${isCollapsed ? 'collapsed' : 'expanded'} (content + packages panel)`);
     }
@@ -685,6 +772,8 @@ window.toggleCalculatorWidget = function() {
 
 window.switchPackagePanel = function(panelName) {
     console.log('🔄 Switching to panel:', panelName);
+    // Store the last active panel for sidebar toggle
+    lastActivePanel = panelName;
 
     // Update icon button states
     const iconButtons = document.querySelectorAll('#package-management-modal .sidebar-icon-btn');
@@ -701,9 +790,18 @@ window.switchPackagePanel = function(panelName) {
     const marketTrendView = document.getElementById('marketTrendView');
     const sidebarContent = document.getElementById('sidebarContent');
 
+    // Get sidebar panels
+    const packagesPanel = document.getElementById('packagesPanel');
+    const marketTrendPanel = document.getElementById('marketTrendPanel');
+
     // Get modal header elements
     const modalTitle = document.getElementById('modalTitle');
     const modalSubtitle = document.getElementById('modalSubtitle');
+
+    // Get sidebar elements
+    const sidebar = document.getElementById('packageManagementSidebar');
+    const packageLayout = document.querySelector('#package-management-modal .package-layout');
+    const backdrop = document.getElementById('sidebarBackdrop');
 
     if (panelName === 'market-trend') {
         // Hide package editor container, show market trend view (full width)
@@ -715,39 +813,29 @@ window.switchPackagePanel = function(panelName) {
             marketTrendView.style.display = 'flex';
         }
 
-        // FIX 1: ALWAYS hide sidebar content when market trends is clicked
+        // Show sidebar with market trend panel
         if (sidebarContent) {
-            sidebarContent.classList.remove('active');
+            sidebarContent.classList.add('active');
+            sidebarContent.style.display = '';
         }
 
-        // FIX 1: Also hide packages panel explicitly
-        const packagesPanel = document.getElementById('packagesPanel');
+        // Switch sidebar panels - hide packages, show market trend
         if (packagesPanel) {
             packagesPanel.classList.remove('active');
         }
+        if (marketTrendPanel) {
+            marketTrendPanel.classList.add('active');
+        }
 
-        // FIX 1: On mobile, also close the sidebar overlay completely
-        const sidebar = document.getElementById('packageSidebar');
-        const packageLayout = document.querySelector('#package-management-modal .package-layout');
-        const backdrop = document.getElementById('sidebarBackdrop');
-        const isMobile = window.innerWidth <= 1024;
-
-        if (isMobile) {
-            // Mobile: Close sidebar overlay
-            if (sidebar) {
-                sidebar.classList.remove('visible');
-            }
-            if (backdrop) {
-                backdrop.classList.remove('active');
-            }
-        } else {
-            // Desktop: Keep sidebar open, just hide content
-            if (sidebar) {
-                sidebar.classList.remove('collapsed');
-            }
-            if (packageLayout) {
-                packageLayout.classList.remove('sidebar-collapsed');
-            }
+        // Ensure sidebar is not collapsed
+        if (sidebar) {
+            sidebar.classList.remove('collapsed');
+        }
+        if (packageLayout) {
+            packageLayout.classList.remove('sidebar-collapsed');
+        }
+        if (backdrop) {
+            backdrop.classList.remove('active');
         }
 
         // Hide Save Package button (not relevant for market trends)
@@ -763,15 +851,24 @@ window.switchPackagePanel = function(panelName) {
             modalSubtitle.style.display = 'block';
         }
 
-        // Initialize the default view (Pricing Trends) - container is visible by default
+        // Initialize the default view (Line Graph) - container is visible by default
         setTimeout(() => {
+            // Ensure graph container is visible and table/price containers are hidden
+            const graphContainer = document.getElementById('marketGraphContainer');
+            const tableContainer = document.getElementById('marketTableContainer');
+            const priceContainer = document.getElementById('marketPriceContainer');
+
+            if (graphContainer) graphContainer.classList.remove('hidden');
+            if (tableContainer) tableContainer.classList.add('hidden');
+            if (priceContainer) priceContainer.classList.add('hidden');
+
             // Auto-load graph if not already loaded
             if (!marketChartInstance && typeof updateMarketGraph === 'function') {
                 updateMarketGraph();
             }
         }, 100);
 
-        console.log('✅ Market trend view displayed (full width), sidebar content hidden');
+        console.log('✅ Market trend view displayed with sidebar panel');
     } else {
         // Show package editor container (editor + calculator), hide market trend view
         if (packageEditorContainer) {
@@ -785,16 +882,32 @@ window.switchPackagePanel = function(panelName) {
         // Show sidebar content with packages panel
         if (sidebarContent) {
             sidebarContent.classList.add('active');
+            sidebarContent.style.display = ''; // Reset display property
+        }
+
+        // Switch sidebar panels - show packages, hide market trend
+        if (packagesPanel) {
+            packagesPanel.classList.add('active');
+        }
+        if (marketTrendPanel) {
+            marketTrendPanel.classList.remove('active');
         }
 
         // Ensure sidebar is not collapsed
-        const sidebar = document.getElementById('packageSidebar');
-        const packageLayout = document.querySelector('#package-management-modal .package-layout');
         if (sidebar) {
             sidebar.classList.remove('collapsed');
         }
         if (packageLayout) {
             packageLayout.classList.remove('sidebar-collapsed');
+        }
+
+        // IMPORTANT: Populate packages list when switching to packages panel
+        console.log('📦 Rendering packages list...');
+        renderPackagesList();
+
+        // If packages exist and none is currently selected, select the first one
+        if (window.packageManagerClean.packages.length > 0 && !window.packageManagerClean.currentPackageId) {
+            selectPackage(window.packageManagerClean.packages[0].id);
         }
 
         // Reset modal header
@@ -1066,16 +1179,12 @@ function renderPackageEditor() {
                     </div>
                     <div class="checkbox-group" style="display: flex; gap: 24px; flex-wrap: wrap;">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="formatOnline" ${pkg.sessionFormat?.includes('online') ? 'checked' : ''}>
+                            <input type="radio" name="sessionFormat" id="formatOnline" value="Online" ${pkg.session_format?.toLowerCase() === 'online' ? 'checked' : ''}>
                             <span><i class="fas fa-laptop"></i> Online</span>
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" id="formatInPerson" ${pkg.sessionFormat?.includes('in-person') ? 'checked' : ''}>
+                            <input type="radio" name="sessionFormat" id="formatInPerson" value="In-person" ${pkg.session_format?.toLowerCase() === 'in-person' ? 'checked' : ''}>
                             <span><i class="fas fa-users"></i> In-Person</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="formatSelfPaced" ${pkg.sessionFormat?.includes('self-paced') ? 'checked' : ''}>
-                            <span><i class="fas fa-clock"></i> Self-Paced</span>
                         </label>
                     </div>
                 </div>
@@ -1184,7 +1293,7 @@ function renderPackageEditor() {
                             </select>
                         </div>
                         <div class="form-field">
-                            <label><i class="fas fa-dollar-sign"></i> Hourly Rate (ETB)</label>
+                            <label><i class="fas fa-dollar-sign"></i> Hourly Rate (${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'})</label>
                             <input type="number" id="hourlyRate" value="${pkg.hourlyRate}" min="0" placeholder="200" oninput="updateCalculator()">
                         </div>
                     </div>
@@ -1273,6 +1382,19 @@ function renderPackageEditor() {
         };
     } else {
         console.warn('⚠️ Add course button not found in DOM!');
+    }
+
+    // Add event listener for "Make an Estimate" checkbox
+    const makeEstimateCheckbox = document.getElementById('makeEstimate');
+    if (makeEstimateCheckbox) {
+        makeEstimateCheckbox.addEventListener('change', async function(e) {
+            if (e.target.checked) {
+                console.log('💰 Make an Estimate checked - fetching suggested market price...');
+                await fetchAndApplyMarketPrice();
+            } else {
+                console.log('ℹ️ Make an Estimate unchecked');
+            }
+        });
     }
 
     // Initial calculator update
@@ -2041,19 +2163,19 @@ window.updateCalculator = function() {
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">Base ${paymentFreq === '2-weeks' ? '2-Week' : 'Monthly'} Fee</span>
-            <span class="calc-result-value">${fees.basePayment.toFixed(2)} ETB</span>
+            <span class="calc-result-value">${fees.basePayment.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">3 Months Total (${discount3}% off)</span>
-            <span class="calc-result-value">${fees.threeMonths.toFixed(2)} ETB</span>
+            <span class="calc-result-value">${fees.threeMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">6 Months Total (${discount6}% off)</span>
-            <span class="calc-result-value">${fees.sixMonths.toFixed(2)} ETB</span>
+            <span class="calc-result-value">${fees.sixMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
         </div>
         <div class="calc-result-row total">
             <span class="calc-result-label">Yearly Total (${discountYear}% off)</span>
-            <span class="calc-result-value">${fees.yearly.toFixed(2)} ETB</span>
+            <span class="calc-result-value">${fees.yearly.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
         </div>
     `;
 };
@@ -2090,11 +2212,9 @@ window.saveCurrentPackage = async function() {
         }
     }
 
-    // Get session format checkboxes
-    const sessionFormat = [];
-    if (document.getElementById('formatOnline')?.checked) sessionFormat.push('online');
-    if (document.getElementById('formatInPerson')?.checked) sessionFormat.push('in-person');
-    if (document.getElementById('formatSelfPaced')?.checked) sessionFormat.push('self-paced');
+    // Get session format from radio button (only one can be selected)
+    const sessionFormatRadio = document.querySelector('input[name="sessionFormat"]:checked');
+    const sessionFormat = sessionFormatRadio ? sessionFormatRadio.value : null;
 
     // Get schedule type
     const scheduleType = document.querySelector('input[name="pkg-schedule-type"]:checked')?.value || 'recurring';
@@ -2291,10 +2411,8 @@ function renderPackagesGrid() {
                         <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Format</span>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        ${pkg.sessionFormat && pkg.sessionFormat.length > 0
-                            ? pkg.sessionFormat.map(format =>
-                                `<span style="background: var(--badge-bg); color: var(--primary-color); border: 1px solid var(--badge-border); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize;">${format}</span>`
-                              ).join('')
+                        ${pkg.session_format
+                            ? `<span style="background: var(--badge-bg); color: var(--primary-color); border: 1px solid var(--badge-border); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">${pkg.session_format}</span>`
                             : `<span style="color: var(--text-secondary); font-size: 0.875rem;">Not specified</span>`
                         }
                     </div>
@@ -2427,12 +2545,10 @@ window.viewPackage = function(packageId) {
 
     // Session Format
     const formatContainer = document.getElementById('view-pkg-format');
-    if (pkg.sessionFormat && pkg.sessionFormat.length > 0) {
-        formatContainer.innerHTML = pkg.sessionFormat.map(format =>
-            `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm capitalize">${format}</span>`
-        ).join('');
+    if (pkg.session_format) {
+        formatContainer.innerHTML = `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">${pkg.session_format}</span>`;
     } else {
-        formatContainer.innerHTML = '<p class="text-gray-500">No format specified</p>';
+        formatContainer.innerHTML = '<p class="text-gray-500">Not specified</p>';
     }
 
     // Schedule Type
@@ -2741,3 +2857,94 @@ document.addEventListener('click', function(event) {
         resultsContainer.style.display = 'none';
     }
 });
+
+/**
+ * Fetch suggested market price and apply it to hourly rate
+ * Called when "Make an Estimate" checkbox is checked
+ */
+async function fetchAndApplyMarketPrice() {
+    const hourlyRateInput = document.getElementById('hourlyRate');
+    if (!hourlyRateInput) {
+        console.error('❌ Hourly rate input not found');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Please log in to get market pricing');
+        return;
+    }
+
+    // Show loading state in hourly rate input
+    const originalValue = hourlyRateInput.value;
+    hourlyRateInput.value = 'Loading...';
+    hourlyRateInput.disabled = true;
+
+    // Get session format from universal session format radio button (same as Market Trend)
+    const sessionFormatRadio = document.querySelector('input[name="universalSessionFormat"]:checked');
+    const sessionFormat = sessionFormatRadio ? sessionFormatRadio.value : 'Online';  // Default to Online
+
+    try {
+        // Fetch suggested market price from API
+        const response = await fetch(`${API_BASE_URL}/api/market-pricing/suggest-price`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                time_period_months: 3,  // Default to 3 months (consistent with Price Suggestion)
+                session_format: sessionFormat  // Include session format for accurate pricing
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        const suggestedPrice = data.suggested_price;
+
+        console.log('✅ Suggested market price fetched:', suggestedPrice, 'ETB', `(${sessionFormat || 'any format'})`);
+
+        // Apply suggested price to hourly rate
+        hourlyRateInput.value = suggestedPrice;
+        hourlyRateInput.disabled = false;
+
+        // Trigger calculator update
+        const event = new Event('input', { bubbles: true });
+        hourlyRateInput.dispatchEvent(event);
+
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #16a34a; color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; animation: slideInRight 0.3s ease-out;';
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <strong>Market Price Applied!</strong> ${suggestedPrice} ETB based on market data
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+
+    } catch (error) {
+        console.error('❌ Failed to fetch market price:', error);
+
+        // Restore original value
+        hourlyRateInput.value = originalValue;
+        hourlyRateInput.disabled = false;
+
+        // Show error notification
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #dc2626; color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;';
+        notification.innerHTML = `
+            <i class="fas fa-times-circle"></i>
+            <strong>Error!</strong> Could not fetch market price. Please enter manually.
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.remove(), 4000);
+    }
+}

@@ -300,16 +300,39 @@ function updateUIForLoggedInUser() {
     }
 
     if (dropdownUserRole) {
-        const role = APP_STATE.currentUser.active_role || APP_STATE.userRole || 'user';
-        dropdownUserRole.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        const role = APP_STATE.currentUser.active_role || APP_STATE.userRole;
+
+        // Handle case where user has no active role
+        if (!role || role === 'null' || role === 'undefined') {
+            dropdownUserRole.textContent = 'No role selected';
+        } else {
+            dropdownUserRole.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        }
     }
 
     // Make profile header clickable - navigate to role profile page
     if (dropdownProfileLink) {
         const role = APP_STATE.currentUser.active_role || APP_STATE.userRole;
-        const profileUrl = PROFILE_URLS[role] || 'index.html';
-        dropdownProfileLink.href = profileUrl;
-        console.log('[updateUIForLoggedInUser] Profile link set to:', profileUrl);
+
+        // Handle case where user has no active role
+        if (!role || role === 'null' || role === 'undefined') {
+            dropdownProfileLink.href = '#';
+            dropdownProfileLink.onclick = (e) => {
+                e.preventDefault();
+                // Open "Add Role" modal
+                if (window.openAddRoleModal && typeof window.openAddRoleModal === 'function') {
+                    window.openAddRoleModal();
+                } else {
+                    console.warn('[updateUIForLoggedInUser] openAddRoleModal function not found');
+                }
+            };
+            console.log('[updateUIForLoggedInUser] No active role - profile link opens Add Role modal');
+        } else {
+            const profileUrl = PROFILE_URLS[role] || 'index.html';
+            dropdownProfileLink.href = profileUrl;
+            dropdownProfileLink.onclick = null; // Remove onclick if there was one
+            console.log('[updateUIForLoggedInUser] Profile link set to:', profileUrl);
+        }
     }
 
     // Update role switcher if user has multiple roles
@@ -342,24 +365,63 @@ async function handleLogin(e) {
         updateProfileLink(result.user.role);
         showToast("Welcome back!", "success");
 
-        // Check for intended destination
-        const intendedDestination = localStorage.getItem("intendedDestination");
-        if (intendedDestination) {
-            localStorage.removeItem("intendedDestination");
+        // Check if account is scheduled for deletion
+        // If so, show restoration modal instead of redirecting
+        if (window.AccountRestorationModal) {
+            console.log('[Login] Checking for scheduled account deletion...');
+            await window.AccountRestorationModal.checkAndShowModal();
+
+            // Wait a moment to see if modal appears
             setTimeout(() => {
-                window.location.href = intendedDestination;
+                const restorationModal = document.getElementById('account-restoration-modal');
+                const isModalShowing = restorationModal && !restorationModal.classList.contains('hidden');
+
+                if (!isModalShowing) {
+                    // No deletion scheduled, proceed with normal redirect
+                    proceedWithRedirect();
+                }
             }, 500);
         } else {
-            // Redirect to role-specific profile page after login
-            const profileUrl = PROFILE_URLS[result.user.role];
-            if (profileUrl) {
+            // AccountRestorationModal not loaded, proceed with redirect
+            proceedWithRedirect();
+        }
+
+        function proceedWithRedirect() {
+            // Check for intended destination
+            const intendedDestination = localStorage.getItem("intendedDestination");
+            if (intendedDestination) {
+                localStorage.removeItem("intendedDestination");
                 setTimeout(() => {
-                    window.location.href = profileUrl;
-                }, 1000);
+                    window.location.href = intendedDestination;
+                }, 500);
+            } else {
+                // Redirect to role-specific profile page after login
+                const profileUrl = PROFILE_URLS[result.user.role];
+                if (profileUrl) {
+                    setTimeout(() => {
+                        window.location.href = profileUrl;
+                    }, 1000);
+                }
             }
         }
+    } else if (result.error) {
+        // Check if error is account pending deletion (403 status)
+        if (result.error.includes('ACCOUNT_PENDING_DELETION') || result.deletionInfo) {
+            console.log('[Login] Account has pending deletion - showing confirmation modal');
+
+            // Show restoration confirmation modal BEFORE logging in
+            if (window.showRestorationConfirmModal) {
+                window.showRestorationConfirmModal(email, password, result.deletionInfo);
+            } else {
+                // Fallback if modal not loaded
+                showToast('Your account is scheduled for deletion. Please contact support.', 'error');
+            }
+        } else {
+            // Normal login error
+            showToast(result.error || "Invalid credentials", "error");
+        }
     } else {
-        showToast(result.error || "Invalid credentials", "error");
+        showToast("Invalid credentials", "error");
     }
 }
 
@@ -476,15 +538,11 @@ async function handleRegister(e) {
         return;
     }
 
-    // Store data temporarily
+    // Store data temporarily (no role - user will add roles later)
     tempRegistrationData = {
-        first_name: formData.get("register-firstname"),
-        father_name: formData.get("register-fathername"),
-        grandfather_name: formData.get("register-grandfathername"),
         email: email,
         phone: '',
         password: password,
-        role: document.getElementById("register-as")?.value,
     };
 
     // Show confirmation modal
@@ -516,9 +574,6 @@ window.editRegistrationInfo = function() {
         openModal('register-modal');
         // Optionally prefill the form with stored data
         if (tempRegistrationData) {
-            document.getElementById('register-firstname').value = tempRegistrationData.first_name;
-            document.getElementById('register-fathername').value = tempRegistrationData.father_name;
-            document.getElementById('register-grandfathername').value = tempRegistrationData.grandfather_name;
             document.getElementById('register-email').value = tempRegistrationData.email;
         }
     }, 300);

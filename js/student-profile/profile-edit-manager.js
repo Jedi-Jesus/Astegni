@@ -172,6 +172,108 @@ function addHobby() {
 
 // Quote is now a single value field (removed addQuote function)
 
+/**
+ * Add new social link field
+ */
+function addSocialLink() {
+    const container = document.getElementById('social-media-container');
+    if (!container) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '0.5rem';
+    wrapper.style.marginBottom = '0.5rem';
+
+    const platformSelect = document.createElement('select');
+    platformSelect.className = 'form-input social-platform-select';
+    platformSelect.style.minWidth = '150px';
+    platformSelect.innerHTML = `
+        <option value="">Select Platform</option>
+        <option value="facebook">Facebook</option>
+        <option value="twitter">Twitter</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="instagram">Instagram</option>
+        <option value="youtube">YouTube</option>
+        <option value="telegram">Telegram</option>
+        <option value="website">Website</option>
+    `;
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.className = 'form-input social-url-input';
+    urlInput.placeholder = 'URL (e.g., https://facebook.com/yourpage)';
+    urlInput.style.flex = '1';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'btn-secondary';
+    removeBtn.style.padding = '0.5rem 1rem';
+    removeBtn.style.minWidth = 'auto';
+    removeBtn.onclick = () => wrapper.remove();
+
+    wrapper.appendChild(platformSelect);
+    wrapper.appendChild(urlInput);
+    wrapper.appendChild(removeBtn);
+
+    container.appendChild(wrapper);
+}
+
+/**
+ * Load existing social links into form
+ */
+function loadSocialLinks(socialLinks) {
+    const container = document.getElementById('social-media-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (socialLinks && typeof socialLinks === 'object') {
+        Object.entries(socialLinks).forEach(([platform, url]) => {
+            if (platform && url) {
+                addSocialLink();
+                const wrappers = container.querySelectorAll('div');
+                const lastWrapper = wrappers[wrappers.length - 1];
+                if (lastWrapper) {
+                    const platformSelect = lastWrapper.querySelector('.social-platform-select');
+                    const urlInput = lastWrapper.querySelector('.social-url-input');
+                    if (platformSelect) platformSelect.value = platform;
+                    if (urlInput) urlInput.value = url;
+                }
+            }
+        });
+    }
+
+    // Add one empty field if no links exist
+    if (!container.children.length) {
+        addSocialLink();
+    }
+}
+
+/**
+ * Collect social links from form
+ */
+function collectSocialLinks() {
+    const container = document.getElementById('social-media-container');
+    if (!container) return {};
+
+    const socialLinks = {};
+    const wrappers = container.querySelectorAll('div');
+
+    wrappers.forEach(wrapper => {
+        const platformSelect = wrapper.querySelector('.social-platform-select');
+        const urlInput = wrapper.querySelector('.social-url-input');
+        const platform = platformSelect?.value?.trim();
+        const url = urlInput?.value?.trim();
+
+        if (platform && url) {
+            socialLinks[platform] = url;
+        }
+    });
+
+    return socialLinks;
+}
+
 // ============================================
 // DATA LOADING AND POPULATION
 // ============================================
@@ -223,6 +325,31 @@ function populateEditForm(data) {
     if (data.about) document.getElementById('edit-about').value = data.about;
     if (data.career_aspirations) document.getElementById('edit-career-aspirations').value = data.career_aspirations;
 
+    // Load display_location checkbox (show/hide location on public profile)
+    const displayLocationCheckbox = document.getElementById('edit-display-location');
+    if (displayLocationCheckbox) {
+        displayLocationCheckbox.checked = data.display_location === true;
+        console.log('[Student Edit] display_location loaded:', data.display_location);
+    }
+
+    // Disable GPS checkbox if location exists (require "Change Location" button click to enable)
+    const allowLocationCheckbox = document.getElementById('allow-location-access');
+    const changeLocationBtn = document.getElementById('change-location-btn');
+    if (allowLocationCheckbox && data.location) {
+        allowLocationCheckbox.checked = false;
+        allowLocationCheckbox.disabled = true; // Make unselectable
+        // Show "Change Location" button
+        if (changeLocationBtn) {
+            changeLocationBtn.classList.remove('hidden');
+        }
+        console.log('[Student Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
+    } else if (allowLocationCheckbox) {
+        allowLocationCheckbox.disabled = false;
+        if (changeLocationBtn) {
+            changeLocationBtn.classList.add('hidden');
+        }
+    }
+
     // Hero subtitle (single value from array - take first element)
     if (data.hero_subtitle && Array.isArray(data.hero_subtitle) && data.hero_subtitle.length > 0) {
         document.getElementById('edit-hero-subtitle').value = data.hero_subtitle[0];
@@ -252,6 +379,9 @@ function populateEditForm(data) {
     populateArrayField('interested-in-container', 'interested-in-input', data.interested_in, 'input', addInterestedIn);
     populateArrayField('languages-container', 'language-input', data.languages, 'input', addLanguage);
     populateArrayField('hobbies-container', 'hobby-input', data.hobbies, 'input', addHobby);
+
+    // Social links
+    loadSocialLinks(data.social_links || {});
 }
 
 /**
@@ -372,12 +502,17 @@ async function saveStudentProfile() {
 
         const heroSubtitle = heroSubtitleEl?.value?.trim() || '';
         const quote = quoteEl?.value?.trim() || '';
+        const displayLocationCheckbox = document.getElementById('edit-display-location');
+        const displayLocation = displayLocationCheckbox?.checked || false;
+
+        console.log('[Student Save] display_location value:', displayLocation);
 
         const profileData = {
             hero_title: collectArrayValues('hero-title-input'),
             hero_subtitle: heroSubtitle ? [heroSubtitle] : [],
             username: usernameEl?.value?.trim() || null,
             location: locationEl?.value?.trim() || null,
+            display_location: displayLocation,
             studying_at: studyingAtEl?.value?.trim() || null,
             grade_level: gradeLevelEl?.value || null,
             interested_in: collectArrayValues('interested-in-input'),
@@ -386,7 +521,8 @@ async function saveStudentProfile() {
             hobbies: collectArrayValues('hobby-input'),
             quote: quote ? [quote] : [],
             about: aboutEl?.value?.trim() || null,
-            career_aspirations: careerAspirationsEl?.value?.trim() || null
+            career_aspirations: careerAspirationsEl?.value?.trim() || null,
+            social_links: collectSocialLinks()
         };
 
         console.log('🔵 [DEBUG] Profile data collected:', profileData);
@@ -673,12 +809,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Handle "Change Location" button click for student profile
+function handleChangeLocationStudent() {
+    const allowLocationCheckbox = document.getElementById('allow-location-access');
+    const changeLocationBtn = document.getElementById('change-location-btn');
+
+    if (allowLocationCheckbox) {
+        allowLocationCheckbox.disabled = false; // Enable the checkbox
+        allowLocationCheckbox.checked = false; // Uncheck it
+        console.log('[Student Edit] GPS checkbox enabled for location change');
+    }
+
+    if (changeLocationBtn) {
+        changeLocationBtn.style.display = 'none'; // Hide the button
+    }
+}
+
 // Export functions for global access
 window.showNotification = showNotification;
 window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
 window.saveStudentProfile = saveStudentProfile;
+window.handleChangeLocationStudent = handleChangeLocationStudent;
 window.addHeroTitle = addHeroTitle;
 window.addInterestedIn = addInterestedIn;
 window.addLanguage = addLanguage;
 window.addHobby = addHobby;
+window.addSocialLink = addSocialLink;

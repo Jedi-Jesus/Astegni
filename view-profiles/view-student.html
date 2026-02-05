@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - View Student</title>
+    <!-- Preconnect for faster font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts - For Appearance Modal Font Selection -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v=20251217"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,6 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css?v=3">
+    <link rel="stylesheet" href="../css/root/profile-dropdown.css">
     <link rel="stylesheet" href="../css/find-tutors/navbar.css">
     <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <!-- admin.css removed - not needed for view pages, was causing tooltip transparency -->
@@ -968,17 +974,14 @@
             <!-- Right Section: Nav Menu + Actions -->
             <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
                 <div class="nav-items" style="display: flex; gap: 0.25rem;">
-                    <a class="nav-link" href="../index.html">
-                        <span class="nav-icon">🏠</span> Home
-                    </a>
                     <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
                         <span class="nav-icon">📰</span> News
                     </a>
                     <a class="nav-link" href="../branch/find-tutors.html">
                         <span class="nav-icon">👨‍🏫</span> Find Tutors
                     </a>
-                    <a class="nav-link" href="../branch/reels.html">
-                        <span class="nav-icon">🎬</span> Reels
+                    <a class="nav-link" href="../branch/videos.html">
+                        <span class="nav-icon">🎬</span> Videos
                     </a>
                     <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
                         <span class="nav-icon">📚</span> Bookstore
@@ -1020,6 +1023,29 @@
                         </a>
 
                         <div class="dropdown-divider"></div>
+
+                        <!-- Deletion Countdown Banner (shown when role is scheduled for deletion) -->
+                        <div id="deletion-countdown-banner" class="deletion-countdown-banner hidden">
+                            <div class="countdown-content">
+                                <div class="countdown-icon">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="countdown-text">
+                                    <div class="countdown-title">Role Scheduled for Deletion</div>
+                                    <div class="countdown-details">
+                                        Your <span id="countdown-role-name" class="font-semibold"></span> role will be deleted in
+                                        <span id="countdown-days" class="font-bold text-orange-600"></span> days
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openAddRoleModal()" class="countdown-restore-btn">
+                                Restore Role
+                            </button>
+                        </div>
+
+                        <div class="dropdown-divider" id="countdown-divider" style="display: none;"></div>
 
                         <!-- Role switcher (shown only if user has multiple roles) -->
                         <div id="role-switcher-section" class="role-switcher-section hidden">
@@ -1092,17 +1118,14 @@
         <div class="mobile-menu-content">
             <!-- Navigation Links -->
             <div class="mobile-nav-section">
-                <a href="../index.html" class="mobile-menu-link">
-                    <span class="nav-icon">🏠</span> Home
-                </a>
                 <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
                 <a href="../branch/find-tutors.html" class="mobile-menu-link">
                     <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </a>
-                <a href="../branch/reels.html" class="mobile-menu-link">
-                    <span class="nav-icon">🎬</span> Reels
+                <a href="../branch/videos.html" class="mobile-menu-link">
+                    <span class="nav-icon">🎬</span> Videos
                 </a>
                 <a href="#" class="mobile-menu-link" onclick="handleNavLinkClick(event, 'store')">
                     <span class="nav-icon">📚</span> Bookstore
@@ -1182,7 +1205,7 @@
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
     <div class="ad-container premium-ad" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1191,7 +1214,7 @@
                 <span class="ad-label">Ad 1</span>
                 <h3 class="ad-title">Unlock Your Full Potential</h3>
                 <p class="ad-text">Premium tutoring available</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1203,7 +1226,7 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1212,7 +1235,7 @@
                 <span class="ad-label">Ad 2</span>
                 <h3 class="ad-title">Study Materials Available</h3>
                 <p class="ad-text">Access quality resources</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Now</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Browse Now</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1224,7 +1247,7 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1233,7 +1256,7 @@
                 <span class="ad-label">Ad 3</span>
                 <h3 class="ad-title">Connect with Tutors</h3>
                 <p class="ad-text">Find expert guidance</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Find Tutors</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Find Tutors</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1245,7 +1268,7 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openAdAnalyticsModal()">
+        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
             <div class="ad-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
@@ -1254,7 +1277,7 @@
                 <span class="ad-label">Ad 4</span>
                 <h3 class="ad-title">Your Ad Space Here</h3>
                 <p class="ad-text">Connect with students</p>
-                <button class="ad-cta" onclick="openAdAnalyticsModal()">Advertise</button>
+                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Advertise</button>
             </div>
             <div class="ad-visual">
                 <div class="ad-circles">
@@ -1276,15 +1299,16 @@
                     <span class="sidebar-icon">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="switchPanel('overview'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">👤</span>
-                    <span>Student Overview</span>
-                </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('credentials'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📜</span>
                     <span>Credentials</span>
                     <span class="badge-count">12</span>
+                </a>
+                <a href="#" onclick="switchPanel('parents'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">👨‍👩‍👧</span>
+                    <span>Parents</span>
+                    <span class="badge-count">2</span>
                 </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('blog'); return false;" class="sidebar-link">
@@ -1293,16 +1317,21 @@
                     <span class="badge-count">7</span>
                 </a>
                 <hr class="my-4 border-gray-300">
-                <a href="#" onclick="switchPanel('parents'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">👨‍👩‍👧</span>
-                    <span>Parents</span>
-                    <span class="badge-count">2</span>
-                </a>
                 <a href="#" onclick="switchPanel('behavioral-notes'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📋</span>
                     <span>Behavioral Notes</span>
                     <span class="badge-count">12</span>
                 </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+                <a href="#" onclick="showLogoutModal(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                    <span class="sidebar-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
             </div>
         </div>
     </aside>
@@ -1548,6 +1577,12 @@
                                                 </div>
                                             </div>
 
+                                            <!-- Social Links -->
+                                            <div class="profile-social-links" id="social-links-container"
+                                                style="display: flex; gap: 0.75rem; margin-top: 1.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0;">
+                                                <!-- Social links will be populated dynamically by JS with beautiful styling -->
+                                            </div>
+
                                             <div class="profile-quote">
                                                 <span id="student-quote">"Knowledge is power. Learning never
                                                     stops."</span>
@@ -1566,6 +1601,12 @@
                                                 <button onclick="messageStudent()"
                                                     style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                                                     <span>💬</span> Message
+                                                </button>
+
+                                                <!-- Share Button -->
+                                                <button onclick="shareProfile()"
+                                                    style="padding: 0.875rem; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer;">
+                                                    <i class="fas fa-share-alt"></i> Share
                                                 </button>
                                             </div>
                                         </div>
@@ -1601,833 +1642,12 @@
                                 </div>
                             </section>
                         </div>
-
-                        <!-- Student Overview Panel -->
-                        <div id="overview-panel" class="panel-content">
-                            <h2
-                                style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; color: var(--heading); display: flex; align-items: center; gap: 0.75rem;">
-                                <span>👤</span> Student Overview
-                            </h2>
-
-                            <!-- Academic Profile Summary -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📋</span> Academic Profile
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #3b82f6;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Student ID</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">
-                                            STD-2024-0542</p>
-                                    </div>
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #10b981;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Grade Level</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">Grade 12
-                                            (Senior Year)</p>
-                                    </div>
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #f59e0b;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Academic Track</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">Natural
-                                            Sciences</p>
-                                    </div>
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #8b5cf6;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Enrollment Date</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">January
-                                            2020</p>
-                                    </div>
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #ef4444;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Expected Graduation</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">June
-                                            2025</p>
-                                    </div>
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #06b6d4;">
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                            Years in School</p>
-                                        <p style="font-size: 1.25rem; font-weight: 600; color: var(--heading);">4 Years
-                                        </p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Learning Progress Tracker -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📈</span> Learning Progress Tracker
-                                </h3>
-                                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                                    <!-- Mathematics Progress -->
-                                    <div>
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">📐 Mathematics</span>
-                                            <span style="font-weight: 600; color: #3b82f6;">92%</span>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 12px; background: rgba(var(--button-bg-rgb), 0.1); border-radius: 6px; overflow: hidden;">
-                                            <div
-                                                style="width: 92%; height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); border-radius: 6px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                            Excellent problem-solving skills, advanced calculus mastery</p>
-                                    </div>
-
-                                    <!-- Physics Progress -->
-                                    <div>
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">⚛️ Physics</span>
-                                            <span style="font-weight: 600; color: #10b981;">88%</span>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 12px; background: rgba(var(--button-bg-rgb), 0.1); border-radius: 6px; overflow: hidden;">
-                                            <div
-                                                style="width: 88%; height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 6px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                            Strong theoretical understanding, improving lab skills</p>
-                                    </div>
-
-                                    <!-- Chemistry Progress -->
-                                    <div>
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">🧪 Chemistry</span>
-                                            <span style="font-weight: 600; color: #8b5cf6;">95%</span>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 12px; background: rgba(var(--button-bg-rgb), 0.1); border-radius: 6px; overflow: hidden;">
-                                            <div
-                                                style="width: 95%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); border-radius: 6px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                            Outstanding organic chemistry knowledge, lab excellence</p>
-                                    </div>
-
-                                    <!-- Biology Progress -->
-                                    <div>
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">🧬 Biology</span>
-                                            <span style="font-weight: 600; color: #22c55e;">87%</span>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 12px; background: rgba(var(--button-bg-rgb), 0.1); border-radius: 6px; overflow: hidden;">
-                                            <div
-                                                style="width: 87%; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: 6px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                            Strong genetics knowledge, active in lab research</p>
-                                    </div>
-
-                                    <!-- English Progress -->
-                                    <div>
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">📚 English</span>
-                                            <span style="font-weight: 600; color: #f59e0b;">90%</span>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 12px; background: rgba(var(--button-bg-rgb), 0.1); border-radius: 6px; overflow: hidden;">
-                                            <div
-                                                style="width: 90%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 6px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <p
-                                            style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                            Strong writing skills, active debate team participant</p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Study Habits & Patterns -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📖</span> Study Habits & Patterns
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-                                    <div
-                                        style="padding: 1.5rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 12px;">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                            <span style="font-size: 2.5rem;">⏰</span>
-                                            <div>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Average
-                                                    Study Time</p>
-                                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">
-                                                    24 hrs/week</p>
-                                            </div>
-                                        </div>
-                                        <p style="font-size: 0.875rem; color: var(--text); line-height: 1.6;">Consistent
-                                            study schedule, prefers evening sessions (6-9 PM)</p>
-                                    </div>
-
-                                    <div
-                                        style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 12px;">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                            <span style="font-size: 2.5rem;">🎯</span>
-                                            <div>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Assignment
-                                                    Completion</p>
-                                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">
-                                                    98%</p>
-                                            </div>
-                                        </div>
-                                        <p style="font-size: 0.875rem; color: var(--text); line-height: 1.6;">Excellent
-                                            time management, rarely misses deadlines</p>
-                                    </div>
-
-                                    <div
-                                        style="padding: 1.5rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 12px;">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                            <span style="font-size: 2.5rem;">👥</span>
-                                            <div>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Learning
-                                                    Style</p>
-                                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">
-                                                    Collaborative</p>
-                                            </div>
-                                        </div>
-                                        <p style="font-size: 0.875rem; color: var(--text); line-height: 1.6;">Excels in
-                                            group projects, helps peers understand concepts</p>
-                                    </div>
-
-                                    <div
-                                        style="padding: 1.5rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); border-radius: 12px;">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                            <span style="font-size: 2.5rem;">🔍</span>
-                                            <div>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Research
-                                                    Skills</p>
-                                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">
-                                                    Advanced</p>
-                                            </div>
-                                        </div>
-                                        <p style="font-size: 0.875rem; color: var(--text); line-height: 1.6;">
-                                            Independently researches topics, uses credible sources</p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Attendance & Participation -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>✅</span> Attendance & Participation
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                                    <div
-                                        style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05)); border-radius: 12px;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">96%</div>
-                                        <p style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                            Attendance Rate</p>
-                                        <p style="font-size: 0.875rem; color: var(--text-secondary);">4 absences this
-                                            year</p>
-                                    </div>
-                                    <div
-                                        style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 12px;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">94%</div>
-                                        <p style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                            Class Participation</p>
-                                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Active contributor
-                                        </p>
-                                    </div>
-                                    <div
-                                        style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); border-radius: 12px;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">100%</div>
-                                        <p style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                            Punctuality</p>
-                                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Never late</p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Tutor Engagement History -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>👨‍🏫</span> Tutor Engagement History
-                                </h3>
-                                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                    <div
-                                        style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #3b82f6;">
-                                        <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
-                                            alt="Tutor"
-                                            style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-                                        <div style="flex: 1;">
-                                            <p
-                                                style="font-weight: 600; font-size: 1.125rem; color: var(--heading); margin-bottom: 0.25rem;">
-                                                Mr. Getachew Tesfaye</p>
-                                            <p
-                                                style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                                Mathematics Tutor • 24 sessions completed</p>
-                                            <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
-                                                <span style="color: var(--text);">📅 Since Jan 2024</span>
-                                                <span style="color: #f59e0b;">⭐ 5.0 rating</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="text-align: center; padding: 1rem; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05)); border-radius: 8px;">
-                                            <p style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">+15%</p>
-                                            <p style="font-size: 0.75rem; color: var(--text-secondary);">Improvement</p>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #10b981;">
-                                        <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
-                                            alt="Tutor"
-                                            style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-                                        <div style="flex: 1;">
-                                            <p
-                                                style="font-weight: 600; font-size: 1.125rem; color: var(--heading); margin-bottom: 0.25rem;">
-                                                Dr. Hanna Bekele</p>
-                                            <p
-                                                style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                                Science Tutor • 18 sessions completed</p>
-                                            <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
-                                                <span style="color: var(--text);">📅 Since Feb 2024</span>
-                                                <span style="color: #f59e0b;">⭐ 4.9 rating</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="text-align: center; padding: 1rem; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05)); border-radius: 8px;">
-                                            <p style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">+12%</p>
-                                            <p style="font-size: 0.75rem; color: var(--text-secondary);">Improvement</p>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; border-left: 4px solid #8b5cf6;">
-                                        <img src="../uploads/system_images/system_profile_pictures/man-user.png"
-                                            alt="Tutor"
-                                            style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-                                        <div style="flex: 1;">
-                                            <p
-                                                style="font-weight: 600; font-size: 1.125rem; color: var(--heading); margin-bottom: 0.25rem;">
-                                                Mr. Solomon Assefa</p>
-                                            <p
-                                                style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                                                Physics Tutor • 15 sessions completed</p>
-                                            <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
-                                                <span style="color: var(--text);">📅 Since Mar 2024</span>
-                                                <span style="color: #f59e0b;">⭐ 4.8 rating</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="text-align: center; padding: 1rem; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05)); border-radius: 8px;">
-                                            <p style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">+10%</p>
-                                            <p style="font-size: 0.75rem; color: var(--text-secondary);">Improvement</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Academic Performance (From Performance Panel) -->
-                            <h2
-                                style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; color: var(--heading); display: flex; align-items: center; gap: 0.75rem;">
-                                <span>📈</span> Academic Performance
-                            </h2>
-
-                            <!-- Performance Summary Stats -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📊</span> Performance Summary
-                                </h3>
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
-                                    <div
-                                        style="padding: 1.75rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 12px; text-align: center; border: 1px solid rgba(59, 130, 246, 0.2);">
-                                        <div
-                                            style="font-size: 3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem;">
-                                            3.8</div>
-                                        <div
-                                            style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.25rem;">
-                                            Overall GPA</div>
-                                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 500;">↑ +0.2 from
-                                            last semester</div>
-                                    </div>
-                                    <div
-                                        style="padding: 1.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 12px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.2);">
-                                        <div
-                                            style="font-size: 3rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">
-                                            92%</div>
-                                        <div
-                                            style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.25rem;">
-                                            Average Score</div>
-                                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 500;">Top 5% of
-                                            class</div>
-                                    </div>
-                                    <div
-                                        style="padding: 1.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 12px; text-align: center; border: 1px solid rgba(245, 158, 11, 0.2);">
-                                        <div
-                                            style="font-size: 3rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem;">
-                                            5/120</div>
-                                        <div
-                                            style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.25rem;">
-                                            Class Ranking</div>
-                                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 500;">↑ Improved
-                                            from 8th</div>
-                                    </div>
-                                    <div
-                                        style="padding: 1.75rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); border-radius: 12px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2);">
-                                        <div
-                                            style="font-size: 3rem; font-weight: 700; color: #8b5cf6; margin-bottom: 0.5rem;">
-                                            A</div>
-                                        <div
-                                            style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.25rem;">
-                                            Grade Level</div>
-                                        <div style="font-size: 0.75rem; color: #10b981; font-weight: 500;">Honor Roll
-                                            Status</div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- GPA Trend Over Time -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📉</span> GPA Trend (4-Year History)
-                                </h3>
-                                <div
-                                    style="display: flex; align-items: flex-end; justify-content: space-around; height: 300px; border-bottom: 2px solid rgba(var(--border-rgb), 0.2); position: relative;">
-                                    <!-- Y-axis labels -->
-                                    <div
-                                        style="position: absolute; left: -30px; top: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
-                                        <span>4.0</span>
-                                        <span>3.5</span>
-                                        <span>3.0</span>
-                                        <span>2.5</span>
-                                        <span>2.0</span>
-                                    </div>
-
-                                    <!-- Grade 9 -->
-                                    <div
-                                        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1;">
-                                        <div
-                                            style="width: 60px; height: 180px; background: linear-gradient(180deg, #3b82f6, #2563eb); border-radius: 8px 8px 0 0; position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.5rem;">
-                                            <span
-                                                style="color: white; font-weight: 700; font-size: 1.125rem;">3.6</span>
-                                        </div>
-                                        <span style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Grade
-                                            9</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">2021</span>
-                                    </div>
-
-                                    <!-- Grade 10 -->
-                                    <div
-                                        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1;">
-                                        <div
-                                            style="width: 60px; height: 200px; background: linear-gradient(180deg, #10b981, #059669); border-radius: 8px 8px 0 0; position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.5rem;">
-                                            <span
-                                                style="color: white; font-weight: 700; font-size: 1.125rem;">3.7</span>
-                                        </div>
-                                        <span style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Grade
-                                            10</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">2022</span>
-                                    </div>
-
-                                    <!-- Grade 11 -->
-                                    <div
-                                        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1;">
-                                        <div
-                                            style="width: 60px; height: 200px; background: linear-gradient(180deg, #f59e0b, #d97706); border-radius: 8px 8px 0 0; position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.5rem;">
-                                            <span
-                                                style="color: white; font-weight: 700; font-size: 1.125rem;">3.7</span>
-                                        </div>
-                                        <span style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Grade
-                                            11</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">2023</span>
-                                    </div>
-
-                                    <!-- Grade 12 (Current) -->
-                                    <div
-                                        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1;">
-                                        <div
-                                            style="width: 60px; height: 240px; background: linear-gradient(180deg, #8b5cf6, #7c3aed); border-radius: 8px 8px 0 0; position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.5rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
-                                            <span
-                                                style="color: white; font-weight: 700; font-size: 1.125rem;">3.8</span>
-                                        </div>
-                                        <span style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Grade
-                                            12</span>
-                                        <span
-                                            style="font-size: 0.75rem; color: #8b5cf6; font-weight: 600;">Current</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Current Semester Grades -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>📚</span> Current Semester Grades
-                                </h3>
-                                <div style="display: grid; gap: 1.25rem;">
-                                    <!-- Advanced Mathematics -->
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.03); border-radius: 12px; border-left: 4px solid #10b981;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                            <div>
-                                                <div
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem; font-size: 1.125rem;">
-                                                    Advanced Mathematics</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">Mr.
-                                                    Getachew Tesfaye • Semester 2</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-weight: 700; font-size: 1.75rem; color: #10b981;">A
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">92%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">
-                                            <div
-                                                style="width: 92%; height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 5px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Assignments</p>
-                                                <p style="font-weight: 700; color: var(--heading);">94%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Exams</p>
-                                                <p style="font-weight: 700; color: var(--heading);">90%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Participation</p>
-                                                <p style="font-weight: 700; color: var(--heading);">95%</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Physics -->
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.03); border-radius: 12px; border-left: 4px solid #3b82f6;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                            <div>
-                                                <div
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem; font-size: 1.125rem;">
-                                                    Physics</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">Mr.
-                                                    Solomon Assefa • Semester 2</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-weight: 700; font-size: 1.75rem; color: #3b82f6;">B+
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">88%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">
-                                            <div
-                                                style="width: 88%; height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); border-radius: 5px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Lab Work</p>
-                                                <p style="font-weight: 700; color: var(--heading);">86%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Exams</p>
-                                                <p style="font-weight: 700; color: var(--heading);">89%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Projects</p>
-                                                <p style="font-weight: 700; color: var(--heading);">92%</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Chemistry -->
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.03); border-radius: 12px; border-left: 4px solid #8b5cf6;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                            <div>
-                                                <div
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem; font-size: 1.125rem;">
-                                                    Chemistry</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">Dr.
-                                                    Hanna Bekele • Semester 2</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-weight: 700; font-size: 1.75rem; color: #8b5cf6;">A
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">95%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">
-                                            <div
-                                                style="width: 95%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); border-radius: 5px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Lab Work</p>
-                                                <p style="font-weight: 700; color: var(--heading);">97%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Exams</p>
-                                                <p style="font-weight: 700; color: var(--heading);">94%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Research</p>
-                                                <p style="font-weight: 700; color: var(--heading);">96%</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Biology -->
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.03); border-radius: 12px; border-left: 4px solid #22c55e;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                            <div>
-                                                <div
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem; font-size: 1.125rem;">
-                                                    Biology</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">Dr.
-                                                    Yohannes Molla • Semester 2</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-weight: 700; font-size: 1.75rem; color: #22c55e;">B+
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">87%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">
-                                            <div
-                                                style="width: 87%; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: 5px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Lab Work</p>
-                                                <p style="font-weight: 700; color: var(--heading);">90%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Exams</p>
-                                                <p style="font-weight: 700; color: var(--heading);">85%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Projects</p>
-                                                <p style="font-weight: 700; color: var(--heading);">88%</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- English Literature -->
-                                    <div
-                                        style="padding: 1.25rem; background: rgba(var(--button-bg-rgb), 0.03); border-radius: 12px; border-left: 4px solid #f59e0b;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                            <div>
-                                                <div
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem; font-size: 1.125rem;">
-                                                    English Literature</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">Ms.
-                                                    Tigist Wolde • Semester 2</div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-weight: 700; font-size: 1.75rem; color: #f59e0b;">A-
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: var(--text-secondary);">90%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="width: 100%; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">
-                                            <div
-                                                style="width: 90%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 5px; transition: width 1s ease;">
-                                            </div>
-                                        </div>
-                                        <div
-                                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Essays</p>
-                                                <p style="font-weight: 700; color: var(--heading);">92%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Exams</p>
-                                                <p style="font-weight: 700; color: var(--heading);">88%</p>
-                                            </div>
-                                            <div style="text-align: center;">
-                                                <p
-                                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                                    Participation</p>
-                                                <p style="font-weight: 700; color: var(--heading);">91%</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Performance Breakdown by Category -->
-                            <section
-                                style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
-                                <h3
-                                    style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>🎯</span> Performance Breakdown
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
-                                    <!-- Strengths -->
-                                    <div>
-                                        <h4
-                                            style="font-weight: 600; color: #10b981; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span>✅</span> Academic Strengths
-                                        </h4>
-                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 8px; border-left: 3px solid #10b981;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    Chemistry (95%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">
-                                                    Exceptional lab work and research skills</p>
-                                            </div>
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 8px; border-left: 3px solid #10b981;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    Mathematics (92%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Strong
-                                                    analytical and problem-solving abilities</p>
-                                            </div>
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 8px; border-left: 3px solid #10b981;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    English (90%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Excellent
-                                                    writing and communication skills</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Areas for Improvement -->
-                                    <div>
-                                        <h4
-                                            style="font-weight: 600; color: #f59e0b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span>📌</span> Areas for Improvement
-                                        </h4>
-                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 8px; border-left: 3px solid #f59e0b;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    Physics - Lab Work (86%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Focus on
-                                                    experimental technique and precision</p>
-                                            </div>
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 8px; border-left: 3px solid #f59e0b;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    Biology - Exams (85%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Review
-                                                    complex systems and memorization</p>
-                                            </div>
-                                            <div
-                                                style="padding: 0.75rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); border-radius: 8px; border-left: 3px solid #f59e0b;">
-                                                <p
-                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.25rem;">
-                                                    English - Exam Performance (88%)</p>
-                                                <p style="font-size: 0.875rem; color: var(--text-secondary);">Practice
-                                                    timed essay writing under pressure</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-
-                        <!-- Credentials Panel (Combined: Achievements, Certifications, Extracurricular) -->
+                        
+                        <!-- Credentials Panel (Achievements & Academic Credentials) -->
                         <div id="credentials-panel" class="panel-content">
                             <!-- Credential Type Selection Cards -->
                             <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                                style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
                                 <!-- Achievements Card -->
                                 <div id="cred-card-achievements" class="credential-type-card"
                                     onclick="switchCredentialSection('achievements')"
@@ -2444,35 +1664,19 @@
                                     </div>
                                 </div>
 
-                                <!-- Certifications Card -->
+                                <!-- Academic Credentials Card -->
                                 <div id="cred-card-certifications" class="credential-type-card"
                                     onclick="switchCredentialSection('certifications')"
                                     style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
                                     <div style="text-align: center;">
-                                        <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">📜</span>
+                                        <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">🎓</span>
                                         <h3
                                             style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">
-                                            Certifications</h3>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View certificates
+                                            Academic Credentials</h3>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View academic certificates
                                             & qualifications</p>
                                         <span id="certifications-count"
                                             style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(59, 130, 246, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #3b82f6;">Loading...</span>
-                                    </div>
-                                </div>
-
-                                <!-- Extracurricular Card -->
-                                <div id="cred-card-extracurricular" class="credential-type-card"
-                                    onclick="switchCredentialSection('extracurricular')"
-                                    style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
-                                    <div style="text-align: center;">
-                                        <span style="font-size: 3rem; display: block; margin-bottom: 0.75rem;">🎭</span>
-                                        <h3
-                                            style="font-weight: 600; font-size: 1.25rem; color: var(--heading); margin-bottom: 0.5rem;">
-                                            Extracurricular</h3>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">View activities &
-                                            involvement</p>
-                                        <span id="extracurricular-count"
-                                            style="display: inline-block; margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 0.875rem; font-weight: 600; color: #10b981;">Loading...</span>
                                     </div>
                                 </div>
                             </div>
@@ -2482,13 +1686,8 @@
                                 <!-- Content will be dynamically loaded by JavaScript -->
                             </div>
 
-                            <!-- Certifications Section -->
+                            <!-- Academic Credentials Section -->
                             <div id="certifications-section" class="credential-section hidden">
-                                <!-- Content will be dynamically loaded by JavaScript -->
-                            </div>
-
-                            <!-- Extracurricular Section -->
-                            <div id="extracurricular-section" class="credential-section hidden">
                                 <!-- Content will be dynamically loaded by JavaScript -->
                             </div>
                         </div>
@@ -3136,16 +2335,22 @@
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js?v=20251217"></script>
     <script src="../js/root/nav.js"></script>
+
+    <!-- Share Profile Manager (Must load early for onclick handlers) -->
+    <script src="../js/common-modals/share-profile-manager.js?v=20260204k"></script>
+
     <script src="../js/root/default-avatar.js"></script>
     <script src="../js/root/profile-system.js"></script>
     <script src="../js/root/theme-toggle.js"></script>
     <!-- Note: student-profile.js removed - it's for editing own profile, not viewing others -->
     <!-- Common Modal Loader for add-role, logout, coming-soon modals -->
-    <script src="../modals/common-modals/common-modal-loader.js"></script>
+    <script src="../modals/common-modals/common-modal-loader.js?v=20260204g"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
+    <!-- Deletion Countdown Banner - Shows role deletion warning in profile dropdown -->
+    <script src="../js/common-modals/deletion-countdown-banner.js"></script>
     <!-- Student Reviews Loader - Loads reviews from tutors and parents -->
     <script src="../js/view-student/view-student-reviews.js"></script>
     <!-- Interested In Ticker Manager - Populates ticker animation from database -->
@@ -3931,6 +3136,18 @@
 
     <!-- Ad Rotation Manager -->
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
+    <!-- Appearance Manager - Theme & Color Palette Sync -->
+    <script src="../js/common-modals/appearance-manager.js?v=20260127"></script>
+
+    <!-- Currency Utilities for dynamic currency display -->
+    <script src="../js/utils/currency-utils.js"></script>
+
+    <!-- Share Profile Function -->
+    <script>
+        // shareProfile() is now handled by share-profile-manager.js
+    </script>
+
+    <!-- Share Profile Manager - MOVED EARLIER (after nav.js) to ensure onclick handlers work -->
 
 </body>
 

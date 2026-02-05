@@ -1005,10 +1005,16 @@
                                     </h3>
                                     <p class="text-sm text-gray-600">Manage subscription plans by user type with custom pricing and discount tiers</p>
                                 </div>
-                                <button onclick="openAddSubscriptionPlanModal()"
-                                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                                    <i class="fas fa-plus mr-2"></i>Add Plan
-                                </button>
+                                <div class="flex gap-3">
+                                    <button onclick="openAssignFeaturesModal()"
+                                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                                        <i class="fas fa-check-square mr-2"></i>Assign Features
+                                    </button>
+                                    <button onclick="openAddSubscriptionPlanModal()"
+                                        class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Add Plan
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Subscription Type Tabs -->
@@ -1112,6 +1118,54 @@
                             </div>
                         </div>
 
+                        <!-- New Tutor Starting Price Settings -->
+                        <div class="card p-6 mb-6" id="tutor-base-price-section">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold">
+                                        <i class="fas fa-tag mr-2 text-teal-600"></i>
+                                        New Tutor Starting Price
+                                    </h3>
+                                    <p class="text-sm text-gray-600">Set default starting prices for new tutors without market data history</p>
+                                </div>
+                                <button onclick="openAddBasePriceModal()"
+                                    class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Price Rule
+                                </button>
+                            </div>
+
+                            <!-- Base Price Rules Grid -->
+                            <div id="base-price-rules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                <!-- Base price rules will be loaded dynamically -->
+                            </div>
+
+                            <!-- Base Price Information -->
+                            <div class="p-4 bg-teal-50 rounded-lg border border-teal-200">
+                                <h5 class="font-semibold mb-2 flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-teal-600"></i>
+                                    How Starting Prices Work
+                                </h5>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-graduation-cap text-teal-600 mt-1"></i>
+                                        <div><strong>Subject-Based:</strong> Different prices for Math, Science, Languages, etc.</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-laptop-house text-teal-600 mt-1"></i>
+                                        <div><strong>Session Format:</strong> Online, In-Person, or Hybrid pricing</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-certificate text-teal-600 mt-1"></i>
+                                        <div><strong>Credential Bonus:</strong> Additional price for verified credentials</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-chart-line text-teal-600 mt-1"></i>
+                                        <div><strong>Auto-Upgrade:</strong> System automatically suggests market-based prices once tutor has history</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Affiliate Management -->
                         <div class="card p-6" id="affiliate-management-section">
                             <div class="flex items-center justify-between mb-4">
@@ -1120,7 +1174,7 @@
                                         <i class="fas fa-users mr-2 text-purple-600"></i>
                                         Affiliate Program
                                     </h3>
-                                    <p class="text-sm text-gray-600">Configure multi-tier affiliate commission structure</p>
+                                    <p class="text-sm text-gray-600">Configure multi-tier affiliate commission structure by business type</p>
                                 </div>
                                 <div class="flex gap-2">
                                     <button onclick="openAffiliateProgramSettingsModal()"
@@ -1134,29 +1188,116 @@
                                 </div>
                             </div>
 
-                            <!-- Dynamic Tiers Grid -->
-                            <div id="affiliate-tiers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                                <!-- Tiers will be rendered dynamically by affiliate-tier-manager.js -->
+                            <!-- Business Type Tabs -->
+                            <div class="affiliate-business-type-tabs mb-6">
+                                <div class="flex flex-wrap gap-2 border-b border-gray-200 pb-2" id="affiliate-business-tabs">
+                                    <button onclick="switchAffiliateBusinessTab('tutoring')"
+                                        class="affiliate-business-tab active px-4 py-2 rounded-t-lg font-medium transition-all flex items-center gap-2"
+                                        data-tab="tutoring">
+                                        <i class="fas fa-chalkboard-teacher text-blue-600"></i>
+                                        <span>Tutoring Sessions</span>
+                                        <span class="tab-count bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">0</span>
+                                    </button>
+                                    <button onclick="switchAffiliateBusinessTab('subscription')"
+                                        class="affiliate-business-tab px-4 py-2 rounded-t-lg font-medium transition-all flex items-center gap-2"
+                                        data-tab="subscription">
+                                        <i class="fas fa-crown text-purple-600"></i>
+                                        <span>Subscriptions</span>
+                                        <span class="tab-count bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">0</span>
+                                    </button>
+                                    <button onclick="switchAffiliateBusinessTab('advertisement')"
+                                        class="affiliate-business-tab px-4 py-2 rounded-t-lg font-medium transition-all flex items-center gap-2"
+                                        data-tab="advertisement">
+                                        <i class="fas fa-ad text-orange-600"></i>
+                                        <span>Advertisements</span>
+                                        <span class="tab-count bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full">0</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tab Content Containers -->
+                            <div id="affiliate-business-tab-content">
+                                <!-- Tutoring Tab -->
+                                <div id="affiliate-business-tab-tutoring" class="affiliate-business-tab-panel active">
+                                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <p class="text-sm text-gray-700">
+                                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                            <strong>Tutoring Sessions:</strong> Commission from transactions when referred users hire tutors. Up to 18% across 4 tiers.
+                                        </p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 affiliate-tiers-grid" data-business-type="tutoring">
+                                        <!-- Tutoring tiers loaded dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Subscription Tab -->
+                                <div id="affiliate-business-tab-subscription" class="affiliate-business-tab-panel hidden">
+                                    <div class="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                                        <p class="text-sm text-gray-700">
+                                            <i class="fas fa-info-circle text-purple-600 mr-2"></i>
+                                            <strong>Subscriptions:</strong> Commission from subscription purchases by referred users. Multi-tier structure available.
+                                        </p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 affiliate-tiers-grid" data-business-type="subscription">
+                                        <!-- Subscription tiers loaded dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Advertisement Tab -->
+                                <div id="affiliate-business-tab-advertisement" class="affiliate-business-tab-panel hidden">
+                                    <div class="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                        <p class="text-sm text-gray-700">
+                                            <i class="fas fa-info-circle text-orange-600 mr-2"></i>
+                                            <strong>Advertisements:</strong> Commission from ad impressions viewed by the referrer and their referred users' network.
+                                        </p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 affiliate-tiers-grid" data-business-type="advertisement">
+                                        <!-- Advertisement tiers loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Legacy grid for backwards compatibility (hidden) -->
+                            <div id="affiliate-tiers-grid" class="hidden">
+                                <!-- Old grid, kept for backwards compatibility -->
                             </div>
 
                             <!-- Affiliate Program Info -->
-                            <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                                <h5 class="font-semibold mb-2 flex items-center gap-2">
+                            <div class="p-4 bg-purple-50 rounded-lg border border-purple-200 mt-6">
+                                <h5 class="font-semibold mb-3 flex items-center gap-2">
                                     <i class="fas fa-info-circle text-purple-600"></i>
-                                    Commission Tier Levels
+                                    How the Affiliate System Works
                                 </h5>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-700">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-user text-purple-600 mt-1"></i>
-                                        <div><strong>Level 1:</strong> Direct referral commission</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                                    <div class="space-y-2">
+                                        <h6 class="font-semibold text-purple-700">Commission Tiers:</h6>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-user text-purple-600 mt-1"></i>
+                                            <div><strong>Level 1:</strong> Direct referral commission</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-user-friends text-purple-600 mt-1"></i>
+                                            <div><strong>Level 2:</strong> Referral's referral commission</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-users text-purple-600 mt-1"></i>
+                                            <div><strong>Level 3-4:</strong> Extended network commission (up to 18% total)</div>
+                                        </div>
                                     </div>
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-user-friends text-purple-600 mt-1"></i>
-                                        <div><strong>Level 2:</strong> Referral's referral commission</div>
-                                    </div>
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-users text-purple-600 mt-1"></i>
-                                        <div><strong>Level 3+:</strong> Extended network commission</div>
+                                    <div class="space-y-2">
+                                        <h6 class="font-semibold text-purple-700">Business Types:</h6>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-chalkboard-teacher text-blue-600 mt-1"></i>
+                                            <div><strong>Tutoring:</strong> Commission from tutor hiring transactions</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-crown text-purple-600 mt-1"></i>
+                                            <div><strong>Subscriptions:</strong> Commission from subscription purchases</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-ad text-orange-600 mt-1"></i>
+                                            <div><strong>Advertisements:</strong> Commission from ad impressions viewed by referrer and their network</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2923,6 +3064,7 @@
 
     <!-- Scripts -->
     <script src="./js/api-config.js"></script>
+    <script src="./js/admin-pages/shared/auth-helpers.js"></script>
     <script src="./js/auth.js"></script>
 
     <!-- Admin DB Service - reads from astegni_admin_db -->
@@ -4639,6 +4781,34 @@ The Team" required></textarea>
                                     <i class="fas fa-coins text-orange-600"></i>
                                     Base CPI Rate
                                 </h4>
+
+                                <!-- Country/Location -->
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">
+                                        Country/Location *
+                                        <span class="text-xs font-normal text-blue-600 ml-2">
+                                            <i class="fas fa-location-arrow"></i> Auto-detected from GPS
+                                        </span>
+                                    </label>
+
+                                    <!-- Hidden field to store country code -->
+                                    <input type="hidden" id="cpi-country" required>
+
+                                    <!-- Read-only display field -->
+                                    <div id="cpi-country-display"
+                                         class="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 font-medium">
+                                        <i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...
+                                    </div>
+
+                                    <!-- GPS Detection Status -->
+                                    <div id="cpi-country-status" class="text-xs mt-1">
+                                        <span class="text-gray-500">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            Automatically detected from your physical location via GPS.
+                                        </span>
+                                    </div>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="block text-sm font-semibold mb-2">Cost Per Impression (ETB) *</label>
                                     <input type="number" id="cpi-base-rate" class="w-full px-3 py-2 border rounded-lg"
@@ -5056,6 +5226,33 @@ The Team" required></textarea>
                         <p class="text-xs text-gray-500 mt-1">Name shown to users</p>
                     </div>
 
+                    <!-- Country/Location -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2">
+                            Country/Location *
+                            <span class="text-xs font-normal text-blue-600 ml-2">
+                                <i class="fas fa-location-arrow"></i> Auto-detected from GPS
+                            </span>
+                        </label>
+
+                        <!-- Hidden field to store country code -->
+                        <input type="hidden" id="verification-fee-country" required>
+
+                        <!-- Read-only display field -->
+                        <div id="verification-fee-country-display"
+                             class="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 font-medium">
+                            <i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...
+                        </div>
+
+                        <!-- GPS Detection Status -->
+                        <div id="verification-fee-country-status" class="text-xs mt-1">
+                            <span class="text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Automatically detected from your physical location via GPS.
+                            </span>
+                        </div>
+                    </div>
+
                     <!-- Price -->
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-2">Price (ETB) *</label>
@@ -5142,6 +5339,33 @@ The Team" required></textarea>
                                 <p class="text-xs text-gray-500 mt-1">Select who this subscription plan is for</p>
                             </div>
 
+                            <!-- Country/Location -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">
+                                    Country/Location *
+                                    <span class="text-xs font-normal text-blue-600 ml-2">
+                                        <i class="fas fa-location-arrow"></i> Auto-detected from GPS
+                                    </span>
+                                </label>
+
+                                <!-- Hidden field to store country code -->
+                                <input type="hidden" id="subscription-plan-country" required>
+
+                                <!-- Read-only display field -->
+                                <div id="subscription-plan-country-display"
+                                     class="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 font-medium">
+                                    <i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...
+                                </div>
+
+                                <!-- GPS Detection Status -->
+                                <div id="subscription-plan-country-status" class="text-xs mt-1">
+                                    <span class="text-gray-500">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        Automatically detected from your physical location via GPS.
+                                    </span>
+                                </div>
+                            </div>
+
                             <!-- Monthly Price -->
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-2">Monthly Price (ETB) *</label>
@@ -5212,29 +5436,6 @@ The Team" required></textarea>
                                 </div>
                             </div>
 
-                            <!-- Plan Features -->
-                            <div class="mb-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-sm font-semibold">Plan Features</label>
-                                    <button type="button" onclick="addSubscriptionPlanFeature()"
-                                        class="flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Add Feature</span>
-                                    </button>
-                                </div>
-                                <p class="text-xs text-gray-500 mb-3">What features are included in this plan</p>
-
-                                <!-- Container for dynamic feature items -->
-                                <div id="subscription-features-container" class="space-y-2">
-                                    <!-- Dynamic feature items will be added here -->
-                                </div>
-
-                                <!-- Empty state message -->
-                                <div id="subscription-features-empty-state" class="text-center py-4 text-gray-400 text-sm border-2 border-dashed rounded-lg">
-                                    <i class="fas fa-list-ul mb-2"></i>
-                                    <p>No features added yet. Click "Add Feature" to start.</p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Right Column: Price Preview & Tier Calculation -->
@@ -5322,6 +5523,469 @@ The Team" required></textarea>
         </div>
     </div>
 
+    <!-- Assign Features Modal -->
+    <div id="assign-features-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeAssignFeaturesModal()"></div>
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">
+                    <i class="fas fa-check-square mr-2 text-indigo-600"></i>Assign Features to Subscription Plan
+                </h2>
+                <button class="modal-close" onclick="closeAssignFeaturesModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="assign-features-form" onsubmit="saveAssignedFeatures(event)">
+
+                    <!-- Left-Right Split Layout -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- LEFT SIDE: Plan Selection & Filter -->
+                        <div class="lg:col-span-1">
+                            <div class="sticky top-0">
+                                <h3 class="font-semibold text-gray-900 mb-3">
+                                    <i class="fas fa-crown mr-2 text-indigo-600"></i>Select Plan
+                                </h3>
+
+                                <!-- Search and Filter (always visible) -->
+                                <div id="plan-selection-controls">
+                                    <div class="mb-3">
+                                        <label class="block text-sm font-medium mb-2">Search by Name</label>
+                                        <input type="text" id="feature-plan-search"
+                                            class="w-full px-3 py-2 border rounded-lg text-sm"
+                                            placeholder="Type to search..."
+                                            oninput="searchSubscriptionPlansForFeatures()">
+                                    </div>
+
+                                    <!-- Selected Plan Display (shown after selection) -->
+                                    <div id="selected-plan-display" class="hidden mb-3 p-3 bg-indigo-50 rounded-lg border-2 border-indigo-300">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="flex-1">
+                                                <span class="text-xs text-indigo-600 font-medium">Selected:</span>
+                                                <h4 id="selected-plan-name" class="font-bold text-base text-indigo-900 mt-1"></h4>
+                                                <p id="selected-plan-price" class="text-sm text-gray-600 mt-1"></p>
+                                            </div>
+                                            <button type="button" onclick="clearFeatureAssignmentSelectedPlan()"
+                                                class="px-3 py-1.5 text-xs bg-white hover:bg-gray-50 border rounded-lg transition-colors flex-shrink-0">
+                                                <i class="fas fa-times mr-1"></i>Change
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Plans List -->
+                                    <div id="feature-plans-list-container" class="mb-3">
+                                        <label class="block text-sm font-medium mb-2">Available Plans</label>
+                                        <div id="feature-plans-list" class="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-2 bg-gray-50">
+                                            <!-- Plans will be dynamically loaded here -->
+                                            <div class="text-center py-8 text-gray-400">
+                                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                                <p class="text-sm">Loading plans...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Filter by Role</label>
+                                        <select id="feature-role-filter"
+                                            class="w-full px-3 py-2 border rounded-lg text-sm"
+                                            onchange="filterSubscriptionPlansByRole()">
+                                            <option value="">All Roles</option>
+                                            <option value="tutor">Tutor Plans</option>
+                                            <option value="student">Student Plans</option>
+                                            <option value="parent">Parent Plans</option>
+                                            <option value="institute">Institute Plans</option>
+                                            <option value="advertiser">Advertiser Plans</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT SIDE: Feature Assignment -->
+                        <div class="lg:col-span-2">
+                            <div id="feature-assignment-section" class="hidden">
+                                <h3 class="font-semibold text-gray-900 mb-4">
+                                    <i class="fas fa-tasks mr-2 text-indigo-600"></i>Assign Features by Role
+                                </h3>
+
+                                <!-- Role Tabs -->
+                                <div class="flex flex-wrap gap-2 mb-4 border-b border-gray-200 pb-2">
+                                    <button type="button" onclick="switchFeatureRoleTab('tutor')"
+                                        class="feature-role-tab px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
+                                        data-role="tutor">
+                                        <i class="fas fa-chalkboard-teacher mr-1"></i>Tutor
+                                    </button>
+                                    <button type="button" onclick="switchFeatureRoleTab('student')"
+                                        class="feature-role-tab px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
+                                        data-role="student">
+                                        <i class="fas fa-user-graduate mr-1"></i>Student
+                                    </button>
+                                    <button type="button" onclick="switchFeatureRoleTab('parent')"
+                                        class="feature-role-tab px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
+                                        data-role="parent">
+                                        <i class="fas fa-users mr-1"></i>Parent
+                                    </button>
+                                    <button type="button" onclick="switchFeatureRoleTab('advertiser')"
+                                        class="feature-role-tab px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
+                                        data-role="advertiser">
+                                        <i class="fas fa-bullhorn mr-1"></i>Advertiser
+                                    </button>
+                                    <button type="button" onclick="switchFeatureRoleTab('institute')"
+                                        class="feature-role-tab px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
+                                        data-role="institute">
+                                        <i class="fas fa-university mr-1"></i>Institute
+                                    </button>
+                                </div>
+
+                                <!-- Feature Panels for each Role -->
+                                <div class="max-h-96 overflow-y-auto pr-2">
+                                    <div id="tutor-features-panel" class="feature-role-panel hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-700">Tutor Features</h4>
+                                            <button type="button" onclick="addRoleFeature('tutor')"
+                                                class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                                                <i class="fas fa-plus mr-1"></i>Add Feature
+                                            </button>
+                                        </div>
+                                        <div id="tutor-features-container" class="space-y-2"></div>
+                                    </div>
+
+                                    <div id="student-features-panel" class="feature-role-panel hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-700">Student Features</h4>
+                                            <button type="button" onclick="addRoleFeature('student')"
+                                                class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                                                <i class="fas fa-plus mr-1"></i>Add Feature
+                                            </button>
+                                        </div>
+                                        <div id="student-features-container" class="space-y-2"></div>
+                                    </div>
+
+                                    <div id="parent-features-panel" class="feature-role-panel hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-700">Parent Features</h4>
+                                            <button type="button" onclick="addRoleFeature('parent')"
+                                                class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                                                <i class="fas fa-plus mr-1"></i>Add Feature
+                                            </button>
+                                        </div>
+                                        <div id="parent-features-container" class="space-y-2"></div>
+                                    </div>
+
+                                    <div id="advertiser-features-panel" class="feature-role-panel hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-700">Advertiser Features</h4>
+                                            <button type="button" onclick="addRoleFeature('advertiser')"
+                                                class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                                                <i class="fas fa-plus mr-1"></i>Add Feature
+                                            </button>
+                                        </div>
+                                        <div id="advertiser-features-container" class="space-y-2"></div>
+                                    </div>
+
+                                    <div id="institute-features-panel" class="feature-role-panel hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-700">Institute Features</h4>
+                                            <button type="button" onclick="addRoleFeature('institute')"
+                                                class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                                                <i class="fas fa-plus mr-1"></i>Add Feature
+                                            </button>
+                                        </div>
+                                        <div id="institute-features-container" class="space-y-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty State (when no plan selected) -->
+                            <div id="feature-assignment-empty-state" class="text-center py-12 text-gray-400">
+                                <i class="fas fa-hand-pointer text-4xl mb-4 opacity-50"></i>
+                                <h4 class="text-lg font-semibold mb-2">Select a Plan</h4>
+                                <p class="text-sm">Choose a subscription plan from the left to assign features</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" onclick="closeAssignFeaturesModal()"
+                            class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" id="save-features-btn" class="hidden px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                            <i class="fas fa-save mr-2"></i>Save Features
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Base Price Rule Modal (Add/Edit) -->
+    <div id="base-price-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeBasePriceModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold" id="base-price-modal-title">
+                    <i class="fas fa-tag mr-2"></i>Add Starting Price Rule
+                </h2>
+                <button class="modal-close" onclick="closeBasePriceModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="base-price-form" onsubmit="saveBasePriceRule(event)">
+                    <!-- Hidden ID for editing -->
+                    <input type="hidden" id="base-price-rule-id" placeholder="">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column: Rule Configuration -->
+                        <div>
+                            <!-- Rule Name -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Rule Name *</label>
+                                <input type="text" id="base-price-rule-name" class="w-full px-3 py-2 border rounded-lg"
+                                    placeholder="e.g., Math Online Base Price" required>
+                                <p class="text-xs text-gray-500 mt-1">Descriptive name for this pricing rule</p>
+                            </div>
+
+                            <!-- Country/Location -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">
+                                    Country/Location *
+                                    <span class="text-xs font-normal text-blue-600 ml-2">
+                                        <i class="fas fa-location-arrow"></i> Auto-detected from GPS
+                                    </span>
+                                </label>
+                                <!-- Hidden field to store country code -->
+                                <input type="hidden" id="base-price-country" required>
+
+                                <!-- Read-only display field -->
+                                <div id="base-price-country-display" class="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 font-medium">
+                                    <i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>Detecting location...
+                                </div>
+
+                                <!-- GPS Detection Status -->
+                                <div id="country-detection-status" class="text-xs mt-1">
+                                    <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>Automatically detected from your physical location via GPS.</span>
+                                </div>
+                            </div>
+
+                            <!-- Subject Category -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Subject Category *</label>
+                                <select id="base-price-subject" class="w-full px-3 py-2 border rounded-lg" required onchange="updateBasePricePreview()">
+                                    <option value="">Select Subject</option>
+                                    <option value="all">All Subjects (Default)</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science (Physics, Chemistry, Biology)</option>
+                                    <option value="languages">Languages (English, Amharic, etc.)</option>
+                                    <option value="social_studies">Social Studies (History, Geography)</option>
+                                    <option value="computer_science">Computer Science & IT</option>
+                                    <option value="arts">Arts & Music</option>
+                                    <option value="business">Business & Economics</option>
+                                    <option value="other">Other Subjects</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Which subject(s) this price applies to</p>
+                            </div>
+
+                            <!-- Session Format -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Session Format *</label>
+                                <select id="base-price-format" class="w-full px-3 py-2 border rounded-lg" required onchange="updateBasePricePreview()">
+                                    <option value="">Select Format</option>
+                                    <option value="all">All Formats (Default)</option>
+                                    <option value="Online">Online Only</option>
+                                    <option value="In-Person">In-Person Only</option>
+                                    <option value="Hybrid">Hybrid (Online + In-Person)</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Session delivery format</p>
+                            </div>
+
+                            <!-- Grade Level Range -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Education Level Range *</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <select id="base-price-min-grade" class="w-full px-3 py-2 border rounded-lg" required>
+                                            <option value="1">Grade 1</option>
+                                            <option value="2">Grade 2</option>
+                                            <option value="3">Grade 3</option>
+                                            <option value="4">Grade 4</option>
+                                            <option value="5">Grade 5</option>
+                                            <option value="6">Grade 6</option>
+                                            <option value="7">Grade 7</option>
+                                            <option value="8">Grade 8</option>
+                                            <option value="9">Grade 9</option>
+                                            <option value="10">Grade 10</option>
+                                            <option value="11">Grade 11</option>
+                                            <option value="12">Grade 12</option>
+                                            <option value="13">University</option>
+                                            <option value="14">Certification</option>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Minimum</p>
+                                    </div>
+                                    <div>
+                                        <select id="base-price-max-grade" class="w-full px-3 py-2 border rounded-lg" required>
+                                            <option value="1">Grade 1</option>
+                                            <option value="2">Grade 2</option>
+                                            <option value="3">Grade 3</option>
+                                            <option value="4">Grade 4</option>
+                                            <option value="5">Grade 5</option>
+                                            <option value="6">Grade 6</option>
+                                            <option value="7">Grade 7</option>
+                                            <option value="8">Grade 8</option>
+                                            <option value="9">Grade 9</option>
+                                            <option value="10">Grade 10</option>
+                                            <option value="11">Grade 11</option>
+                                            <option value="12">Grade 12</option>
+                                            <option value="13">University</option>
+                                            <option value="14" selected>Certification</option>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Maximum</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Set to Grade 1-Certification for all levels (default). University = College/Bachelor's/Master's/PhD. Certification = Professional certifications, test prep
+                                </p>
+                            </div>
+
+                            <!-- Base Price -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Starting Price (ETB/hour) *</label>
+                                <input type="number" id="base-price-amount" class="w-full px-3 py-2 border rounded-lg"
+                                    placeholder="e.g., 50" min="1" step="1" required oninput="updateBasePricePreview()">
+                                <p class="text-xs text-gray-500 mt-1">Base hourly rate for new tutors</p>
+                            </div>
+
+                            <!-- Credential Bonus -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Credential Bonus (ETB/hour)</label>
+                                <input type="number" id="base-price-credential-bonus" class="w-full px-3 py-2 border rounded-lg"
+                                    placeholder="e.g., 10" min="0" step="1" value="0" oninput="updateBasePricePreview()">
+                                <p class="text-xs text-gray-500 mt-1">Additional price per verified credential (degree, certificate)</p>
+                            </div>
+
+                            <!-- Experience Bonus -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Experience Bonus (ETB/year)</label>
+                                <input type="number" id="base-price-experience-bonus" class="w-full px-3 py-2 border rounded-lg"
+                                    placeholder="e.g., 5" min="0" step="1" value="0" oninput="updateBasePricePreview()">
+                                <p class="text-xs text-gray-500 mt-1">Additional price per year of experience (e.g., 5 years × bonus = 5× bonus)</p>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2">Rule Priority</label>
+                                <select id="base-price-priority" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="1">High (applies first)</option>
+                                    <option value="2" selected>Medium (normal)</option>
+                                    <option value="3">Low (fallback)</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Higher priority rules are matched first</p>
+                            </div>
+
+                            <!-- Active Status -->
+                            <div class="mb-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="base-price-active" class="w-4 h-4" checked>
+                                    <span class="text-sm font-semibold">Active Rule</span>
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1">Inactive rules won't be applied to new tutors</p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Preview & Examples -->
+                        <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-5 border border-teal-200">
+                            <h4 class="font-bold text-lg mb-4 text-teal-700">
+                                <i class="fas fa-eye mr-2"></i>Price Preview
+                            </h4>
+
+                            <div class="space-y-4">
+                                <!-- Base Price Display -->
+                                <div class="bg-white rounded-lg p-4 shadow-sm border border-teal-300">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <div>
+                                            <div class="font-semibold text-gray-700">Base Starting Price</div>
+                                            <div class="text-xs text-gray-500">Per hour rate</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div id="preview-base-price" class="text-2xl font-bold text-teal-600">-- ETB</div>
+                                            <div class="text-xs text-gray-500">/hour</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bonus Previews -->
+                                <div class="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-lg p-4 border border-cyan-200">
+                                    <h5 class="font-semibold text-cyan-800 mb-3">
+                                        <i class="fas fa-certificate mr-1"></i>With Credentials
+                                    </h5>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">1 Credential:</span>
+                                            <span id="preview-1-credential" class="font-semibold text-gray-800">-- ETB/hr</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">2 Credentials:</span>
+                                            <span id="preview-2-credentials" class="font-semibold text-gray-800">-- ETB/hr</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">3 Credentials:</span>
+                                            <span id="preview-3-credentials" class="font-semibold text-gray-800">-- ETB/hr</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Experience Bonus Preview -->
+                                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                                    <h5 class="font-semibold text-purple-800 mb-3">
+                                        <i class="fas fa-briefcase mr-1"></i>With Experience
+                                    </h5>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">1 Year:</span>
+                                            <span id="preview-1-year" class="font-semibold text-gray-800">-- ETB/hr</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">3 Years:</span>
+                                            <span id="preview-3-years" class="font-semibold text-gray-800">-- ETB/hr</span>
+                                        </div>
+                                        <div class="flex justify-between items-center border-t border-purple-300 pt-2 mt-2">
+                                            <span class="text-sm font-semibold text-purple-700">5 Years:</span>
+                                            <span id="preview-5-years" class="text-lg font-bold text-purple-700">-- ETB/hr</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Bonus multiplies by years of experience
+                                    </p>
+                                </div>
+
+                                <!-- Example Notice -->
+                                <div class="bg-blue-100 rounded-lg p-4 border border-blue-300">
+                                    <div class="text-center">
+                                        <i class="fas fa-lightbulb text-blue-600 text-2xl mb-2"></i>
+                                        <p class="font-semibold text-blue-800">Smart Pricing</p>
+                                        <p class="text-xs text-blue-600">System switches to market-based pricing once tutor has enrollment history</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" onclick="closeBasePriceModal()"
+                            class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+                            <i class="fas fa-save mr-2"></i>Save Rule
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Affiliate Tier Modal (Add/Edit) -->
     <div id="affiliate-tier-modal" class="modal hidden">
         <div class="modal-overlay" onclick="closeAffiliateTierModal()"></div>
@@ -5336,6 +6000,18 @@ The Team" required></textarea>
                 <form id="affiliate-tier-form" onsubmit="saveAffiliateTier(event)">
                     <!-- Hidden fields -->
                     <input type="hidden" id="affiliate-tier-original-level">
+                    <input type="hidden" id="affiliate-tier-original-business-type">
+
+                    <!-- Business Type -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2">Business Type *</label>
+                        <select id="affiliate-tier-business-type" class="w-full px-3 py-2 border rounded-lg" required>
+                            <option value="tutoring">Tutoring Sessions</option>
+                            <option value="subscription">Subscriptions</option>
+                            <option value="advertisement">Advertisements</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Select the type of transaction this tier applies to</p>
+                    </div>
 
                     <!-- Tier Level -->
                     <div class="mb-4">
@@ -5386,14 +6062,14 @@ The Team" required></textarea>
                     <!-- Example Calculation -->
                     <div class="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
                         <h4 class="font-semibold text-purple-700 mb-2 text-sm">
-                            <i class="fas fa-calculator mr-1"></i>Example Calculation
+                            <i class="fas fa-calculator mr-1"></i>Example Calculations
                         </h4>
-                        <p class="text-xs text-gray-600">
-                            If a referred user subscribes for <strong>100 ETB/month</strong> and this tier has <strong>10% commission</strong>:
-                        </p>
-                        <p class="text-sm text-purple-700 mt-2 font-semibold">
-                            Affiliate earns: 10 ETB/month for up to the max duration
-                        </p>
+                        <div class="text-xs text-gray-600 space-y-2">
+                            <p><strong>Tutoring:</strong> 1000 ETB session × 10% commission = 100 ETB per session</p>
+                            <p><strong>Subscription:</strong> 100 ETB/month × 10% commission = 10 ETB/month</p>
+                            <p><strong>Advertisement:</strong> 1000 impressions × 0.50 ETB/impression × 10% = 50 ETB</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Commission earned for up to the max duration or until user leaves platform</p>
                     </div>
 
                     <!-- Submit Buttons -->
@@ -5813,13 +6489,13 @@ The Team" required></textarea>
                             <!-- Results will be populated dynamically -->
                         </div>
                         <!-- Selected Plan Display -->
-                        <div id="selected-plan-display" class="hidden mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <div id="upload-limit-selected-plan-display" class="hidden mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <span class="font-semibold text-purple-700" id="selected-plan-name">-</span>
-                                    <span class="text-sm text-gray-500 ml-2" id="selected-plan-price">-</span>
+                                    <span class="font-semibold text-purple-700" id="upload-limit-selected-plan-name">-</span>
+                                    <span class="text-sm text-gray-500 ml-2" id="upload-limit-selected-plan-price">-</span>
                                 </div>
-                                <button type="button" onclick="clearSelectedPlan()" class="text-red-500 hover:text-red-700">
+                                <button type="button" onclick="clearUploadLimitSelectedPlan()" class="text-red-500 hover:text-red-700">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -6246,6 +6922,8 @@ The Team" required></textarea>
     <script src="./js/admin-pages/payment-gateway-manager.js"></script>
     <script src="./js/admin-pages/verification-fee-manager.js"></script>
     <script src="./js/admin-pages/subscription-plan-manager.js"></script>
+    <script src="./js/admin-pages/feature-assignment-manager.js"></script>
+    <script src="./js/admin-pages/base-price-manager.js"></script>
     <script src="./js/admin-pages/affiliate-tier-manager.js"></script>
     <!-- Media Panel Managers -->
     <script src="./js/admin-pages/system-media-manager.js"></script>

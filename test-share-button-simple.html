@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Share Button</title>
+</head>
+<body style="padding: 50px; font-family: Arial, sans-serif;">
+    <h1>Share Button Debug Test</h1>
+
+    <div style="margin: 20px 0;">
+        <h2>Step 1: Setup</h2>
+        <p>Make sure you're logged in and have an active role set</p>
+        <button onclick="checkAuth()" style="padding: 10px 20px; margin: 5px;">Check Authentication</button>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h2>Step 2: Load Modal Loader</h2>
+        <button onclick="loadModalLoader()" style="padding: 10px 20px; margin: 5px;">Load Modal Loader</button>
+        <p id="loaderStatus"></p>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h2>Step 3: Load Share Manager</h2>
+        <button onclick="loadShareManager()" style="padding: 10px 20px; margin: 5px;">Load Share Manager</button>
+        <p id="managerStatus"></p>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h2>Step 4: Test Share Button</h2>
+        <button onclick="testShareProfile()" style="padding: 10px 20px; margin: 5px; background: #4CAF50; color: white;">
+            🔗 Share Profile (TEST)
+        </button>
+    </div>
+
+    <div style="margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+        <h3>Console Output:</h3>
+        <pre id="console" style="background: #000; color: #0f0; padding: 15px; overflow-x: auto; max-height: 400px; overflow-y: auto;"></pre>
+    </div>
+
+    <script>
+        const output = document.getElementById('console');
+
+        function log(msg, color = '#0f0') {
+            console.log(msg);
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser') || localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            const activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole');
+
+            log('=== AUTHENTICATION CHECK ===');
+            log(`User: ${user ? '✓ Found' : '✗ Not found'}`, user ? '#0f0' : '#f00');
+            log(`Token: ${token ? '✓ Found' : '✗ Not found'}`, token ? '#0f0' : '#f00');
+            log(`Active Role: ${activeRole || '✗ Not set'}`, activeRole ? '#0f0' : '#f00');
+
+            if (user) {
+                const userData = JSON.parse(user);
+                log(`User ID: ${userData.id || userData.user_id}`);
+                log(`Name: ${userData.first_name || 'N/A'}`);
+            }
+        }
+
+        async function loadModalLoader() {
+            log('=== LOADING MODAL LOADER ===');
+            document.getElementById('loaderStatus').textContent = 'Loading...';
+
+            try {
+                // Try to load common modal loader first
+                const script1 = document.createElement('script');
+                script1.src = 'modals/common-modals/common-modal-loader.js?v=' + Date.now();
+                script1.onload = () => {
+                    log('✓ CommonModalLoader loaded', '#0f0');
+                    document.getElementById('loaderStatus').textContent = '✓ Loaded CommonModalLoader';
+
+                    setTimeout(() => {
+                        const modal = document.getElementById('shareProfileModal');
+                        log(`Modal in DOM: ${modal ? '✓ Yes' : '✗ No'}`, modal ? '#0f0' : '#ff0');
+                    }, 1000);
+                };
+                script1.onerror = () => {
+                    log('✗ Failed to load CommonModalLoader', '#f00');
+                    // Try tutor-profile loader
+                    const script2 = document.createElement('script');
+                    script2.src = 'modals/tutor-profile/modal-loader.js?v=' + Date.now();
+                    script2.onload = () => {
+                        log('✓ ModalLoader loaded', '#0f0');
+                        document.getElementById('loaderStatus').textContent = '✓ Loaded ModalLoader';
+
+                        setTimeout(() => {
+                            const modal = document.getElementById('shareProfileModal');
+                            log(`Modal in DOM: ${modal ? '✓ Yes' : '✗ No'}`, modal ? '#0f0' : '#ff0');
+                        }, 1000);
+                    };
+                    script2.onerror = () => {
+                        log('✗ Failed to load ModalLoader', '#f00');
+                        document.getElementById('loaderStatus').textContent = '✗ Failed to load';
+                    };
+                    document.head.appendChild(script2);
+                };
+                document.head.appendChild(script1);
+            } catch (error) {
+                log('✗ Error: ' + error.message, '#f00');
+                document.getElementById('loaderStatus').textContent = '✗ Error: ' + error.message;
+            }
+        }
+
+        function loadShareManager() {
+            log('=== LOADING SHARE MANAGER ===');
+            document.getElementById('managerStatus').textContent = 'Loading...';
+
+            const script = document.createElement('script');
+            script.src = 'js/common-modals/share-profile-manager.js?v=' + Date.now();
+            script.onload = () => {
+                log('✓ Share manager loaded', '#0f0');
+                log(`shareProfile function: ${typeof shareProfile !== 'undefined' ? '✓ Exists' : '✗ Missing'}`, typeof shareProfile !== 'undefined' ? '#0f0' : '#f00');
+                document.getElementById('managerStatus').textContent = '✓ Loaded';
+            };
+            script.onerror = () => {
+                log('✗ Failed to load share manager', '#f00');
+                document.getElementById('managerStatus').textContent = '✗ Failed';
+            };
+            document.head.appendChild(script);
+        }
+
+        async function testShareProfile() {
+            log('=== TESTING SHARE PROFILE ===');
+
+            // Check if function exists
+            if (typeof shareProfile === 'undefined') {
+                log('✗ shareProfile() function not found!', '#f00');
+                log('Did you load the Share Manager first?', '#ff0');
+                return;
+            }
+
+            log('✓ shareProfile() function exists', '#0f0');
+            log('Calling shareProfile()...');
+
+            try {
+                await shareProfile();
+                log('✓ shareProfile() completed', '#0f0');
+
+                // Check if modal is visible
+                const modal = document.getElementById('shareProfileModal');
+                if (modal) {
+                    const display = window.getComputedStyle(modal).display;
+                    log(`Modal display: ${display}`, display !== 'none' ? '#0f0' : '#ff0');
+                } else {
+                    log('✗ Modal not found in DOM!', '#f00');
+                }
+            } catch (error) {
+                log('✗ Error calling shareProfile(): ' + error.message, '#f00');
+                console.error(error);
+            }
+        }
+
+        // Auto-check auth on load
+        window.addEventListener('load', () => {
+            log('=== PAGE LOADED ===');
+            checkAuth();
+        });
+    </script>
+</body>
+</html>

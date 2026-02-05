@@ -5,6 +5,7 @@
 
 const StudentSessionRequestsManager = {
     currentFilter: 'all',
+    currentDirection: 'sent', // 'sent' or 'received' (students send requests to tutors)
     allRequests: [],
 
     /**
@@ -19,7 +20,7 @@ const StudentSessionRequestsManager = {
      * Load all session requests made by the current student
      */
     async loadMyRequests() {
-        const container = document.getElementById('student-session-requests-list');
+        const container = document.getElementById('student-session-requests-list') || document.getElementById('student-requests-list');
         if (!container) {
             console.warn('[StudentSessionRequestsManager] Container not found');
             return;
@@ -93,6 +94,29 @@ const StudentSessionRequestsManager = {
     },
 
     /**
+     * Filter requests by direction (sent/received)
+     */
+    filterByDirection(direction) {
+        this.currentDirection = direction;
+
+        // Update tab styling
+        document.querySelectorAll('.direction-tab').forEach(tab => {
+            tab.classList.remove('active');
+            tab.style.color = 'var(--text-secondary)';
+            tab.style.fontWeight = '500';
+            tab.style.borderBottomColor = 'transparent';
+            if (tab.dataset.direction === direction) {
+                tab.classList.add('active');
+                tab.style.color = 'var(--primary-color)';
+                tab.style.fontWeight = '600';
+                tab.style.borderBottomColor = 'var(--primary-color)';
+            }
+        });
+
+        this.applyFilter();
+    },
+
+    /**
      * Filter requests by status
      */
     filterByStatus(status) {
@@ -113,14 +137,20 @@ const StudentSessionRequestsManager = {
      * Apply current filter and render
      */
     applyFilter() {
-        const container = document.getElementById('student-session-requests-list');
+        const container = document.getElementById('student-session-requests-list') || document.getElementById('student-requests-list');
         if (!container) return;
 
         let filteredRequests = this.allRequests;
 
+        // Filter by direction (for students, 'sent' = requests TO tutors, 'received' = future feature)
+        // Currently, students only send requests, so we show all in 'sent' tab
+        if (this.currentDirection === 'received') {
+            filteredRequests = []; // Students don't receive session requests (tutors do)
+        }
+
         // Filter by status
         if (this.currentFilter !== 'all') {
-            filteredRequests = this.allRequests.filter(req => req.status === this.currentFilter);
+            filteredRequests = filteredRequests.filter(req => req.status === this.currentFilter);
         }
 
         if (filteredRequests.length === 0) {
@@ -141,7 +171,7 @@ const StudentSessionRequestsManager = {
      * Render requests list
      */
     renderRequests(requests) {
-        const container = document.getElementById('student-session-requests-list');
+        const container = document.getElementById('student-session-requests-list') || document.getElementById('student-requests-list');
         if (!container) return;
 
         const requestsHTML = requests.map(request => this.renderRequestCard(request)).join('');

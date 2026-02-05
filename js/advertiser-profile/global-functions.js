@@ -194,33 +194,37 @@ function resetUpload(type) {
 }
 
 // Share Profile
-function shareProfile() {
-    const profileUrl = window.location.href;
+// DEPRECATED: Old shareProfile() function removed
+// Now using shareProfile() from js/common-modals/share-profile-manager.js
+// which provides full referral system with modal, social sharing, and tracking
 
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out my Astegni Advertiser Profile',
-            text: 'I\'m an advertiser on Astegni. Check out my campaigns!',
-            url: profileUrl
-        }).then(() => {
-            console.log('Profile shared successfully');
-        }).catch((error) => {
-            console.error('Error sharing profile:', error);
-            fallbackShare(profileUrl);
-        });
-    } else {
-        fallbackShare(profileUrl);
-    }
-}
-
-function fallbackShare(url) {
-    navigator.clipboard.writeText(url).then(() => {
-        alert('Profile link copied to clipboard!');
-    }).catch((error) => {
-        console.error('Error copying to clipboard:', error);
-        alert('Failed to copy link');
-    });
-}
+// Old functions commented out:
+// function shareProfile() {
+//     const profileUrl = window.location.href;
+//     if (navigator.share) {
+//         navigator.share({
+//             title: 'Check out my Astegni Advertiser Profile',
+//             text: 'I\'m an advertiser on Astegni. Check out my campaigns!',
+//             url: profileUrl
+//         }).then(() => {
+//             console.log('Profile shared successfully');
+//         }).catch((error) => {
+//             console.error('Error sharing profile:', error);
+//             fallbackShare(profileUrl);
+//         });
+//     } else {
+//         fallbackShare(profileUrl);
+//     }
+// }
+//
+// function fallbackShare(url) {
+//     navigator.clipboard.writeText(url).then(() => {
+//         alert('Profile link copied to clipboard!');
+//     }).catch((error) => {
+//         console.error('Error copying to clipboard:', error);
+//         alert('Failed to copy link');
+//     });
+// }
 
 // Open Community Modal
 async function openCommunityModal() {
@@ -270,13 +274,23 @@ function closeCommunityModal() {
     }
 }
 
-// Open Ad Analytics Modal
+// Open Ad Analytics Modal - NOW OPENS COMING SOON MODAL
 function openAdAnalyticsModal() {
-    console.log('Opening ad analytics modal...');
-    // Switch to ad-analytics panel instead
-    if (typeof switchPanel === 'function') {
-        switchPanel('ad-analytics');
+    console.log('Opening coming soon modal for Advertising...');
+    // Open coming soon modal instead
+    if (typeof openComingSoonModal === 'function') {
+        openComingSoonModal('Advertising');
+    } else {
+        console.error('openComingSoonModal function not available');
     }
+
+    // OLD CODE (disabled):
+    // Switch to ad-analytics panel instead
+    // if (typeof switchPanel === 'function') {
+    //     switchPanel('ad-analytics');
+    // } else {
+    //     console.error('switchPanel function not available');
+    // }
 }
 
 // Open Verify Company Info Modal
@@ -376,7 +390,7 @@ window.closeProfileUploadModal = closeProfileUploadModal;
 window.handleImageSelect = handleImageSelect;
 window.uploadImage = uploadImage;
 window.resetUpload = resetUpload;
-window.shareProfile = shareProfile;
+// window.shareProfile = shareProfile; // REMOVED: Now defined in share-profile-manager.js
 window.openCommunityModal = openCommunityModal;
 window.closeCommunityModal = closeCommunityModal;
 window.openAdAnalyticsModal = openAdAnalyticsModal;

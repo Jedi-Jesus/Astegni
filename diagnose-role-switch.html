@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Switch Diagnostic - Astegni</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .section h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        pre {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: #fff;
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+            color: #fff;
+        }
+
+        .success { color: #0f0; }
+        .error { color: #f44; }
+        .warning { color: #fa0; }
+        .info { color: #0af; }
+
+        select, input {
+            background: rgba(0, 0, 0, 0.5);
+            color: #e0e0e0;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            margin: 5px;
+        }
+
+        .step {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid #00d4ff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .step-title {
+            color: #00d4ff;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Role Switch Diagnostic Tool</h1>
+
+        <!-- Current State -->
+        <div class="section">
+            <h2>📊 Current State</h2>
+            <button onclick="checkAllState()">🔍 Refresh All State</button>
+            <pre id="currentState">Click "Refresh All State" to see current state...</pre>
+        </div>
+
+        <!-- Test Role Switch -->
+        <div class="section">
+            <h2>🔄 Test Role Switch</h2>
+            <p style="margin-bottom: 15px;">Select a role and test switching to it:</p>
+
+            <select id="roleSelect">
+                <option value="">-- Select Role --</option>
+                <option value="tutor">Tutor</option>
+                <option value="student">Student</option>
+                <option value="parent">Parent</option>
+                <option value="advertiser">Advertiser</option>
+            </select>
+
+            <button onclick="testRoleSwitch()">🧪 Test Switch Role</button>
+            <button onclick="verifyBackendState()" class="secondary">🔍 Verify Backend State</button>
+
+            <pre id="switchOutput">Results will appear here...</pre>
+        </div>
+
+        <!-- Step-by-Step Analysis -->
+        <div class="section">
+            <h2>🔎 Step-by-Step Analysis</h2>
+            <button onclick="runStepByStepAnalysis()">▶️ Run Full Analysis</button>
+            <pre id="analysisOutput">Click "Run Full Analysis" to see detailed step-by-step breakdown...</pre>
+        </div>
+
+        <!-- Fix Tools -->
+        <div class="section">
+            <h2>🔧 Fix Tools</h2>
+            <button onclick="syncLocalStorageWithBackend()">🔄 Sync localStorage with Backend</button>
+            <button onclick="clearSessionFlags()">🧹 Clear Session Flags</button>
+            <button onclick="clearAll()" class="danger">🗑️ Clear All & Logout</button>
+            <pre id="fixOutput">Fix results will appear here...</pre>
+        </div>
+
+        <!-- Instructions -->
+        <div class="section">
+            <h2>📖 How to Use</h2>
+            <div class="step">
+                <div class="step-title">1. Check Current State</div>
+                <div>Click "Refresh All State" to see what's currently stored in localStorage, sessionStorage, and JWT token.</div>
+            </div>
+            <div class="step">
+                <div class="step-title">2. Test Role Switch</div>
+                <div>Select a role you want to switch to, then click "Test Switch Role". Watch the console for detailed logs.</div>
+            </div>
+            <div class="step">
+                <div class="step-title">3. Verify Backend</div>
+                <div>Click "Verify Backend State" to check what role the backend thinks you have (compares JWT vs Database).</div>
+            </div>
+            <div class="step">
+                <div class="step-title">4. Run Analysis</div>
+                <div>Click "Run Full Analysis" to see a complete step-by-step breakdown of the role switching process.</div>
+            </div>
+            <div class="step">
+                <div class="step-title">5. Fix If Needed</div>
+                <div>If there's a mismatch, use "Sync localStorage with Backend" to force synchronization.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // ============================================
+        // STATE CHECKING
+        // ============================================
+
+        function checkAllState() {
+            const output = document.getElementById('currentState');
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const userRole = localStorage.getItem('userRole');
+            const currentUserStr = localStorage.getItem('currentUser');
+
+            let currentUser = null;
+            try {
+                currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+            } catch (e) {
+                currentUser = { error: 'Failed to parse' };
+            }
+
+            // Decode JWT to see what's inside
+            let jwtPayload = null;
+            if (token) {
+                try {
+                    const parts = token.split('.');
+                    if (parts.length === 3) {
+                        jwtPayload = JSON.parse(atob(parts[1]));
+                    }
+                } catch (e) {
+                    jwtPayload = { error: 'Failed to decode JWT' };
+                }
+            }
+
+            const state = {
+                localStorage: {
+                    token: token ? `Present (${token.substring(0, 20)}...)` : '❌ Missing',
+                    userRole: userRole || '❌ Missing',
+                    currentUser: currentUser
+                },
+                sessionStorage: {
+                    role_switch_in_progress: sessionStorage.getItem('role_switch_in_progress') || '❌ Not set',
+                    target_role: sessionStorage.getItem('target_role') || '❌ Not set'
+                },
+                jwt_decoded: jwtPayload || '❌ No token to decode'
+            };
+
+            output.textContent = JSON.stringify(state, null, 2);
+
+            // Highlight issues
+            if (jwtPayload && currentUser && jwtPayload.role !== currentUser.active_role) {
+                output.innerHTML += '\n\n<span class="error">⚠️ MISMATCH DETECTED!</span>\n';
+                output.innerHTML += `JWT says role="${jwtPayload.role}" but currentUser.active_role="${currentUser.active_role}"`;
+            }
+
+            return state;
+        }
+
+        // ============================================
+        // ROLE SWITCH TESTING
+        // ============================================
+
+        async function testRoleSwitch() {
+            const role = document.getElementById('roleSelect').value;
+            const output = document.getElementById('switchOutput');
+
+            if (!role) {
+                output.innerHTML = '<span class="error">❌ Please select a role first!</span>';
+                return;
+            }
+
+            output.innerHTML = `<span class="info">🔄 Testing switch to ${role}...</span>\n\n`;
+
+            try {
+                // Step 1: Get current state
+                output.innerHTML += '📋 STEP 1: Current State\n';
+                const beforeState = checkAllState();
+                output.innerHTML += `  - localStorage.userRole: ${beforeState.localStorage.userRole}\n`;
+                output.innerHTML += `  - currentUser.active_role: ${beforeState.localStorage.currentUser?.active_role}\n`;
+                output.innerHTML += `  - JWT role: ${beforeState.jwt_decoded?.role}\n\n`;
+
+                // Step 2: Call switch-role API
+                output.innerHTML += '📞 STEP 2: Calling /api/switch-role\n';
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+                if (!token) {
+                    output.innerHTML += '<span class="error">❌ No token found! Please log in first.</span>\n';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ role: role })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    output.innerHTML += `<span class="error">❌ API Error: ${error.detail}</span>\n`;
+                    return;
+                }
+
+                const data = await response.json();
+                output.innerHTML += `<span class="success">✅ API Response received</span>\n`;
+                output.innerHTML += `  - active_role: ${data.active_role}\n`;
+                output.innerHTML += `  - user_roles: ${JSON.stringify(data.user_roles)}\n`;
+                output.innerHTML += `  - New token received: ${data.access_token ? 'Yes' : 'No'}\n\n`;
+
+                // Step 3: Update localStorage (simulate what profile-system.js does)
+                output.innerHTML += '💾 STEP 3: Updating localStorage\n';
+
+                if (data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    output.innerHTML += '  ✅ Updated token\n';
+                }
+
+                localStorage.setItem('userRole', data.active_role);
+                output.innerHTML += `  ✅ Updated userRole to: ${data.active_role}\n`;
+
+                // Update currentUser
+                let currentUser = localStorage.getItem('currentUser');
+                if (currentUser) {
+                    currentUser = JSON.parse(currentUser);
+                } else {
+                    currentUser = { id: beforeState.jwt_decoded?.sub };
+                }
+
+                currentUser.role = data.active_role;
+                currentUser.active_role = data.active_role;
+                currentUser.roles = data.user_roles;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                output.innerHTML += '  ✅ Updated currentUser object\n\n';
+
+                // Step 4: Set session flags
+                output.innerHTML += '🚩 STEP 4: Setting session flags\n';
+                sessionStorage.setItem('role_switch_in_progress', 'true');
+                sessionStorage.setItem('target_role', data.active_role);
+                output.innerHTML += '  ✅ Set role_switch_in_progress flag\n\n';
+
+                // Step 5: Verify final state
+                output.innerHTML += '🔍 STEP 5: Final State Verification\n';
+                const afterState = checkAllState();
+                output.innerHTML += `  - localStorage.userRole: ${afterState.localStorage.userRole}\n`;
+                output.innerHTML += `  - currentUser.active_role: ${afterState.localStorage.currentUser?.active_role}\n`;
+                output.innerHTML += `  - JWT role: ${afterState.jwt_decoded?.role}\n\n`;
+
+                // Check if all in sync
+                const jwtRole = afterState.jwt_decoded?.role;
+                const lsUserRole = afterState.localStorage.userRole;
+                const cuActiveRole = afterState.localStorage.currentUser?.active_role;
+
+                if (jwtRole === lsUserRole && lsUserRole === cuActiveRole) {
+                    output.innerHTML += '<span class="success">✅ SUCCESS! All roles are in sync!</span>\n\n';
+                    output.innerHTML += `<span class="info">👉 You can now navigate to: profile-pages/${role}-profile.html</span>`;
+                } else {
+                    output.innerHTML += '<span class="error">⚠️ MISMATCH DETECTED!</span>\n';
+                    output.innerHTML += `  JWT: ${jwtRole}, localStorage: ${lsUserRole}, currentUser: ${cuActiveRole}\n`;
+                }
+
+            } catch (error) {
+                output.innerHTML += `<span class="error">❌ Error: ${error.message}</span>\n`;
+                console.error('Role switch test error:', error);
+            }
+        }
+
+        async function verifyBackendState() {
+            const output = document.getElementById('switchOutput');
+            output.innerHTML = '<span class="info">🔍 Verifying backend state...</span>\n\n';
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+                if (!token) {
+                    output.innerHTML += '<span class="error">❌ No token found!</span>';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    output.innerHTML += `<span class="error">❌ API Error: ${error.detail}</span>`;
+                    return;
+                }
+
+                const data = await response.json();
+
+                output.innerHTML += '📊 Backend User Data:\n';
+                output.innerHTML += `  - User ID: ${data.id}\n`;
+                output.innerHTML += `  - active_role: ${data.active_role}\n`;
+                output.innerHTML += `  - roles: ${JSON.stringify(data.roles)}\n\n`;
+
+                // Compare with localStorage
+                const localState = checkAllState();
+                const jwtRole = localState.jwt_decoded?.role;
+                const lsUserRole = localState.localStorage.userRole;
+
+                output.innerHTML += '🔄 Comparison:\n';
+                output.innerHTML += `  - Backend active_role: ${data.active_role}\n`;
+                output.innerHTML += `  - JWT token role: ${jwtRole}\n`;
+                output.innerHTML += `  - localStorage.userRole: ${lsUserRole}\n\n`;
+
+                if (data.active_role === jwtRole && jwtRole === lsUserRole) {
+                    output.innerHTML += '<span class="success">✅ All in sync!</span>';
+                } else {
+                    output.innerHTML += '<span class="error">⚠️ MISMATCH! Backend and frontend are out of sync!</span>';
+                }
+
+            } catch (error) {
+                output.innerHTML += `<span class="error">❌ Error: ${error.message}</span>`;
+                console.error('Backend verification error:', error);
+            }
+        }
+
+        // ============================================
+        // STEP-BY-STEP ANALYSIS
+        // ============================================
+
+        async function runStepByStepAnalysis() {
+            const output = document.getElementById('analysisOutput');
+            output.innerHTML = '<span class="info">🔎 Running comprehensive analysis...</span>\n\n';
+
+            // 1. Check localStorage structure
+            output.innerHTML += '═══ 1. LocalStorage Structure ═══\n';
+            const currentUserStr = localStorage.getItem('currentUser');
+            const userRole = localStorage.getItem('userRole');
+            const token = localStorage.getItem('token');
+
+            if (!currentUserStr) {
+                output.innerHTML += '<span class="error">❌ currentUser is missing!</span>\n';
+            } else {
+                const currentUser = JSON.parse(currentUserStr);
+                output.innerHTML += `<span class="success">✅ currentUser exists</span>\n`;
+                output.innerHTML += `   - Has active_role field: ${currentUser.hasOwnProperty('active_role') ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `   - active_role value: ${currentUser.active_role}\n`;
+                output.innerHTML += `   - Has role field: ${currentUser.hasOwnProperty('role') ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `   - role value: ${currentUser.role}\n`;
+            }
+
+            if (!userRole) {
+                output.innerHTML += '<span class="error">❌ userRole is missing!</span>\n';
+            } else {
+                output.innerHTML += `<span class="success">✅ userRole exists: ${userRole}</span>\n`;
+            }
+
+            output.innerHTML += '\n';
+
+            // 2. Decode JWT
+            output.innerHTML += '═══ 2. JWT Token Analysis ═══\n';
+            if (!token) {
+                output.innerHTML += '<span class="error">❌ No JWT token found!</span>\n\n';
+            } else {
+                try {
+                    const parts = token.split('.');
+                    const payload = JSON.parse(atob(parts[1]));
+                    output.innerHTML += '<span class="success">✅ JWT decoded successfully</span>\n';
+                    output.innerHTML += `   - User ID (sub): ${payload.sub}\n`;
+                    output.innerHTML += `   - Role: ${payload.role}\n`;
+                    output.innerHTML += `   - Role IDs: ${JSON.stringify(payload.role_ids)}\n`;
+                    output.innerHTML += `   - Expiry: ${new Date(payload.exp * 1000).toLocaleString()}\n\n`;
+                } catch (e) {
+                    output.innerHTML += `<span class="error">❌ Failed to decode JWT: ${e.message}</span>\n\n`;
+                }
+            }
+
+            // 3. Check sessionStorage flags
+            output.innerHTML += '═══ 3. Session Flags ═══\n';
+            const switchInProgress = sessionStorage.getItem('role_switch_in_progress');
+            const targetRole = sessionStorage.getItem('target_role');
+
+            if (switchInProgress === 'true') {
+                output.innerHTML += `<span class="warning">⚠️ Role switch in progress to: ${targetRole}</span>\n`;
+                output.innerHTML += '   This means the next page load will skip role validation.\n\n';
+            } else {
+                output.innerHTML += '<span class="info">ℹ️ No active role switch</span>\n\n';
+            }
+
+            // 4. Identify mismatches
+            output.innerHTML += '═══ 4. Mismatch Detection ═══\n';
+            const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+            const jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
+
+            const roles = {
+                jwt: jwtPayload?.role,
+                localStorage: userRole,
+                currentUser_active_role: currentUser?.active_role,
+                currentUser_role: currentUser?.role
+            };
+
+            output.innerHTML += `Detected roles:\n`;
+            Object.entries(roles).forEach(([source, role]) => {
+                output.innerHTML += `  - ${source}: ${role}\n`;
+            });
+
+            const uniqueRoles = [...new Set(Object.values(roles).filter(r => r))];
+            if (uniqueRoles.length === 1) {
+                output.innerHTML += `\n<span class="success">✅ All sources agree: ${uniqueRoles[0]}</span>\n\n`;
+            } else {
+                output.innerHTML += `\n<span class="error">❌ MISMATCH! Found ${uniqueRoles.length} different roles: ${uniqueRoles.join(', ')}</span>\n\n`;
+            }
+
+            // 5. Recommendations
+            output.innerHTML += '═══ 5. Recommendations ═══\n';
+            if (uniqueRoles.length > 1) {
+                output.innerHTML += '<span class="warning">Recommended actions:</span>\n';
+                output.innerHTML += '  1. Click "Sync localStorage with Backend" to fix the mismatch\n';
+                output.innerHTML += '  2. Or manually select the correct role and click "Test Switch Role"\n';
+            } else {
+                output.innerHTML += '<span class="success">✅ No action needed - all roles are synchronized!</span>\n';
+            }
+        }
+
+        // ============================================
+        // FIX TOOLS
+        // ============================================
+
+        async function syncLocalStorageWithBackend() {
+            const output = document.getElementById('fixOutput');
+            output.innerHTML = '<span class="info">🔄 Syncing with backend...</span>\n\n';
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+                if (!token) {
+                    output.innerHTML += '<span class="error">❌ No token found! Please log in first.</span>';
+                    return;
+                }
+
+                // Fetch fresh user data from backend
+                const response = await fetch(`${API_BASE_URL}/api/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    output.innerHTML += `<span class="error">❌ API Error: ${error.detail}</span>`;
+                    return;
+                }
+
+                const data = await response.json();
+
+                output.innerHTML += 'Backend says:\n';
+                output.innerHTML += `  - active_role: ${data.active_role}\n`;
+                output.innerHTML += `  - roles: ${JSON.stringify(data.roles)}\n\n`;
+
+                // Update localStorage to match backend
+                localStorage.setItem('userRole', data.active_role);
+
+                let currentUser = localStorage.getItem('currentUser');
+                if (currentUser) {
+                    currentUser = JSON.parse(currentUser);
+                } else {
+                    currentUser = { id: data.id };
+                }
+
+                currentUser.role = data.active_role;
+                currentUser.active_role = data.active_role;
+                currentUser.roles = data.roles;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                output.innerHTML += '<span class="success">✅ Successfully synced localStorage with backend!</span>\n';
+                output.innerHTML += `   - Set userRole to: ${data.active_role}\n`;
+                output.innerHTML += '   - Updated currentUser object\n\n';
+
+                output.innerHTML += '<span class="info">🔄 Refreshing state...</span>\n';
+                checkAllState();
+
+            } catch (error) {
+                output.innerHTML += `<span class="error">❌ Error: ${error.message}</span>`;
+                console.error('Sync error:', error);
+            }
+        }
+
+        function clearSessionFlags() {
+            const output = document.getElementById('fixOutput');
+            sessionStorage.removeItem('role_switch_in_progress');
+            sessionStorage.removeItem('target_role');
+            output.innerHTML = '<span class="success">✅ Cleared session flags</span>\n';
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ This will clear ALL data and log you out. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                document.getElementById('fixOutput').innerHTML = '<span class="warning">🗑️ All data cleared. You have been logged out.</span>';
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        }
+
+        // Auto-check state on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAllState();
+        });
+    </script>
+</body>
+</html>

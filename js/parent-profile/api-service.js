@@ -332,6 +332,31 @@ const ParentProfileAPI = {
             console.error('Error getting connection stats:', error);
             throw error;
         }
+    },
+
+    // Get dashboard statistics
+    async getDashboardStats() {
+        try {
+            const token = this.getAuthToken();
+            if (!token) {
+                throw new Error('No auth token found');
+            }
+
+            const response = await fetch(`${this.baseURL}/api/parent/dashboard-stats`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting dashboard stats:', error);
+            throw error;
+        }
     }
 };
 

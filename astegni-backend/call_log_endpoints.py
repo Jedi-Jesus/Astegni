@@ -32,12 +32,13 @@ router = APIRouter()
 # ============================================
 
 class CallLogCreate(BaseModel):
-    """Create a new call log"""
+    """Create a new call log (USER-BASED - profile fields optional for backward compatibility)"""
     conversation_id: int
-    caller_profile_id: int
-    caller_profile_type: str  # 'tutor', 'student', 'parent', 'advertiser'
     call_type: str  # 'voice', 'video'
     status: str  # 'initiated', 'ringing', 'answered', 'missed', 'declined', 'ended', 'failed'
+    caller_user_id: Optional[int] = None  # NEW: User-based (preferred)
+    caller_profile_id: Optional[int] = None  # Legacy: Profile-based
+    caller_profile_type: Optional[str] = None  # Legacy: 'tutor', 'student', 'parent', 'advertiser'
     started_at: Optional[datetime] = None
     answered_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
@@ -83,12 +84,12 @@ async def create_call_log(
                 detail="Not a participant in this conversation"
             )
 
-        # Create call log
+        # Create call log (USER-BASED with legacy support)
         call_log = CallLog(
             conversation_id=call_data.conversation_id,
-            caller_profile_id=call_data.caller_profile_id,
-            caller_profile_type=call_data.caller_profile_type,
-            caller_user_id=current_user.id,
+            caller_user_id=call_data.caller_user_id or current_user.id,  # Prefer provided, fallback to current user
+            caller_profile_id=call_data.caller_profile_id,  # Optional (legacy)
+            caller_profile_type=call_data.caller_profile_type,  # Optional (legacy)
             call_type=call_data.call_type,
             status=call_data.status,
             started_at=call_data.started_at or datetime.utcnow(),

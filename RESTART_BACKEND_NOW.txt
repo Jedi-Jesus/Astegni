@@ -1,0 +1,40 @@
+RESTART BACKEND IMMEDIATELY
+
+The Problem:
+Backend code has been fixed, but the server is still running OLD CODE in memory.
+
+Fixed Issues:
+1. Changed messages -> chat_messages (all occurrences)
+2. Changed INSERT INTO messages -> INSERT INTO chat_messages
+3. Changed FROM messages -> FROM chat_messages
+
+But the backend is still using old code because it hasn't been restarted!
+
+How to Restart:
+
+In your backend terminal window:
+1. Press Ctrl+C to stop the server
+2. Wait for it to stop completely
+3. Restart:
+   cd astegni-backend
+   python app.py
+
+What Should Happen After Restart:
+- No more "relation messages does not exist" errors
+- Conversations loading successfully
+- Chat modal working properly
+
+Current Error (Before Restart):
+relation "messages" does not exist
+LINE 16: FROM messages m
+
+After Restart:
+Successfully loading conversations from chat_messages table
+
+Next Steps After Restart:
+1. Hard refresh browser: Ctrl + Shift + R
+2. Click Message button
+3. Check console - should see no 500 errors
+
+Created: 2026-02-02
+Action Required: RESTART BACKEND NOW

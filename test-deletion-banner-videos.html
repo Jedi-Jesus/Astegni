@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Deletion Banner - Videos Page</title>
+</head>
+<body>
+    <h1>Deletion Banner Debug Test for Videos.html</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const p = document.createElement('p');
+            p.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            p.textContent = message;
+            results.appendChild(p);
+            console.log(message);
+        }
+
+        // Simulate videos.html environment
+        log('=== Testing Videos.html Deletion Banner ===', 'info');
+
+        // Check 1: Check if banner element exists in videos.html
+        fetch('../branch/videos.html')
+            .then(r => r.text())
+            .then(html => {
+                if (html.includes('id="deletion-countdown-banner"')) {
+                    log('✓ deletion-countdown-banner element found in HTML', 'success');
+                } else {
+                    log('✗ deletion-countdown-banner element NOT found in HTML', 'error');
+                }
+
+                if (html.includes('deletion-countdown-banner.js')) {
+                    log('✓ deletion-countdown-banner.js script tag found', 'success');
+                } else {
+                    log('✗ deletion-countdown-banner.js script tag NOT found', 'error');
+                }
+
+                if (html.includes('profile-system.js')) {
+                    log('✓ profile-system.js script tag found', 'success');
+                } else {
+                    log('✗ profile-system.js script tag NOT found', 'error');
+                }
+
+                if (html.includes('reels/auth.js')) {
+                    log('⚠ reels/auth.js script tag found (potential conflict)', 'error');
+                } else {
+                    log('✓ reels/auth.js NOT found', 'success');
+                }
+            });
+
+        // Check 2: Verify deletion-countdown-banner.js file exists and content
+        fetch('../js/common-modals/deletion-countdown-banner.js')
+            .then(r => r.text())
+            .then(js => {
+                log('✓ deletion-countdown-banner.js file exists', 'success');
+
+                if (js.includes('checkAndShowBanner')) {
+                    log('✓ checkAndShowBanner function found', 'success');
+                } else {
+                    log('✗ checkAndShowBanner function NOT found', 'error');
+                }
+
+                if (js.includes('hookIntoProfileDropdown')) {
+                    log('✓ hookIntoProfileDropdown function found', 'success');
+                } else {
+                    log('✗ hookIntoProfileDropdown function NOT found', 'error');
+                }
+            })
+            .catch(err => {
+                log('✗ Error loading deletion-countdown-banner.js: ' + err.message, 'error');
+            });
+
+        // Check 3: Test the actual API endpoint
+        log('\n=== Testing API Endpoint ===', 'info');
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            log('✓ Access token found in localStorage', 'success');
+
+            fetch('http://localhost:8000/api/role/deletion-status', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                log('API Response: ' + JSON.stringify(data, null, 2), 'info');
+                if (data.has_pending_deletion) {
+                    log('✓ User HAS pending role deletion: ' + data.role + ' (' + data.days_remaining + ' days)', 'success');
+                } else {
+                    log('✓ User has NO pending role deletion', 'info');
+                }
+            })
+            .catch(err => {
+                log('✗ API Error: ' + err.message, 'error');
+            });
+        } else {
+            log('✗ No access token found - user not logged in', 'error');
+        }
+    </script>
+</body>
+</html>

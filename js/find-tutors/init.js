@@ -50,13 +50,11 @@ function initTypingAnimation() {
 function applyUrlFilters() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    // Check for subject parameter (for subject-specific filtering from course cards)
+    // Check for subject parameter (legacy support - for backward compatibility)
     const subject = urlParams.get('subject');
     if (subject) {
-        console.log('Applying subject filter from URL:', subject);
-
-        // Set both subject filter AND search filter
-        FindTutorsState.updateFilter('subject', subject);
+        console.log('Applying subject filter from URL (legacy):', subject);
+        // Convert subject to search parameter for course-based searching
         FindTutorsState.updateFilter('search', subject);
 
         // Update the search bar to show the subject being searched
@@ -66,7 +64,7 @@ function applyUrlFilters() {
         }
     }
 
-    // Check for search parameter (for general searches)
+    // Check for search parameter (primary method for course card clicks)
     const searchQuery = urlParams.get('search');
     if (searchQuery && !subject) { // Only if subject wasn't already set
         console.log('Applying search filter from URL:', searchQuery);
@@ -79,29 +77,29 @@ function applyUrlFilters() {
         }
     }
 
-    // Check for courseType parameter
-    const courseType = urlParams.get('courseType');
-    if (courseType) {
-        console.log('Applying courseType filter from URL:', courseType);
-        FindTutorsState.updateFilter('courseType', courseType);
+    // Check for minGradeLevel parameter
+    const minGradeLevel = urlParams.get('minGradeLevel');
+    if (minGradeLevel) {
+        console.log('Applying minGradeLevel filter from URL:', minGradeLevel);
+        FindTutorsState.updateFilter('minGradeLevel', minGradeLevel);
 
-        // Update the courseType select dropdown if it exists
-        const courseTypeSelect = document.getElementById('courseTypeSelect');
-        if (courseTypeSelect) {
-            courseTypeSelect.value = courseType;
+        // Update the minGradeLevel select dropdown if it exists
+        const minGradeLevelSelect = document.getElementById('minGradeLevel');
+        if (minGradeLevelSelect) {
+            minGradeLevelSelect.value = minGradeLevel;
         }
     }
 
-    // Check for gradeLevel parameter
-    const gradeLevel = urlParams.get('gradeLevel');
-    if (gradeLevel) {
-        console.log('Applying gradeLevel filter from URL:', gradeLevel);
-        FindTutorsState.updateFilter('gradeLevel', gradeLevel);
+    // Check for maxGradeLevel parameter
+    const maxGradeLevel = urlParams.get('maxGradeLevel');
+    if (maxGradeLevel) {
+        console.log('Applying maxGradeLevel filter from URL:', maxGradeLevel);
+        FindTutorsState.updateFilter('maxGradeLevel', maxGradeLevel);
 
-        // Update the gradeLevel select dropdown if it exists
-        const gradeLevelSelect = document.getElementById('gradeLevelSelect');
-        if (gradeLevelSelect) {
-            gradeLevelSelect.value = gradeLevel;
+        // Update the maxGradeLevel select dropdown if it exists
+        const maxGradeLevelSelect = document.getElementById('maxGradeLevel');
+        if (maxGradeLevelSelect) {
+            maxGradeLevelSelect.value = maxGradeLevel;
         }
     }
 

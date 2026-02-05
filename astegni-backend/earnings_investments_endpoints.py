@@ -362,10 +362,10 @@ async def get_investments_summary(
             SELECT id, investment_type, investment_name, amount, current_value,
                    roi_percentage, investment_date, maturity_date, status,
                    description, risk_level
-            FROM tutor_investments
-            WHERE tutor_profile_id = %s
+            FROM user_investments
+            WHERE user_id = %s
             ORDER BY investment_date DESC
-        """, (tutor_profile_id,))
+        """, (current_user.id,))
         rows = cur.fetchall()
 
         investments = [
@@ -373,7 +373,7 @@ async def get_investments_summary(
                 id=row[0],
                 investment_type=row[1],
                 investment_name=row[2],
-                amount=float(row[3]),
+                amount=float(row[3]) if row[3] is not None else 0.0,
                 current_value=float(row[4]) if row[4] else None,
                 roi_percentage=float(row[5]) if row[5] else None,
                 investment_date=row[6],
@@ -426,10 +426,10 @@ async def get_investments(
             SELECT id, investment_type, investment_name, amount, current_value,
                    roi_percentage, investment_date, maturity_date, status,
                    description, risk_level
-            FROM tutor_investments
-            WHERE tutor_profile_id = %s
+            FROM user_investments
+            WHERE user_id = %s
         """
-        params = [tutor_profile[0]]
+        params = [current_user.id]
 
         if status:
             query += " AND status = %s"
@@ -445,7 +445,7 @@ async def get_investments(
                 id=row[0],
                 investment_type=row[1],
                 investment_name=row[2],
-                amount=float(row[3]),
+                amount=float(row[3]) if row[3] is not None else 0.0,
                 current_value=float(row[4]) if row[4] else None,
                 roi_percentage=float(row[5]) if row[5] else None,
                 investment_date=row[6],

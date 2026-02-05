@@ -111,6 +111,16 @@ async function uploadCredential(formData) {
             throw new Error('No auth token found');
         }
 
+        // Debug: Log FormData contents
+        console.log('📤 FormData contents:');
+        for (let [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+            } else {
+                console.log(`  ${key}: ${value}`);
+            }
+        }
+
         // Use tutor-specific endpoint (which writes to credentials table)
         const response = await fetch(`${CRED_API_BASE_URL}/api/tutor/documents/upload`, {
             method: 'POST',
@@ -122,8 +132,15 @@ async function uploadCredential(formData) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ Backend raw error response:', errorText);
+            try {
+                const errorData = JSON.parse(errorText);
+                console.error('❌ Backend error JSON:', JSON.stringify(errorData, null, 2));
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+            } catch (parseError) {
+                throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+            }
         }
 
         const credential = await response.json();
@@ -455,18 +472,176 @@ function _openUploadCredentialModalInternal() {
     if (modal) {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
+
         // Reset form
         const form = document.getElementById('uploadDocumentForm');
         if (form) {
             form.reset();
             // Set up form handler if not already done (modal loaded dynamically)
-            if (!form.dataset.handlerAttached) {
-                setupCredentialFormHandler();
-                form.dataset.handlerAttached = 'true';
+            setupCredentialFormHandler();
+        }
+
+        // Hide "Experience" option for students (only for tutors)
+        const currentRole = localStorage.getItem('activeRole');
+        const experienceOption = document.getElementById('doc-type-experience');
+
+        if (experienceOption) {
+            if (currentRole === 'student') {
+                // Hide experience option for students
+                experienceOption.style.display = 'none';
+                console.log('[CredentialManager] 🎓 Student mode: Experience option hidden');
+            } else {
+                // Show experience option for tutors and others
+                experienceOption.style.display = 'block';
+                console.log('[CredentialManager] 💼 Tutor mode: Experience option visible');
             }
         }
     } else {
         console.error('❌ Upload document modal not found. Make sure modal-loader has loaded it.');
+    }
+}
+
+/**
+ * Show toast notification (appears in bottom-right corner)
+ */
+function showToastNotification(message, type = 'success', duration = 3000) {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; max-width: 400px;';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.style.cssText = 'padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: start; gap: 12px; animation: slideInRight 0.3s ease-out; min-width: 300px;';
+
+    if (type === 'success') {
+        toast.style.backgroundColor = '#10B981';
+        toast.style.color = 'white';
+        toast.innerHTML = `
+            <span style="font-size: 20px; flex-shrink: 0;">✅</span>
+            <div style="flex: 1; font-size: 14px;">
+                <p style="font-weight: 600; margin-bottom: 4px;">Success</p>
+                <p style="opacity: 0.95;">${message}</p>
+            </div>
+        `;
+    } else if (type === 'error') {
+        toast.style.backgroundColor = '#EF4444';
+        toast.style.color = 'white';
+        toast.innerHTML = `
+            <span style="font-size: 20px; flex-shrink: 0;">❌</span>
+            <div style="flex: 1; font-size: 14px;">
+                <p style="font-weight: 600; margin-bottom: 4px;">Error</p>
+                <p style="opacity: 0.95;">${message}</p>
+            </div>
+        `;
+    } else if (type === 'info') {
+        toast.style.backgroundColor = '#3B82F6';
+        toast.style.color = 'white';
+        toast.innerHTML = `
+            <span style="font-size: 20px; flex-shrink: 0;">ℹ️</span>
+            <div style="flex: 1; font-size: 14px;">
+                <p style="font-weight: 600; margin-bottom: 4px;">Info</p>
+                <p style="opacity: 0.95;">${message}</p>
+            </div>
+        `;
+    }
+
+    // Add animation styles if not already added
+    if (!document.getElementById('toast-animation-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animation-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    toastContainer.appendChild(toast);
+
+    // Auto-remove after duration
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
+}
+
+/**
+ * Show status message in the modal
+ */
+function showDocUploadStatus(message, type = 'success') {
+    const statusDiv = document.getElementById('doc-upload-status');
+    if (!statusDiv) return;
+
+    // Clear existing classes
+    statusDiv.className = 'mb-4 p-4 rounded-lg';
+
+    // Add type-specific styling
+    if (type === 'success') {
+        statusDiv.classList.add('bg-green-50', 'border-l-4', 'border-green-500', 'text-green-800');
+        statusDiv.innerHTML = `
+            <div class="flex items-start">
+                <span class="text-green-500 text-xl mr-3">✅</span>
+                <div class="text-sm">
+                    <p class="font-semibold mb-1">Success!</p>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    } else if (type === 'error') {
+        statusDiv.classList.add('bg-red-50', 'border-l-4', 'border-red-500', 'text-red-800');
+        statusDiv.innerHTML = `
+            <div class="flex items-start">
+                <span class="text-red-500 text-xl mr-3">❌</span>
+                <div class="text-sm">
+                    <p class="font-semibold mb-1">Error</p>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    } else if (type === 'info') {
+        statusDiv.classList.add('bg-blue-50', 'border-l-4', 'border-blue-500', 'text-blue-800');
+        statusDiv.innerHTML = `
+            <div class="flex items-start">
+                <span class="text-blue-500 text-xl mr-3">ℹ️</span>
+                <div class="text-sm">
+                    <p class="font-semibold mb-1">Info</p>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Show the status div
+    statusDiv.classList.remove('hidden');
+
+    // Auto-hide success messages after 3 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            statusDiv.classList.add('hidden');
+        }, 3000);
+    }
+}
+
+/**
+ * Hide status message in the modal
+ */
+function hideDocUploadStatus() {
+    const statusDiv = document.getElementById('doc-upload-status');
+    if (statusDiv) {
+        statusDiv.classList.add('hidden');
     }
 }
 
@@ -476,6 +651,9 @@ function _openUploadCredentialModalInternal() {
 function closeUploadDocumentModal() {
     const modal = document.getElementById('uploadDocumentModal');
     if (!modal) return;
+
+    // Hide status message
+    hideDocUploadStatus();
 
     // Reset form
     const form = document.getElementById('uploadDocumentForm');
@@ -502,6 +680,17 @@ function closeUploadDocumentModal() {
         }
     }
 
+    // Hide and reset years field
+    const yearsField = document.getElementById('years-field');
+    const yearsInput = document.getElementById('doc-years');
+    if (yearsField) {
+        yearsField.style.display = 'none';
+    }
+    if (yearsInput) {
+        yearsInput.required = false;
+        yearsInput.value = '';
+    }
+
     // Hide modal
     modal.classList.add('hidden');
     modal.style.display = 'none';
@@ -518,8 +707,20 @@ function setupCredentialFormHandler() {
         return;
     }
 
+    // GUARD: Prevent attaching multiple event listeners
+    if (form.dataset.handlerAttached === 'true') {
+        console.log('⚠️ Form handler already attached, skipping...');
+        return;
+    }
+
+    // Mark form as having handler attached
+    form.dataset.handlerAttached = 'true';
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Hide any previous status messages
+        hideDocUploadStatus();
 
         // Check if we're in edit mode
         const isEditMode = form.getAttribute('data-edit-mode') === 'true';
@@ -538,6 +739,23 @@ function setupCredentialFormHandler() {
                 formData.delete('is_featured');
                 formData.append('is_featured', isFeaturedCheckbox.checked ? 'true' : 'false');
                 console.log('📌 Is Featured:', isFeaturedCheckbox.checked);
+            }
+
+            // Remove empty optional fields to avoid validation errors
+            // FastAPI expects optional integer fields to be omitted if empty, not sent as ""
+            const yearsValue = formData.get('years');
+            if (!yearsValue || yearsValue.trim() === '') {
+                formData.delete('years');
+            }
+
+            const expiryDateValue = formData.get('expiry_date');
+            if (!expiryDateValue || expiryDateValue.trim() === '') {
+                formData.delete('expiry_date');
+            }
+
+            const descriptionValue = formData.get('description');
+            if (!descriptionValue || descriptionValue.trim() === '') {
+                formData.delete('description');
             }
 
             // Show loading state
@@ -560,7 +778,22 @@ function setupCredentialFormHandler() {
                 }
 
                 console.log('✅ Credential updated:', uploadedDocument);
-                alert(`✅ Credential updated successfully!\n\nYour ${uploadedDocument.document_type} credential "${uploadedDocument.title}" has been updated.`);
+
+                // Show success message
+                showDocUploadStatus(
+                    `Your ${uploadedDocument.document_type} credential "${uploadedDocument.title}" has been updated successfully.`,
+                    'success'
+                );
+
+                // Update UI
+                updateCredentialCounts();
+                displayCredentials(currentCredentialType);
+
+                // Close modal after showing success message
+                setTimeout(() => {
+                    closeUploadDocumentModal();
+                }, 2000);
+
             } else {
                 // Upload new credential
                 uploadedDocument = await uploadCredential(formData);
@@ -570,23 +803,31 @@ function setupCredentialFormHandler() {
                 allDocuments = allCredentials; // Keep in sync
 
                 console.log('✅ Credential uploaded:', uploadedDocument);
-                alert(`✅ Credential uploaded successfully!\n\nYour ${uploadedDocument.document_type} credential "${uploadedDocument.title}" has been submitted for verification. You'll be notified once it's reviewed by our admin team.`);
+
+                // Show success message
+                showDocUploadStatus(
+                    `Your ${uploadedDocument.document_type} credential "${uploadedDocument.title}" has been submitted for verification. You'll be notified once it's reviewed by our admin team.`,
+                    'success'
+                );
+
+                // Update UI
+                updateCredentialCounts();
+                displayCredentials(currentCredentialType);
+
+                // Close modal after showing success message
+                setTimeout(() => {
+                    closeUploadDocumentModal();
+                }, 2500);
             }
-
-            // Update UI
-            updateCredentialCounts();
-            displayCredentials(currentCredentialType);
-
-            // Close modal
-            closeUploadDocumentModal();
-
-            // Reset button
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
 
         } catch (error) {
             console.error('❌ Error:', error);
-            alert(`❌ ${isEditMode ? 'Update' : 'Upload'} Failed\n\n${error.message}\n\nPlease try again or contact support if the issue persists.`);
+
+            // Show error message in modal
+            showDocUploadStatus(
+                `${isEditMode ? 'Update' : 'Upload'} failed: ${error.message}. Please try again or contact support if the issue persists.`,
+                'error'
+            );
 
             // Reset button
             const submitButton = form.querySelector('button[type="submit"]');
@@ -615,7 +856,7 @@ function viewDocument(documentId) {
     if (docData.document_url) {
         window.open(docData.document_url, '_blank');
     } else {
-        alert('Credential file not available');
+        showToastNotification('Credential file not available', 'error', 4000);
     }
 }
 
@@ -644,10 +885,11 @@ function editDocument(documentId) {
     const typeSelect = document.getElementById('doc-type');
     const descriptionInput = document.getElementById('doc-description');
     const issuedByInput = document.getElementById('doc-issued-by');
-    const dateInput = document.getElementById('doc-date');
-    const expiryInput = document.getElementById('doc-expiry');
+    const dateInput = document.getElementById('doc-date-of-issue');
+    const expiryInput = document.getElementById('doc-expiry-date');
     const isFeaturedCheckbox = document.getElementById('doc-is-featured');
     const fileInput = document.getElementById('doc-file');
+    const yearsInput = document.getElementById('doc-years');
     const modalTitle = modal.querySelector('h2');
     const submitButton = form.querySelector('button[type="submit"]');
 
@@ -657,7 +899,11 @@ function editDocument(documentId) {
 
     // Populate form fields
     if (titleInput) titleInput.value = docData.title || '';
-    if (typeSelect) typeSelect.value = docData.document_type || '';
+    if (typeSelect) {
+        typeSelect.value = docData.document_type || '';
+        // Trigger the credential type change handler to show/hide years field
+        handleCredentialTypeChange(typeSelect);
+    }
     if (descriptionInput) descriptionInput.value = docData.description || '';
     if (issuedByInput) issuedByInput.value = docData.issued_by || '';
     if (dateInput && docData.date_of_issue) {
@@ -668,6 +914,9 @@ function editDocument(documentId) {
     if (expiryInput && docData.expiry_date) {
         const expiryDate = new Date(docData.expiry_date);
         expiryInput.value = expiryDate.toISOString().split('T')[0];
+    }
+    if (yearsInput && docData.years !== undefined && docData.years !== null) {
+        yearsInput.value = docData.years;
     }
     if (isFeaturedCheckbox) {
         isFeaturedCheckbox.checked = docData.is_featured || false;
@@ -728,12 +977,12 @@ async function deleteDocumentConfirm(documentId) {
         updateCredentialCounts();
         displayCredentials(currentCredentialType);
 
-        // Success message
-        alert('✅ Document deleted successfully');
+        // Show success toast
+        showToastNotification('Document deleted successfully', 'success');
 
     } catch (error) {
         console.error('❌ Error deleting document:', error);
-        alert(`❌ Delete Failed\n\n${error.message}\n\nPlease try again or contact support.`);
+        showToastNotification(`Delete failed: ${error.message}`, 'error', 5000);
     }
 }
 
@@ -846,74 +1095,56 @@ setTimeout(() => {
 }, 2000);
 
 // ============================================================================
-// FEATURED TOGGLE HANDLER (Coming Soon)
+// CREDENTIAL TYPE CHANGE HANDLER
+// ============================================================================
+
+/**
+ * Handle credential type change
+ * Shows/hides the years input field when experience type is selected
+ */
+function handleCredentialTypeChange(selectElement) {
+    const yearsField = document.getElementById('years-field');
+    const yearsInput = document.getElementById('doc-years');
+
+    if (!yearsField || !yearsInput) {
+        console.warn('[CredentialManager] Years field elements not found');
+        return;
+    }
+
+    const selectedType = selectElement.value;
+
+    if (selectedType === 'experience') {
+        // Show years field for experience type
+        yearsField.style.display = 'block';
+        yearsInput.required = true;
+        console.log('[CredentialManager] Years field shown (experience type selected)');
+    } else {
+        // Hide years field for other types
+        yearsField.style.display = 'none';
+        yearsInput.required = false;
+        yearsInput.value = ''; // Clear the value when hiding
+        console.log('[CredentialManager] Years field hidden (non-experience type selected)');
+    }
+}
+
+// ============================================================================
+// FEATURED TOGGLE HANDLER
 // ============================================================================
 
 /**
  * Handle the "Featured Document" toggle
- * Shows coming soon modal and unchecks the toggle
- * Saving continues normally but without is_featured = true
+ * Featured documents are highlighted on the user's public profile
+ * This feature is fully functional - featured credentials show on view-tutor.html
  */
 function handleFeaturedToggle(checkbox) {
+    // Simply allow the toggle to work normally
+    // The is_featured value will be sent with the form data
+    console.log('[CredentialManager] Featured toggle:', checkbox.checked ? 'ON' : 'OFF');
+
+    // Optional: Show a tooltip/info message when first enabled
     if (checkbox.checked) {
-        // Uncheck it immediately
-        checkbox.checked = false;
-
-        // Custom message for featured documents - tells user they can still save
-        const customMessage = "The Featured Documents feature is coming soon! You can still save your credential - it just won't be highlighted on your profile yet.";
-
-        // Use the global openComingSoonModal function if available
-        if (typeof window.openComingSoonModal === 'function') {
-            window.openComingSoonModal('Featured Documents');
-            // Update message after modal opens to include the "you can still save" note
-            setTimeout(() => {
-                const messageEl = document.querySelector('#coming-soon-message');
-                if (messageEl) {
-                    messageEl.textContent = customMessage;
-                }
-            }, 50);
-        } else {
-            // Fallback: Try to show the coming-soon-modal directly
-            const modal = document.getElementById('coming-soon-modal');
-            if (modal) {
-                // Update the message
-                const messageEl = modal.querySelector('#coming-soon-message');
-                if (messageEl) {
-                    messageEl.textContent = customMessage;
-                }
-
-                // Check login state and show appropriate content
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                const isLoggedIn = user && (user.id || user.email || user.first_name);
-                const formEl = modal.querySelector('#coming-soon-form');
-                const loggedInEl = modal.querySelector('#coming-soon-logged-in');
-                const userNameEl = modal.querySelector('#coming-soon-user-name');
-
-                if (isLoggedIn) {
-                    if (formEl) formEl.style.display = 'none';
-                    if (loggedInEl) loggedInEl.style.display = 'block';
-                    if (userNameEl) {
-                        const displayName = user.first_name || user.full_name || user.email?.split('@')[0] || 'there';
-                        userNameEl.textContent = displayName;
-                    }
-                } else {
-                    if (formEl) formEl.style.display = 'block';
-                    if (loggedInEl) loggedInEl.style.display = 'none';
-                }
-
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
-            } else {
-                // Ultimate fallback: show notification
-                if (typeof window.showNotification === 'function') {
-                    window.showNotification(customMessage, 'info');
-                } else {
-                    alert(customMessage);
-                }
-            }
-        }
-
-        console.log('[CredentialManager] Featured toggle blocked - feature coming soon');
+        // You can add a subtle notification here if desired
+        console.log('[CredentialManager] ⭐ This credential will be featured on your public profile');
     }
 }
 
@@ -1020,6 +1251,7 @@ window.editDocument = editDocument;
 window.deleteDocumentConfirm = deleteDocumentConfirm;
 window.initializeCredentialManager = initializeCredentialManager;
 window.safeInitializeCredentialManager = safeInitializeCredentialManager;
+window.handleCredentialTypeChange = handleCredentialTypeChange;
 
 // Legacy aliases for backward compatibility
 window.switchDocumentSection = switchCredentialSection;

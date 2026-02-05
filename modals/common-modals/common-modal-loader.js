@@ -26,12 +26,21 @@ const CommonModalLoader = (function() {
     const COMMON_MODALS = [
         'access-restricted-modal.html',
         'add-role-modal.html',
+        'appearance-modal.html',
+        'attendance-suggestion-modal.html',
+        'chat-modal.html',
         'coming-soon-modal.html',
         'community-modal.html',
+        'confirm-delete-schedule-modal.html',
         'create-job-modal.html',
         'logout-modal.html',
+        'manage-role-modal.html',
+        'mark-attendance-modal.html',
+        'schedule-modal.html',
+        'share-profile-modal.html',
         'subscription-modal.html',
-        'view-request-modal.html'
+        'view-request-modal.html',
+        'view-schedule-modal.html'
     ];
 
     // Modal ID to filename mapping
@@ -39,14 +48,30 @@ const CommonModalLoader = (function() {
         'access-restricted-modal': 'access-restricted-modal.html',
         'accessRestrictedModal': 'access-restricted-modal.html',
         'add-role-modal': 'add-role-modal.html',
+        'appearance-modal': 'appearance-modal.html',
+        'attendance-suggestion-modal': 'attendance-suggestion-modal.html',
+        'attendanceSuggestionModal': 'attendance-suggestion-modal.html',
+        'chat-modal': 'chat-modal.html',
+        'chatModal': 'chat-modal.html',
         'coming-soon-modal': 'coming-soon-modal.html',
         'community-modal': 'community-modal.html',
         'communityModal': 'community-modal.html',
+        'confirm-delete-schedule-modal': 'confirm-delete-schedule-modal.html',
+        'confirmDeleteScheduleModal': 'confirm-delete-schedule-modal.html',
         'create-job-modal': 'create-job-modal.html',
         'createJobModal': 'create-job-modal.html',
         'logout-modal': 'logout-modal.html',
+        'manage-role-modal': 'manage-role-modal.html',
+        'mark-attendance-modal': 'mark-attendance-modal.html',
+        'markAttendanceModal': 'mark-attendance-modal.html',
+        'schedule-modal': 'schedule-modal.html',
+        'scheduleModal': 'schedule-modal.html',
+        'share-profile-modal': 'share-profile-modal.html',
+        'shareProfileModal': 'share-profile-modal.html',
         'subscription-modal': 'subscription-modal.html',
-        'view-request-modal': 'view-request-modal.html'
+        'view-request-modal': 'view-request-modal.html',
+        'view-schedule-modal': 'view-schedule-modal.html',
+        'viewScheduleModal': 'view-schedule-modal.html'
     };
 
     // Cache for loaded modals
@@ -241,7 +266,54 @@ const CommonModalLoader = (function() {
 
 // Auto-initialize on DOM ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => CommonModalLoader.init());
+    document.addEventListener('DOMContentLoaded', () => {
+        CommonModalLoader.init();
+        loadAppearanceModalJS();
+    });
 } else {
     CommonModalLoader.init();
+    loadAppearanceModalJS();
+}
+
+/**
+ * Load appearance modal JavaScript
+ * This is needed for the appearance settings modal to work
+ */
+function loadAppearanceModalJS() {
+    // Check if appearance functions already exist (from appearance-manager.js or appearance-modal.js)
+    if (window.openAppearanceModal && window.setColorPalette) {
+        console.log('[CommonModalLoader] Appearance functions already available, skipping load');
+        return;
+    }
+
+    // Check if appearanceModalManager already exists
+    if (window.appearanceModalManager) {
+        console.log('[CommonModalLoader] Appearance modal JS already loaded');
+        return;
+    }
+
+    // Detect base path for JS files
+    const currentPath = window.location.pathname;
+    let jsBasePath = '';
+
+    if (currentPath.includes('/profile-pages/') ||
+        currentPath.includes('/view-profiles/') ||
+        currentPath.includes('/branch/') ||
+        currentPath.includes('/admin-pages/')) {
+        jsBasePath = '../js/common-modals/';
+    } else {
+        jsBasePath = 'js/common-modals/';
+    }
+
+    // Load the appearance modal JS
+    const script = document.createElement('script');
+    script.src = jsBasePath + 'appearance-modal.js?v=' + Date.now(); // Cache-busting
+    script.async = false; // Ensure it loads in order
+    script.onload = () => {
+        console.log('[CommonModalLoader] Appearance modal JS loaded successfully');
+    };
+    script.onerror = () => {
+        console.error('[CommonModalLoader] Failed to load appearance modal JS from:', script.src);
+    };
+    document.head.appendChild(script);
 }

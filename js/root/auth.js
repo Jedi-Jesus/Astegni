@@ -90,19 +90,88 @@ class AuthenticationManager {
                     this.user.roles = [this.user.role];
                 }
 
-                // FIX: Ensure active_role is properly restored from localStorage
-                const storedUserRole = localStorage.getItem('userRole');
-                if (storedUserRole && storedUserRole !== 'undefined' && storedUserRole !== 'null') {
-                    if (!this.user.active_role || this.user.active_role === 'undefined') {
-                        console.log('[AuthManager.restoreSession] Restoring active_role from userRole:', storedUserRole);
-                        this.user.active_role = storedUserRole;
+                // CRITICAL FIX: Check if role switch is in progress (within 10s grace period)
+                // This must happen BEFORE syncing from localStorage.userRole
+                const switchTimestamp = localStorage.getItem('role_switch_timestamp');
+                const targetRole = localStorage.getItem('role_switch_target');
+
+                if (switchTimestamp && targetRole) {
+                    const timeSinceSwitch = Date.now() - parseInt(switchTimestamp);
+                    const isWithinGracePeriod = timeSinceSwitch < 10000; // 10 seconds
+
+                    console.log('[AuthManager.restoreSession] Role switch detected:', {
+                        targetRole: targetRole,
+                        timeSinceSwitch: timeSinceSwitch + 'ms',
+                        gracePeriodValid: isWithinGracePeriod
+                    });
+
+                    if (isWithinGracePeriod) {
+                        // FORCE the user object to have the target role (override any stale data)
+                        console.log('[AuthManager.restoreSession] ✅ Within grace period - forcing active_role to:', targetRole);
+                        this.user.active_role = targetRole;
+                        this.user.role = targetRole;
+                        // Also ensure localStorage.userRole matches (belt and suspenders)
+                        localStorage.setItem('userRole', targetRole);
+
+                        // CRITICAL: Update the currentUser object in localStorage with the new role
+                        // This ensures the UI displays the correct profile data
+                        localStorage.setItem('currentUser', JSON.stringify(this.user));
+                        console.log('[AuthManager.restoreSession] Updated localStorage.currentUser with new role');
+
+                        // Dispatch event to notify profile-system to refresh the UI
+                        window.dispatchEvent(new CustomEvent('userRoleUpdated', {
+                            detail: { role: targetRole, user: this.user }
+                        }));
+                        console.log('[AuthManager.restoreSession] Dispatched userRoleUpdated event');
+
+                        console.log('[AuthManager.restoreSession] Role switch applied - user now has active_role:', this.user.active_role);
+
+                        // Don't clear the flags here - let them expire naturally or be cleared by page-specific logic
+                        // This ensures any subsequent checks within the grace period still pass
+                    } else {
+                        // Grace period expired - clear the flags
+                        console.log('[AuthManager.restoreSession] ⏱️ Grace period expired - clearing flags');
+                        localStorage.removeItem('role_switch_timestamp');
+                        localStorage.removeItem('role_switch_target');
+
+                        // Fall through to normal userRole sync below
                     }
                 }
 
-                // If still no active_role but we have a role property, use that
-                if ((!this.user.active_role || this.user.active_role === 'undefined') && this.user.role && this.user.role !== 'undefined') {
-                    console.log('[AuthManager.restoreSession] Setting active_role from user.role:', this.user.role);
-                    this.user.active_role = this.user.role;
+                // FIX: ALWAYS sync active_role from localStorage.userRole (source of truth)
+                // This is critical for role switching - localStorage.userRole is updated first
+                // BUT: Only do this if we're NOT in a grace period (already handled above)
+                const storedUserRole = localStorage.getItem('userRole');
+                if (storedUserRole && storedUserRole !== 'undefined' && storedUserRole !== 'null') {
+                    // ALWAYS override with latest userRole from localStorage
+                    // Don't check if active_role exists - always sync from source of truth
+                    console.log('[AuthManager.restoreSession] Syncing active_role from userRole:', storedUserRole);
+                    console.log('[AuthManager.restoreSession] Previous active_role:', this.user.active_role);
+                    this.user.active_role = storedUserRole;
+                    this.user.role = storedUserRole; // Also sync the role field
+                } else {
+                    // localStorage.userRole doesn't exist - need to establish it
+                    console.log('[AuthManager.restoreSession] No localStorage.userRole found, establishing from user object...');
+
+                    // Try to get active_role from currentUser object (already loaded from localStorage)
+                    if (this.user.active_role && this.user.active_role !== 'undefined') {
+                        // User object has active_role - sync it to localStorage
+                        console.log('[AuthManager.restoreSession] Using user.active_role:', this.user.active_role);
+                        localStorage.setItem('userRole', this.user.active_role);
+                    } else if (this.user.role && this.user.role !== 'undefined') {
+                        // Fallback to user.role
+                        console.log('[AuthManager.restoreSession] Using user.role:', this.user.role);
+                        this.user.active_role = this.user.role;
+                        localStorage.setItem('userRole', this.user.role);
+                    } else if (this.user.roles && Array.isArray(this.user.roles) && this.user.roles.length > 0) {
+                        // Last resort: use first role in array
+                        console.log('[AuthManager.restoreSession] Using first role from roles array:', this.user.roles[0]);
+                        this.user.active_role = this.user.roles[0];
+                        this.user.role = this.user.roles[0];
+                        localStorage.setItem('userRole', this.user.roles[0]);
+                    } else {
+                        console.error('[AuthManager.restoreSession] NO ROLE FOUND! User object has no role information!');
+                    }
                 }
 
                 // CRITICAL FIX: If role_ids is missing, fetch fresh user data from /api/me
@@ -175,6 +244,9 @@ class AuthenticationManager {
             // Update localStorage
             localStorage.setItem('currentUser', JSON.stringify(this.user));
             console.log('[AuthManager.fetchUserData] Updated localStorage with role_ids:', this.user.role_ids);
+
+            // Dispatch custom event for components that need to react to user data updates
+            document.dispatchEvent(new CustomEvent('userDataLoaded', { detail: this.user }));
 
             return this.user;
         } catch (error) {
@@ -326,6 +398,17 @@ async login(email, password) {
 
         if (!response.ok) {
             const error = await response.json();
+
+            // Check if it's account pending deletion (403)
+            if (response.status === 403 && error.detail && error.detail.error_code === 'ACCOUNT_PENDING_DELETION') {
+                // Return deletion info to frontend
+                return {
+                    success: false,
+                    error: 'ACCOUNT_PENDING_DELETION',
+                    deletionInfo: error.detail
+                };
+            }
+
             throw new Error(error.detail || 'Login failed');
         }
 

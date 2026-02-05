@@ -415,6 +415,9 @@ const StudentProfileDataLoader = {
             }
         }
 
+        // Social Links
+        this.populateSocialLinks(data.social_links || {});
+
         // Joined date
         if (data.joined) {
             this.updateElement('student-joined', data.joined);
@@ -496,6 +499,74 @@ const StudentProfileDataLoader = {
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
+        }
+    },
+
+    // Populate social links
+    populateSocialLinks(socialLinks) {
+        const container = document.getElementById('social-links-container');
+        if (!container) {
+            console.error('❌ Social links container not found!');
+            return;
+        }
+
+        const iconMap = {
+            facebook: 'fab fa-facebook-f',
+            twitter: 'fab fa-twitter',
+            linkedin: 'fab fa-linkedin-in',
+            instagram: 'fab fa-instagram',
+            youtube: 'fab fa-youtube',
+            telegram: 'fab fa-telegram-plane',
+            website: 'fas fa-globe'
+        };
+
+        const titleMap = {
+            facebook: 'Facebook',
+            twitter: 'Twitter',
+            linkedin: 'LinkedIn',
+            instagram: 'Instagram',
+            youtube: 'YouTube',
+            telegram: 'Telegram',
+            website: 'Website'
+        };
+
+        console.log('📱 Populating social links. Raw data:', socialLinks);
+        console.log('📱 Type:', typeof socialLinks, 'IsObject:', socialLinks && typeof socialLinks === 'object');
+
+        // Handle both object and array formats
+        let entries = [];
+        if (socialLinks && typeof socialLinks === 'object') {
+            if (Array.isArray(socialLinks)) {
+                // Array format: [{platform: 'facebook', url: 'https://...'}]
+                entries = socialLinks.map(item => [item.platform, item.url]);
+            } else {
+                // Object format: {facebook: 'https://...', twitter: 'https://...'}
+                entries = Object.entries(socialLinks);
+            }
+        }
+
+        console.log('📱 Parsed entries:', entries);
+
+        // Only show platforms that have URLs
+        const html = entries
+            .filter(([platform, url]) => url && url.trim() !== '')
+            .map(([platform, url]) => {
+                console.log(`  ✓ Adding ${platform}: ${url}`);
+                return `
+                <a href="${url}" class="social-link" title="${titleMap[platform] || platform}"
+                   onclick="event.preventDefault(); window.open('${url}', '_blank');" target="_blank" rel="noopener noreferrer">
+                    <i class="${iconMap[platform] || 'fas fa-link'}"></i>
+                </a>
+            `;
+            }).join('');
+
+        if (html) {
+            container.innerHTML = html;
+            const count = entries.filter(([_, url]) => url && url.trim() !== '').length;
+            console.log(`✅ ${count} social link(s) populated successfully`);
+        } else {
+            container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">No social links added</p>';
+            console.log('ℹ️ No social links to display');
         }
     }
 };

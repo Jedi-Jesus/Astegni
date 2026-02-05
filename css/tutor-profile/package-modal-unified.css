@@ -1,0 +1,4368 @@
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE MODAL - ENHANCED SOPHISTICATED DESIGN
+   Premium glass-morphism design with modern UI patterns
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL OVERLAY & BACKDROP
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+#package-management-modal.hidden {
+    display: none;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: overlayFade 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN MODAL CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+
+.package-modal-redesigned {
+    position: relative;
+    z-index: 2;
+    max-width: 1500px;
+    width: 95%;
+    max-height: 92vh;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 24px;
+    box-shadow:
+        0 32px 64px -12px rgba(0, 0, 0, 0.2),
+        0 16px 32px -8px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 0 120px rgba(245, 158, 11, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Dark theme support */
+[data-theme="dark"] .package-modal-redesigned {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+    box-shadow:
+        0 32px 64px -12px rgba(0, 0, 0, 0.5),
+        0 16px 32px -8px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 120px rgba(245, 158, 11, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL HEADER
+   ═══════════════════════════════════════════════════════════ */
+
+/* IMPORTANT: Scope to package modal only - don't affect other modals like share-profile */
+#package-management-modal .modal-header {
+    position: relative;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+#package-management-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.modal-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.025em;
+}
+
+.modal-close {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE LAYOUT CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+
+.package-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, transparent 0%, rgba(245, 158, 11, 0.02) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR: PACKAGE LIST
+   ═══════════════════════════════════════════════════════════ */
+
+.package-management-sidebar {
+    width: 360px;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-right: 1px solid rgba(226, 232, 240, 0.8);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .package-management-sidebar {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-right: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.sidebar-header {
+    padding: 1.75rem 1.5rem;
+    background: linear-gradient(180deg, white 0%, rgba(255, 255, 255, 0.95) 100%);
+    border-bottom: 2px solid rgba(226, 232, 240, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="dark"] .sidebar-header {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-bottom: 2px solid rgba(51, 65, 85, 0.5);
+}
+
+.sidebar-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+[data-theme="dark"] .sidebar-header h3 {
+    background: linear-gradient(135deg, #FFD54F 0%, #FFC107 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btn-new-package {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-new-package::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-new-package:hover::before {
+    width: 100px;
+    height: 100px;
+}
+
+.btn-new-package:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.btn-new-package:active {
+    transform: scale(0.95);
+}
+
+.packages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.packages-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.packages-list::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.3);
+    border-radius: 3px;
+}
+
+.packages-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+    border-radius: 3px;
+}
+
+.packages-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE LIST ITEMS
+   ═══════════════════════════════════════════════════════════ */
+
+.package-item {
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .package-item {
+    background: rgba(30, 41, 59, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.package-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.package-item:hover::before {
+    left: 100%;
+}
+
+.package-item:hover {
+    border-color: var(--primary-color, #F59E0B);
+    background: linear-gradient(135deg, white 0%, #fef3c7 100%);
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+}
+
+[data-theme="dark"] .package-item:hover {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(245, 158, 11, 0.1) 100%);
+}
+
+.package-item.active {
+    border-color: var(--primary-color, #F59E0B);
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    box-shadow:
+        0 8px 24px rgba(245, 158, 11, 0.2),
+        inset 0 0 0 1px rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="dark"] .package-item.active {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+}
+
+.package-item.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+}
+
+.package-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.package-item-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+[data-theme="dark"] .package-item-name {
+    color: #e2e8f0;
+}
+
+.package-item-actions {
+    display: flex;
+    gap: 0.375rem;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s;
+}
+
+.package-item:hover .package-item-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.package-item-actions button {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.package-item-actions button:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.package-item-courses {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+[data-theme="dark"] .package-item-courses {
+    color: #94a3b8;
+}
+
+.package-item-rate {
+    font-size: 0.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.package-item-rate::before {
+    content: '💰';
+    font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+   ═══════════════════════════════════════════════════════════ */
+
+.package-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+}
+
+[data-theme="dark"] .package-main {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+.package-editor {
+    flex: 1;
+    overflow-y: auto;
+    padding: 3rem;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for editor */
+.package-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.package-editor::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.2);
+    border-radius: 4px;
+}
+
+.package-editor::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+    border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════ */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    min-height: 500px;
+    animation: fadeIn 0.6s ease;
+}
+
+.empty-state i {
+    font-size: 5rem;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+.empty-state h3 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.025em;
+}
+
+[data-theme="dark"] .empty-state h3 {
+    color: #e2e8f0;
+}
+
+.empty-state p {
+    color: #64748b;
+    font-size: 1.125rem;
+    margin: 0 0 2.5rem 0;
+    max-width: 400px;
+}
+
+[data-theme="dark"] .empty-state p {
+    color: #94a3b8;
+}
+
+.btn-create-first {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-create-first::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.8s, height 0.8s;
+}
+
+.btn-create-first:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-create-first:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.4);
+}
+
+.btn-create-first:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE FORM STYLING
+   ═══════════════════════════════════════════════════════════ */
+
+.package-form {
+    max-width: 100%;
+    width: 100%;
+    animation: slideIn 0.5s ease;
+}
+
+.package-form-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px solid linear-gradient(90deg, #3b82f6 0%, transparent 100%);
+    position: relative;
+}
+
+.package-form-header::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 2px;
+    animation: expandWidth 0.8s ease;
+}
+
+.package-form-header h3 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.025em;
+}
+
+[data-theme="dark"] .package-form-header h3 {
+    color: #e2e8f0;
+}
+
+.package-form-header p {
+    color: #64748b;
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+[data-theme="dark"] .package-form-header p {
+    color: #94a3b8;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .form-section {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.3) 0%, rgba(15, 23, 42, 0.3) 100%);
+    border: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+[data-theme="dark"] .form-section-title {
+    color: #e2e8f0;
+}
+
+.form-section-title i {
+    font-size: 1.125rem;
+    color: #3b82f6;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-field label {
+    font-size: 0.975rem;
+    font-weight: 600;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.01em;
+}
+
+[data-theme="dark"] .form-field label {
+    color: #cbd5e1;
+}
+
+.form-field label i {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1.0625rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    color: #1e293b;
+}
+
+[data-theme="dark"] .form-field input,
+[data-theme="dark"] .form-field select,
+[data-theme="dark"] .form-field textarea {
+    background: rgba(15, 23, 42, 0.5);
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+.form-field input:hover,
+.form-field select:hover,
+.form-field textarea:hover {
+    border-color: #cbd5e1;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.1),
+        0 4px 12px rgba(245, 158, 11, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COURSE TAGS INPUT
+   ═══════════════════════════════════════════════════════════ */
+
+.course-input-wrapper {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.course-input-wrapper input {
+    flex: 1;
+}
+
+.btn-add-course {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.btn-add-course:hover {
+    transform: translateY(-2px) rotate(90deg);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.btn-add-course:active {
+    transform: scale(0.95) rotate(90deg);
+}
+
+.course-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.course-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 1rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border-radius: 24px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    animation: tagAppear 0.3s ease;
+}
+
+@keyframes tagAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.course-tag button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.course-tag button:hover {
+    background: rgba(239, 68, 68, 0.9);
+    transform: rotate(90deg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DISCOUNT FIELDS
+   ═══════════════════════════════════════════════════════════ */
+
+.discount-fields {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.discount-field {
+    position: relative;
+}
+
+.discount-field input {
+    padding-left: 3rem;
+}
+
+.discount-field::before {
+    content: '%';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CALCULATOR SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+.calculator-section {
+    margin-top: 3rem;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+    border-radius: 20px;
+    border: 2px solid var(--primary-color, #F59E0B);
+    box-shadow:
+        0 12px 32px rgba(245, 158, 11, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .calculator-section {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border: 2px solid rgba(245, 158, 11, 0.5);
+}
+
+.calculator-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: drift 20s linear infinite;
+}
+
+@keyframes drift {
+    from { transform: translate(0, 0); }
+    to { transform: translate(20px, 20px); }
+}
+
+.calculator-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.calculator-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color, #F59E0B);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.calculator-header h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+[data-theme="dark"] .calculator-header h4 {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.calculator-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.calculator-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.calc-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.75rem;
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+[data-theme="dark"] .calc-result-row {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.calc-result-row:hover {
+    background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+    transform: translateX(8px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .calc-result-row:hover {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+}
+
+.calc-result-label {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+[data-theme="dark"] .calc-result-label {
+    color: #94a3b8;
+}
+
+.calc-result-value {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.125rem;
+}
+
+[data-theme="dark"] .calc-result-value {
+    color: #e2e8f0;
+}
+
+.calc-result-row.total {
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    margin-top: 1rem;
+    box-shadow:
+        0 8px 24px rgba(245, 158, 11, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: none;
+    transform: scale(1.02);
+}
+
+.calc-result-row.total:hover {
+    transform: translateX(8px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.4);
+}
+
+.calc-result-row.total .calc-result-label,
+.calc-result-row.total .calc-result-value {
+    color: white;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL FOOTER
+   ═══════════════════════════════════════════════════════════ */
+
+.modal-footer {
+    padding: 1.75rem 2.5rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-top: 1px solid rgba(226, 232, 240, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+[data-theme="dark"] .modal-footer {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-top: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.modal-footer button {
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.0625rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+[data-theme="dark"] .btn-secondary {
+    background: rgba(30, 41, 59, 0.5);
+    color: #cbd5e1;
+    border: 2px solid #475569;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes overlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes expandWidth {
+    from { width: 0; }
+    to { width: 100px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING STATES
+   ═══════════════════════════════════════════════════════════ */
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(59, 130, 246, 0.1);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmerSkeleton 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmerSkeleton {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .package-modal-redesigned {
+        max-width: 95%;
+    }
+
+    .package-management-sidebar {
+        width: 320px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .discount-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .calculator-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .package-modal-redesigned {
+        width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    #package-management-modal .modal-header {
+        padding: 1.5rem;
+    }
+
+    #package-management-modal .modal-title {
+        font-size: 1.25rem;
+    }
+
+    .package-layout {
+        flex-direction: column;
+    }
+
+    .package-management-sidebar {
+        width: 100%;
+        max-height: 250px;
+        border-right: none;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .packages-list {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-direction: row;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .package-item {
+        min-width: 240px;
+        margin-bottom: 0;
+    }
+
+    .package-editor {
+        padding: 1.5rem;
+    }
+
+    .form-section {
+        padding: 1.25rem;
+    }
+
+    .calculator-section {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        flex-direction: column;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SESSION FORMAT & SCHEDULE STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Checkbox Group Styling */
+.checkbox-group {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--card-bg, #f9fafb);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--text, #1f2937);
+}
+
+.checkbox-label:hover {
+    background: var(--highlight-bg, #f3f4f6);
+    border-color: var(--primary-color, #F59E0B);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color, #F59E0B);
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"]:checked + span {
+    color: var(--primary-color, #F59E0B);
+    font-weight: 600;
+}
+
+.checkbox-label span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.3s ease;
+}
+
+/* Day Checkbox Styling */
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: var(--card-bg, #f9fafb);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.day-checkbox:hover {
+    background: var(--highlight-bg, #f3f4f6);
+    border-color: var(--primary-color, #F59E0B);
+    transform: scale(1.05);
+}
+
+.day-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color, #F59E0B);
+    cursor: pointer;
+}
+
+.day-checkbox input[type="checkbox"]:checked ~ span {
+    color: var(--primary-color, #F59E0B);
+    font-weight: 600;
+}
+
+/* Radio Button Styling */
+.inline-flex {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.inline-flex.items-center input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color, #F59E0B);
+    cursor: pointer;
+}
+
+.mr-2 {
+    margin-right: 8px;
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .checkbox-label,
+[data-theme="dark"] .day-checkbox {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text, #e5e7eb);
+}
+
+[data-theme="dark"] .checkbox-label:hover,
+[data-theme="dark"] .day-checkbox:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+}/* ═══════════════════════════════════════════════════════════
+   PACKAGE MANAGEMENT MODAL - COMPREHENSIVE FIX
+
+   This file fixes all conflicts between:
+   - css/root/modals.css (generic modal styles - too small)
+   - css/tutor-profile/tutor-profile.css (multiple conflicting rules)
+   - css/tutor-profile/package-modal-enhanced.css (premium design)
+   - css/tutor-profile/package-modal-clean.css (simple design)
+
+   Priority: This file should be loaded LAST to override all conflicts
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL CONTAINER OVERRIDE
+   High specificity to override root/modals.css
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    animation: fadeIn 0.3s ease;
+}
+
+#package-management-modal.hidden {
+    display: none !important;
+}
+
+#package-management-modal .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: overlayFade 0.4s ease;
+    z-index: 1;
+}
+
+/* Dark theme overlay */
+[data-theme="dark"] #package-management-modal .modal-overlay {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.97) 0%, rgba(15, 23, 42, 0.97) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL CONTENT - OVERRIDE ALL WIDTH CONSTRAINTS
+   Using high specificity and !important where necessary
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal .modal-content,
+#package-management-modal .package-modal-redesigned {
+    position: relative;
+    z-index: 2;
+    max-width: 1600px !important;  /* Override the 450px from root/modals.css */
+    width: 95% !important;
+    max-height: 92vh;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 24px;
+    box-shadow:
+        0 32px 64px -12px rgba(0, 0, 0, 0.2),
+        0 16px 32px -8px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 0 120px rgba(59, 130, 246, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateY(0) scale(1) !important;  /* Override root modal transform */
+}
+
+/* Dark theme modal content */
+[data-theme="dark"] #package-management-modal .modal-content,
+[data-theme="dark"] #package-management-modal .package-modal-redesigned {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+    box-shadow:
+        0 32px 64px -12px rgba(0, 0, 0, 0.5),
+        0 16px 32px -8px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 120px rgba(59, 130, 246, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL HEADER - THEMED CORRECTLY (COMPACT) WITH HAMBURGER
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal .modal-header {
+    position: relative;
+    padding: 1.25rem 1.75rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Sidebar Toggle Button (Left Side) */
+#package-management-modal .modal-header .sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+#package-management-modal .modal-header .sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Title Container */
+#package-management-modal .modal-header .modal-title-container {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Right Actions Group (Calculator + Close) */
+#package-management-modal .modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Calculator Toggle Button */
+#package-management-modal .calculator-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .calculator-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#package-management-modal .calculator-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+#package-management-modal .calculator-toggle-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+#package-management-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Sidebar Toggle Button is now in modal header - see package-modal-responsive.css */
+
+#package-management-modal .modal-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.025em;
+    flex: 1;
+}
+
+/* Close Button (matches calculator toggle button size) */
+#package-management-modal .modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .modal-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE LAYOUT CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal .package-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, transparent 0%, rgba(245, 158, 11, 0.02) 100%);
+    position: relative; /* For absolute positioning of collapsed sidebar */
+    gap: 1.5rem; /* Spacing between sidebar and main content */
+}
+
+[data-theme="dark"] #package-management-modal .package-layout {
+    background: linear-gradient(180deg, transparent 0%, rgba(255, 213, 79, 0.03) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR: VS CODE STYLE WITH ICON BAR + CONTENT PANELS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Icon Bar - Always visible vertical strip with theme colors (NOW OUTSIDE sidebar) */
+#package-management-modal .sidebar-icon-bar {
+    width: 50px;
+    background: linear-gradient(180deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    box-shadow: 2px 0 12px rgba(245, 158, 11, 0.2);
+    z-index: 10; /* Always on top */
+}
+
+#package-management-modal .package-management-sidebar {
+    width: 280px; /* Just content width, icon bar is now separate */
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-right: 1px solid rgba(226, 232, 240, 0.8);
+    display: flex;
+    flex-direction: column; /* Changed from row - icon bar is outside now */
+    flex-shrink: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-icon-bar {
+    background: linear-gradient(180deg, #FFD54F 0%, #FBC02D 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 2px 0 12px rgba(255, 213, 79, 0.3);
+}
+
+/* Icon buttons in the icon bar */
+#package-management-modal .sidebar-icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 1.125rem;
+    position: relative;
+}
+
+#package-management-modal .sidebar-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: scale(1.05);
+}
+
+#package-management-modal .sidebar-icon-btn.active {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-icon-btn {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-icon-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-icon-btn.active {
+    background: rgba(0, 0, 0, 0.15);
+    color: #0f172a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle button is now in modal header - styling in package-modal-responsive.css */
+
+/* Active indicator line */
+#package-management-modal .sidebar-icon-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    background: white;
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-icon-btn.active::before {
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar Content Area - Contains all panels */
+#package-management-modal .sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-content {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Individual panels */
+#package-management-modal .sidebar-panel {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#package-management-modal .sidebar-panel.active {
+    display: flex;
+}
+
+/* Collapsed state - Hide icon bar entirely and remove from layout */
+#package-management-modal .package-management-sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    border-right: none;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar content is shown/hidden by clicking icon buttons */
+#package-management-modal .sidebar-content {
+    display: none;
+}
+
+#package-management-modal .sidebar-content.active {
+    display: flex;
+}
+
+[data-theme="dark"] #package-management-modal .package-management-sidebar {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-right: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+/* REMOVED: Flexbox will automatically handle sizing when sidebar width changes from 360px to 0px */
+/* No special rules needed for .sidebar-collapsed state */
+
+#package-management-modal .sidebar-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(180deg, white 0%, rgba(255, 255, 255, 0.95) 100%);
+    border-bottom: 2px solid rgba(245, 158, 11, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
+}
+
+#package-management-modal .packages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+#package-management-modal .packages-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#package-management-modal .packages-list::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.2);
+}
+
+#package-management-modal .packages-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+[data-theme="dark"] #package-management-modal .packages-list::-webkit-scrollbar-thumb {
+    background: #FFD54F;
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-header {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-bottom: 2px solid rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .sidebar-header h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+[data-theme="dark"] #package-management-modal .sidebar-header h3 {
+    background: linear-gradient(135deg, #FFD54F 0%, #e6bf45 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#package-management-modal .btn-new-package {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+#package-management-modal .btn-new-package:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+   ═══════════════════════════════════════════════════════════ */
+
+/* NOTE: Main layout is ROW (editor + calculator side-by-side)
+   See "CALCULATOR WIDGET" section below for the actual .package-main definition */
+
+/* This section only contains scrollbar styles */
+
+/* MOVED: .package-main definition is now in "CALCULATOR WIDGET" section below */
+
+/* MOVED: .package-editor definition is now in "CALCULATOR WIDGET" section below */
+
+/* Custom scrollbar */
+#package-management-modal .package-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+#package-management-modal .package-editor::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.2);
+    border-radius: 4px;
+}
+
+#package-management-modal .package-editor::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    border-radius: 4px;
+}
+
+[data-theme="dark"] #package-management-modal .package-editor::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FFD54F 0%, #e6bf45 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL FOOTER - THEMED
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal .modal-footer {
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-top: 1px solid rgba(245, 158, 11, 0.2);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] #package-management-modal .modal-footer {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-top: 1px solid rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .modal-footer .btn-secondary {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    color: #64748b;
+    border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] #package-management-modal .modal-footer .btn-secondary {
+    background: rgba(30, 41, 59, 0.5);
+    color: #FFD54F;
+    border: 2px solid rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .modal-footer .btn-secondary:hover {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: var(--primary-color, #F59E0B);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+#package-management-modal .modal-footer .btn-primary {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] #package-management-modal .modal-footer .btn-primary {
+    background: linear-gradient(135deg, #FFD54F 0%, #e6bf45 100%);
+    color: #1E1E1E;
+}
+
+#package-management-modal .modal-footer .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORM STYLING - THEMED WITH MODERATE SPACING
+   ═══════════════════════════════════════════════════════════ */
+
+/* Reduce spacing between sections - from 3rem to 1.5rem */
+#package-management-modal .form-section {
+    margin-bottom: 1.5rem;
+}
+
+/* Course tags display below the form row */
+#package-management-modal .course-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+/* Course input wrapper */
+#package-management-modal .course-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+#package-management-modal .course-input-wrapper input {
+    flex: 1;
+}
+
+#package-management-modal .course-input-wrapper .btn-add-course {
+    width: 42px;
+    height: auto;
+    min-height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+#package-management-modal .course-input-wrapper .btn-add-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+#package-management-modal .form-field input,
+#package-management-modal .form-field select,
+#package-management-modal .form-field textarea {
+    padding: 0.625rem 0.875rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    color: #1e293b;
+}
+
+[data-theme="dark"] #package-management-modal .form-field input,
+[data-theme="dark"] #package-management-modal .form-field select,
+[data-theme="dark"] #package-management-modal .form-field textarea {
+    background: rgba(15, 23, 42, 0.5);
+    color: #e2e8f0;
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .form-field input:focus,
+#package-management-modal .form-field select:focus,
+#package-management-modal .form-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.1),
+        0 4px 12px rgba(245, 158, 11, 0.1);
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] #package-management-modal .form-field input:focus,
+[data-theme="dark"] #package-management-modal .form-field select:focus,
+[data-theme="dark"] #package-management-modal .form-field textarea:focus {
+    border-color: #FFD54F;
+    box-shadow:
+        0 0 0 4px rgba(255, 213, 79, 0.1),
+        0 4px 12px rgba(255, 213, 79, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes overlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1400px) {
+    #package-management-modal .modal-content,
+    #package-management-modal .package-modal-redesigned {
+        max-width: 1200px !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    #package-management-modal .modal-content,
+    #package-management-modal .package-modal-redesigned {
+        max-width: 95% !important;
+        width: 95% !important;
+    }
+
+    #package-management-modal .package-management-sidebar {
+        width: 260px;
+    }
+
+    #package-management-modal .package-editor {
+        padding: 1.5rem 1.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #package-management-modal .modal-content,
+    #package-management-modal .package-modal-redesigned {
+        width: 100% !important;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    #package-management-modal .modal-header {
+        padding: 1rem 1.25rem;
+    }
+
+    #package-management-modal .modal-title {
+        font-size: 1.125rem;
+    }
+
+    #package-management-modal .package-layout {
+        flex-direction: column;
+    }
+
+    #package-management-modal .package-management-sidebar {
+        width: 100%;
+        max-height: 200px;
+        border-right: none;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    #package-management-modal .package-editor {
+        padding: 1.25rem;
+    }
+
+    #package-management-modal .modal-footer {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+    }
+
+    #package-management-modal .modal-footer button {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    /* Calculator widget stacks on mobile */
+    #package-management-modal .package-editor-layout {
+        flex-direction: column !important;
+    }
+
+    #package-management-modal .calculator-widget {
+        max-width: 100% !important;
+        margin-top: 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CALCULATOR WIDGET - RIGHT SIDE PANEL
+   ═══════════════════════════════════════════════════════════ */
+
+/* Make package-main a flex container for editor + calculator side-by-side */
+#package-management-modal .package-main {
+    flex: 1;
+    display: flex;
+    flex-direction: row;  /* Editor + calculator side-by-side */
+    gap: 1.5rem;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+    transition: gap 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] #package-management-modal .package-main {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Package editor takes remaining space */
+#package-management-modal .package-editor {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    min-width: 0;  /* Allow flex item to shrink below content size */
+    scroll-behavior: smooth;
+    transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Package editor takes full width when calculator is hidden */
+#package-management-modal .package-main:has(.calculator-widget.hidden) .package-editor {
+    flex: 1;
+    max-width: 100%;
+}
+
+/* When sidebar is collapsed, market view and package editor should expand to fill space */
+#package-management-modal .package-layout.sidebar-collapsed #packageEditorContainer,
+#package-management-modal .package-layout.sidebar-collapsed #marketTrendView {
+    flex: 1 1 auto;
+    max-width: 100% !important;
+    min-width: 0;
+}
+
+/* Ensure market trend content also expands when sidebar is collapsed */
+#package-management-modal .package-layout.sidebar-collapsed .market-trend-content {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ISSUE #1 FIX: Smooth transitions for main containers when sidebar toggles */
+#package-management-modal #packageEditorContainer,
+#package-management-modal #marketTrendView {
+    margin-left: 0; /* Sidebar takes its own space in flexbox - no extra margin needed */
+    transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When calculator is hidden, remove gap from package-main */
+#package-management-modal .package-main:has(.calculator-widget.hidden) {
+    gap: 0;
+}
+
+/* REMOVED: Flexbox will automatically handle sizing - no forced width rules needed */
+
+/* Legacy support for JS-generated layout */
+#package-management-modal .package-editor-layout {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+    height: 100%;
+}
+
+#package-management-modal .package-form {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Calculator widget (fixed on right side) - Smooth width transition */
+#package-management-modal .calculator-widget {
+    width: 350px;
+    max-width: 350px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 16px;
+    border: 2px solid rgba(245, 158, 11, 0.2);
+    box-shadow:
+        0 8px 32px rgba(245, 158, 11, 0.12),
+        0 4px 16px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    max-height: calc(100vh - 280px);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                min-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hidden state - collapse width to 0 (same as sidebar) */
+#package-management-modal .calculator-widget.hidden {
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    overflow: hidden;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 213, 79, 0.3);
+    box-shadow:
+        0 8px 32px rgba(255, 213, 79, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Calculator Widget Backdrop - ONLY for Mobile/Tablet (< 1024px) */
+.calculator-widget-backdrop {
+    display: none; /* Hidden on desktop by default */
+}
+
+/* Backdrop only appears on smaller screens */
+@media (max-width: 1024px) {
+    .calculator-widget-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .calculator-widget-backdrop.active {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Calculator appears above backdrop on mobile */
+    #package-management-modal .calculator-widget {
+        z-index: 1000;
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        max-height: 100vh;
+        border-radius: 0;
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+
+    #package-management-modal .calculator-widget.hidden {
+        transform: translateX(100%);
+    }
+}
+
+#package-management-modal .calculator-widget-header {
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget-header {
+    background: linear-gradient(135deg, #FFD54F 0%, #e6bf45 100%);
+}
+
+#package-management-modal .calculator-widget-header i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget-header i {
+    color: #0f172a;
+}
+
+#package-management-modal .calculator-widget-header h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget-header h4 {
+    color: #0f172a;
+}
+
+#package-management-modal .calculator-widget-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Calculator inputs in a single row */
+#package-management-modal .calculator-widget .calculator-inputs-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Legacy support for older calculator-inputs class */
+#package-management-modal .calculator-widget .calculator-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Stack on very narrow screens */
+@media (max-width: 420px) {
+    #package-management-modal .calculator-widget .calculator-inputs-row,
+    #package-management-modal .calculator-widget .calculator-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
+#package-management-modal .calculator-widget .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#package-management-modal .calculator-widget .form-field label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget .form-field label {
+    color: #cbd5e1;
+}
+
+#package-management-modal .calculator-widget .form-field label i {
+    color: var(--primary-color, #F59E0B);
+    font-size: 1rem;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget .form-field label i {
+    color: #FFD54F;
+}
+
+#package-management-modal .calculator-widget .form-field input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget .form-field input {
+    background: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+#package-management-modal .calculator-widget .form-field input:focus {
+    outline: none;
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="dark"] #package-management-modal .calculator-widget .form-field input:focus {
+    border-color: #FFD54F;
+    box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .calculator-results {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] #package-management-modal .calculator-results {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.15) 0%, rgba(255, 213, 79, 0.08) 100%);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .calc-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+#package-management-modal .calc-result-row:last-child {
+    border-bottom: none;
+}
+
+#package-management-modal .calc-result-row.total {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 2px solid rgba(245, 158, 11, 0.4);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    margin-bottom: -1.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-bottom: 1rem;
+    border-radius: 0 0 10px 10px;
+}
+
+[data-theme="dark"] #package-management-modal .calc-result-row.total {
+    border-top-color: rgba(255, 213, 79, 0.4);
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.15) 0%, rgba(255, 213, 79, 0.08) 100%);
+}
+
+#package-management-modal .calc-result-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #78350f;
+}
+
+[data-theme="dark"] #package-management-modal .calc-result-label {
+    color: #fef3c7;
+}
+
+#package-management-modal .calc-result-row.total .calc-result-label {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+#package-management-modal .calc-result-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-dark, #D97706);
+}
+
+[data-theme="dark"] #package-management-modal .calc-result-value {
+    color: #FFD54F;
+}
+
+#package-management-modal .calc-result-row.total .calc-result-value {
+    font-size: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARKET TREND VIEW (SEPARATE FULL-WIDTH CONTAINER)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Market Trend View - Sibling to package-main, takes full width */
+#package-management-modal .market-trend-view {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 2rem;
+    background: linear-gradient(180deg, white 0%, #f8fafc 100%);
+    display: none; /* Hidden by default, shown via JS */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] #package-management-modal .market-trend-view {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Hide package editor container when showing market trends */
+#package-management-modal #packageEditorContainer.hidden {
+    display: none !important;
+}
+
+/* Show market trend view when active */
+#package-management-modal .market-trend-view.active {
+    display: flex !important;
+    flex-direction: column;
+}
+
+#package-management-modal .market-trend-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+#package-management-modal .market-trend-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+#package-management-modal .market-trend-header h2 i {
+    color: var(--primary-color);
+}
+
+#package-management-modal .market-trend-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+#package-management-modal .market-trend-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: none;
+    min-height: 600px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] #package-management-modal .market-trend-content {
+    background: rgba(30, 41, 59, 0.5);
+    border: none;
+}
+/* Market Graph Container */
+#package-management-modal .market-graph-wrapper {
+    flex: 1;
+    width: 100%;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+#package-management-modal .market-chart {
+    width: 100% !important;
+    max-width: 100%;
+    max-height: 500px;
+    height: 400px !important;
+}
+
+#package-management-modal .market-chart.hidden {
+    display: none;
+}
+
+#package-management-modal .market-spinner {
+    display: none;
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(245, 158, 11, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Market View Container with Graph and Toggles */
+#package-management-modal #marketGraphContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    min-height: 500px;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    flex: 1;
+}
+
+/* Dataset Toggles on the Right */
+#package-management-modal .market-dataset-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 180px;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(245, 158, 11, 0.2);
+    height: fit-content;
+    align-self: flex-start;
+}
+
+[data-theme="dark"] #package-management-modal .market-dataset-toggles {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.08) 0%, rgba(251, 191, 36, 0.08) 100%);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .market-dataset-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+}
+
+#package-management-modal .market-dataset-label:hover {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+    transform: translateX(-2px);
+}
+
+[data-theme="dark"] #package-management-modal .market-dataset-label {
+    background: rgba(30, 41, 59, 0.6);
+}
+
+[data-theme="dark"] #package-management-modal .market-dataset-label:hover {
+    background: rgba(255, 213, 79, 0.12);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .market-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* View Selection Cards */
+#package-management-modal .market-view-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    padding: 2rem;
+    padding-bottom: 0;
+}
+
+/* Universal Filters Container */
+#package-management-modal .universal-filters-container {
+    padding: 1.5rem;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+#package-management-modal .universal-filters-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Session Format Filter */
+#package-management-modal .session-format-filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+#package-management-modal .filter-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+#package-management-modal .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+#package-management-modal .radio-label span {
+    font-weight: 500;
+}
+
+/* Time Period Filter */
+#package-management-modal .time-period-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#package-management-modal .time-period-filter .filter-label {
+    text-align: center;
+}
+
+#package-management-modal .time-value {
+    color: var(--primary-color);
+}
+
+#package-management-modal .time-slider {
+    width: 100%;
+    cursor: pointer;
+}
+
+/* Desktop: Filters in same row (768px and above) */
+@media (min-width: 768px) {
+    #package-management-modal .universal-filters-wrapper {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    #package-management-modal .session-format-filter {
+        flex: 0 0 auto;
+        justify-content: flex-start;
+    }
+
+    #package-management-modal .time-period-filter {
+        flex: 1;
+        min-width: 300px;
+        max-width: 500px;
+    }
+
+    #package-management-modal .time-period-filter .filter-label {
+        text-align: left;
+    }
+}
+
+/* Tablet and Mobile: Stack filters vertically */
+@media (max-width: 767px) {
+    #package-management-modal .universal-filters-container {
+        padding: 1rem;
+    }
+
+    #package-management-modal .session-format-filter {
+        gap: 1rem;
+    }
+}
+
+/* Market view cards in sidebar - vertical layout */
+#package-management-modal #marketTrendPanel .market-view-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0;
+}
+
+#package-management-modal #marketTrendPanel .market-view-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.875rem 1rem;
+}
+
+#package-management-modal #marketTrendPanel .market-view-card-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+#package-management-modal #marketTrendPanel .market-view-card-content {
+    flex: 1;
+    text-align: left;
+}
+
+#package-management-modal #marketTrendPanel .market-view-card-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+#package-management-modal #marketTrendPanel .market-view-card-description {
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+#package-management-modal .market-view-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid rgba(245, 158, 11, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+#package-management-modal .market-view-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(245, 158, 11, 0.5) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+#package-management-modal .market-view-card:hover::before {
+    transform: scaleX(1);
+}
+
+#package-management-modal .market-view-card.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #D97706 100%);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+    transform: translateY(-2px);
+}
+
+#package-management-modal .market-view-card.active::before {
+    transform: scaleX(1);
+    background: white;
+}
+
+#package-management-modal .market-view-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card.active .market-view-card-icon {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+#package-management-modal .market-view-card-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#package-management-modal .market-view-card.active .market-view-card-icon i {
+    color: white;
+    transform: scale(1.1);
+}
+
+#package-management-modal .market-view-card-content {
+    flex: 1;
+}
+
+#package-management-modal .market-view-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    transition: color 0.3s;
+}
+
+#package-management-modal .market-view-card.active .market-view-card-title {
+    color: white;
+}
+
+#package-management-modal .market-view-card-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+    transition: color 0.3s;
+}
+
+#package-management-modal .market-view-card.active .market-view-card-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] #package-management-modal .market-view-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card:hover {
+    border-color: rgba(255, 213, 79, 0.4);
+    box-shadow: 0 8px 24px rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active {
+    background: linear-gradient(135deg, #FFD54F 0%, #FFA726 100%);
+    border-color: #FFD54F;
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-title,
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-description {
+    color: #0f172a;
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-icon {
+    background: rgba(15, 23, 42, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .market-view-card.active .market-view-card-icon i {
+    color: #0f172a;
+}
+
+/* Responsive grid */
+@media (max-width: 1200px) {
+    #package-management-modal .market-view-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    #package-management-modal .market-view-cards {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+    }
+}
+
+/* Market main container (holds the actual data views) */
+#package-management-modal .market-main-container {
+    padding: 0 2rem 2rem 2rem;
+}
+
+@media (max-width: 768px) {
+    #package-management-modal .market-main-container {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPANDED COURSES SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+#package-management-modal .courses-section-expanded {
+    margin-bottom: 2rem;
+}
+
+#package-management-modal .courses-section-expanded .form-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#package-management-modal .btn-add-course-card {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#package-management-modal .btn-add-course-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* Course Thumbnail Upload Section */
+#package-management-modal .course-thumbnail-upload-section {
+    margin-bottom: 1.5rem;
+}
+
+#package-management-modal .course-thumbnail-upload-section > label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #78350f;
+    margin-bottom: 0.75rem;
+}
+
+[data-theme="dark"] #package-management-modal .course-thumbnail-upload-section > label {
+    color: #fef3c7;
+}
+
+#package-management-modal .course-thumbnail-uploader {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 16/9;
+    border: 3px dashed rgba(245, 158, 11, 0.4);
+    border-radius: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
+}
+
+#package-management-modal .course-thumbnail-uploader:hover {
+    border-color: var(--primary-color, #F59E0B);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+}
+
+[data-theme="dark"] #package-management-modal .course-thumbnail-uploader {
+    border-color: rgba(255, 213, 79, 0.4);
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.08) 0%, rgba(255, 213, 79, 0.03) 100%);
+}
+
+[data-theme="dark"] #package-management-modal .course-thumbnail-uploader:hover {
+    border-color: #FFD54F;
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.15) 0%, rgba(255, 213, 79, 0.08) 100%);
+}
+
+#package-management-modal .thumbnail-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+#package-management-modal .thumbnail-preview i.fa-cloud-upload-alt {
+    font-size: 2.5rem;
+    color: var(--primary-color, #F59E0B);
+    transition: transform 0.3s ease;
+}
+
+#package-management-modal .course-thumbnail-uploader:hover .thumbnail-preview i.fa-cloud-upload-alt {
+    transform: translateY(-4px);
+}
+
+#package-management-modal .thumbnail-preview .upload-text {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#package-management-modal .thumbnail-preview .upload-hint {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+/* Thumbnail with image */
+#package-management-modal .thumbnail-preview.has-image {
+    padding: 0;
+}
+
+#package-management-modal .thumbnail-preview .thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#package-management-modal .thumbnail-preview .thumbnail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+}
+
+#package-management-modal .thumbnail-preview:hover .thumbnail-overlay {
+    opacity: 1;
+}
+
+#package-management-modal .thumbnail-preview .thumbnail-overlay i {
+    font-size: 1.5rem;
+}
+
+#package-management-modal .thumbnail-preview .thumbnail-overlay span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+#package-management-modal .btn-remove-thumbnail {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    opacity: 0;
+    z-index: 10;
+}
+
+#package-management-modal .thumbnail-preview:hover .btn-remove-thumbnail {
+    opacity: 1;
+}
+
+#package-management-modal .btn-remove-thumbnail:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Custom Category Input */
+#package-management-modal .custom-category-input {
+    padding: 0.625rem 0.875rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: #1e293b;
+    width: 100%;
+}
+
+[data-theme="dark"] #package-management-modal .custom-category-input {
+    background: rgba(15, 23, 42, 0.5);
+    color: #e2e8f0;
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .custom-category-input:focus {
+    outline: none;
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Languages Section */
+#package-management-modal .languages-section {
+    margin-top: 1rem;
+}
+
+#package-management-modal .language-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+#package-management-modal .language-input-wrapper input {
+    flex: 1;
+    padding: 0.625rem 0.875rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: #1e293b;
+}
+
+[data-theme="dark"] #package-management-modal .language-input-wrapper input {
+    background: rgba(15, 23, 42, 0.5);
+    color: #e2e8f0;
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .language-input-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+#package-management-modal .btn-add-language {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+#package-management-modal .btn-add-language:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* Language Suggestions */
+#package-management-modal .language-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(245, 158, 11, 0.05);
+    border-radius: 10px;
+}
+
+[data-theme="dark"] #package-management-modal .language-suggestions {
+    background: rgba(255, 213, 79, 0.08);
+}
+
+#package-management-modal .language-suggestions .suggestion-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 0.25rem;
+}
+
+#package-management-modal .language-suggestions button {
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] #package-management-modal .language-suggestions button {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .language-suggestions button:hover {
+    background: var(--primary-color, #F59E0B);
+    color: white;
+    border-color: var(--primary-color, #F59E0B);
+    transform: translateY(-1px);
+}
+
+/* Language Tags */
+#package-management-modal .language-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 36px;
+}
+
+#package-management-modal .language-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border-radius: 24px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: tagFadeIn 0.3s ease;
+}
+
+@keyframes tagFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#package-management-modal .language-tag i.fa-globe {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+#package-management-modal .language-tag button {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    margin-left: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+#package-management-modal .language-tag button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+#package-management-modal .no-languages-hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 0;
+    padding: 0.5rem;
+}
+
+/* Course Form Container */
+#package-management-modal .course-form-container {
+    margin-bottom: 1.5rem;
+}
+
+#package-management-modal .course-form-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #ffffff 100%);
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+}
+
+[data-theme="dark"] #package-management-modal .course-form-card {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.1) 0%, rgba(30, 41, 59, 0.95) 30%, #1e293b 100%);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .course-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#package-management-modal .course-form-header h4 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#package-management-modal .btn-close-course-form {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#package-management-modal .btn-close-course-form:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+#package-management-modal .course-form-body {
+    padding: 1.5rem;
+}
+
+#package-management-modal .course-form-body .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#package-management-modal .course-form-body .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#package-management-modal .course-form-body .form-field label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #78350f;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+[data-theme="dark"] #package-management-modal .course-form-body .form-field label {
+    color: #fef3c7;
+}
+
+#package-management-modal .course-form-body .form-field label i {
+    color: var(--primary-color, #F59E0B);
+}
+
+#package-management-modal .course-form-body textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Language Checkboxes */
+#package-management-modal .language-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+#package-management-modal .checkbox-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+#package-management-modal .checkbox-inline input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color, #F59E0B);
+    cursor: pointer;
+}
+
+/* Lesson Titles Section */
+#package-management-modal .lesson-titles-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+#package-management-modal .lesson-titles-container {
+    margin-top: 0.75rem;
+}
+
+#package-management-modal .lesson-titles-hint {
+    color: #78350f;
+    font-size: 0.875rem;
+    font-style: italic;
+    margin: 0;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+[data-theme="dark"] #package-management-modal .lesson-titles-hint {
+    color: #fef3c7;
+    background: rgba(255, 213, 79, 0.1);
+}
+
+#package-management-modal .lesson-titles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+#package-management-modal .lesson-title-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] #package-management-modal .lesson-title-input-group {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+#package-management-modal .lesson-title-input-group:focus-within {
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+#package-management-modal .lesson-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+#package-management-modal .lesson-title-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    outline: none;
+    padding: 0.25rem 0;
+}
+
+#package-management-modal .lesson-title-input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Course Form Footer */
+#package-management-modal .course-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: rgba(245, 158, 11, 0.05);
+    border-top: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="dark"] #package-management-modal .course-form-footer {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Courses List Container */
+#package-management-modal .courses-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Empty State */
+#package-management-modal .empty-courses-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px dashed rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    text-align: center;
+}
+
+[data-theme="dark"] #package-management-modal .empty-courses-state {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+#package-management-modal .empty-courses-state i {
+    font-size: 3rem;
+    color: rgba(245, 158, 11, 0.4);
+    margin-bottom: 1rem;
+}
+
+#package-management-modal .empty-courses-state p {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+#package-management-modal .empty-courses-state span {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Course Card Mini (Legacy) */
+#package-management-modal .course-card-mini {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+#package-management-modal .course-card-mini:hover {
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+#package-management-modal .course-card-mini-content h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#package-management-modal .course-card-legacy {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+#package-management-modal .course-card-mini-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#package-management-modal .course-card-mini-actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--hover-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#package-management-modal .course-card-mini-actions button:hover {
+    background: var(--primary-color, #F59E0B);
+    color: white;
+}
+
+#package-management-modal .course-card-mini-actions button:last-child:hover {
+    background: #ef4444;
+}
+
+/* Course Card Expanded */
+#package-management-modal .course-card-expanded {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+#package-management-modal .course-card-expanded:hover {
+    border-color: var(--primary-color, #F59E0B);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
+    transform: translateY(-2px);
+}
+
+#package-management-modal .course-card-thumbnail {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+[data-theme="dark"] #package-management-modal .course-card-thumbnail {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.2) 0%, rgba(255, 213, 79, 0.1) 100%);
+}
+
+#package-management-modal .course-card-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#package-management-modal .course-card-thumbnail i {
+    font-size: 2.5rem;
+    color: var(--primary-color, #F59E0B);
+}
+
+#package-management-modal .course-card-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#package-management-modal .course-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+#package-management-modal .course-card-header h5 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+#package-management-modal .course-category-badge {
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, var(--primary-color, #F59E0B) 0%, var(--primary-dark, #D97706) 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+#package-management-modal .course-description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#package-management-modal .course-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+#package-management-modal .course-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+#package-management-modal .course-meta span i {
+    color: var(--primary-color, #F59E0B);
+    font-size: 0.875rem;
+}
+
+#package-management-modal .course-lessons-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+[data-theme="dark"] #package-management-modal .course-lessons-preview {
+    background: rgba(255, 213, 79, 0.1);
+}
+
+#package-management-modal .lessons-label {
+    font-weight: 600;
+    color: var(--primary-color, #F59E0B);
+    white-space: nowrap;
+}
+
+#package-management-modal .lessons-list {
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Course Card Actions */
+#package-management-modal .course-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+#package-management-modal .btn-edit-course,
+#package-management-modal .btn-remove-course {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#package-management-modal .btn-edit-course {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+#package-management-modal .btn-edit-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+#package-management-modal .btn-remove-course {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+#package-management-modal .btn-remove-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsive adjustments for course cards */
+@media (max-width: 768px) {
+    #package-management-modal .course-form-body .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    #package-management-modal .course-card-expanded {
+        flex-direction: column;
+    }
+
+    #package-management-modal .course-card-thumbnail {
+        width: 100%;
+        height: 120px;
+    }
+
+    #package-management-modal .course-card-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+
+    #package-management-modal .lesson-titles-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* ═══════════════════════════════════════════════════════════
+   PACKAGE MODAL - RESPONSIVE DESIGN (CLEAN REBUILD)
+   Built from scratch to avoid conflicts
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   DESKTOP (> 1024px)
+   Default behavior - sidebar visible, both containers transition
+   ═══════════════════════════════════════════════════════════ */
+
+/* Smooth transitions for main containers when sidebar toggles */
+@media (min-width: 1025px) {
+    #package-management-modal #packageEditorContainer,
+    #package-management-modal #marketTrendView {
+        transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar backdrop not needed on desktop */
+    #package-management-modal .sidebar-backdrop {
+        display: none !important;
+    }
+
+    /* Calculator widget backdrop not needed on desktop */
+    .calculator-widget-backdrop {
+        display: none !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE/TABLET (≤ 1024px)
+   Overlay behavior - sidebar and calculator as full overlays
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    /* Remove gap around modal */
+    #package-management-modal .package-modal-redesigned {
+        width: 100% !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+    }
+
+    /* FIX B: Ensure modal-header is on top */
+    #package-management-modal .modal-header {
+        position: relative;
+        z-index: 1004; /* Above sidebar and calculator */
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SIDEBAR AS OVERLAY (Z-INDEX: 1003)
+       Below modal-header, above calculator
+       ═══════════════════════════════════════════════════════════ */
+
+    #package-management-modal .package-management-sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px; /* Start below modal-header */
+        bottom: 0;
+        height: calc(100vh - 60px) !important; /* Full height minus header */
+        max-height: none !important; /* Override base CSS max-height: 200px */
+        width: 85%;
+        max-width: 320px;
+        z-index: 1003; /* Above calculator, below modal-header */
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Show sidebar when visible class is added */
+    #package-management-modal .package-management-sidebar.visible {
+        transform: translateX(0);
+    }
+
+    /* FIX 2: Sidebar content always visible when sidebar is shown */
+    #package-management-modal .package-management-sidebar .sidebar-content {
+        display: flex !important;
+        flex-direction: column;
+        height: 100%; /* Full height of parent */
+        min-height: 0; /* Allow flexbox to shrink */
+    }
+
+    /* FIX 2: Ensure panels inside sidebar-content also take full height */
+    #package-management-modal .package-management-sidebar .sidebar-panel {
+        height: 100%;
+        min-height: 0;
+        overflow-y: auto; /* Allow scrolling if content overflows */
+    }
+
+    /* FIX 2: Ensure packages list can scroll */
+    #package-management-modal .packages-list {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+        /* Override package-modal-clean.css horizontal scroll on mobile */
+        display: block !important;
+        flex-direction: column !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Sidebar backdrop (Z-INDEX: 1002) */
+    #package-management-modal .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1002; /* Below sidebar, above calculator */
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    #package-management-modal .sidebar-backdrop.active {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CALCULATOR AS OVERLAY (Z-INDEX: 1001)
+       Below modal-header and sidebar, above main content
+       ═══════════════════════════════════════════════════════════ */
+
+    #package-management-modal .calculator-widget {
+        position: fixed;
+        right: 0;
+        top: 60px; /* Start below modal-header */
+        bottom: 0;
+        height: calc(100vh - 60px); /* Full height minus header */
+        width: 90%;
+        max-width: 400px;
+        z-index: 1001; /* Below sidebar and modal-header */
+        border-radius: 0;
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Show calculator when NOT hidden */
+    #package-management-modal .calculator-widget:not(.hidden) {
+        transform: translateX(0);
+    }
+
+    #package-management-modal .calculator-widget.hidden {
+        transform: translateX(100%);
+    }
+
+    /* FIX C: Calculator backdrop removed - calculator no longer blurs page */
+    .calculator-widget-backdrop {
+        display: none !important; /* Never show backdrop for calculator */
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MAIN CONTENT AREA
+       No transitions needed - overlays don't affect layout
+       ═══════════════════════════════════════════════════════════ */
+
+    #package-management-modal .package-layout {
+        position: relative;
+    }
+
+    #package-management-modal .package-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    #package-management-modal #packageEditorContainer {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    #package-management-modal #marketTrendView {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET LANDSCAPE (769px - 1024px)
+   Specific adjustments for medium tablets
+   ═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    #package-management-modal .modal-content {
+        width: 95%;
+        max-width: 100%;
+    }
+
+    #package-management-modal .package-management-sidebar {
+        width: 75%;
+        max-width: 300px;
+    }
+
+    #package-management-modal .calculator-widget {
+        width: 70%;
+        max-width: 380px;
+    }
+
+    #package-management-modal .package-main {
+        padding: 1.25rem;
+    }
+
+    #package-management-modal .modal-title {
+        font-size: 1.35rem;
+    }
+
+    /* Market view cards - 2 columns */
+    #package-management-modal .market-view-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET PORTRAIT (481px - 768px)
+   Single column cards, compact layout
+   ═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    #package-management-modal .modal-content {
+        width: 98%;
+        border-radius: 16px;
+    }
+
+    #package-management-modal .modal-header {
+        padding: 1rem 1.25rem;
+    }
+
+    #package-management-modal .modal-title {
+        font-size: 1.25rem;
+    }
+
+    #package-management-modal .sidebar-toggle,
+    #package-management-modal .calculator-toggle-btn,
+    #package-management-modal .modal-close {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    #package-management-modal .package-management-sidebar {
+        width: 85%;
+        max-width: 320px;
+    }
+
+    #package-management-modal .calculator-widget {
+        width: 90%;
+        max-width: 400px;
+    }
+
+    #package-management-modal .package-main {
+        padding: 1rem;
+    }
+
+    #package-management-modal .modal-footer {
+        padding: 1rem 1.25rem;
+        gap: 0.75rem;
+    }
+
+    #package-management-modal .modal-footer button {
+        padding: 0.625rem 1.125rem;
+        font-size: 0.9rem;
+    }
+
+    /* Market view cards - Single column */
+    #package-management-modal .market-view-cards {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+        padding: 1.25rem;
+        padding-bottom: 0;
+    }
+
+    #package-management-modal .market-view-card {
+        padding: 1.125rem 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE (≤ 480px)
+   Full-screen overlays, minimal spacing
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    #package-management-modal .modal-content {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    #package-management-modal .modal-header {
+        display: flex !important;
+        flex-direction: row !important;
+        padding: 0.75rem 1rem !important;
+        gap: 0.5rem !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    /* All in one row: hamburger + title + calculator + close */
+    #package-management-modal .modal-header .sidebar-toggle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.75rem !important;
+        flex-shrink: 0 !important;
+        order: 1 !important;
+    }
+
+    #package-management-modal .modal-header .modal-title-container {
+        flex: 1 !important;
+        min-width: 0 !important;
+        order: 2 !important;
+    }
+
+    #package-management-modal .modal-header .modal-header-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.75rem !important;
+        flex-shrink: 0 !important;
+        order: 3 !important;
+        align-items: center !important;
+    }
+
+    #package-management-modal .calculator-toggle-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.875rem !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    #package-management-modal .modal-close {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1.5rem !important;
+        line-height: 1 !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        z-index: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+
+    #package-management-modal .modal-title {
+        font-size: 0.95rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    #package-management-modal .modal-subtitle {
+        display: none !important;
+    }
+
+    #package-management-modal .package-management-sidebar {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #package-management-modal .calculator-widget {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #package-management-modal .package-main {
+        padding: 0.875rem;
+        gap: 0;
+    }
+
+    #package-management-modal .package-editor {
+        padding: 0;
+    }
+
+    #package-management-modal .modal-footer {
+        padding: 0.875rem 1rem;
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+
+    #package-management-modal .modal-footer button {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    /* Market view cards - Compact */
+    #package-management-modal .market-view-cards {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+        padding-bottom: 0;
+    }
+
+    #package-management-modal .market-view-card {
+        padding: 1rem 0.875rem;
+        gap: 0.75rem;
+    }
+
+    #package-management-modal .market-view-card-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    #package-management-modal .market-view-card-title {
+        font-size: 0.875rem;
+    }
+
+    #package-management-modal .market-view-card-description {
+        font-size: 0.7rem;
+        line-height: 1.3;
+    }
+
+    /* Form elements - Larger tap targets */
+    #package-management-modal input,
+    #package-management-modal select,
+    #package-management-modal textarea,
+    #package-management-modal button {
+        min-height: 44px;
+    }
+
+    #package-management-modal .form-field input,
+    #package-management-modal .form-field select,
+    #package-management-modal .form-field textarea {
+        font-size: 16px; /* Prevent iOS zoom */
+    }
+
+    #package-management-modal .calculator-widget-header {
+        padding: 1rem 1.125rem;
+    }
+
+    #package-management-modal .calculator-widget-body {
+        padding: 1.125rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LANDSCAPE ORIENTATION ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    #package-management-modal .modal-content {
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    #package-management-modal .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    #package-management-modal .market-view-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #package-management-modal .market-view-card {
+        padding: 0.75rem;
+    }
+
+    #package-management-modal .market-view-card-description {
+        display: none;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    #package-management-modal *,
+    #package-management-modal *::before,
+    #package-management-modal *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    #package-management-modal .calculator-toggle-btn,
+    #package-management-modal .modal-close,
+    #package-management-modal .sidebar-toggle {
+        border: 2px solid white !important;
+    }
+
+    #package-management-modal .market-view-card {
+        border-width: 3px;
+    }
+
+    #package-management-modal .market-view-card.active {
+        border-width: 4px;
+    }
+}

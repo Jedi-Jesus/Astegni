@@ -63,9 +63,9 @@ async def create_partner_request(
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="Invalid JSON format for emails or phones")
 
-        # Validate
-        if not company_name or not contact_person:
-            raise HTTPException(status_code=400, detail="Company name and contact person are required")
+        # Validate (company_name and description are now optional)
+        if not contact_person:
+            raise HTTPException(status_code=400, detail="Contact person is required")
 
         if not emails_list or not isinstance(emails_list, list) or len(emails_list) == 0:
             raise HTTPException(status_code=400, detail="At least one email is required")
@@ -78,9 +78,6 @@ async def create_partner_request(
 
         if not partnership_type:
             raise HTTPException(status_code=400, detail="Partnership type is required")
-
-        if not description:
-            raise HTTPException(status_code=400, detail="Company description is required")
 
         # Validate proposal file is provided
         if not proposal:

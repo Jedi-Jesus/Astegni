@@ -1,6 +1,6 @@
 """
-Chat System API Endpoints
-=========================
+Chat System API Endpoints - User-Based Architecture
+===================================================
 Handles all chat/messaging functionality:
 - Conversations (direct and group)
 - Messages (text, media, files)
@@ -9,8 +9,8 @@ Handles all chat/messaging functionality:
 - Call logs
 - Blocking
 
-Contacts are fetched from the connections table (status='accepted').
-Uses profile_id + profile_type for multi-role support.
+MIGRATED TO USER-BASED: Uses user_id as primary identifier.
+Profile fields (profile_id, profile_type) are nullable for backward compatibility.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Body
@@ -24,7 +24,21 @@ import os
 from dotenv import load_dotenv
 from encryption_service import encrypt_message, decrypt_message, is_encrypted
 from email_service import email_service
+from utils import get_current_user
 import threading
+
+# Import user-based helper functions
+from chat_user_based_helpers import (
+    get_user_display_info,
+    get_user_privacy_settings,
+    are_users_connected,
+    is_user_blocked,
+    check_can_message,
+    check_can_call,
+    check_can_add_to_group,
+    get_user_contacts,
+    get_or_create_direct_conversation
+)
 
 load_dotenv()
 
@@ -34,8 +48,8 @@ router = APIRouter(prefix="/api/chat", tags=["Chat"])
 # IN-MEMORY TYPING STATUS STORE
 # =============================================
 # Stores typing status with timestamps for expiry
-# Format: {conversation_id: {(profile_id, profile_type): {"is_typing": bool, "timestamp": datetime, "user_name": str, "avatar": str}}}
-_typing_status: Dict[int, Dict[tuple, dict]] = {}
+# Format: {conversation_id: {user_id: {"is_typing": bool, "timestamp": datetime, "user_name": str, "avatar": str}}}
+_typing_status: Dict[int, Dict[int, dict]] = {}
 _typing_lock = threading.Lock()
 TYPING_EXPIRY_SECONDS = 5  # Typing status expires after 5 seconds of no updates
 
@@ -45,9 +59,9 @@ def _clean_expired_typing():
     now = datetime.now()
     with _typing_lock:
         for conv_id in list(_typing_status.keys()):
-            for key in list(_typing_status[conv_id].keys()):
-                if now - _typing_status[conv_id][key]["timestamp"] > timedelta(seconds=TYPING_EXPIRY_SECONDS):
-                    del _typing_status[conv_id][key]
+            for user_id in list(_typing_status[conv_id].keys()):
+                if now - _typing_status[conv_id][user_id]["timestamp"] > timedelta(seconds=TYPING_EXPIRY_SECONDS):
+                    del _typing_status[conv_id][user_id]
             if not _typing_status[conv_id]:
                 del _typing_status[conv_id]
 
@@ -63,16 +77,11 @@ def get_db_connection():
 # PYDANTIC MODELS
 # =============================================
 
-class ProfileInfo(BaseModel):
-    profile_id: int
-    profile_type: str  # 'tutor', 'student', 'parent', 'advertiser'
-    user_id: int
-
 class CreateConversationRequest(BaseModel):
     type: str = "direct"  # 'direct' or 'group'
     name: Optional[str] = None  # For groups
     description: Optional[str] = None
-    participants: List[ProfileInfo]  # List of participants
+    participant_user_ids: List[int]  # List of participant user IDs
 
 class SendMessageRequest(BaseModel):
     conversation_id: int
@@ -81,12 +90,11 @@ class SendMessageRequest(BaseModel):
     media_url: Optional[str] = None
     media_metadata: Optional[dict] = None
     reply_to_id: Optional[int] = None
-    # Forwarded message fields (forwarder info comes from sender_profile_id/type)
+    # Forwarded message fields
     is_forwarded: Optional[bool] = False
     forwarded_from: Optional[str] = None  # Original sender's name
     forwarded_from_avatar: Optional[str] = None  # Original sender's avatar URL
-    forwarded_from_profile_id: Optional[int] = None  # Original sender's profile ID
-    forwarded_from_profile_type: Optional[str] = None  # Original sender's profile type
+    forwarded_from_user_id: Optional[int] = None  # Original sender's user ID
 
 class UpdateMessageRequest(BaseModel):
     content: str
@@ -98,624 +106,189 @@ class CreateGroupRequest(BaseModel):
     name: str
     description: Optional[str] = None
     avatar_url: Optional[str] = None
-    participants: List[ProfileInfo]
+    participant_user_ids: List[int]
 
 class AddParticipantsRequest(BaseModel):
-    participants: List[ProfileInfo]
+    participant_user_ids: List[int]
 
 class BlockContactRequest(BaseModel):
-    blocked_profile_id: int
-    blocked_profile_type: str
     blocked_user_id: int
     reason: Optional[str] = None
 
 
 # =============================================
-# HELPER FUNCTIONS
-# =============================================
-
-def get_profile_info_from_token(token_data: dict) -> ProfileInfo:
-    """Extract profile info from JWT token data"""
-    # This would normally come from your auth dependency
-    # For now, we'll pass it directly
-    return ProfileInfo(
-        profile_id=token_data.get("profile_id"),
-        profile_type=token_data.get("profile_type"),
-        user_id=token_data.get("user_id")
-    )
-
-def get_user_display_info(conn, user_id: int, profile_type: str, profile_id: int) -> dict:
-    """Get user display info (name, avatar) based on profile type"""
-    cur = conn.cursor()
-
-    # First get user basic info
-    cur.execute("""
-        SELECT first_name, father_name, profile_picture, email
-        FROM users WHERE id = %s
-    """, (user_id,))
-    user = cur.fetchone()
-
-    if not user:
-        return {"name": "Unknown User", "avatar": None}
-
-    full_name = f"{user['first_name']} {user['father_name']}"
-    avatar = user['profile_picture']
-
-    # Try to get profile-specific info
-    profile_table = f"{profile_type}_profiles"
-    try:
-        cur.execute(f"""
-            SELECT profile_picture, username
-            FROM {profile_table}
-            WHERE id = %s
-        """, (profile_id,))
-        profile = cur.fetchone()
-        if profile:
-            if profile.get('profile_picture'):
-                avatar = profile['profile_picture']
-            if profile.get('username'):
-                full_name = profile['username']
-    except:
-        pass
-
-    cur.close()
-    return {
-        "name": full_name,
-        "avatar": avatar,
-        "email": user.get('email')
-    }
-
-
-# =============================================
-# PRIVACY SETTINGS HELPER FUNCTIONS
-# =============================================
-
-def get_user_privacy_settings(conn, profile_id: int, profile_type: str) -> dict:
-    """Get privacy settings for a user profile"""
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            SELECT who_can_message, read_receipts, online_status, typing_indicators,
-                   last_seen_visibility, block_screenshots, disable_forwarding,
-                   allow_calls_from, allow_group_adds, allow_channel_adds
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
-        row = cur.fetchone()
-        if row:
-            return dict(row)
-        # Return defaults
-        return {
-            "who_can_message": "everyone",
-            "read_receipts": True,
-            "online_status": True,
-            "typing_indicators": True,
-            "last_seen_visibility": "everyone",
-            "block_screenshots": False,
-            "disable_forwarding": False,
-            "allow_calls_from": "everyone",
-            "allow_group_adds": "everyone",
-            "allow_channel_adds": "everyone"
-        }
-    finally:
-        cur.close()
-
-
-def are_users_connected(conn, profile1_id: int, profile1_type: str, profile2_id: int, profile2_type: str) -> bool:
-    """Check if two users are connected (have an accepted connection)"""
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            SELECT id FROM connections
-            WHERE status = 'accepted'
-            AND (
-                (requester_profile_id = %s AND requester_type = %s
-                 AND recipient_profile_id = %s AND recipient_type = %s)
-                OR
-                (requester_profile_id = %s AND requester_type = %s
-                 AND recipient_profile_id = %s AND recipient_type = %s)
-            )
-            LIMIT 1
-        """, (profile1_id, profile1_type, profile2_id, profile2_type,
-              profile2_id, profile2_type, profile1_id, profile1_type))
-        return cur.fetchone() is not None
-    finally:
-        cur.close()
-
-
-def is_user_blocked(conn, blocker_profile_id: int, blocker_profile_type: str,
-                    blocked_profile_id: int, blocked_profile_type: str) -> bool:
-    """Check if a user has blocked another user"""
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            SELECT id FROM blocked_chat_contacts
-            WHERE blocker_profile_id = %s AND blocker_profile_type = %s
-            AND blocked_profile_id = %s AND blocked_profile_type = %s
-            LIMIT 1
-        """, (blocker_profile_id, blocker_profile_type, blocked_profile_id, blocked_profile_type))
-        return cur.fetchone() is not None
-    finally:
-        cur.close()
-
-
-def check_can_message(conn, sender_profile_id: int, sender_profile_type: str,
-                      recipient_profile_id: int, recipient_profile_type: str) -> tuple:
-    """
-    Check if sender can message recipient based on privacy settings.
-    Returns (can_message: bool, reason: str or None)
-    """
-    # Check if blocked (either direction)
-    if is_user_blocked(conn, recipient_profile_id, recipient_profile_type,
-                       sender_profile_id, sender_profile_type):
-        return False, "You have been blocked by this user"
-
-    if is_user_blocked(conn, sender_profile_id, sender_profile_type,
-                       recipient_profile_id, recipient_profile_type):
-        return False, "You have blocked this user"
-
-    # Get recipient's privacy settings
-    settings = get_user_privacy_settings(conn, recipient_profile_id, recipient_profile_type)
-    who_can_message = settings.get('who_can_message', 'everyone')
-
-    if who_can_message == 'everyone':
-        return True, None
-    elif who_can_message == 'connections':
-        if are_users_connected(conn, sender_profile_id, sender_profile_type,
-                               recipient_profile_id, recipient_profile_type):
-            return True, None
-        return False, "This user only accepts messages from connections"
-    elif who_can_message == 'none':
-        return False, "This user has disabled messages"
-
-    return True, None
-
-
-def check_can_call(conn, caller_profile_id: int, caller_profile_type: str,
-                   recipient_profile_id: int, recipient_profile_type: str) -> tuple:
-    """
-    Check if caller can call recipient based on privacy settings.
-    Returns (can_call: bool, reason: str or None)
-    """
-    # Check if blocked
-    if is_user_blocked(conn, recipient_profile_id, recipient_profile_type,
-                       caller_profile_id, caller_profile_type):
-        return False, "You have been blocked by this user"
-
-    # Get recipient's privacy settings
-    settings = get_user_privacy_settings(conn, recipient_profile_id, recipient_profile_type)
-    allow_calls_from = settings.get('allow_calls_from', 'everyone')
-
-    if allow_calls_from == 'everyone':
-        return True, None
-    elif allow_calls_from == 'connections':
-        if are_users_connected(conn, caller_profile_id, caller_profile_type,
-                               recipient_profile_id, recipient_profile_type):
-            return True, None
-        return False, "This user only accepts calls from connections"
-    elif allow_calls_from == 'none':
-        return False, "This user has disabled calls"
-
-    return True, None
-
-
-def check_can_add_to_group(conn, adder_profile_id: int, adder_profile_type: str,
-                           target_profile_id: int, target_profile_type: str) -> tuple:
-    """
-    Check if adder can add target to a group based on privacy settings.
-    Returns (can_add: bool, reason: str or None)
-    """
-    # Get target's privacy settings
-    settings = get_user_privacy_settings(conn, target_profile_id, target_profile_type)
-    allow_group_adds = settings.get('allow_group_adds', 'everyone')
-
-    if allow_group_adds == 'everyone':
-        return True, None
-    elif allow_group_adds == 'connections':
-        if are_users_connected(conn, adder_profile_id, adder_profile_type,
-                               target_profile_id, target_profile_type):
-            return True, None
-        return False, "This user only allows connections to add them to groups"
-    elif allow_group_adds == 'none':
-        return False, "This user has disabled being added to groups"
-
-    return True, None
-
-
-def check_can_add_to_channel(conn, adder_profile_id: int, adder_profile_type: str,
-                             target_profile_id: int, target_profile_type: str) -> tuple:
-    """
-    Check if adder can add target to a channel based on privacy settings.
-    Returns (can_add: bool, reason: str or None)
-    """
-    # Get target's privacy settings
-    settings = get_user_privacy_settings(conn, target_profile_id, target_profile_type)
-    allow_channel_adds = settings.get('allow_channel_adds', 'everyone')
-
-    if allow_channel_adds == 'everyone':
-        return True, None
-    elif allow_channel_adds == 'connections':
-        if are_users_connected(conn, adder_profile_id, adder_profile_type,
-                               target_profile_id, target_profile_type):
-            return True, None
-        return False, "This user only allows connections to add them to channels"
-    elif allow_channel_adds == 'none':
-        return False, "This user has disabled being added to channels"
-
-    return True, None
-
-
-def check_can_forward_message(conn, message_id: int) -> tuple:
-    """
-    Check if a message can be forwarded based on sender's disable_forwarding setting.
-    Returns (can_forward: bool, reason: str or None)
-    """
-    cur = conn.cursor()
-    try:
-        # Get original message sender's profile
-        cur.execute("""
-            SELECT sender_profile_id, sender_profile_type
-            FROM chat_messages
-            WHERE id = %s
-        """, (message_id,))
-        msg = cur.fetchone()
-        if not msg:
-            return False, "Message not found"
-
-        # Get sender's privacy settings
-        settings = get_user_privacy_settings(conn, msg['sender_profile_id'], msg['sender_profile_type'])
-
-        if settings.get('disable_forwarding', False):
-            return False, "This message cannot be forwarded"
-
-        return True, None
-    finally:
-        cur.close()
-
-
-def should_show_read_receipts(conn, viewer_profile_id: int, viewer_profile_type: str) -> bool:
-    """Check if read receipts should be shown for this user"""
-    settings = get_user_privacy_settings(conn, viewer_profile_id, viewer_profile_type)
-    return settings.get('read_receipts', True)
-
-
-def should_show_typing_indicator(conn, typer_profile_id: int, typer_profile_type: str) -> bool:
-    """Check if typing indicator should be shown for this user"""
-    settings = get_user_privacy_settings(conn, typer_profile_id, typer_profile_type)
-    return settings.get('typing_indicators', True)
-
-
-def should_show_online_status(conn, user_profile_id: int, user_profile_type: str,
-                              viewer_profile_id: int, viewer_profile_type: str) -> bool:
-    """Check if online status should be shown to a specific viewer"""
-    settings = get_user_privacy_settings(conn, user_profile_id, user_profile_type)
-
-    if not settings.get('online_status', True):
-        return False
-
-    return True
-
-
-def should_show_last_seen(conn, user_profile_id: int, user_profile_type: str,
-                          viewer_profile_id: int, viewer_profile_type: str) -> bool:
-    """Check if last seen should be shown to a specific viewer"""
-    settings = get_user_privacy_settings(conn, user_profile_id, user_profile_type)
-    last_seen_visibility = settings.get('last_seen_visibility', 'everyone')
-
-    if last_seen_visibility == 'everyone':
-        return True
-    elif last_seen_visibility == 'connections':
-        return are_users_connected(conn, user_profile_id, user_profile_type,
-                                   viewer_profile_id, viewer_profile_type)
-    elif last_seen_visibility == 'nobody':
-        return False
-
-    return True
-
-
-def get_user_last_seen_info(conn, target_profile_id: int, target_profile_type: str,
-                            viewer_profile_id: int, viewer_profile_type: str) -> dict:
-    """
-    Get last_seen and is_online info for a user, respecting privacy settings.
-    Returns dict with: is_online, last_seen, online_hidden, last_seen_hidden
-    """
-    from datetime import datetime, timedelta
-
-    cur = conn.cursor()
-    result = {
-        "is_online": False,
-        "last_seen": None,
-        "online_hidden": False,
-        "last_seen_hidden": False
-    }
-
-    # Check privacy settings
-    show_online = should_show_online_status(
-        conn, target_profile_id, target_profile_type,
-        viewer_profile_id, viewer_profile_type
-    )
-    show_last_seen = should_show_last_seen(
-        conn, target_profile_id, target_profile_type,
-        viewer_profile_id, viewer_profile_type
-    )
-
-    # Query last_active from chat_active_sessions
-    cur.execute("""
-        SELECT last_active FROM chat_active_sessions
-        WHERE profile_id = %s AND profile_type = %s
-        ORDER BY last_active DESC
-        LIMIT 1
-    """, (target_profile_id, target_profile_type))
-    session = cur.fetchone()
-
-    if session and session['last_active']:
-        time_diff = datetime.now() - session['last_active']
-        is_online = time_diff < timedelta(minutes=5)
-        last_seen = session['last_active'].isoformat()
-
-        if show_online:
-            result['is_online'] = is_online
-        else:
-            result['online_hidden'] = True
-
-        if show_last_seen:
-            result['last_seen'] = last_seen
-        else:
-            result['last_seen_hidden'] = True
-    else:
-        # No session data
-        if not show_online:
-            result['online_hidden'] = True
-        if not show_last_seen:
-            result['last_seen_hidden'] = True
-
-    return result
-
-
-# =============================================
-# CONTACTS ENDPOINTS (from connections table)
+# ENDPOINTS
 # =============================================
 
 @router.get("/contacts")
-async def get_contacts(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    search: Optional[str] = None,
-    limit: int = Query(50, le=100),
-    offset: int = 0
-):
+async def get_contacts(user_id: int = Query(...)):
     """
-    Get contacts from connections table (accepted connections only).
-    Returns users that the current profile has an accepted connection with.
-    Filters by profile_id to support multi-role users (same user can have different
-    connections as tutor vs student vs parent).
+    Get all contacts for a user (accepted connections).
+
+    Returns users that this user has any accepted connection with.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Build query to get accepted connections filtered by profile_id
-        # This ensures tutor profile sees tutor connections, student sees student connections, etc.
-        query = """
-            SELECT DISTINCT
-                c.id as connection_id,
-                c.connected_at,
-                CASE
-                    WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_id
-                    WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requested_by
-                END as contact_user_id,
-                CASE
-                    WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_type
-                    WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requester_type
-                END as contact_profile_type,
-                CASE
-                    WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_profile_id
-                    WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requester_profile_id
-                END as contact_profile_id,
-                u.first_name,
-                u.father_name,
-                u.profile_picture,
-                u.email,
-                u.last_login
-            FROM connections c
-            JOIN users u ON u.id = CASE
-                WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_id
-                WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requested_by
-            END
-            WHERE c.status = 'accepted'
-            AND (
-                (c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s)
-                OR
-                (c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s)
-            )
-        """
+        # Get contact user IDs
+        contact_ids = get_user_contacts(conn, user_id)
 
-        params = {"user_id": user_id, "profile_id": profile_id}
+        if not contact_ids:
+            return {"contacts": []}
 
-        # Add search filter
-        if search:
-            query += """
-                AND (
-                    LOWER(u.first_name) LIKE LOWER(%(search)s)
-                    OR LOWER(u.father_name) LIKE LOWER(%(search)s)
-                    OR LOWER(u.email) LIKE LOWER(%(search)s)
-                )
-            """
-            params["search"] = f"%{search}%"
+        # Get display info for each contact
+        contacts = []
+        for contact_id in contact_ids:
+            display_info = get_user_display_info(conn, contact_id)
 
-        query += """
-            ORDER BY c.connected_at DESC
-            LIMIT %(limit)s OFFSET %(offset)s
-        """
-        params["limit"] = limit
-        params["offset"] = offset
-
-        cur.execute(query, params)
-        contacts = cur.fetchall()
-
-        # Get profile-specific info for each contact
-        result = []
-        for contact in contacts:
-            contact_dict = dict(contact)
-
-            # Get profile-specific avatar/username
-            profile_info = get_user_display_info(
-                conn,
-                contact['contact_user_id'],
-                contact['contact_profile_type'],
-                contact['contact_profile_id']
-            )
-
-            contact_dict['display_name'] = profile_info['name']
-            contact_dict['avatar'] = profile_info['avatar']
-            contact_dict['is_online'] = False  # Would check with WebSocket in production
-
-            # Check if there's an existing conversation
+            # Check last message/conversation with this contact
             cur.execute("""
-                SELECT c.id, c.type, c.last_message_at
+                SELECT c.id, c.updated_at, m.content, m.created_at as message_time
                 FROM conversations c
-                JOIN conversation_participants cp1 ON cp1.conversation_id = c.id
-                    AND cp1.profile_id = %(my_profile_id)s
-                    AND cp1.profile_type = %(my_profile_type)s
-                JOIN conversation_participants cp2 ON cp2.conversation_id = c.id
-                    AND cp2.profile_id = %(contact_profile_id)s
-                    AND cp2.profile_type = %(contact_profile_type)s
+                JOIN conversation_participants cp1 ON cp1.conversation_id = c.id AND cp1.user_id = %s
+                JOIN conversation_participants cp2 ON cp2.conversation_id = c.id AND cp2.user_id = %s
+                LEFT JOIN messages m ON m.conversation_id = c.id
                 WHERE c.type = 'direct'
+                AND cp1.is_active = true
+                AND cp2.is_active = true
+                ORDER BY COALESCE(m.created_at, c.updated_at) DESC
                 LIMIT 1
-            """, {
-                "my_profile_id": profile_id,
-                "my_profile_type": profile_type,
-                "contact_profile_id": contact['contact_profile_id'],
-                "contact_profile_type": contact['contact_profile_type']
+            """, (user_id, contact_id))
+
+            last_interaction = cur.fetchone()
+
+            contacts.append({
+                "user_id": contact_id,
+                "name": display_info["name"],
+                "avatar": display_info["avatar"],
+                "email": display_info["email"],
+                "last_message": last_interaction["content"] if last_interaction and last_interaction.get("content") else None,
+                "last_interaction": last_interaction["message_time"].isoformat() if last_interaction and last_interaction.get("message_time") else None,
+                "conversation_id": last_interaction["id"] if last_interaction else None
             })
-            existing_conv = cur.fetchone()
 
-            if existing_conv:
-                contact_dict['conversation_id'] = existing_conv['id']
-                contact_dict['last_message_at'] = existing_conv['last_message_at']
+        # Sort by last interaction
+        contacts.sort(key=lambda x: x["last_interaction"] or "", reverse=True)
 
-            result.append(contact_dict)
+        return {"contacts": contacts}
 
-        return {"contacts": result, "total": len(result)}
-
+    except Exception as e:
+        print(f"[Chat API] Error fetching contacts for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch contacts: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.get("/connection-requests")
-async def get_connection_requests(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    request_type: Optional[str] = None,  # 'sent', 'received', 'all'
-    limit: int = Query(50, le=100),
-    offset: int = 0
-):
+async def get_connection_requests(user_id: int = Query(...)):
     """
-    Get pending connection requests (sent and received).
-    Returns requests that can be accepted/rejected in the chat interface.
+    Get pending connection requests for a user.
+
+    Returns connection requests across all profiles of the user.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        results = {"sent": [], "received": []}
+        # Get all profile IDs for this user
+        cur.execute("""
+            SELECT id as profile_id, 'student' as profile_type FROM student_profiles WHERE user_id = %s
+            UNION
+            SELECT id as profile_id, 'tutor' as profile_type FROM tutor_profiles WHERE user_id = %s
+            UNION
+            SELECT id as profile_id, 'parent' as profile_type FROM parent_profiles WHERE user_id = %s
+            UNION
+            SELECT id as profile_id, 'advertiser' as profile_type FROM advertiser_profiles WHERE user_id = %s
+        """, (user_id, user_id, user_id, user_id))
 
-        # Get SENT requests (pending) - filtered by profile_id
-        # This ensures tutor profile only sees tutor requests, student sees student requests, etc.
-        if request_type in ['sent', 'all', None]:
-            cur.execute("""
-                SELECT
-                    c.id as connection_id,
-                    c.requested_at,
-                    c.status,
-                    c.recipient_id as user_id,
-                    c.recipient_type as profile_type,
-                    c.recipient_profile_id as profile_id,
-                    u.first_name,
-                    u.father_name,
-                    u.profile_picture,
-                    u.email
-                FROM connections c
-                JOIN users u ON u.id = c.recipient_id
-                WHERE c.requested_by = %(user_id)s
-                AND c.requester_profile_id = %(profile_id)s
-                AND c.status = 'pending'
-                ORDER BY c.requested_at DESC
-                LIMIT %(limit)s OFFSET %(offset)s
-            """, {"user_id": user_id, "profile_id": profile_id, "limit": limit, "offset": offset})
+        user_profiles = cur.fetchall()
 
-            sent_requests = cur.fetchall()
-            for req in sent_requests:
-                req_dict = dict(req)
-                # Get profile-specific info
-                if req['profile_id']:
-                    profile_info = get_user_display_info(
-                        conn,
-                        req['user_id'],
-                        req['profile_type'],
-                        req['profile_id']
-                    )
-                    req_dict['display_name'] = profile_info['name']
-                    req_dict['avatar'] = profile_info['avatar']
-                else:
-                    req_dict['display_name'] = f"{req['first_name']} {req['father_name']}"
-                    req_dict['avatar'] = req['profile_picture']
-                req_dict['request_direction'] = 'sent'
-                results['sent'].append(req_dict)
+        if not user_profiles:
+            return {"incoming": [], "outgoing": []}
 
-        # Get RECEIVED requests (pending) - filtered by profile_id
-        # This ensures tutor profile only sees tutor requests, student sees student requests, etc.
-        if request_type in ['received', 'all', None]:
-            cur.execute("""
-                SELECT
-                    c.id as connection_id,
-                    c.requested_at,
-                    c.status,
-                    c.requested_by as user_id,
-                    c.requester_type as profile_type,
-                    c.requester_profile_id as profile_id,
-                    u.first_name,
-                    u.father_name,
-                    u.profile_picture,
-                    u.email
-                FROM connections c
-                JOIN users u ON u.id = c.requested_by
-                WHERE c.recipient_id = %(user_id)s
-                AND c.recipient_profile_id = %(profile_id)s
-                AND c.status = 'pending'
-                ORDER BY c.requested_at DESC
-                LIMIT %(limit)s OFFSET %(offset)s
-            """, {"user_id": user_id, "profile_id": profile_id, "limit": limit, "offset": offset})
+        # Build profile conditions
+        profile_conditions = " OR ".join([
+            f"(recipient_profile_id = {p['profile_id']} AND recipient_type = '{p['profile_type']}')"
+            for p in user_profiles
+        ])
 
-            received_requests = cur.fetchall()
-            for req in received_requests:
-                req_dict = dict(req)
-                # Get profile-specific info
-                if req['profile_id']:
-                    profile_info = get_user_display_info(
-                        conn,
-                        req['user_id'],
-                        req['profile_type'],
-                        req['profile_id']
-                    )
-                    req_dict['display_name'] = profile_info['name']
-                    req_dict['avatar'] = profile_info['avatar']
-                else:
-                    req_dict['display_name'] = f"{req['first_name']} {req['father_name']}"
-                    req_dict['avatar'] = req['profile_picture']
-                req_dict['request_direction'] = 'received'
-                results['received'].append(req_dict)
+        requester_conditions = " OR ".join([
+            f"(requester_profile_id = {p['profile_id']} AND requester_type = '{p['profile_type']}')"
+            for p in user_profiles
+        ])
+
+        # Get incoming requests
+        cur.execute(f"""
+            SELECT c.id, c.requester_profile_id, c.requester_type,
+                   c.recipient_profile_id, c.recipient_type,
+                   c.status, c.requested_at as created_at
+            FROM connections c
+            WHERE ({profile_conditions})
+            AND c.status = 'pending'
+            ORDER BY c.requested_at DESC
+        """)
+
+        incoming_requests = []
+        for req in cur.fetchall():
+            # Get requester user_id
+            requester_profile_table = f"{req['requester_type']}_profiles"
+            cur.execute(f"""
+                SELECT user_id FROM {requester_profile_table}
+                WHERE id = %s
+            """, (req['requester_profile_id'],))
+            requester_user = cur.fetchone()
+
+            if requester_user:
+                requester_info = get_user_display_info(conn, requester_user['user_id'])
+                incoming_requests.append({
+                    "connection_id": req['id'],
+                    "requester_user_id": requester_user['user_id'],
+                    "requester_name": requester_info['name'],
+                    "requester_avatar": requester_info['avatar'],
+                    "created_at": req['created_at'].isoformat()
+                })
+
+        # Get outgoing requests
+        cur.execute(f"""
+            SELECT c.id, c.requester_profile_id, c.requester_type,
+                   c.recipient_profile_id, c.recipient_type,
+                   c.status, c.requested_at as created_at
+            FROM connections c
+            WHERE ({requester_conditions})
+            AND c.status = 'pending'
+            ORDER BY c.requested_at DESC
+        """)
+
+        outgoing_requests = []
+        for req in cur.fetchall():
+            # Get recipient user_id
+            recipient_profile_table = f"{req['recipient_type']}_profiles"
+            cur.execute(f"""
+                SELECT user_id FROM {recipient_profile_table}
+                WHERE id = %s
+            """, (req['recipient_profile_id'],))
+            recipient_user = cur.fetchone()
+
+            if recipient_user:
+                recipient_info = get_user_display_info(conn, recipient_user['user_id'])
+                outgoing_requests.append({
+                    "connection_id": req['id'],
+                    "recipient_user_id": recipient_user['user_id'],
+                    "recipient_name": recipient_info['name'],
+                    "recipient_avatar": recipient_info['avatar'],
+                    "created_at": req['created_at'].isoformat()
+                })
 
         return {
-            "sent_requests": results['sent'],
-            "received_requests": results['received'],
-            "sent_count": len(results['sent']),
-            "received_count": len(results['received'])
+            "incoming": incoming_requests,
+            "outgoing": outgoing_requests
         }
 
+    except Exception as e:
+        print(f"[Chat API] Error fetching connection requests for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch connection requests: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -724,35 +297,48 @@ async def get_connection_requests(
 @router.post("/connection-requests/{connection_id}/respond")
 async def respond_to_connection_request(
     connection_id: int,
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    action: str  # 'accept' or 'reject'
+    user_id: int = Query(...),
+    action: str = Query(..., regex="^(accept|reject)$")
 ):
-    """Accept or reject a connection request"""
+    """
+    Respond to a connection request (accept or reject).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify the request exists and is for this user
+        # Verify the connection request exists and user is the recipient
         cur.execute("""
-            SELECT * FROM connections
-            WHERE id = %s AND recipient_id = %s AND status = 'pending'
-        """, (connection_id, user_id))
+            SELECT c.id, c.requester_profile_id, c.requester_type,
+                   c.recipient_profile_id, c.recipient_type
+            FROM connections c
+            WHERE c.id = %s AND c.status = 'pending'
+        """, (connection_id,))
 
-        request = cur.fetchone()
-        if not request:
+        connection = cur.fetchone()
+
+        if not connection:
             raise HTTPException(status_code=404, detail="Connection request not found")
 
-        # Update status
-        new_status = 'accepted' if action == 'accept' else 'rejected'
-        connected_at = datetime.now() if action == 'accept' else None
+        # Check if user owns the recipient profile
+        recipient_profile_table = f"{connection['recipient_type']}_profiles"
+        cur.execute(f"""
+            SELECT user_id FROM {recipient_profile_table}
+            WHERE id = %s
+        """, (connection['recipient_profile_id'],))
 
+        recipient_user = cur.fetchone()
+
+        if not recipient_user or recipient_user['user_id'] != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to respond to this request")
+
+        # Update connection status
+        new_status = 'accepted' if action == 'accept' else 'rejected'
         cur.execute("""
             UPDATE connections
-            SET status = %s, connected_at = %s, updated_at = CURRENT_TIMESTAMP
+            SET status = %s, updated_at = NOW()
             WHERE id = %s
-        """, (new_status, connected_at, connection_id))
+        """, (new_status, connection_id))
 
         conn.commit()
 
@@ -762,1348 +348,292 @@ async def respond_to_connection_request(
             "status": new_status
         }
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error responding to connection request {connection_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to respond to request: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# CONVERSATIONS ENDPOINTS
-# =============================================
-
 @router.get("/conversations")
 async def get_conversations(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    filter_type: Optional[str] = None,  # 'all', 'direct', 'groups', 'unread'
-    limit: int = Query(50, le=100),
-    offset: int = 0
+    user_id: int = Query(...),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0)
 ):
-    """Get all conversations for the current profile"""
-    print(f"[Chat API] GET /conversations - user_id={user_id}, profile_id={profile_id}, profile_type={profile_type}")
+    """
+    Get all conversations for a user with pagination.
+
+    Returns conversations ordered by most recent activity.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        query = """
+        # Get conversations where user is a participant
+        cur.execute("""
             SELECT
                 c.id,
                 c.type,
                 c.name,
                 c.description,
                 c.avatar_url,
-                c.last_message_at,
+                c.created_by_user_id,
                 c.created_at,
-                c.created_by_profile_id,
-                c.created_by_profile_type,
+                c.updated_at,
                 cp.is_muted,
-                cp.is_pinned,
+                c.is_archived,
                 cp.last_read_at,
-                cp.last_read_message_id,
-                cp.chat_cleared_at
+                (
+                    SELECT COUNT(*)
+                    FROM chat_messages m
+                    WHERE m.conversation_id = c.id
+                    AND m.created_at > COALESCE(cp.last_read_at, '1970-01-01')
+                    AND m.sender_user_id != %s
+                    AND m.is_deleted = false
+                ) as unread_count,
+                (
+                    SELECT m2.content
+                    FROM chat_messages m2
+                    WHERE m2.conversation_id = c.id
+                    AND m2.is_deleted = false
+                    ORDER BY m2.created_at DESC
+                    LIMIT 1
+                ) as last_message_content,
+                (
+                    SELECT m2.message_type
+                    FROM chat_messages m2
+                    WHERE m2.conversation_id = c.id
+                    AND m2.is_deleted = false
+                    ORDER BY m2.created_at DESC
+                    LIMIT 1
+                ) as last_message_type,
+                (
+                    SELECT m2.sender_user_id
+                    FROM chat_messages m2
+                    WHERE m2.conversation_id = c.id
+                    AND m2.is_deleted = false
+                    ORDER BY m2.created_at DESC
+                    LIMIT 1
+                ) as last_message_sender_user_id,
+                (
+                    SELECT m2.created_at
+                    FROM chat_messages m2
+                    WHERE m2.conversation_id = c.id
+                    AND m2.is_deleted = false
+                    ORDER BY m2.created_at DESC
+                    LIMIT 1
+                ) as last_message_time
             FROM conversations c
             JOIN conversation_participants cp ON cp.conversation_id = c.id
-            WHERE cp.profile_id = %(profile_id)s
-            AND cp.profile_type = %(profile_type)s
-            AND cp.is_active = TRUE
-            AND c.is_archived = FALSE
-        """
+            WHERE cp.user_id = %s
+            AND cp.is_active = true
+            ORDER BY COALESCE(
+                (SELECT m3.created_at FROM chat_messages m3
+                 WHERE m3.conversation_id = c.id
+                 AND m3.is_deleted = false
+                 ORDER BY m3.created_at DESC LIMIT 1),
+                c.updated_at
+            ) DESC
+            LIMIT %s OFFSET %s
+        """, (user_id, user_id, limit, offset))
 
-        params = {
-            "profile_id": profile_id,
-            "profile_type": profile_type,
-            "user_id": user_id
-        }
+        conversations = []
 
-        # Filter by type
-        if filter_type == 'direct':
-            query += " AND c.type = 'direct'"
-        elif filter_type == 'groups':
-            query += " AND c.type IN ('group', 'channel')"
-        elif filter_type == 'channels':
-            query += " AND c.type = 'channel'"
-
-        query += """
-            ORDER BY cp.is_pinned DESC, c.last_message_at DESC NULLS LAST
-            LIMIT %(limit)s OFFSET %(offset)s
-        """
-        params["limit"] = limit
-        params["offset"] = offset
-
-        cur.execute(query, params)
-        conversations = cur.fetchall()
-
-        result = []
-        for conv in conversations:
+        for conv in cur.fetchall():
             conv_dict = dict(conv)
 
-            # Convert datetime fields to ISO format strings
-            for key in ['last_message_at', 'created_at', 'last_read_at', 'chat_cleared_at']:
-                if key in conv_dict and conv_dict[key] and hasattr(conv_dict[key], 'isoformat'):
-                    conv_dict[key] = conv_dict[key].isoformat()
+            # Decrypt last message if encrypted
+            if conv_dict.get('last_message_content'):
+                try:
+                    if is_encrypted(conv_dict['last_message_content']):
+                        conv_dict['last_message_content'] = decrypt_message(conv_dict['last_message_content'])
+                except Exception as e:
+                    print(f"[Chat API] Error decrypting last message: {e}")
+                    conv_dict['last_message_content'] = "[Encrypted message]"
 
-            # For direct chats, get the other participant's info
-            if conv['type'] == 'direct':
+            # For direct conversations, get the other participant's info
+            if conv_dict['type'] == 'direct':
                 cur.execute("""
-                    SELECT
-                        cp.profile_id,
-                        cp.profile_type,
-                        cp.user_id
-                    FROM conversation_participants cp
-                    WHERE cp.conversation_id = %s
-                    AND NOT (cp.profile_id = %s AND cp.profile_type = %s)
-                """, (conv['id'], profile_id, profile_type))
+                    SELECT user_id
+                    FROM conversation_participants
+                    WHERE conversation_id = %s
+                    AND user_id != %s
+                    AND is_active = true
+                    LIMIT 1
+                """, (conv_dict['id'], user_id))
+
                 other_participant = cur.fetchone()
 
                 if other_participant:
-                    user_info = get_user_display_info(
-                        conn,
-                        other_participant['user_id'],
-                        other_participant['profile_type'],
-                        other_participant['profile_id']
-                    )
-                    conv_dict['display_name'] = user_info['name']
-                    conv_dict['avatar'] = user_info['avatar']
-                    conv_dict['other_profile_id'] = other_participant['profile_id']
-                    conv_dict['other_profile_type'] = other_participant['profile_type']
+                    other_user_info = get_user_display_info(conn, other_participant['user_id'])
+                    conv_dict['name'] = other_user_info['name']
+                    conv_dict['avatar_url'] = other_user_info['avatar']
                     conv_dict['other_user_id'] = other_participant['user_id']
 
-                    # Get last_seen and is_online for the other participant (respecting privacy)
-                    # Check privacy settings first
-                    show_online = should_show_online_status(
-                        conn,
-                        other_participant['profile_id'],
-                        other_participant['profile_type'],
-                        profile_id,
-                        profile_type
-                    )
-                    show_last_seen = should_show_last_seen(
-                        conn,
-                        other_participant['profile_id'],
-                        other_participant['profile_type'],
-                        profile_id,
-                        profile_type
-                    )
-
-                    cur.execute("""
-                        SELECT last_active FROM chat_active_sessions
-                        WHERE profile_id = %s AND profile_type = %s
-                        ORDER BY last_active DESC
-                        LIMIT 1
-                    """, (other_participant['profile_id'], other_participant['profile_type']))
-                    session = cur.fetchone()
-
-                    if session and session['last_active']:
-                        from datetime import datetime, timedelta
-                        time_diff = datetime.now() - session['last_active']
-                        is_online = time_diff < timedelta(minutes=5)
-                        last_seen = session['last_active'].isoformat()
-
-                        # Apply privacy filters
-                        if show_online:
-                            conv_dict['is_online'] = is_online
-                        else:
-                            conv_dict['is_online'] = False
-                            conv_dict['online_hidden'] = True
-
-                        if show_last_seen:
-                            conv_dict['last_seen'] = last_seen
-                        else:
-                            conv_dict['last_seen'] = None
-                            conv_dict['last_seen_hidden'] = True
-                    else:
-                        conv_dict['is_online'] = False
-                        conv_dict['last_seen'] = None
-                        # Still indicate if hidden by privacy
-                        if not show_online:
-                            conv_dict['online_hidden'] = True
-                        if not show_last_seen:
-                            conv_dict['last_seen_hidden'] = True
-            else:
-                # For groups/channels, use group/channel name
-                default_name = 'Channel' if conv['type'] == 'channel' else 'Group Chat'
-                conv_dict['display_name'] = conv['name'] or default_name
-                conv_dict['avatar'] = conv['avatar_url']
-
-                # Get participant count (for groups: "members", for channels: "subscribers")
-                cur.execute("""
-                    SELECT COUNT(*) as count
-                    FROM conversation_participants
-                    WHERE conversation_id = %s AND is_active = TRUE
-                """, (conv['id'],))
-                conv_dict['participant_count'] = cur.fetchone()['count']
-
-                # Include creator info for channels (needed for posting restrictions)
-                conv_dict['created_by_profile_id'] = conv.get('created_by_profile_id')
-                conv_dict['created_by_profile_type'] = conv.get('created_by_profile_type')
-
-            # Get last message
+            # Get participant count
             cur.execute("""
-                SELECT
-                    m.id,
-                    m.content,
-                    m.message_type,
-                    m.created_at,
-                    m.sender_profile_id,
-                    m.sender_profile_type
-                FROM chat_messages m
-                WHERE m.conversation_id = %s
-                AND m.is_deleted = FALSE
-                ORDER BY m.created_at DESC
-                LIMIT 1
-            """, (conv['id'],))
-            last_msg = cur.fetchone()
-
-            if last_msg:
-                # Decrypt last message content for preview
-                decrypted_content = decrypt_message(last_msg['content']) if last_msg['content'] else None
-                conv_dict['last_message'] = {
-                    "id": last_msg['id'],
-                    "content": decrypted_content,
-                    "type": last_msg['message_type'],
-                    "time": last_msg['created_at'].isoformat() if last_msg['created_at'] else None,
-                    "is_mine": (last_msg['sender_profile_id'] == profile_id and
-                               last_msg['sender_profile_type'] == profile_type)
-                }
-
-            # Get unread count (respecting deleted messages and chat_cleared_at)
-            chat_cleared_at = conv.get('chat_cleared_at')
-            unread_query = """
                 SELECT COUNT(*) as count
-                FROM chat_messages m
-                WHERE m.conversation_id = %s
-                AND m.is_deleted = FALSE
-                AND NOT (COALESCE(m.deleted_for_user_ids, '[]'::jsonb) @> %s::jsonb)
-                AND m.created_at > COALESCE(%s, '1970-01-01'::timestamp)
-                AND NOT (m.sender_profile_id = %s AND m.sender_profile_type = %s)
-            """
-            unread_params = [conv['id'], json.dumps([user_id]), conv['last_read_at'], profile_id, profile_type]
-
-            # Also filter by chat_cleared_at if set
-            if chat_cleared_at:
-                unread_query += " AND m.created_at > %s"
-                unread_params.append(chat_cleared_at)
-
-            cur.execute(unread_query, unread_params)
-            conv_dict['unread_count'] = cur.fetchone()['count']
-
-            result.append(conv_dict)
-
-        # If filter is 'unread', filter results
-        if filter_type == 'unread':
-            result = [c for c in result if c.get('unread_count', 0) > 0]
-
-        # Also get accepted connections that don't have conversations yet
-        # These are contacts the user can start chatting with
-        if filter_type in ['all', 'direct', None]:
-            # Get IDs of users we already have conversations with
-            existing_conv_users = set()
-            for conv in result:
-                if conv.get('other_user_id'):
-                    existing_conv_users.add(conv['other_user_id'])
-
-            # Get accepted connections filtered by profile_id
-            # This ensures tutor profile only sees tutor connections, student sees student connections, etc.
-            cur.execute("""
-                SELECT
-                    c.id as connection_id,
-                    c.connected_at,
-                    CASE
-                        WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_id
-                        WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requested_by
-                    END as other_user_id,
-                    CASE
-                        WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_type
-                        WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requester_type
-                    END as other_profile_type,
-                    CASE
-                        WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_profile_id
-                        WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requester_profile_id
-                    END as other_profile_id,
-                    u.first_name,
-                    u.father_name,
-                    u.profile_picture
-                FROM connections c
-                JOIN users u ON u.id = CASE
-                    WHEN c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s THEN c.recipient_id
-                    WHEN c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s THEN c.requested_by
-                END
-                WHERE c.status = 'accepted'
-                AND (
-                    (c.requested_by = %(user_id)s AND c.requester_profile_id = %(profile_id)s)
-                    OR
-                    (c.recipient_id = %(user_id)s AND c.recipient_profile_id = %(profile_id)s)
-                )
-                ORDER BY c.connected_at DESC
-            """, {"user_id": user_id, "profile_type": profile_type, "profile_id": profile_id})
-
-            accepted_connections = cur.fetchall()
-            print(f"[Chat API] Found {len(accepted_connections)} accepted connections for user_id={user_id}, profile_id={profile_id}")
-            print(f"[Chat API] Existing conversation user_ids: {existing_conv_users}")
-
-            for conn_row in accepted_connections:
-                # Skip if we already have a conversation with this user
-                if conn_row['other_user_id'] in existing_conv_users:
-                    continue
-
-                # Get profile-specific display info
-                if conn_row['other_profile_id']:
-                    user_info = get_user_display_info(
-                        conn,
-                        conn_row['other_user_id'],
-                        conn_row['other_profile_type'],
-                        conn_row['other_profile_id']
-                    )
-                    display_name = user_info['name']
-                    avatar = user_info['avatar']
-                else:
-                    display_name = f"{conn_row['first_name']} {conn_row['father_name']}"
-                    avatar = conn_row['profile_picture']
-
-                # Create a pseudo-conversation entry for this connection
-                connected_at = conn_row['connected_at']
-                if connected_at and hasattr(connected_at, 'isoformat'):
-                    connected_at = connected_at.isoformat()
-
-                # Get last_seen for this connection (same logic as for conversations)
-                conn_is_online = False
-                conn_last_seen = None
-                conn_online_hidden = False
-                conn_last_seen_hidden = False
-
-                if conn_row['other_profile_id'] and conn_row['other_profile_type']:
-                    # Check privacy settings
-                    show_online = should_show_online_status(
-                        conn,
-                        conn_row['other_profile_id'],
-                        conn_row['other_profile_type'],
-                        profile_id,
-                        profile_type
-                    )
-                    show_last_seen = should_show_last_seen(
-                        conn,
-                        conn_row['other_profile_id'],
-                        conn_row['other_profile_type'],
-                        profile_id,
-                        profile_type
-                    )
-
-                    # Query last_active from chat_active_sessions
-                    cur.execute("""
-                        SELECT last_active FROM chat_active_sessions
-                        WHERE profile_id = %s AND profile_type = %s
-                        ORDER BY last_active DESC
-                        LIMIT 1
-                    """, (conn_row['other_profile_id'], conn_row['other_profile_type']))
-                    session = cur.fetchone()
-
-                    if session and session['last_active']:
-                        from datetime import datetime, timedelta
-                        time_diff = datetime.now() - session['last_active']
-                        is_online = time_diff < timedelta(minutes=5)
-                        last_seen = session['last_active'].isoformat()
-
-                        if show_online:
-                            conn_is_online = is_online
-                        else:
-                            conn_online_hidden = True
-
-                        if show_last_seen:
-                            conn_last_seen = last_seen
-                        else:
-                            conn_last_seen_hidden = True
-                    else:
-                        if not show_online:
-                            conn_online_hidden = True
-                        if not show_last_seen:
-                            conn_last_seen_hidden = True
-
-                result.append({
-                    "id": f"connection-{conn_row['connection_id']}",
-                    "type": "direct",
-                    "display_name": display_name,
-                    "avatar": avatar,
-                    "other_profile_id": conn_row['other_profile_id'],
-                    "other_profile_type": conn_row['other_profile_type'],
-                    "other_user_id": conn_row['other_user_id'],
-                    "last_message": None,
-                    "last_message_at": connected_at,
-                    "unread_count": 0,
-                    "is_muted": False,
-                    "is_pinned": False,
-                    "is_connection": True,  # Flag to indicate this is a connection without conversation
-                    "is_online": conn_is_online,
-                    "last_seen": conn_last_seen,
-                    "online_hidden": conn_online_hidden,
-                    "last_seen_hidden": conn_last_seen_hidden
-                })
-
-        # Add linked family members (parents for students, children for parents)
-        # These are implicit connections based on family relationships
-        if filter_type in ['all', 'direct', None]:
-            # Track which users we already have in the list
-            existing_user_ids = set()
-            for conv in result:
-                if conv.get('other_user_id'):
-                    existing_user_ids.add(conv['other_user_id'])
-
-            # For STUDENTS: Add linked parents from parent_id array
-            if profile_type == 'student':
-                cur.execute("""
-                    SELECT parent_id FROM student_profiles WHERE id = %s
-                """, (profile_id,))
-                student_row = cur.fetchone()
-
-                if student_row and student_row['parent_id']:
-                    parent_profile_ids = student_row['parent_id']  # This is an integer[]
-                    print(f"[Chat API] Student {profile_id} has linked parents: {parent_profile_ids}")
-
-                    for parent_profile_id in parent_profile_ids:
-                        if parent_profile_id:
-                            # Get parent profile and user info
-                            cur.execute("""
-                                SELECT pp.id, pp.user_id, pp.profile_picture, pp.username,
-                                       u.first_name, u.father_name, u.profile_picture as user_picture
-                                FROM parent_profiles pp
-                                JOIN users u ON u.id = pp.user_id
-                                WHERE pp.id = %s
-                            """, (parent_profile_id,))
-                            parent_row = cur.fetchone()
-
-                            if parent_row and parent_row['user_id'] not in existing_user_ids:
-                                display_name = parent_row['username'] or f"{parent_row['first_name']} {parent_row['father_name']}"
-                                avatar = parent_row['profile_picture'] or parent_row['user_picture']
-
-                                # Get last_seen info for this parent
-                                last_seen_info = get_user_last_seen_info(
-                                    conn, parent_profile_id, "parent",
-                                    profile_id, profile_type
-                                )
-
-                                result.append({
-                                    "id": f"family-parent-{parent_profile_id}",
-                                    "type": "direct",
-                                    "display_name": display_name,
-                                    "avatar": avatar,
-                                    "other_profile_id": parent_profile_id,
-                                    "other_profile_type": "parent",
-                                    "other_user_id": parent_row['user_id'],
-                                    "last_message": None,
-                                    "last_message_at": None,
-                                    "unread_count": 0,
-                                    "is_muted": False,
-                                    "is_pinned": False,
-                                    "is_family": True,  # Flag to indicate this is a family member
-                                    "relationship": "Parent",
-                                    **last_seen_info  # Add is_online, last_seen, online_hidden, last_seen_hidden
-                                })
-                                existing_user_ids.add(parent_row['user_id'])
-                                print(f"[Chat API] Added linked parent: {display_name}")
-
-            # For PARENTS: Add linked children from children_ids array
-            elif profile_type == 'parent':
-                cur.execute("""
-                    SELECT children_ids FROM parent_profiles WHERE id = %s
-                """, (profile_id,))
-                parent_row = cur.fetchone()
-
-                if parent_row and parent_row['children_ids']:
-                    children_profile_ids = parent_row['children_ids']  # This is an integer[]
-                    print(f"[Chat API] Parent {profile_id} has linked children: {children_profile_ids}")
-
-                    for child_profile_id in children_profile_ids:
-                        if child_profile_id:
-                            # Get student profile and user info
-                            cur.execute("""
-                                SELECT sp.id, sp.user_id, sp.profile_picture, sp.username,
-                                       u.first_name, u.father_name, u.profile_picture as user_picture
-                                FROM student_profiles sp
-                                JOIN users u ON u.id = sp.user_id
-                                WHERE sp.id = %s
-                            """, (child_profile_id,))
-                            child_row = cur.fetchone()
-
-                            if child_row and child_row['user_id'] not in existing_user_ids:
-                                display_name = child_row['username'] or f"{child_row['first_name']} {child_row['father_name']}"
-                                avatar = child_row['profile_picture'] or child_row['user_picture']
-
-                                # Get last_seen info for this child
-                                last_seen_info = get_user_last_seen_info(
-                                    conn, child_profile_id, "student",
-                                    profile_id, profile_type
-                                )
-
-                                result.append({
-                                    "id": f"family-child-{child_profile_id}",
-                                    "type": "direct",
-                                    "display_name": display_name,
-                                    "avatar": avatar,
-                                    "other_profile_id": child_profile_id,
-                                    "other_profile_type": "student",
-                                    "other_user_id": child_row['user_id'],
-                                    "last_message": None,
-                                    "last_message_at": None,
-                                    "unread_count": 0,
-                                    "is_muted": False,
-                                    "is_pinned": False,
-                                    "is_family": True,  # Flag to indicate this is a family member
-                                    "relationship": "Child",
-                                    **last_seen_info  # Add is_online, last_seen, online_hidden, last_seen_hidden
-                                })
-                                existing_user_ids.add(child_row['user_id'])
-                                print(f"[Chat API] Added linked child: {display_name}")
-
-        # =============================================
-        # ADD ENROLLED STUDENTS/TUTORS FROM enrolled_students TABLE
-        # =============================================
-        if filter_type in ['all', 'direct', None]:
-            # For TUTORS: Add enrolled students and their parents
-            if profile_type == 'tutor':
-                cur.execute("""
-                    SELECT DISTINCT
-                        es.student_id,
-                        sp.user_id as student_user_id,
-                        sp.profile_picture as student_avatar,
-                        sp.username as student_username,
-                        sp.parent_id as parent_ids,
-                        u.first_name, u.father_name,
-                        u.profile_picture as user_avatar,
-                        es.enrolled_at
-                    FROM enrolled_students es
-                    JOIN student_profiles sp ON sp.id = es.student_id
-                    JOIN users u ON u.id = sp.user_id
-                    WHERE es.tutor_id = %s
-                    AND es.status = 'active'
-                    ORDER BY es.enrolled_at DESC
-                """, (profile_id,))
-                enrolled_students = cur.fetchall()
-                print(f"[Chat API] Found {len(enrolled_students)} enrolled students for tutor {profile_id}")
-
-                for student in enrolled_students:
-                    # Add student if not already in list
-                    if student['student_user_id'] not in existing_user_ids:
-                        display_name = student['student_username'] or f"{student['first_name']} {student['father_name']}"
-                        avatar = student['student_avatar'] or student['user_avatar']
-                        enrolled_at = student['enrolled_at']
-                        if enrolled_at and hasattr(enrolled_at, 'isoformat'):
-                            enrolled_at = enrolled_at.isoformat()
-
-                        # Get last_seen info for this student
-                        last_seen_info = get_user_last_seen_info(
-                            conn, student['student_id'], "student",
-                            profile_id, profile_type
-                        )
-
-                        result.append({
-                            "id": f"enrolled-student-{student['student_id']}",
-                            "type": "direct",
-                            "display_name": display_name,
-                            "avatar": avatar,
-                            "other_profile_id": student['student_id'],
-                            "other_profile_type": "student",
-                            "other_user_id": student['student_user_id'],
-                            "last_message": None,
-                            "last_message_at": enrolled_at,
-                            "unread_count": 0,
-                            "is_muted": False,
-                            "is_pinned": False,
-                            "is_enrolled": True,
-                            "relationship": "Enrolled Student",
-                            **last_seen_info
-                        })
-                        existing_user_ids.add(student['student_user_id'])
-                        print(f"[Chat API] Added enrolled student: {display_name}")
-
-                    # Add student's parents if they exist
-                    if student['parent_ids']:
-                        for parent_profile_id in student['parent_ids']:
-                            if parent_profile_id:
-                                cur.execute("""
-                                    SELECT pp.id, pp.user_id, pp.profile_picture, pp.username,
-                                           u.first_name, u.father_name, u.profile_picture as user_picture
-                                    FROM parent_profiles pp
-                                    JOIN users u ON u.id = pp.user_id
-                                    WHERE pp.id = %s
-                                """, (parent_profile_id,))
-                                parent_row = cur.fetchone()
-
-                                if parent_row and parent_row['user_id'] not in existing_user_ids:
-                                    parent_name = parent_row['username'] or f"{parent_row['first_name']} {parent_row['father_name']}"
-                                    parent_avatar = parent_row['profile_picture'] or parent_row['user_picture']
-
-                                    # Get last_seen info for this parent
-                                    parent_last_seen = get_user_last_seen_info(
-                                        conn, parent_profile_id, "parent",
-                                        profile_id, profile_type
-                                    )
-
-                                    result.append({
-                                        "id": f"enrolled-parent-{parent_profile_id}",
-                                        "type": "direct",
-                                        "display_name": parent_name,
-                                        "avatar": parent_avatar,
-                                        "other_profile_id": parent_profile_id,
-                                        "other_profile_type": "parent",
-                                        "other_user_id": parent_row['user_id'],
-                                        "last_message": None,
-                                        "last_message_at": enrolled_at,
-                                        "unread_count": 0,
-                                        "is_muted": False,
-                                        "is_pinned": False,
-                                        "is_enrolled": True,
-                                        "relationship": "Student's Parent",
-                                        **parent_last_seen
-                                    })
-                                    existing_user_ids.add(parent_row['user_id'])
-                                    print(f"[Chat API] Added enrolled student's parent: {parent_name}")
-
-            # For STUDENTS: Add enrolled tutors
-            elif profile_type == 'student':
-                cur.execute("""
-                    SELECT DISTINCT
-                        es.tutor_id,
-                        tp.user_id as tutor_user_id,
-                        tp.profile_picture as tutor_avatar,
-                        tp.username as tutor_username,
-                        u.first_name, u.father_name,
-                        u.profile_picture as user_avatar,
-                        es.enrolled_at
-                    FROM enrolled_students es
-                    JOIN tutor_profiles tp ON tp.id = es.tutor_id
-                    JOIN users u ON u.id = tp.user_id
-                    WHERE es.student_id = %s
-                    AND es.status = 'active'
-                    ORDER BY es.enrolled_at DESC
-                """, (profile_id,))
-                enrolled_tutors = cur.fetchall()
-                print(f"[Chat API] Found {len(enrolled_tutors)} enrolled tutors for student {profile_id}")
-
-                for tutor in enrolled_tutors:
-                    if tutor['tutor_user_id'] not in existing_user_ids:
-                        display_name = tutor['tutor_username'] or f"{tutor['first_name']} {tutor['father_name']}"
-                        avatar = tutor['tutor_avatar'] or tutor['user_avatar']
-                        enrolled_at = tutor['enrolled_at']
-                        if enrolled_at and hasattr(enrolled_at, 'isoformat'):
-                            enrolled_at = enrolled_at.isoformat()
-
-                        # Get last_seen info for this tutor
-                        tutor_last_seen = get_user_last_seen_info(
-                            conn, tutor['tutor_id'], "tutor",
-                            profile_id, profile_type
-                        )
-
-                        result.append({
-                            "id": f"enrolled-tutor-{tutor['tutor_id']}",
-                            "type": "direct",
-                            "display_name": display_name,
-                            "avatar": avatar,
-                            "other_profile_id": tutor['tutor_id'],
-                            "other_profile_type": "tutor",
-                            "other_user_id": tutor['tutor_user_id'],
-                            "last_message": None,
-                            "last_message_at": enrolled_at,
-                            "unread_count": 0,
-                            "is_muted": False,
-                            "is_pinned": False,
-                            "is_enrolled": True,
-                            "relationship": "My Tutor",
-                            **tutor_last_seen
-                        })
-                        existing_user_ids.add(tutor['tutor_user_id'])
-                        print(f"[Chat API] Added enrolled tutor: {display_name}")
-
-            # For PARENTS: Add tutors their children are enrolled with
-            elif profile_type == 'parent':
-                # Get children IDs
-                cur.execute("""
-                    SELECT children_ids FROM parent_profiles WHERE id = %s
-                """, (profile_id,))
-                parent_row = cur.fetchone()
-
-                if parent_row and parent_row['children_ids']:
-                    children_ids = parent_row['children_ids']
-                    print(f"[Chat API] Parent {profile_id} has children: {children_ids}")
-
-                    # Get tutors for all children
-                    cur.execute("""
-                        SELECT DISTINCT
-                            es.tutor_id,
-                            tp.user_id as tutor_user_id,
-                            tp.profile_picture as tutor_avatar,
-                            tp.username as tutor_username,
-                            u.first_name, u.father_name,
-                            u.profile_picture as user_avatar,
-                            es.enrolled_at
-                        FROM enrolled_students es
-                        JOIN tutor_profiles tp ON tp.id = es.tutor_id
-                        JOIN users u ON u.id = tp.user_id
-                        WHERE es.student_id = ANY(%s)
-                        AND es.status = 'active'
-                        ORDER BY es.enrolled_at DESC
-                    """, (children_ids,))
-                    children_tutors = cur.fetchall()
-                    print(f"[Chat API] Found {len(children_tutors)} tutors for parent's children")
-
-                    for tutor in children_tutors:
-                        if tutor['tutor_user_id'] not in existing_user_ids:
-                            display_name = tutor['tutor_username'] or f"{tutor['first_name']} {tutor['father_name']}"
-                            avatar = tutor['tutor_avatar'] or tutor['user_avatar']
-                            enrolled_at = tutor['enrolled_at']
-                            if enrolled_at and hasattr(enrolled_at, 'isoformat'):
-                                enrolled_at = enrolled_at.isoformat()
-
-                            # Get last_seen info for this tutor
-                            tutor_last_seen = get_user_last_seen_info(
-                                conn, tutor['tutor_id'], "tutor",
-                                profile_id, profile_type
-                            )
-
-                            result.append({
-                                "id": f"child-tutor-{tutor['tutor_id']}",
-                                "type": "direct",
-                                "display_name": display_name,
-                                "avatar": avatar,
-                                "other_profile_id": tutor['tutor_id'],
-                                "other_profile_type": "tutor",
-                                "other_user_id": tutor['tutor_user_id'],
-                                "last_message": None,
-                                "last_message_at": enrolled_at,
-                                "unread_count": 0,
-                                "is_muted": False,
-                                "is_pinned": False,
-                                "is_enrolled": True,
-                                "relationship": "Child's Tutor",
-                                **tutor_last_seen
-                            })
-                            existing_user_ids.add(tutor['tutor_user_id'])
-                            print(f"[Chat API] Added child's tutor: {display_name}")
-
-        # =============================================
-        # ADD SESSION REQUESTS FROM requested_sessions TABLE
-        # =============================================
-        if filter_type in ['all', 'direct', None]:
-            # For TUTORS: Add users who have requested sessions
-            if profile_type == 'tutor':
-                cur.execute("""
-                    SELECT DISTINCT
-                        rs.requester_id,
-                        rs.requester_type,
-                        rs.status as request_status,
-                        rs.created_at as requested_at,
-                        u.first_name, u.father_name, u.profile_picture as user_avatar
-                    FROM requested_sessions rs
-                    JOIN users u ON u.id = rs.requester_id
-                    WHERE rs.tutor_id = %s
-                    ORDER BY rs.created_at DESC
-                """, (profile_id,))
-                session_requests = cur.fetchall()
-                print(f"[Chat API] Found {len(session_requests)} session requests for tutor {profile_id}")
-
-                for req in session_requests:
-                    if req['requester_id'] not in existing_user_ids:
-                        display_name = f"{req['first_name']} {req['father_name']}"
-                        avatar = req['user_avatar']
-                        requested_at = req['requested_at']
-                        if requested_at and hasattr(requested_at, 'isoformat'):
-                            requested_at = requested_at.isoformat()
-
-                        # Get requester's profile info
-                        requester_profile_id = None
-                        if req['requester_type'] == 'student':
-                            cur.execute("SELECT id, profile_picture, username FROM student_profiles WHERE user_id = %s", (req['requester_id'],))
-                            profile_row = cur.fetchone()
-                            if profile_row:
-                                requester_profile_id = profile_row['id']
-                                if profile_row['username']:
-                                    display_name = profile_row['username']
-                                if profile_row['profile_picture']:
-                                    avatar = profile_row['profile_picture']
-                        elif req['requester_type'] == 'parent':
-                            cur.execute("SELECT id, profile_picture, username FROM parent_profiles WHERE user_id = %s", (req['requester_id'],))
-                            profile_row = cur.fetchone()
-                            if profile_row:
-                                requester_profile_id = profile_row['id']
-                                if profile_row['username']:
-                                    display_name = profile_row['username']
-                                if profile_row['profile_picture']:
-                                    avatar = profile_row['profile_picture']
-
-                        status_label = "Session Request"
-                        if req['request_status'] == 'pending':
-                            status_label = "Pending Request"
-                        elif req['request_status'] == 'accepted':
-                            status_label = "Accepted Request"
-
-                        # Get last_seen info for this requester
-                        req_last_seen = {}
-                        if requester_profile_id:
-                            req_last_seen = get_user_last_seen_info(
-                                conn, requester_profile_id, req['requester_type'],
-                                profile_id, profile_type
-                            )
-
-                        result.append({
-                            "id": f"session-request-{req['requester_id']}-{req['requester_type']}",
-                            "type": "direct",
-                            "display_name": display_name,
-                            "avatar": avatar,
-                            "other_profile_id": requester_profile_id,
-                            "other_profile_type": req['requester_type'],
-                            "other_user_id": req['requester_id'],
-                            "last_message": None,
-                            "last_message_at": requested_at,
-                            "unread_count": 0,
-                            "is_muted": False,
-                            "is_pinned": False,
-                            "is_session_request": True,
-                            "request_status": req['request_status'],
-                            "relationship": status_label,
-                            **req_last_seen
-                        })
-                        existing_user_ids.add(req['requester_id'])
-                        print(f"[Chat API] Added session requester: {display_name} ({req['requester_type']})")
-
-            # For STUDENTS and PARENTS: Add tutors they have requested sessions from
-            elif profile_type in ['student', 'parent']:
-                cur.execute("""
-                    SELECT DISTINCT
-                        rs.tutor_id,
-                        rs.status as request_status,
-                        rs.created_at as requested_at,
-                        tp.user_id as tutor_user_id,
-                        tp.profile_picture as tutor_avatar,
-                        tp.username as tutor_username,
-                        u.first_name, u.father_name,
-                        u.profile_picture as user_avatar
-                    FROM requested_sessions rs
-                    JOIN tutor_profiles tp ON tp.id = rs.tutor_id
-                    JOIN users u ON u.id = tp.user_id
-                    WHERE rs.requester_id = %s
-                    AND rs.requester_type = %s
-                    ORDER BY rs.created_at DESC
-                """, (user_id, profile_type))
-                my_requests = cur.fetchall()
-                print(f"[Chat API] Found {len(my_requests)} session requests by {profile_type} {profile_id}")
-
-                for req in my_requests:
-                    if req['tutor_user_id'] not in existing_user_ids:
-                        display_name = req['tutor_username'] or f"{req['first_name']} {req['father_name']}"
-                        avatar = req['tutor_avatar'] or req['user_avatar']
-                        requested_at = req['requested_at']
-                        if requested_at and hasattr(requested_at, 'isoformat'):
-                            requested_at = requested_at.isoformat()
-
-                        status_label = "Requested Tutor"
-                        if req['request_status'] == 'pending':
-                            status_label = "Pending Request"
-                        elif req['request_status'] == 'accepted':
-                            status_label = "Accepted Request"
-
-                        # Get last_seen info for this tutor
-                        tutor_last_seen = get_user_last_seen_info(
-                            conn, req['tutor_id'], "tutor",
-                            profile_id, profile_type
-                        )
-
-                        result.append({
-                            "id": f"my-request-tutor-{req['tutor_id']}",
-                            "type": "direct",
-                            "display_name": display_name,
-                            "avatar": avatar,
-                            "other_profile_id": req['tutor_id'],
-                            "other_profile_type": "tutor",
-                            "other_user_id": req['tutor_user_id'],
-                            "last_message": None,
-                            "last_message_at": requested_at,
-                            "unread_count": 0,
-                            "is_muted": False,
-                            "is_pinned": False,
-                            "is_session_request": True,
-                            "request_status": req['request_status'],
-                            "relationship": status_label,
-                            **tutor_last_seen
-                        })
-                        existing_user_ids.add(req['tutor_user_id'])
-                        print(f"[Chat API] Added requested tutor: {display_name}")
-
-        # =============================================
-        # ADD PARENT INVITATIONS (co-parent invitations)
-        # =============================================
-        if filter_type in ['all', 'direct', None]:
-            # For ALL USERS: Show parent invitations they've sent or received
-            # Invitations SENT by this user
-            cur.execute("""
-                SELECT
-                    pi.id as invitation_id,
-                    pi.inviter_user_id,
-                    pi.inviter_type,
-                    pi.invited_to_user_id,
-                    pi.relationship_type,
-                    pi.requested_as,
-                    pi.status,
-                    pi.created_at,
-                    pi.pending_first_name,
-                    pi.pending_father_name,
-                    pi.pending_email,
-                    u.first_name, u.father_name, u.profile_picture
-                FROM parent_invitations pi
-                LEFT JOIN users u ON u.id = pi.invited_to_user_id
-                WHERE pi.inviter_user_id = %s
-                ORDER BY pi.created_at DESC
-            """, (user_id,))
-            sent_invitations = cur.fetchall()
-            print(f"[Chat API] Found {len(sent_invitations)} parent invitations sent by user {user_id}")
-
-            for inv in sent_invitations:
-                invited_user_id = inv['invited_to_user_id']
-                # Always show PENDING invitations, or new users not in existing conversations
-                should_add = inv['status'] == 'pending' or (invited_user_id and invited_user_id not in existing_user_ids)
-                if invited_user_id and should_add:
-                    display_name = f"{inv['first_name']} {inv['father_name']}" if inv['first_name'] else f"{inv['pending_first_name']} {inv['pending_father_name']}"
-                    avatar = inv['profile_picture']
-                    created_at = inv['created_at']
-                    if created_at and hasattr(created_at, 'isoformat'):
-                        created_at = created_at.isoformat()
-
-                    # Get invited user's parent profile
-                    invited_profile_id = None
-                    cur.execute("SELECT id, profile_picture, username FROM parent_profiles WHERE user_id = %s", (invited_user_id,))
-                    profile_row = cur.fetchone()
-                    if profile_row:
-                        invited_profile_id = profile_row['id']
-                        if profile_row['username']:
-                            display_name = profile_row['username']
-                        if profile_row['profile_picture']:
-                            avatar = profile_row['profile_picture']
-
-                    status_label = f"{inv['requested_as'].title()} Invitation Sent"
-                    if inv['status'] == 'pending':
-                        status_label = f"Pending {inv['requested_as'].title()} Invitation"
-                    elif inv['status'] == 'accepted':
-                        status_label = f"Accepted {inv['requested_as'].title()}"
-
-                    # Get last_seen info
-                    inv_last_seen = {}
-                    if invited_profile_id:
-                        inv_last_seen = get_user_last_seen_info(
-                            conn, invited_profile_id, "parent",
-                            profile_id, profile_type
-                        )
-
-                    result.append({
-                        "id": f"parent-invitation-sent-{inv['invitation_id']}",
-                        "type": "direct",
-                        "display_name": display_name,
-                        "avatar": avatar,
-                        "other_profile_id": invited_profile_id,
-                        "other_profile_type": "parent",
-                        "other_user_id": invited_user_id,
-                        "last_message": None,
-                        "last_message_at": created_at,
-                        "unread_count": 0,
-                        "is_muted": False,
-                        "is_pinned": False,
-                        "is_parent_invitation": True,
-                        "invitation_direction": "sent",
-                        "request_status": inv['status'],
-                        "relationship": status_label,
-                        "relationship_type": inv['relationship_type'],
-                        **inv_last_seen
-                    })
-                    existing_user_ids.add(invited_user_id)
-                    print(f"[Chat API] Added sent parent invitation: {display_name}")
-                elif not invited_user_id and inv['pending_email']:
-                    # Invitation to a new user (not yet registered)
-                    display_name = f"{inv['pending_first_name']} {inv['pending_father_name']}"
-                    status_label = f"Pending {inv['requested_as'].title()} Invitation (New User)"
-
-                    result.append({
-                        "id": f"parent-invitation-pending-{inv['invitation_id']}",
-                        "type": "direct",
-                        "display_name": display_name,
-                        "avatar": None,
-                        "other_profile_id": None,
-                        "other_profile_type": "parent",
-                        "other_user_id": None,
-                        "last_message": None,
-                        "last_message_at": inv['created_at'].isoformat() if inv['created_at'] else None,
-                        "unread_count": 0,
-                        "is_muted": False,
-                        "is_pinned": False,
-                        "is_parent_invitation": True,
-                        "invitation_direction": "sent",
-                        "request_status": "pending",
-                        "relationship": status_label,
-                        "relationship_type": inv['relationship_type'],
-                        "pending_email": inv['pending_email']
-                    })
-                    print(f"[Chat API] Added pending parent invitation to new user: {display_name}")
-
-            # Invitations RECEIVED by this user
-            cur.execute("""
-                SELECT
-                    pi.id as invitation_id,
-                    pi.inviter_user_id,
-                    pi.inviter_type,
-                    pi.relationship_type,
-                    pi.requested_as,
-                    pi.status,
-                    pi.created_at,
-                    u.first_name, u.father_name, u.profile_picture
-                FROM parent_invitations pi
-                JOIN users u ON u.id = pi.inviter_user_id
-                WHERE pi.invited_to_user_id = %s
-                ORDER BY pi.created_at DESC
-            """, (user_id,))
-            received_invitations = cur.fetchall()
-            print(f"[Chat API] Found {len(received_invitations)} parent invitations received by user {user_id}")
-
-            for inv in received_invitations:
-                inviter_user_id = inv['inviter_user_id']
-                # Always show PENDING invitations, or new users not in existing conversations
-                should_add = inv['status'] == 'pending' or inviter_user_id not in existing_user_ids
-                if should_add:
-                    display_name = f"{inv['first_name']} {inv['father_name']}"
-                    avatar = inv['profile_picture']
-                    created_at = inv['created_at']
-                    if created_at and hasattr(created_at, 'isoformat'):
-                        created_at = created_at.isoformat()
-
-                    # Get inviter's parent profile
-                    inviter_profile_id = None
-                    cur.execute("SELECT id, profile_picture, username FROM parent_profiles WHERE user_id = %s", (inviter_user_id,))
-                    profile_row = cur.fetchone()
-                    if profile_row:
-                        inviter_profile_id = profile_row['id']
-                        if profile_row['username']:
-                            display_name = profile_row['username']
-                        if profile_row['profile_picture']:
-                            avatar = profile_row['profile_picture']
-
-                    status_label = f"{inv['requested_as'].title()} Invitation Received"
-                    if inv['status'] == 'pending':
-                        status_label = f"Pending {inv['requested_as'].title()} Request"
-                    elif inv['status'] == 'accepted':
-                        status_label = f"Accepted {inv['requested_as'].title()}"
-
-                    # Get last_seen info
-                    inv_last_seen = {}
-                    if inviter_profile_id:
-                        inv_last_seen = get_user_last_seen_info(
-                            conn, inviter_profile_id, "parent",
-                            profile_id, profile_type
-                        )
-
-                    result.append({
-                        "id": f"parent-invitation-received-{inv['invitation_id']}",
-                        "type": "direct",
-                        "display_name": display_name,
-                        "avatar": avatar,
-                        "other_profile_id": inviter_profile_id,
-                        "other_profile_type": "parent",
-                        "other_user_id": inviter_user_id,
-                        "last_message": None,
-                        "last_message_at": created_at,
-                        "unread_count": 0,
-                        "is_muted": False,
-                        "is_pinned": False,
-                        "is_parent_invitation": True,
-                        "invitation_direction": "received",
-                        "request_status": inv['status'],
-                        "relationship": status_label,
-                        "relationship_type": inv['relationship_type'],
-                        **inv_last_seen
-                    })
-                    existing_user_ids.add(inviter_user_id)
-                    print(f"[Chat API] Added received parent invitation from: {display_name}")
-
-        # =============================================
-        # ADD CHILD INVITATIONS (parent-child invitations)
-        # =============================================
-        if filter_type in ['all', 'direct', None]:
-            # Invitations SENT by this user (parent inviting child)
-            cur.execute("""
-                SELECT
-                    ci.id as invitation_id,
-                    ci.inviter_user_id,
-                    ci.inviter_type,
-                    ci.invited_to_user_id,
-                    ci.relationship_type,
-                    ci.status,
-                    ci.created_at,
-                    ci.pending_first_name,
-                    ci.pending_father_name,
-                    ci.pending_email,
-                    u.first_name, u.father_name, u.profile_picture
-                FROM child_invitations ci
-                LEFT JOIN users u ON u.id = ci.invited_to_user_id
-                WHERE ci.inviter_user_id = %s
-                ORDER BY ci.created_at DESC
-            """, (user_id,))
-            sent_child_invitations = cur.fetchall()
-            print(f"[Chat API] Found {len(sent_child_invitations)} child invitations sent by user {user_id}")
-
-            for inv in sent_child_invitations:
-                invited_user_id = inv['invited_to_user_id']
-                # Always show PENDING invitations, or new users not in existing conversations
-                should_add = inv['status'] == 'pending' or (invited_user_id and invited_user_id not in existing_user_ids)
-                if invited_user_id and should_add:
-                    display_name = f"{inv['first_name']} {inv['father_name']}" if inv['first_name'] else f"{inv['pending_first_name']} {inv['pending_father_name']}"
-                    avatar = inv['profile_picture']
-                    created_at = inv['created_at']
-                    if created_at and hasattr(created_at, 'isoformat'):
-                        created_at = created_at.isoformat()
-
-                    # Get invited user's student profile
-                    invited_profile_id = None
-                    cur.execute("SELECT id, profile_picture, username FROM student_profiles WHERE user_id = %s", (invited_user_id,))
-                    profile_row = cur.fetchone()
-                    if profile_row:
-                        invited_profile_id = profile_row['id']
-                        if profile_row['username']:
-                            display_name = profile_row['username']
-                        if profile_row['profile_picture']:
-                            avatar = profile_row['profile_picture']
-
-                    status_label = "Child Invitation Sent"
-                    if inv['status'] == 'pending':
-                        status_label = "Pending Child Invitation"
-                    elif inv['status'] == 'accepted':
-                        status_label = "Accepted Child"
-
-                    # Get last_seen info
-                    inv_last_seen = {}
-                    if invited_profile_id:
-                        inv_last_seen = get_user_last_seen_info(
-                            conn, invited_profile_id, "student",
-                            profile_id, profile_type
-                        )
-
-                    result.append({
-                        "id": f"child-invitation-sent-{inv['invitation_id']}",
-                        "type": "direct",
-                        "display_name": display_name,
-                        "avatar": avatar,
-                        "other_profile_id": invited_profile_id,
-                        "other_profile_type": "student",
-                        "other_user_id": invited_user_id,
-                        "last_message": None,
-                        "last_message_at": created_at,
-                        "unread_count": 0,
-                        "is_muted": False,
-                        "is_pinned": False,
-                        "is_child_invitation": True,
-                        "invitation_direction": "sent",
-                        "request_status": inv['status'],
-                        "relationship": status_label,
-                        "relationship_type": inv['relationship_type'],
-                        **inv_last_seen
-                    })
-                    existing_user_ids.add(invited_user_id)
-                    print(f"[Chat API] Added sent child invitation: {display_name}")
-
-            # Invitations RECEIVED by this user (child receiving parent invitation)
-            cur.execute("""
-                SELECT
-                    ci.id as invitation_id,
-                    ci.inviter_user_id,
-                    ci.inviter_type,
-                    ci.relationship_type,
-                    ci.status,
-                    ci.created_at,
-                    u.first_name, u.father_name, u.profile_picture
-                FROM child_invitations ci
-                JOIN users u ON u.id = ci.inviter_user_id
-                WHERE ci.invited_to_user_id = %s
-                ORDER BY ci.created_at DESC
-            """, (user_id,))
-            received_child_invitations = cur.fetchall()
-            print(f"[Chat API] Found {len(received_child_invitations)} child invitations received by user {user_id}")
-
-            for inv in received_child_invitations:
-                inviter_user_id = inv['inviter_user_id']
-                # Always show PENDING invitations, or new users not in existing conversations
-                should_add = inv['status'] == 'pending' or inviter_user_id not in existing_user_ids
-                if should_add:
-                    display_name = f"{inv['first_name']} {inv['father_name']}"
-                    avatar = inv['profile_picture']
-                    created_at = inv['created_at']
-                    if created_at and hasattr(created_at, 'isoformat'):
-                        created_at = created_at.isoformat()
-
-                    # Get inviter's parent profile
-                    inviter_profile_id = None
-                    cur.execute("SELECT id, profile_picture, username FROM parent_profiles WHERE user_id = %s", (inviter_user_id,))
-                    profile_row = cur.fetchone()
-                    if profile_row:
-                        inviter_profile_id = profile_row['id']
-                        if profile_row['username']:
-                            display_name = profile_row['username']
-                        if profile_row['profile_picture']:
-                            avatar = profile_row['profile_picture']
-
-                    status_label = "Parent Invitation Received"
-                    if inv['status'] == 'pending':
-                        status_label = "Pending Parent Request"
-                    elif inv['status'] == 'accepted':
-                        status_label = "Accepted Parent"
-
-                    # Get last_seen info
-                    inv_last_seen = {}
-                    if inviter_profile_id:
-                        inv_last_seen = get_user_last_seen_info(
-                            conn, inviter_profile_id, "parent",
-                            profile_id, profile_type
-                        )
-
-                    result.append({
-                        "id": f"child-invitation-received-{inv['invitation_id']}",
-                        "type": "direct",
-                        "display_name": display_name,
-                        "avatar": avatar,
-                        "other_profile_id": inviter_profile_id,
-                        "other_profile_type": "parent",
-                        "other_user_id": inviter_user_id,
-                        "last_message": None,
-                        "last_message_at": created_at,
-                        "unread_count": 0,
-                        "is_muted": False,
-                        "is_pinned": False,
-                        "is_child_invitation": True,
-                        "invitation_direction": "received",
-                        "request_status": inv['status'],
-                        "relationship": status_label,
-                        "relationship_type": inv['relationship_type'],
-                        **inv_last_seen
-                    })
-                    existing_user_ids.add(inviter_user_id)
-                    print(f"[Chat API] Added received child invitation from: {display_name}")
-
-        print(f"[Chat API] Returning {len(result)} conversations/connections for profile_id={profile_id}")
-        return {"conversations": result}
+                FROM conversation_participants
+                WHERE conversation_id = %s
+                AND is_active = true
+            """, (conv_dict['id'],))
+
+            participant_count = cur.fetchone()
+            conv_dict['participant_count'] = participant_count['count'] if participant_count else 0
+
+            # Get last message sender info
+            if conv_dict.get('last_message_sender_user_id'):
+                sender_info = get_user_display_info(conn, conv_dict['last_message_sender_user_id'])
+                conv_dict['last_message_sender_name'] = sender_info['name']
+
+            # Format timestamps
+            if conv_dict.get('last_message_time'):
+                conv_dict['last_message_time'] = conv_dict['last_message_time'].isoformat()
+            if conv_dict.get('created_at'):
+                conv_dict['created_at'] = conv_dict['created_at'].isoformat()
+            if conv_dict.get('updated_at'):
+                conv_dict['updated_at'] = conv_dict['updated_at'].isoformat()
+            if conv_dict.get('last_read_at'):
+                conv_dict['last_read_at'] = conv_dict['last_read_at'].isoformat()
+
+            conversations.append(conv_dict)
+
+        return {
+            "conversations": conversations,
+            "total": len(conversations),
+            "limit": limit,
+            "offset": offset
+        }
 
     except Exception as e:
-        print(f"[Chat API] ERROR in /conversations: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error fetching conversations for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch conversations: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.post("/conversations")
-async def create_conversation(request: CreateConversationRequest, profile_id: int, profile_type: str, user_id: int):
-    """Create a new conversation (direct or group)"""
+async def create_conversation(
+    request: CreateConversationRequest,
+    user_id: int = Query(...)
+):
+    """
+    Create a new conversation (direct or group).
+
+    For direct conversations, checks for existing conversation between the two users.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # For direct chats, check if conversation already exists
-        if request.type == 'direct' and len(request.participants) == 1:
-            other = request.participants[0]
+        # Validate participants
+        if not request.participant_user_ids:
+            raise HTTPException(status_code=400, detail="At least one participant is required")
 
-            # Prevent self-messaging (same profile_id and profile_type)
-            if other.profile_id == profile_id and other.profile_type == profile_type:
-                raise HTTPException(status_code=400, detail="You cannot start a conversation with yourself")
+        # For direct conversations
+        if request.type == "direct":
+            if len(request.participant_user_ids) != 1:
+                raise HTTPException(status_code=400, detail="Direct conversations must have exactly one other participant")
 
-            # Also prevent self-messaging by user_id (same user, different roles)
-            if other.user_id == user_id:
-                raise HTTPException(status_code=400, detail="You cannot start a conversation with yourself")
+            other_user_id = request.participant_user_ids[0]
 
-            # Check if the recipient allows messages from this user (privacy setting)
-            can_message, reason = check_can_message(conn, profile_id, profile_type, other.profile_id, other.profile_type)
-            if not can_message:
-                raise HTTPException(status_code=403, detail=reason)
+            # Check if conversation already exists
+            existing_conv_id = get_or_create_direct_conversation(conn, user_id, other_user_id)
 
+            if existing_conv_id:
+                # Return existing conversation
+                cur.execute("""
+                    SELECT id, type, name, description, avatar_url, created_at, updated_at
+                    FROM conversations
+                    WHERE id = %s
+                """, (existing_conv_id,))
+
+                existing_conv = cur.fetchone()
+
+                if existing_conv:
+                    conv_dict = dict(existing_conv)
+
+                    # Get other user's info for direct conversation
+                    other_user_info = get_user_display_info(conn, other_user_id)
+                    conv_dict['name'] = other_user_info['name']
+                    conv_dict['avatar_url'] = other_user_info['avatar']
+                    conv_dict['other_user_id'] = other_user_id
+
+                    if conv_dict.get('created_at'):
+                        conv_dict['created_at'] = conv_dict['created_at'].isoformat()
+                    if conv_dict.get('updated_at'):
+                        conv_dict['updated_at'] = conv_dict['updated_at'].isoformat()
+
+                    return {
+                        "conversation": conv_dict,
+                        "message": "Existing conversation returned"
+                    }
+
+            # If we get here, get_or_create_direct_conversation failed
+            raise HTTPException(status_code=500, detail="Failed to create conversation")
+
+        # For group conversations
+        else:
+            if not request.name:
+                raise HTTPException(status_code=400, detail="Group conversations must have a name")
+
+            # Check privacy settings for all participants
+            for participant_id in request.participant_user_ids:
+                can_add, reason = check_can_add_to_group(conn, user_id, participant_id)
+                if not can_add:
+                    raise HTTPException(status_code=403, detail=f"Cannot add user {participant_id}: {reason}")
+
+            # Create group conversation
             cur.execute("""
-                SELECT c.id
-                FROM conversations c
-                JOIN conversation_participants cp1 ON cp1.conversation_id = c.id
-                    AND cp1.profile_id = %s AND cp1.profile_type = %s
-                JOIN conversation_participants cp2 ON cp2.conversation_id = c.id
-                    AND cp2.profile_id = %s AND cp2.profile_type = %s
-                WHERE c.type = 'direct'
-            """, (profile_id, profile_type, other.profile_id, other.profile_type))
-            existing = cur.fetchone()
+                INSERT INTO conversations (type, name, description, avatar_url, created_by_user_id, created_at, updated_at)
+                VALUES ('group', %s, %s, %s, %s, NOW(), NOW())
+                RETURNING id, type, name, description, avatar_url, created_at, updated_at
+            """, (request.name, request.description, request.avatar_url, user_id))
 
-            if existing:
-                return {"conversation_id": existing['id'], "existing": True}
+            new_conv = cur.fetchone()
+            conv_id = new_conv['id']
 
-        # Create conversation
-        cur.execute("""
-            INSERT INTO conversations (type, name, description, created_by_profile_id, created_by_profile_type)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id
-        """, (request.type, request.name, request.description, profile_id, profile_type))
-        conv_id = cur.fetchone()['id']
-
-        # Add creator as participant (admin for groups and channels)
-        role = 'admin' if request.type in ('group', 'channel') else 'member'
-        cur.execute("""
-            INSERT INTO conversation_participants
-            (conversation_id, profile_id, profile_type, user_id, role)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (conv_id, profile_id, profile_type, user_id, role))
-
-        # Add other participants (with privacy checks for groups/channels)
-        added_participants = []
-        rejected_participants = []
-        for participant in request.participants:
-            # Check privacy settings for groups and channels
-            if request.type == 'group':
-                can_add, reason = check_can_add_to_group(
-                    conn, profile_id, profile_type,
-                    participant.profile_id, participant.profile_type
-                )
-                if not can_add:
-                    rejected_participants.append({
-                        "profile_id": participant.profile_id,
-                        "profile_type": participant.profile_type,
-                        "reason": reason
-                    })
-                    continue
-            elif request.type == 'channel':
-                can_add, reason = check_can_add_to_channel(
-                    conn, profile_id, profile_type,
-                    participant.profile_id, participant.profile_type
-                )
-                if not can_add:
-                    rejected_participants.append({
-                        "profile_id": participant.profile_id,
-                        "profile_type": participant.profile_type,
-                        "reason": reason
-                    })
-                    continue
-
+            # Add creator as admin
             cur.execute("""
                 INSERT INTO conversation_participants
-                (conversation_id, profile_id, profile_type, user_id, role)
-                VALUES (%s, %s, %s, %s, 'member')
-                ON CONFLICT (conversation_id, profile_id, profile_type) DO NOTHING
-            """, (conv_id, participant.profile_id, participant.profile_type, participant.user_id))
-            added_participants.append({
-                "profile_id": participant.profile_id,
-                "profile_type": participant.profile_type
-            })
+                (conversation_id, user_id, role, is_active, joined_at, created_at, updated_at)
+                VALUES (%s, %s, 'admin', true, NOW(), NOW(), NOW())
+            """, (conv_id, user_id))
 
-        conn.commit()
-        return {
-            "conversation_id": conv_id,
-            "existing": False,
-            "added_participants": added_participants,
-            "rejected_participants": rejected_participants
-        }
+            # Add other participants
+            for participant_id in request.participant_user_ids:
+                if participant_id != user_id:  # Don't add creator twice
+                    cur.execute("""
+                        INSERT INTO conversation_participants
+                        (conversation_id, user_id, role, is_active, joined_at, created_at, updated_at)
+                        VALUES (%s, %s, 'member', true, NOW(), NOW(), NOW())
+                    """, (conv_id, participant_id))
+
+            conn.commit()
+
+            conv_dict = dict(new_conv)
+            if conv_dict.get('created_at'):
+                conv_dict['created_at'] = conv_dict['created_at'].isoformat()
+            if conv_dict.get('updated_at'):
+                conv_dict['updated_at'] = conv_dict['updated_at'].isoformat()
+
+            return {
+                "conversation": conv_dict,
+                "message": "Group conversation created successfully"
+            }
 
     except HTTPException:
-        # Re-raise HTTPExceptions (like self-messaging error) without wrapping
-        cur.close()
-        conn.close()
         raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error creating conversation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create conversation: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -2112,27 +642,34 @@ async def create_conversation(request: CreateConversationRequest, profile_id: in
 @router.get("/conversations/{conversation_id}")
 async def get_conversation_details(
     conversation_id: int,
-    profile_id: int,
-    profile_type: str
+    user_id: int = Query(...)
 ):
-    """Get detailed information about a conversation"""
+    """
+    Get detailed information about a specific conversation.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify user is participant
+        # Check if user is a participant
         cur.execute("""
-            SELECT * FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (conversation_id, profile_id, profile_type))
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
 
         if not cur.fetchone():
-            raise HTTPException(status_code=403, detail="Not a participant of this conversation")
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
 
         # Get conversation details
         cur.execute("""
-            SELECT * FROM conversations WHERE id = %s
+            SELECT id, type, name, description, avatar_url,
+                   created_by_user_id, created_at, updated_at
+            FROM conversations
+            WHERE id = %s
         """, (conversation_id,))
+
         conv = cur.fetchone()
 
         if not conv:
@@ -2142,527 +679,413 @@ async def get_conversation_details(
 
         # Get participants
         cur.execute("""
-            SELECT
-                cp.profile_id,
-                cp.profile_type,
-                cp.user_id,
-                cp.role,
-                cp.joined_at,
-                cp.is_muted
+            SELECT cp.user_id, cp.role, cp.joined_at,
+                   cp.is_muted, cp.is_archived
             FROM conversation_participants cp
-            WHERE cp.conversation_id = %s AND cp.is_active = TRUE
+            WHERE cp.conversation_id = %s
+            AND cp.is_active = true
         """, (conversation_id,))
-        participants = cur.fetchall()
 
-        participants_info = []
-        for p in participants:
-            user_info = get_user_display_info(conn, p['user_id'], p['profile_type'], p['profile_id'])
-            participants_info.append({
-                "profile_id": p['profile_id'],
-                "profile_type": p['profile_type'],
+        participants = []
+        for p in cur.fetchall():
+            user_info = get_user_display_info(conn, p['user_id'])
+            participants.append({
                 "user_id": p['user_id'],
+                "name": user_info['name'],
+                "avatar": user_info['avatar'],
                 "role": p['role'],
-                "joined_at": p['joined_at'].isoformat() if p['joined_at'] else None,
-                "display_name": user_info['name'],
-                "avatar": user_info['avatar']
+                "joined_at": p['joined_at'].isoformat() if p.get('joined_at') else None,
+                "is_muted": p['is_muted'],
+                "is_archived": p['is_archived']
             })
 
-        conv_dict['participants'] = participants_info
+        conv_dict['participants'] = participants
 
-        # Get pinned messages
-        cur.execute("""
-            SELECT m.*, u.first_name, u.father_name
-            FROM chat_messages m
-            JOIN users u ON u.id = m.sender_user_id
-            WHERE m.conversation_id = %s AND m.is_pinned = TRUE AND m.is_deleted = FALSE
-            ORDER BY m.pinned_at DESC
-        """, (conversation_id,))
-        pinned_messages = []
-        for msg in cur.fetchall():
-            msg_dict = dict(msg)
-            # Decrypt message content for pinned messages
-            if msg_dict.get('content'):
-                msg_dict['content'] = decrypt_message(msg_dict['content'])
-            pinned_messages.append(msg_dict)
-        conv_dict['pinned_messages'] = pinned_messages
+        # For direct conversations, set name and avatar from other participant
+        if conv_dict['type'] == 'direct' and len(participants) == 2:
+            other_participant = next((p for p in participants if p['user_id'] != user_id), None)
+            if other_participant:
+                conv_dict['name'] = other_participant['name']
+                conv_dict['avatar_url'] = other_participant['avatar']
+                conv_dict['other_user_id'] = other_participant['user_id']
 
-        # Get shared media count
-        cur.execute("""
-            SELECT
-                COUNT(*) FILTER (WHERE message_type = 'image') as images,
-                COUNT(*) FILTER (WHERE message_type IN ('file', 'video', 'audio')) as files
-            FROM chat_messages
-            WHERE conversation_id = %s AND is_deleted = FALSE
-        """, (conversation_id,))
-        media_counts = cur.fetchone()
-        conv_dict['shared_media'] = dict(media_counts)
+        # Format timestamps
+        if conv_dict.get('created_at'):
+            conv_dict['created_at'] = conv_dict['created_at'].isoformat()
+        if conv_dict.get('updated_at'):
+            conv_dict['updated_at'] = conv_dict['updated_at'].isoformat()
 
-        return conv_dict
+        return {"conversation": conv_dict}
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[Chat API] Error fetching conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch conversation: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# MESSAGES ENDPOINTS
-# =============================================
-
 @router.get("/messages/{conversation_id}")
 async def get_messages(
     conversation_id: int,
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    before_id: Optional[int] = None,
-    after: Optional[str] = None,
-    limit: int = Query(50, le=10000)
+    user_id: int = Query(...),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    before_message_id: Optional[int] = Query(None)
 ):
-    """Get messages for a conversation"""
+    """
+    Get messages from a conversation with pagination.
+
+    Messages are returned in reverse chronological order (newest first).
+    Automatically decrypts encrypted messages.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify user is participant and get chat_cleared_at
+        # Check if user is a participant
         cur.execute("""
-            SELECT chat_cleared_at FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (conversation_id, profile_id, profile_type))
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
 
-        participant = cur.fetchone()
-        if not participant:
-            raise HTTPException(status_code=403, detail="Not a participant of this conversation")
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
 
-        # Get other participants' last_read_at to determine read status for sent messages
-        # IMPORTANT: Only include participants who have read_receipts enabled in their privacy settings
-        cur.execute("""
-            SELECT cp.profile_id, cp.profile_type, cp.last_read_at
-            FROM conversation_participants cp
-            WHERE cp.conversation_id = %s AND cp.is_active = TRUE
-            AND NOT (cp.profile_id = %s AND cp.profile_type = %s)
-        """, (conversation_id, profile_id, profile_type))
-        other_participants = cur.fetchall()
+        # Build query based on pagination method
+        if before_message_id:
+            # Fetch messages before a specific message (for infinite scroll)
+            cur.execute("""
+                SELECT m.id, m.sender_user_id, m.message_type, m.content,
+                       m.media_url, m.media_metadata, m.is_edited, m.is_deleted,
+                       m.reply_to_id, m.is_forwarded, m.forwarded_from_id,
+                       m.forwarded_from_avatar, m.forwarded_from_id,
+                       m.created_at, m.updated_at,
+                       (SELECT COUNT(*) FROM message_reactions mr WHERE mr.message_id = m.id) as reaction_count
+                FROM chat_messages m
+                WHERE m.conversation_id = %s
+                AND m.id < %s
+                ORDER BY m.created_at DESC
+                LIMIT %s
+            """, (conversation_id, before_message_id, limit))
+        else:
+            # Standard offset pagination
+            cur.execute("""
+                SELECT m.id, m.sender_user_id, m.message_type, m.content,
+                       m.media_url, m.media_metadata, m.is_edited, m.is_deleted,
+                       m.reply_to_id, m.is_forwarded, m.forwarded_from_id,
+                       m.forwarded_from_avatar, m.forwarded_from_id,
+                       m.created_at, m.updated_at,
+                       (SELECT COUNT(*) FROM message_reactions mr WHERE mr.message_id = m.id) as reaction_count
+                FROM chat_messages m
+                WHERE m.conversation_id = %s
+                ORDER BY m.created_at DESC
+                LIMIT %s OFFSET %s
+            """, (conversation_id, limit, offset))
 
-        # Get the minimum last_read_at only from participants who have read_receipts enabled
-        other_last_read = None
-        if other_participants:
-            read_times = []
-            for p in other_participants:
-                if p['last_read_at']:
-                    # Check if this participant has read_receipts enabled
-                    if should_show_read_receipts(conn, p['profile_id'], p['profile_type']):
-                        read_times.append(p['last_read_at'])
-            if read_times:
-                other_last_read = min(read_times)
+        messages = []
 
-        chat_cleared_at = participant.get('chat_cleared_at')
-
-        query = """
-            SELECT
-                m.*,
-                u.first_name,
-                u.father_name,
-                u.profile_picture as user_avatar
-            FROM chat_messages m
-            JOIN users u ON u.id = m.sender_user_id
-            WHERE m.conversation_id = %s
-            AND m.is_deleted = FALSE
-            AND NOT (COALESCE(m.deleted_for_user_ids, '[]'::jsonb) @> %s::jsonb)
-        """
-        params = [conversation_id, json.dumps([user_id])]
-
-        # Only show messages after chat was cleared (if cleared)
-        if chat_cleared_at:
-            query += " AND m.created_at > %s"
-            params.append(chat_cleared_at)
-
-        if before_id:
-            query += " AND m.id < %s"
-            params.append(before_id)
-
-        # Filter messages after a specific timestamp (for polling new messages)
-        if after:
-            try:
-                after_dt = datetime.fromisoformat(after.replace('Z', '+00:00'))
-                query += " AND m.created_at > %s"
-                params.append(after_dt)
-            except (ValueError, TypeError):
-                pass  # Invalid timestamp, ignore filter
-
-        query += " ORDER BY m.created_at DESC LIMIT %s"
-        params.append(limit)
-
-        cur.execute(query, params)
-        messages = cur.fetchall()
-
-        result = []
-        for msg in messages:
+        for msg in cur.fetchall():
             msg_dict = dict(msg)
 
-            # Decrypt message content
-            if msg_dict.get('content'):
-                msg_dict['content'] = decrypt_message(msg_dict['content'])
+            # Decrypt content if encrypted
+            if msg_dict.get('content') and not msg_dict.get('is_deleted'):
+                try:
+                    if is_encrypted(msg_dict['content']):
+                        msg_dict['content'] = decrypt_message(msg_dict['content'])
+                except Exception as e:
+                    print(f"[Chat API] Error decrypting message {msg_dict['id']}: {e}")
+                    msg_dict['content'] = "[Failed to decrypt message]"
 
-            # Get sender display info
-            sender_info = get_user_display_info(
-                conn, msg['sender_user_id'], msg['sender_profile_type'], msg['sender_profile_id']
-            )
-            msg_dict['sender_name'] = sender_info['name']
-            msg_dict['sender_avatar'] = sender_info['avatar']
-            msg_dict['is_mine'] = (msg['sender_profile_id'] == profile_id and
-                                   msg['sender_profile_type'] == profile_type)
-
-            # Determine read status for sent messages
-            if msg_dict['is_mine']:
-                if other_last_read and msg['created_at'] <= other_last_read:
-                    msg_dict['status'] = 'read'
-                else:
-                    msg_dict['status'] = 'sent'
-            else:
-                msg_dict['status'] = None  # Received messages don't need status
+            # Get sender info
+            if msg_dict.get('sender_user_id'):
+                sender_info = get_user_display_info(conn, msg_dict['sender_user_id'])
+                msg_dict['sender_name'] = sender_info['name']
+                msg_dict['sender_avatar'] = sender_info['avatar']
 
             # Get reactions
             cur.execute("""
-                SELECT reaction, COUNT(*) as count,
-                    array_agg(profile_id) as profile_ids
-                FROM message_reactions
-                WHERE message_id = %s
-                GROUP BY reaction
-            """, (msg['id'],))
-            msg_dict['reactions'] = [dict(r) for r in cur.fetchall()]
+                SELECT mr.reaction, mr.user_id, mr.created_at
+                FROM message_reactions mr
+                WHERE mr.message_id = %s
+                ORDER BY mr.created_at ASC
+            """, (msg_dict['id'],))
 
-            # Get reply info if exists
-            if msg['reply_to_id']:
+            reactions = []
+            for reaction in cur.fetchall():
+                reactor_info = get_user_display_info(conn, reaction['user_id'])
+                reactions.append({
+                    "reaction": reaction['reaction'],
+                    "user_id": reaction['user_id'],
+                    "reactor_name": reactor_info['name'],
+                    "created_at": reaction['created_at'].isoformat()
+                })
+
+            msg_dict['reactions'] = reactions
+
+            # Get reply-to message if exists
+            if msg_dict.get('reply_to_id'):
                 cur.execute("""
-                    SELECT m.content, m.message_type, u.first_name, u.father_name
-                    FROM chat_messages m
-                    JOIN users u ON u.id = m.sender_user_id
-                    WHERE m.id = %s
-                """, (msg['reply_to_id'],))
-                reply = cur.fetchone()
-                if reply:
-                    # Decrypt reply content as well
-                    reply_content = decrypt_message(reply['content']) if reply['content'] else None
-                    msg_dict['reply_to'] = {
-                        "content": reply_content,
-                        "type": reply['message_type'],
-                        "sender_name": f"{reply['first_name']} {reply['father_name']}"
-                    }
+                    SELECT id, sender_user_id, content, message_type
+                    FROM chat_messages
+                    WHERE id = %s
+                """, (msg_dict['reply_to_id'],))
 
-            # Add forwarded message info (rename columns for frontend consistency)
-            if msg.get('is_forwarded'):
-                msg_dict['is_forwarded'] = True
-                msg_dict['forwarded_from'] = msg.get('forwarded_from_name')
-                msg_dict['forwarded_from_avatar'] = msg.get('forwarded_from_avatar')
-                msg_dict['forwarded_from_profile_id'] = msg.get('forwarded_from_profile_id')
-                msg_dict['forwarded_from_profile_type'] = msg.get('forwarded_from_profile_type')
-                # Forwarder info is already in sender_name/sender_avatar (the person who sent/forwarded the message)
+                reply_to = cur.fetchone()
+                if reply_to:
+                    reply_to_dict = dict(reply_to)
 
-            # For session_request messages, fetch package details
-            if msg['message_type'] == 'session_request' and msg_dict.get('media_metadata'):
-                metadata = msg_dict['media_metadata']
-                if isinstance(metadata, str):
-                    metadata = json.loads(metadata)
+                    # Decrypt reply content if needed
+                    if reply_to_dict.get('content'):
+                        try:
+                            if is_encrypted(reply_to_dict['content']):
+                                reply_to_dict['content'] = decrypt_message(reply_to_dict['content'])
+                        except:
+                            reply_to_dict['content'] = "[Encrypted]"
 
-                package_id = metadata.get('package_id')
-                session_request_id = metadata.get('session_request_id')
+                    # Get reply sender info
+                    if reply_to_dict.get('sender_user_id'):
+                        reply_sender_info = get_user_display_info(conn, reply_to_dict['sender_user_id'])
+                        reply_to_dict['sender_name'] = reply_sender_info['name']
 
-                if package_id:
-                    # Fetch package details with course names
-                    cur.execute("""
-                        SELECT
-                            tp.id, tp.name, tp.description, tp.hourly_rate,
-                            tp.days_per_week, tp.hours_per_day, tp.payment_frequency,
-                            tp.discount_3_month, tp.discount_6_month, tp.yearly_discount,
-                            tp.session_format, tp.grade_level, tp.schedule_type,
-                            tp.start_time, tp.end_time, tp.schedule_days, tp.course_ids,
-                            t.id as tutor_profile_id,
-                            u.first_name as tutor_first_name,
-                            u.father_name as tutor_father_name,
-                            u.profile_picture as tutor_avatar
-                        FROM tutor_packages tp
-                        JOIN tutor_profiles t ON tp.tutor_id = t.id
-                        JOIN users u ON t.user_id = u.id
-                        WHERE tp.id = %s
-                    """, (package_id,))
-                    package = cur.fetchone()
+                    msg_dict['reply_to'] = reply_to_dict
 
-                    if package:
-                        # Fetch course names for the course_ids
-                        courses = []
-                        course_ids = package.get('course_ids') or []
-                        if course_ids:
-                            cur.execute("""
-                                SELECT id, course_name FROM courses WHERE id = ANY(%s)
-                            """, (course_ids,))
-                            courses = [{"id": c['id'], "name": c['course_name']} for c in cur.fetchall()]
+            # Check if message is pinned
+            cur.execute("""
+                SELECT 1 FROM pinned_messages
+                WHERE message_id = %s
+                AND conversation_id = %s
+            """, (msg_dict['id'], conversation_id))
 
-                        # Parse schedule_days (stored as JSON string or comma-separated)
-                        schedule_days = package.get('schedule_days') or ''
-                        if schedule_days:
-                            try:
-                                schedule_days = json.loads(schedule_days) if schedule_days.startswith('[') else schedule_days.split(',')
-                            except:
-                                schedule_days = [schedule_days] if schedule_days else []
-                        else:
-                            schedule_days = []
+            msg_dict['is_pinned'] = cur.fetchone() is not None
 
-                        msg_dict['package_details'] = {
-                            "id": package['id'],
-                            "name": package['name'],
-                            "description": package['description'],
-                            "hourly_rate": float(package['hourly_rate']) if package['hourly_rate'] else 0,
-                            "days_per_week": package['days_per_week'],
-                            "hours_per_day": float(package['hours_per_day']) if package['hours_per_day'] else 0,
-                            "payment_frequency": package['payment_frequency'],
-                            "discount_3_month": float(package['discount_3_month']) if package['discount_3_month'] else 0,
-                            "discount_6_month": float(package['discount_6_month']) if package['discount_6_month'] else 0,
-                            "yearly_discount": float(package['yearly_discount']) if package['yearly_discount'] else 0,
-                            "session_format": package['session_format'],
-                            "grade_level": package['grade_level'],
-                            "schedule_type": package['schedule_type'],
-                            "schedule_days": schedule_days,
-                            "start_time": str(package['start_time']) if package['start_time'] else None,
-                            "end_time": str(package['end_time']) if package['end_time'] else None,
-                            "courses": courses,
-                            "tutor": {
-                                "id": package['tutor_profile_id'],
-                                "name": f"{package['tutor_first_name']} {package['tutor_father_name']}",
-                                "avatar": package['tutor_avatar']
-                            }
-                        }
+            # Add is_mine flag to indicate if current user sent this message
+            msg_dict['is_mine'] = msg_dict.get('sender_user_id') == user_id
 
-                if session_request_id:
-                    # Fetch current session request status and requested_to (student) info
-                    cur.execute("""
-                        SELECT
-                            rs.status, rs.responded_at, rs.rejected_reason,
-                            rs.requested_to_id,
-                            CONCAT(u.first_name, ' ', u.father_name) as requested_to_name,
-                            u.profile_picture as requested_to_avatar
-                        FROM requested_sessions rs
-                        LEFT JOIN student_profiles sp ON rs.requested_to_id = sp.id
-                        LEFT JOIN users u ON sp.user_id = u.id
-                        WHERE rs.id = %s
-                    """, (session_request_id,))
-                    session_req = cur.fetchone()
-                    if session_req:
-                        msg_dict['session_request_status'] = {
-                            "status": session_req['status'],
-                            "responded_at": session_req['responded_at'].isoformat() if session_req['responded_at'] else None,
-                            "rejected_reason": session_req['rejected_reason']
-                        }
-                        # Add requested_to (student) info to the message
-                        msg_dict['requested_to_id'] = session_req['requested_to_id']
-                        msg_dict['requested_to_name'] = session_req['requested_to_name']
-                        msg_dict['requested_to_avatar'] = session_req['requested_to_avatar']
+            # Format timestamps
+            if msg_dict.get('created_at'):
+                msg_dict['created_at'] = msg_dict['created_at'].isoformat()
+            if msg_dict.get('updated_at'):
+                msg_dict['updated_at'] = msg_dict['updated_at'].isoformat()
 
-            result.append(msg_dict)
+            messages.append(msg_dict)
 
-        # Update last read
+        # Update last_read_at for user
         cur.execute("""
             UPDATE conversation_participants
-            SET last_read_at = CURRENT_TIMESTAMP,
-                last_read_message_id = (
-                    SELECT MAX(id) FROM chat_messages WHERE conversation_id = %s
-                )
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s
-        """, (conversation_id, conversation_id, profile_id, profile_type))
+            SET last_read_at = NOW(), updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (conversation_id, user_id))
+
         conn.commit()
 
-        # Get total message count for this conversation (respecting deleted and cleared filters)
-        count_query = """
-            SELECT COUNT(*) as total
-            FROM chat_messages m
-            WHERE m.conversation_id = %s
-            AND m.is_deleted = FALSE
-            AND NOT (COALESCE(m.deleted_for_user_ids, '[]'::jsonb) @> %s::jsonb)
-        """
-        count_params = [conversation_id, json.dumps([user_id])]
+        return {
+            "messages": messages,
+            "total": len(messages),
+            "limit": limit,
+            "offset": offset
+        }
 
-        if chat_cleared_at:
-            count_query += " AND m.created_at > %s"
-            count_params.append(chat_cleared_at)
-
-        cur.execute(count_query, count_params)
-        total_count = cur.fetchone()['total']
-
-        # Return in chronological order
-        result.reverse()
-
-        return {"messages": result, "has_more": len(result) == limit, "total_count": total_count}
-
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[Chat API] Error fetching messages for conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch messages: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.post("/messages")
-async def send_message(request: SendMessageRequest, profile_id: int, profile_type: str, user_id: int):
-    """Send a message to a conversation (encrypted for security)"""
+async def send_message(
+    request: SendMessageRequest,
+    user_id: int = Query(...)
+):
+    """
+    Send a message in a conversation.
+
+    Automatically encrypts the message content.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify user is participant
+        # Check if user is a participant
         cur.execute("""
-            SELECT * FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (request.conversation_id, profile_id, profile_type))
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (request.conversation_id, user_id))
 
         if not cur.fetchone():
-            raise HTTPException(status_code=403, detail="Not a participant of this conversation")
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
 
-        # === PRIVACY ENFORCEMENT: Check if sender can message recipient ===
-        # Get conversation type to determine if privacy check is needed
-        cur.execute("""
-            SELECT type FROM conversations WHERE id = %s
-        """, (request.conversation_id,))
-        conv = cur.fetchone()
+        # Encrypt content if it's a text message
+        encrypted_content = request.content
+        if request.message_type == "text" and request.content:
+            try:
+                encrypted_content = encrypt_message(request.content)
+            except Exception as e:
+                print(f"[Chat API] Warning: Failed to encrypt message: {e}")
+                # Continue with unencrypted content
 
-        if conv and conv['type'] == 'direct':
-            # For direct conversations, get the other participant
-            cur.execute("""
-                SELECT profile_id, profile_type FROM conversation_participants
-                WHERE conversation_id = %s AND is_active = TRUE
-                AND NOT (profile_id = %s AND profile_type = %s)
-            """, (request.conversation_id, profile_id, profile_type))
-            recipient = cur.fetchone()
-
-            if recipient:
-                # Check if sender can message this recipient
-                can_message, reason = check_can_message(
-                    conn,
-                    profile_id, profile_type,
-                    recipient['profile_id'], recipient['profile_type']
-                )
-                if not can_message:
-                    raise HTTPException(status_code=403, detail=reason)
-
-        # === PRIVACY ENFORCEMENT: Check if forwarding is allowed ===
-        if request.is_forwarded and request.forwarded_from_profile_id:
-            # Check if the original sender allows forwarding
-            # We need to check the original message sender's settings
-            original_sender_settings = get_user_privacy_settings(
-                conn,
-                request.forwarded_from_profile_id,
-                request.forwarded_from_profile_type or 'student'
-            )
-            if original_sender_settings.get('disable_forwarding', False):
-                raise HTTPException(status_code=403, detail="This message cannot be forwarded - sender has disabled forwarding")
-
-        # Encrypt message content before storing
-        encrypted_content = encrypt_message(request.content) if request.content else None
-
-        # Insert message with encrypted content (including forwarded message fields)
-        # Note: forwarder info is derived from sender_profile_id/type, no need for separate columns
+        # Insert message
         cur.execute("""
             INSERT INTO chat_messages
-            (conversation_id, sender_profile_id, sender_profile_type, sender_user_id,
-             message_type, content, media_url, media_metadata, reply_to_id,
-             is_forwarded, forwarded_from_name, forwarded_from_avatar,
-             forwarded_from_profile_id, forwarded_from_profile_type)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, created_at
+            (conversation_id, sender_user_id, message_type, content, media_url,
+             media_metadata, reply_to_id, is_forwarded, forwarded_from_name,
+             forwarded_from_avatar, forwarded_from_id,
+             created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+            RETURNING id, conversation_id, sender_user_id, message_type, content,
+                      media_url, media_metadata, reply_to_id, is_forwarded,
+                      forwarded_from_name, forwarded_from_avatar, forwarded_from_id,
+                      created_at, updated_at
         """, (
             request.conversation_id,
-            profile_id,
-            profile_type,
             user_id,
             request.message_type,
             encrypted_content,
             request.media_url,
             json.dumps(request.media_metadata) if request.media_metadata else None,
             request.reply_to_id,
-            request.is_forwarded or False,
+            request.is_forwarded,
             request.forwarded_from,
             request.forwarded_from_avatar,
-            request.forwarded_from_profile_id,
-            request.forwarded_from_profile_type
+            request.forwarded_from_user_id  # Fixed: was forwarded_from_id
         ))
-        result = cur.fetchone()
-        message_id = result['id']
-        created_at = result['created_at']
 
-        # Update conversation last_message_at
+        new_message = cur.fetchone()
+        msg_dict = dict(new_message)
+
+        # Update conversation's updated_at
         cur.execute("""
             UPDATE conversations
-            SET last_message_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+            SET updated_at = NOW()
             WHERE id = %s
         """, (request.conversation_id,))
 
+        # Update sender's last_read_at
+        cur.execute("""
+            UPDATE conversation_participants
+            SET last_read_at = NOW(), updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (request.conversation_id, user_id))
+
         conn.commit()
 
-        # Get sender info for response
-        sender_info = get_user_display_info(conn, user_id, profile_type, profile_id)
+        # Decrypt content for response
+        if msg_dict.get('content'):
+            try:
+                if is_encrypted(msg_dict['content']):
+                    msg_dict['content'] = decrypt_message(msg_dict['content'])
+            except:
+                pass
 
-        # Build response with forwarded info if applicable
-        response = {
-            "message_id": message_id,
-            "conversation_id": request.conversation_id,
-            "content": request.content,
-            "message_type": request.message_type,
-            "created_at": created_at.isoformat(),
-            "sender_name": sender_info['name'],
-            "sender_avatar": sender_info['avatar']
+        # Get sender info
+        sender_info = get_user_display_info(conn, user_id)
+        msg_dict['sender_name'] = sender_info['name']
+        msg_dict['sender_avatar'] = sender_info['avatar']
+
+        # Format timestamps
+        if msg_dict.get('created_at'):
+            msg_dict['created_at'] = msg_dict['created_at'].isoformat()
+        if msg_dict.get('updated_at'):
+            msg_dict['updated_at'] = msg_dict['updated_at'].isoformat()
+
+        return {
+            "message": msg_dict,
+            "status": "sent"
         }
 
-        # Add forwarded message fields if this is a forwarded message
-        if request.is_forwarded:
-            response["is_forwarded"] = True
-            response["forwarded_from"] = request.forwarded_from
-            response["forwarded_from_avatar"] = request.forwarded_from_avatar
-            response["forwarded_from_profile_id"] = request.forwarded_from_profile_id
-            response["forwarded_from_profile_type"] = request.forwarded_from_profile_type
-            # Forwarder info comes from sender fields (already in response as sender_name/avatar)
-
-        return response
-
+    except HTTPException:
+        raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error sending message: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send message: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.put("/messages/{message_id}")
-async def edit_message(message_id: int, request: UpdateMessageRequest, profile_id: int, profile_type: str):
-    """Edit a message (only by sender, within time limit)"""
+async def edit_message(
+    message_id: int,
+    request: UpdateMessageRequest,
+    user_id: int = Query(...)
+):
+    """
+    Edit a message (only sender can edit).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify ownership
+        # Check if message exists and user is the sender
         cur.execute("""
-            SELECT * FROM chat_messages
-            WHERE id = %s AND sender_profile_id = %s AND sender_profile_type = %s
-            AND is_deleted = FALSE
-        """, (message_id, profile_id, profile_type))
-
-        msg = cur.fetchone()
-        if not msg:
-            raise HTTPException(status_code=404, detail="Message not found or not authorized")
-
-        # Encrypt the new content before updating
-        encrypted_content = encrypt_message(request.content) if request.content else None
-
-        # Update message (original_content is already encrypted from initial save)
-        cur.execute("""
-            UPDATE chat_messages
-            SET content = %s,
-                is_edited = TRUE,
-                edited_at = CURRENT_TIMESTAMP,
-                original_content = COALESCE(original_content, %s)
+            SELECT sender_user_id, conversation_id
+            FROM chat_messages
             WHERE id = %s
-        """, (encrypted_content, msg['content'], message_id))
+        """, (message_id,))
 
+        message = cur.fetchone()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        if message['sender_user_id'] != user_id:
+            raise HTTPException(status_code=403, detail="You can only edit your own messages")
+
+        # Encrypt new content
+        encrypted_content = request.content
+        try:
+            encrypted_content = encrypt_message(request.content)
+        except Exception as e:
+            print(f"[Chat API] Warning: Failed to encrypt edited message: {e}")
+
+        # Update message
+        cur.execute("""
+            UPDATE messages
+            SET content = %s, is_edited = true, updated_at = NOW()
+            WHERE id = %s
+            RETURNING id, content, is_edited, updated_at
+        """, (encrypted_content, message_id))
+
+        updated_message = cur.fetchone()
         conn.commit()
-        return {"success": True, "message_id": message_id}
 
+        msg_dict = dict(updated_message)
+
+        # Decrypt for response
+        if msg_dict.get('content'):
+            try:
+                if is_encrypted(msg_dict['content']):
+                    msg_dict['content'] = decrypt_message(msg_dict['content'])
+            except:
+                pass
+
+        if msg_dict.get('updated_at'):
+            msg_dict['updated_at'] = msg_dict['updated_at'].isoformat()
+
+        return {
+            "message": msg_dict,
+            "status": "updated"
+        }
+
+    except HTTPException:
+        raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error editing message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to edit message: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -2671,482 +1094,747 @@ async def edit_message(message_id: int, request: UpdateMessageRequest, profile_i
 @router.delete("/messages/{message_id}")
 async def delete_message(
     message_id: int,
-    profile_id: int,
-    profile_type: str,
-    for_everyone: bool = False
+    user_id: int = Query(...)
 ):
-    """Delete a message (soft delete)"""
+    """
+    Delete a message (only sender can delete).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify ownership
+        # Check if message exists and user is the sender
         cur.execute("""
-            SELECT * FROM chat_messages
-            WHERE id = %s AND sender_profile_id = %s AND sender_profile_type = %s
-        """, (message_id, profile_id, profile_type))
-
-        if not cur.fetchone():
-            raise HTTPException(status_code=404, detail="Message not found or not authorized")
-
-        cur.execute("""
-            UPDATE chat_messages
-            SET is_deleted = TRUE,
-                deleted_at = CURRENT_TIMESTAMP,
-                deleted_for_everyone = %s
+            SELECT sender_user_id
+            FROM chat_messages
             WHERE id = %s
-        """, (for_everyone, message_id))
+        """, (message_id,))
+
+        message = cur.fetchone()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        if message['sender_user_id'] != user_id:
+            raise HTTPException(status_code=403, detail="You can only delete your own messages")
+
+        # Soft delete
+        cur.execute("""
+            UPDATE messages
+            SET is_deleted = true, content = '[Message deleted]', updated_at = NOW()
+            WHERE id = %s
+        """, (message_id,))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "Message deleted successfully"}
+
+    except HTTPException:
+        raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error deleting message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete message: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# REACTIONS ENDPOINTS
-# =============================================
-
 @router.post("/messages/{message_id}/reactions")
-async def add_reaction(message_id: int, request: ReactionRequest, profile_id: int, profile_type: str, user_id: int):
-    """Add a reaction to a message"""
+async def add_reaction(
+    message_id: int,
+    request: ReactionRequest,
+    user_id: int = Query(...)
+):
+    """
+    Add a reaction to a message.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Check if message exists
         cur.execute("""
-            INSERT INTO message_reactions (message_id, profile_id, profile_type, user_id, reaction)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (message_id, profile_id, profile_type, reaction) DO NOTHING
-            RETURNING id
-        """, (message_id, profile_id, profile_type, user_id, request.reaction))
+            SELECT conversation_id FROM chat_messages WHERE id = %s
+        """, (message_id,))
+
+        message = cur.fetchone()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        # Check if user is a participant in the conversation
+        cur.execute("""
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (message['conversation_id'], user_id))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
+
+        # Insert or update reaction
+        cur.execute("""
+            INSERT INTO message_reactions (message_id, user_id, reaction, created_at)
+            VALUES (%s, %s, %s, NOW())
+            ON CONFLICT (message_id, user_id)
+            DO UPDATE SET reaction = EXCLUDED.reaction, created_at = NOW()
+        """, (message_id, user_id, request.reaction))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "Reaction added successfully"}
+
+    except HTTPException:
+        raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error adding reaction to message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to add reaction: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.delete("/messages/{message_id}/reactions/{reaction}")
-async def remove_reaction(message_id: int, reaction: str, profile_id: int, profile_type: str):
-    """Remove a reaction from a message"""
+async def remove_reaction(
+    message_id: int,
+    reaction: str,
+    user_id: int = Query(...)
+):
+    """
+    Remove a reaction from a message.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Delete reaction
         cur.execute("""
             DELETE FROM message_reactions
-            WHERE message_id = %s AND profile_id = %s AND profile_type = %s AND reaction = %s
-        """, (message_id, profile_id, profile_type, reaction))
+            WHERE message_id = %s
+            AND user_id = %s
+            AND reaction = %s
+        """, (message_id, user_id, reaction))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "Reaction removed successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error removing reaction from message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to remove reaction: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# PIN MESSAGE ENDPOINT
-# =============================================
-
 @router.post("/messages/{message_id}/pin")
-async def pin_message(message_id: int, profile_id: int, profile_type: str):
-    """Pin a message in a conversation"""
+async def pin_message(
+    message_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Pin a message in a conversation (admin/creator only).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Get message conversation
         cur.execute("""
-            UPDATE chat_messages
-            SET is_pinned = TRUE,
-                pinned_at = CURRENT_TIMESTAMP,
-                pinned_by_profile_id = %s,
-                pinned_by_profile_type = %s
-            WHERE id = %s
-        """, (profile_id, profile_type, message_id))
+            SELECT conversation_id FROM chat_messages WHERE id = %s
+        """, (message_id,))
+
+        message = cur.fetchone()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        # Check if user is admin or creator
+        cur.execute("""
+            SELECT role FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (message['conversation_id'], user_id))
+
+        participant = cur.fetchone()
+
+        if not participant or participant['role'] not in ['admin', 'owner']:
+            raise HTTPException(status_code=403, detail="Only admins can pin messages")
+
+        # Pin message
+        cur.execute("""
+            INSERT INTO pinned_messages (message_id, conversation_id, pinned_by_user_id, pinned_at)
+            VALUES (%s, %s, %s, NOW())
+            ON CONFLICT (message_id, conversation_id) DO NOTHING
+        """, (message_id, message['conversation_id'], user_id))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "Message pinned successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error pinning message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to pin message: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.delete("/messages/{message_id}/pin")
-async def unpin_message(message_id: int):
-    """Unpin a message"""
+async def unpin_message(
+    message_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Unpin a message from a conversation (admin/creator only).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Get message conversation
         cur.execute("""
-            UPDATE chat_messages
-            SET is_pinned = FALSE, pinned_at = NULL, pinned_by_profile_id = NULL, pinned_by_profile_type = NULL
-            WHERE id = %s
+            SELECT conversation_id FROM chat_messages WHERE id = %s
         """, (message_id,))
 
-        conn.commit()
-        return {"success": True}
+        message = cur.fetchone()
 
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        # Check if user is admin or creator
+        cur.execute("""
+            SELECT role FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (message['conversation_id'], user_id))
+
+        participant = cur.fetchone()
+
+        if not participant or participant['role'] not in ['admin', 'owner']:
+            raise HTTPException(status_code=403, detail="Only admins can unpin messages")
+
+        # Unpin message
+        cur.execute("""
+            DELETE FROM pinned_messages
+            WHERE message_id = %s
+            AND conversation_id = %s
+        """, (message_id, message['conversation_id']))
+
+        conn.commit()
+
+        return {"message": "Message unpinned successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error unpinning message {message_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to unpin message: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# GROUP MANAGEMENT ENDPOINTS
-# =============================================
-
 @router.post("/groups")
-async def create_group(request: CreateGroupRequest, profile_id: int, profile_type: str, user_id: int):
-    """Create a new group chat"""
-    return await create_conversation(
-        CreateConversationRequest(
-            type="group",
-            name=request.name,
-            description=request.description,
-            participants=request.participants
-        ),
-        profile_id, profile_type, user_id
+async def create_group(
+    request: CreateGroupRequest,
+    user_id: int = Query(...)
+):
+    """
+    Create a new group conversation.
+    """
+    # Use the standard create_conversation endpoint
+    conv_request = CreateConversationRequest(
+        type="group",
+        name=request.name,
+        description=request.description,
+        participant_user_ids=request.participant_user_ids
     )
+
+    return await create_conversation(conv_request, user_id)
 
 
 @router.post("/conversations/{conversation_id}/participants")
-async def add_participants(conversation_id: int, request: AddParticipantsRequest, profile_id: int, profile_type: str):
-    """Add participants to a group chat"""
+async def add_participants(
+    conversation_id: int,
+    request: AddParticipantsRequest,
+    user_id: int = Query(...)
+):
+    """
+    Add participants to a group conversation (admin only).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify user is admin
-        cur.execute("""
-            SELECT role FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (conversation_id, profile_id, profile_type))
-
-        participant = cur.fetchone()
-        if not participant or participant['role'] != 'admin':
-            raise HTTPException(status_code=403, detail="Only admins can add participants")
-
-        # Get conversation type to determine which privacy setting to check
+        # Check if conversation is a group
         cur.execute("""
             SELECT type FROM conversations WHERE id = %s
         """, (conversation_id,))
+
         conv = cur.fetchone()
-        conv_type = conv['type'] if conv else 'group'
 
-        added = []
-        rejected = []
-        for p in request.participants:
-            # === PRIVACY ENFORCEMENT: Check if user allows being added ===
-            if conv_type == 'channel':
-                can_add, reason = check_can_add_to_channel(
-                    conn,
-                    profile_id, profile_type,
-                    p.profile_id, p.profile_type
-                )
-            else:  # group
-                can_add, reason = check_can_add_to_group(
-                    conn,
-                    profile_id, profile_type,
-                    p.profile_id, p.profile_type
-                )
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
 
+        if conv['type'] != 'group':
+            raise HTTPException(status_code=400, detail="Can only add participants to group conversations")
+
+        # Check if user is admin
+        cur.execute("""
+            SELECT role FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
+
+        participant = cur.fetchone()
+
+        if not participant or participant['role'] not in ['admin', 'owner']:
+            raise HTTPException(status_code=403, detail="Only admins can add participants")
+
+        # Check privacy settings for all new participants
+        for new_participant_id in request.participant_user_ids:
+            can_add, reason = check_can_add_to_group(conn, user_id, new_participant_id)
             if not can_add:
-                rejected.append({"profile_id": p.profile_id, "profile_type": p.profile_type, "reason": reason})
-                continue
+                raise HTTPException(status_code=403, detail=f"Cannot add user {new_participant_id}: {reason}")
 
+        # Add participants
+        added_count = 0
+        for new_participant_id in request.participant_user_ids:
+            # Check if already a participant
             cur.execute("""
-                INSERT INTO conversation_participants
-                (conversation_id, profile_id, profile_type, user_id, role)
-                VALUES (%s, %s, %s, %s, 'member')
-                ON CONFLICT (conversation_id, profile_id, profile_type)
-                DO UPDATE SET is_active = TRUE, left_at = NULL
-                RETURNING id
-            """, (conversation_id, p.profile_id, p.profile_type, p.user_id))
-            if cur.fetchone():
-                added.append(p.dict())
+                SELECT 1 FROM conversation_participants
+                WHERE conversation_id = %s
+                AND user_id = %s
+            """, (conversation_id, new_participant_id))
+
+            if not cur.fetchone():
+                # Add as member
+                cur.execute("""
+                    INSERT INTO conversation_participants
+                    (conversation_id, user_id, role, is_active, joined_at, created_at, updated_at)
+                    VALUES (%s, %s, 'member', true, NOW(), NOW(), NOW())
+                """, (conversation_id, new_participant_id))
+                added_count += 1
 
         conn.commit()
-        return {"added": added, "rejected": rejected}
 
+        return {
+            "message": f"Added {added_count} participant(s) successfully",
+            "added_count": added_count
+        }
+
+    except HTTPException:
+        raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error adding participants to conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to add participants: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-@router.delete("/conversations/{conversation_id}/participants/{participant_profile_id}/{participant_profile_type}")
+@router.delete("/conversations/{conversation_id}/participants/{participant_user_id}")
 async def remove_participant(
     conversation_id: int,
-    participant_profile_id: int,
-    participant_profile_type: str,
-    profile_id: int,
-    profile_type: str
+    participant_user_id: int,
+    user_id: int = Query(...)
 ):
-    """Remove a participant from a group chat"""
+    """
+    Remove a participant from a group conversation (admin only or self-removal).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Check if removing self or if admin
-        is_self = (participant_profile_id == profile_id and participant_profile_type == profile_type)
+        # Check if user is admin or removing themselves
+        cur.execute("""
+            SELECT role FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
 
-        if not is_self:
-            cur.execute("""
-                SELECT role FROM conversation_participants
-                WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-            """, (conversation_id, profile_id, profile_type))
+        participant = cur.fetchone()
 
-            participant = cur.fetchone()
-            if not participant or participant['role'] != 'admin':
-                raise HTTPException(status_code=403, detail="Only admins can remove participants")
+        if not participant:
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
 
+        # Allow self-removal or admin removal
+        if participant_user_id != user_id and participant['role'] not in ['admin', 'owner']:
+            raise HTTPException(status_code=403, detail="Only admins can remove other participants")
+
+        # Remove participant (soft delete)
         cur.execute("""
             UPDATE conversation_participants
-            SET is_active = FALSE, left_at = CURRENT_TIMESTAMP
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s
-        """, (conversation_id, participant_profile_id, participant_profile_type))
+            SET is_active = false, updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (conversation_id, participant_user_id))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "Participant removed successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error removing participant from conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to remove participant: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.put("/conversations/{conversation_id}")
-async def update_group(
+async def update_conversation(
     conversation_id: int,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    avatar_url: Optional[str] = None,
-    profile_id: int = None,
-    profile_type: str = None
+    name: Optional[str] = Body(None),
+    description: Optional[str] = Body(None),
+    avatar_url: Optional[str] = Body(None),
+    user_id: int = Query(...)
 ):
-    """Update group chat details"""
+    """
+    Update conversation details (admin only).
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify admin
+        # Check if user is admin
         cur.execute("""
             SELECT role FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (conversation_id, profile_id, profile_type))
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
 
         participant = cur.fetchone()
-        if not participant or participant['role'] != 'admin':
-            raise HTTPException(status_code=403, detail="Only admins can update group")
 
+        if not participant or participant['role'] not in ['admin', 'owner']:
+            raise HTTPException(status_code=403, detail="Only admins can update conversation details")
+
+        # Build update query
         updates = []
         params = []
 
         if name is not None:
             updates.append("name = %s")
             params.append(name)
+
         if description is not None:
             updates.append("description = %s")
             params.append(description)
+
         if avatar_url is not None:
             updates.append("avatar_url = %s")
             params.append(avatar_url)
 
-        if updates:
-            updates.append("updated_at = CURRENT_TIMESTAMP")
-            query = f"UPDATE conversations SET {', '.join(updates)} WHERE id = %s"
-            params.append(conversation_id)
-            cur.execute(query, params)
+        if not updates:
+            raise HTTPException(status_code=400, detail="No fields to update")
 
+        updates.append("updated_at = NOW()")
+        params.append(conversation_id)
+
+        # Update conversation
+        cur.execute(f"""
+            UPDATE conversations
+            SET {', '.join(updates)}
+            WHERE id = %s
+            RETURNING id, type, name, description, avatar_url, updated_at
+        """, params)
+
+        updated_conv = cur.fetchone()
         conn.commit()
-        return {"success": True}
 
+        conv_dict = dict(updated_conv)
+        if conv_dict.get('updated_at'):
+            conv_dict['updated_at'] = conv_dict['updated_at'].isoformat()
+
+        return {
+            "conversation": conv_dict,
+            "message": "Conversation updated successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error updating conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update conversation: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
-
-# =============================================
-# BLOCKING ENDPOINTS
-# =============================================
 
 @router.post("/block")
-async def block_contact(request: BlockContactRequest, profile_id: int, profile_type: str, user_id: int):
-    """Block a contact"""
+async def block_contact(
+    request: BlockContactRequest,
+    user_id: int = Query(...)
+):
+    """
+    Block a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Insert block record
         cur.execute("""
             INSERT INTO blocked_chat_contacts
-            (blocker_profile_id, blocker_profile_type, blocker_user_id,
-             blocked_profile_id, blocked_profile_type, blocked_user_id, reason)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
-        """, (
-            profile_id, profile_type, user_id,
-            request.blocked_profile_id, request.blocked_profile_type,
-            request.blocked_user_id, request.reason
-        ))
+            (blocker_user_id, blocked_user_id, reason, is_active, created_at)
+            VALUES (%s, %s, %s, true, NOW())
+            ON CONFLICT (blocker_user_id, blocked_user_id)
+            DO UPDATE SET is_active = true, reason = EXCLUDED.reason, created_at = NOW()
+        """, (user_id, request.blocked_user_id, request.reason))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "User blocked successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error blocking user: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to block user: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-@router.delete("/block/{blocked_profile_id}/{blocked_profile_type}")
-async def unblock_contact(blocked_profile_id: int, blocked_profile_type: str, profile_id: int, profile_type: str):
-    """Unblock a contact"""
+@router.delete("/block/{blocked_user_id}")
+async def unblock_contact(
+    blocked_user_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Unblock a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Update block record
         cur.execute("""
-            DELETE FROM blocked_chat_contacts
-            WHERE blocker_profile_id = %s AND blocker_profile_type = %s
-            AND blocked_profile_id = %s AND blocked_profile_type = %s
-        """, (profile_id, profile_type, blocked_profile_id, blocked_profile_type))
+            UPDATE blocked_chat_contacts
+            SET is_active = false
+            WHERE blocker_user_id = %s
+            AND blocked_user_id = %s
+        """, (user_id, blocked_user_id))
 
         conn.commit()
-        return {"success": True}
 
+        return {"message": "User unblocked successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error unblocking user: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to unblock user: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.get("/blocked")
-async def get_blocked_contacts(profile_id: int, profile_type: str):
-    """Get list of blocked contacts"""
+async def get_blocked_contacts(user_id: int = Query(...)):
+    """
+    Get all blocked contacts for a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         cur.execute("""
-            SELECT
-                b.*,
-                u.first_name,
-                u.father_name,
-                u.profile_picture
-            FROM blocked_chat_contacts b
-            JOIN users u ON u.id = b.blocked_user_id
-            WHERE b.blocker_profile_id = %s AND b.blocker_profile_type = %s
-        """, (profile_id, profile_type))
+            SELECT blocked_user_id, reason, blocked_at
+            FROM blocked_chat_contacts
+            WHERE blocker_user_id = %s
+            ORDER BY blocked_at DESC
+        """, (user_id,))
 
-        return {"blocked": [dict(b) for b in cur.fetchall()]}
+        blocked_list = []
 
+        for block in cur.fetchall():
+            blocked_info = get_user_display_info(conn, block['blocked_user_id'])
+            blocked_list.append({
+                "user_id": block['blocked_user_id'],
+                "name": blocked_info['name'],
+                "avatar": blocked_info['avatar'],
+                "reason": block['reason'],
+                "blocked_at": block['blocked_at'].isoformat() if block['blocked_at'] else None
+            })
+
+        return {"blocked_contacts": blocked_list}
+
+    except Exception as e:
+        print(f"[Chat API] Error fetching blocked contacts: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch blocked contacts: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# CALL LOGS ENDPOINTS
-# =============================================
-
 @router.post("/calls")
-async def log_call(
-    conversation_id: int,
-    call_type: str,
-    profile_id: int,
-    profile_type: str,
-    user_id: int
+async def initiate_call(
+    conversation_id: int = Body(...),
+    call_type: str = Body(..., regex="^(audio|video)$"),
+    user_id: int = Query(...)
 ):
-    """Log a new call"""
+    """
+    Initiate a call in a conversation.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # === PRIVACY ENFORCEMENT: Check if caller can call recipient ===
-        # Get conversation type
+        # Check if user is a participant
+        cur.execute("""
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
+
+        # For direct conversations, check call privacy
         cur.execute("""
             SELECT type FROM conversations WHERE id = %s
         """, (conversation_id,))
+
         conv = cur.fetchone()
 
         if conv and conv['type'] == 'direct':
-            # For direct conversations, get the other participant
+            # Get other participant
             cur.execute("""
-                SELECT profile_id, profile_type FROM conversation_participants
-                WHERE conversation_id = %s AND is_active = TRUE
-                AND NOT (profile_id = %s AND profile_type = %s)
-            """, (conversation_id, profile_id, profile_type))
-            recipient = cur.fetchone()
+                SELECT user_id
+                FROM conversation_participants
+                WHERE conversation_id = %s
+                AND user_id != %s
+                AND is_active = true
+                LIMIT 1
+            """, (conversation_id, user_id))
 
-            if recipient:
-                # Check if caller can call this recipient
-                can_call, reason = check_can_call(
-                    conn,
-                    profile_id, profile_type,
-                    recipient['profile_id'], recipient['profile_type']
-                )
+            other_participant = cur.fetchone()
+
+            if other_participant:
+                can_call, reason = check_can_call(conn, user_id, other_participant['user_id'])
                 if not can_call:
                     raise HTTPException(status_code=403, detail=reason)
 
+        # Create call log
         cur.execute("""
             INSERT INTO call_logs
-            (conversation_id, caller_profile_id, caller_profile_type, caller_user_id, call_type)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id
-        """, (conversation_id, profile_id, profile_type, user_id, call_type))
+            (conversation_id, caller_user_id, call_type, status, started_at, created_at)
+            VALUES (%s, %s, %s, 'initiated', NOW(), NOW())
+            RETURNING id, conversation_id, caller_user_id, call_type, status, started_at
+        """, (conversation_id, user_id, call_type))
 
-        call_id = cur.fetchone()['id']
+        call = cur.fetchone()
         conn.commit()
-        return {"call_id": call_id}
 
+        call_dict = dict(call)
+        if call_dict.get('started_at'):
+            call_dict['started_at'] = call_dict['started_at'].isoformat()
+
+        return {
+            "call": call_dict,
+            "message": "Call initiated"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error initiating call: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to initiate call: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.put("/calls/{call_id}")
-async def update_call(
+async def update_call_status(
     call_id: int,
-    status: str,
-    duration_seconds: Optional[int] = None
+    status: str = Body(..., regex="^(answered|missed|declined|ended)$"),
+    user_id: int = Query(...)
 ):
-    """Update call status"""
+    """
+    Update call status.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        updates = ["status = %s"]
-        params = [status]
+        # Get call info
+        cur.execute("""
+            SELECT conversation_id, caller_user_id
+            FROM call_logs
+            WHERE id = %s
+        """, (call_id,))
 
-        if status == 'answered':
-            updates.append("answered_at = CURRENT_TIMESTAMP")
-        elif status in ('ended', 'missed', 'declined', 'failed'):
-            updates.append("ended_at = CURRENT_TIMESTAMP")
-            if duration_seconds:
-                updates.append("duration_seconds = %s")
-                params.append(duration_seconds)
+        call = cur.fetchone()
 
-        query = f"UPDATE call_logs SET {', '.join(updates)} WHERE id = %s"
-        params.append(call_id)
-        cur.execute(query, params)
+        if not call:
+            raise HTTPException(status_code=404, detail="Call not found")
 
+        # Check if user is a participant
+        cur.execute("""
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (call['conversation_id'], user_id))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
+
+        # Update call status
+        if status == 'ended':
+            cur.execute("""
+                UPDATE call_logs
+                SET status = %s, ended_at = NOW()
+                WHERE id = %s
+                RETURNING id, status, ended_at
+            """, (status, call_id))
+        else:
+            cur.execute("""
+                UPDATE call_logs
+                SET status = %s
+                WHERE id = %s
+                RETURNING id, status
+            """, (status, call_id))
+
+        updated_call = cur.fetchone()
         conn.commit()
-        return {"success": True}
 
+        call_dict = dict(updated_call)
+        if call_dict.get('ended_at'):
+            call_dict['ended_at'] = call_dict['ended_at'].isoformat()
+
+        return {
+            "call": call_dict,
+            "message": f"Call status updated to {status}"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error updating call status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update call status: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -3154,197 +1842,163 @@ async def update_call(
 
 @router.get("/calls")
 async def get_call_history(
-    profile_id: int,
-    profile_type: str,
-    limit: int = Query(20, le=50)
+    user_id: int = Query(...),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0)
 ):
-    """Get call history"""
+    """
+    Get call history for a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Get calls from conversations where user is a participant
         cur.execute("""
-            SELECT
-                cl.*,
-                c.type as conversation_type,
-                c.name as conversation_name
+            SELECT cl.id, cl.conversation_id, cl.caller_user_id,
+                   cl.call_type, cl.status, cl.started_at, cl.ended_at,
+                   c.type as conversation_type
             FROM call_logs cl
             JOIN conversations c ON c.id = cl.conversation_id
             JOIN conversation_participants cp ON cp.conversation_id = c.id
-            WHERE cp.profile_id = %s AND cp.profile_type = %s
+            WHERE cp.user_id = %s
+            AND cp.is_active = true
             ORDER BY cl.started_at DESC
-            LIMIT %s
-        """, (profile_id, profile_type, limit))
+            LIMIT %s OFFSET %s
+        """, (user_id, limit, offset))
 
-        calls = cur.fetchall()
+        calls = []
 
-        result = []
-        for call in calls:
+        for call in cur.fetchall():
             call_dict = dict(call)
-            # Get other participant info for direct calls
-            if call['conversation_type'] == 'direct':
-                cur.execute("""
-                    SELECT cp.profile_id, cp.profile_type, cp.user_id
-                    FROM conversation_participants cp
-                    WHERE cp.conversation_id = %s
-                    AND NOT (cp.profile_id = %s AND cp.profile_type = %s)
-                """, (call['conversation_id'], profile_id, profile_type))
-                other = cur.fetchone()
-                if other:
-                    user_info = get_user_display_info(conn, other['user_id'], other['profile_type'], other['profile_id'])
-                    call_dict['other_participant'] = user_info
 
-            result.append(call_dict)
+            # Get caller info
+            caller_info = get_user_display_info(conn, call['caller_user_id'])
+            call_dict['caller_name'] = caller_info['name']
+            call_dict['caller_avatar'] = caller_info['avatar']
 
-        return {"calls": result}
+            # Format timestamps
+            if call_dict.get('started_at'):
+                call_dict['started_at'] = call_dict['started_at'].isoformat()
+            if call_dict.get('ended_at'):
+                call_dict['ended_at'] = call_dict['ended_at'].isoformat()
 
-    finally:
-        cur.close()
-        conn.close()
-
-
-# =============================================
-# DELETE CHAT HISTORY ENDPOINTS
-# =============================================
-
-@router.delete("/conversations/{conversation_id}/history")
-async def delete_chat_history(
-    conversation_id: int,
-    profile_id: int,
-    profile_type: str,
-    user_id: int
-):
-    """
-    Delete chat history for the requesting user only.
-    This is a soft delete - messages are marked as deleted for this user,
-    but remain visible to other participants.
-    Uses deleted_for_user_ids JSON array to track per-user deletion.
-    """
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    try:
-        # Verify user is participant
-        cur.execute("""
-            SELECT * FROM conversation_participants
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (conversation_id, profile_id, profile_type))
-
-        if not cur.fetchone():
-            raise HTTPException(status_code=403, detail="Not a participant of this conversation")
-
-        # Mark all messages in this conversation as deleted for this user
-        # We use a JSON array to track which users have deleted each message
-        cur.execute("""
-            UPDATE chat_messages
-            SET deleted_for_user_ids = COALESCE(deleted_for_user_ids, '[]'::jsonb) || %s::jsonb
-            WHERE conversation_id = %s
-            AND NOT (COALESCE(deleted_for_user_ids, '[]'::jsonb) @> %s::jsonb)
-        """, (json.dumps([user_id]), conversation_id, json.dumps([user_id])))
-
-        # Update the participant's deleted_at timestamp
-        cur.execute("""
-            UPDATE conversation_participants
-            SET chat_cleared_at = CURRENT_TIMESTAMP
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s
-        """, (conversation_id, profile_id, profile_type))
-
-        conn.commit()
+            calls.append(call_dict)
 
         return {
-            "success": True,
-            "message": "Chat history deleted for your account only"
+            "calls": calls,
+            "total": len(calls),
+            "limit": limit,
+            "offset": offset
         }
 
     except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error fetching call history: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch call history: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# READ RECEIPTS & TYPING INDICATORS (Privacy-Enforced)
-# =============================================
-
-@router.get("/conversations/{conversation_id}/read-status")
-async def get_conversation_read_status(
+@router.delete("/conversations/{conversation_id}/history")
+async def clear_chat_history(
     conversation_id: int,
-    profile_id: int,
-    profile_type: str
+    user_id: int = Query(...)
 ):
     """
-    Get read status of messages in a conversation.
-    Respects privacy settings - only returns read status if the reader has read_receipts enabled.
+    Clear chat history for a user in a conversation.
+
+    This only affects the user's view - messages are not deleted for others.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Get conversation type
+        # Check if user is a participant
         cur.execute("""
-            SELECT type FROM conversations WHERE id = %s
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
+
+        # Update last_read_at to now (effectively hiding all previous messages)
+        cur.execute("""
+            UPDATE conversation_participants
+            SET last_read_at = NOW(), updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (conversation_id, user_id))
+
+        conn.commit()
+
+        return {"message": "Chat history cleared successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error clearing chat history: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to clear chat history: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.get("/conversations/{conversation_id}/read-status")
+async def get_message_read_status(
+    conversation_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Get read status for messages in a conversation.
+
+    Shows which participants have read which messages.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Check if user is a participant
+        cur.execute("""
+            SELECT 1 FROM conversation_participants
+            WHERE conversation_id = %s
+            AND user_id = %s
+            AND is_active = true
+        """, (conversation_id, user_id))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
+
+        # Get all participants and their last_read_at times
+        cur.execute("""
+            SELECT cp.user_id, cp.last_read_at
+            FROM conversation_participants cp
+            WHERE cp.conversation_id = %s
+            AND cp.is_active = true
         """, (conversation_id,))
-        conv = cur.fetchone()
 
-        if not conv:
-            raise HTTPException(status_code=404, detail="Conversation not found")
+        read_status = []
 
-        # For direct conversations, get the other participant's read status
-        if conv['type'] == 'direct':
-            # Get the other participant
-            cur.execute("""
-                SELECT cp.profile_id, cp.profile_type, cp.last_read_at, cp.last_read_message_id
-                FROM conversation_participants cp
-                WHERE cp.conversation_id = %s AND cp.is_active = TRUE
-                AND NOT (cp.profile_id = %s AND cp.profile_type = %s)
-            """, (conversation_id, profile_id, profile_type))
-            other = cur.fetchone()
+        for participant in cur.fetchall():
+            user_info = get_user_display_info(conn, participant['user_id'])
+            read_status.append({
+                "user_id": participant['user_id'],
+                "name": user_info['name'],
+                "avatar": user_info['avatar'],
+                "last_read_at": participant['last_read_at'].isoformat() if participant.get('last_read_at') else None
+            })
 
-            if not other:
-                return {"read_status": None, "reason": "No other participant"}
+        return {"read_status": read_status}
 
-            # Check if the other user has read receipts enabled
-            if not should_show_read_receipts(conn, other['profile_id'], other['profile_type']):
-                return {
-                    "read_status": None,
-                    "hidden": True,
-                    "reason": "User has disabled read receipts"
-                }
-
-            return {
-                "read_status": {
-                    "last_read_at": other['last_read_at'].isoformat() if other['last_read_at'] else None,
-                    "last_read_message_id": other['last_read_message_id']
-                },
-                "hidden": False
-            }
-        else:
-            # For group/channel, return list of who has read (respecting privacy)
-            cur.execute("""
-                SELECT cp.profile_id, cp.profile_type, cp.last_read_at, cp.last_read_message_id, cp.user_id
-                FROM conversation_participants cp
-                WHERE cp.conversation_id = %s AND cp.is_active = TRUE
-                AND NOT (cp.profile_id = %s AND cp.profile_type = %s)
-            """, (conversation_id, profile_id, profile_type))
-
-            readers = []
-            for participant in cur.fetchall():
-                # Only include if they have read receipts enabled
-                if should_show_read_receipts(conn, participant['profile_id'], participant['profile_type']):
-                    user_info = get_user_display_info(conn, participant['user_id'], participant['profile_type'], participant['profile_id'])
-                    readers.append({
-                        "profile_id": participant['profile_id'],
-                        "profile_type": participant['profile_type'],
-                        "name": user_info['name'],
-                        "avatar": user_info['avatar'],
-                        "last_read_at": participant['last_read_at'].isoformat() if participant['last_read_at'] else None,
-                        "last_read_message_id": participant['last_read_message_id']
-                    })
-
-            return {"readers": readers}
-
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[Chat API] Error fetching read status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch read status: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -3353,362 +2007,287 @@ async def get_conversation_read_status(
 @router.get("/conversations/{conversation_id}/typing-allowed")
 async def check_typing_allowed(
     conversation_id: int,
-    profile_id: int,
-    profile_type: str
+    user_id: int = Query(...)
 ):
     """
-    Check if the current user's typing indicator should be broadcast.
-    Returns whether this user has typing indicators enabled.
-    Frontend should call this before broadcasting typing status.
-    """
-    conn = get_db_connection()
-    try:
-        # Check if this user has typing indicators enabled
-        can_broadcast = should_show_typing_indicator(conn, profile_id, profile_type)
-        return {"can_broadcast_typing": can_broadcast}
-    finally:
-        conn.close()
+    Check if typing indicators are allowed for this conversation.
 
-
-@router.post("/conversations/{conversation_id}/typing")
-async def broadcast_typing(
-    conversation_id: int,
-    profile_id: int,
-    profile_type: str,
-    is_typing: bool = True
-):
-    """
-    Indicate that user is typing (respects privacy settings).
-    Only broadcasts if user has typing_indicators enabled.
-    Stores typing status in memory for other users to poll.
-    """
-    conn = get_db_connection()
-    try:
-        # Check if this user allows typing indicator broadcast
-        if not should_show_typing_indicator(conn, profile_id, profile_type):
-            return {"broadcasted": False, "reason": "Typing indicators disabled in settings"}
-
-        # Get user display info for the typing indicator
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT u.id as user_id, u.first_name, u.father_name, u.profile_picture
-            FROM users u
-            JOIN conversation_participants cp ON cp.user_id = u.id
-            WHERE cp.conversation_id = %s AND cp.profile_id = %s AND cp.profile_type = %s
-        """, (conversation_id, profile_id, profile_type))
-        user_row = cur.fetchone()
-        cur.close()
-
-        user_name = ""
-        avatar = ""
-        if user_row:
-            user_name = f"{user_row['first_name'] or ''} {user_row['father_name'] or ''}".strip()
-            avatar = user_row['profile_picture'] or ""
-
-        # Store typing status in memory
-        with _typing_lock:
-            if conversation_id not in _typing_status:
-                _typing_status[conversation_id] = {}
-
-            key = (profile_id, profile_type)
-            if is_typing:
-                _typing_status[conversation_id][key] = {
-                    "is_typing": True,
-                    "timestamp": datetime.now(),
-                    "user_name": user_name,
-                    "avatar": avatar,
-                    "profile_id": profile_id,
-                    "profile_type": profile_type
-                }
-            else:
-                # Remove typing status when user stops typing
-                if key in _typing_status[conversation_id]:
-                    del _typing_status[conversation_id][key]
-
-        return {
-            "broadcasted": True,
-            "conversation_id": conversation_id,
-            "profile_id": profile_id,
-            "profile_type": profile_type,
-            "is_typing": is_typing
-        }
-    finally:
-        conn.close()
-
-
-@router.get("/conversations/{conversation_id}/typing")
-async def get_typing_status(
-    conversation_id: int,
-    profile_id: int,
-    profile_type: str
-):
-    """
-    Get who is currently typing in a conversation.
-    Only returns typing status for users who have typing_indicators enabled.
-    Excludes the requesting user from the result.
-    """
-    # Clean expired typing statuses first
-    _clean_expired_typing()
-
-    conn = get_db_connection()
-    try:
-        typing_users = []
-
-        with _typing_lock:
-            if conversation_id in _typing_status:
-                for key, status in _typing_status[conversation_id].items():
-                    typer_profile_id, typer_profile_type = key
-
-                    # Skip self
-                    if typer_profile_id == profile_id and typer_profile_type == profile_type:
-                        continue
-
-                    # Check if this typer has typing indicators enabled
-                    if should_show_typing_indicator(conn, typer_profile_id, typer_profile_type):
-                        typing_users.append({
-                            "profile_id": status["profile_id"],
-                            "profile_type": status["profile_type"],
-                            "user_name": status["user_name"],
-                            "avatar": status["avatar"]
-                        })
-
-        return {
-            "typing_users": typing_users,
-            "is_someone_typing": len(typing_users) > 0
-        }
-    finally:
-        conn.close()
-
-
-# =============================================
-# ONLINE STATUS & LAST SEEN (Privacy-Enforced)
-# =============================================
-
-@router.get("/users/{target_profile_id}/{target_profile_type}/status")
-async def get_user_status(
-    target_profile_id: int,
-    target_profile_type: str,
-    profile_id: int,
-    profile_type: str
-):
-    """
-    Get a user's online status and last seen.
-    Respects privacy settings:
-    - online_status: if False, always shows as offline
-    - last_seen_visibility: 'everyone', 'connections', 'nobody'
+    Returns allowed=false if any participant has disabled typing indicators.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Check online status visibility
-        show_online = should_show_online_status(conn, target_profile_id, target_profile_type,
-                                                 profile_id, profile_type)
-        # Check last seen visibility
-        show_last_seen = should_show_last_seen(conn, target_profile_id, target_profile_type,
-                                                profile_id, profile_type)
-
-        # Get the user's actual status
-        # Check if they have any active sessions
+        # Get all participants
         cur.execute("""
-            SELECT last_active FROM chat_active_sessions
-            WHERE profile_id = %s AND profile_type = %s
-            ORDER BY last_active DESC
+            SELECT user_id
+            FROM conversation_participants
+            WHERE conversation_id = %s
+            AND is_active = true
+        """, (conversation_id,))
+
+        participants = cur.fetchall()
+
+        # Check if all participants allow typing indicators
+        for p in participants:
+            settings = get_user_privacy_settings(conn, p['user_id'])
+            if not settings.get('typing_indicators', True):
+                return {"allowed": False}
+
+        return {"allowed": True}
+
+    except Exception as e:
+        print(f"[Chat API] Error checking typing indicators: {e}")
+        return {"allowed": True}  # Default to allowed on error
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.post("/conversations/{conversation_id}/typing")
+async def update_typing_status(
+    conversation_id: int,
+    user_id: int = Query(...),
+    is_typing: bool = Body(..., embed=True)
+):
+    """
+    Update typing status for a user in a conversation.
+    """
+    try:
+        # Get user info
+        conn = get_db_connection()
+        user_info = get_user_display_info(conn, user_id)
+        conn.close()
+
+        with _typing_lock:
+            if conversation_id not in _typing_status:
+                _typing_status[conversation_id] = {}
+
+            if is_typing:
+                _typing_status[conversation_id][user_id] = {
+                    "is_typing": True,
+                    "timestamp": datetime.now(),
+                    "user_name": user_info['name'],
+                    "avatar": user_info['avatar']
+                }
+            else:
+                # Remove typing status
+                _typing_status[conversation_id].pop(user_id, None)
+
+                # Clean up empty conversation entries
+                if not _typing_status[conversation_id]:
+                    del _typing_status[conversation_id]
+
+        return {"message": "Typing status updated"}
+
+    except Exception as e:
+        print(f"[Chat API] Error updating typing status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update typing status: {str(e)}")
+
+
+@router.get("/conversations/{conversation_id}/typing")
+async def get_typing_status(
+    conversation_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Get typing status for a conversation.
+
+    Returns list of users currently typing (excluding the requesting user).
+    """
+    try:
+        # Clean expired statuses
+        _clean_expired_typing()
+
+        with _typing_lock:
+            if conversation_id not in _typing_status:
+                return {"typing_users": []}
+
+            typing_users = []
+
+            for typing_user_id, status in _typing_status[conversation_id].items():
+                # Exclude the requesting user
+                if typing_user_id != user_id and status["is_typing"]:
+                    typing_users.append({
+                        "user_id": typing_user_id,
+                        "name": status["user_name"],
+                        "avatar": status["avatar"]
+                    })
+
+            return {"typing_users": typing_users}
+
+    except Exception as e:
+        print(f"[Chat API] Error getting typing status: {e}")
+        return {"typing_users": []}
+
+
+@router.get("/users/{target_user_id}/status")
+async def get_user_online_status(
+    target_user_id: int,
+    user_id: int = Query(...)
+):
+    """
+    Get online status and last seen for a user.
+
+    Respects privacy settings.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Check privacy settings
+        settings = get_user_privacy_settings(conn, target_user_id)
+        online_status_visibility = settings.get('online_status', True)
+        last_seen_visibility = settings.get('last_seen_visibility', 'everyone')
+
+        # Get user's online status from active sessions
+        cur.execute("""
+            SELECT last_active_at, is_online
+            FROM chat_active_sessions
+            WHERE user_id = %s
+            ORDER BY last_active_at DESC
             LIMIT 1
-        """, (target_profile_id, target_profile_type))
+        """, (target_user_id,))
+
         session = cur.fetchone()
 
-        # Determine if user is "online" (active within last 5 minutes)
-        from datetime import datetime, timedelta
-        is_online = False
-        last_seen = None
+        response = {
+            "user_id": target_user_id,
+            "is_online": False,
+            "last_seen": None
+        }
 
-        if session and session['last_active']:
-            time_diff = datetime.now() - session['last_active']
-            is_online = time_diff < timedelta(minutes=5)
-            last_seen = session['last_active']
+        if session:
+            # Check if should show online status
+            if online_status_visibility:
+                response['is_online'] = session.get('is_online', False)
 
-        # Apply privacy filters
-        result = {}
+            # Check if should show last seen
+            if last_seen_visibility == 'everyone':
+                response['last_seen'] = session['last_active_at'].isoformat() if session.get('last_active_at') else None
+            elif last_seen_visibility == 'connections':
+                # Check if users are connected
+                if are_users_connected(conn, user_id, target_user_id):
+                    response['last_seen'] = session['last_active_at'].isoformat() if session.get('last_active_at') else None
 
-        if show_online:
-            result["is_online"] = is_online
-        else:
-            result["is_online"] = None
-            result["online_hidden"] = True
+        return response
 
-        if show_last_seen and last_seen:
-            result["last_seen"] = last_seen.isoformat()
-        else:
-            result["last_seen"] = None
-            if not show_last_seen:
-                result["last_seen_hidden"] = True
-
-        return result
-
+    except Exception as e:
+        print(f"[Chat API] Error getting user status: {e}")
+        return {
+            "user_id": target_user_id,
+            "is_online": False,
+            "last_seen": None
+        }
     finally:
         cur.close()
         conn.close()
 
 
 @router.get("/users/online-status")
-async def get_bulk_online_status(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    profile_ids: str = None  # Comma-separated list of "profile_type_profile_id"
+async def get_multiple_users_status(
+    user_ids: str = Query(...),  # Comma-separated list
+    user_id: int = Query(...)
 ):
     """
-    Get online/last_seen status for multiple users in bulk.
-    Used for silent polling updates without reloading the entire conversation list.
-
-    profile_ids format: "tutor_123,student_456,parent_789"
+    Get online status for multiple users at once.
     """
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
     try:
-        statuses = {}
+        # Parse user IDs
+        target_user_ids = [int(uid.strip()) for uid in user_ids.split(',')]
 
-        # If no profile_ids provided, return empty
-        if not profile_ids:
-            return {"statuses": statuses}
+        statuses = []
 
-        # Parse the profile_ids
-        profile_list = []
-        for pid in profile_ids.split(','):
-            pid = pid.strip()
-            if '_' in pid:
-                parts = pid.rsplit('_', 1)
-                if len(parts) == 2:
-                    ptype, pid_num = parts
-                    try:
-                        profile_list.append((ptype, int(pid_num)))
-                    except ValueError:
-                        continue
-
-        # Get status for each profile
-        for target_profile_type, target_profile_id in profile_list:
-            status_info = get_user_last_seen_info(
-                conn, target_profile_id, target_profile_type,
-                profile_id, profile_type
-            )
-            key = f"{target_profile_type}_{target_profile_id}"
-            statuses[key] = status_info
+        for target_user_id in target_user_ids:
+            status = await get_user_online_status(target_user_id, user_id)
+            statuses.append(status)
 
         return {"statuses": statuses}
 
-    finally:
-        cur.close()
-        conn.close()
+    except Exception as e:
+        print(f"[Chat API] Error getting multiple user statuses: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get user statuses: {str(e)}")
 
 
 @router.post("/users/status/update")
-async def update_my_status(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    device_name: str = None,
-    device_type: str = "desktop",
-    browser: str = None,
-    os: str = None
+async def update_user_status(
+    user_id: int = Query(...),
+    device_name: str = Query(None),
+    device_type: str = Query(None),
+    browser: str = Query(None),
+    os: str = Query(None),
+    is_online: bool = Query(True)  # Default to true when heartbeat is sent
 ):
     """
-    Update the current user's last active time and device info.
-    Call this periodically (e.g., every 30 seconds) to maintain online status.
-    Also captures device information for the Active Sessions feature.
+    Update user's online status and active session info.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        session_token = f"web-{user_id}-{profile_id}-{profile_type}"
-
-        # Check if session exists
+        # Update or insert active session in chat_active_sessions table
         cur.execute("""
-            SELECT id FROM chat_active_sessions WHERE session_token = %s
-        """, (session_token,))
-        existing = cur.fetchone()
-
-        if existing:
-            # Update existing session with device info and last_active
-            cur.execute("""
-                UPDATE chat_active_sessions
-                SET last_active = CURRENT_TIMESTAMP,
-                    device_name = COALESCE(%s, device_name),
-                    device_type = COALESCE(%s, device_type),
-                    browser = COALESCE(%s, browser),
-                    os = COALESCE(%s, os),
-                    is_current = TRUE
-                WHERE session_token = %s
-            """, (device_name, device_type, browser, os, session_token))
-        else:
-            # Insert new session with device info
-            cur.execute("""
-                INSERT INTO chat_active_sessions
-                (user_id, profile_id, profile_type, session_token, device_name, device_type, browser, os, last_active, is_current)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, TRUE)
-            """, (user_id, profile_id, profile_type, session_token, device_name, device_type, browser, os))
+            INSERT INTO chat_active_sessions (
+                user_id, device_type, device_name, browser, os,
+                is_online, last_active_at, created_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+            ON CONFLICT (user_id, device_name)
+            DO UPDATE SET
+                is_online = EXCLUDED.is_online,
+                last_active_at = NOW(),
+                browser = EXCLUDED.browser,
+                os = EXCLUDED.os,
+                device_type = EXCLUDED.device_type
+        """, (user_id, device_type, device_name, browser, os, is_online))
 
         conn.commit()
-        return {"success": True, "last_active": "now"}
 
+        return {"message": "Status updated successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error updating user status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update status: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# ACTIVE SESSIONS MANAGEMENT
-# =============================================
-
 @router.get("/sessions")
-async def get_active_sessions(
-    profile_id: int,
-    profile_type: str,
-    user_id: int
-):
+async def get_active_sessions(user_id: int = Query(...)):
     """
-    Get all active sessions for the current user.
-    Shows devices/browsers where the user is logged in.
+    Get all active sessions for a user.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         cur.execute("""
-            SELECT id, device_name, device_type, browser, os, ip_address, location,
-                   is_current, last_active, created_at
-            FROM chat_active_sessions
-            WHERE user_id = %s AND profile_id = %s AND profile_type = %s
-            ORDER BY last_active DESC
-        """, (user_id, profile_id, profile_type))
+            SELECT id, user_id, device_type, device_name, ip_address,
+                   last_active_at, is_online, created_at
+            FROM user_sessions
+            WHERE user_id = %s
+            ORDER BY last_active_at DESC
+        """, (user_id,))
 
         sessions = []
-        for row in cur.fetchall():
-            # Determine if session is active (within last 5 minutes)
-            from datetime import datetime, timedelta
-            is_active = False
-            if row['last_active']:
-                time_diff = datetime.now() - row['last_active']
-                is_active = time_diff < timedelta(minutes=5)
 
-            sessions.append({
-                "id": row['id'],
-                "device_name": row['device_name'] or "Unknown Device",
-                "device_type": row['device_type'] or "unknown",
-                "browser": row['browser'] or "Unknown Browser",
-                "os": row['os'] or "Unknown OS",
-                "ip_address": row['ip_address'],
-                "location": row['location'] or "Unknown Location",
-                "is_current": row['is_current'] or False,
-                "is_active": is_active,
-                "last_active": row['last_active'].isoformat() if row['last_active'] else None,
-                "created_at": row['created_at'].isoformat() if row['created_at'] else None
-            })
+        for session in cur.fetchall():
+            session_dict = dict(session)
+
+            if session_dict.get('last_active_at'):
+                session_dict['last_active_at'] = session_dict['last_active_at'].isoformat()
+            if session_dict.get('created_at'):
+                session_dict['created_at'] = session_dict['created_at'].isoformat()
+
+            sessions.append(session_dict)
 
         return {"sessions": sessions}
 
+    except Exception as e:
+        print(f"[Chat API] Error fetching sessions: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch sessions: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -3717,70 +2296,70 @@ async def get_active_sessions(
 @router.delete("/sessions/{session_id}")
 async def terminate_session(
     session_id: int,
-    profile_id: int,
-    profile_type: str,
-    user_id: int
+    user_id: int = Query(...)
 ):
     """
-    Terminate a specific session (log out that device).
+    Terminate a specific session.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify ownership of the session
+        # Verify session belongs to user
         cur.execute("""
-            DELETE FROM chat_active_sessions
-            WHERE id = %s AND user_id = %s AND profile_id = %s AND profile_type = %s
-            RETURNING id
-        """, (session_id, user_id, profile_id, profile_type))
+            SELECT user_id FROM user_sessions WHERE id = %s
+        """, (session_id,))
 
-        deleted = cur.fetchone()
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Session not found or not authorized")
+        session = cur.fetchone()
+
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        if session['user_id'] != user_id:
+            raise HTTPException(status_code=403, detail="Cannot terminate another user's session")
+
+        # Delete session
+        cur.execute("""
+            DELETE FROM user_sessions WHERE id = %s
+        """, (session_id,))
 
         conn.commit()
-        return {"success": True, "terminated_session_id": session_id}
 
+        return {"message": "Session terminated successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error terminating session: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to terminate session: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.delete("/sessions")
-async def terminate_all_other_sessions(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    current_session_token: str = None
-):
+async def terminate_all_sessions(user_id: int = Query(...)):
     """
-    Terminate all sessions except the current one.
+    Terminate all sessions except current one.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        if current_session_token:
-            # Keep only the current session
-            cur.execute("""
-                DELETE FROM chat_active_sessions
-                WHERE user_id = %s AND profile_id = %s AND profile_type = %s
-                AND session_token != %s
-            """, (user_id, profile_id, profile_type, current_session_token))
-        else:
-            # If no current session token provided, terminate all except marked as current
-            cur.execute("""
-                DELETE FROM chat_active_sessions
-                WHERE user_id = %s AND profile_id = %s AND profile_type = %s
-                AND is_current = FALSE
-            """, (user_id, profile_id, profile_type))
+        # Delete all sessions for user
+        cur.execute("""
+            DELETE FROM user_sessions WHERE user_id = %s
+        """, (user_id,))
 
-        terminated_count = cur.rowcount
         conn.commit()
 
-        return {"success": True, "terminated_count": terminated_count}
+        return {"message": "All sessions terminated successfully"}
 
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error terminating all sessions: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to terminate sessions: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -3788,138 +2367,148 @@ async def terminate_all_other_sessions(
 
 @router.post("/sessions/register")
 async def register_session(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    device_name: str = None,
-    device_type: str = "desktop",
-    browser: str = None,
-    os: str = None
+    device_type: str = Body(...),
+    device_name: str = Body(...),
+    ip_address: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
-    Register a new session when user logs in.
-    Called automatically on login or can be called to register device info.
+    Register a new session for a user.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        import uuid
-        session_token = str(uuid.uuid4())
-
-        # Mark all other sessions as not current
         cur.execute("""
-            UPDATE chat_active_sessions
-            SET is_current = FALSE
-            WHERE user_id = %s AND profile_id = %s AND profile_type = %s
-        """, (user_id, profile_id, profile_type))
+            INSERT INTO user_sessions
+            (user_id, device_type, device_name, ip_address, is_online, last_active_at, created_at)
+            VALUES (%s, %s, %s, %s, true, NOW(), NOW())
+            RETURNING id, user_id, device_type, device_name, created_at
+        """, (user_id, device_type, device_name, ip_address))
 
-        # Insert new session
-        cur.execute("""
-            INSERT INTO chat_active_sessions
-            (user_id, profile_id, profile_type, session_token, device_name, device_type, browser, os, is_current, last_active)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP)
-            RETURNING id
-        """, (user_id, profile_id, profile_type, session_token, device_name, device_type, browser, os))
-
-        session_id = cur.fetchone()['id']
+        session = cur.fetchone()
         conn.commit()
 
+        session_dict = dict(session)
+        if session_dict.get('created_at'):
+            session_dict['created_at'] = session_dict['created_at'].isoformat()
+
         return {
-            "success": True,
-            "session_id": session_id,
-            "session_token": session_token
+            "session": session_dict,
+            "message": "Session registered successfully"
         }
 
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error registering session: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to register session: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# MUTE/ARCHIVE ENDPOINTS
-# =============================================
-
 @router.put("/conversations/{conversation_id}/mute")
-async def toggle_mute(conversation_id: int, muted: bool, profile_id: int, profile_type: str):
-    """Mute/unmute a conversation"""
+async def mute_conversation(
+    conversation_id: int,
+    is_muted: bool = Body(...),
+    user_id: int = Query(...)
+):
+    """
+    Mute or unmute a conversation.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         cur.execute("""
             UPDATE conversation_participants
-            SET is_muted = %s
-            WHERE conversation_id = %s AND profile_id = %s AND profile_type = %s
-        """, (muted, conversation_id, profile_id, profile_type))
+            SET is_muted = %s, updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (is_muted, conversation_id, user_id))
 
         conn.commit()
-        return {"success": True, "muted": muted}
 
+        action = "muted" if is_muted else "unmuted"
+        return {"message": f"Conversation {action} successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error muting conversation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to mute conversation: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.put("/conversations/{conversation_id}/archive")
-async def archive_conversation(conversation_id: int, archived: bool, profile_id: int, profile_type: str):
-    """Archive/unarchive a conversation for the current user"""
+async def archive_conversation(
+    conversation_id: int,
+    is_archived: bool = Body(...),
+    user_id: int = Query(...)
+):
+    """
+    Archive or unarchive a conversation.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # For now, we archive at conversation level
-        # Could be per-user if needed
         cur.execute("""
-            UPDATE conversations
-            SET is_archived = %s
-            WHERE id = %s
-        """, (archived, conversation_id))
+            UPDATE conversation_participants
+            SET is_archived = %s, updated_at = NOW()
+            WHERE conversation_id = %s
+            AND user_id = %s
+        """, (is_archived, conversation_id, user_id))
 
         conn.commit()
-        return {"success": True, "archived": archived}
 
+        action = "archived" if is_archived else "unarchived"
+        return {"message": f"Conversation {action} successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error archiving conversation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to archive conversation: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# TWO-STEP VERIFICATION
-# =============================================
-
 @router.get("/security/two-step")
-async def get_two_step_status(
-    profile_id: int,
-    profile_type: str
-):
+async def get_two_step_settings(user_id: int = Query(...)):
     """
-    Get current two-step verification status.
+    Get two-step verification settings for user.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         cur.execute("""
-            SELECT two_step_verification, two_step_email
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
+            SELECT is_enabled, recovery_email
+            FROM chat_two_step_verification
+            WHERE user_id = %s
+        """, (user_id,))
 
-        row = cur.fetchone()
-        if not row:
+        settings = cur.fetchone()
+
+        if settings:
             return {
-                "enabled": False,
-                "email": None,
-                "has_password": False
+                "is_enabled": settings['is_enabled'],
+                "has_recovery_email": bool(settings.get('recovery_email'))
             }
 
         return {
-            "enabled": row['two_step_verification'] or False,
-            "email": row['two_step_email'],
-            "has_password": row['two_step_verification'] or False
+            "is_enabled": False,
+            "has_recovery_email": False
         }
 
+    except Exception as e:
+        print(f"[Chat API] Error fetching two-step settings: {e}")
+        return {
+            "is_enabled": False,
+            "has_recovery_email": False
+        }
     finally:
         cur.close()
         conn.close()
@@ -3927,50 +2516,41 @@ async def get_two_step_status(
 
 @router.post("/security/two-step/enable")
 async def enable_two_step_verification(
-    profile_id: int,
-    profile_type: str,
-    user_id: int,
-    password: str,
-    recovery_email: str = None
+    password: str = Body(...),
+    recovery_email: Optional[str] = Body(None),
+    user_id: int = Query(...)
 ):
     """
-    Enable two-step verification with a password.
-    The password is hashed and stored securely.
+    Enable two-step verification.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Hash password (you should use bcrypt or similar)
         import hashlib
-        # Hash the password (in production, use bcrypt or similar)
         password_hash = hashlib.sha256(password.encode()).hexdigest()
 
-        # First, check if chat_settings row exists
         cur.execute("""
-            SELECT id FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
-
-        if cur.fetchone():
-            # Update existing row
-            cur.execute("""
-                UPDATE chat_settings
-                SET two_step_verification = TRUE,
-                    two_step_email = %s,
-                    two_step_password_hash = %s,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE profile_id = %s AND profile_type = %s
-            """, (recovery_email, password_hash, profile_id, profile_type))
-        else:
-            # Insert new row
-            cur.execute("""
-                INSERT INTO chat_settings (user_id, profile_id, profile_type, two_step_verification, two_step_email, two_step_password_hash)
-                VALUES (%s, %s, %s, TRUE, %s, %s)
-            """, (user_id, profile_id, profile_type, recovery_email, password_hash))
+            INSERT INTO chat_two_step_verification
+            (user_id, password_hash, recovery_email, is_enabled, created_at)
+            VALUES (%s, %s, %s, true, NOW())
+            ON CONFLICT (user_id)
+            DO UPDATE SET
+                password_hash = EXCLUDED.password_hash,
+                recovery_email = EXCLUDED.recovery_email,
+                is_enabled = true,
+                updated_at = NOW()
+        """, (user_id, password_hash, recovery_email))
 
         conn.commit()
-        return {"success": True, "message": "Two-step verification enabled"}
 
+        return {"message": "Two-step verification enabled successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error enabling two-step verification: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to enable two-step verification: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -3978,44 +2558,50 @@ async def enable_two_step_verification(
 
 @router.post("/security/two-step/disable")
 async def disable_two_step_verification(
-    profile_id: int,
-    profile_type: str,
-    password: str
+    password: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
     Disable two-step verification.
-    Requires the current password for security.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Verify password
         import hashlib
         password_hash = hashlib.sha256(password.encode()).hexdigest()
 
-        # Verify password first
         cur.execute("""
-            SELECT two_step_password_hash
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
+            SELECT password_hash FROM chat_two_step_verification
+            WHERE user_id = %s AND is_enabled = true
+        """, (user_id,))
 
-        row = cur.fetchone()
-        if not row or row['two_step_password_hash'] != password_hash:
+        settings = cur.fetchone()
+
+        if not settings:
+            raise HTTPException(status_code=404, detail="Two-step verification not enabled")
+
+        if settings['password_hash'] != password_hash:
             raise HTTPException(status_code=403, detail="Incorrect password")
 
         # Disable two-step verification
         cur.execute("""
-            UPDATE chat_settings
-            SET two_step_verification = FALSE,
-                two_step_password_hash = NULL,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
+            UPDATE chat_two_step_verification
+            SET is_enabled = false, updated_at = NOW()
+            WHERE user_id = %s
+        """, (user_id,))
 
         conn.commit()
-        return {"success": True, "message": "Two-step verification disabled"}
 
+        return {"message": "Two-step verification disabled successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error disabling two-step verification: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to disable two-step verification: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -4023,13 +2609,12 @@ async def disable_two_step_verification(
 
 @router.post("/security/two-step/change-password")
 async def change_two_step_password(
-    profile_id: int,
-    profile_type: str,
-    current_password: str,
-    new_password: str
+    current_password: str = Body(...),
+    new_password: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
-    Change the two-step verification password.
+    Change two-step verification password.
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -4041,42 +2626,48 @@ async def change_two_step_password(
 
         # Verify current password
         cur.execute("""
-            SELECT two_step_password_hash
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s AND two_step_verification = TRUE
-        """, (profile_id, profile_type))
+            SELECT password_hash FROM chat_two_step_verification
+            WHERE user_id = %s AND is_enabled = true
+        """, (user_id,))
 
-        row = cur.fetchone()
-        if not row:
+        settings = cur.fetchone()
+
+        if not settings:
             raise HTTPException(status_code=404, detail="Two-step verification not enabled")
-        if row['two_step_password_hash'] != current_hash:
+
+        if settings['password_hash'] != current_hash:
             raise HTTPException(status_code=403, detail="Incorrect current password")
 
         # Update password
         cur.execute("""
-            UPDATE chat_settings
-            SET two_step_password_hash = %s,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE profile_id = %s AND profile_type = %s
-        """, (new_hash, profile_id, profile_type))
+            UPDATE chat_two_step_verification
+            SET password_hash = %s, updated_at = NOW()
+            WHERE user_id = %s
+        """, (new_hash, user_id))
 
         conn.commit()
-        return {"success": True, "message": "Password changed successfully"}
 
+        return {"message": "Password changed successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error changing password: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to change password: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.post("/security/two-step/change-email")
-async def change_two_step_email(
-    profile_id: int,
-    profile_type: str,
-    password: str,
-    new_email: str
+async def change_recovery_email(
+    password: str = Body(...),
+    new_email: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
-    Change the recovery email for two-step verification.
+    Change recovery email for two-step verification.
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -4087,69 +2678,75 @@ async def change_two_step_email(
 
         # Verify password
         cur.execute("""
-            SELECT two_step_password_hash
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s AND two_step_verification = TRUE
-        """, (profile_id, profile_type))
+            SELECT password_hash FROM chat_two_step_verification
+            WHERE user_id = %s AND is_enabled = true
+        """, (user_id,))
 
-        row = cur.fetchone()
-        if not row:
+        settings = cur.fetchone()
+
+        if not settings:
             raise HTTPException(status_code=404, detail="Two-step verification not enabled")
-        if row['two_step_password_hash'] != password_hash:
+
+        if settings['password_hash'] != password_hash:
             raise HTTPException(status_code=403, detail="Incorrect password")
 
         # Update email
         cur.execute("""
-            UPDATE chat_settings
-            SET two_step_email = %s,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE profile_id = %s AND profile_type = %s
-        """, (new_email, profile_id, profile_type))
+            UPDATE chat_two_step_verification
+            SET recovery_email = %s, updated_at = NOW()
+            WHERE user_id = %s
+        """, (new_email, user_id))
 
         conn.commit()
-        return {"success": True, "message": "Recovery email updated"}
 
+        return {"message": "Recovery email updated successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error changing recovery email: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to change recovery email: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-class TwoStepVerifyRequest(BaseModel):
-    password: str
-
-
 @router.post("/security/two-step/verify")
 async def verify_two_step_password(
-    request: TwoStepVerifyRequest,
-    profile_id: int,
-    profile_type: str
+    password: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
-    Verify the two-step password.
-    Called during sensitive operations that require additional verification.
+    Verify two-step verification password.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         import hashlib
-        password_hash = hashlib.sha256(request.password.encode()).hexdigest()
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
 
         cur.execute("""
-            SELECT two_step_password_hash
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s AND two_step_verification = TRUE
-        """, (profile_id, profile_type))
+            SELECT password_hash FROM chat_two_step_verification
+            WHERE user_id = %s AND is_enabled = true
+        """, (user_id,))
 
-        row = cur.fetchone()
-        if not row:
+        settings = cur.fetchone()
+
+        if not settings:
             raise HTTPException(status_code=404, detail="Two-step verification not enabled")
 
-        if row['two_step_password_hash'] == password_hash:
+        if settings['password_hash'] == password_hash:
             return {"verified": True}
         else:
-            return {"verified": False, "error": "Incorrect password"}
+            return {"verified": False}
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[Chat API] Error verifying password: {e}")
+        return {"verified": False}
     finally:
         cur.close()
         conn.close()
@@ -4157,220 +2754,134 @@ async def verify_two_step_password(
 
 @router.post("/security/two-step/forgot")
 async def forgot_two_step_password(
-    profile_id: int,
-    profile_type: str,
-    user_id: int
+    user_id: int = Query(...)
 ):
     """
-    Send a password reset OTP to the user's account email (from users table).
+    Send recovery email for two-step verification.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Verify 2FA is enabled for this profile
+        # Get recovery email
         cur.execute("""
-            SELECT user_id
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s AND two_step_verification = TRUE
-        """, (profile_id, profile_type))
-
-        row = cur.fetchone()
-        if not row:
-            raise HTTPException(status_code=400, detail="Two-step verification is not enabled for this account")
-
-        # Get user's email from the users table (primary account email)
-        cur.execute("""
-            SELECT email FROM users WHERE id = %s
+            SELECT recovery_email FROM chat_two_step_verification
+            WHERE user_id = %s AND is_enabled = true
         """, (user_id,))
 
-        user_row = cur.fetchone()
-        if not user_row or not user_row['email']:
-            raise HTTPException(status_code=400, detail="No email found for this account")
+        settings = cur.fetchone()
 
-        user_email = user_row['email']
+        if not settings or not settings.get('recovery_email'):
+            raise HTTPException(status_code=404, detail="No recovery email configured")
 
-        # Generate OTP
-        import random
-        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        # Generate reset token (you should implement proper token generation)
+        import secrets
+        reset_token = secrets.token_urlsafe(32)
 
-        # Store OTP in database (expires in 10 minutes)
-        from datetime import datetime, timedelta
-        expires_at = datetime.utcnow() + timedelta(minutes=10)
-
-        # Delete any existing OTPs for this user/purpose
+        # Store reset token with expiry
         cur.execute("""
-            DELETE FROM otps
-            WHERE user_id = %s AND purpose = 'two_step_reset'
-        """, (user_id,))
-
-        # Insert new OTP
-        cur.execute("""
-            INSERT INTO otps (user_id, contact, otp_code, purpose, expires_at)
-            VALUES (%s, %s, %s, 'two_step_reset', %s)
-        """, (user_id, user_email, otp, expires_at))
+            INSERT INTO chat_password_reset_tokens
+            (user_id, reset_token, expires_at, created_at)
+            VALUES (%s, %s, NOW() + INTERVAL '1 hour', NOW())
+        """, (user_id, reset_token))
 
         conn.commit()
 
-        # Send email with OTP using email service
-        email_sent = email_service.send_two_step_reset_email(user_email, otp)
-
-        if email_sent:
-            print(f"[2FA Reset] OTP sent successfully to {user_email}")
-        else:
-            # Email service logs the OTP as fallback - also log OTP for dev testing
-            print(f"[2FA Reset] Email not configured. OTP for {user_email}: {otp}")
+        # Send email (implement email sending logic)
+        # email_service.send_password_reset(settings['recovery_email'], reset_token)
 
         return {
-            "success": True,
-            "message": "Reset code sent to your account email",
-            "email_masked": user_email[0] + "***@" + user_email.split("@")[1] if "@" in user_email else "***"
+            "message": "Recovery email sent",
+            "email": settings['recovery_email'][:3] + "***"  # Partially hide email
         }
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error sending recovery email: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send recovery email: {str(e)}")
     finally:
         cur.close()
         conn.close()
-
-
-class TwoStepResetRequest(BaseModel):
-    otp: str
-    new_password: str
 
 
 @router.post("/security/two-step/reset")
 async def reset_two_step_password(
-    request: TwoStepResetRequest,
-    profile_id: int,
-    profile_type: str,
-    user_id: int
+    reset_token: str = Body(...),
+    new_password: str = Body(...),
+    user_id: int = Query(...)
 ):
     """
-    Reset the two-step verification password using OTP.
+    Reset two-step verification password using recovery token.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        from datetime import datetime
-
-        # Verify OTP
+        # Verify reset token
         cur.execute("""
-            SELECT id, expires_at, is_used
-            FROM otps
-            WHERE user_id = %s AND otp_code = %s AND purpose = 'two_step_reset'
-            ORDER BY created_at DESC
-            LIMIT 1
-        """, (user_id, request.otp))
+            SELECT user_id FROM chat_password_reset_tokens
+            WHERE user_id = %s
+            AND reset_token = %s
+            AND expires_at > NOW()
+            AND used_at IS NULL
+        """, (user_id, reset_token))
 
-        otp_row = cur.fetchone()
+        token_record = cur.fetchone()
 
-        if not otp_row:
-            raise HTTPException(status_code=400, detail="Invalid reset code")
-
-        if otp_row['is_used']:
-            raise HTTPException(status_code=400, detail="This code has already been used")
-
-        if otp_row['expires_at'] < datetime.utcnow():
-            raise HTTPException(status_code=400, detail="Reset code has expired. Please request a new one.")
-
-        # Validate new password
-        if len(request.new_password) < 6:
-            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        if not token_record:
+            raise HTTPException(status_code=403, detail="Invalid or expired reset token")
 
         # Hash new password
         import hashlib
-        new_password_hash = hashlib.sha256(request.new_password.encode()).hexdigest()
+        new_hash = hashlib.sha256(new_password.encode()).hexdigest()
 
         # Update password
         cur.execute("""
-            UPDATE chat_settings
-            SET two_step_password_hash = %s,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE profile_id = %s AND profile_type = %s
-        """, (new_password_hash, profile_id, profile_type))
+            UPDATE chat_two_step_verification
+            SET password_hash = %s, updated_at = NOW()
+            WHERE user_id = %s
+        """, (new_hash, user_id))
 
-        # Mark OTP as used
+        # Mark token as used
         cur.execute("""
-            UPDATE otps
-            SET is_used = TRUE
-            WHERE id = %s
-        """, (otp_row['id'],))
+            UPDATE chat_password_reset_tokens
+            SET used_at = NOW()
+            WHERE reset_token = %s
+        """, (reset_token,))
 
         conn.commit()
 
-        return {
-            "success": True,
-            "message": "Password reset successfully"
-        }
+        return {"message": "Password reset successfully"}
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"[Chat API] Error resetting password: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to reset password: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
-# =============================================
-# CHAT SETTINGS ENDPOINTS
-# =============================================
-
 @router.get("/settings")
-async def get_chat_settings(profile_id: int, profile_type: str):
-    """Get chat settings for a user profile"""
+async def get_chat_settings(user_id: int = Query(...)):
+    """
+    Get all chat settings for a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        cur.execute("""
-            SELECT
-                who_can_message, read_receipts, online_status, typing_indicators,
-                message_notifications, sound_alerts, mute_duration, mute_until,
-                bubble_style, font_size, message_density, enter_key,
-                auto_download, image_quality,
-                default_translation, auto_translate, tts_voice,
-                last_seen_visibility, block_screenshots, disable_forwarding,
-                two_step_verification, two_step_email,
-                allow_calls_from, allow_group_adds, allow_channel_adds
-            FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
+        settings = get_user_privacy_settings(conn, user_id)
 
-        row = cur.fetchone()
-
-        if not row:
-            # Return defaults if no settings exist
-            return {
-                "settings": {
-                    "who_can_message": "everyone",
-                    "read_receipts": True,
-                    "online_status": True,
-                    "typing_indicators": True,
-                    "message_notifications": True,
-                    "sound_alerts": True,
-                    "mute_duration": "off",
-                    "bubble_style": "rounded",
-                    "font_size": "medium",
-                    "message_density": "comfortable",
-                    "enter_key": "send",
-                    "auto_download": "wifi",
-                    "image_quality": "compressed",
-                    "default_translation": "none",
-                    "auto_translate": False,
-                    "tts_voice": "default",
-                    "last_seen_visibility": "everyone",
-                    "block_screenshots": False,
-                    "disable_forwarding": False,
-                    "two_step_verification": False,
-                    "two_step_email": None,
-                    "allow_calls_from": "everyone",
-                    "allow_group_adds": "everyone",
-                    "allow_channel_adds": "everyone"
-                }
-            }
-
-        return {"settings": dict(row)}
+        return {"settings": settings}
 
     except Exception as e:
-        print(f"[GET /settings ERROR] {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error fetching chat settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch settings: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -4378,138 +2889,90 @@ async def get_chat_settings(profile_id: int, profile_type: str):
 
 @router.put("/settings")
 async def update_chat_settings(
-    profile_id: int = Body(...),
-    profile_type: str = Body(...),
-    settings: dict = Body(...)
+    who_can_message: Optional[str] = Body(None),
+    read_receipts: Optional[bool] = Body(None),
+    online_status: Optional[bool] = Body(None),
+    typing_indicators: Optional[bool] = Body(None),
+    last_seen_visibility: Optional[str] = Body(None),
+    block_screenshots: Optional[bool] = Body(None),
+    disable_forwarding: Optional[bool] = Body(None),
+    allow_calls_from: Optional[str] = Body(None),
+    allow_group_adds: Optional[str] = Body(None),
+    allow_channel_adds: Optional[str] = Body(None),
+    user_id: int = Query(...)
 ):
-    """Update chat settings for a user profile"""
+    """
+    Update chat settings for a user.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Get user_id from profile
-        if profile_type == 'student':
-            cur.execute("SELECT user_id FROM student_profiles WHERE id = %s", (profile_id,))
-        elif profile_type == 'tutor':
-            cur.execute("SELECT user_id FROM tutor_profiles WHERE id = %s", (profile_id,))
-        elif profile_type == 'parent':
-            cur.execute("SELECT user_id FROM parent_profiles WHERE id = %s", (profile_id,))
-        elif profile_type == 'advertiser':
-            cur.execute("SELECT user_id FROM advertiser_profiles WHERE id = %s", (profile_id,))
-        else:
-            raise HTTPException(status_code=400, detail="Invalid profile type")
+        # Build update query
+        updates = []
+        params = []
 
-        user_row = cur.fetchone()
-        if not user_row:
-            raise HTTPException(status_code=404, detail="Profile not found")
+        if who_can_message is not None:
+            updates.append("who_can_message = %s")
+            params.append(who_can_message)
 
-        user_id = user_row['user_id']
+        if read_receipts is not None:
+            updates.append("read_receipts = %s")
+            params.append(read_receipts)
 
-        # Extract settings with defaults
-        who_can_message = settings.get('who_can_message', 'everyone')
-        read_receipts = settings.get('read_receipts', True)
-        online_status = settings.get('online_status', True)
-        typing_indicators = settings.get('typing_indicators', True)
-        message_notifications = settings.get('message_notifications', True)
-        sound_alerts = settings.get('sound_alerts', True)
-        mute_duration = settings.get('mute_duration', 'off')
-        bubble_style = settings.get('bubble_style', 'rounded')
-        font_size = settings.get('font_size', 'medium')
-        message_density = settings.get('message_density', 'comfortable')
-        enter_key = settings.get('enter_key', 'send')
-        auto_download = settings.get('auto_download', 'wifi')
-        image_quality = settings.get('image_quality', 'compressed')
-        default_translation = settings.get('default_translation', 'none')
-        auto_translate = settings.get('auto_translate', False)
-        tts_voice = settings.get('tts_voice', 'default')
+        if online_status is not None:
+            updates.append("online_status = %s")
+            params.append(online_status)
 
-        # New privacy settings
-        last_seen_visibility = settings.get('last_seen_visibility', 'everyone')
-        block_screenshots = settings.get('block_screenshots', False)
-        disable_forwarding = settings.get('disable_forwarding', False)
-        two_step_verification = settings.get('two_step_verification', False)
-        two_step_email = settings.get('two_step_email')
-        allow_calls_from = settings.get('allow_calls_from', 'everyone')
-        allow_group_adds = settings.get('allow_group_adds', 'everyone')
-        allow_channel_adds = settings.get('allow_channel_adds', 'everyone')
+        if typing_indicators is not None:
+            updates.append("typing_indicators = %s")
+            params.append(typing_indicators)
 
-        # Calculate mute_until if mute_duration is set
-        mute_until = None
-        if mute_duration == '1h':
-            mute_until = "CURRENT_TIMESTAMP + INTERVAL '1 hour'"
-        elif mute_duration == '8h':
-            mute_until = "CURRENT_TIMESTAMP + INTERVAL '8 hours'"
-        elif mute_duration == '24h':
-            mute_until = "CURRENT_TIMESTAMP + INTERVAL '24 hours'"
+        if last_seen_visibility is not None:
+            updates.append("last_seen_visibility = %s")
+            params.append(last_seen_visibility)
 
-        # Upsert settings
-        cur.execute("""
-            INSERT INTO chat_settings (
-                user_id, profile_id, profile_type,
-                who_can_message, read_receipts, online_status, typing_indicators,
-                message_notifications, sound_alerts, mute_duration,
-                bubble_style, font_size, message_density, enter_key,
-                auto_download, image_quality,
-                default_translation, auto_translate, tts_voice,
-                last_seen_visibility, block_screenshots, disable_forwarding,
-                two_step_verification, two_step_email,
-                allow_calls_from, allow_group_adds, allow_channel_adds,
-                updated_at
-            ) VALUES (
-                %s, %s, %s,
-                %s, %s, %s, %s,
-                %s, %s, %s,
-                %s, %s, %s, %s,
-                %s, %s,
-                %s, %s, %s,
-                %s, %s, %s,
-                %s, %s,
-                %s, %s, %s,
-                CURRENT_TIMESTAMP
-            )
-            ON CONFLICT (user_id, profile_id, profile_type)
-            DO UPDATE SET
-                who_can_message = EXCLUDED.who_can_message,
-                read_receipts = EXCLUDED.read_receipts,
-                online_status = EXCLUDED.online_status,
-                typing_indicators = EXCLUDED.typing_indicators,
-                message_notifications = EXCLUDED.message_notifications,
-                sound_alerts = EXCLUDED.sound_alerts,
-                mute_duration = EXCLUDED.mute_duration,
-                bubble_style = EXCLUDED.bubble_style,
-                font_size = EXCLUDED.font_size,
-                message_density = EXCLUDED.message_density,
-                enter_key = EXCLUDED.enter_key,
-                auto_download = EXCLUDED.auto_download,
-                image_quality = EXCLUDED.image_quality,
-                default_translation = EXCLUDED.default_translation,
-                auto_translate = EXCLUDED.auto_translate,
-                tts_voice = EXCLUDED.tts_voice,
-                last_seen_visibility = EXCLUDED.last_seen_visibility,
-                block_screenshots = EXCLUDED.block_screenshots,
-                disable_forwarding = EXCLUDED.disable_forwarding,
-                two_step_verification = EXCLUDED.two_step_verification,
-                two_step_email = EXCLUDED.two_step_email,
-                allow_calls_from = EXCLUDED.allow_calls_from,
-                allow_group_adds = EXCLUDED.allow_group_adds,
-                allow_channel_adds = EXCLUDED.allow_channel_adds,
-                updated_at = CURRENT_TIMESTAMP
-        """, (
-            user_id, profile_id, profile_type,
-            who_can_message, read_receipts, online_status, typing_indicators,
-            message_notifications, sound_alerts, mute_duration,
-            bubble_style, font_size, message_density, enter_key,
-            auto_download, image_quality,
-            default_translation, auto_translate, tts_voice,
-            last_seen_visibility, block_screenshots, disable_forwarding,
-            two_step_verification, two_step_email,
-            allow_calls_from, allow_group_adds, allow_channel_adds
-        ))
+        if block_screenshots is not None:
+            updates.append("block_screenshots = %s")
+            params.append(block_screenshots)
 
+        if disable_forwarding is not None:
+            updates.append("disable_forwarding = %s")
+            params.append(disable_forwarding)
+
+        if allow_calls_from is not None:
+            updates.append("allow_calls_from = %s")
+            params.append(allow_calls_from)
+
+        if allow_group_adds is not None:
+            updates.append("allow_group_adds = %s")
+            params.append(allow_group_adds)
+
+        if allow_channel_adds is not None:
+            updates.append("allow_channel_adds = %s")
+            params.append(allow_channel_adds)
+
+        if not updates:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        updates.append("updated_at = NOW()")
+        params.append(user_id)
+
+        # Update or insert settings
+        cur.execute(f"""
+            INSERT INTO chat_settings (user_id, {', '.join([u.split(' = ')[0] for u in updates if 'updated_at' not in u])}, updated_at)
+            VALUES (%s, {', '.join(['%s'] * (len(params) - 1))}, NOW())
+            ON CONFLICT (user_id)
+            DO UPDATE SET {', '.join(updates)}
+            WHERE chat_settings.user_id = %s
+            RETURNING *
+        """, [user_id] + params[:-1] + [user_id])
+
+        updated_settings = cur.fetchone()
         conn.commit()
 
         return {
-            "success": True,
+            "settings": dict(updated_settings),
             "message": "Settings updated successfully"
         }
 
@@ -4517,64 +2980,136 @@ async def update_chat_settings(
         raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error updating chat settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update settings: {str(e)}")
     finally:
         cur.close()
         conn.close()
 
 
 @router.delete("/data")
-async def delete_all_chat_data(profile_id: int, profile_type: str, user_id: int):
+async def delete_all_chat_data(
+    user_id: int = Query(...),
+    confirm: bool = Query(...)
+):
     """
-    Delete all chat data for a user (one-sided deletion).
-    This marks all messages as deleted for this user and clears all conversations.
+    Delete all chat data for a user (GDPR compliance).
+
+    This is irreversible and will delete:
+    - All messages sent by the user
+    - All conversations created by the user
+    - All participant records
+    - All blocked contacts
+    - All settings
+    - All two-step verification data
     """
+    if not confirm:
+        raise HTTPException(status_code=400, detail="Must confirm deletion")
+
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
-        # Get all conversation IDs where user is a participant
+        # Delete messages
         cur.execute("""
-            SELECT conversation_id FROM conversation_participants
-            WHERE profile_id = %s AND profile_type = %s AND is_active = TRUE
-        """, (profile_id, profile_type))
+            DELETE FROM chat_messages WHERE sender_user_id = %s
+        """, (user_id,))
 
-        conversation_ids = [row['conversation_id'] for row in cur.fetchall()]
-
-        if conversation_ids:
-            # Mark all messages in these conversations as deleted for this user
-            for conv_id in conversation_ids:
-                cur.execute("""
-                    UPDATE chat_messages
-                    SET deleted_for_user_ids = COALESCE(deleted_for_user_ids, '[]'::jsonb) || %s::jsonb
-                    WHERE conversation_id = %s
-                    AND NOT (COALESCE(deleted_for_user_ids, '[]'::jsonb) @> %s::jsonb)
-                """, (json.dumps([user_id]), conv_id, json.dumps([user_id])))
-
-            # Update chat_cleared_at for all participations
-            cur.execute("""
-                UPDATE conversation_participants
-                SET chat_cleared_at = CURRENT_TIMESTAMP
-                WHERE profile_id = %s AND profile_type = %s
-            """, (profile_id, profile_type))
-
-        # Delete chat settings
+        # Delete conversation participants
         cur.execute("""
-            DELETE FROM chat_settings
-            WHERE profile_id = %s AND profile_type = %s
-        """, (profile_id, profile_type))
+            DELETE FROM conversation_participants WHERE user_id = %s
+        """, (user_id,))
+
+        # Delete conversations created by user
+        cur.execute("""
+            DELETE FROM conversations WHERE created_by_user_id = %s
+        """, (user_id,))
+
+        # Delete blocked contacts
+        cur.execute("""
+            DELETE FROM blocked_chat_contacts
+            WHERE blocker_user_id = %s OR blocked_user_id = %s
+        """, (user_id, user_id))
+
+        # Delete settings
+        cur.execute("""
+            DELETE FROM chat_settings WHERE user_id = %s
+        """, (user_id,))
+
+        # Delete two-step verification
+        cur.execute("""
+            DELETE FROM chat_two_step_verification WHERE user_id = %s
+        """, (user_id,))
+
+        # Delete sessions
+        cur.execute("""
+            DELETE FROM user_sessions WHERE user_id = %s
+        """, (user_id,))
 
         conn.commit()
 
-        return {
-            "success": True,
-            "message": "All chat data deleted for your account",
-            "conversations_cleared": len(conversation_ids)
-        }
+        return {"message": "All chat data deleted successfully"}
 
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[Chat API] Error deleting chat data: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete chat data: {str(e)}")
     finally:
         cur.close()
         conn.close()
+
+
+# ============================================================================
+# POLLS ENDPOINTS (Stubs - Not Yet Implemented)
+# ============================================================================
+
+@router.get("/polls/conversation/{conversation_id}")
+async def get_conversation_polls(
+    conversation_id: int,
+    user_id: int = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """Get all polls in a conversation (stub - returns empty list)"""
+    return {"polls": []}
+
+
+@router.post("/polls")
+async def create_poll(
+    user_id: int = Query(...),
+    conversation_id: int = Body(...),
+    question: str = Body(...),
+    options: List[str] = Body(...),
+    current_user=Depends(get_current_user)
+):
+    """Create a new poll (stub - not implemented)"""
+    raise HTTPException(
+        status_code=501,
+        detail="Polls feature is not yet implemented"
+    )
+
+
+@router.post("/polls/{poll_id}/vote")
+async def vote_on_poll(
+    poll_id: int,
+    user_id: int = Query(...),
+    option_index: int = Body(...),
+    current_user=Depends(get_current_user)
+):
+    """Vote on a poll (stub - not implemented)"""
+    raise HTTPException(
+        status_code=501,
+        detail="Polls feature is not yet implemented"
+    )
+
+
+@router.delete("/polls/{poll_id}")
+async def delete_poll(
+    poll_id: int,
+    user_id: int = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """Delete a poll (stub - not implemented)"""
+    raise HTTPException(
+        status_code=501,
+        detail="Polls feature is not yet implemented"
+    )

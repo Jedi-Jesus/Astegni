@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Guard Comprehensive Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Role Guard Comprehensive Test</h1>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Current State</h2>
+            <div id="currentState" class="space-y-2 font-mono text-sm"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Quick Tests</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="testNoLogin()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: No Login
+                </button>
+                <button onclick="testNullRole()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: NULL Active Role
+                </button>
+                <button onclick="testStudent()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Test: Student (Should Pass)
+                </button>
+                <button onclick="testParent()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Test: Parent (Should Pass)
+                </button>
+                <button onclick="testUser()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Test: User (Should Pass)
+                </button>
+                <button onclick="testTutor()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: Tutor (Should Fail)
+                </button>
+                <button onclick="testAdvertiser()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: Advertiser (Should Fail)
+                </button>
+                <button onclick="testEmptyString()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: Empty String Role
+                </button>
+                <button onclick="testUndefinedString()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Test: "undefined" String
+                </button>
+                <button onclick="testStudentWithTutorRoles()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                    Test: Multi-Role User
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Navigation Test</h2>
+            <button onclick="navigateToFindTutors()" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600">
+                Navigate to Find Tutors Page
+            </button>
+            <p class="text-sm text-gray-600 mt-2">Opens find-tutors.html with current localStorage state</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="testResults" class="space-y-2 text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display current state
+        function displayCurrentState() {
+            const state = {
+                'Token': localStorage.getItem('token') || localStorage.getItem('access_token') || 'MISSING',
+                'Current User': localStorage.getItem('currentUser') || 'MISSING',
+                'User Role': localStorage.getItem('userRole') || 'MISSING',
+                'Session Role Switch': sessionStorage.getItem('role_switch_in_progress') || 'false'
+            };
+
+            let html = '';
+            for (const [key, value] of Object.entries(state)) {
+                const truncated = typeof value === 'string' && value.length > 100
+                    ? value.substring(0, 100) + '...'
+                    : value;
+
+                const colorClass = value === 'MISSING' ? 'text-red-600' : 'text-green-600';
+                html += `<div><strong>${key}:</strong> <span class="${colorClass}">${truncated}</span></div>`;
+            }
+
+            document.getElementById('currentState').innerHTML = html;
+        }
+
+        // Log test result
+        function logResult(testName, details) {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultHTML = `
+                <div class="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50">
+                    <div class="font-semibold">[${timestamp}] ${testName}</div>
+                    <div class="text-gray-600">${details}</div>
+                </div>
+            `;
+            resultsDiv.insertAdjacentHTML('afterbegin', resultHTML);
+            displayCurrentState();
+        }
+
+        // Test functions
+        function testNoLogin() {
+            localStorage.clear();
+            sessionStorage.clear();
+            logResult('No Login Test', 'Cleared all storage. Navigate to find-tutors - should show auth required modal.');
+        }
+
+        function testNullRole() {
+            const mockUser = {
+                id: 1,
+                name: 'Test User',
+                email: 'test@test.com',
+                active_role: null,
+                roles: ['student', 'parent']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.removeItem('userRole');
+            logResult('NULL Role Test', 'Set active_role to null with roles=[student, parent]. Should show role switch modal.');
+        }
+
+        function testStudent() {
+            const mockUser = {
+                id: 1,
+                name: 'Student User',
+                email: 'student@test.com',
+                active_role: 'student',
+                role: 'student',
+                roles: ['student']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'student');
+            logResult('Student Test', 'Set active_role to "student". Should PASS ✅');
+        }
+
+        function testParent() {
+            const mockUser = {
+                id: 1,
+                name: 'Parent User',
+                email: 'parent@test.com',
+                active_role: 'parent',
+                role: 'parent',
+                roles: ['parent']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'parent');
+            logResult('Parent Test', 'Set active_role to "parent". Should PASS ✅');
+        }
+
+        function testUser() {
+            const mockUser = {
+                id: 1,
+                name: 'User',
+                email: 'user@test.com',
+                active_role: 'user',
+                role: 'user',
+                roles: ['user']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'user');
+            logResult('User Test', 'Set active_role to "user". Should PASS ✅');
+        }
+
+        function testTutor() {
+            const mockUser = {
+                id: 1,
+                name: 'Tutor User',
+                email: 'tutor@test.com',
+                active_role: 'tutor',
+                role: 'tutor',
+                roles: ['tutor']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'tutor');
+            logResult('Tutor Test', 'Set active_role to "tutor". Should FAIL ❌ - show access denied modal.');
+        }
+
+        function testAdvertiser() {
+            const mockUser = {
+                id: 1,
+                name: 'Advertiser User',
+                email: 'advertiser@test.com',
+                active_role: 'advertiser',
+                role: 'advertiser',
+                roles: ['advertiser']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'advertiser');
+            logResult('Advertiser Test', 'Set active_role to "advertiser". Should FAIL ❌ - show access denied modal.');
+        }
+
+        function testEmptyString() {
+            const mockUser = {
+                id: 1,
+                name: 'Empty Role User',
+                email: 'empty@test.com',
+                active_role: '',
+                role: '',
+                roles: ['student']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', '');
+            logResult('Empty String Test', 'Set active_role to empty string "". Should FAIL ❌ - treated as no role.');
+        }
+
+        function testUndefinedString() {
+            const mockUser = {
+                id: 1,
+                name: 'Undefined User',
+                email: 'undefined@test.com',
+                active_role: 'undefined',
+                role: 'undefined',
+                roles: ['student']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'undefined');
+            logResult('Undefined String Test', 'Set active_role to string "undefined". Should FAIL ❌ - treated as no role.');
+        }
+
+        function testStudentWithTutorRoles() {
+            const mockUser = {
+                id: 1,
+                name: 'Multi-Role User',
+                email: 'multi@test.com',
+                active_role: 'tutor',
+                role: 'tutor',
+                roles: ['tutor', 'student', 'parent']
+            };
+            localStorage.setItem('currentUser', JSON.stringify(mockUser));
+            localStorage.setItem('token', 'mock_token_123');
+            localStorage.setItem('userRole', 'tutor');
+            logResult('Multi-Role Test', 'Set active_role to "tutor" with roles=[tutor, student, parent]. Should show role switch modal offering student/parent.');
+        }
+
+        function navigateToFindTutors() {
+            logResult('Navigation', 'Opening find-tutors page with current state...');
+            setTimeout(() => {
+                window.location.href = 'branch/find-tutors.html';
+            }, 500);
+        }
+
+        // Auto-display on load
+        displayCurrentState();
+
+        // Add instructions
+        document.addEventListener('DOMContentLoaded', () => {
+            logResult('Test Page Loaded', 'Click any test button, then click "Navigate to Find Tutors Page" to test the role guard.');
+        });
+    </script>
+</body>
+</html>

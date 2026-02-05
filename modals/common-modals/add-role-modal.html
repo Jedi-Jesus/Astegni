@@ -35,9 +35,24 @@
                         <option value="student">Student</option>
                         <option value="tutor">Tutor</option>
                         <option value="parent">Parent</option>
-                        <option value="advertiser">Advertiser</option>
+                    <!--    <option value="advertiser">Advertiser</option> -->
                     </select>
                     <label>Register As</label>
+                </div>
+
+                <!-- Deactivated Role Message -->
+                <div id="role-deactivated-message" class="alert" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: start; gap: 8px;">
+                        <svg class="w-5 h-5" style="flex-shrink: 0; color: #F59E0B; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div>
+                            <strong style="color: #F59E0B; display: block; margin-bottom: 4px;">Role Already Exists (Deactivated)</strong>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                You previously had this role but it was deactivated. Click <strong>"Activate Role"</strong> to reactivate it with OTP verification.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Confirm Password -->
@@ -109,8 +124,8 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn-submit">
-                <span class="btn-text">Verify & Continue</span>
+            <button type="submit" class="btn-submit" id="add-role-submit-btn">
+                <span class="btn-text" id="add-role-btn-text">Verify & Continue</span>
                 <span class="btn-loader" style="display: none;">
                     <svg class="animate-spin" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
@@ -120,5 +135,39 @@
                 </span>
             </button>
         </form>
+
+        <!-- Step 3: Success & Switch Confirmation Panel (hidden initially) -->
+        <div id="add-role-success-panel" style="display: none; padding: 2rem;">
+            <!-- Success Icon -->
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="width: 64px; height: 64px; margin: 0 auto 1rem; background: linear-gradient(135deg, #10B981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <svg class="w-8 h-8" style="color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                    <span id="add-role-success-title">Role Added Successfully!</span>
+                </h3>
+                <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary);">
+                    Your <strong id="add-role-success-role-name"></strong> role has been added to your account.
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button type="button" class="btn-submit" id="switch-to-new-role-btn" onclick="confirmSwitchToNewRole()">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                    <span id="switch-to-new-role-text">Switch to Account</span>
+                </button>
+                <button type="button" class="btn-outline" onclick="stayWithCurrentRole()" style="background: transparent; border: 2px solid var(--border-color); color: var(--text-primary);">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Stay Here
+                </button>
+            </div>
+        </div>
     </div>
 </div>

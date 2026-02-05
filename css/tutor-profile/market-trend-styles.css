@@ -48,8 +48,14 @@
 
 /* View Containers */
 #package-management-modal .market-view-container {
-    padding: 2rem;
+    padding: 0;
     animation: fadeIn 0.5s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 @keyframes fadeIn {
@@ -195,51 +201,17 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Dataset Toggles */
-#package-management-modal .market-dataset-toggles {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-#package-management-modal .market-dataset-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--hover-bg);
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#package-management-modal .market-dataset-label:hover {
-    border-color: var(--primary-color);
-    background: var(--card-bg);
-}
-
-#package-management-modal .market-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--primary-color);
-}
-
-[data-theme="dark"] #package-management-modal .market-checkbox {
-    accent-color: #FFD54F;
-}
+/* Dataset Toggles - Now using sidebar layout from package-modal-unified.css */
+/* Styles moved to package-modal-unified.css for better layout control */
 
 /* Table View */
 #package-management-modal .market-table-wrapper {
     overflow-x: auto;
     border-radius: 12px;
     border: 2px solid var(--border-color);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 #package-management-modal .market-table {
@@ -665,6 +637,9 @@
     border-radius: 16px;
     padding: 2rem !important;
     min-height: 500px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .market-price-green-bg {

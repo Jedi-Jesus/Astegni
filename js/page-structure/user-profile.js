@@ -56,72 +56,7 @@ let originalEmail = '';
 let emailChangeVerified = false;
 let newEmailToVerify = '';
 
-function openEditProfileModal() {
-    const modal = document.getElementById('editProfileModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-
-        // Get current user from authManager
-        const currentUser = window.AuthManager ? window.AuthManager.getUser() : null;
-
-        // Load current profile data - separate name fields
-        if (currentUser) {
-            document.getElementById('editFirstName').value = currentUser.first_name || '';
-            document.getElementById('editFatherName').value = currentUser.father_name || '';
-            document.getElementById('editGrandfatherName').value = currentUser.grandfather_name || '';
-            originalEmail = currentUser.email || '';
-            document.getElementById('editEmail').value = currentUser.email || '';
-            document.getElementById('editPhone').value = currentUser.phone || '';
-        } else {
-            // Fallback to parsing display name
-            const fullName = document.getElementById('profile-name').textContent || '';
-            const nameParts = fullName.split(' ');
-            document.getElementById('editFirstName').value = nameParts[0] || '';
-            document.getElementById('editFatherName').value = nameParts[1] || '';
-            document.getElementById('editGrandfatherName').value = nameParts[2] || '';
-            originalEmail = document.getElementById('user-email').textContent || '';
-            document.getElementById('editEmail').value = originalEmail;
-            document.getElementById('editPhone').value = document.getElementById('user-phone').textContent || '';
-        }
-
-        document.getElementById('editLocation').value = document.getElementById('user-location').textContent || '';
-        document.getElementById('editInterests').value = document.getElementById('user-interests').textContent || '';
-        document.getElementById('editBio').value = document.getElementById('user-bio').textContent || '';
-        document.getElementById('editQuote').value = document.getElementById('user-quote').textContent.replace(/"/g, '') || '';
-
-        // Reset OTP verification state
-        emailChangeVerified = false;
-        newEmailToVerify = '';
-        document.getElementById('otpVerificationSection').style.display = 'none';
-        document.getElementById('sendEmailOtpBtn').style.display = 'none';
-
-        // Monitor email changes
-        document.getElementById('editEmail').addEventListener('input', handleEmailChange);
-    }
-}
-
-function handleEmailChange(event) {
-    const newEmail = event.target.value;
-    const sendOtpBtn = document.getElementById('sendEmailOtpBtn');
-
-    // Show OTP button only if email has changed and is valid
-    if (newEmail !== originalEmail && newEmail && newEmail.includes('@')) {
-        sendOtpBtn.style.display = 'inline-block';
-        emailChangeVerified = false;
-    } else {
-        sendOtpBtn.style.display = 'none';
-        emailChangeVerified = newEmail === originalEmail; // If same as original, no verification needed
-    }
-}
-
-function closeEditProfileModal() {
-    const modal = document.getElementById('editProfileModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        // Remove event listener
-        document.getElementById('editEmail').removeEventListener('input', handleEmailChange);
-    }
-}
+// OLD FUNCTION REMOVED - See new implementation at line 1031
 
 // OTP Functions for Email Change
 async function sendEmailOTP() {
@@ -369,27 +304,8 @@ function updateProfileDisplay(firstName, fatherName, grandfatherName, location, 
     if (quote) document.getElementById('user-quote').textContent = `"${quote}"`;
 }
 
-// Share profile function
-function shareProfile() {
-    const profileUrl = window.location.href;
-
-    if (navigator.share) {
-        navigator.share({
-            title: 'My Astegni Profile',
-            text: 'Check out my profile on Astegni!',
-            url: profileUrl
-        }).catch(err => console.log('Error sharing:', err));
-    } else {
-        // Fallback: Copy to clipboard
-        navigator.clipboard.writeText(profileUrl).then(() => {
-            if (typeof showNotification === 'function') {
-                showNotification('Profile link copied to clipboard!', 'success');
-            } else {
-                alert('Profile link copied to clipboard!');
-            }
-        });
-    }
-}
+// Note: shareProfile() function is provided by share-profile-manager.js
+// which is loaded after this file in user-profile.html
 
 // Cover upload functions
 let coverFile = null;
@@ -631,12 +547,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // FIX: Check if role switch is in progress FIRST (before getting userRole)
+    // Use localStorage with timestamp - valid for 10 seconds after switch
+    const switchTimestamp = localStorage.getItem('role_switch_timestamp');
+    const targetRole = localStorage.getItem('role_switch_target');
+
+    if (switchTimestamp && targetRole === 'user') {
+        const timeSinceSwitch = Date.now() - parseInt(switchTimestamp);
+        const isWithinGracePeriod = timeSinceSwitch < 10000; // 10 seconds grace period
+
+        if (isWithinGracePeriod) {
+            // Clear the flags after successful detection
+            localStorage.removeItem('role_switch_timestamp');
+            localStorage.removeItem('role_switch_target');
+
+            console.log('✅ [UserProfile] Role switch detected (within 10s grace period) - allowing page load');
+            console.log('✅ [UserProfile] Skipping role validation (user just switched roles)');
+            // Continue to initialize the page - skip role validation entirely
+        } else {
+            // Grace period expired, clear flags and perform normal check
+            console.log('⚠️ [UserProfile] Role switch grace period expired, clearing flags and performing normal role check');
+            localStorage.removeItem('role_switch_timestamp');
+            localStorage.removeItem('role_switch_target');
+
+            // Fall through to normal role check below
+            performNormalRoleCheck();
+        }
+    } else {
+        // No role switch in progress - perform normal check
+        performNormalRoleCheck();
+    }
+
+    function performNormalRoleCheck() {
+        const userRole = window.AuthManager.getUserRole();
+        const user = window.AuthManager.getUser();
+
+        // DEBUG: Log detailed role information
+        console.log('🔍 [UserProfile] Role Check Debug:', {
+            userRole: userRole,
+            user_active_role: user?.active_role,
+            user_role: user?.role,
+            user_roles: user?.roles,
+            localStorage_userRole: localStorage.getItem('userRole'),
+            localStorage_switchTimestamp: localStorage.getItem('role_switch_timestamp'),
+            localStorage_switchTarget: localStorage.getItem('role_switch_target')
+        });
+
+        // More defensive role check - handle undefined, null, and string "undefined"
+        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+        if (normalizedRole !== 'user') {
+            console.warn(`⚠️ [UserProfile] User role is '${normalizedRole}', not 'user'. Redirecting...`);
+            alert(`This page is for general users only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your user role or log in with a user account.`);
+            window.location.href = '../index.html';
+            return;
+        }
+    }
+
     console.log('✅ Authentication verified for user profile');
 
     // ============================================
     // LOAD PROFILE DATA FROM API
     // ============================================
     await loadUserProfileData();
+
+    // ============================================
+    // LOAD CONNECTION STATISTICS
+    // ============================================
+    await loadConnectionStats();
+
+    // ============================================
+    // LOAD TRENDING TUTORS & RECOMMENDED TOPICS
+    // ============================================
+    await loadTrendingTutors();
+    await loadRecommendedTopics();
 });
 
 // Navigation link handler
@@ -681,11 +665,10 @@ document.head.appendChild(quickActionStyle);
 // ============================================
 
 // State for current engagement filters
-let currentEngagementFilter = 'likes'; // likes, saved, favorites, comments
-let currentEngagementType = 'tutors'; // tutors, reels
+let currentEngagementFilter = 'likes'; // likes, saved, favorites, comments, shares, viewing-history
 
 /**
- * Filter engagements by type (likes, saved, favorites, comments)
+ * Filter engagements by type (likes, saved, favorites, comments, shares, viewing-history)
  */
 function filterEngagements(filterType) {
     currentEngagementFilter = filterType;
@@ -694,26 +677,6 @@ function filterEngagements(filterType) {
     const filterButtons = document.querySelectorAll('.engagement-filter-btn');
     filterButtons.forEach(btn => {
         if (btn.dataset.filter === filterType) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-
-    // Load engagement data
-    loadEngagementData();
-}
-
-/**
- * Filter engagements by content type (tutors, reels)
- */
-function filterEngagementType(contentType) {
-    currentEngagementType = contentType;
-
-    // Update button active states
-    const typeButtons = document.querySelectorAll('.engagement-type-btn');
-    typeButtons.forEach(btn => {
-        if (btn.dataset.type === contentType) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
@@ -734,91 +697,16 @@ function loadEngagementData() {
     // Show loading state
     resultsContainer.innerHTML = '<p class="text-gray-500">Loading...</p>';
 
-    // Simulate API call delay
+    // TODO: Fetch real data from API based on currentEngagementFilter
+    // For now, show empty state
     setTimeout(() => {
-        // Sample data for demonstration
-        const sampleData = generateSampleEngagementData(currentEngagementFilter, currentEngagementType);
-
-        if (sampleData.length === 0) {
-            resultsContainer.innerHTML = `
-                <div class="text-center py-8">
-                    <p class="text-gray-500 text-lg mb-2">No ${currentEngagementFilter} found</p>
-                    <p class="text-sm text-gray-400">You haven't ${currentEngagementFilter} any ${currentEngagementType} yet</p>
-                </div>
-            `;
-        } else {
-            resultsContainer.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${sampleData.map(item => createEngagementCard(item)).join('')}
-                </div>
-            `;
-        }
+        resultsContainer.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-gray-500 text-lg mb-2">No ${currentEngagementFilter} found</p>
+                <p class="text-sm text-gray-400">You haven't ${currentEngagementFilter} any content yet</p>
+            </div>
+        `;
     }, 300);
-}
-
-/**
- * Generate sample engagement data
- */
-function generateSampleEngagementData(filterType, contentType) {
-    // Sample data structure
-    const tutorData = [
-        { id: 1, name: 'Dr. Abebe Tadesse', subject: 'Mathematics', rating: 4.8, image: '../uploads/system_images/system_profile_pictures/tutor-.jpg', time: '2 hours ago' },
-        { id: 2, name: 'Aster Bekele', subject: 'Physics', rating: 4.9, image: '../uploads/system_images/system_profile_pictures/tutor-woman.jpg', time: '1 day ago' },
-        { id: 3, name: 'Mulugeta Assefa', subject: 'Chemistry', rating: 4.7, image: '../uploads/system_images/system_profile_pictures/tutor-.jpg', time: '3 days ago' }
-    ];
-
-    const reelData = [
-        { id: 1, title: 'Advanced Calculus Tutorial', views: '12K', thumbnail: '../uploads/system_images/system_images/Math wallpaper 1.jpeg', time: '1 hour ago' },
-        { id: 2, title: 'Physics Lab Experiment', views: '8K', thumbnail: '../uploads/system_images/system_images/Physics wallpaper 2.jpeg', time: '5 hours ago' },
-        { id: 3, title: 'Chemistry Fundamentals', views: '15K', thumbnail: '../uploads/system_images/system_images/Chemistry wallpaper 3.jpg', time: '2 days ago' }
-    ];
-
-    return contentType === 'tutors' ? tutorData : reelData;
-}
-
-/**
- * Create engagement card HTML
- */
-function createEngagementCard(item) {
-    if (currentEngagementType === 'tutors') {
-        return `
-            <div class="card p-4 engagement-card">
-                <div class="flex items-center gap-4">
-                    <img src="${item.image}" alt="${item.name}"
-                         class="w-16 h-16 rounded-full object-cover"
-                         onerror="this.style.display='none'; this.onerror=null;">
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-lg">${item.name}</h3>
-                        <p class="text-sm text-gray-600">${item.subject}</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-yellow-500">⭐ ${item.rating}</span>
-                            <span class="text-xs text-gray-500">${item.time}</span>
-                        </div>
-                    </div>
-                    <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                        View Profile
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        return `
-            <div class="card overflow-hidden engagement-card">
-                <div class="relative aspect-video bg-gray-200">
-                    <img src="${item.thumbnail}" alt="${item.title}"
-                         class="w-full h-full object-cover"
-                         onerror="this.style.display='none'; this.onerror=null;">
-                    <div class="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                        ${item.views} views
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-semibold mb-1">${item.title}</h3>
-                    <p class="text-xs text-gray-500">${item.time}</p>
-                </div>
-            </div>
-        `;
-    }
 }
 
 // Initialize engagement panel when switching to it
@@ -882,15 +770,35 @@ function displayUserProfile(profile) {
     console.log('[displayUserProfile] Displaying profile:', profile);
     // Profile Header Section
     const profileNameEl = document.getElementById('profile-name');
+    const navbarProfileNameEl = document.getElementById('navbar-profile-name');
     const usernameEl = document.getElementById('profile-username');
     const profileLocationEl = document.getElementById('user-location');
     const profilePicEl = document.getElementById('profile-pic');
     const coverImgEl = document.getElementById('cover-img');
 
-    // Display name (from users table)
-    const fullName = [profile.first_name, profile.father_name, profile.grandfather_name]
-        .filter(Boolean)
-        .join(' ');
+    // Display name (from API - already built with naming convention logic)
+    // API returns pre-built name based on Ethiopian or International naming convention
+    let fullName = profile.name;
+
+    // Fallback: Build name manually if API didn't provide it
+    if (!fullName) {
+        if (profile.grandfather_name) {
+            // Ethiopian naming convention
+            fullName = [profile.first_name, profile.father_name, profile.grandfather_name]
+                .filter(Boolean)
+                .join(' ');
+        } else if (profile.last_name) {
+            // International naming convention
+            fullName = [profile.first_name, profile.last_name]
+                .filter(Boolean)
+                .join(' ');
+        } else {
+            // Fallback
+            fullName = [profile.first_name, profile.father_name]
+                .filter(Boolean)
+                .join(' ');
+        }
+    }
 
     console.log('[displayUserProfile] Setting profile name to:', fullName);
     if (profileNameEl) {
@@ -899,30 +807,35 @@ function displayUserProfile(profile) {
         console.error('[displayUserProfile] profile-name element not found!');
     }
 
-    // Display username (from user_profiles table)
+    // Also update navbar profile name
+    if (navbarProfileNameEl) {
+        navbarProfileNameEl.textContent = fullName;
+    }
+
+    // Display username (from user_profiles table - renamed for clarity)
     if (usernameEl) {
-        usernameEl.textContent = profile.username ? `@${profile.username}` : '@username';
+        usernameEl.textContent = profile.user_profile_username ? `@${profile.user_profile_username}` : '@username';
         // Add styling for placeholder
-        if (!profile.username) {
+        if (!profile.user_profile_username) {
             usernameEl.style.opacity = '0.5';
         } else {
             usernameEl.style.opacity = '1';
         }
     }
 
-    // Display location
+    // Display location (from users table)
     if (profileLocationEl) {
         profileLocationEl.textContent = profile.location || 'Location not set';
     }
 
-    // Display profile picture
+    // Display profile picture (from users table)
     if (profilePicEl && profile.profile_picture) {
         profilePicEl.src = profile.profile_picture;
     }
 
-    // Display cover image
-    if (coverImgEl && profile.cover_image) {
-        coverImgEl.src = profile.cover_image;
+    // Display cover image (from user_profiles table)
+    if (coverImgEl && profile.user_profile_cover_image) {
+        coverImgEl.src = profile.user_profile_cover_image;
     }
 
     // Profile Details Section
@@ -931,81 +844,319 @@ function displayUserProfile(profile) {
     const userInterestsEl = document.getElementById('user-interests');
     const userEmailEl = document.getElementById('user-email');
     const userPhoneEl = document.getElementById('user-phone');
+    const emailContainer = document.getElementById('email-container');
 
+    // Quote (from user_profiles table)
     if (userQuoteEl) {
-        userQuoteEl.textContent = profile.quote || '"Learning is a journey, not a destination."';
+        userQuoteEl.textContent = profile.user_profile_quote || '"Learning is a journey, not a destination."';
     }
 
+    // Bio (from user_profiles table)
     if (userBioEl) {
-        userBioEl.textContent = profile.about || profile.bio || 'No bio available';
+        userBioEl.textContent = profile.user_profile_about || profile.bio || 'No bio available';
     }
 
-    if (userInterestsEl && profile.interested_in) {
-        userInterestsEl.textContent = profile.interested_in.join(', ') || 'Not specified';
+    // Interests (from user_profiles table)
+    if (userInterestsEl) {
+        const interests = profile.user_profile_interests || profile.user_profile_interested_in;
+        if (Array.isArray(interests) && interests.length > 0) {
+            userInterestsEl.textContent = interests.join(', ');
+        } else {
+            userInterestsEl.textContent = 'Not specified';
+        }
     }
 
-    if (userEmailEl) {
+    // Email (from users table) - ALWAYS display
+    if (userEmailEl && emailContainer) {
         userEmailEl.textContent = profile.email || 'Not specified';
+        emailContainer.style.display = 'flex';  // Always show email container
     }
 
-    if (userPhoneEl) {
-        userPhoneEl.textContent = profile.phone || 'Not specified';
+    // Phone (from users table)
+    const phoneContainer = document.getElementById('phone-container');
+    if (userPhoneEl && phoneContainer) {
+        if (profile.phone) {
+            userPhoneEl.textContent = profile.phone;
+            phoneContainer.style.display = 'flex';
+        } else {
+            phoneContainer.style.display = 'none';
+        }
     }
 
-    // Member since (created_at from users table)
+    // Member since (from user_profiles.created_at - when user role was added)
     const userJoinedEl = document.getElementById('user-joined');
-    if (userJoinedEl && profile.created_at) {
-        const joinDate = new Date(profile.created_at);
-        userJoinedEl.textContent = joinDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long'
-        });
+    if (userJoinedEl) {
+        if (profile.user_profile_created_at) {
+            // Use user_profiles.created_at (when user role was added)
+            const joinDate = new Date(profile.user_profile_created_at);
+            userJoinedEl.textContent = joinDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+            });
+        } else if (profile.user_created_at) {
+            // Fallback to users.created_at
+            const joinDate = new Date(profile.user_created_at);
+            userJoinedEl.textContent = joinDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+            });
+        }
     }
 
     // Hero section (if present on page)
     const heroTitleEl = document.getElementById('typedText');
     const heroSubtitleEl = document.getElementById('hero-subtitle');
 
-    if (heroTitleEl && profile.hero_title) {
-        heroTitleEl.textContent = profile.hero_title;
+    if (heroTitleEl && profile.user_profile_hero_title) {
+        heroTitleEl.textContent = profile.user_profile_hero_title;
     }
 
-    if (heroSubtitleEl && profile.hero_subtitle) {
-        heroSubtitleEl.textContent = profile.hero_subtitle;
+    if (heroSubtitleEl && profile.user_profile_hero_subtitle) {
+        heroSubtitleEl.textContent = profile.user_profile_hero_subtitle;
+    }
+
+    // Mobile Profile Section
+    const mobileProfilePicEl = document.getElementById('mobile-profile-pic');
+    const mobileProfileNameEl = document.getElementById('mobile-profile-name');
+    const mobileProfileRoleEl = document.getElementById('mobile-profile-role');
+
+    // Update mobile profile picture
+    if (mobileProfilePicEl && profile.profile_picture) {
+        mobileProfilePicEl.src = profile.profile_picture;
+    }
+
+    // Update mobile profile name
+    if (mobileProfileNameEl) {
+        mobileProfileNameEl.textContent = fullName;
+    }
+
+    // Update mobile profile role (display active role)
+    if (mobileProfileRoleEl && profile.active_role) {
+        // Capitalize first letter of role
+        const roleDisplay = profile.active_role.charAt(0).toUpperCase() + profile.active_role.slice(1);
+        mobileProfileRoleEl.textContent = roleDisplay;
+    }
+
+    // Display Social Links (from users table)
+    displaySocialLinks(profile.social_links);
+
+    console.log('[displayUserProfile] Profile display complete');
+}
+
+/**
+ * Display social media links from database
+ * @param {Object} socialLinks - Object containing social media URLs from users.social_links (JSON field)
+ */
+function displaySocialLinks(socialLinks) {
+    console.log('[displaySocialLinks] Rendering social links:', socialLinks);
+    const container = document.getElementById('social-links-container');
+
+    if (!container) {
+        console.warn('[displaySocialLinks] Container not found');
+        return;
+    }
+
+    // Clear existing content
+    container.innerHTML = '';
+
+    // If no social links, hide container
+    if (!socialLinks || Object.keys(socialLinks).length === 0) {
+        console.log('[displaySocialLinks] No social links to display');
+        container.style.display = 'none';
+        return;
+    }
+
+    // Social media platform configurations
+    const platforms = {
+        twitter: {
+            name: 'Twitter',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+            </svg>`,
+            color: '#1DA1F2',
+            hoverColor: '#1a91da'
+        },
+        linkedin: {
+            name: 'LinkedIn',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                <circle cx="4" cy="4" r="2"></circle>
+            </svg>`,
+            color: '#0A66C2',
+            hoverColor: '#004182'
+        },
+        facebook: {
+            name: 'Facebook',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+            </svg>`,
+            color: '#1877F2',
+            hoverColor: '#165ed0'
+        },
+        instagram: {
+            name: 'Instagram',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>`,
+            color: '#E4405F',
+            hoverColor: '#d32f4f'
+        },
+        youtube: {
+            name: 'YouTube',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path>
+            </svg>`,
+            color: '#FF0000',
+            hoverColor: '#cc0000'
+        },
+        github: {
+            name: 'GitHub',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
+            </svg>`,
+            color: '#333333',
+            hoverColor: '#24292e'
+        },
+        tiktok: {
+            name: 'TikTok',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"></path>
+            </svg>`,
+            color: '#000000',
+            hoverColor: '#2b2b2b'
+        },
+        telegram: {
+            name: 'Telegram',
+            icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path>
+            </svg>`,
+            color: '#0088cc',
+            hoverColor: '#006699'
+        }
+    };
+
+    // Build social links HTML
+    let hasLinks = false;
+
+    for (const [platform, url] of Object.entries(socialLinks)) {
+        if (url && url.trim() !== '') {
+            hasLinks = true;
+            const config = platforms[platform.toLowerCase()];
+
+            if (config) {
+                const linkEl = document.createElement('a');
+                linkEl.href = url;
+                linkEl.target = '_blank';
+                linkEl.rel = 'noopener noreferrer';
+                linkEl.title = config.name;
+                linkEl.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background-color: ${config.color};
+                    color: white;
+                    transition: all 0.3s ease;
+                    text-decoration: none;
+                `;
+
+                // Hover effect
+                linkEl.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = config.hoverColor;
+                    this.style.transform = 'translateY(-3px) scale(1.1)';
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                });
+
+                linkEl.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = config.color;
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = 'none';
+                });
+
+                linkEl.innerHTML = config.icon;
+                container.appendChild(linkEl);
+            }
+        }
+    }
+
+    // Show/hide container based on whether we have links
+    if (hasLinks) {
+        container.style.display = 'flex';
+        console.log('[displaySocialLinks] Displayed social links successfully');
+    } else {
+        container.style.display = 'none';
+        console.log('[displaySocialLinks] No valid social links found');
     }
 }
 
 /**
  * Open edit profile modal and populate with current data
+ * Loads data from both users table and user_profiles table
  */
 function openEditProfileModal() {
+    console.log('[openEditProfileModal] Opening edit modal with profile:', currentUserProfile);
     const modal = document.getElementById('editProfileModal');
-    if (!modal) return;
+    if (!modal) {
+        console.error('[openEditProfileModal] Modal not found');
+        return;
+    }
 
     // Populate form fields with current data
     if (currentUserProfile) {
-        document.getElementById('editUsername').value = currentUserProfile.username || '';
-        document.getElementById('editHeroTitle').value = currentUserProfile.hero_title || '';
-        document.getElementById('editHeroSubtitle').value = currentUserProfile.hero_subtitle || '';
+        // From user_profiles table
+        document.getElementById('editUsername').value = currentUserProfile.user_profile_username || '';
+        document.getElementById('editHeroTitle').value = currentUserProfile.user_profile_hero_title || '';
+        document.getElementById('editHeroSubtitle').value = currentUserProfile.user_profile_hero_subtitle || '';
+        document.getElementById('editQuote').value = currentUserProfile.user_profile_quote || '';
+
+        // About - try user_profiles.about first, fallback to users.bio
+        const aboutValue = currentUserProfile.user_profile_about || currentUserProfile.bio || '';
+        document.getElementById('editAbout').value = aboutValue;
+
+        // From users table
         document.getElementById('editLocation').value = currentUserProfile.location || '';
-        document.getElementById('editQuote').value = currentUserProfile.quote || '';
-        document.getElementById('editAbout').value = currentUserProfile.about || '';
 
-        // Languages (array to comma-separated string)
-        document.getElementById('editLanguages').value =
-            currentUserProfile.languages ? currentUserProfile.languages.join(', ') : '';
+        // Languages (array to comma-separated string) - from users table
+        const languages = currentUserProfile.languages || [];
+        document.getElementById('editLanguages').value = Array.isArray(languages) ? languages.join(', ') : '';
 
-        // Interested in (array to comma-separated string)
-        document.getElementById('editInterestedIn').value =
-            currentUserProfile.interested_in ? currentUserProfile.interested_in.join(', ') : '';
+        // Interested in (array to comma-separated string) - from user_profiles table
+        const interests = currentUserProfile.user_profile_interested_in || currentUserProfile.user_profile_interests || [];
+        document.getElementById('editInterestedIn').value = Array.isArray(interests) ? interests.join(', ') : '';
 
-        // Social links
-        if (currentUserProfile.social_links) {
-            document.getElementById('editTwitter').value = currentUserProfile.social_links.twitter || '';
-            document.getElementById('editLinkedIn').value = currentUserProfile.social_links.linkedin || '';
-            document.getElementById('editFacebook').value = currentUserProfile.social_links.facebook || '';
-            document.getElementById('editInstagram').value = currentUserProfile.social_links.instagram || '';
+        // Social links - from users table
+        const socialLinks = currentUserProfile.social_links || {};
+        document.getElementById('editTwitter').value = socialLinks.twitter || '';
+        document.getElementById('editLinkedIn').value = socialLinks.linkedin || '';
+        document.getElementById('editFacebook').value = socialLinks.facebook || '';
+        document.getElementById('editInstagram').value = socialLinks.instagram || '';
+
+        // Load display_location checkbox (show/hide location on public profile)
+        const displayLocationCheckbox = document.getElementById('editDisplayLocation');
+        if (displayLocationCheckbox) {
+            displayLocationCheckbox.checked = currentUserProfile.display_location === true;
+            console.log('[User Edit] display_location loaded:', currentUserProfile.display_location);
         }
+
+        // Disable GPS detection checkbox and show "Change Location" button if location exists
+        const allowLocationCheckbox = document.getElementById('editAllowLocation');
+        const changeLocationBtn = document.getElementById('changeLocationBtn');
+        if (allowLocationCheckbox && currentUserProfile.location) {
+            allowLocationCheckbox.checked = false;
+            allowLocationCheckbox.disabled = true; // Make unselectable
+            if (changeLocationBtn) {
+                changeLocationBtn.classList.remove('hidden');
+            }
+            console.log('[User Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
+        }
+
+        console.log('[openEditProfileModal] Form populated successfully');
+    } else {
+        console.warn('[openEditProfileModal] No currentUserProfile data available');
     }
 
     modal.classList.remove('hidden');
@@ -1055,21 +1206,31 @@ async function saveUserProfile() {
             instagram: document.getElementById('editInstagram').value.trim()
         };
 
-        // Prepare update data
+        // Get display_location checkbox value
+        const displayLocationCheckbox = document.getElementById('editDisplayLocation');
+        const displayLocation = displayLocationCheckbox?.checked || false;
+        console.log('[User Save] display_location value:', displayLocation);
+
+        // Prepare update data for both tables
+        // Location goes to users table, rest goes to user_profiles table
         const updateData = {
+            // For users table
+            location: location || null,
+            display_location: displayLocation,
+
+            // For user_profiles table
             username: username || null,
             hero_title: heroTitle || null,
             hero_subtitle: heroSubtitle || null,
-            location: location || null,
             quote: quote || null,
-            about: about || null,
+            bio: about || null,  // Store as 'bio' in user_profiles table
             languages: languages,
             interested_in: interestedIn,
             social_links: socialLinks
         };
 
-        // Send update request
-        const response = await fetch(`${API_BASE_URL_PROFILE}/api/user/profile`, {
+        // Send update request to full profile endpoint (updates both tables)
+        const response = await fetch(`${API_BASE_URL_PROFILE}/api/user/profile/full`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1107,29 +1268,9 @@ async function saveUserProfile() {
     }
 }
 
-/**
- * Share profile functionality
- */
-function shareProfile() {
-    const profileUrl = window.location.href;
-
-    if (navigator.share) {
-        navigator.share({
-            title: 'My Astegni Profile',
-            text: 'Check out my profile on Astegni',
-            url: profileUrl
-        }).catch(err => console.log('Error sharing:', err));
-    } else {
-        // Fallback: copy to clipboard
-        navigator.clipboard.writeText(profileUrl).then(() => {
-            if (window.showToast) {
-                window.showToast('Profile link copied to clipboard!', 'success');
-            } else {
-                alert('Profile link copied to clipboard!');
-            }
-        });
-    }
-}
+// Note: shareProfile() function is now provided by share-profile-manager.js
+// which is loaded after this file in user-profile.html and provides
+// full referral tracking functionality
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -1140,5 +1281,442 @@ document.addEventListener('DOMContentLoaded', function() {
 window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
 window.saveUserProfile = saveUserProfile;
-window.shareProfile = shareProfile;
+// Note: window.shareProfile is set by share-profile-manager.js
 window.loadUserProfileData = loadUserProfileData;
+
+
+/**
+ * Load connection statistics from the connections table
+ */
+async function loadConnectionStats() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Use the dedicated stats endpoint that returns all counts in one call
+        const response = await fetch(`${API_BASE_URL}/api/connections/stats?role=user`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const stats = await response.json();
+
+            // Update the stat boxes with the data from the API
+            const connectionsCountEl = document.getElementById('connections-count');
+            const pendingRequestsCountEl = document.getElementById('pending-requests-count');
+            const receivedRequestsCountEl = document.getElementById('received-requests-count');
+
+            if (connectionsCountEl) {
+                connectionsCountEl.textContent = stats.accepted_count || 0;
+            }
+            if (pendingRequestsCountEl) {
+                pendingRequestsCountEl.textContent = stats.outgoing_requests || 0;
+            }
+            if (receivedRequestsCountEl) {
+                receivedRequestsCountEl.textContent = stats.incoming_requests || 0;
+            }
+
+            console.log('[loadConnectionStats] Stats loaded:', stats);
+        } else {
+            console.error('[loadConnectionStats] Failed to load stats:', response.status);
+        }
+
+    } catch (error) {
+        console.error('[loadConnectionStats] Error loading connection stats:', error);
+    }
+}
+
+/**
+ * NOTE: openChatModal() and openCommunityModal() are now provided by:
+ * - chat-modal.js (for chat)
+ * - community-modal-manager.js (for community)
+ * These scripts are loaded in user-profile.html and provide the global functions.
+ */
+
+/**
+ * Load trending tutors with continuous cycling
+ */
+async function loadTrendingTutors() {
+    try {
+        const container = document.getElementById('trending-tutors-container');
+        if (!container) return;
+
+        // Fetch more trending tutors for continuous cycling
+        const response = await fetch(`${API_BASE_URL}/api/tutors/trending?limit=20&min_searches=1`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const allTutors = data.trending_tutors || [];
+
+        if (allTutors.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-sm text-gray-500">No trending tutors yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Initialize container with fade transition
+        container.style.opacity = '0';
+        container.style.transition = 'opacity 0.5s ease-in-out';
+
+        let currentIndex = 0;
+        const tutorsPerPage = 5;
+
+        // Function to render a batch of tutors
+        function renderTutorBatch(tutors) {
+            return tutors.map(tutor => {
+                const fullName = `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim();
+
+                // Generate initials from first_name and father_name/last_name
+                const firstName = tutor.first_name || '';
+                const secondName = tutor.father_name || tutor.last_name || '';
+                const initials = (firstName.charAt(0) + secondName.charAt(0)).toUpperCase();
+
+                // Generate background color based on name
+                const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
+                const colorIndex = (firstName.charCodeAt(0) + secondName.charCodeAt(0)) % colors.length;
+                const bgColor = colors[colorIndex];
+
+                // Get rating
+                const rating = tutor.rating ? `${tutor.rating.toFixed(1)}⭐` : null;
+
+                // Get subjects/courses
+                let subjects = 'Various Subjects';
+                if (tutor.subjects && Array.isArray(tutor.subjects) && tutor.subjects.length > 0) {
+                    subjects = tutor.subjects.slice(0, 2).join(', ');
+                } else if (tutor.subject) {
+                    subjects = tutor.subject;
+                }
+
+                // Get institution/school
+                const institution = tutor.teaches_at || tutor.institution || tutor.location || '';
+
+                // Build info line: "Rating • Subject • Institution" (skip rating if not available)
+                let infoLine = '';
+                if (rating && institution) {
+                    infoLine = `${rating} • ${subjects} • ${institution}`;
+                } else if (rating) {
+                    infoLine = `${rating} • ${subjects}`;
+                } else if (institution) {
+                    infoLine = `${subjects} • ${institution}`;
+                } else {
+                    infoLine = subjects;
+                }
+
+                // Use profile picture if available, otherwise show initials
+                const avatarHTML = tutor.profile_picture
+                    ? `<img src="${tutor.profile_picture}"
+                            alt="${fullName}"
+                            class="w-12 h-12 rounded-full object-cover">`
+                    : `<div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                            style="background-color: ${bgColor}">
+                            ${initials}
+                       </div>`;
+
+                return `
+                    <div class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all">
+                        ${avatarHTML}
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm">${fullName}</p>
+                            <p class="text-xs text-gray-500">${infoLine}</p>
+                        </div>
+                        <a href="../view-profiles/view-tutor.html?id=${tutor.user_id}"
+                           class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded hover:bg-blue-600 transition-colors">
+                            View
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Function to cycle through tutors
+        async function cycleTutors() {
+            // Get next batch of tutors
+            const batch = allTutors.slice(currentIndex, currentIndex + tutorsPerPage);
+
+            // If we've reached the end, restart from beginning
+            if (batch.length === 0 || currentIndex >= allTutors.length) {
+                currentIndex = 0;
+                return cycleTutors(); // Restart cycle
+            }
+
+            // Fade out current content
+            container.style.opacity = '0';
+            await delay(500);
+
+            // Render new batch
+            container.innerHTML = renderTutorBatch(batch);
+
+            // Fade in new content
+            container.style.opacity = '1';
+            await delay(500);
+
+            // Move to next batch
+            currentIndex += tutorsPerPage;
+
+            // Wait before showing next batch (3 seconds display time)
+            await delay(3000);
+
+            // Continue cycling
+            cycleTutors();
+        }
+
+        // Start the cycling
+        cycleTutors();
+
+        console.log(`[loadTrendingTutors] Started cycling ${allTutors.length} trending tutors`);
+
+    } catch (error) {
+        console.error('[loadTrendingTutors] Error loading trending tutors:', error);
+        const container = document.getElementById('trending-tutors-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-sm text-red-500">Failed to load trending tutors</p>
+                </div>
+            `;
+        }
+    }
+}
+
+/**
+ * Load recommended topics (top tier courses and schools) with continuous cycling
+ */
+async function loadRecommendedTopics() {
+    try {
+        const container = document.getElementById('recommended-topics-widget');
+        if (!container) return;
+
+        console.log('[loadRecommendedTopics] Loading recommended topics...');
+
+        // Fetch more courses and schools for continuous cycling
+        const [coursesResponse, schoolsResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/trending/courses?limit=20&min_searches=1`),
+            fetch(`${API_BASE_URL}/api/trending/schools?limit=20&min_searches=1`)
+        ]);
+
+        let courses = [];
+        let schools = [];
+
+        if (coursesResponse.ok) {
+            const coursesData = await coursesResponse.json();
+            courses = coursesData.trending_courses || [];
+        }
+
+        if (schoolsResponse.ok) {
+            const schoolsData = await schoolsResponse.json();
+            schools = schoolsData.trending_schools || [];
+        }
+
+        // Handle empty states
+        if (courses.length === 0 && schools.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-3xl mb-2 text-gray-400"></i>
+                    <p class="text-sm text-gray-500">No topics available yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Prepare all topics in a single array for cycling
+        const allTopics = [];
+
+        // Add all courses
+        courses.forEach(course => {
+            allTopics.push({
+                type: 'course',
+                id: course.id,
+                name: course.course_name,
+                category: course.course_category,
+                rating: course.rating,
+                icon: getCourseIcon(course.course_category)
+            });
+        });
+
+        // Add all schools
+        schools.forEach(school => {
+            allTopics.push({
+                type: 'school',
+                id: school.id,
+                name: school.name,
+                category: school.type,
+                rating: school.rating,
+                icon: '🏫',
+                students: school.student_count
+            });
+        });
+
+        // Initialize container with fade transition
+        container.style.opacity = '0';
+        container.style.transition = 'opacity 0.5s ease-in-out';
+
+        let currentIndex = 0;
+        const itemsPerPage = 5;
+
+        // Function to cycle through topics
+        async function cycleTopics() {
+            // Get next batch of topics
+            const batch = allTopics.slice(currentIndex, currentIndex + itemsPerPage);
+
+            // If we've reached the end, restart from beginning
+            if (batch.length === 0 || currentIndex >= allTopics.length) {
+                currentIndex = 0;
+                return cycleTopics(); // Restart cycle
+            }
+
+            // Fade out current content
+            await fadeOut(container);
+            await delay(300);
+
+            // Render new batch
+            renderTopics(container, batch);
+
+            // Fade in new content
+            await fadeIn(container);
+
+            // Move to next batch
+            currentIndex += itemsPerPage;
+
+            // Wait before showing next batch (3 seconds display time)
+            await delay(3000);
+
+            // Continue cycling
+            cycleTopics();
+        }
+
+        // Start the cycling
+        cycleTopics();
+
+        console.log(`[loadRecommendedTopics] Started cycling ${allTopics.length} topics (${courses.length} courses, ${schools.length} schools)`);
+
+    } catch (error) {
+        console.error('[loadRecommendedTopics] Error loading topics:', error);
+        const container = document.getElementById('recommended-topics-widget');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-3xl mb-2 text-yellow-500"></i>
+                    <p class="text-sm text-gray-500">Failed to load topics</p>
+                </div>
+            `;
+        }
+    }
+}
+
+/**
+ * Render topics into container
+ */
+function renderTopics(container, topics) {
+    container.innerHTML = topics.map(topic => {
+        const ratingStars = topic.rating ? '⭐'.repeat(Math.round(topic.rating)) : '';
+        const subtitle = topic.type === 'course'
+            ? topic.category
+            : `${topic.students || 0} students`;
+
+        return `
+            <div class="topic-item" onclick="handleTopicClick('${topic.type}', ${topic.id})">
+                <span class="topic-icon">${topic.icon}</span>
+                <div class="topic-info">
+                    <p class="topic-name">${topic.name}</p>
+                    <p class="topic-subtitle">${subtitle}</p>
+                </div>
+                <span class="topic-rating">${ratingStars}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Fade in animation
+ */
+function fadeIn(element) {
+    return new Promise(resolve => {
+        element.style.opacity = '1';
+        setTimeout(resolve, 500); // Match transition duration
+    });
+}
+
+/**
+ * Fade out animation
+ */
+function fadeOut(element) {
+    return new Promise(resolve => {
+        element.style.opacity = '0';
+        setTimeout(resolve, 500); // Match transition duration
+    });
+}
+
+/**
+ * Delay helper
+ */
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Get icon for course category
+ */
+function getCourseIcon(category) {
+    const icons = {
+        'STEM': '🔬',
+        'Mathematics': '📐',
+        'Math': '📐',
+        'Science': '🧪',
+        'Technology': '💻',
+        'Engineering': '⚙️',
+        'Arts': '🎨',
+        'Music': '🎵',
+        'Languages': '🗣️',
+        'Business': '💼',
+        'Education': '📚',
+        'Sports & Fitness': '🏃',
+        'Beauty & Wellness': '💄'
+    };
+    return icons[category] || '📚';
+}
+
+/**
+ * Handle topic click
+ */
+function handleTopicClick(type, id) {
+    if (type === 'course') {
+        // Navigate to course page or search tutors by course
+        window.location.href = `../branch/find-tutors.html?course_id=${id}`;
+    } else if (type === 'school') {
+        // Navigate to school page or search tutors by school
+        window.location.href = `../branch/find-tutors.html?school_id=${id}`;
+    }
+}
+
+/**
+ * Handle "Change Location" button click - enables GPS checkbox
+ */
+function handleChangeLocationUser() {
+    const allowLocationCheckbox = document.getElementById('editAllowLocation');
+    const changeLocationBtn = document.getElementById('changeLocationBtn');
+
+    if (allowLocationCheckbox) {
+        allowLocationCheckbox.disabled = false; // Enable the checkbox
+        allowLocationCheckbox.checked = false; // Uncheck it
+        console.log('[User Edit] GPS checkbox enabled for location change');
+    }
+
+    if (changeLocationBtn) {
+        changeLocationBtn.classList.add('hidden'); // Hide the button
+    }
+}
+
+// Export connection stats function to window
+window.loadConnectionStats = loadConnectionStats;
+window.loadTrendingTutors = loadTrendingTutors;
+window.loadRecommendedTopics = loadRecommendedTopics;
+window.handleChangeLocationUser = handleChangeLocationUser;

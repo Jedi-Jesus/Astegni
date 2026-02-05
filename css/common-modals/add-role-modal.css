@@ -552,7 +552,58 @@
 }
 
 /* ============================================
-   15. RESPONSIVE DESIGN
+   15. SUCCESS PANEL STYLES
+   ============================================ */
+
+#add-role-modal #add-role-success-panel {
+    animation: slideInUp 0.3s ease;
+}
+
+#add-role-modal .btn-outline {
+    width: 100%;
+    height: 48px;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    background: transparent;
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#add-role-modal .btn-outline:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: var(--text-secondary, #6b7280);
+    transform: translateY(-1px);
+}
+
+#add-role-modal .btn-outline:active {
+    transform: translateY(0);
+}
+
+[data-theme="dark"] #add-role-modal .btn-outline {
+    color: #f3f4f6;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] #add-role-modal .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Success icon SVG color */
+#add-role-modal #add-role-success-panel svg {
+    flex-shrink: 0;
+}
+
+/* ============================================
+   16. RESPONSIVE DESIGN
    ============================================ */
 
 @media (max-width: 640px) {
@@ -570,5 +621,9 @@
 
     #add-role-modal .auth-form {
         padding: 0 1.5rem 1.25rem;
+    }
+
+    #add-role-modal #add-role-success-panel {
+        padding: 1.5rem !important;
     }
 }

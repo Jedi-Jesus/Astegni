@@ -3,6 +3,54 @@
 //    Reads from users table - no tutor-specific fields
 
         /**
+         * Toggle between Ethiopian and International naming systems
+         */
+        function toggleNamingSystem() {
+            const ethiopianNaming = document.getElementById('ethiopianNaming');
+            const internationalNaming = document.getElementById('internationalNaming');
+            const ethiopianFields = document.getElementById('ethiopianNameFields');
+            const internationalFields = document.getElementById('internationalNameFields');
+
+            if (ethiopianNaming && ethiopianNaming.checked) {
+                // Show Ethiopian fields, hide International fields
+                if (ethiopianFields) ethiopianFields.style.display = 'block';
+                if (internationalFields) internationalFields.style.display = 'none';
+
+                // Make Ethiopian fields required
+                const modalFirstName = document.getElementById('modalFirstName');
+                const modalFatherName = document.getElementById('modalFatherName');
+                const modalGrandfatherName = document.getElementById('modalGrandfatherName');
+                if (modalFirstName) modalFirstName.required = true;
+                if (modalFatherName) modalFatherName.required = true;
+                if (modalGrandfatherName) modalGrandfatherName.required = true;
+
+                // Make International fields not required
+                const modalFirstNameIntl = document.getElementById('modalFirstNameIntl');
+                const modalLastName = document.getElementById('modalLastName');
+                if (modalFirstNameIntl) modalFirstNameIntl.required = false;
+                if (modalLastName) modalLastName.required = false;
+            } else if (internationalNaming && internationalNaming.checked) {
+                // Show International fields, hide Ethiopian fields
+                if (ethiopianFields) ethiopianFields.style.display = 'none';
+                if (internationalFields) internationalFields.style.display = 'block';
+
+                // Make International fields required
+                const modalFirstNameIntl = document.getElementById('modalFirstNameIntl');
+                const modalLastName = document.getElementById('modalLastName');
+                if (modalFirstNameIntl) modalFirstNameIntl.required = true;
+                if (modalLastName) modalLastName.required = true;
+
+                // Make Ethiopian fields not required
+                const modalFirstName = document.getElementById('modalFirstName');
+                const modalFatherName = document.getElementById('modalFatherName');
+                const modalGrandfatherName = document.getElementById('modalGrandfatherName');
+                if (modalFirstName) modalFirstName.required = false;
+                if (modalFatherName) modalFatherName.required = false;
+                if (modalGrandfatherName) modalGrandfatherName.required = false;
+            }
+        }
+
+        /**
          * Open Verify Personal Info Modal
          */
         async function openVerifyPersonalInfoModal() {
@@ -783,35 +831,58 @@
                 }
 
                 // Load personal information (names)
-                const modalFirstName = document.getElementById('modalFirstName');
-                const modalFatherName = document.getElementById('modalFatherName');
-                const modalGrandfatherName = document.getElementById('modalGrandfatherName');
+                // Determine which naming system to use
+                const hasEthiopianNames = user.father_name || user.grandfather_name;
+                const hasInternationalNames = user.last_name;
 
-                console.log('🔍 Found elements:', {
-                    firstName: !!modalFirstName,
-                    fatherName: !!modalFatherName,
-                    grandfatherName: !!modalGrandfatherName
-                });
+                const ethiopianNaming = document.getElementById('ethiopianNaming');
+                const internationalNaming = document.getElementById('internationalNaming');
 
-                if (modalFirstName) {
-                    modalFirstName.value = user.first_name || '';
-                    console.log('✅ Loaded first name:', user.first_name);
+                // Set naming system based on existing data
+                if (hasInternationalNames && !hasEthiopianNames) {
+                    // User has international naming
+                    if (internationalNaming) internationalNaming.checked = true;
+                    toggleNamingSystem();
+
+                    const modalFirstNameIntl = document.getElementById('modalFirstNameIntl');
+                    const modalLastName = document.getElementById('modalLastName');
+                    if (modalFirstNameIntl) modalFirstNameIntl.value = user.first_name || '';
+                    if (modalLastName) modalLastName.value = user.last_name || '';
                 } else {
-                    console.error('❌ modalFirstName element not found');
-                }
+                    // Default to Ethiopian naming or user has Ethiopian names
+                    if (ethiopianNaming) ethiopianNaming.checked = true;
+                    toggleNamingSystem();
 
-                if (modalFatherName) {
-                    modalFatherName.value = user.father_name || '';
-                    console.log('✅ Loaded father name:', user.father_name);
-                } else {
-                    console.error('❌ modalFatherName element not found');
-                }
+                    const modalFirstName = document.getElementById('modalFirstName');
+                    const modalFatherName = document.getElementById('modalFatherName');
+                    const modalGrandfatherName = document.getElementById('modalGrandfatherName');
 
-                if (modalGrandfatherName) {
-                    modalGrandfatherName.value = user.grandfather_name || '';
-                    console.log('✅ Loaded grandfather name:', user.grandfather_name);
-                } else {
-                    console.error('❌ modalGrandfatherName element not found');
+                    console.log('🔍 Found elements:', {
+                        firstName: !!modalFirstName,
+                        fatherName: !!modalFatherName,
+                        grandfatherName: !!modalGrandfatherName
+                    });
+
+                    if (modalFirstName) {
+                        modalFirstName.value = user.first_name || '';
+                        console.log('✅ Loaded first name:', user.first_name);
+                    } else {
+                        console.error('❌ modalFirstName element not found');
+                    }
+
+                    if (modalFatherName) {
+                        modalFatherName.value = user.father_name || '';
+                        console.log('✅ Loaded father name:', user.father_name);
+                    } else {
+                        console.error('❌ modalFatherName element not found');
+                    }
+
+                    if (modalGrandfatherName) {
+                        modalGrandfatherName.value = user.grandfather_name || '';
+                        console.log('✅ Loaded grandfather name:', user.grandfather_name);
+                    } else {
+                        console.error('❌ modalGrandfatherName element not found');
+                    }
                 }
 
                 // Load email and phone arrays
@@ -868,21 +939,58 @@
          * Updates users table
          */
         async function saveAllPersonalInfo() {
-            // Get all modal fields
-            const modalFirstName = document.getElementById('modalFirstName');
-            const modalFatherName = document.getElementById('modalFatherName');
-            const modalGrandfatherName = document.getElementById('modalGrandfatherName');
-            const modalEmailContainer = document.getElementById('modalEmailContainer');
-            const modalPhoneContainer = document.getElementById('modalPhoneContainer');
+            // Determine which naming system is selected
+            const ethiopianNaming = document.getElementById('ethiopianNaming');
+            const isEthiopian = ethiopianNaming && ethiopianNaming.checked;
 
-            if (!modalFirstName || !modalFatherName || !modalGrandfatherName) {
-                alert('⚠️ Name fields not found');
-                return;
+            // Get fields based on naming system
+            let firstName, fatherName, grandfatherName, lastName;
+
+            if (isEthiopian) {
+                // Ethiopian naming system
+                const modalFirstName = document.getElementById('modalFirstName');
+                const modalFatherName = document.getElementById('modalFatherName');
+                const modalGrandfatherName = document.getElementById('modalGrandfatherName');
+
+                if (!modalFirstName || !modalFatherName || !modalGrandfatherName) {
+                    alert('⚠️ Ethiopian name fields not found');
+                    return;
+                }
+
+                firstName = modalFirstName.value.trim();
+                fatherName = modalFatherName.value.trim();
+                grandfatherName = modalGrandfatherName.value.trim();
+                lastName = null;
+
+                // Validate required fields for Ethiopian naming
+                if (!firstName || !fatherName || !grandfatherName) {
+                    alert('Please fill in all Ethiopian name fields (First Name, Father Name, Grandfather Name)');
+                    return;
+                }
+            } else {
+                // International naming system
+                const modalFirstNameIntl = document.getElementById('modalFirstNameIntl');
+                const modalLastName = document.getElementById('modalLastName');
+
+                if (!modalFirstNameIntl || !modalLastName) {
+                    alert('⚠️ International name fields not found');
+                    return;
+                }
+
+                firstName = modalFirstNameIntl.value.trim();
+                lastName = modalLastName.value.trim();
+                fatherName = null;
+                grandfatherName = null;
+
+                // Validate required fields for International naming
+                if (!firstName || !lastName) {
+                    alert('Please fill in all name fields (First Name, Last Name)');
+                    return;
+                }
             }
 
-            const firstName = modalFirstName.value.trim();
-            const fatherName = modalFatherName.value.trim();
-            const grandfatherName = modalGrandfatherName.value.trim();
+            const modalEmailContainer = document.getElementById('modalEmailContainer');
+            const modalPhoneContainer = document.getElementById('modalPhoneContainer');
             const gender = document.getElementById('modalGender') ? document.getElementById('modalGender').value : '';
             const dateOfBirth = document.getElementById('modalDateOfBirth') ? document.getElementById('modalDateOfBirth').value : '';
             const digitalIdNo = document.getElementById('modalDigitalIdNo') ? document.getElementById('modalDigitalIdNo').value.trim() : '';
@@ -898,12 +1006,6 @@
             const phonesArray = Array.from(phoneInputs)
                 .map(input => input.value.trim())
                 .filter(value => value !== '');
-
-            // Validate required fields
-            if (!firstName || !fatherName || !grandfatherName) {
-                alert('Please fill in all name fields');
-                return;
-            }
 
             // Validate DOB and gender are required for profile completion
             if (!dateOfBirth) {
@@ -928,7 +1030,10 @@
             const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
             // Check what has changed
-            const nameChanged = firstName !== user.first_name || fatherName !== user.father_name || grandfatherName !== user.grandfather_name;
+            const nameChanged = firstName !== user.first_name ||
+                                fatherName !== user.father_name ||
+                                grandfatherName !== user.grandfather_name ||
+                                lastName !== user.last_name;
             const currentEmails = user.emails && Array.isArray(user.emails) ? user.emails : (user.email ? [user.email] : []);
             const currentPhones = user.phones && Array.isArray(user.phones) ? user.phones : (user.phone ? [user.phone] : []);
             const emailsChanged = JSON.stringify(emailsArray.sort()) !== JSON.stringify(currentEmails.sort());
@@ -944,7 +1049,13 @@
 
             // Build confirmation message
             let confirmMessage = 'You are about to update:\n\n';
-            if (nameChanged) confirmMessage += `Names: ${firstName} ${fatherName} ${grandfatherName}\n`;
+            if (nameChanged) {
+                if (isEthiopian) {
+                    confirmMessage += `Names: ${firstName} ${fatherName} ${grandfatherName}\n`;
+                } else {
+                    confirmMessage += `Names: ${firstName} ${lastName}\n`;
+                }
+            }
             if (dobChanged) confirmMessage += `Date of Birth: ${dateOfBirth}\n`;
             if (genderChanged) confirmMessage += `Gender: ${gender}\n`;
             if (digitalIdChanged) confirmMessage += `Digital ID: ${digitalIdNo}\n`;
@@ -955,7 +1066,7 @@
             const confirmed = confirm(confirmMessage);
             if (!confirmed) return;
 
-            console.log('Saving all personal info:', { firstName, fatherName, grandfatherName, emailsArray, phonesArray, gender });
+            console.log('Saving all personal info:', { firstName, fatherName, grandfatherName, lastName, emailsArray, phonesArray, gender });
 
             try {
                 // Check both token keys (app uses both 'token' and 'access_token')
@@ -972,6 +1083,7 @@
                     updateData.first_name = firstName;
                     updateData.father_name = fatherName;
                     updateData.grandfather_name = grandfatherName;
+                    updateData.last_name = lastName;
                 }
                 if (dobChanged) {
                     updateData.date_of_birth = dateOfBirth;

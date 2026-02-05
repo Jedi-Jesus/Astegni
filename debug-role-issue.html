@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Role Deactivation Issue</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .section {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #00ff00;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        pre {
+            background: #0a0a0a;
+            padding: 10px;
+            border-left: 3px solid #00ff00;
+            overflow-x: auto;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .warning {
+            color: #ffaa00;
+        }
+        .success {
+            color: #00ff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .key {
+            color: #00aaff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Role Deactivation Debugging Tool</h1>
+
+    <div class="section">
+        <h2>📦 localStorage Contents</h2>
+        <pre id="localStorage-output"></pre>
+    </div>
+
+    <div class="section">
+        <h2>🌐 Profile System State</h2>
+        <pre id="profile-system-state"></pre>
+    </div>
+
+    <div class="section">
+        <h2>🔗 Dropdown Link Analysis</h2>
+        <pre id="dropdown-link-info"></pre>
+    </div>
+
+    <div class="section">
+        <h2>⚠️ Issue Detection</h2>
+        <pre id="issue-detection"></pre>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Quick Fixes</h2>
+        <button onclick="syncLocalStorage()">Sync localStorage Keys</button>
+        <button onclick="refreshProfileSystem()">Refresh Profile System</button>
+        <button onclick="clearAllAndReload()">Clear All & Reload</button>
+        <button onclick="location.reload()">Reload Page</button>
+    </div>
+
+    <script>
+        function displayLocalStorage() {
+            const output = document.getElementById('localStorage-output');
+            const relevantKeys = ['user', 'currentUser', 'userRole', 'token', 'access_token'];
+
+            let html = '';
+            relevantKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    html += `<span class="key">${key}:</span>\n`;
+                    try {
+                        const parsed = JSON.parse(value);
+                        html += JSON.stringify(parsed, null, 2) + '\n\n';
+                    } catch (e) {
+                        html += value + '\n\n';
+                    }
+                } else {
+                    html += `<span class="warning">${key}: NOT FOUND</span>\n\n`;
+                }
+            });
+
+            output.innerHTML = html;
+        }
+
+        function displayProfileSystemState() {
+            const output = document.getElementById('profile-system-state');
+            let html = '';
+
+            if (typeof ProfileSystem !== 'undefined') {
+                html += `<span class="success">✓ ProfileSystem is loaded</span>\n\n`;
+
+                if (ProfileSystem.getCurrentUser) {
+                    const currentUser = ProfileSystem.getCurrentUser();
+                    html += `<span class="key">currentUser (from ProfileSystem):</span>\n`;
+                    html += JSON.stringify(currentUser, null, 2) + '\n\n';
+                }
+
+                if (ProfileSystem.getUserRole) {
+                    const userRole = ProfileSystem.getUserRole();
+                    html += `<span class="key">userRole (from ProfileSystem):</span> ${userRole}\n\n`;
+                }
+            } else {
+                html += `<span class="error">✗ ProfileSystem is NOT loaded!</span>\n`;
+            }
+
+            output.innerHTML = html;
+        }
+
+        function displayDropdownLinkInfo() {
+            const output = document.getElementById('dropdown-link-info');
+            let html = '';
+
+            const dropdownLink = document.getElementById('dropdown-profile-link');
+            if (dropdownLink) {
+                html += `<span class="success">✓ Dropdown link found</span>\n`;
+                html += `<span class="key">href:</span> ${dropdownLink.href}\n`;
+                html += `<span class="key">text:</span> ${dropdownLink.textContent}\n\n`;
+            } else {
+                html += `<span class="warning">⚠ Dropdown link NOT found in DOM</span>\n`;
+                html += `(This is normal if you're not on a profile page)\n\n`;
+            }
+
+            const dropdownRole = document.getElementById('dropdown-user-role');
+            if (dropdownRole) {
+                html += `<span class="key">Dropdown role text:</span> ${dropdownRole.textContent}\n`;
+            }
+
+            output.innerHTML = html;
+        }
+
+        function detectIssues() {
+            const output = document.getElementById('issue-detection');
+            let issues = [];
+
+            const user = localStorage.getItem('user');
+            const currentUser = localStorage.getItem('currentUser');
+            const userRole = localStorage.getItem('userRole');
+
+            // Check for missing keys
+            if (!user) issues.push('❌ localStorage key "user" is missing');
+            if (!currentUser) issues.push('❌ localStorage key "currentUser" is missing');
+            if (!userRole) issues.push('❌ localStorage key "userRole" is missing');
+
+            // Check for mismatched roles
+            if (user && currentUser && userRole) {
+                try {
+                    const userObj = JSON.parse(user);
+                    const currentUserObj = JSON.parse(currentUser);
+
+                    const userActiveRole = userObj.active_role || userObj.current_role;
+                    const currentUserActiveRole = currentUserObj.active_role || currentUserObj.role;
+
+                    if (userActiveRole !== userRole) {
+                        issues.push(`⚠️ MISMATCH: user.active_role="${userActiveRole}" but userRole="${userRole}"`);
+                    }
+
+                    if (currentUserActiveRole !== userRole) {
+                        issues.push(`⚠️ MISMATCH: currentUser.active_role="${currentUserActiveRole}" but userRole="${userRole}"`);
+                    }
+
+                    if (userActiveRole !== currentUserActiveRole) {
+                        issues.push(`⚠️ MISMATCH: user.active_role="${userActiveRole}" but currentUser.active_role="${currentUserActiveRole}"`);
+                    }
+
+                    // Check if pointing to deactivated role
+                    if (userRole === 'tutor' || userActiveRole === 'tutor' || currentUserActiveRole === 'tutor') {
+                        issues.push(`🚨 CRITICAL: Still showing "tutor" role (likely deactivated)`);
+                    }
+
+                } catch (e) {
+                    issues.push(`❌ Error parsing localStorage: ${e.message}`);
+                }
+            }
+
+            // Check ProfileSystem
+            if (typeof ProfileSystem === 'undefined') {
+                issues.push('❌ ProfileSystem is not loaded');
+            }
+
+            if (issues.length === 0) {
+                output.innerHTML = '<span class="success">✓ No issues detected!</span>';
+            } else {
+                output.innerHTML = issues.join('\n');
+            }
+        }
+
+        function syncLocalStorage() {
+            const userRole = localStorage.getItem('userRole');
+            if (!userRole || userRole === 'undefined' || userRole === 'null') {
+                alert('No valid userRole found in localStorage!');
+                return;
+            }
+
+            // Sync 'user' object
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            user.active_role = userRole;
+            user.current_role = userRole;
+            localStorage.setItem('user', JSON.stringify(user));
+
+            // Sync 'currentUser' object
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            currentUser.role = userRole;
+            currentUser.active_role = userRole;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            alert(`Synced both 'user' and 'currentUser' to role: ${userRole}`);
+            location.reload();
+        }
+
+        function refreshProfileSystem() {
+            if (typeof ProfileSystem !== 'undefined') {
+                ProfileSystem.updateUI();
+                ProfileSystem.updateProfileDropdown();
+                alert('Profile System refreshed!');
+                location.reload();
+            } else {
+                alert('ProfileSystem is not loaded!');
+            }
+        }
+
+        function clearAllAndReload() {
+            if (confirm('This will log you out and clear all data. Continue?')) {
+                localStorage.clear();
+                location.href = '/index.html';
+            }
+        }
+
+        // Run diagnostics on load
+        window.addEventListener('DOMContentLoaded', () => {
+            displayLocalStorage();
+            displayProfileSystemState();
+            displayDropdownLinkInfo();
+            detectIssues();
+        });
+    </script>
+</body>
+</html>

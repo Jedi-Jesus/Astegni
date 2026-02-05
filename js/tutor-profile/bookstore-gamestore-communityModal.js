@@ -323,6 +323,47 @@
         function switchCommunityMainTab(section) {
             console.log('Switching to main section:', section);
 
+            // Handle direct requests cards
+            if (section === 'requests-sent' || section === 'requests-received') {
+                // Hide all main tab content sections
+                const mainTabContents = document.querySelectorAll('.community-main-tab-content');
+                mainTabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Show requests content
+                const requestsContent = document.getElementById('requests-main-tab-content');
+                if (requestsContent) {
+                    requestsContent.classList.remove('hidden');
+                }
+
+                // Update active state on cards
+                const mainCards = document.querySelectorAll('.community-main-card');
+                mainCards.forEach(card => {
+                    card.classList.remove('active-community-card');
+                    card.style.transform = '';
+                    card.style.boxShadow = '';
+                });
+
+                // Add active state to clicked card
+                const activeCard = document.getElementById(`${section}-main-tab`);
+                if (activeCard) {
+                    activeCard.classList.add('active-community-card');
+                    activeCard.style.transform = 'translateY(-4px)';
+                    activeCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+                }
+
+                // IMPORTANT: Fetch data when card is clicked
+                const subsection = section === 'requests-sent' ? 'sent' : 'received';
+                console.log(`📥 Fetching ${subsection} requests on click...`);
+                if (typeof toggleRequestsSubSection === 'function') {
+                    toggleRequestsSubSection(subsection);
+                } else if (typeof window.toggleRequestsSubSection === 'function') {
+                    window.toggleRequestsSubSection(subsection);
+                }
+                return;
+            }
+
             // Hide all main tab content sections
             const mainTabContents = document.querySelectorAll('.community-main-tab-content');
             mainTabContents.forEach(content => {

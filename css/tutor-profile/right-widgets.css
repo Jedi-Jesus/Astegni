@@ -43,7 +43,7 @@ section:not(footer),
 
 /* Ensure proper spacing for widget containers */
 .right-widgets > div {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 /* Individual widget card styling */

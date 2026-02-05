@@ -157,6 +157,12 @@ const PanelManager = {
 
         this.currentPanel = panelName;
 
+        // Dispatch panel changed event for other scripts to listen
+        const panelEvent = new CustomEvent('panelChanged', {
+            detail: { panelName: panelName }
+        });
+        document.dispatchEvent(panelEvent);
+
         // Ensure profile header is always visible on all panels
         this.ensureProfileHeaderVisible();
 

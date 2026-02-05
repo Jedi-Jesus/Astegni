@@ -6,11 +6,16 @@ const SessionRequestManager = {
     currentRequestId: null,
     currentRequest: null, // Store full request data for messaging
     allStudents: [], // Store all students for search filtering
+    currentDirection: 'received', // Track current direction: 'received' or 'sent'
+    currentStatus: 'all', // Track current status filter
 
     /**
      * Load and display session requests
      */
-    async loadRequests(status = 'pending') {
+    async loadRequests(status = 'all', direction = 'received') {
+        // Store current filters
+        this.currentStatus = status;
+        this.currentDirection = direction;
         // Try both container IDs for compatibility
         const container = document.getElementById('tutor-requests-list') || document.getElementById('session-requests-list');
         if (!container) {
@@ -59,39 +64,28 @@ const SessionRequestManager = {
 
             const requests = await response.json();
 
-            if (requests.length === 0) {
+            // Filter by direction (received vs sent)
+            const filteredRequests = requests.filter(request => {
+                // For now, all tutor requests are "received" since tutors receive requests from students/parents
+                // In the future, if tutors can send requests, implement that logic here
+                return direction === 'received';
+            });
+
+            if (filteredRequests.length === 0) {
+                const statusText = status === 'all' ? '' : status;
                 container.innerHTML = `
                     <div class="card p-6 text-center text-gray-500">
                         <i class="fas fa-inbox text-3xl mb-3"></i>
-                        <p>No ${status} session requests</p>
+                        <p>No ${statusText} session requests</p>
                         <p class="text-sm mt-2">Students and parents can request sessions from your profile page</p>
                     </div>
                 `;
                 return;
             }
 
-            // Create table
-            const tableHTML = `
-                <div class="overflow-x-auto card p-6">
-                    <table class="w-full" style="border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Requester</th>
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Type</th>
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Package</th>
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Student Info</th>
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Requested</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${requests.map(request => this.renderRequestRow(request)).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            container.innerHTML = tableHTML;
+            // Render cards
+            const cardsHTML = filteredRequests.map(request => this.renderRequestCard(request)).join('');
+            container.innerHTML = cardsHTML;
 
         } catch (error) {
             console.error('Error loading session requests:', error);
@@ -165,6 +159,111 @@ const SessionRequestManager = {
                     </button>
                 </td>
             </tr>
+        `;
+    },
+
+    /**
+     * Render request as a card (using simple .card class to avoid layout conflicts)
+     */
+    renderRequestCard(request) {
+        const requesterUrl = request.requester_type === 'student'
+            ? `../view-profiles/view-student.html?id=${request.requester_id}`
+            : `../view-profiles/view-parent.html?id=${request.requester_id}`;
+
+        const statusConfig = {
+            pending: {
+                color: 'orange',
+                icon: 'fa-clock',
+                text: 'Pending'
+            },
+            accepted: {
+                color: 'green',
+                icon: 'fa-check-circle',
+                text: 'Accepted'
+            },
+            rejected: {
+                color: 'red',
+                icon: 'fa-times-circle',
+                text: 'Rejected'
+            }
+        };
+
+        const config = statusConfig[request.status] || statusConfig.pending;
+        const requestDate = new Date(request.created_at);
+        const timeAgo = this.getTimeAgo(requestDate);
+        const requesterTypeIcon = request.requester_type === 'student' ? '🎓' : '👨‍👩‍👧';
+
+        return `
+            <div class="card p-6 mb-4 hover:shadow-lg transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <!-- Requester Info -->
+                    <div class="flex items-center gap-3">
+                        <img src="${request.requester_profile_picture || '/uploads/system_images/system_profile_pictures/woman-user.jpg'}"
+                             alt="${request.requester_name}"
+                             class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <a href="${requesterUrl}"
+                               class="font-semibold text-lg hover:text-blue-600 hover:underline"
+                               style="color: var(--primary-color);">
+                                ${request.requester_name || 'Unknown User'} ${requesterTypeIcon}
+                            </a>
+                            <p class="text-sm text-gray-500">
+                                <i class="far fa-calendar mr-1"></i>
+                                Requested ${timeAgo}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Status Badge -->
+                    <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                          style="background-color: ${config.color}20; color: ${config.color};">
+                        <i class="fas ${config.icon} mr-1"></i>
+                        ${config.text}
+                    </span>
+                </div>
+
+                <!-- Request Details -->
+                <div class="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Package</p>
+                        <p class="font-semibold">${request.package_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Student</p>
+                        <p class="font-semibold">${request.student_name} (${request.student_grade})</p>
+                    </div>
+                </div>
+
+                <!-- Message -->
+                ${request.message ? `
+                <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p class="text-sm text-gray-500 mb-1">Message:</p>
+                    <p class="text-gray-700 dark:text-gray-300">${request.message}</p>
+                </div>
+                ` : ''}
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mt-4">
+                    ${request.status === 'pending' ? `
+                    <button onclick="SessionRequestManager.currentRequestId = ${request.id}; SessionRequestManager.acceptRequest()"
+                            class="btn-primary flex-1">
+                        <i class="fas fa-check mr-2"></i>
+                        Accept
+                    </button>
+                    <button onclick="SessionRequestManager.currentRequestId = ${request.id}; SessionRequestManager.rejectRequest()"
+                            class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Reject
+                    </button>
+                    ` : `
+                    <button onclick="SessionRequestManager.viewRequest(${request.id})"
+                            class="btn-secondary flex-1">
+                        <i class="fas fa-eye mr-2"></i>
+                        View Details
+                    </button>
+                    `}
+                </div>
+            </div>
         `;
     },
 
@@ -534,9 +633,9 @@ const SessionRequestManager = {
             // Show success message
             alert('✅ Session request accepted! The student has been added to "My Students".');
 
-            // Close modal and refresh lists
+            // Close modal and refresh lists with current filters
             this.closeModal();
-            this.loadRequests('pending');
+            this.loadRequests(this.currentStatus, this.currentDirection);
 
             // If on My Students panel, reload that too
             if (typeof this.loadMyStudents === 'function') {
@@ -611,9 +710,9 @@ const SessionRequestManager = {
             // Show success message
             alert('Request has been rejected.');
 
-            // Close modal and refresh list
+            // Close modal and refresh list with current filters
             this.closeModal();
-            this.loadRequests('pending');
+            this.loadRequests(this.currentStatus, this.currentDirection);
 
         } catch (error) {
             console.error('Error rejecting request:', error);

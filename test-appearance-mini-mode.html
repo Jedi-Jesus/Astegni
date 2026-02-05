@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appearance Mini Mode</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/root/theme.css">
+    <link rel="stylesheet" href="css/common-modals/appearance-modal.css">
+    <link rel="stylesheet" href="css/root/color-palettes.css">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .demo-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .demo-header p {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .demo-content {
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .demo-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .demo-section p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .demo-button {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .instructions h4 {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .instructions ol {
+            color: #78350f;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .instructions ol li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🎨 Appearance Mini-Mode Demo</h1>
+            <p>Test the new mini-mode feature for live theme previews</p>
+        </div>
+
+        <div class="demo-content">
+            <div class="demo-section">
+                <h3>What is Mini-Mode?</h3>
+                <p>
+                    Mini-mode transforms the appearance modal into a compact widget positioned at the bottom-right of your screen.
+                    This allows you to preview theme changes in real-time without the modal blocking your view of the page content.
+                </p>
+            </div>
+
+            <div class="demo-section">
+                <h3>Features</h3>
+                <ul class="feature-list">
+                    <li>Live theme preview while modal is minimized</li>
+                    <li>Bottom-right positioning for unobstructed view</li>
+                    <li>Quick access to theme and color palette settings</li>
+                    <li>Click header to expand back to full mode</li>
+                    <li>Smooth animations and transitions</li>
+                    <li>Shows only essential controls in compact view</li>
+                </ul>
+            </div>
+
+            <button onclick="openAppearanceModal()" class="demo-button">
+                <span>🎨</span>
+                <span>Open Appearance Settings</span>
+            </button>
+
+            <div class="instructions">
+                <h4>How to Test Mini-Mode:</h4>
+                <ol>
+                    <li>Click the button above to open the appearance modal</li>
+                    <li>Look for the minimize button (↓) in the top-right of the modal header</li>
+                    <li>Click the minimize button to enter mini-mode</li>
+                    <li>The modal will shrink and move to the bottom-right corner</li>
+                    <li>Try changing themes or color palettes to see live previews</li>
+                    <li>Click the modal header to expand back to full mode</li>
+                    <li>Click "Save Changes" to apply your selections</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>Sample Content for Testing</h3>
+            <p>
+                This is sample content that demonstrates how the page remains visible and interactive
+                while the appearance modal is in mini-mode. You can scroll through this content,
+                interact with elements, and see your theme changes applied in real-time.
+            </p>
+            <p style="margin-top: 12px;">
+                The mini-mode feature is perfect for users who want to experiment with different
+                themes and color schemes while simultaneously seeing how they affect the actual
+                page layout and content. No more guessing or switching back and forth!
+            </p>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- JavaScript -->
+    <script src="js/common-modals/appearance-manager.js"></script>
+
+    <script>
+        // Load modal dynamically
+        fetch('modals/common-modals/appearance-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('modal-container').innerHTML = html;
+
+                // Initialize appearance modal manager
+                appearanceModalManager.initialize();
+
+                console.log('✅ Appearance modal loaded and initialized');
+            })
+            .catch(error => {
+                console.error('Error loading appearance modal:', error);
+            });
+    </script>
+</body>
+</html>

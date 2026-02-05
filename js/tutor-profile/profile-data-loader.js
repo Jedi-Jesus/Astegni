@@ -283,6 +283,30 @@ const TutorProfileDataLoader = {
             console.error('❌ Element #tutor-languages-inline not found');
         }
 
+        // Hobbies & Interests - always show, with "No hobbies yet" if empty
+        const hobbiesEl = document.getElementById('tutor-hobbies');
+        if (hobbiesEl) {
+            if (data.hobbies && Array.isArray(data.hobbies) && data.hobbies.length > 0) {
+                const hobbiesText = data.hobbies.join(', ');
+                hobbiesEl.textContent = hobbiesText;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+                console.log(`✅ Hobbies loaded: ${hobbiesText}`);
+            } else if (data.hobbies && typeof data.hobbies === 'string' && data.hobbies.trim() !== '') {
+                hobbiesEl.textContent = data.hobbies;
+                hobbiesEl.style.color = 'var(--text)';
+                hobbiesEl.style.fontStyle = 'normal';
+                console.log(`✅ Hobbies loaded: ${data.hobbies}`);
+            } else {
+                hobbiesEl.textContent = 'No hobbies yet';
+                hobbiesEl.style.color = 'var(--text-muted)';
+                hobbiesEl.style.fontStyle = 'italic';
+                console.log('⚠️ Hobbies is empty in database');
+            }
+        } else {
+            console.error('❌ Element #tutor-hobbies not found');
+        }
+
         // Courses & Categories - fetch from courses table via API
         // This replaces the old subjects/course_type fields with data from the courses table
         this.loadTutorCoursesAndCategories();

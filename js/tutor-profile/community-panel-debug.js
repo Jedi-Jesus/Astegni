@@ -43,7 +43,7 @@ window.CommunityDebug = {
 
         const elements = {
             // Main panel
-            'tutor-community-panel': document.getElementById('tutor-community-panel'),
+            'community-panel': document.getElementById('community-panel'),
 
             // Main tab contents
             'connections-main-tab-content': document.getElementById('connections-main-tab-content'),
