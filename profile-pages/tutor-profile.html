@@ -382,21 +382,21 @@
     <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="ad-container premium-ad" style="margin-top: 2rem;">
+    <div class="promo-container premium-promo" style="margin-top: 2rem;">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide active" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 1</span>
-                <h3 class="ad-title">Grow Your Tutoring Business</h3>
-                <p class="ad-text">Reach more students with Astegni</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 1</span>
+                <h3 class="promo-title">Grow Your Tutoring Business</h3>
+                <p class="promo-text">Reach more students with Astegni</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -405,19 +405,19 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 2</span>
-                <h3 class="ad-title">Upgrade to Premium</h3>
-                <p class="ad-text">Unlock advanced tutor features</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Premium</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 2</span>
+                <h3 class="promo-title">Upgrade to Premium</h3>
+                <p class="promo-text">Unlock advanced tutor features</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Get Premium</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -426,19 +426,19 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 3</span>
-                <h3 class="ad-title">Teaching Resources</h3>
-                <p class="ad-text">Access premium learning materials</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Browse Now</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 3</span>
+                <h3 class="promo-title">Teaching Resources</h3>
+                <p class="promo-text">Access premium learning materials</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Browse Now</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -447,19 +447,19 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 4</span>
-                <h3 class="ad-title">Your Ad Space</h3>
-                <p class="ad-text">Reach tutors across Ethiopia</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Advertise</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 4</span>
+                <h3 class="promo-title">Your Ad Space</h3>
+                <p class="promo-text">Reach tutors across Ethiopia</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Advertise</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -544,7 +544,7 @@
                     <span>My Videos</span>
                 </a>
                 <hr class="my-4 border-gray-300">               
-                <a href="#" onclick="openComingSoonModal('Earnings & Investments'); return false;" class="sidebar-link">
+                <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
                     <span class="sidebar-icon"
                         style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 1.1rem;">ℰ</span>
                     <span>Earnings & Investments</span>
@@ -3339,7 +3339,7 @@
                         <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="ad-content" id="ad-container-tutor" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
+                        <div class="promo-content" id="promo-container-tutor" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
                             <div id="ad-message-container-tutor" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
                                 <div class="ad-message-tutor active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
                                     <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
@@ -4015,7 +4015,7 @@
     <script src="../js/common-modals/credential-manager.js?v=20260130-roleaware"></script>
 
     <!-- Earnings & Investments Manager -->
-    <script src="../js/tutor-profile/earnings-investments-manager.js?v=20260118"></script>
+    <script src="../js/tutor-profile/earnings-investments-manager.js?v=20260205"></script>
 
     <!-- Student-Specific Managers for Teaching Panel -->
     <!-- Note: StudentWhiteboardManager is now included in whiteboard-manager.js -->

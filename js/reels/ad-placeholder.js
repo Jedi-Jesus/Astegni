@@ -1,6 +1,6 @@
 function createAdPlaceholder(adIndex) {
     const div = document.createElement("div");
-    div.className = "reel-card ad-placeholder-card";
+    div.className = "reel-card promo-placeholder-card";
     div.style.animationDelay = `${adIndex * 0.1}s`;
 
     const adVariations = [
@@ -29,14 +29,14 @@ function createAdPlaceholder(adIndex) {
     const ad = adVariations[adIndex % adVariations.length];
 
     div.innerHTML = `
-        <div class="inline-ad-container" style="background: ${ad.color};" onclick="openComingSoonModal('Advertising')">
-            <div class="inline-ad-content">
-                <span class="inline-ad-label">Ad</span>
-                <h3 class="inline-ad-title">${ad.title}</h3>
-                <p class="inline-ad-text">${ad.text}</p>
-                <button class="inline-ad-cta">Learn More</button>
+        <div class="inline-promo-container" style="background: ${ad.color};" onclick="openComingSoonModal('Advertising')">
+            <div class="inline-promo-content">
+                <span class="inline-promo-label">Ad</span>
+                <h3 class="inline-promo-title">${ad.title}</h3>
+                <p class="inline-promo-text">${ad.text}</p>
+                <button class="inline-promo-cta">Learn More</button>
             </div>
-            <div class="inline-ad-visual">
+            <div class="inline-promo-visual">
                 <div class="ad-pattern"></div>
             </div>
         </div>

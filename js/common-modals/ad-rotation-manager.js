@@ -1,7 +1,7 @@
 /**
  * Ad Rotation Manager
  * Handles smooth 10-second ad rotation with fade transitions
- * Works with .ad-container.premium-ad structure
+ * Works with .promo-container.premium-promo structure
  */
 
 class AdRotationManager {
@@ -22,10 +22,10 @@ class AdRotationManager {
         if (this.isInitialized) return;
 
         // Find all ad containers with slides
-        const adContainers = document.querySelectorAll('.ad-container.premium-ad');
+        const adContainers = document.querySelectorAll('.promo-container.premium-promo');
 
         adContainers.forEach((container, index) => {
-            const slides = container.querySelectorAll('.ad-slide');
+            const slides = container.querySelectorAll('.promo-slide');
             if (slides.length > 1) {
                 this.initContainer(container, `ad-${index}`);
             }
@@ -39,7 +39,7 @@ class AdRotationManager {
      * Initialize a single container with rotating slides
      */
     initContainer(container, id) {
-        const slides = container.querySelectorAll('.ad-slide');
+        const slides = container.querySelectorAll('.promo-slide');
         if (slides.length <= 1) return;
 
         const containerData = {
@@ -95,11 +95,11 @@ class AdRotationManager {
         styles.id = 'ad-rotation-styles';
         styles.textContent = `
             /* Ad Slide Transitions */
-            .ad-container.premium-ad {
+            .promo-container.premium-promo {
                 position: relative;
             }
 
-            .ad-container.premium-ad .ad-slide {
+            .promo-container.premium-promo .promo-slide {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -113,14 +113,14 @@ class AdRotationManager {
                 justify-content: center;
             }
 
-            .ad-container.premium-ad .ad-slide.active {
+            .promo-container.premium-promo .promo-slide.active {
                 position: relative;
                 opacity: 1;
                 visibility: visible;
                 z-index: 2;
             }
 
-            .ad-container.premium-ad .ad-slide.fade-out {
+            .promo-container.premium-promo .promo-slide.fade-out {
                 opacity: 0;
                 z-index: 1;
             }
@@ -171,14 +171,14 @@ class AdRotationManager {
             }
 
             /* Pause progress on hover */
-            .ad-container.premium-ad:hover .ad-indicator.active .ad-indicator-progress {
+            .promo-container.premium-promo:hover .ad-indicator.active .ad-indicator-progress {
                 animation-play-state: paused;
             }
 
             /* Slide content wrapper */
-            .ad-slide .ad-animation,
-            .ad-slide .ad-content,
-            .ad-slide .ad-visual {
+            .promo-slide .promo-animation,
+            .promo-slide .promo-content,
+            .promo-slide .promo-visual {
                 pointer-events: auto;
             }
 

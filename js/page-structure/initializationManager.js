@@ -72,13 +72,13 @@ class InitializationManager {
         });
 
         // Fix ad placeholder learn more buttons
-        document.querySelectorAll('.ad-cta').forEach(btn => {
+        document.querySelectorAll('.promo-cta').forEach(btn => {
             if (!btn.hasAttribute('data-handler-attached')) {
                 btn.setAttribute('data-handler-attached', 'true');
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (window.modalsManager) {
-                        window.modalsManager.open('adAnalyticsModal');
+                        window.modalsManager.open('promoAnalyticsModal');
                     }
                 });
             }

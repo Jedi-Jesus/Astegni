@@ -462,8 +462,8 @@ window.closeEditProfileModal = () => app.modals.close("edit-profile-modal"); // 
     window.publishBlog = () => app.blog.publishBlog();
     window.openCommentsModal = () => app.comments.open();
     window.closeCommentsModal = () => app.comments.close();
-    // window.openAdAnalyticsModal = () => app.modals.open("adAnalyticsModal"); // DISABLED - Now opens coming soon modal (defined elsewhere)
-    window.closeAdAnalyticsModal = () => app.modals.close("adAnalyticsModal");
+    // window.openAdAnalyticsModal = () => app.modals.open("promoAnalyticsModal"); // DISABLED - Now opens coming soon modal (defined elsewhere)
+    window.closeAdAnalyticsModal = () => app.modals.close("promoAnalyticsModal");
     window.openAllEventsModal = () => app.events.viewAllEvents();
     window.openAnalyticsModal = () => app.analytics.openModal();
 

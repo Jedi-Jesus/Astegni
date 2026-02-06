@@ -3707,17 +3707,13 @@ window.viewSessionCourseworks = viewSessionCourseworks;
  * Students can view their scheduled sessions with tutors
  */
 function openStudentWhiteboard() {
-    // Always show coming soon modal
-    openComingSoonModal('Digital Whiteboard');
-
-    // Original implementation (disabled):
-    // if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
-    //     // Open whiteboard from Learning Tools - shows tutors instead of students
-    //     whiteboardManager.openWhiteboardFromLearningTools();
-    // } else {
-    //     console.error('Whiteboard manager not loaded');
-    //     openComingSoonModal('Digital Whiteboard');
-    // }
+    if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
+        // Open whiteboard from Learning Tools - shows tutors instead of students
+        whiteboardManager.openWhiteboardFromLearningTools();
+    } else {
+        console.error('Whiteboard manager not loaded');
+        openComingSoonModal('Digital Whiteboard');
+    }
 }
 
 /**

@@ -119,7 +119,7 @@ const AdPackageManager = {
     ],
 
     renderPackages() {
-        const packagesSection = document.querySelector('#adAnalyticsModal .ad-packages');
+        const packagesSection = document.querySelector('#promoAnalyticsModal .ad-packages');
         if (!packagesSection) return;
 
         packagesSection.innerHTML = `

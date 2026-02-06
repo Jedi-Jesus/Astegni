@@ -1,6 +1,6 @@
 /**
  * Testimonials Widget - Featured Reviews Display
- * Shows featured platform reviews in ad-placeholder sections
+ * Shows featured platform reviews in promo-placeholder sections
  */
 
 const TestimonialsWidget = {

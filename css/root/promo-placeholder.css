@@ -1,5 +1,6 @@
 /* ============================================
-   AD PLACEHOLDER & CIRCLES - MERGED STYLES
+   PROMO PLACEHOLDER & CIRCLES - MERGED STYLES
+   (Renamed from ad-placeholder.css to bypass ad blockers)
    ============================================ */
 
 /* Base Promo Placeholder Section */
@@ -75,7 +76,7 @@
     min-height: 250px;
 }
 
-/* Shimmer effect for ad container */
+/* Shimmer effect for promo container */
 .promo-container::before {
     content: '';
     position: absolute;

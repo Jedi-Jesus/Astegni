@@ -2,8 +2,8 @@
    AD PLACEHOLDER & CIRCLES - MERGED STYLES
    ============================================ */
 
-/* Base Ad Placeholder Section */
-.ad-placeholder-section {
+/* Base Promo Placeholder Section */
+.promo-placeholder-section {
     grid-column: 1 / -1;
     background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
     border-radius: 20px;
@@ -18,7 +18,7 @@
 }
 
 /* Shimmer animations for background */
-.ad-placeholder-section::before {
+.promo-placeholder-section::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -29,7 +29,7 @@
     animation: shimmer 3s infinite linear;
 }
 
-.ad-placeholder-section::after {
+.promo-placeholder-section::after {
     content: '';
     position: absolute;
     bottom: -50%;
@@ -56,8 +56,8 @@
     }
 }
 
-/* Enhanced Ad Container */
-.ad-container {
+/* Enhanced Promo Container */
+.promo-container {
     background: var(--primary-gradient, linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%));
     min-height: 200px;
     border-radius: 1.25rem;
@@ -71,12 +71,12 @@
     cursor: pointer;
 }
 
-.ad-container.premium-ad {
+.promo-container.premium-promo {
     min-height: 250px;
 }
 
 /* Shimmer effect for ad container */
-.ad-container::before {
+.promo-container::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -92,8 +92,8 @@
     100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
-/* Ad Animation Container */
-.ad-animation {
+/* Promo Animation Container */
+.promo-animation {
     position: absolute;
     top: 0;
     left: 0;
@@ -131,16 +131,16 @@
     }
 }
 
-/* Ad Content */
-.ad-content {
+/* Promo Content */
+.promo-content {
     position: relative;
     z-index: 2;
     text-align: center;
     padding: 2rem;
 }
 
-/* Ad Elements */
-.ad-badge {
+/* Promo Elements */
+.promo-badge {
     display: inline-block;
     background: rgba(255,255,255,0.2);
     backdrop-filter: blur(10px);
@@ -154,7 +154,7 @@
     border: 1px solid rgba(255,255,255,0.3);
 }
 
-.ad-label {
+.promo-label {
     display: block;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -163,7 +163,7 @@
     margin-bottom: 0.5rem;
 }
 
-.ad-title {
+.promo-title {
     font-size: clamp(1.5rem, 4vw, 2.25rem);
     font-weight: 700;
     margin-bottom: 12px;
@@ -172,14 +172,14 @@
     color: white;
 }
 
-.ad-subtitle {
+.promo-subtitle {
     font-size: 18px;
     opacity: 0.95;
     margin-bottom: 30px;
     line-height: 1.5;
 }
 
-.ad-text {
+.promo-text {
     color: rgba(255, 255, 255, 0.9);
     font-size: 1.75rem;
     font-weight: 700;
@@ -190,7 +190,7 @@
 }
 
 /* Call to Action Button */
-.ad-cta {
+.promo-cta {
     display: inline-block;
     padding: 0.75rem 2rem;
     background: rgba(255, 255, 255, 0.25);
@@ -206,14 +206,14 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.ad-cta:hover {
+.promo-cta:hover {
     background: rgba(255, 255, 255, 0.35);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
-/* Ad Visual Elements */
-.ad-visual {
+/* Promo Visual Elements */
+.promo-visual {
     position: absolute;
     right: 2rem;
     top: 50%;
@@ -222,7 +222,7 @@
     height: 200px;
 }
 
-.ad-circles {
+.promo-circles {
     position: relative;
     width: 100%;
     height: 100%;
@@ -270,7 +270,7 @@
 }
 
 /* Grid placeholders */
-.ad-placeholder {
+.promo-placeholder {
     grid-column: 1 / -1;
     background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
     min-height: 180px;
@@ -283,7 +283,7 @@
     overflow: hidden;
 }
 
-.ad-placeholder .ad-text {
+.promo-placeholder .promo-text {
     color: white;
     font-size: 1.25rem;
     font-weight: 600;
@@ -293,16 +293,16 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .ad-placeholder-section {
+    .promo-placeholder-section {
         padding: 40px 20px;
         margin: 20px 0 1.5rem 0;
     }
 
-    .ad-title {
+    .promo-title {
         font-size: 1.5rem;
     }
 
-    .ad-visual {
+    .promo-visual {
         position: relative;
         right: auto;
         top: auto;
@@ -312,13 +312,13 @@
         margin: 1rem auto 0;
     }
 
-    .ad-content {
+    .promo-content {
         padding: 1rem;
     }
 }
 
 @media (max-width: 480px) {
-    .ad-container.premium-ad {
+    .promo-container.premium-promo {
         min-height: 200px;
     }
 
@@ -327,7 +327,7 @@
         height: 80px;
     }
 
-    .ad-visual {
+    .promo-visual {
         width: 120px;
         height: 120px;
     }

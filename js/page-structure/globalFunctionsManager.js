@@ -423,7 +423,7 @@ window.showPackageType = function(type) {
 window.submitCustomPackage = function() {
     Utils.showToast("📧 Custom package request sent! We'll contact you within 24 hours.", "success");
     if (window.modalsManager) {
-        window.modalsManager.close('adAnalyticsModal');
+        window.modalsManager.close('promoAnalyticsModal');
     }
 };
 

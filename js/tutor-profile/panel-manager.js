@@ -107,6 +107,14 @@ async function switchPanel(panelName) {
             window.loadPackagesPanel();
         }, 100);
     }
+
+    // Initialize Earnings & Investments Panel when switching to earnings-investments
+    if (panelName === 'earnings-investments' && window.EarningsInvestmentsManager) {
+        console.log('💰 Initializing Earnings & Investments Panel...');
+        setTimeout(() => {
+            window.EarningsInvestmentsManager.init();
+        }, 100);
+    }
 }
 
 /**

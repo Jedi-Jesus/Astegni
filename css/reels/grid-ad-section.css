@@ -1,21 +1,21 @@
 /* ============================================
    GRID AD SECTION
    ============================================ */
-.grid-ad-section {
+.grid-promo-section {
     grid-column: 1 / -1; /* Span full width */
     width: 100%;
     padding: 1.5rem 0;
     margin: 1rem 0;
 }
 
-.grid-ad-section .ad-container {
+.grid-promo-section .promo-container {
     max-width: 100%;
     margin: 0 auto;
     height: 180px;
 }
 
 /* Ensure the ad maintains its styling within the grid */
-#reels-grid .grid-ad-section {
+#reels-grid .grid-promo-section {
     animation: fadeInUp 0.5s ease-out;
 }
 

@@ -9,7 +9,7 @@ function openModal(modalId) {
     console.log(`openModal called with: ${modalId}`);
 
     // Route to appropriate modal manager based on modal ID
-    if (modalId === 'adAnalyticsModal') {
+    if (modalId === 'promoAnalyticsModal') {
         openAdAnalyticsModal();
     } else if (['coverUploadModal', 'profileUploadModal'].includes(modalId)) {
         // These are special upload modals with different structure
@@ -352,7 +352,7 @@ function openAdAnalyticsModal(event) {
     return; // Don't open ad analytics modal
 
     // OLD CODE (disabled):
-    const modal = document.getElementById('adAnalyticsModal');
+    const modal = document.getElementById('promoAnalyticsModal');
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.remove('hidden');
@@ -663,7 +663,7 @@ function openVideoUploadModal() {
 
 function closeModal(modalId) {
     // Handle specific modal closing
-    if (modalId === 'adAnalyticsModal' && typeof closeAdAnalyticsModal !== 'undefined') {
+    if (modalId === 'promoAnalyticsModal' && typeof closeAdAnalyticsModal !== 'undefined') {
         closeAdAnalyticsModal();
     } else if (typeof TutorModalManager !== 'undefined') {
         TutorModalManager.close(modalId);
@@ -1531,7 +1531,7 @@ function selectSchool(inputId, schoolName) {
     // Define the close function for ad analytics
     const closeAdAnalyticsModalFn = function() {
         console.log('closeAdAnalyticsModal called (tutor-profile version)');
-        const modal = document.getElementById('adAnalyticsModal');
+        const modal = document.getElementById('promoAnalyticsModal');
         if (modal) {
             modal.classList.add('hidden');
             modal.classList.remove('active', 'show');
@@ -1541,7 +1541,7 @@ function selectSchool(inputId, schoolName) {
             document.body.style.overflow = '';
             console.log('Ad analytics modal closed');
         } else {
-            console.error('adAnalyticsModal not found');
+            console.error('promoAnalyticsModal not found');
         }
     };
 

@@ -1950,12 +1950,12 @@
         display: none;
     }
     
-    .ad-container.premium-ad {
+    .promo-container.premium-promo {
         flex-direction: column;
         text-align: center;
     }
     
-    .ad-animation {
+    .promo-animation {
         position: relative;
         margin-top: 2rem;
     }
@@ -2071,11 +2071,11 @@ body {
 }
 
 /* Ad Placeholder Section */
-.ad-placeholder-section {
+.promo-placeholder-section {
     margin-bottom: 2rem;
 }
 
-.ad-container.premium-ad {
+.promo-container.premium-promo {
     background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
     min-height: 180px;
     border-radius: 20px;
@@ -2088,31 +2088,31 @@ body {
     box-shadow: 0 15px 40px rgba(var(--button-bg-rgb), 0.25);
 }
 
-.ad-content {
+.promo-content {
     z-index: 1;
     color: white;
 }
 
-.ad-label {
+.promo-label {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.9;
 }
 
-.ad-title {
+.promo-title {
     font-size: 2rem;
     font-weight: 700;
     margin: 0.5rem 0;
 }
 
-.ad-text {
+.promo-text {
     font-size: 1.125rem;
     opacity: 0.95;
     margin-bottom: 1rem;
 }
 
-.ad-cta {
+.promo-cta {
     padding: 0.75rem 2rem;
     background: rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(10px);
@@ -2124,13 +2124,13 @@ body {
     transition: all 0.3s ease;
 }
 
-.ad-cta:hover {
+.promo-cta:hover {
     background: rgba(255, 255, 255, 0.35);
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-.ad-animation {
+.promo-animation {
     position: absolute;
     right: 10%;
     top: 50%;
@@ -3031,14 +3031,14 @@ body {
    AD ANALYTICS STATS GRID
    ============================================ */
 
-.ad-stats-grid {
+.promo-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
-.ad-stat-card {
+.promo-stat-card {
     position: relative;
     display: flex;
     align-items: center;
@@ -3051,7 +3051,7 @@ body {
     overflow: hidden;
 }
 
-.ad-stat-card::before {
+.promo-stat-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -3063,37 +3063,37 @@ body {
     transition: opacity 0.3s ease;
 }
 
-.ad-stat-card:hover {
+.promo-stat-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-.ad-stat-card:hover::before {
+.promo-stat-card:hover::before {
     opacity: 1;
 }
 
 /* Individual card accents */
-.ad-stat-card:nth-child(1)::before {
+.promo-stat-card:nth-child(1)::before {
     background: linear-gradient(180deg, #8B5CF6, #7C3AED);
     opacity: 1;
 }
 
-.ad-stat-card:nth-child(2)::before {
+.promo-stat-card:nth-child(2)::before {
     background: linear-gradient(180deg, #F59E0B, #D97706);
     opacity: 1;
 }
 
-.ad-stat-card:nth-child(3)::before {
+.promo-stat-card:nth-child(3)::before {
     background: linear-gradient(180deg, #10B981, #059669);
     opacity: 1;
 }
 
-.ad-stat-card:nth-child(4)::before {
+.promo-stat-card:nth-child(4)::before {
     background: linear-gradient(180deg, #3B82F6, #1D4ED8);
     opacity: 1;
 }
 
-.ad-stat-icon {
+.promo-stat-icon {
     font-size: 2rem;
     width: 50px;
     height: 50px;
@@ -3105,11 +3105,11 @@ body {
     flex-shrink: 0;
 }
 
-.ad-stat-info {
+.promo-stat-info {
     flex: 1;
 }
 
-.ad-stat-info h3 {
+.promo-stat-info h3 {
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--heading);
@@ -3117,13 +3117,13 @@ body {
     line-height: 1.2;
 }
 
-.ad-stat-info p {
+.promo-stat-info p {
     font-size: 0.8rem;
     color: var(--text-muted);
     margin: 0.25rem 0 0;
 }
 
-.ad-stat-card > span {
+.promo-stat-card > span {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;

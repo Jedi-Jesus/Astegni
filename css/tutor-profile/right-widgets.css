@@ -12,16 +12,16 @@
 
 /* Remove the YouTube-style page shift behavior for tutor profile */
 body.sidebar-active section:not(footer),
-body.sidebar-active .ad-placeholder,
-body.sidebar-active .ad-placeholder-section,
-body.sidebar-active .ad-container {
+body.sidebar-active .promo-placeholder,
+body.sidebar-active .promo-placeholder-section,
+body.sidebar-active .promo-container {
     margin-left: 0 !important;
 }
 
 section:not(footer),
-.ad-placeholder,
-.ad-placeholder-section,
-.ad-container {
+.promo-placeholder,
+.promo-placeholder-section,
+.promo-container {
     margin-left: 0 !important;
 }
 

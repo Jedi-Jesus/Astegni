@@ -731,10 +731,35 @@ class WhiteboardManager {
 
         console.log('🎨 Setting up whiteboard event listeners...');
 
-        // Modal controls
-        document.getElementById('closeWhiteboard')?.addEventListener('click', () => this.closeModal());
-        document.getElementById('minimizeWhiteboard')?.addEventListener('click', () => this.minimizeModal());
-        document.getElementById('maximizeWhiteboard')?.addEventListener('click', () => this.maximizeModal());
+        // Modal controls - Check if elements exist and log
+        const closeBtn = document.getElementById('closeWhiteboard');
+        const minimizeBtn = document.getElementById('minimizeWhiteboard');
+        const maximizeBtn = document.getElementById('maximizeWhiteboard');
+
+        console.log('🎨 Header buttons:', {
+            closeBtn: !!closeBtn,
+            minimizeBtn: !!minimizeBtn,
+            maximizeBtn: !!maximizeBtn
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                console.log('🎨 Close button clicked');
+                this.closeModal();
+            });
+        }
+        if (minimizeBtn) {
+            minimizeBtn.addEventListener('click', () => {
+                console.log('🎨 Minimize button clicked');
+                this.minimizeModal();
+            });
+        }
+        if (maximizeBtn) {
+            maximizeBtn.addEventListener('click', () => {
+                console.log('🎨 Maximize button clicked');
+                this.maximizeModal();
+            });
+        }
 
         // Mobile toggle button for left sidebar in header
         document.getElementById('mobileToggleHistory')?.addEventListener('click', () => this.toggleMobileSidebar('history'));
@@ -758,16 +783,24 @@ class WhiteboardManager {
         this.resizeCanvas();
 
         // Left Sidebar icon buttons (VS Code style)
-        document.querySelectorAll('.sidebar-icon-btn').forEach(btn => {
+        const leftSidebarBtns = modal.querySelectorAll('.sidebar-icon-btn');
+        console.log(`🎨 Found ${leftSidebarBtns.length} left sidebar buttons`);
+        leftSidebarBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.switchSidebarPanel(e.currentTarget.dataset.panel);
+                const panel = e.currentTarget.dataset.panel;
+                console.log(`🎨 Left sidebar button clicked: ${panel}`);
+                this.switchSidebarPanel(panel);
             });
         });
 
         // Right Sidebar icon buttons (Live, Chat, AI)
-        document.querySelectorAll('.right-sidebar-icon-btn').forEach(btn => {
+        const rightSidebarBtns = modal.querySelectorAll('.right-sidebar-icon-btn');
+        console.log(`🎨 Found ${rightSidebarBtns.length} right sidebar buttons`);
+        rightSidebarBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.switchRightSidebarPanel(e.currentTarget.dataset.panel);
+                const panel = e.currentTarget.dataset.panel;
+                console.log(`🎨 Right sidebar button clicked: ${panel}`);
+                this.switchRightSidebarPanel(panel);
             });
         });
 
@@ -1027,6 +1060,11 @@ class WhiteboardManager {
                 alert('Failed to load whiteboard. Please refresh the page and try again.');
                 return;
             }
+
+            // CRITICAL FIX: Re-setup event listeners every time modal opens
+            // This ensures buttons work even if modal was dynamically loaded
+            this._eventListenersSetup = false;
+            this.setupEventListeners();
 
             // Set context for data loading based on user role
             if (this.userRole === 'student') {
@@ -1341,14 +1379,30 @@ class WhiteboardManager {
      * Opening left sidebar closes right sidebar (mutual exclusivity)
      */
     switchSidebarPanel(panel) {
-        const leftSidebar = document.querySelector('.whiteboard-sidebar');
-        const rightSidebar = document.querySelector('.whiteboard-right-sidebar');
-        const clickedBtn = document.querySelector(`.sidebar-icon-btn[data-panel="${panel}"]`);
+        console.log(`🎨 switchSidebarPanel called with: ${panel}`);
+
+        const modal = document.getElementById('whiteboardModal');
+        if (!modal) {
+            console.error('🎨 Modal not found in switchSidebarPanel');
+            return;
+        }
+
+        const leftSidebar = modal.querySelector('.whiteboard-sidebar');
+        const rightSidebar = modal.querySelector('.whiteboard-right-sidebar');
+        const clickedBtn = modal.querySelector(`.sidebar-icon-btn[data-panel="${panel}"]`);
+
+        console.log('🎨 Found elements:', {
+            leftSidebar: !!leftSidebar,
+            rightSidebar: !!rightSidebar,
+            clickedBtn: !!clickedBtn
+        });
+
         const isCurrentlyActive = clickedBtn?.classList.contains('active');
 
         // If clicking the same active button, toggle collapse
         if (isCurrentlyActive) {
             leftSidebar?.classList.toggle('collapsed');
+            console.log('🎨 Toggled collapsed state');
             return;
         }
 
@@ -1359,13 +1413,15 @@ class WhiteboardManager {
         rightSidebar?.classList.add('collapsed');
 
         // Update icon buttons
-        document.querySelectorAll('.sidebar-icon-btn').forEach(btn => {
+        modal.querySelectorAll('.sidebar-icon-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.panel === panel);
         });
 
         // Update panels
-        document.querySelectorAll('.sidebar-panel').forEach(p => {
-            p.classList.toggle('active', p.id === `${panel}Panel`);
+        modal.querySelectorAll('.sidebar-panel').forEach(p => {
+            const isActive = p.id === `${panel}Panel`;
+            p.classList.toggle('active', isActive);
+            console.log(`🎨 Panel ${p.id}: ${isActive ? 'active' : 'inactive'}`);
         });
     }
 
@@ -1375,9 +1431,24 @@ class WhiteboardManager {
      * Opening right sidebar closes left sidebar (mutual exclusivity)
      */
     switchRightSidebarPanel(panel) {
-        const leftSidebar = document.querySelector('.whiteboard-sidebar');
-        const rightSidebar = document.querySelector('.whiteboard-right-sidebar');
-        const clickedBtn = document.querySelector(`.right-sidebar-icon-btn[data-panel="${panel}"]`);
+        console.log(`🎨 switchRightSidebarPanel called with: ${panel}`);
+
+        const modal = document.getElementById('whiteboardModal');
+        if (!modal) {
+            console.error('🎨 Modal not found in switchRightSidebarPanel');
+            return;
+        }
+
+        const leftSidebar = modal.querySelector('.whiteboard-sidebar');
+        const rightSidebar = modal.querySelector('.whiteboard-right-sidebar');
+        const clickedBtn = modal.querySelector(`.right-sidebar-icon-btn[data-panel="${panel}"]`);
+
+        console.log('🎨 Found elements:', {
+            leftSidebar: !!leftSidebar,
+            rightSidebar: !!rightSidebar,
+            clickedBtn: !!clickedBtn
+        });
+
         const isCurrentlyActive = clickedBtn?.classList.contains('active');
         const isRightSidebarCollapsed = rightSidebar?.classList.contains('collapsed');
 
@@ -1397,17 +1468,19 @@ class WhiteboardManager {
         // Close left sidebar when right sidebar is active/expanding (mutual exclusivity)
         leftSidebar?.classList.add('collapsed');
 
-        // Update icon buttons
-        document.querySelectorAll('.right-sidebar-icon-btn').forEach(btn => {
+        // Update icon buttons (scope to modal)
+        modal.querySelectorAll('.right-sidebar-icon-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.panel === panel);
         });
 
-        // Update panels
-        document.querySelectorAll('.right-sidebar-panel').forEach(p => {
+        // Update panels (scope to modal)
+        modal.querySelectorAll('.right-sidebar-panel').forEach(p => {
             const panelId = panel === 'live' ? 'livePanel' :
                            panel === 'chat' ? 'chatPanel' :
                            panel === 'ai' ? 'aiPanel' : '';
-            p.classList.toggle('active', p.id === panelId);
+            const isActive = p.id === panelId;
+            p.classList.toggle('active', isActive);
+            console.log(`🎨 Right panel ${p.id}: ${isActive ? 'active' : 'inactive'}`);
         });
     }
 
@@ -12651,16 +12724,12 @@ function openWhiteboardModal(sessionId = null, studentId = null, context = 'teac
 
 // Open whiteboard from Teaching Tools (all students)
 function openWhiteboardFromTeachingTools() {
-    // Always show coming soon modal
-    openComingSoonModal('Digital Whiteboard');
-
-    // Original implementation (disabled):
-    // if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
-    //     whiteboardManager.openWhiteboardFromTeachingTools();
-    // } else {
-    //     console.error('WhiteboardManager not initialized');
-    //     openComingSoonModal('Digital Whiteboard');
-    // }
+    if (typeof whiteboardManager !== 'undefined' && whiteboardManager) {
+        whiteboardManager.openWhiteboardFromTeachingTools();
+    } else {
+        console.error('WhiteboardManager not initialized');
+        openComingSoonModal('Digital Whiteboard');
+    }
 }
 
 // Open whiteboard for a specific student (from Student Details Modal)

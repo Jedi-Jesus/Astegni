@@ -110,6 +110,15 @@ function loadPanelData(panelName) {
                 ChildrenManager.loadChildren();
             }
             break;
+        case 'earnings-investments':
+            // Initialize Earnings & Investments Panel
+            if (typeof window.EarningsInvestmentsManager !== 'undefined') {
+                console.log('💰 Initializing earnings-investments panel...');
+                window.EarningsInvestmentsManager.init();
+            } else {
+                console.warn('⚠️ EarningsInvestmentsManager not found');
+            }
+            break;
         case 'session-requests':
             // Load session requests
             if (typeof SessionRequestsManager !== 'undefined' && SessionRequestsManager.loadRequests) {

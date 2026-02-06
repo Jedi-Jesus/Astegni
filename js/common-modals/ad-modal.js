@@ -122,7 +122,7 @@
             ],
 
             renderPackages() {
-                const packagesSection = document.querySelector('#adAnalyticsModal .ad-packages');
+                const packagesSection = document.querySelector('#promoAnalyticsModal .ad-packages');
                 if (!packagesSection) return;
 
                 packagesSection.innerHTML = `
@@ -198,7 +198,7 @@
             return; // Stop here - don't open ad analytics modal
 
             // OLD CODE (disabled):
-            const modal = document.getElementById('adAnalyticsModal');
+            const modal = document.getElementById('promoAnalyticsModal');
             if (!modal) {
                 console.error('Ad Analytics Modal not found');
                 return;
@@ -227,7 +227,7 @@
 
         // Function to close ad modal
         window.closeAdAnalyticsModal = function () {
-            const modal = document.getElementById('adAnalyticsModal');
+            const modal = document.getElementById('promoAnalyticsModal');
             if (!modal) return;
 
             modal.classList.remove('active', 'show');
@@ -245,14 +245,14 @@
 // Setup ad button event listeners - NOW OPENS COMING SOON MODAL
 document.addEventListener('DOMContentLoaded', function () {
     // For the ad container (clicking anywhere on it)
-    document.querySelectorAll('.ad-container').forEach(container => {
+    document.querySelectorAll('.promo-container').forEach(container => {
         container.style.cursor = 'pointer';
         container.addEventListener('click', function (e) {
-            // Don't trigger if clicking the button inside or ad-slide (which has its own onclick)
-            if (!e.target.classList.contains('ad-cta') &&
+            // Don't trigger if clicking the button inside or promo-slide (which has its own onclick)
+            if (!e.target.classList.contains('promo-cta') &&
                 !e.target.classList.contains('ad-primary-btn') &&
-                !e.target.classList.contains('ad-slide') &&
-                !e.target.closest('.ad-slide')) {
+                !e.target.classList.contains('promo-slide') &&
+                !e.target.closest('.promo-slide')) {
                 // Open coming soon modal instead of ad analytics
                 if (typeof openComingSoonModal === 'function') {
                     openComingSoonModal('Advertising');
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // For the Learn More buttons (both classes)
-    document.querySelectorAll('.ad-cta, .ad-primary-btn').forEach(btn => {
+    document.querySelectorAll('.promo-cta, .ad-primary-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             // Open coming soon modal instead of ad analytics
@@ -297,7 +297,7 @@ function initializeAdAnalytics() {
 
 // Animate statistics numbers
 function animateAnalyticsNumbers() {
-    const statNumbers = document.querySelectorAll('.ad-stat-info h3');
+    const statNumbers = document.querySelectorAll('.promo-stat-info h3');
 
     statNumbers.forEach(stat => {
         const finalValue = stat.textContent;

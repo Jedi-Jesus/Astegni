@@ -125,6 +125,16 @@ async function switchPanel(panelName) {
         }
     }
 
+    // Initialize earnings-investments panel when switched to
+    if (panelName === 'earnings-investments') {
+        if (typeof window.EarningsInvestmentsManager !== 'undefined') {
+            console.log('💰 Initializing earnings-investments panel...');
+            window.EarningsInvestmentsManager.init();
+        } else {
+            console.warn('⚠️ EarningsInvestmentsManager not found');
+        }
+    }
+
     // Initialize schedule panel when switched to
     if (panelName === 'schedule') {
         if (typeof window.initializeSchedulePanel === 'function') {

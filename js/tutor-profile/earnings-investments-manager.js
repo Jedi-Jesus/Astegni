@@ -969,7 +969,7 @@ const EarningsInvestmentsManager = {
                             callbacks: {
                                 label: function(context) {
                                     if (context.parsed.y !== null) {
-                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
+                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
                                     }
                                     return '';
                                 }
@@ -981,7 +981,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
+                                    return value.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
                                 },
                                 font: {
                                     size: 11
@@ -1071,7 +1071,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}';
+                                    return value.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
                                 }
                             }
                         }
@@ -2124,3 +2124,33 @@ function togglePurchaseHistorySection() {
         }
     }
 }
+
+// ============================================
+// GLOBAL EXPORTS (for onclick handlers in HTML)
+// ============================================
+
+// Export main manager to window
+window.EarningsInvestmentsManager = EarningsInvestmentsManager;
+
+// Export global functions used in HTML onclick handlers
+window.switchEarningsTab = switchEarningsTab;
+window.switchAffiliateTab = switchAffiliateTab;
+window.toggleEarningsSection = toggleEarningsSection;
+window.loadTotalEarningsData = loadTotalEarningsData;
+window.loadAffiliateData = loadAffiliateData;
+window.loadTutoringData = loadTutoringData;
+window.showSubscriptionHistory = showSubscriptionHistory;
+window.showTutoringPackages = showTutoringPackages;
+window.showCourseMaterials = showCourseMaterials;
+window.showPurchaseHistory = showPurchaseHistory;
+window.resetInvestmentFilter = resetInvestmentFilter;
+window.populateMetricsSidebar = populateMetricsSidebar;
+window.switchMetricsView = switchMetricsView;
+window.showMetricsModalState = showMetricsModalState;
+window.closePerformanceMetricsModal = closePerformanceMetricsModal;
+window.downloadSubscriptionInvoice = downloadSubscriptionInvoice;
+window.viewSubscriptionDetails = viewSubscriptionDetails;
+window.closeSubscriptionDetailsModal = closeSubscriptionDetailsModal;
+window.exportMetricsReport = exportMetricsReport;
+window.toggleSubscriptionsSection = toggleSubscriptionsSection;
+window.togglePurchaseHistorySection = togglePurchaseHistorySection;

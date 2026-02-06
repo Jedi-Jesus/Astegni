@@ -7,100 +7,150 @@
 <div id="edit-profile-modal" class="modal hidden"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
         <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
-        <div class="modal-content enhanced-modal">
+        <div class="modal-content enhanced-modal" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2>Edit Profile</h2>
+                <h2>✏️ Edit Profile</h2>
                 <button class="modal-close" onclick="closeEditProfileModal()">×</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="padding: 2rem;">
                 <form id="editProfileForm">
-                    <div class="form-group">
-                        <label>Username *</label>
-                        <input type="text" id="username" class="form-input" required>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Languages</label>
-                        <div id="languagesContainer"></div>
-                        <button type="button" class="btn-add" onclick="addLanguage()">+ Add Language</button>
-                    </div>
+                    <!-- Hero Titles Section -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🎯</span> Hero Titles
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Hero Titles (Multiple)</label>
+                                <div id="heroTitlesContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <input type="text" class="form-input hero-title-input" placeholder="Enter hero title (e.g., 'Expert Math Tutor')" style="margin-bottom: 0.5rem;">
+                                </div>
+                                <button type="button" class="btn-add" onclick="addHeroTitle()" style="margin-top: 0.5rem; width: 100%;">
+                                    + Add Another Title
+                                </button>
+                            </div>
 
-                    <div class="form-group">
-                        <label>Hobbies & Interests</label>
-                        <div id="hobbies-container"></div>
-                        <button type="button" class="btn-add" onclick="addHobby()">+ Add Hobby</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" id="editLocation" class="form-input" placeholder="e.g., Addis Ababa, Ethiopia">
-
-                        <!-- GPS Location Detection -->
-                        <div class="flex items-center gap-2 mt-2">
-                            <input type="checkbox" id="editAllowLocation" onchange="handleAllowLocationChange(this)"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
-                            <label for="editAllowLocation" class="text-sm text-gray-700">
-                                Enable GPS location detection
-                            </label>
+                            <div class="form-group">
+                                <label>Hero Subtitle</label>
+                                <input type="text" id="heroSubtitle" class="form-input" placeholder="Your hero subtitle (e.g., Empowering students through personalized learning)">
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Uses GPS/WiFi positioning to detect your physical location (not affected by VPN)</p>
+                    </div>
 
-                        <!-- Change Location Button (shown when location exists) -->
-                        <button type="button" id="changeLocationBtn" onclick="handleChangeLocation()"
-                            class="hidden mt-2 text-sm bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 flex items-center gap-1">
-                            <i class="fas fa-edit mr-1"></i> Change Location
-                        </button>
+                    <!-- Basic Information Section -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>👤</span> Basic Information
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" id="username" class="form-input" placeholder="Enter username" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" id="editLocation" class="form-input" placeholder="City, Country (e.g., Addis Ababa, Ethiopia)">
 
-                        <!-- Detect Location Button (shown when checkbox is checked) -->
-                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
-                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
-                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
-                        </button>
-                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
+                                <!-- GPS Location Detection -->
+                                <div style="margin-top: 0.75rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
+                                        <input type="checkbox" id="editAllowLocation" onchange="handleAllowLocationChange(this)" style="width: 16px; height: 16px; cursor: pointer;">
+                                        <span>Enable GPS location detection</span>
+                                    </label>
+                                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">Uses GPS/WiFi positioning to detect your physical location (not affected by VPN)</small>
+                                </div>
 
-                        <!-- Display Location Checkbox -->
-                        <div class="flex items-center gap-2 mt-3">
-                            <input type="checkbox" id="editDisplayLocation"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
-                            <label for="editDisplayLocation" class="text-sm text-gray-700">
-                                Display location on my public profile
-                            </label>
+                                <!-- Change Location Button (shown when location exists) -->
+                                <button type="button" id="changeLocationBtn" onclick="handleChangeLocation()"
+                                    style="display: none; margin-top: 0.5rem; font-size: 0.875rem; background: #3b82f6; color: white; padding: 0.375rem 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer;">
+                                    <i class="fas fa-edit" style="margin-right: 0.25rem;"></i> Change Location
+                                </button>
+
+                                <!-- Detect Location Button (shown when checkbox is checked) -->
+                                <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                                    style="display: none; margin-top: 0.5rem; font-size: 0.875rem; background: #10b981; color: white; padding: 0.375rem 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer;">
+                                    <i class="fas fa-location-arrow" style="margin-right: 0.25rem;"></i> Detect Location
+                                </button>
+                                <p id="locationStatus" style="display: none; font-size: 0.75rem; margin-top: 0.25rem;"></p>
+
+                                <!-- Display Location Checkbox -->
+                                <div style="margin-top: 0.75rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
+                                        <input type="checkbox" id="editDisplayLocation" style="width: 16px; height: 16px; cursor: pointer;">
+                                        <span>Display location on my public profile</span>
+                                    </label>
+                                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">When enabled, your location will be visible to others viewing your profile</small>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible to others viewing your profile</p>
                     </div>
 
-                    <div class="form-group">
-                        <label>Quote</label>
-                        <textarea id="profileQuote" class="form-textarea" rows="2"></textarea>
+                    <!-- Languages & Hobbies Section -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📚</span> Languages & Hobbies
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Languages (Multiple)</label>
+                                <div id="languagesContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <input type="text" class="form-input language-input" placeholder="Enter language (e.g., English, Amharic)" style="margin-bottom: 0.5rem;">
+                                </div>
+                                <button type="button" class="btn-add" onclick="addLanguage()" style="margin-top: 0.5rem; width: 100%;">
+                                    + Add Another Language
+                                </button>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hobbies & Interests (Multiple)</label>
+                                <div id="hobbies-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <input type="text" class="form-input hobby-input" placeholder="Enter hobby (e.g., Reading, Sports)" style="margin-bottom: 0.5rem;">
+                                </div>
+                                <button type="button" class="btn-add" onclick="addHobby()" style="margin-top: 0.5rem; width: 100%;">
+                                    + Add Another Hobby
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>About Us</label>
-                        <textarea id="aboutUs" class="form-textarea" rows="4"></textarea>
+                    <!-- About Me Section -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🎨</span> About Me
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>About Us</label>
+                                <textarea id="aboutUs" class="form-textarea" rows="4" placeholder="Tell us about yourself..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Favorite Quote</label>
+                                <textarea id="profileQuote" class="form-textarea" rows="4" placeholder="Enter a quote that inspires you"></textarea>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Hero Titles (Multiple titles will cycle on your profile)</label>
-                        <div id="heroTitlesContainer"></div>
-                        <button type="button" class="btn-add" onclick="addHeroTitle()">+ Add Hero Title</button>
+                    <!-- Social Media Links Section -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🔗</span> Social Media Links
+                        </h3>
+                        <div class="form-group">
+                            <label>Social Media Links (Optional)</label>
+                            <div id="socialMediaContainer" style="margin-bottom: 0.5rem;"></div>
+                            <button type="button" class="btn-add" onclick="addSocialLink()" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                ➕ Add Social Link
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Hero Subtitle</label>
-                        <input type="text" id="heroSubtitle" class="form-input"
-                            placeholder="Your hero subtitle (e.g., Empowering students through personalized learning)">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Social Media Links</label>
-                        <div id="socialMediaContainer"></div>
-                        <button type="button" class="btn-add" onclick="addSocialLink()">+ Add Social Link</button>
-                    </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+            <div class="modal-footer" style="display: flex; gap: 1rem; justify-content: flex-end; padding: 1.5rem;">
+                <button class="btn-secondary" onclick="closeEditProfileModal()" style="padding: 0.75rem 2rem;">Cancel</button>
+                <button class="btn-primary" onclick="saveProfile()" style="padding: 0.75rem 2rem;">💾 Save Changes</button>
             </div>
         </div>
     </div>

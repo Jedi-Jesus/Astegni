@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="../css/common-modals/auth-modal.css">
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
-    <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/promo-modal.css">
     <!-- Standalone Chat Call Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <!-- Search bar styling from find-tutors -->
@@ -312,21 +312,21 @@
     <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="ad-container premium-ad">
+    <div class="promo-container premium-promo">
         <!-- Ad Slide 1 -->
-        <div class="ad-slide active" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide active" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 1</span>
-                <h3 class="ad-title">Boost Your Reach Today</h3>
-                <p class="ad-text">Premium placement available</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 1</span>
+                <h3 class="promo-title">Boost Your Reach Today</h3>
+                <p class="promo-text">Premium placement available</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Learn More</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -335,19 +335,19 @@
         </div>
 
         <!-- Ad Slide 2 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 2</span>
-                <h3 class="ad-title">Create Engaging Videos</h3>
-                <p class="ad-text">Share your educational content</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Start Creating</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 2</span>
+                <h3 class="promo-title">Create Engaging Videos</h3>
+                <p class="promo-text">Share your educational content</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Start Creating</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -356,19 +356,19 @@
         </div>
 
         <!-- Ad Slide 3 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 3</span>
-                <h3 class="ad-title">Video Marketing Solutions</h3>
-                <p class="ad-text">Reach millions of learners</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Explore Options</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 3</span>
+                <h3 class="promo-title">Video Marketing Solutions</h3>
+                <p class="promo-text">Reach millions of learners</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Explore Options</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -377,19 +377,19 @@
         </div>
 
         <!-- Ad Slide 4 -->
-        <div class="ad-slide" onclick="openComingSoonModal('Advertising')">
-            <div class="ad-animation">
+        <div class="promo-slide" onclick="openComingSoonModal('Advertising')">
+            <div class="promo-animation">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
-            <div class="ad-content">
-                <span class="ad-label">Ad 4</span>
-                <h3 class="ad-title">Advertise on Videos</h3>
-                <p class="ad-text">Your ad could be here</p>
-                <button class="ad-cta" onclick="openComingSoonModal('Advertising')">Get Started</button>
+            <div class="promo-content">
+                <span class="promo-label">Ad 4</span>
+                <h3 class="promo-title">Advertise on Videos</h3>
+                <p class="promo-text">Your ad could be here</p>
+                <button class="promo-cta" onclick="openComingSoonModal('Advertising')">Get Started</button>
             </div>
-            <div class="ad-visual">
-                <div class="ad-circles">
+            <div class="promo-visual">
+                <div class="promo-circles">
                     <div class="circle circle-1"></div>
                     <div class="circle circle-2"></div>
                     <div class="circle circle-3"></div>
@@ -1140,40 +1140,40 @@
     <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
         <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
-        <div class="modal-content ad-analytics-modal">
+        <div class="modal-content promo-analytics-modal">
             <div class="modal-header">
                 <h2>Advertisement Analytics & Information</h2>
                 <button class="modal-close" onclick="closeAdAnalyticsModal()">×</button>
             </div>
             <div class="modal-body">
-                <div class="ad-stats-grid">
-                    <div class="ad-stat-card">
-                        <div class="ad-stat-icon">👁️</div>
-                        <div class="ad-stat-info">
+                <div class="promo-stats-grid">
+                    <div class="promo-stat-card">
+                        <div class="promo-stat-icon">👁️</div>
+                        <div class="promo-stat-info">
                             <h3>2.5M+</h3>
                             <p>Monthly Impressions</p>
                         </div>
                         <span>Mock</span>
                     </div>
-                    <div class="ad-stat-card">
-                        <div class="ad-stat-icon">🎯</div>
-                        <div class="ad-stat-info">
+                    <div class="promo-stat-card">
+                        <div class="promo-stat-icon">🎯</div>
+                        <div class="promo-stat-info">
                             <h3>4.2%</h3>
                             <p>Average CTR</p>
                         </div>
                         <span>Mock</span>
                     </div>
-                    <div class="ad-stat-card">
-                        <div class="ad-stat-icon">💰</div>
-                        <div class="ad-stat-info">
+                    <div class="promo-stat-card">
+                        <div class="promo-stat-icon">💰</div>
+                        <div class="promo-stat-info">
                             <h3>$0.45</h3>
                             <p>Average CPC</p>
                         </div>
                         <span>Mock</span>
                     </div>
-                    <div class="ad-stat-card">
-                        <div class="ad-stat-icon">📈</div>
-                        <div class="ad-stat-info">
+                    <div class="promo-stat-card">
+                        <div class="promo-stat-icon">📈</div>
+                        <div class="promo-stat-info">
                             <h3>325%</h3>
                             <p>Average ROI</p>
                         </div>

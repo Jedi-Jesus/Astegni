@@ -60,7 +60,7 @@ window.selectPackage = function(packageId) {
 
 window.submitCustomPackage = function() {
     Utils.showToast("📧 Custom package request sent! We'll contact you within 24 hours.", "success");
-    window.modalsManager.close('adAnalyticsModal');
+    window.modalsManager.close('promoAnalyticsModal');
 };
 
 // Switch metric for analytics
@@ -128,10 +128,10 @@ AdPackageManager.renderPackages();
     });
 
     // Fix ad placeholder learn more buttons
-    document.querySelectorAll('.ad-cta').forEach(btn => {
+    document.querySelectorAll('.promo-cta').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            window.modalsManager.open('adAnalyticsModal');
+            window.modalsManager.open('promoAnalyticsModal');
         });
     });
 
