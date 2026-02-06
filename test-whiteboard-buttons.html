@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard Button Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #4338ca;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .info { background: #dbeafe; color: #1e40af; }
+        pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Whiteboard Button Diagnostic Tool</h1>
+
+    <div class="debug-panel">
+        <h2>Test Controls</h2>
+        <button class="test-button" onclick="testOpenWhiteboard()">Test Open Whiteboard</button>
+        <button class="test-button" onclick="checkWhiteboardElements()">Check Modal Elements</button>
+        <button class="test-button" onclick="checkEventListeners()">Check Event Listeners</button>
+        <button class="test-button" onclick="manuallyOpenModal()">Manually Open Modal</button>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Status</h2>
+        <div id="status-container"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Console Output</h2>
+        <pre id="console-output"></pre>
+    </div>
+
+    <!-- Load necessary scripts -->
+    <script src="js/root/config.js"></script>
+    <script src="js/root/modal-loader.js"></script>
+    <script src="modals/tutor-profile/modal-loader.js"></script>
+    <script src="js/tutor-profile/whiteboard-manager.js"></script>
+
+    <script>
+        const statusContainer = document.getElementById('status-container');
+        const consoleOutput = document.getElementById('console-output');
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleOutput.textContent += '❌ ERROR: ' + args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            statusContainer.appendChild(div);
+        }
+
+        function testOpenWhiteboard() {
+            addStatus('Testing openWhiteboardFromTeachingTools()...', 'info');
+            try {
+                if (typeof openWhiteboardFromTeachingTools === 'function') {
+                    addStatus('✓ Function exists', 'success');
+                    openWhiteboardFromTeachingTools();
+                    addStatus('✓ Function called successfully', 'success');
+                } else {
+                    addStatus('✗ Function not found', 'error');
+                }
+            } catch (error) {
+                addStatus('✗ Error: ' + error.message, 'error');
+            }
+        }
+
+        function checkWhiteboardElements() {
+            addStatus('Checking whiteboard modal elements...', 'info');
+
+            const checks = [
+                'whiteboardModal',
+                'whiteboardModalContainer',
+                'closeWhiteboard',
+                'minimizeWhiteboard',
+                'maximizeWhiteboard',
+                'whiteboardCanvas',
+                'canvasContainer'
+            ];
+
+            checks.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    addStatus(`✓ Found: ${id}`, 'success');
+                } else {
+                    addStatus(`✗ Missing: ${id}`, 'error');
+                }
+            });
+
+            // Check if modal-container exists
+            const modalContainer = document.getElementById('modal-container');
+            if (modalContainer) {
+                addStatus(`✓ modal-container exists`, 'success');
+                addStatus(`  Contains ${modalContainer.children.length} child elements`, 'info');
+            } else {
+                addStatus(`✗ modal-container not found`, 'error');
+            }
+        }
+
+        function checkEventListeners() {
+            addStatus('Checking whiteboardManager state...', 'info');
+
+            if (typeof whiteboardManager !== 'undefined') {
+                addStatus('✓ whiteboardManager exists', 'success');
+                addStatus(`  Initialized: ${whiteboardManager._eventListenersSetup || 'unknown'}`, 'info');
+                addStatus(`  User role: ${whiteboardManager.userRole || 'unknown'}`, 'info');
+            } else {
+                addStatus('✗ whiteboardManager not found', 'error');
+            }
+        }
+
+        function manuallyOpenModal() {
+            addStatus('Manually opening modal...', 'info');
+            const overlay = document.getElementById('whiteboardModal');
+            if (overlay) {
+                overlay.classList.add('active');
+                addStatus('✓ Added "active" class to modal', 'success');
+
+                // Test a button click
+                setTimeout(() => {
+                    const closeBtn = document.getElementById('closeWhiteboard');
+                    if (closeBtn) {
+                        addStatus('Testing close button...', 'info');
+                        const hasListener = closeBtn.onclick !== null;
+                        addStatus(`  Has onclick: ${hasListener}`, 'info');
+
+                        // Try to click it
+                        closeBtn.addEventListener('click', function testClick() {
+                            addStatus('✓ Close button clicked!', 'success');
+                            closeBtn.removeEventListener('click', testClick);
+                        });
+                        closeBtn.click();
+                    } else {
+                        addStatus('✗ Close button not found', 'error');
+                    }
+                }, 500);
+            } else {
+                addStatus('✗ Modal overlay not found', 'error');
+            }
+        }
+
+        // Auto-run checks on load
+        window.addEventListener('load', () => {
+            addStatus('Page loaded, running initial checks...', 'info');
+            setTimeout(() => {
+                checkWhiteboardElements();
+                checkEventListeners();
+            }, 1000);
+        });
+
+        // Listen for modalsLoaded event
+        document.addEventListener('modalsLoaded', () => {
+            addStatus('🎉 modalsLoaded event fired!', 'success');
+            checkWhiteboardElements();
+        });
+    </script>
+</body>
+</html>
