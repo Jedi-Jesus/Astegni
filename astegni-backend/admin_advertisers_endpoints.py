@@ -12,15 +12,16 @@ Table Relationships:
                  status, status_by, status_reason, status_at, is_verified, is_active,
                  created_at, updated_at, phone, email, location, campaign_ids[] (array of campaign IDs),
                  package_id (references brand_packages.id in admin db)
-- campaign_profile: id, name, description, thumbnail_url, file_url, objective, is_verified,
+- campaign_profile: id, name, description, brand_id (FK to brand_profile.id), objective, is_verified,
                     verification_status, status_by, status_reason, status_at, campaign_package_id
                     (references brand_packages.id in admin db),
                     start_date, target_audience, target_location, impressions, clicks, etc.
 - brand_packages (in admin db): id, name, price, etc.
 
-Relationships (IMPORTANT: parent holds child IDs in arrays):
+Relationships:
 - advertiser_profiles.brand_ids[] contains brand IDs -> join: bp.id = ANY(ap.brand_ids)
-- brand_profile.campaign_ids[] contains campaign IDs -> join: cp.id = ANY(bp.campaign_ids)
+- campaign_profile.brand_id -> brand_profile.id (proper FK) -> join: cp.brand_id = bp.id
+- brand_profile.campaign_ids[] (deprecated, kept for backward compatibility)
 - brand_profile.package_id -> brand_packages.id (cross-database lookup)
 - campaign_profile.campaign_package_id -> brand_packages.id (cross-database lookup)
 """
@@ -77,9 +78,9 @@ async def get_brands(
         try:
             with get_admin_db() as admin_conn:
                 with admin_conn.cursor() as admin_cur:
-                    admin_cur.execute("SELECT id, name, price FROM brand_packages")
+                    admin_cur.execute("SELECT id, package_title, package_price FROM brand_packages")
                     for pkg in admin_cur.fetchall():
-                        packages_map[pkg['id']] = {'name': pkg['name'], 'price': pkg['price']}
+                        packages_map[pkg['id']] = {'name': pkg['package_title'], 'price': pkg['package_price']}
         except Exception as pkg_error:
             print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
             # Continue without packages - they'll show as "No Package"
@@ -383,7 +384,7 @@ async def get_campaigns(
     limit: int = Query(default=20, le=100)
 ):
     """Get all campaigns with optional filtering.
-    Joins with brand_profile via campaign_ids array: cp.id = ANY(bp.campaign_ids)
+    Joins with brand_profile using brand_id (proper foreign key relationship)
     Fetches brand_packages from astegni_admin_db"""
     try:
         # First, fetch all brand_packages from admin database
@@ -391,20 +392,20 @@ async def get_campaigns(
         try:
             with get_admin_db() as admin_conn:
                 with admin_conn.cursor() as admin_cur:
-                    admin_cur.execute("SELECT id, name, price FROM brand_packages")
+                    admin_cur.execute("SELECT id, package_title, package_price FROM brand_packages")
                     for pkg in admin_cur.fetchall():
-                        packages_map[pkg['id']] = {'name': pkg['name'], 'price': pkg['price']}
+                        packages_map[pkg['id']] = {'name': pkg['package_title'], 'price': pkg['package_price']}
         except Exception as pkg_error:
             print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
             # Continue without packages - they'll show as "No Package"
 
         with get_user_db() as conn:
             with conn.cursor() as cur:
-                # Build query - join with brand_profile only (packages come from admin db)
-                # brand_profile.campaign_ids[] contains campaign IDs
+                # Build query - join with brand_profile using brand_id (proper foreign key relationship)
+                # campaign_profile.brand_id references brand_profile.id
                 base_query = """
                     FROM campaign_profile cp
-                    LEFT JOIN brand_profile bp ON cp.id = ANY(bp.campaign_ids)
+                    LEFT JOIN brand_profile bp ON cp.brand_id = bp.id
                     WHERE 1=1
                 """
                 params = []
@@ -414,7 +415,8 @@ async def get_campaigns(
                     if status == 'verified':
                         where_clauses.append("cp.verification_status = 'verified'")
                     elif status == 'pending' or status == 'requested':
-                        where_clauses.append("(cp.verification_status = 'pending' OR cp.verification_status IS NULL)")
+                        # Only show campaigns that have been submitted for verification
+                        where_clauses.append("((cp.verification_status = 'pending' OR cp.verification_status IS NULL) AND cp.submit_for_verification = true)")
                     elif status == 'rejected':
                         where_clauses.append("cp.verification_status = 'rejected'")
                     elif status == 'suspended':
@@ -450,41 +452,92 @@ async def get_campaigns(
                 cur.execute(select_query, params)
                 campaigns = cur.fetchall()
 
+                # Get campaign IDs for aggregation queries
+                campaign_ids = [c['id'] for c in campaigns]
+
+                # Aggregate impressions and clicks from campaign_impressions table
+                impressions_map = {}
+                clicks_map = {}
+                conversions_map = {}
+                if campaign_ids:
+                    cur.execute("""
+                        SELECT
+                            campaign_id,
+                            COUNT(*) as total_impressions,
+                            COUNT(*) FILTER (WHERE clicked = true) as total_clicks,
+                            COUNT(*) FILTER (WHERE converted = true) as total_conversions
+                        FROM campaign_impressions
+                        WHERE campaign_id = ANY(%s)
+                        GROUP BY campaign_id
+                    """, (campaign_ids,))
+                    for row in cur.fetchall():
+                        impressions_map[row['campaign_id']] = row['total_impressions']
+                        clicks_map[row['campaign_id']] = row['total_clicks']
+                        conversions_map[row['campaign_id']] = row['total_conversions']
+
+                # Aggregate engagements (likes, shares, comments) from campaign_engagement table
+                likes_map = {}
+                shares_map = {}
+                comments_map = {}
+                if campaign_ids:
+                    cur.execute("""
+                        SELECT
+                            campaign_id,
+                            COUNT(*) FILTER (WHERE engagement_type = 'like') as total_likes,
+                            COUNT(*) FILTER (WHERE engagement_type = 'share') as total_shares,
+                            COUNT(*) FILTER (WHERE engagement_type = 'comment') as total_comments
+                        FROM campaign_engagement
+                        WHERE campaign_id = ANY(%s)
+                        GROUP BY campaign_id
+                    """, (campaign_ids,))
+                    for row in cur.fetchall():
+                        likes_map[row['campaign_id']] = row['total_likes']
+                        shares_map[row['campaign_id']] = row['total_shares']
+                        comments_map[row['campaign_id']] = row['total_comments']
+
+                # Get thumbnail from campaign_media (first image for each campaign)
+                thumbnail_map = {}
+                if campaign_ids:
+                    cur.execute("""
+                        SELECT DISTINCT ON (campaign_id) campaign_id, file_url
+                        FROM campaign_media
+                        WHERE campaign_id = ANY(%s) AND media_type = 'image'
+                        ORDER BY campaign_id, created_at ASC
+                    """, (campaign_ids,))
+                    for row in cur.fetchall():
+                        thumbnail_map[row['campaign_id']] = row['file_url']
+
                 # Transform to match frontend expectations
                 result = []
                 for c in campaigns:
-                    # Look up package from admin db packages_map
-                    package_id = c.get('campaign_package_id')
-                    package_info = packages_map.get(package_id, {}) if package_id else {}
+                    campaign_id = c['id']
 
                     result.append({
-                        'id': c['id'],
+                        'id': campaign_id,
                         'campaign_name': c['name'],
-                        'campaign_image': c['thumbnail_url'],
-                        'description': c['description'],
-                        'objective': c['objective'],
-                        'verification_status': c['verification_status'] or 'pending',
-                        'is_verified': c['is_verified'],
-                        'impressions': c['impressions'] or 0,
-                        'clicks': c.get('click_through_rate', 0) or c.get('clicks', 0) or 0,
-                        'conversions': c['conversions'] or 0,
-                        'likes': c['likes'] or 0,
-                        'shares': c['shares'] or 0,
-                        'comments': c['comments'] or 0,
-                        'campaign_budget': float(c['campaign_budget']) if c['campaign_budget'] else 0,
-                        'budget': float(c.get('budget', 0) or c.get('campaign_budget', 0) or 0),
-                        'start_date': str(c['start_date']) if c['start_date'] else None,
-                        'end_date': str(c.get('end_date')) if c.get('end_date') else None,
-                        'created_at': str(c['created_at']) if c['created_at'] else None,
+                        'campaign_image': thumbnail_map.get(campaign_id),
+                        'description': c.get('description'),
+                        'objective': c.get('objective'),
+                        'verification_status': c.get('verification_status') or 'pending',
+                        'is_verified': c.get('is_verified', False),
+                        'submit_for_verification': c.get('submit_for_verification', False),
+                        'impressions': impressions_map.get(campaign_id, 0),
+                        'clicks': clicks_map.get(campaign_id, 0),
+                        'conversions': conversions_map.get(campaign_id, 0),
+                        'likes': likes_map.get(campaign_id, 0),
+                        'shares': shares_map.get(campaign_id, 0),
+                        'comments': comments_map.get(campaign_id, 0),
+                        'campaign_budget': float(c['campaign_budget']) if c.get('campaign_budget') else 0,
+                        'start_date': str(c['start_date']) if c.get('start_date') else None,
+                        'end_date': str(c.get('ended_at')) if c.get('ended_at') else None,
+                        'created_at': str(c['created_at']) if c.get('created_at') else None,
                         'status_at': str(c['status_at']) if c.get('status_at') else None,
-                        'target_audience': c.get('target_audience'),
-                        'ad_type': c.get('ad_type'),
+                        'target_audience': c.get('target_audiences', []),
                         'brand_name': c.get('brand_name'),
                         'brand_logo': c.get('brand_logo'),
                         'brand_id': c.get('brand_id'),
-                        'package_id': package_id,
-                        'package_name': package_info.get('name'),
-                        'package_price': float(package_info['price']) if package_info.get('price') else None
+                        'package_name': 'Custom',
+                        'package_price': None
                     })
 
                 return {
@@ -508,9 +561,10 @@ async def get_campaign_counts():
                     SELECT
                         COUNT(*) as total,
                         COUNT(*) FILTER (WHERE verification_status = 'verified') as verified,
-                        COUNT(*) FILTER (WHERE verification_status = 'pending' OR verification_status IS NULL) as pending,
+                        COUNT(*) FILTER (WHERE (verification_status = 'pending' OR verification_status IS NULL) AND submit_for_verification = true) as pending,
                         COUNT(*) FILTER (WHERE verification_status = 'rejected') as rejected,
-                        COUNT(*) FILTER (WHERE verification_status = 'suspended') as suspended
+                        COUNT(*) FILTER (WHERE verification_status = 'suspended') as suspended,
+                        COUNT(*) FILTER (WHERE submit_for_verification = true) as submitted_for_verification
                     FROM campaign_profile
                 """)
                 counts = cur.fetchone()
@@ -519,21 +573,8 @@ async def get_campaign_counts():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/campaigns/{campaign_id}")
-async def get_campaign(campaign_id: int):
-    """Get specific campaign by ID"""
-    try:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM campaign_profile WHERE id = %s", (campaign_id,))
-                campaign = cur.fetchone()
-                if not campaign:
-                    raise HTTPException(status_code=404, detail="Campaign not found")
-                return dict(campaign)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# Removed: Replaced by detailed get_campaign_details endpoint below (line ~1155)
+# The detailed endpoint fetches brand info and engagement metrics from DB
 
 
 @router.post("/campaigns/{campaign_id}/verify")
@@ -714,28 +755,43 @@ async def get_recent_brands(limit: int = Query(default=5, le=20)):
 @router.get("/recent/campaigns")
 async def get_recent_campaigns(limit: int = Query(default=5, le=20)):
     """Get most recent campaign submissions with brand names.
-    Joins with brand_profile via campaign_ids array: cp.id = ANY(bp.campaign_ids)"""
+    Joins with brand_profile using brand_id (proper foreign key relationship)"""
     try:
         with get_user_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT cp.id, cp.name, cp.thumbnail_url, cp.verification_status, cp.created_at,
+                    SELECT cp.id, cp.name, cp.verification_status, cp.created_at,
                            bp.name as brand_name, bp.thumbnail as brand_logo
                     FROM campaign_profile cp
-                    LEFT JOIN brand_profile bp ON cp.id = ANY(bp.campaign_ids)
+                    LEFT JOIN brand_profile bp ON cp.brand_id = bp.id
                     ORDER BY cp.created_at DESC
                     LIMIT %s
                 """, (limit,))
                 campaigns = cur.fetchall()
+
+                # Get campaign IDs
+                campaign_ids = [c['id'] for c in campaigns]
+
+                # Get thumbnails from campaign_media
+                thumbnail_map = {}
+                if campaign_ids:
+                    cur.execute("""
+                        SELECT DISTINCT ON (campaign_id) campaign_id, file_url
+                        FROM campaign_media
+                        WHERE campaign_id = ANY(%s) AND media_type = 'image'
+                        ORDER BY campaign_id, created_at ASC
+                    """, (campaign_ids,))
+                    for row in cur.fetchall():
+                        thumbnail_map[row['campaign_id']] = row['file_url']
 
                 result = []
                 for c in campaigns:
                     result.append({
                         'id': c['id'],
                         'campaign_name': c['name'],
-                        'campaign_image': c['thumbnail_url'],
-                        'verification_status': c['verification_status'] or 'pending',
-                        'created_at': str(c['created_at']) if c['created_at'] else None,
+                        'campaign_image': thumbnail_map.get(c['id']),
+                        'verification_status': c.get('verification_status') or 'pending',
+                        'created_at': str(c['created_at']) if c.get('created_at') else None,
                         'brand_name': c.get('brand_name'),
                         'brand_logo': c.get('brand_logo')
                     })
@@ -1071,6 +1127,228 @@ async def get_advertisers_reviews_by_email(email: str):
                     "reviews": [dict(r) for r in reviews],
                     "total_reviews": stats['total_reviews'] if stats else 0,
                     "average_rating": round(float(stats['average_rating']), 1) if stats else 0
+                }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================
+# CAMPAIGN DETAIL ENDPOINTS (for view-campaign-modal)
+# ============================================================
+
+@router.get("/campaigns/{campaign_id}")
+async def get_campaign_details(campaign_id: int):
+    """
+    Get detailed campaign information for admin view modal
+    Fetches from campaign_profile and brand_profile tables
+    """
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                # Get campaign details with brand information directly from DB
+                cur.execute("""
+                    SELECT
+                        cp.id,
+                        cp.name,
+                        cp.description,
+                        cp.objective,
+                        cp.start_date,
+                        cp.ended_at,
+                        cp.campaign_budget,
+                        cp.amount_used,
+                        cp.remaining_balance,
+                        cp.target_audiences,
+                        cp.target_placements,
+                        cp.target_location,
+                        cp.target_regions,
+                        cp.verification_status,
+                        cp.is_verified,
+                        cp.status_by,
+                        cp.status_reason,
+                        cp.status_at,
+                        cp.submit_for_verification,
+                        cp.cpi_rate,
+                        cp.created_at,
+                        cp.updated_at,
+                        bp.name as brand_name,
+                        bp.bio as brand_description,
+                        bp.thumbnail as brand_logo,
+                        bp.location as brand_location,
+                        bp.industry as brand_category,
+                        bp.website as brand_website,
+                        bp.id as brand_id
+                    FROM campaign_profile cp
+                    LEFT JOIN brand_profile bp ON cp.brand_id = bp.id
+                    WHERE cp.id = %s
+                """, (campaign_id,))
+
+                campaign = cur.fetchone()
+
+                if not campaign:
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+
+                # Get campaign impression metrics from campaign_impressions table
+                cur.execute("""
+                    SELECT
+                        COUNT(*) as total_impressions,
+                        COUNT(*) FILTER (WHERE clicked = true) as total_clicks,
+                        COUNT(*) FILTER (WHERE converted = true) as total_conversions
+                    FROM campaign_impressions
+                    WHERE campaign_id = %s
+                """, (campaign_id,))
+                engagement = cur.fetchone()
+
+                # Get social engagement metrics from campaign_engagement table
+                cur.execute("""
+                    SELECT
+                        COUNT(*) FILTER (WHERE engagement_type = 'like') as total_likes,
+                        COUNT(*) FILTER (WHERE engagement_type = 'share') as total_shares,
+                        COUNT(*) FILTER (WHERE engagement_type = 'comment') as total_comments
+                    FROM campaign_engagement
+                    WHERE campaign_id = %s
+                """, (campaign_id,))
+                social_engagement = cur.fetchone()
+
+                # Calculate CTR
+                impressions = engagement['total_impressions'] if engagement else 0
+                clicks = engagement['total_clicks'] if engagement else 0
+                ctr = (clicks / impressions * 100) if impressions > 0 else 0
+
+                # Handle brand location (JSONB field)
+                brand_location_str = None
+                if campaign['brand_location']:
+                    if isinstance(campaign['brand_location'], dict):
+                        # Extract city/country from JSONB
+                        location_parts = []
+                        if campaign['brand_location'].get('city'):
+                            location_parts.append(campaign['brand_location']['city'])
+                        if campaign['brand_location'].get('country'):
+                            location_parts.append(campaign['brand_location']['country'])
+                        brand_location_str = ', '.join(location_parts) if location_parts else None
+                    else:
+                        brand_location_str = str(campaign['brand_location'])
+
+                # Build response matching frontend expectations - directly from DB tables
+                return {
+                    "campaign": {
+                        "id": campaign['id'],
+                        "campaign_name": campaign['name'] or 'Unnamed Campaign',
+                        "description": campaign['description'] or 'No description provided',
+                        "objective": campaign['objective'] or 'Not specified',
+                        "start_date": str(campaign['start_date']) if campaign['start_date'] else None,
+                        "end_date": str(campaign['ended_at']) if campaign['ended_at'] else None,
+                        "budget": float(campaign['campaign_budget']) if campaign['campaign_budget'] else 0,
+                        "campaign_type": "Standard",  # Can be enhanced based on actual campaign type
+                        "ad_type": "Campaign",
+                        "target_audience": campaign['target_audiences'] if campaign['target_audiences'] else [],
+                        "target_placements": campaign['target_placements'] if campaign['target_placements'] else [],
+                        "target_location": campaign['target_location'],
+                        "target_regions": campaign['target_regions'] if campaign['target_regions'] else [],
+                        "verification_status": campaign['verification_status'] or 'pending',
+                        "is_verified": campaign['is_verified'],
+                        "rejection_reason": campaign['status_reason'] if campaign['verification_status'] == 'rejected' else None,
+                        "suspension_reason": campaign['status_reason'] if campaign['verification_status'] == 'suspended' else None,
+                        "submit_for_verification": campaign['submit_for_verification'],
+                        "cpi_rate": float(campaign['cpi_rate']) if campaign['cpi_rate'] else 0,
+                        "created_at": str(campaign['created_at']) if campaign['created_at'] else None,
+                        "updated_at": str(campaign['updated_at']) if campaign['updated_at'] else None,
+
+                        # Brand information (from brand_profile table)
+                        "brand_name": campaign['brand_name'] or 'Unknown Brand',
+                        "brand_description": campaign['brand_description'] or 'No description available',
+                        "brand_logo": campaign['brand_logo'] or None,
+                        "brand_location": brand_location_str,
+                        "brand_category": campaign['brand_category'] or 'Uncategorized',
+                        "brand_website": campaign['brand_website'] or None,
+                        "brand_id": campaign['brand_id'],
+
+                        # Performance metrics (from campaign_engagement table)
+                        "impressions": impressions,
+                        "clicks": clicks,
+                        "conversions": engagement['total_conversions'] if engagement else 0,
+                        "ctr": round(ctr, 2),
+                        "spent": float(campaign['amount_used']) if campaign['amount_used'] else 0,
+
+                        # Social engagement
+                        "likes": social_engagement['total_likes'] if social_engagement else 0,
+                        "shares": social_engagement['total_shares'] if social_engagement else 0,
+                        "comments": social_engagement['total_comments'] if social_engagement else 0,
+                    }
+                }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/campaigns/{campaign_id}/media")
+async def get_campaign_media(campaign_id: int):
+    """
+    Get all media (images and videos) for a campaign
+    Fetches from campaign_media table
+    """
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                # Verify campaign exists
+                cur.execute("""
+                    SELECT id FROM campaign_profile WHERE id = %s
+                """, (campaign_id,))
+
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+
+                # Get all media for this campaign
+                cur.execute("""
+                    SELECT
+                        id,
+                        campaign_id,
+                        brand_id,
+                        advertiser_id,
+                        media_type,
+                        file_url,
+                        file_name,
+                        file_size,
+                        placement,
+                        content_type,
+                        folder_path,
+                        created_at,
+                        updated_at
+                    FROM campaign_media
+                    WHERE campaign_id = %s
+                    ORDER BY created_at ASC
+                """, (campaign_id,))
+
+                media_items = cur.fetchall()
+
+                # Format response
+                media = []
+                for item in media_items:
+                    media.append({
+                        "id": item['id'],
+                        "campaign_id": item['campaign_id'],
+                        "brand_id": item['brand_id'],
+                        "advertiser_id": item['advertiser_id'],
+                        "media_type": item['media_type'],  # 'image' or 'video'
+                        "file_url": item['file_url'],
+                        "file_name": item['file_name'],
+                        "file_size": item['file_size'],
+                        "placement": item['placement'],  # 'leaderboard-banner', 'logo', etc.
+                        "content_type": item['content_type'],
+                        "folder_path": item['folder_path'],
+                        "created_at": str(item['created_at']) if item['created_at'] else None,
+                        "updated_at": str(item['updated_at']) if item['updated_at'] else None,
+                    })
+
+                return {
+                    "media": media,
+                    "total": len(media),
+                    "images": len([m for m in media if m['media_type'] == 'image']),
+                    "videos": len([m for m in media if m['media_type'] == 'video'])
                 }
 
     except HTTPException:

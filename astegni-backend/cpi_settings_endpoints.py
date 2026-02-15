@@ -7,7 +7,7 @@ CPI Structure:
 - Audience premiums: Additional cost for targeting specific audiences (tutor, student, parent, advertiser, user)
 - Location premiums: Additional cost for targeting specific locations (national)
 - Region exclusion premiums: Country-specific region premiums stored as JSONB (supports any country)
-- Placement premiums: Additional cost for specific ad placements (placeholder, widget, popup, insession)
+- Placement premiums: Additional cost for specific ad placements (leaderboard-banner, logo, in-session-skyscrapper-banner)
 
 JSONB Region Structure:
 {
@@ -53,7 +53,7 @@ class CpiSettingsUpdate(BaseModel):
     audiencePremiums: dict  # {tutor: float, student: float, parent: float, advertiser: float, user: float}
     locationPremiums: dict  # {national: float}
     regionExclusionPremiums: dict = {}  # {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}}
-    placementPremiums: dict = {}  # {placeholder: float, widget: float, popup: float, insession: float}
+    placementPremiums: dict = {}  # {'leaderboard-banner': float, 'logo': float, 'in-session-skyscrapper-banner': float}
 
 
 def get_db():
@@ -138,10 +138,9 @@ async def get_full_cpi_rates():
                 advertiser_premium,
                 user_premium,
                 national_premium,
-                placeholder_premium,
-                widget_premium,
-                popup_premium,
-                insession_premium,
+                leaderboard_banner_premium,
+                logo_premium,
+                in_session_skyscrapper_banner_premium,
                 currency,
                 region_exclusion_premiums,
                 country_regions
@@ -211,18 +210,17 @@ async def get_full_cpi_rates():
                 "regionExclusionPremiums": default_region_premiums,
                 "countryRegions": default_country_regions,
                 "placementPremiums": {
-                    "placeholder": 0.01,
-                    "widget": 0.02,
-                    "popup": 0.05,
-                    "insession": 0.10
+                    "leaderboard-banner": 0.01,
+                    "logo": 0.02,
+                    "in-session-skyscrapper-banner": 0.05
                 },
                 "currency": "ETB",
                 "message": "Using default rates"
             }
 
         # Parse JSONB columns
-        region_premiums = row[12] if row[12] else default_region_premiums
-        country_regions = row[13] if row[13] else default_country_regions
+        region_premiums = row[11] if row[11] else default_region_premiums
+        country_regions = row[12] if row[12] else default_country_regions
 
         return {
             "success": True,
@@ -240,12 +238,11 @@ async def get_full_cpi_rates():
             "regionExclusionPremiums": region_premiums,
             "countryRegions": country_regions,
             "placementPremiums": {
-                "placeholder": float(row[7]) if row[7] else 0,
-                "widget": float(row[8]) if row[8] else 0,
-                "popup": float(row[9]) if row[9] else 0,
-                "insession": float(row[10]) if row[10] else 0
+                "leaderboard-banner": float(row[7]) if row[7] else 0,
+                "logo": float(row[8]) if row[8] else 0,
+                "in-session-skyscrapper-banner": float(row[9]) if row[9] else 0
             },
-            "currency": row[11]
+            "currency": row[10]
         }
 
     except Exception as e:
@@ -282,10 +279,9 @@ async def get_cpi_settings():
                 advertiser_premium,
                 user_premium,
                 national_premium,
-                placeholder_premium,
-                widget_premium,
-                popup_premium,
-                insession_premium,
+                leaderboard_banner_premium,
+                logo_premium,
+                in_session_skyscrapper_banner_premium,
                 currency,
                 is_active,
                 created_at,
@@ -397,8 +393,8 @@ async def get_cpi_settings():
             }
 
         # Parse JSONB columns
-        region_premiums = row[16] if row[16] else default_region_premiums
-        country_regions = row[17] if row[17] else default_country_regions
+        region_premiums = row[15] if row[15] else default_region_premiums
+        country_regions = row[16] if row[16] else default_country_regions
 
         return {
             "success": True,
@@ -417,15 +413,14 @@ async def get_cpi_settings():
                 },
                 "regionExclusionPremiums": region_premiums,
                 "placementPremiums": {
-                    "placeholder": float(row[8]) if row[8] else 0,
-                    "widget": float(row[9]) if row[9] else 0,
-                    "popup": float(row[10]) if row[10] else 0,
-                    "insession": float(row[11]) if row[11] else 0
+                    "leaderboard-banner": float(row[8]) if row[8] else 0,
+                    "logo": float(row[9]) if row[9] else 0,
+                    "in-session-skyscrapper-banner": float(row[10]) if row[10] else 0
                 },
-                "currency": row[12],
-                "isActive": row[13],
-                "createdAt": row[14].isoformat() if row[14] else None,
-                "updatedAt": row[15].isoformat() if row[15] else None
+                "currency": row[11],
+                "isActive": row[12],
+                "createdAt": row[13].isoformat() if row[13] else None,
+                "updatedAt": row[14].isoformat() if row[14] else None
             },
             "countryRegions": country_regions
         }
@@ -470,10 +465,9 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     advertiser_premium = %s,
                     user_premium = %s,
                     national_premium = %s,
-                    placeholder_premium = %s,
-                    widget_premium = %s,
-                    popup_premium = %s,
-                    insession_premium = %s,
+                    leaderboard_banner_premium = %s,
+                    logo_premium = %s,
+                    in_session_skyscrapper_banner_premium = %s,
                     region_exclusion_premiums = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
@@ -486,10 +480,9 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.audiencePremiums.get('advertiser', 0),
                 settings.audiencePremiums.get('user', 0),
                 settings.locationPremiums.get('national', 0),
-                settings.placementPremiums.get('placeholder', 0),
-                settings.placementPremiums.get('widget', 0),
-                settings.placementPremiums.get('popup', 0),
-                settings.placementPremiums.get('insession', 0),
+                settings.placementPremiums.get('leaderboard-banner', 0),
+                settings.placementPremiums.get('logo', 0),
+                settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
                 json.dumps(region_premiums),
                 existing[0]
             ))
@@ -505,12 +498,11 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     advertiser_premium,
                     user_premium,
                     national_premium,
-                    placeholder_premium,
-                    widget_premium,
-                    popup_premium,
-                    insession_premium,
+                    leaderboard_banner_premium,
+                    logo_premium,
+                    in_session_skyscrapper_banner_premium,
                     region_exclusion_premiums
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 settings.baseRate,
                 getattr(settings, 'country', 'all'),
@@ -520,10 +512,9 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.audiencePremiums.get('advertiser', 0),
                 settings.audiencePremiums.get('user', 0),
                 settings.locationPremiums.get('national', 0),
-                settings.placementPremiums.get('placeholder', 0),
-                settings.placementPremiums.get('widget', 0),
-                settings.placementPremiums.get('popup', 0),
-                settings.placementPremiums.get('insession', 0),
+                settings.placementPremiums.get('leaderboard-banner', 0),
+                settings.placementPremiums.get('logo', 0),
+                settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
                 json.dumps(region_premiums)
             ))
 
@@ -580,9 +571,9 @@ async def calculate_cpi_cost(
                 parent_premium,
                 national_premium,
                 regional_premium,
-                placeholder_premium,
-                widget_premium,
-                popup_premium,
+                leaderboard_banner_premium,
+                logo_premium,
+                in_session_skyscrapper_banner_premium,
                 insession_premium,
                 currency
             FROM cpi_settings
@@ -600,10 +591,9 @@ async def calculate_cpi_cost(
             parent_premium = 0.018
             national_premium = 0.01
             regional_premium = 0.025
-            placeholder_premium = 0.01
-            widget_premium = 0.02
-            popup_premium = 0.05
-            insession_premium = 0.10
+            leaderboard_banner_premium = 0.01
+            logo_premium = 0.02
+            in_session_skyscrapper_banner_premium = 0.05
             currency = "ETB"
         else:
             base_rate = float(row[0])
@@ -612,11 +602,10 @@ async def calculate_cpi_cost(
             parent_premium = float(row[3]) if row[3] else 0
             national_premium = float(row[4]) if row[4] else 0
             regional_premium = float(row[5]) if row[5] else 0
-            placeholder_premium = float(row[6]) if row[6] else 0
-            widget_premium = float(row[7]) if row[7] else 0
-            popup_premium = float(row[8]) if row[8] else 0
-            insession_premium = float(row[9]) if row[9] else 0
-            currency = row[10]
+            leaderboard_banner_premium = float(row[6]) if row[6] else 0
+            logo_premium = float(row[7]) if row[7] else 0
+            in_session_skyscrapper_banner_premium = float(row[8]) if row[8] else 0
+            currency = row[9]
 
         # Calculate audience premium
         audience_premium = 0
@@ -647,18 +636,15 @@ async def calculate_cpi_cost(
         placement_premium = 0
         placement_label = "No Placement"
         if placement:
-            if placement.lower() == "placeholder":
-                placement_premium = placeholder_premium
-                placement_label = "Ad Placeholder"
-            elif placement.lower() == "widget":
-                placement_premium = widget_premium
-                placement_label = "Ad Widget"
-            elif placement.lower() == "popup":
-                placement_premium = popup_premium
-                placement_label = "Whiteboard Pop-up"
-            elif placement.lower() == "insession":
-                placement_premium = insession_premium
-                placement_label = "Whiteboard In-Session"
+            if placement.lower() == "leaderboard-banner":
+                placement_premium = leaderboard_banner_premium
+                placement_label = "Leaderboard Banner"
+            elif placement.lower() == "logo":
+                placement_premium = logo_premium
+                placement_label = "Logo"
+            elif placement.lower() == "in-session-skyscrapper-banner":
+                placement_premium = in_session_skyscrapper_banner_premium
+                placement_label = "In-Session Skyscrapper Banner"
 
         # Calculate total CPI
         total_cpi = base_rate + audience_premium + location_premium + placement_premium

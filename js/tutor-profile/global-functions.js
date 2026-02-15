@@ -3,6 +3,9 @@
 // Functions accessible from HTML onclick handlers
 // ============================================
 
+// Global Variables
+let currentStudentDetailsId = null;
+
 // Universal Modal Handler - Routes to correct modal manager
 // NOTE: Must be synchronous for HTML onclick compatibility, uses .then() for async operations
 function openModal(modalId) {
@@ -2465,12 +2468,17 @@ function addSocialLink() {
         newSocialLink.className = 'social-link-item input-group';
         newSocialLink.innerHTML = `
             <select class="form-select" name="social_platform[]" style="flex: 0 0 140px;">
-                <option value="facebook">Facebook</option>
-                <option value="twitter">Twitter</option>
-                <option value="linkedin">LinkedIn</option>
+                <option value="">Select Platform</option>
+                <option value="tiktok">TikTok</option>
                 <option value="instagram">Instagram</option>
-                <option value="youtube">YouTube</option>
+                <option value="snapchat">Snapchat</option>
+                <option value="facebook">Facebook</option>
                 <option value="telegram">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="twitter">X</option>
+                <option value="youtube">YouTube</option>
+                <option value="github">GitHub</option>
             </select>
             <input type="url" class="form-input" placeholder="Enter URL" name="social_url[]" style="flex: 1;">
             <button type="button" class="btn-remove" onclick="removeSocialLink(this)">×</button>
@@ -4433,61 +4441,111 @@ window.updateProfileHeaderImmediate = updateProfileHeaderImmediate;
 // STORY-RELATED FUNCTIONS
 // ============================================
 
-// Sample stories data (in production, this would come from an API)
-let tutorStories = [
-    {
-        id: 'story1',
-        type: 'image',
-        mediaUrl: '../uploads/system_images/system_images/Math wallpaper 1.jpeg',
-        caption: 'Today\'s lesson on quadratic equations was amazing! 📚',
-        author: 'Professional Tutor',
-        authorAvatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect width="150" height="150" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="16"%3E150x150%3C/text%3E%3C/svg%3E',
-        time: '2 hours ago',
-        likes: 32,
-        comments: 5,
-        views: 245
-    },
-    {
-        id: 'story2',
-        type: 'image',
-        mediaUrl: '../uploads/system_images/system_images/Physics wallpaper 2.jpeg',
-        caption: 'Newton\'s laws demonstration in the lab today! 🔬',
-        author: 'Professional Tutor',
-        authorAvatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect width="150" height="150" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="16"%3E150x150%3C/text%3E%3C/svg%3E',
-        time: '5 hours ago',
-        likes: 28,
-        comments: 3,
-        views: 189
-    },
-    {
-        id: 'story3',
-        type: 'video',
-        mediaUrl: '../uploads/system_videos/sample-video.mp4',
-        caption: 'Chemistry experiment - watch the reaction! ⚗️',
-        author: 'Professional Tutor',
-        authorAvatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect width="150" height="150" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="16"%3E150x150%3C/text%3E%3C/svg%3E',
-        time: '8 hours ago',
-        likes: 45,
-        comments: 8,
-        views: 312
+// Stories data - loaded from API
+let tutorStories = [];
+
+// Load stories from backend
+async function loadTutorStories() {
+    try {
+        if (typeof TutorProfileAPI !== 'undefined' && TutorProfileAPI.getTutorStories) {
+            const stories = await TutorProfileAPI.getTutorStories();
+
+            if (stories && stories.length > 0) {
+                // Map API response to expected format
+                tutorStories = stories.map(story => ({
+                    id: story.id || `story${story.id}`,
+                    type: story.media_type || (story.url && story.url.includes('video') ? 'video' : 'image'),
+                    mediaUrl: story.url,
+                    caption: story.caption || '',
+                    author: story.author_name || 'Professional Tutor',
+                    authorAvatar: story.author_avatar || '../uploads/system_images/system_profile_pictures/tutor-.jpg',
+                    time: story.created_at ? formatTimeAgo(story.created_at) : 'Recently',
+                    likes: story.likes || 0,
+                    comments: story.comments || 0,
+                    views: story.views || 0
+                }));
+
+                console.log('✅ Loaded stories from API:', tutorStories.length);
+            } else {
+                console.log('ℹ️ No stories found for this tutor');
+                tutorStories = [];
+            }
+        } else {
+            console.warn('⚠️ TutorProfileAPI.getTutorStories not available');
+        }
+    } catch (error) {
+        console.error('❌ Error loading tutor stories:', error);
+        tutorStories = [];
     }
-];
+}
+
+// Format time ago helper
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+}
 
 let currentStoryIndex = 0;
 let currentStoryId = null;
 let storyProgressInterval = null;
 
-// View tutor stories (when clicking on story ring)
-function viewTutorStories() {
-    // Open story viewer with first story
-    if (tutorStories.length > 0) {
+// Handle profile avatar click
+function handleProfileAvatarClick() {
+    const stories = (typeof StoriesLoader !== 'undefined' && StoriesLoader.currentStories) ? StoriesLoader.currentStories : [];
+
+    if (stories.length > 0) {
+        // If stories exist, open story viewer starting from first story
+        viewStoryAtIndex(0, stories);
+    } else {
+        // If no stories, open profile picture in modal
+        const profileAvatar = document.getElementById('profile-avatar');
+        if (profileAvatar && profileAvatar.src && !profileAvatar.src.includes('data:image/svg')) {
+            openImageModal(profileAvatar.src);
+        }
+    }
+}
+
+// Open image in modal viewer
+function openImageModal(imageUrl) {
+    const modalHtml = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+            <div style="max-width: 90%; max-height: 90vh; position: relative;" onclick="event.stopPropagation()">
+                <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
+                <button onclick="this.closest('div[style*=\\"position: fixed\\"]').remove()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px;">×</button>
+            </div>
+        </div>
+    `;
+
+    const viewer = document.createElement('div');
+    viewer.innerHTML = modalHtml;
+    document.body.appendChild(viewer.firstElementChild);
+}
+
+// Open story viewer (when clicking on story ring)
+function openStoryViewer() {
+    // Get stories from StoriesLoader
+    const stories = (typeof StoriesLoader !== 'undefined' && StoriesLoader.currentStories) ? StoriesLoader.currentStories : [];
+
+    if (stories.length > 0) {
         currentStoryIndex = 0;
-        openStoryViewer(tutorStories[0]);
+        viewStoryAtIndex(0, stories);
     } else {
         // If no stories, switch to stories panel
         switchPanel('stories');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+}
+
+// Legacy function for compatibility
+function viewTutorStories() {
+    openStoryViewer();
 }
 
 // Open upload story modal (now universal upload modal)
@@ -4528,7 +4586,7 @@ function closeStoryUploadModal() {
 }
 
 // Handle upload type change
-function handleUploadTypeChange() {
+async function handleUploadTypeChange() {
     const uploadType = document.getElementById('uploadType')?.value || 'story';
     const titleEl = document.getElementById('uploadModalTitle');
     const iconEl = document.getElementById('uploadIcon');
@@ -4537,12 +4595,28 @@ function handleUploadTypeChange() {
     const uploadButton = document.getElementById('uploadButton');
     const captionGroup = document.querySelector('#storyPreview .form-group');
 
+    // Fetch user's subscription limits
+    let limits = null;
+    try {
+        if (typeof StorageManager !== 'undefined') {
+            const response = await StorageManager.getStorageLimits();
+            limits = response.limits;
+        }
+    } catch (error) {
+        console.warn('Could not fetch storage limits, using defaults:', error);
+    }
+
+    // Default limits (fallback)
+    const maxImageSizeMB = limits?.max_image_size_mb || 5;
+    const maxVideoSizeMB = limits?.max_video_size_mb || 50;
+    const storageLimitGB = limits?.storage_limit_gb || 5;
+
     // Update modal title, icon, and hints based on upload type
     switch(uploadType) {
         case 'cover':
             if (titleEl) titleEl.textContent = 'Upload Cover Image';
             if (iconEl) iconEl.textContent = '🖼️';
-            if (hintEl) hintEl.textContent = 'Recommended: 1920x400px (JPG, PNG, GIF) - Max 5MB';
+            if (hintEl) hintEl.textContent = `Recommended: 1920x400px (JPG, PNG, GIF) - Max ${maxImageSizeMB}MB`;
             if (fileInput) fileInput.accept = 'image/*';
             if (uploadButton) uploadButton.textContent = 'Upload Cover';
             if (captionGroup) captionGroup.style.display = 'none';
@@ -4550,24 +4624,16 @@ function handleUploadTypeChange() {
         case 'profile':
             if (titleEl) titleEl.textContent = 'Upload Profile Picture';
             if (iconEl) iconEl.textContent = '👤';
-            if (hintEl) hintEl.textContent = 'Recommended: 500x500px (JPG, PNG, GIF) - Max 5MB';
+            if (hintEl) hintEl.textContent = `Recommended: 500x500px (JPG, PNG, GIF) - Max ${maxImageSizeMB}MB`;
             if (fileInput) fileInput.accept = 'image/*';
             if (uploadButton) uploadButton.textContent = 'Upload Profile';
-            if (captionGroup) captionGroup.style.display = 'none';
-            break;
-        case 'image':
-            if (titleEl) titleEl.textContent = 'Upload Image';
-            if (iconEl) iconEl.textContent = '🎨';
-            if (hintEl) hintEl.textContent = 'Images (JPG, PNG, GIF) - Max 10MB';
-            if (fileInput) fileInput.accept = 'image/*';
-            if (uploadButton) uploadButton.textContent = 'Upload Image';
             if (captionGroup) captionGroup.style.display = 'none';
             break;
         case 'story':
         default:
             if (titleEl) titleEl.textContent = 'Upload Story';
             if (iconEl) iconEl.textContent = '📱';
-            if (hintEl) hintEl.textContent = 'Images (JPG, PNG, GIF) or Videos (MP4, WebM) - Max 50MB';
+            if (hintEl) hintEl.textContent = `Images (Max ${maxImageSizeMB}MB) or Videos (Max ${maxVideoSizeMB}MB) - Storage Limit: ${storageLimitGB}GB`;
             if (fileInput) fileInput.accept = 'image/*,video/*';
             if (uploadButton) uploadButton.textContent = 'Upload Story';
             if (captionGroup) captionGroup.style.display = 'block';
@@ -4586,9 +4652,6 @@ async function uploadFile() {
         case 'profile':
             await uploadProfileImage();
             break;
-        case 'image':
-            await uploadGeneralImage();
-            break;
         case 'story':
         default:
             await uploadStory();
@@ -4604,18 +4667,45 @@ async function uploadCoverImage() {
     }
 
     try {
+        // Show progress
         const progressEl = document.getElementById('storyProgress');
         if (progressEl) progressEl.style.display = 'block';
 
-        // TODO: Call actual API to upload cover
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Animate progress
+        animateStoryUploadProgress(async () => {
+            // Call API to upload cover image
+            if (typeof TutorProfileAPI !== 'undefined' && TutorProfileAPI.uploadCoverImage) {
+                const response = await TutorProfileAPI.uploadCoverImage(window.storyUploadFile);
 
-        alert('Cover image uploaded successfully!');
-        closeStoryUploadModal();
+                if (response && response.url) {
+                    // Success
+                    if (typeof TutorProfileUI !== 'undefined') {
+                        TutorProfileUI.showNotification('Cover image uploaded successfully!', 'success');
+                    }
+
+                    // Update cover image in the UI
+                    const coverImg = document.getElementById('cover-img');
+                    if (coverImg) {
+                        coverImg.src = response.url;
+                    }
+
+                    // Close modal
+                    closeStoryUploadModal();
+
+                    // Reload page to reflect changes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error('Invalid response from server');
+                }
+            } else {
+                throw new Error('TutorProfileAPI not available');
+            }
+        });
     } catch (error) {
-        console.error('Error uploading cover:', error);
-        alert('Failed to upload cover image');
-    } finally {
+        console.error('Error uploading cover image:', error);
+        alert('Failed to upload cover image: ' + error.message);
         const progressEl = document.getElementById('storyProgress');
         if (progressEl) progressEl.style.display = 'none';
     }
@@ -4629,59 +4719,60 @@ async function uploadProfileImage() {
     }
 
     try {
+        // Show progress
         const progressEl = document.getElementById('storyProgress');
         if (progressEl) progressEl.style.display = 'block';
 
-        // TODO: Call actual API to upload profile
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Animate progress
+        animateStoryUploadProgress(async () => {
+            // Call API to upload profile picture
+            if (typeof TutorProfileAPI !== 'undefined' && TutorProfileAPI.uploadProfilePicture) {
+                const response = await TutorProfileAPI.uploadProfilePicture(window.storyUploadFile);
 
-        alert('Profile picture uploaded successfully!');
-        closeStoryUploadModal();
+                if (response && response.url) {
+                    // Success
+                    if (typeof TutorProfileUI !== 'undefined') {
+                        TutorProfileUI.showNotification('Profile picture uploaded successfully!', 'success');
+                    }
+
+                    // Update profile picture in the UI
+                    const profileImg = document.getElementById('profile-img');
+                    if (profileImg) {
+                        profileImg.src = response.url;
+                    }
+
+                    // Update avatar in header if exists
+                    const headerAvatar = document.querySelector('.avatar-img');
+                    if (headerAvatar) {
+                        headerAvatar.src = response.url;
+                    }
+
+                    // Close modal
+                    closeStoryUploadModal();
+
+                    // Reload page to reflect changes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error('Invalid response from server');
+                }
+            } else {
+                throw new Error('TutorProfileAPI not available');
+            }
+        });
     } catch (error) {
-        console.error('Error uploading profile:', error);
-        alert('Failed to upload profile picture');
-    } finally {
-        const progressEl = document.getElementById('storyProgress');
-        if (progressEl) progressEl.style.display = 'none';
-    }
-}
-
-// Upload general image
-async function uploadGeneralImage() {
-    if (!window.storyUploadFile) {
-        alert('Please select an image first');
-        return;
-    }
-
-    try {
-        const progressEl = document.getElementById('storyProgress');
-        if (progressEl) progressEl.style.display = 'block';
-
-        // TODO: Call actual API to upload image
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        alert('Image uploaded successfully!');
-        closeStoryUploadModal();
-    } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Failed to upload image');
-    } finally {
+        console.error('Error uploading profile picture:', error);
+        alert('Failed to upload profile picture: ' + error.message);
         const progressEl = document.getElementById('storyProgress');
         if (progressEl) progressEl.style.display = 'none';
     }
 }
 
 // Handle story file selection
-function handleStorySelect(event) {
+async function handleStorySelect(event) {
     const file = event.target.files[0];
     if (!file) return;
-
-    // Validate file size (50MB max)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-        alert('File size must be less than 50MB');
-        return;
-    }
 
     // Determine if it's image or video
     const isVideo = file.type.startsWith('video/');
@@ -4690,6 +4781,34 @@ function handleStorySelect(event) {
     if (!isVideo && !isImage) {
         alert('Please select a valid image or video file');
         return;
+    }
+
+    // Determine file type for storage validation
+    const fileType = isVideo ? 'video' : 'image';
+
+    // Validate storage quota
+    if (typeof StorageManager !== 'undefined') {
+        try {
+            const validation = await StorageManager.validateFile(file, fileType);
+
+            if (!validation.isAllowed) {
+                // Show error message
+                if (typeof TutorProfileUI !== 'undefined') {
+                    TutorProfileUI.showNotification(validation.message, 'error');
+                } else {
+                    alert(validation.message);
+                }
+                // Reset file input
+                event.target.value = '';
+                return;
+            }
+
+            // Show remaining storage in console
+            console.log(`✅ Storage check passed. Remaining: ${validation.remainingMB?.toFixed(2)} MB (${validation.usagePercentage?.toFixed(1)}% used)`);
+        } catch (error) {
+            console.error('Storage validation error:', error);
+            // Continue with upload even if validation fails
+        }
     }
 
     const reader = new FileReader();
@@ -4754,8 +4873,21 @@ async function uploadStory() {
         const progressEl = document.getElementById('storyProgress');
         if (progressEl) progressEl.style.display = 'block';
 
-        // Get caption
-        const caption = document.getElementById('storyCaption')?.value || '';
+        // Get caption with detailed debugging
+        const captionElement = document.getElementById('storyCaption');
+        console.log('🔍 DEBUG: Caption element:', captionElement);
+        console.log('🔍 DEBUG: Caption element exists?', !!captionElement);
+        console.log('🔍 DEBUG: Caption element value:', captionElement?.value);
+        console.log('🔍 DEBUG: Caption element display:', captionElement?.style?.display);
+        console.log('🔍 DEBUG: Caption parent display:', captionElement?.parentElement?.style?.display);
+
+        // Check if preview container is visible
+        const previewContainer = document.getElementById('storyPreview');
+        console.log('🔍 DEBUG: Preview container display:', previewContainer?.style?.display);
+
+        const caption = captionElement?.value || '';
+        console.log('📝 Uploading story with caption:', caption);
+        console.log('📝 Caption length:', caption.length);
 
         // Animate progress
         animateStoryUploadProgress(async () => {
@@ -4772,8 +4904,16 @@ async function uploadStory() {
                     // Close modal
                     closeStoryUploadModal();
 
-                    // Reload stories section if on stories panel
-                    // You can add logic here to refresh the stories display
+                    // Refresh stories display
+                    if (typeof StoriesLoader !== 'undefined' && StoriesLoader.refresh) {
+                        await StoriesLoader.refresh();
+                    }
+
+                    // Switch to stories panel to show the new story
+                    const storiesTab = document.querySelector('[data-panel="stories"]');
+                    if (storiesTab) {
+                        storiesTab.click();
+                    }
                 } else {
                     throw new Error('Upload failed - no URL returned');
                 }
@@ -4944,17 +5084,127 @@ function clearStoryProgress() {
 
 // View individual story (from story card)
 function viewStory(storyId) {
+    // Get stories from StoriesLoader
+    const stories = (typeof StoriesLoader !== 'undefined' && StoriesLoader.currentStories) ? StoriesLoader.currentStories : [];
+
     // Find story in the array
-    const storyIndex = tutorStories.findIndex(s => s.id === storyId);
+    const storyIndex = stories.findIndex(s => s.id === storyId);
     if (storyIndex !== -1) {
         currentStoryIndex = storyIndex;
-        openStoryViewer(tutorStories[storyIndex]);
+        viewStoryAtIndex(storyIndex, stories);
     } else {
         console.log('Story not found:', storyId);
         if (typeof TutorProfileUI !== 'undefined') {
             TutorProfileUI.showNotification('Story not found', 'error');
         }
     }
+}
+
+// View story at specific index
+async function viewStoryAtIndex(index, stories) {
+    const story = stories[index];
+    if (!story) return;
+
+    // Increment view count
+    if (story.id && typeof TutorProfileAPI !== 'undefined') {
+        try {
+            const response = await TutorProfileAPI.incrementStoryView(story.id);
+            // Update local count with actual value from server
+            if (response && response.views !== undefined) {
+                story.views = response.views;
+
+                // Also update the story in StoriesLoader if available
+                if (typeof StoriesLoader !== 'undefined' && StoriesLoader.currentStories) {
+                    const storyInLoader = StoriesLoader.currentStories.find(s => s.id === story.id);
+                    if (storyInLoader) {
+                        storyInLoader.views = response.views;
+                    }
+                    // Update stats display
+                    const totalViews = StoriesLoader.currentStories.reduce((sum, s) => sum + (s.views || 0), 0);
+                    StoriesLoader.updateStats(StoriesLoader.currentStories.length, totalViews);
+                }
+            }
+        } catch (error) {
+            console.error('Error incrementing story view:', error);
+        }
+    }
+
+    // Calculate if there are previous/next stories
+    const hasPrevious = index > 0;
+    const hasNext = index < stories.length - 1;
+
+    // Show simple story viewer with navigation
+    const viewerHtml = `
+        <div id="story-viewer-container" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center;" onclick="closeStoryViewerContainer()">
+            <!-- Previous Button -->
+            ${hasPrevious ? `
+                <button onclick="event.stopPropagation(); navigateStory(${index - 1})"
+                    style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: none; color: white; font-size: 28px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10001; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                    onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    ‹
+                </button>
+            ` : ''}
+
+            <!-- Story Content -->
+            <div style="max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; align-items: center; gap: 16px;" onclick="event.stopPropagation()">
+                <!-- Story Counter -->
+                <div style="color: white; font-size: 14px; font-weight: 600; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 20px;">
+                    ${index + 1} / ${stories.length}
+                </div>
+
+                <div style="position: relative;">
+                    ${story.media_type === 'video' ?
+                        `<video src="${story.media_url}" controls autoplay style="width: 100%; max-height: 70vh; border-radius: 8px;">` :
+                        `<img src="${story.media_url}" style="width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain;">`
+                    }
+                    <button onclick="closeStoryViewerContainer()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='rgba(0,0,0,0.9)'"
+                        onmouseout="this.style.background='rgba(0,0,0,0.7)'">×</button>
+                </div>
+                ${story.caption ? `
+                    <div style="color: white; background: rgba(0,0,0,0.5); padding: 12px 20px; border-radius: 8px; max-width: 100%; text-align: center;">
+                        <p style="margin: 0; font-size: 14px; line-height: 1.5;">${story.caption}</p>
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Next Button -->
+            ${hasNext ? `
+                <button onclick="event.stopPropagation(); navigateStory(${index + 1})"
+                    style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: none; color: white; font-size: 28px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10001; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                    onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    ›
+                </button>
+            ` : ''}
+        </div>
+    `;
+
+    const viewer = document.createElement('div');
+    viewer.innerHTML = viewerHtml;
+    document.body.appendChild(viewer.firstElementChild);
+}
+
+// Close story viewer container
+function closeStoryViewerContainer() {
+    const container = document.getElementById('story-viewer-container');
+    if (container) {
+        container.remove();
+    }
+}
+
+// Navigate to a specific story in the viewer
+async function navigateStory(newIndex) {
+    const stories = (typeof StoriesLoader !== 'undefined' && StoriesLoader.currentStories) ? StoriesLoader.currentStories : [];
+
+    if (!stories[newIndex]) return;
+
+    // Remove the current viewer
+    closeStoryViewerContainer();
+
+    // Open the new story
+    await viewStoryAtIndex(newIndex, stories);
 }
 
 // Load more stories
@@ -9109,9 +9359,6 @@ window.searchDocuments = searchDocuments;
 window.sortDocuments = sortDocuments;
 
 // ========== STUDENT DETAILS MODAL - COURSEWORK FUNCTIONS ==========
-
-// Current student being viewed
-let currentStudentDetailsId = null;
 
 // Filter coursework by status
 function filterStudentCoursework(status) {

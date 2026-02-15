@@ -94,18 +94,83 @@
 
 .profile-avatar-container {
     position: relative;
-    margin-top: -60px;
+    margin-top: -35px; /* 25% of 140px avatar overlays cover (35px on cover, 105px outside) */
     margin-left: 2rem;
     z-index: 10;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
 }
 
 .profile-avatar {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
-    border: 4px solid var(--card-bg);
+    border: 5px solid var(--card-bg);
     object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    aspect-ratio: 1 / 1;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.profile-avatar-container:hover .profile-avatar {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    background: #22c55e;
+    border: 4px solid var(--card-bg);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+    animation: pulse-indicator 2s ease-in-out infinite;
+}
+
+@keyframes pulse-indicator {
+    0%,
+    100% {
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+    }
+    50% {
+        box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
+    }
+}
+
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+}
+
+.profile-avatar-container:hover .avatar-upload-btn {
+    opacity: 1;
+}
+
+.avatar-upload-btn:hover {
+    background: white;
+    transform: translateX(-50%) translateY(-2px);
+}
+
+.avatar-upload-btn svg {
+    width: 16px;
+    height: 16px;
+    color: #4f46e5;
 }
 
 .profile-info {
@@ -925,13 +990,15 @@
     }
 
     .profile-avatar {
-        width: 100px;
-        height: 100px;
+        width: 120px;
+        height: 120px;
     }
 
     .profile-avatar-container {
-        margin-top: -50px;
+        margin-top: -30px; /* 25% of 120px = 30px overlay */
         margin-left: 1.5rem;
+        width: 120px;
+        height: 120px;
     }
 
     .profile-main-info {
@@ -973,27 +1040,27 @@
     }
 
     .cover-image-container {
-        height: 140px;
+        height: 180px;
         border-radius: 12px 12px 0 0;
     }
 
     .profile-avatar-container {
-        margin-top: -40px;
+        margin-top: -30px; /* 25% of 120px = 30px overlay */
         margin-left: 0;
         display: flex;
         justify-content: center;
-        width: 100%;
+        width: 120px;
+        height: 120px;
     }
 
     .profile-avatar {
-        width: 90px;
-        height: 90px;
-        border-width: 3px;
+        width: 120px;
+        height: 120px;
+        border-width: 4px;
     }
 
     .profile-main-info {
         padding: 0 1rem 1.5rem 1rem;
-        margin-top: -30px;
     }
 
     .profile-info-wrapper {
@@ -1006,15 +1073,19 @@
     .profile-details-section {
         text-align: center;
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .profile-name {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
         text-align: center;
     }
 
     .profile-name-row {
         text-align: center;
+        justify-content: center;
     }
 
     .badges-row {
@@ -1072,7 +1143,7 @@
 
     /* Connections stats */
     .connections-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
     }
 
@@ -1237,26 +1308,27 @@
     }
 
     .cover-image-container {
-        height: 120px;
+        height: 150px;
         border-radius: 10px 10px 0 0;
     }
 
     .profile-avatar {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
     }
 
     .profile-avatar-container {
-        margin-top: -35px;
+        margin-top: -25px; /* 25% of 100px = 25px overlay */
+        width: 100px;
+        height: 100px;
     }
 
     .profile-main-info {
         padding: 0 0.75rem 1rem 0.75rem;
-        margin-top: -25px;
     }
 
     .profile-name {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
     }
 
     .profile-badge {
@@ -1327,12 +1399,18 @@
    ============================================ */
 @media (max-width: 400px) {
     .cover-image-container {
-        height: 100px;
+        height: 120px;
     }
 
     .profile-avatar {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-avatar-container {
+        margin-top: -20px; /* 25% of 80px = 20px overlay */
+        width: 80px;
+        height: 80px;
     }
 
     .profile-name {
@@ -1363,7 +1441,9 @@
     }
 
     .profile-avatar-container {
-        margin-top: -30px;
+        margin-top: -15px; /* 25% of 60px = 15px overlay */
+        width: 60px;
+        height: 60px;
     }
 
     .profile-main-info {

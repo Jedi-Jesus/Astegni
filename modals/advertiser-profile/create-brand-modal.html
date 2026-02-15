@@ -93,68 +93,28 @@
                 </div>
 
                 <!-- Brand Color -->
-                <div class="create-brand-form-row">
-                    <div class="create-brand-form-group">
-                        <label for="brand-color-input">
-                            <i class="fas fa-palette"></i>
-                            Brand Color
-                        </label>
-                        <div class="create-brand-color-picker">
-                            <input type="color" id="brand-color-input" value="#8B5CF6">
-                            <span id="brand-color-value">#8B5CF6</span>
-                        </div>
-                    </div>
-                    <div class="create-brand-form-group">
-                        <label for="brand-status-input">
-                            <i class="fas fa-toggle-on"></i>
-                            Status
-                        </label>
-                        <select id="brand-status-input">
-                            <option value="active">Active</option>
-                            <option value="paused">Paused</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
+                <div class="create-brand-form-group">
+                    <label for="brand-color-input">
+                        <i class="fas fa-palette"></i>
+                        Brand Color
+                    </label>
+                    <div class="create-brand-color-picker">
+                        <input type="color" id="brand-color-input" value="#8B5CF6">
+                        <span id="brand-color-value">#8B5CF6</span>
                     </div>
                 </div>
 
-                <!-- Social Links (Collapsible) -->
-                <div class="create-brand-collapsible">
-                    <button type="button" class="create-brand-collapsible-toggle" onclick="BrandsManager.toggleSocialLinks()">
-                        <span><i class="fas fa-share-alt"></i> Social Media Links</span>
-                        <i class="fas fa-chevron-down" id="social-links-chevron"></i>
+                <!-- Social Links Section -->
+                <div class="create-brand-form-section">
+                    <h3 class="create-brand-section-title">
+                        <i class="fas fa-share-alt"></i>
+                        Social Media Links (Optional)
+                    </h3>
+                    <div id="brand-social-media-container" class="brand-social-links-container"></div>
+                    <button type="button" class="create-brand-add-btn" onclick="BrandsManager.addBrandSocialLink()">
+                        <i class="fas fa-plus"></i>
+                        Add Social Link
                     </button>
-                    <div class="create-brand-collapsible-content" id="social-links-content">
-                        <div class="create-brand-form-row">
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-facebook"></i> Facebook</label>
-                                <input type="url" id="brand-facebook-input" placeholder="https://facebook.com/...">
-                            </div>
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-instagram"></i> Instagram</label>
-                                <input type="url" id="brand-instagram-input" placeholder="https://instagram.com/...">
-                            </div>
-                        </div>
-                        <div class="create-brand-form-row">
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-twitter"></i> Twitter/X</label>
-                                <input type="url" id="brand-twitter-input" placeholder="https://twitter.com/...">
-                            </div>
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-linkedin"></i> LinkedIn</label>
-                                <input type="url" id="brand-linkedin-input" placeholder="https://linkedin.com/...">
-                            </div>
-                        </div>
-                        <div class="create-brand-form-row">
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-youtube"></i> YouTube</label>
-                                <input type="url" id="brand-youtube-input" placeholder="https://youtube.com/...">
-                            </div>
-                            <div class="create-brand-form-group">
-                                <label><i class="fab fa-tiktok"></i> TikTok</label>
-                                <input type="url" id="brand-tiktok-input" placeholder="https://tiktok.com/...">
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </form>
         </div>

@@ -52,22 +52,27 @@ const GeoConfig = {
 window.handleAllowLocationChange = function(checkbox) {
     const detectBtn = document.getElementById('detectLocationBtn');
     const statusDiv = document.getElementById('locationStatus');
+    const changeLocationBtn = document.getElementById('changeLocationBtn');
 
     if (checkbox.checked) {
         // Show detect button
         if (detectBtn) {
-            detectBtn.classList.remove('hidden');
+            detectBtn.style.display = 'block';
+        }
+        // Hide change location button when detecting new location
+        if (changeLocationBtn) {
+            changeLocationBtn.style.display = 'none';
         }
         // Automatically detect location when checkbox is checked
         detectCurrentLocation();
     } else {
         // Hide detect button when unchecked
         if (detectBtn) {
-            detectBtn.classList.add('hidden');
+            detectBtn.style.display = 'none';
         }
         // Clear status when unchecked
         if (statusDiv) {
-            statusDiv.classList.add('hidden');
+            statusDiv.style.display = 'none';
             statusDiv.textContent = '';
         }
     }
@@ -391,18 +396,24 @@ function formatAddress(address, displayName) {
  * @param {string|null} country_code - ISO country code (e.g., 'ET', 'US', 'GB')
  */
 function addDetectedLocation(location, country_code) {
+    // First, try to populate the single location input field (for tutor/student/parent profiles)
+    const locationInput = document.getElementById('editLocation');
+    if (locationInput) {
+        locationInput.value = location;
+        console.log(`[Geolocation] Populated location input: ${location}`);
+    }
+
+    // Also try the array-based location field (for admin pages)
     if (typeof addLocationField === 'function') {
         // Check if this location already exists
         const existingLocations = typeof getLocations === 'function' ? getLocations() : [];
 
         if (!existingLocations.includes(location)) {
             addLocationField(location);
-            console.log(`[Geolocation] Added location: ${location}`);
+            console.log(`[Geolocation] Added location to array: ${location}`);
         } else {
-            console.log(`[Geolocation] Location already exists: ${location}`);
+            console.log(`[Geolocation] Location already exists in array: ${location}`);
         }
-    } else {
-        console.warn('[Geolocation] addLocationField function not available');
     }
 
     // Update country_code field if available (for currency auto-detection)
@@ -411,8 +422,6 @@ function addDetectedLocation(location, country_code) {
         if (countryCodeField) {
             countryCodeField.value = country_code;
             console.log(`[Geolocation] Country code set: ${country_code} (Currency will be auto-detected)`);
-        } else {
-            console.warn('[Geolocation] Country code field not found. Currency auto-detection may not work.');
         }
     }
 }
@@ -426,20 +435,21 @@ function showLocationStatus(message, type) {
     const statusDiv = document.getElementById('locationStatus');
     if (!statusDiv) return;
 
+    statusDiv.style.display = 'block';
     statusDiv.classList.remove('hidden', 'text-gray-500', 'text-green-600', 'text-red-600');
 
     switch (type) {
         case 'loading':
-            statusDiv.classList.add('text-gray-500');
-            statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> ${message}`;
+            statusDiv.style.color = 'var(--text-muted)';
+            statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin" style="margin-right: 0.25rem;"></i> ${message}`;
             break;
         case 'success':
-            statusDiv.classList.add('text-green-600');
-            statusDiv.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${message}`;
+            statusDiv.style.color = '#10b981';
+            statusDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 0.25rem;"></i> ${message}`;
             break;
         case 'error':
-            statusDiv.classList.add('text-red-600');
-            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> ${message}`;
+            statusDiv.style.color = '#ef4444';
+            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 0.25rem;"></i> ${message}`;
             break;
         default:
             statusDiv.textContent = message;

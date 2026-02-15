@@ -521,8 +521,8 @@
     </section>
 
 <!-- Professional Reviews Section with Dynamic Data -->
-    <!-- COMMENTED OUT - Reviews Section Disabled
-    <section id="reviews" class="reviews-section">
+    <!-- COMMENTED OUT - Reviews Section Disabled until we have real reviews -->
+    <section id="reviews" class="reviews-section" style="display: none;">
         <div class="container mx-auto px-4">
             <h2 class="section-title">Expert Reviews & Recognition</h2>
             <p class="section-subtitle">What industry professionals and educators say about the Astegni platform</p>
@@ -537,27 +537,11 @@
             </div>
         </div>
     </section>
-    -->
+
 
     <!-- Single Promo Section with Rotating Visual Elements -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;" onclick="openComingSoonModal('Advertising')">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="all" data-location="home">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
     <!-- Enhanced News Section with Larger Text -->
@@ -687,25 +671,10 @@
     </section>
 
     <!-- Single Promo Section with Rotating Visual Elements -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;" onclick="openComingSoonModal('Advertising')">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Exclusive</span>
-            <h3 class="promo-title">Your Brand Here</h3>
-            <p class="promo-text">Connect with Ethiopia's largest educational community</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Get Started</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="all" data-location="home">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
+
     <!-- Testimonials Section (New) - Hidden until we have real testimonials -->
     <section class="testimonials-section py-16" style="display: none;">
         <div class="container mx-auto px-4">

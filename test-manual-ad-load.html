@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Ad Load Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        .banner {
+            width: 100%;
+            min-height: 200px;
+            background: #e0e0e0;
+            border: 2px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .promo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Manual Ad Load Test</h1>
+        <p>This page manually tests the ad loading without using adRotationManager</p>
+
+        <h2>Step 1: Test API</h2>
+        <button onclick="testAPI()">1. Fetch Ad from API</button>
+        <div id="api-status"></div>
+
+        <h2>Step 2: Display Ad</h2>
+        <button onclick="renderAd()">2. Render Ad Manually</button>
+        <div id="banner1" class="banner">
+            <p style="color: #666;">Ad will appear here...</p>
+        </div>
+
+        <h2>Step 3: Test with ad-rotation-manager.js</h2>
+        <button onclick="testWithManager()">3. Test Ad Manager</button>
+        <div id="banner2" class="banner leaderboard-banner premium-promo"
+             data-placement="leaderboard_banner"
+             data-profile-type="all"
+             data-location="test">
+            <p style="color: #666;">Manager will load ad here...</p>
+        </div>
+
+        <h2>Debug Info</h2>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let fetchedAds = [];
+
+        // Test API
+        async function testAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<div class="status">⏳ Fetching ads from API...</div>';
+
+            try {
+                const url = `${API_BASE_URL}/api/campaigns/ads/placement/leaderboard_banner?limit=5`;
+                console.log('Fetching:', url);
+
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                fetchedAds = data.ads || [];
+
+                if (fetchedAds.length > 0) {
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ Success! Found ${fetchedAds.length} ad(s)<br>
+                            First ad: ${fetchedAds[0].campaign_name}<br>
+                            Image URL: ${fetchedAds[0].file_url}
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ No ads returned from API</div>';
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Render ad manually
+        function renderAd() {
+            const banner = document.getElementById('banner1');
+
+            if (fetchedAds.length === 0) {
+                alert('No ads fetched yet! Click "1. Fetch Ad from API" first.');
+                return;
+            }
+
+            const ad = fetchedAds[0];
+            console.log('Rendering ad:', ad);
+
+            banner.innerHTML = `
+                <img src="${ad.file_url}"
+                     alt="${ad.campaign_name}"
+                     class="promo-image"
+                     onerror="console.error('Image failed to load:', this.src); this.parentElement.innerHTML = '<p style=color:red>Image failed to load: ${ad.file_url}</p>';"
+                     onload="console.log('Image loaded successfully!')">
+            `;
+
+            // Test direct image access
+            const img = new Image();
+            img.onload = () => console.log('✅ Direct Image() test: Image is accessible');
+            img.onerror = () => console.error('❌ Direct Image() test: Image failed to load');
+            img.src = ad.file_url;
+        }
+
+        // Test with ad manager
+        async function testWithManager() {
+            const debugDiv = document.getElementById('debug-info');
+
+            // Check if manager exists
+            if (typeof adRotationManager === 'undefined') {
+                debugDiv.innerHTML = '<div class="status error">❌ adRotationManager not loaded!</div>';
+                return;
+            }
+
+            debugDiv.innerHTML = '<div class="status">⏳ Initializing ad manager...</div>';
+
+            try {
+                // Reinitialize
+                adRotationManager.destroy();
+                await adRotationManager.init();
+
+                debugDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Ad manager initialized<br>
+                        Containers managed: ${adRotationManager.containers.size}<br>
+                        Is initialized: ${adRotationManager.isInitialized}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Manager error:', error);
+                debugDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded. API_BASE_URL:', API_BASE_URL);
+            // Auto-test API
+            setTimeout(testAPI, 500);
+        });
+    </script>
+
+    <!-- Load config first -->
+    <script src="js/config.js"></script>
+    <!-- Then load ad manager -->
+    <script src="js/common-modals/ad-rotation-manager.js"></script>
+</body>
+</html>

@@ -271,6 +271,31 @@ class BasePriceRule(AdminBase):
     updated_at = Column(DateTime, nullable=True)
 
 
+class SystemMediaSettings(AdminBase):
+    """System media settings for subscription-based storage limits"""
+    __tablename__ = "system_media_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    subscription_plan_id = Column(Integer, nullable=True, index=True)
+    max_image_size_mb = Column(Integer, default=5)
+    max_video_size_mb = Column(Integer, default=200)
+    max_document_size_mb = Column(Integer, default=10)
+    max_audio_size_mb = Column(Integer, default=50)
+    storage_limit_gb = Column(Integer, default=10)
+    max_image_storage_mb = Column(Integer, default=0)  # 0 = unlimited
+    max_video_storage_mb = Column(Integer, default=0)  # 0 = unlimited
+    allowed_video_formats = Column(JSON, default=["mp4", "mov", "avi", "webm"])
+    allowed_image_formats = Column(JSON, default=["jpg", "jpeg", "png", "gif"])
+    allowed_document_formats = Column(JSON, default=["pdf", "doc", "docx"])
+    allowed_audio_formats = Column(JSON, default=["mp3", "wav", "ogg"])
+    auto_optimize_images = Column(Boolean, default=True)
+    auto_optimize_videos = Column(Boolean, default=False)
+    auto_generate_thumbnails = Column(Boolean, default=True)
+    video_quality_max = Column(String(20), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # ============================================
 # PYDANTIC SCHEMAS FOR ADMIN API
 # ============================================

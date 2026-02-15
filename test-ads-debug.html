@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ads Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .leaderboard-banner {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .promo-slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .promo-slide.active {
+            display: block;
+        }
+        .promo-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .debug-info {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .debug-info pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ad Rotation Manager Debug Test</h1>
+
+    <div class="debug-info">
+        <h2>Debug Console</h2>
+        <div id="debug-console"></div>
+    </div>
+
+    <h2>Leaderboard Banner Ad Container</h2>
+    <div class="leaderboard-banner"
+         data-placement="leaderboard_banner"
+         data-profile-type="all"
+         data-location="test">
+        <p style="text-align: center; padding-top: 80px;">Loading ads...</p>
+    </div>
+
+    <div class="debug-info">
+        <h2>API Response</h2>
+        <pre id="api-response">Testing...</pre>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/common-modals/ad-rotation-manager.js"></script>
+
+    <script>
+        const debugConsole = document.getElementById('debug-console');
+        const apiResponse = document.getElementById('api-response');
+
+        function log(message) {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugConsole.appendChild(p);
+            console.log(message);
+        }
+
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            log('LOG: ' + args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            log('WARN: ' + args.join(' '));
+            originalWarn.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            log('ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        // Test API directly
+        async function testAPI() {
+            log('Testing API connection...');
+            log('API_BASE_URL: ' + window.API_BASE_URL);
+
+            try {
+                const url = `${window.API_BASE_URL}/api/campaigns/ads/placement/leaderboard_banner?limit=5`;
+                log('Fetching: ' + url);
+
+                const response = await fetch(url);
+                log('Response status: ' + response.status);
+
+                const data = await response.json();
+                log('Response received');
+
+                apiResponse.textContent = JSON.stringify(data, null, 2);
+
+                if (data.success && data.ads && data.ads.length > 0) {
+                    log(`✓ Success! Found ${data.ads.length} ads`);
+                    data.ads.forEach((ad, i) => {
+                        log(`  Ad ${i+1}: Campaign #${ad.campaign_id} - ${ad.campaign_name}`);
+                        log(`    URL: ${ad.file_url}`);
+                    });
+                } else {
+                    log('✗ No ads returned');
+                }
+            } catch (error) {
+                log('✗ Error: ' + error.message);
+                apiResponse.textContent = 'ERROR: ' + error.message;
+            }
+        }
+
+        // Run test when page loads
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            testAPI();
+
+            // Check if AdRotationManager initialized
+            setTimeout(() => {
+                const container = document.querySelector('.leaderboard-banner');
+                const slides = container.querySelectorAll('.promo-slide');
+                log(`AdRotationManager check: Found ${slides.length} slides in container`);
+
+                if (slides.length > 0) {
+                    log('✓ Ads were loaded successfully!');
+                    slides.forEach((slide, i) => {
+                        log(`  Slide ${i+1}: Campaign #${slide.dataset.campaignId}`);
+                    });
+                } else {
+                    log('✗ No slides found - ads did not load');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

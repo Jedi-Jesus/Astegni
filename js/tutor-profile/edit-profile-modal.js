@@ -195,13 +195,16 @@
             div.innerHTML = `
                 <select id="socialPlatform${index}" class="p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); min-width: 150px;">
                     <option value="">Select Platform</option>
-                    <option value="facebook">Facebook</option>
-                    <option value="twitter">Twitter</option>
-                    <option value="linkedin">LinkedIn</option>
+                    <option value="tiktok">TikTok</option>
                     <option value="instagram">Instagram</option>
-                    <option value="youtube">YouTube</option>
+                    <option value="snapchat">Snapchat</option>
+                    <option value="facebook">Facebook</option>
                     <option value="telegram">Telegram</option>
-                    <option value="website">Website</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="twitter">X</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="github">GitHub</option>
                 </select>
                 <input type="url"
                     id="socialUrl${index}"
@@ -496,13 +499,13 @@
                     allowLocationCheckbox.disabled = true; // Make unselectable
                     // Show "Change Location" button
                     if (changeLocationBtn) {
-                        changeLocationBtn.classList.remove('hidden');
+                        changeLocationBtn.style.display = 'block';
                     }
                     console.log('[Edit Profile] GPS checkbox disabled (location exists, click Change Location to modify)');
                 } else if (allowLocationCheckbox) {
                     allowLocationCheckbox.disabled = false;
                     if (changeLocationBtn) {
-                        changeLocationBtn.classList.add('hidden');
+                        changeLocationBtn.style.display = 'none';
                     }
                 }
 
@@ -711,11 +714,109 @@
 
                 alert('✅ Profile updated successfully!');
 
-                // Reload page to reflect changes
-                window.location.reload();
+                // Update UI without reloading (if available)
+                if (typeof updateProfileUI === 'function') {
+                    updateProfileUI(updateData);
+                } else {
+                    // Fallback: reload page if update function doesn't exist
+                    window.location.reload();
+                }
             } catch (error) {
                 console.error('Error updating profile:', error);
                 alert('❌ Failed to update profile. Please try again.');
+            }
+        }
+
+        /**
+         * Update profile UI without page reload
+         * Fetches fresh data from database and reloads the profile display
+         * @param {Object} profileData - The updated profile data (not used, just for consistency)
+         */
+        async function updateProfileUI(profileData) {
+            console.log('🔄 Updating profile UI with fresh data from database...');
+
+            try {
+                // Use the global profile data loader if available
+                if (typeof TutorProfileDataLoader !== 'undefined' && TutorProfileDataLoader.loadCompleteProfile) {
+                    console.log('📡 Reloading profile data using TutorProfileDataLoader...');
+                    await TutorProfileDataLoader.loadCompleteProfile();
+                    console.log('✅ Profile UI updated successfully via data loader');
+                } else {
+                    // Fallback: manually update key elements
+                    console.log('⚠️ TutorProfileDataLoader not available, updating elements manually');
+
+                    // Update hero subtitle
+                    if (profileData.hero_subtitle !== undefined) {
+                        const heroSubtitleEl = document.getElementById('hero-subtitle');
+                        if (heroSubtitleEl) heroSubtitleEl.textContent = profileData.hero_subtitle || '';
+                    }
+
+                    // Update bio/about
+                    if (profileData.bio !== undefined) {
+                        const bioEl = document.getElementById('tutor-bio');
+                        if (bioEl) {
+                            bioEl.textContent = profileData.bio || 'No bio provided yet.';
+                            bioEl.style.color = profileData.bio ? 'var(--text)' : 'var(--text-muted)';
+                            bioEl.style.fontStyle = profileData.bio ? 'normal' : 'italic';
+                        }
+                    }
+
+                    // Update quote
+                    if (profileData.quote !== undefined) {
+                        const quoteEl = document.getElementById('tutor-quote');
+                        if (quoteEl) {
+                            quoteEl.textContent = profileData.quote ? `"${profileData.quote}"` : '';
+                        }
+                    }
+
+                    // Update location
+                    if (profileData.location !== undefined) {
+                        const locationEl = document.getElementById('tutor-location');
+                        if (locationEl && profileData.display_location) {
+                            locationEl.textContent = profileData.location || 'Not specified';
+                            locationEl.style.color = profileData.location ? 'var(--text)' : 'var(--text-muted)';
+                        }
+                    }
+
+                    // Update languages (inline)
+                    if (profileData.languages !== undefined) {
+                        const languagesEl = document.getElementById('tutor-languages-inline');
+                        if (languagesEl) {
+                            if (profileData.languages && profileData.languages.length > 0) {
+                                languagesEl.textContent = profileData.languages.join(', ');
+                                languagesEl.style.color = 'var(--text)';
+                                languagesEl.style.fontStyle = 'normal';
+                            } else {
+                                languagesEl.textContent = 'No languages yet';
+                                languagesEl.style.color = 'var(--text-muted)';
+                                languagesEl.style.fontStyle = 'italic';
+                            }
+                        }
+                    }
+
+                    // Update hobbies
+                    if (profileData.hobbies !== undefined) {
+                        const hobbiesEl = document.getElementById('tutor-hobbies');
+                        if (hobbiesEl) {
+                            if (profileData.hobbies && profileData.hobbies.length > 0) {
+                                hobbiesEl.textContent = profileData.hobbies.join(', ');
+                                hobbiesEl.style.color = 'var(--text)';
+                                hobbiesEl.style.fontStyle = 'normal';
+                            } else {
+                                hobbiesEl.textContent = 'No hobbies yet';
+                                hobbiesEl.style.color = 'var(--text-muted)';
+                                hobbiesEl.style.fontStyle = 'italic';
+                            }
+                        }
+                    }
+
+                    console.log('✅ Profile UI updated successfully (manual fallback)');
+                }
+            } catch (error) {
+                console.error('❌ Error updating profile UI:', error);
+                // Last resort: reload the page
+                console.log('⚠️ Falling back to page reload...');
+                window.location.reload();
             }
         }
 
@@ -744,7 +845,7 @@
             }
 
             if (changeLocationBtn) {
-                changeLocationBtn.classList.add('hidden'); // Hide the button
+                changeLocationBtn.style.display = 'none'; // Hide the button
             }
         }
 
@@ -758,5 +859,6 @@
         window.handleChangeLocation = handleChangeLocation;
         window.saveEditProfile = saveEditProfile;
         window.saveProfile = saveProfile;
+        window.updateProfileUI = updateProfileUI;
 
         console.log('✅ Edit Profile Modal: JavaScript loaded');

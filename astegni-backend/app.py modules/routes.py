@@ -1026,6 +1026,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         role_ids=role_ids,  # FIXED: Include role-specific profile IDs
         account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0,
         location=current_user.location,  # Add location field for location filter
+        country_code=current_user.country_code,  # Add country code for regional targeting
         social_links=current_user.social_links  # Add social media links
     )
 
@@ -2708,7 +2709,9 @@ def get_current_tutor_profile(
         "grades": [],
         "grade_level": "",
         "languages": current_user.languages or [],  # Read from users table
+        "hobbies": current_user.hobbies or [],  # Read from users table
         "location": current_user.location,  # Read from users table
+        "display_location": current_user.display_location,  # Read from users table
         "teaches_at": None,
         "years_experience": None,
         "experience": None,
@@ -2826,7 +2829,7 @@ def update_tutor_profile(
     # username removed - now saved to tutor_profiles.username instead of users.username
     # Fields that belong to users table
     user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name', 'gender',
-                   'location', 'display_location', 'profile_picture', 'social_links', 'languages'}
+                   'location', 'display_location', 'profile_picture', 'social_links', 'languages', 'hobbies'}
 
     # Update user fields if provided
     for field in user_fields:
@@ -2891,10 +2894,22 @@ async def upload_profile_picture(
 ):
     """Upload profile picture to Backblaze B2"""
     try:
-        # Validate file size (5MB max)
+        from storage_service import StorageService
+
+        # Read file contents
         contents = await file.read()
-        if len(contents) > 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File size exceeds 5MB limit")
+        file_size_bytes = len(contents)
+
+        # Validate storage limits based on subscription
+        is_allowed, error_message = StorageService.validate_file_upload(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type='image'
+        )
+
+        if not is_allowed:
+            raise HTTPException(status_code=400, detail=error_message)
 
         # Get role-specific profile first to use profile_id
         profile_id = None
@@ -2943,6 +2958,15 @@ async def upload_profile_picture(
 
         db.commit()
 
+        # Update user's storage usage
+        StorageService.update_storage_usage(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type='image',
+            operation='add'
+        )
+
         return {
             "success": True,
             "message": "Profile picture uploaded successfully",
@@ -2961,13 +2985,24 @@ async def upload_cover_image(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload cover image for profile (tutor or student)"""
+    """Upload cover image for profile (tutor, student, parent, advertiser, or user)"""
     try:
+        from storage_service import StorageService
 
-        # Validate file size (10MB max)
+        # Read file contents
         contents = await file.read()
-        if len(contents) > 10 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+        file_size_bytes = len(contents)
+
+        # Validate storage limits based on subscription
+        is_allowed, error_message = StorageService.validate_file_upload(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type='image'
+        )
+
+        if not is_allowed:
+            raise HTTPException(status_code=400, detail=error_message)
 
         # Get role-specific profile first to use profile_id
         profile_id = None
@@ -2995,8 +3030,18 @@ async def upload_cover_image(
             if not profile:
                 raise HTTPException(status_code=404, detail="Parent profile not found")
             profile_id = profile.id
+        elif current_user.active_role == "user":
+            # For "user" role, use the user_profiles table
+            profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+            if not profile:
+                # Create user profile if it doesn't exist
+                profile = UserProfile(user_id=current_user.id)
+                db.add(profile)
+                db.commit()
+                db.refresh(profile)
+            profile_id = profile.id
         else:
-            raise HTTPException(status_code=400, detail="Invalid role")
+            raise HTTPException(status_code=400, detail=f"Invalid role: {current_user.active_role}")
 
         b2_service = get_backblaze_service()
 
@@ -3015,6 +3060,15 @@ async def upload_cover_image(
         profile.cover_image = result['url']
 
         db.commit()
+
+        # Update user's storage usage
+        StorageService.update_storage_usage(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type='image',
+            operation='add'
+        )
 
         return {
             "success": True,
@@ -3037,10 +3091,16 @@ async def upload_story(
 ):
     """Upload story (image or video) - all roles can upload stories"""
     try:
-        # Validate file size (50MB max for stories)
+        from storage_service import StorageService
+
+        # Debug: Log received caption
+        print(f"📝 Backend received caption: '{caption}'")
+        print(f"📝 Caption type: {type(caption)}")
+        print(f"📝 Caption length: {len(caption) if caption else 0}")
+
+        # Read file contents
         contents = await file.read()
-        if len(contents) > 50 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File size exceeds 50MB limit")
+        file_size_bytes = len(contents)
 
         # Determine file type (image or video)
         file_ext = file.filename.split('.')[-1].lower()
@@ -3049,6 +3109,19 @@ async def upload_story(
 
         if not is_video and not is_image:
             raise HTTPException(status_code=400, detail="Only images and videos are allowed for stories")
+
+        media_type = 'video' if is_video else 'image'
+
+        # Validate storage limits based on subscription
+        is_allowed, error_message = StorageService.validate_file_upload(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type=media_type
+        )
+
+        if not is_allowed:
+            raise HTTPException(status_code=400, detail=error_message)
 
         # Get role-specific profile_id
         profile_id = None
@@ -3089,22 +3162,216 @@ async def upload_story(
         if not result:
             raise HTTPException(status_code=500, detail="Upload failed")
 
-        # In a production app, you would save story metadata to a 'stories' table
-        # For now, we just return the upload result
-        # TODO: Create a stories table with fields:
-        # - id, user_id, media_url, media_type (image/video), caption, created_at, expires_at (24h)
+        # Save story to database
+        from datetime import timedelta
+        expires_at = datetime.utcnow() + timedelta(hours=24)  # Stories expire after 24 hours
+
+        story = Story(
+            user_id=current_user.id,
+            profile_id=profile_id,
+            profile_type=current_user.active_role,
+            media_url=result['url'],
+            media_type='video' if is_video else 'image',
+            caption=caption,
+            views=0,
+            expires_at=expires_at,
+            is_active=True
+        )
+
+        db.add(story)
+        db.commit()
+        db.refresh(story)
+
+        # Update user's storage usage
+        StorageService.update_storage_usage(
+            db=db,
+            user_id=current_user.id,
+            file_size_bytes=file_size_bytes,
+            file_type=media_type,
+            operation='add'
+        )
 
         return {
             "success": True,
             "message": "Story uploaded successfully",
+            "story_id": story.id,
             "url": result['url'],
             "media_type": "video" if is_video else "image",
             "caption": caption,
+            "expires_at": expires_at.isoformat(),
             "details": result
         }
 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/stories")
+def get_stories(
+    profile_id: Optional[int] = None,
+    profile_type: Optional[str] = None,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    """
+    Get active stories (not expired)
+    If profile_id and profile_type are provided, get stories for that profile
+    Otherwise, get all active stories
+    """
+    try:
+        from datetime import datetime
+
+        # Base query - only active and non-expired stories
+        query = db.query(Story).filter(
+            Story.is_active == True,
+            Story.expires_at > datetime.utcnow()
+        )
+
+        # Filter by profile if provided
+        if profile_id and profile_type:
+            query = query.filter(
+                Story.profile_id == profile_id,
+                Story.profile_type == profile_type
+            )
+
+        # Order by creation date (newest first) and limit
+        stories = query.order_by(Story.created_at.desc()).limit(limit).all()
+
+        # Format response with user info
+        result = []
+        for story in stories:
+            user = db.query(User).filter(User.id == story.user_id).first()
+            result.append({
+                "id": story.id,
+                "user_id": story.user_id,
+                "profile_id": story.profile_id,
+                "profile_type": story.profile_type,
+                "media_url": story.media_url,
+                "media_type": story.media_type,
+                "caption": story.caption,
+                "views": story.views,
+                "created_at": story.created_at.isoformat() if story.created_at else None,
+                "expires_at": story.expires_at.isoformat() if story.expires_at else None,
+                "user_name": f"{user.first_name} {user.father_name}" if user else "Unknown",
+                "profile_picture": user.profile_picture if user else None
+            })
+
+        return {
+            "stories": result,
+            "total": len(result)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/stories/{story_id}/view")
+def increment_story_view(
+    story_id: int,
+    db: Session = Depends(get_db)
+):
+    """Increment story view count"""
+    try:
+        story = db.query(Story).filter(Story.id == story_id).first()
+        if not story:
+            raise HTTPException(status_code=404, detail="Story not found")
+
+        # Increment views
+        story.views += 1
+        db.commit()
+
+        return {
+            "success": True,
+            "views": story.views
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/api/stories/{story_id}")
+async def delete_story(
+    story_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a story - only the owner can delete"""
+    try:
+        # Get the story
+        story = db.query(Story).filter(Story.id == story_id).first()
+        if not story:
+            raise HTTPException(status_code=404, detail="Story not found")
+
+        # Check if the current user owns this story
+        if story.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You don't have permission to delete this story")
+
+        # Delete the story
+        db.delete(story)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Story deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/my-stories")
+def get_my_stories(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's active stories"""
+    try:
+        from datetime import datetime
+
+        # Get profile_id based on active role
+        profile_id = None
+        if current_user.active_role == "tutor":
+            profile = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+            profile_id = profile.id if profile else None
+        elif current_user.active_role == "student":
+            profile = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+            profile_id = profile.id if profile else None
+        elif current_user.active_role == "parent":
+            profile = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
+            profile_id = profile.id if profile else None
+        elif current_user.active_role == "advertiser":
+            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            profile_id = profile.id if profile else None
+
+        if not profile_id:
+            return {"stories": [], "total": 0}
+
+        # Get active stories for this profile
+        stories = db.query(Story).filter(
+            Story.profile_id == profile_id,
+            Story.profile_type == current_user.active_role,
+            Story.is_active == True,
+            Story.expires_at > datetime.utcnow()
+        ).order_by(Story.created_at.desc()).all()
+
+        result = []
+        for story in stories:
+            result.append({
+                "id": story.id,
+                "media_url": story.media_url,
+                "media_type": story.media_type,
+                "caption": story.caption,
+                "views": story.views,
+                "created_at": story.created_at.isoformat() if story.created_at else None,
+                "expires_at": story.expires_at.isoformat() if story.expires_at else None
+            })
+
+        return {
+            "stories": result,
+            "total": len(result)
+        }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -7129,7 +7396,7 @@ async def update_advertiser_profile(
 
     # Fields that belong to users table
     user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name',
-                   'email', 'phone', 'gender', 'location', 'display_location', 'profile_picture',
+                   'email', 'phone', 'gender', 'location', 'country_code', 'display_location', 'profile_picture',
                    'social_links', 'languages'}
 
     # Update profile fields
@@ -7182,10 +7449,14 @@ async def upload_campaign_media(
     brand_name: str = Form(...),
     campaign_name: str = Form(...),
     ad_placement: str = Form(...),
+    campaign_id: Optional[int] = Form(None),
+    brand_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload campaign media (image or video) to Backblaze B2 with organized folder structure"""
+    """Upload campaign media (image or video) to Backblaze B2 with organized folder structure and save to database"""
+    import psycopg
+
     try:
         # Check if user has advertiser role
         if "advertiser" not in current_user.roles:
@@ -7212,12 +7483,13 @@ async def upload_campaign_media(
 
         # Read file contents
         file_contents = await file.read()
+        file_size = len(file_contents)
 
         # Validate file size
-        if is_image and len(file_contents) > 5 * 1024 * 1024:  # 5MB for images
+        if is_image and file_size > 5 * 1024 * 1024:  # 5MB for images
             raise HTTPException(status_code=400, detail="Image size exceeds 5MB limit")
 
-        if is_video and len(file_contents) > 200 * 1024 * 1024:  # 200MB for videos
+        if is_video and file_size > 200 * 1024 * 1024:  # 200MB for videos
             raise HTTPException(status_code=400, detail="Video size exceeds 200MB limit")
 
         # Get Backblaze service
@@ -7229,9 +7501,13 @@ async def upload_campaign_media(
         clean_campaign = re.sub(r'[^\w\s-]', '', campaign_name).strip().replace(' ', '_')
         clean_placement = re.sub(r'[^\w\s-]', '', ad_placement).strip().replace(' ', '_')
 
+        # NORMALIZE PLACEMENT: Always use underscores (not dashes) for consistency
+        # This ensures database queries work correctly
+        normalized_placement = ad_placement.replace('-', '_')
+
         # Build organized folder path: images/profile_{id}/{brand}/{campaign}/{placement}/ or videos/profile_{id}/{brand}/{campaign}/{placement}/
-        media_type = 'images' if is_image else 'videos'
-        custom_folder = f"{media_type}/profile_{advertiser_profile.id}/{clean_brand}/{clean_campaign}/{clean_placement}/"
+        media_type = 'image' if is_image else 'video'
+        custom_folder = f"{'images' if is_image else 'videos'}/profile_{advertiser_profile.id}/{clean_brand}/{clean_campaign}/{clean_placement}/"
 
         # Upload to Backblaze with custom folder path
         result = b2_service.upload_file_to_folder(
@@ -7244,13 +7520,53 @@ async def upload_campaign_media(
         if not result:
             raise HTTPException(status_code=500, detail="File upload failed")
 
+        # Save media metadata to database if campaign_id and brand_id are provided
+        media_id = None
+        if campaign_id and brand_id:
+            try:
+                # Get database connection (using psycopg directly)
+                conn = psycopg.connect(os.getenv('DATABASE_URL'))
+                cursor = conn.cursor()
+
+                cursor.execute("""
+                    INSERT INTO campaign_media (
+                        campaign_id, brand_id, advertiser_id, media_type,
+                        file_url, file_name, file_size, placement,
+                        content_type, folder_path
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    campaign_id,
+                    brand_id,
+                    advertiser_profile.id,
+                    media_type,
+                    result['url'],
+                    result['fileName'],
+                    file_size,
+                    normalized_placement,  # Use normalized placement (underscores, not dashes)
+                    file.content_type,
+                    custom_folder
+                ))
+
+                media_id = cursor.fetchone()[0]
+                conn.commit()
+                cursor.close()
+                conn.close()
+
+            except Exception as db_error:
+                print(f"Warning: Failed to save media to database: {db_error}")
+                # Don't fail the upload if database save fails - file is already in Backblaze
+
         return {
             "success": True,
-            "message": f"Campaign {'image' if is_image else 'video'} uploaded successfully",
+            "message": f"Campaign {media_type} uploaded successfully",
             "url": result['url'],
             "file_name": result['fileName'],
-            "file_type": 'image' if is_image else 'video',
+            "file_type": media_type,
             "folder": custom_folder,
+            "media_id": media_id,
+            "file_size": file_size,
+            "placement": ad_placement,
             "details": result
         }
 
@@ -7258,6 +7574,134 @@ async def upload_campaign_media(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload error: {str(e)}")
+
+
+@router.get("/api/campaign/{campaign_id}/media")
+async def get_campaign_media(
+    campaign_id: int,
+    media_type: Optional[str] = Query(None, description="Filter by media type: 'image' or 'video'"),
+    placement: Optional[str] = Query(None, description="Filter by placement: 'placeholder', 'widget', 'popup', 'insession'"),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all media files for a campaign"""
+    import psycopg
+    from psycopg.rows import dict_row
+
+    try:
+        # Get database connection
+        conn = psycopg.connect(os.getenv('DATABASE_URL'), row_factory=dict_row)
+        cursor = conn.cursor()
+
+        # Build query with optional filters
+        query = """
+            SELECT
+                id, campaign_id, brand_id, advertiser_id,
+                media_type, file_url, file_name, file_size,
+                placement, content_type, folder_path,
+                created_at, updated_at
+            FROM campaign_media
+            WHERE campaign_id = %s
+        """
+        params = [campaign_id]
+
+        if media_type:
+            query += " AND media_type = %s"
+            params.append(media_type)
+
+        if placement:
+            query += " AND placement = %s"
+            params.append(placement)
+
+        query += " ORDER BY created_at DESC"
+
+        cursor.execute(query, params)
+        media_items = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "success": True,
+            "campaign_id": campaign_id,
+            "total": len(media_items),
+            "media": media_items
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching campaign media: {str(e)}")
+
+
+@router.delete("/api/campaign/media/{media_id}")
+async def delete_campaign_media(
+    media_id: int,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a campaign media file"""
+    import psycopg
+
+    try:
+        # Check if user has advertiser role
+        if "advertiser" not in current_user.roles:
+            raise HTTPException(status_code=403, detail="User does not have advertiser role")
+
+        # Get database connection
+        conn = psycopg.connect(os.getenv('DATABASE_URL'))
+        cursor = conn.cursor()
+
+        # Get media info to verify ownership
+        cursor.execute("""
+            SELECT cm.*, ap.user_id
+            FROM campaign_media cm
+            JOIN advertiser_profiles ap ON cm.advertiser_id = ap.id
+            WHERE cm.id = %s
+        """, (media_id,))
+
+        media = cursor.fetchone()
+
+        if not media:
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Media not found")
+
+        # Verify ownership
+        if media[13] != current_user.id:  # user_id is at index 13
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=403, detail="You don't have permission to delete this media")
+
+        # Get file info for Backblaze deletion (folder_path is at index 10)
+        folder_path = media[10] if len(media) > 10 else None
+        file_name = media[6] if len(media) > 6 else None  # file_name is at index 6
+
+        # Delete from database first
+        cursor.execute("DELETE FROM campaign_media WHERE id = %s", (media_id,))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        # Try to delete from Backblaze (don't fail if this errors)
+        if folder_path and file_name:
+            try:
+                from backblaze_service import BackblazeService
+                backblaze_service = BackblazeService()
+                file_path = f"{folder_path}{file_name}"
+                backblaze_service.delete_file(file_path)
+                print(f"✅ Deleted file from Backblaze: {file_path}")
+            except Exception as e:
+                print(f"⚠️ Could not delete file from Backblaze: {str(e)}")
+                # Continue anyway - database deletion succeeded
+
+        return {
+            "success": True,
+            "message": "Media deleted successfully",
+            "media_id": media_id
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting media: {str(e)}")
 
 
 # ============================================

@@ -47,6 +47,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css?v=20260206-adblocker-fix">
+    <link rel="stylesheet" href="../css/page-structure/animations.css">
     <link rel="stylesheet" href="../css/find-tutors/navbar.css">
     <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <link rel="stylesheet" href="../css/advertiser-profile/advertiser-profile.css">
@@ -65,6 +66,8 @@
     <link rel="stylesheet" href="../css/common-modals/community-modal.css">
     <!-- Advanced Notes Styles -->
     <link rel="stylesheet" href="../css/common-modals/advanced-notes.css">
+    <!-- Universal Upload Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/universal-upload-modal.css">
     <!-- Brands & Campaigns Styles -->
     <link rel="stylesheet" href="../css/advertiser-profile/brands-campaigns.css">
     <!-- Team Management Styles -->
@@ -899,7 +902,7 @@
         /* Animate ad placeholders */
         .ad-placeholder.sidebar-active,
         .ad-placeholder-section.sidebar-active,
-        .promo-container.sidebar-active {
+        .leaderboard-banner.sidebar-active {
             transform: translateX(280px);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             max-width: calc(100vw - 280px);
@@ -918,7 +921,7 @@
 
             .ad-placeholder.sidebar-active,
             .ad-placeholder-section.sidebar-active,
-            .promo-container.sidebar-active {
+            .leaderboard-banner.sidebar-active {
                 transform: translateX(280px);
             }
         }
@@ -1144,6 +1147,41 @@
 </head>
 
 <body class="font-sans">
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <h2 class="loading-text">ASTEGNI</h2>
+    </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300); // Reduced delay since we're already waiting for full load
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Navigation -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
@@ -1410,24 +1448,8 @@
     </div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="advertiser" data-location="advertiser_profile">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
     <!-- Sidebar -->
@@ -1488,7 +1510,6 @@
                         <!-- Dashboard Panel (Default) -->
                         <div id="dashboard-panel" class="panel-content active">
 
-
                             <!-- Hero Section -->
                             <section class="hero-section animate__animated animate__fadeIn">
                                 <h2 class="hero-title">
@@ -1522,11 +1543,12 @@
                             <section class="profile-header-section mb-8">
                                 <div class="cover-image-container relative">
                                     <img id="cover-img"
-                                        src="../uploads/system_images/system_cover_pictures/ad cover.jpeg" alt="Cover"
-                                        class="cover-img">
+                                        src="" alt="Cover"
+                                        class="cover-img"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); object-fit: cover;">
                                     <div class="cover-overlay"></div>
                                     <!-- Cover Upload Button -->
-                                    <button onclick="openCoverUploadModal()" class="cover-upload-btn">
+                                    <button onclick="openUniversalUploadModal('cover')" class="cover-upload-btn">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
@@ -1541,11 +1563,12 @@
                                     <div class="profile-info-wrapper">
                                         <div class="profile-avatar-container">
                                             <img id="profile-avatar"
-                                                src="../uploads/system_images/system_profile_pictures/ad-profile-1.jpeg"
-                                                alt="Advertiser Profile" class="profile-avatar">
+                                                src=""
+                                                alt="Advertiser Profile" class="profile-avatar"
+                                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                                             <span class="online-indicator"></span>
                                             <!-- Profile Picture Upload Button -->
-                                            <button onclick="openProfileUploadModal()" class="avatar-upload-btn">
+                                            <button onclick="openUniversalUploadModal('profile')" class="avatar-upload-btn">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -2636,107 +2659,21 @@
                 <div class="right-sidebar-content"
                     style="width: 320px; flex-shrink: 0; position: sticky; top: 5rem; height: fit-content; overflow-y: visible;">
 
-                    <!-- Ad Widget -->
+                    <!-- Dynamic Logo Ad Widget -->
                     <div class="sidebar-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                         <div class="widget-header"
                             style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span
                                 style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="promo-content" id="promo-container-advertiser"
-                            style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <div id="ad-message-container-advertiser"
-                                style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message-advertiser active"
-                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes
-                                        Here</p>
-                                </div>
-                                <div class="ad-message-advertiser"
-                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions
-                                        of Audience</p>
-                                </div>
-                                <div class="ad-message-advertiser"
-                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your
-                                        Business</p>
-                                </div>
-                                <div class="ad-message-advertiser"
-                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your
-                                        Audience</p>
-                                </div>
-                                <div class="ad-message-advertiser"
-                                    style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With
-                                        Us</p>
-                                </div>
-                            </div>
-                            <div id="ad-ticker-advertiser"
-                                style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content-advertiser"
-                                    style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
+                        <!-- Dynamic ad container loaded by AdRotationManager -->
+                        <div
+                            data-placement="logo"
+                            data-profile-type="advertiser"
+                            class="leaderboard-banner premium-promo"
+                            style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                            <!-- Ads will be dynamically loaded here -->
                         </div>
-                        <style>
-                            @keyframes tickerScrollAdvertiser {
-                                0% {
-                                    transform: translateX(0);
-                                }
-
-                                100% {
-                                    transform: translateX(-50%);
-                                }
-                            }
-
-                            #ad-ticker-content-advertiser {
-                                animation: tickerScrollAdvertiser 20s linear infinite;
-                            }
-
-                            .ad-message-advertiser {
-                                visibility: hidden;
-                            }
-
-                            .ad-message-advertiser.active {
-                                opacity: 1 !important;
-                                transform: scale(1) !important;
-                                visibility: visible !important;
-                            }
-
-                            .ad-message-advertiser.fade-out {
-                                opacity: 0 !important;
-                                transform: scale(0.8) !important;
-                                visibility: visible !important;
-                            }
-                        </style>
-                        <script>
-                            (function () {
-                                const messages = document.querySelectorAll('#ad-message-container-advertiser .ad-message-advertiser');
-                                let currentIndex = 0;
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-                                    messages[currentIndex].classList.add('active');
-                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
-                                }
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
                     </div>
 
                     <!-- Today's Impressions Widget -->
@@ -3319,126 +3256,8 @@
         </div>
     </div>
 
-    <!-- Cover Upload Modal -->
-    <div id="coverUploadModal" class="upload-cover-modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="modal-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Cover
-                        Photo</h3>
-                    <button onclick="closeCoverUploadModal()"
-                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;"
-                        onmouseover="this.style.color='var(--heading)'"
-                        onmouseout="this.style.color='var(--text-muted)'">&times;</button>
-                </div>
-
-                <!-- Upload Area -->
-                <div class="upload-area" onclick="document.getElementById('coverInput').click()">
-                    <span class="upload-icon">📸</span>
-                    <p class="upload-text">Click to upload cover photo</p>
-                    <p class="upload-hint">Recommended size: 1920x400px (Max: 5MB)</p>
-                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
-                        onchange="handleImageSelect(event, 'cover')">
-                </div>
-
-                <!-- Preview Container -->
-                <div id="coverPreview" class="preview-container" style="display: none;">
-                    <img id="coverPreviewImage" src="" alt="Cover Preview" class="preview-image">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File Name:</span>
-                            <span id="coverFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File Size:</span>
-                            <span id="coverFileSize">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>Dimensions:</span>
-                            <span id="coverDimensions">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Progress -->
-                <div id="coverProgress" class="upload-progress" style="display: none;">
-                    <div id="coverSpinner" class="upload-spinner"></div>
-                    <div class="progress-bar">
-                        <div id="coverProgressFill" class="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <p id="coverProgressText" class="progress-text">Uploading to Backblaze...</p>
-                </div>
-
-                <!-- Upload Actions -->
-                <div class="upload-actions">
-                    <button class="btn-upload secondary" onclick="closeCoverUploadModal()">Cancel</button>
-                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload to Backblaze</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Profile Picture Upload Modal -->
-    <div id="profileUploadModal" class="upload-profile-modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="modal-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Profile
-                        Picture</h3>
-                    <button onclick="closeProfileUploadModal()"
-                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;"
-                        onmouseover="this.style.color='var(--heading)'"
-                        onmouseout="this.style.color='var(--text-muted)'">&times;</button>
-                </div>
-
-                <!-- Upload Area -->
-                <div class="upload-area" onclick="document.getElementById('profileInput').click()">
-                    <span class="upload-icon">👤</span>
-                    <p class="upload-text">Click to upload profile picture</p>
-                    <p class="upload-hint">Recommended size: 400x400px (Max: 2MB)</p>
-                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
-                        onchange="handleImageSelect(event, 'profile')">
-                </div>
-
-                <!-- Preview Container -->
-                <div id="profilePreview" class="preview-container" style="display: none;">
-                    <img id="profilePreviewImage" src="" alt="Profile Preview" class="preview-image"
-                        style="max-height: 400px; object-fit: contain;">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File Name:</span>
-                            <span id="profileFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File Size:</span>
-                            <span id="profileFileSize">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>Dimensions:</span>
-                            <span id="profileDimensions">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Progress -->
-                <div id="profileProgress" class="upload-progress" style="display: none;">
-                    <div id="profileSpinner" class="upload-spinner"></div>
-                    <div class="progress-bar">
-                        <div id="profileProgressFill" class="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <p id="profileProgressText" class="progress-text">Uploading to Backblaze...</p>
-                </div>
-
-                <!-- Upload Actions -->
-                <div class="upload-actions">
-                    <button class="btn-upload secondary" onclick="closeProfileUploadModal()">Cancel</button>
-                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload to Backblaze</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Universal Upload Modal (loaded from common-modals) -->
+    <!-- Modal will be loaded by common-modal-loader.js -->
 
     <!-- Ad Analytics Modal -->
     <div class="modal hidden" id="adAnalyticsModal">
@@ -3877,7 +3696,6 @@
         </div>
     </footer>
 
-
     <!-- Core Page Structure Scripts -->
     <!-- NOTE: Many of these manager files don't exist and cause 404 errors, which can break script loading -->
     <!-- Commenting out missing files to prevent script loading errors -->
@@ -3888,6 +3706,7 @@
     <!-- <script src="../js/page-structure/settingsManager.js"></script> -->
     <!-- <script src="../js/page-structure/badgeManager.js"></script> -->
     <script src="../js/page-structure/notificationManager.js"></script>
+    <script src="../js/page-structure/utilsManager.js?v=20260213"></script>
     <!-- <script src="../js/page-structure/videoPlayerManager.js"></script> -->
     <!-- <script src="../js/page-structure/bottomWidgetManager.js"></script> -->
     <!-- <script src="../js/page-structure/rightSidebarManager.js"></script> -->
@@ -3954,8 +3773,9 @@
     <script src="../js/advertiser-profile/profile-data-loader.js"></script>
 
     <!-- 3. Profile Management -->
+    <script src="../js/root/storage-manager.js"></script>
     <script src="../js/advertiser-profile/profile-edit-handler.js"></script>
-    <script src="../js/advertiser-profile/upload-modal-handler.js"></script>
+    <script src="../js/advertiser-profile/universal-upload-handler.js"></script>
 
     <!-- 4. Campaign Management -->
     <script src="../js/advertiser-profile/campaign-manager.js"></script>
@@ -3984,8 +3804,22 @@
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof AdvertiserProfileDataLoader !== 'undefined') {
             setTimeout(function() {
-                AdvertiserProfileDataLoader.loadProfileData();
+                console.log('[advertiser-profile.html] Calling AdvertiserProfileDataLoader.init()');
+                AdvertiserProfileDataLoader.init();
             }, 500);
+        } else {
+            console.error('[advertiser-profile.html] AdvertiserProfileDataLoader is not defined!');
+        }
+
+        // Load universal upload modal
+        if (typeof CommonModalLoader !== 'undefined') {
+            CommonModalLoader.load('universal-upload-modal.html')
+                .then(() => {
+                    console.log('[advertiser-profile.html] ✅ Universal upload modal loaded');
+                })
+                .catch(error => {
+                    console.error('[advertiser-profile.html] ❌ Failed to load universal upload modal:', error);
+                });
         }
     });
 

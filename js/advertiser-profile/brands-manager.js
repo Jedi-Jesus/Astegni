@@ -142,6 +142,7 @@ const BrandsManager = {
                 const data = await response.json();
                 this.brands = data.brands || [];
                 console.log('🏷️ Loaded brands from API:', this.brands.length);
+                console.log('🏷️ Brand colors:', this.brands.map(b => ({ name: b.name, color: b.brand_color })));
             } else {
                 console.warn('🏷️ API returned non-OK status:', response.status);
                 // Use sample data for now
@@ -261,14 +262,20 @@ const BrandsManager = {
     // Create brand card HTML
     createBrandCard(brand) {
         const statusClass = brand.status || 'active';
+        const brandColor = brand.brand_color || '#8B5CF6';
         const logoContent = brand.logo
             ? `<img src="${brand.logo}" alt="${brand.name}">`
-            : `<i class="fas fa-building"></i>`;
+            : `<i class="fas fa-building" style="color: ${brandColor};"></i>`;
+
+        // Apply brand color to logo background if no logo image
+        const logoStyle = !brand.logo
+            ? `style="background: linear-gradient(135deg, ${brandColor}15, ${brandColor}30);"`
+            : '';
 
         return `
             <div class="brand-card" onclick="BrandsManager.openCampaignModal(${brand.id})">
                 <div class="brand-card-header">
-                    <div class="brand-logo">${logoContent}</div>
+                    <div class="brand-logo" ${logoStyle}>${logoContent}</div>
                     <div class="brand-info">
                         <h3 class="brand-name">${brand.name}</h3>
                         <span class="brand-industry">
@@ -324,11 +331,29 @@ const BrandsManager = {
         this.setElementText('campaign-modal-brand-name', brand.name);
         this.setElementText('campaign-modal-brand-industry', brand.industry || 'General');
 
+        const brandColor = brand.brand_color || '#8B5CF6';
+        console.log('🎨 Opening modal for brand:', brand.name, 'Color:', brandColor);
+
         const logoEl = document.getElementById('campaign-modal-brand-logo');
         if (logoEl) {
-            logoEl.innerHTML = brand.logo
-                ? `<img src="${brand.logo}" alt="${brand.name}">`
-                : '<i class="fas fa-building"></i>';
+            if (brand.logo) {
+                logoEl.innerHTML = `<img src="${brand.logo}" alt="${brand.name}">`;
+            } else {
+                logoEl.innerHTML = '<i class="fas fa-building"></i>';
+                logoEl.style.background = 'rgba(255, 255, 255, 0.2)';
+            }
+        }
+
+        // Apply brand color to modal header
+        const modalHeader = document.querySelector('.campaign-modal-header');
+        if (modalHeader) {
+            // Create lighter shade for gradient
+            const lighterShade = this.adjustColorBrightness(brandColor, -10);
+            const gradient = `linear-gradient(135deg, ${brandColor}, ${lighterShade})`;
+            console.log('🎨 Applying gradient to modal header:', gradient);
+            modalHeader.style.background = gradient;
+        } else {
+            console.error('❌ Modal header element not found!');
         }
 
         // Load campaigns for this brand
@@ -397,7 +422,7 @@ const BrandsManager = {
                 target_audiences: ['tutor', 'student', 'parent', 'advertiser', 'user'],
                 target_location: 'national',
                 target_regions: [],
-                target_placements: ['placeholder', 'widget', 'popup', 'insession']
+                target_placements: ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
             },
             {
                 id: 2,
@@ -415,7 +440,7 @@ const BrandsManager = {
                 target_audiences: ['student'],
                 target_location: 'regional',
                 target_regions: ['addis-ababa', 'oromia'],
-                target_placements: ['widget', 'popup']
+                target_placements: ['logo', 'in-session-skyscrapper-banner']
             },
             {
                 id: 3,
@@ -433,7 +458,7 @@ const BrandsManager = {
                 target_audiences: ['tutor'],
                 target_location: 'global',
                 target_regions: [],
-                target_placements: ['placeholder', 'widget', 'popup', 'insession']
+                target_placements: ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
             },
             {
                 id: 4,
@@ -451,7 +476,7 @@ const BrandsManager = {
                 target_audiences: ['parent', 'student'],
                 target_location: 'national',
                 target_regions: [],
-                target_placements: ['placeholder', 'widget']
+                target_placements: ['leaderboard-banner', 'logo']
             }
         ];
         return campaigns;
@@ -492,6 +517,9 @@ const BrandsManager = {
                     <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
                     <span><i class="fas fa-eye"></i> ${this.formatNumber(campaign.impressions || 0)}</span>
                 </div>
+                <button class="campaign-card-edit-btn-bottom" onclick="event.stopPropagation(); BrandsManager.editCampaignById(${campaign.id})">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
             </div>
         `;
     },
@@ -510,9 +538,29 @@ const BrandsManager = {
     },
 
     // Select a campaign (card dealing animation)
-    selectCampaign(campaignId) {
+    async selectCampaign(campaignId) {
         const campaign = this.campaigns.find(c => c.id === campaignId);
         if (!campaign) return;
+
+        // Fetch latest campaign data from backend to get current status
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaignId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const freshCampaignData = await response.json();
+                // Merge fresh data with local campaign object
+                Object.assign(campaign, freshCampaignData);
+                console.log('[BrandsManager] Fetched latest campaign data:', campaign);
+            }
+        } catch (error) {
+            console.error('[BrandsManager] Error fetching campaign data:', error);
+            // Continue with cached data if fetch fails
+        }
 
         this.currentCampaign = campaign;
         this.currentPlacementType = 'all'; // Default to all placements
@@ -662,10 +710,10 @@ const BrandsManager = {
         // Apply placement filter multiplier
         const placementMultipliers = {
             'all': 1,
-            'placeholder': 0.45,
-            'widget': 0.35,
-            'popup': 0.12,
-            'insession': 0.08
+            'leaderboard-banner': 0.45,
+            'logo': 0.35,
+            'in-session-skyscrapper-banner': 0.12,
+            'promo-slide': 0.08
         };
 
         const totalMultiplier = (audienceMultipliers[audience] || 1) *
@@ -708,10 +756,9 @@ const BrandsManager = {
         };
 
         const placementConfig = {
-            placeholder: 'Ad Placeholder',
-            widget: 'Ad Widget',
-            popup: 'WB Pop-up',
-            insession: 'WB In-Session'
+            'leaderboard-banner': 'Leaderboard Banner',
+            'logo': 'Logo',
+            'in-session-skyscrapper-banner': 'In-Session Skyscrapper Banner'
         };
 
         // Get campaign targeting data
@@ -871,11 +918,13 @@ const BrandsManager = {
 
     // Reset campaign view
     resetCampaignView() {
+        const header = document.getElementById('campaign-details-leaderboard-banner');
         const placeholder = document.getElementById('campaign-details-placeholder');
         const content = document.getElementById('campaign-details-content');
         const listSection = document.getElementById('campaign-list-section');
         const backBtn = document.getElementById('campaign-back-btn');
 
+        if (header) header.style.display = 'flex';
         if (placeholder) placeholder.style.display = 'flex';
         if (content) content.classList.remove('active');
         if (listSection) listSection.classList.remove('collapsed');
@@ -901,7 +950,7 @@ const BrandsManager = {
         const types = {
             'overall': { name: 'Overall', icon: 'fa-chart-pie', color: '#8b5cf6' },
             'main-ads': { name: 'Main Ads', icon: 'fa-rectangle-ad', color: '#3b82f6' },
-            'widget-ads': { name: 'Widget Ads', icon: 'fa-window-restore', color: '#10b981' },
+            'logo-ads': { name: 'Widget Ads', icon: 'fa-window-restore', color: '#10b981' },
             'pop-ups': { name: 'Pop-ups', icon: 'fa-window-maximize', color: '#f59e0b' },
             'in-session-ads': { name: 'In-Session Ads', icon: 'fa-chalkboard-user', color: '#ef4444' }
         };
@@ -918,7 +967,7 @@ const BrandsManager = {
         const multipliers = {
             'overall': 1.0,
             'main-ads': 0.45,
-            'widget-ads': 0.35,
+            'logo-ads': 0.35,
             'pop-ups': 0.12,
             'in-session-ads': 0.08
         };
@@ -927,7 +976,7 @@ const BrandsManager = {
         const ctrMultipliers = {
             'overall': 1.0,
             'main-ads': 1.2,      // Main ads have higher CTR
-            'widget-ads': 0.9,    // Widget ads slightly lower
+            'logo-ads': 0.9,    // Widget ads slightly lower
             'pop-ups': 1.5,       // Pop-ups have highest engagement
             'in-session-ads': 0.7 // In-session ads lowest (during teaching)
         };
@@ -944,10 +993,12 @@ const BrandsManager = {
     },
 
     // Show campaign details
-    showCampaignDetails(campaign, placementType = 'overall') {
+    async showCampaignDetails(campaign, placementType = 'overall') {
+        const header = document.getElementById('campaign-details-leaderboard-banner');
         const placeholder = document.getElementById('campaign-details-placeholder');
         const content = document.getElementById('campaign-details-content');
 
+        if (header) header.style.display = 'none';
         if (placeholder) placeholder.style.display = 'none';
         if (content) content.classList.add('active');
 
@@ -972,8 +1023,14 @@ const BrandsManager = {
         // Populate media filters based on campaign targeting
         this.populateMediaFilters();
 
+        // Load campaign media from backend
+        await this.loadCampaignMediaFromBackend(campaign.id);
+
         // Update footer buttons based on campaign status
         this.updateFooterButtons();
+
+        // Disable upload buttons if campaign is under verification
+        this.updateUploadButtonsState();
 
         // Update finances from campaign total_budget
         this.updateFinancesFromCampaign(campaign);
@@ -1156,12 +1213,75 @@ const BrandsManager = {
         }
     },
 
-    // Toggle social links collapsible
-    toggleSocialLinks() {
-        const collapsible = document.querySelector('.create-brand-collapsible');
-        if (collapsible) {
-            collapsible.classList.toggle('expanded');
+    // Brand social links array
+    brandSocialLinks: [],
+
+    // Add a new social link field for brand
+    addBrandSocialLink() {
+        const container = document.getElementById('brand-social-media-container');
+        if (!container) return;
+
+        const index = this.brandSocialLinks.length;
+        const div = document.createElement('div');
+        div.className = 'brand-social-link-item';
+        div.innerHTML = `
+            <select id="brandSocialPlatform${index}" class="brand-social-select" onchange="BrandsManager.updateBrandSocialPlaceholder(${index})">
+                <option value="">Select Platform</option>
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+                <option value="snapchat">Snapchat</option>
+                <option value="facebook">Facebook</option>
+                <option value="telegram">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="twitter">X</option>
+                <option value="youtube">YouTube</option>
+                <option value="github">GitHub</option>
+            </select>
+            <input type="url"
+                id="brandSocialUrl${index}"
+                class="brand-social-input"
+                leaderboard-banner="Enter URL">
+            <button type="button" class="brand-social-remove-btn" onclick="BrandsManager.removeBrandSocialLink(${index})">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(div);
+        this.brandSocialLinks.push({ platform: '', url: '' });
+    },
+
+    // Remove a social link field for brand
+    removeBrandSocialLink(index) {
+        const container = document.getElementById('brand-social-media-container');
+        if (!container) return;
+
+        const children = Array.from(container.children);
+        if (children[index]) {
+            children[index].remove();
+            this.brandSocialLinks.splice(index, 1);
         }
+    },
+
+    // Update leaderboard-banner based on selected platform
+    updateBrandSocialPlaceholder(index) {
+        const platformSelect = document.getElementById(`brandSocialPlatform${index}`);
+        const urlInput = document.getElementById(`brandSocialUrl${index}`);
+        if (!platformSelect || !urlInput) return;
+
+        const platform = platformSelect.value;
+        const placeholders = {
+            tiktok: 'https://tiktok.com/@username',
+            instagram: 'https://instagram.com/username',
+            snapchat: 'https://snapchat.com/add/username',
+            facebook: 'https://facebook.com/username',
+            telegram: 'https://t.me/username',
+            whatsapp: 'https://wa.me/1234567890',
+            linkedin: 'https://linkedin.com/in/username',
+            twitter: 'https://x.com/username',
+            youtube: 'https://youtube.com/@username',
+            github: 'https://github.com/username'
+        };
+        urlInput.placeholder = placeholders[platform] || 'Enter URL';
     },
 
     // Preview brand logo
@@ -1184,13 +1304,23 @@ const BrandsManager = {
         this.setElementText('campaign-modal-brand-name', brand.name);
         this.setElementText('campaign-modal-brand-industry', brand.industry || 'General');
 
+        const brandColor = brand.brand_color || '#8B5CF6';
         const logoEl = document.getElementById('campaign-modal-brand-logo');
         if (logoEl) {
             if (brand.logo || brand.logo_url) {
                 logoEl.innerHTML = `<img src="${brand.logo || brand.logo_url}" alt="${brand.name}">`;
             } else {
                 logoEl.innerHTML = '<i class="fas fa-building"></i>';
+                logoEl.style.background = 'rgba(255, 255, 255, 0.2)';
             }
+        }
+
+        // Apply brand color to modal header
+        const modalHeader = document.querySelector('.campaign-modal-header');
+        if (modalHeader) {
+            // Create lighter shade for gradient
+            const lighterShade = this.adjustColorBrightness(brandColor, -10);
+            modalHeader.style.background = `linear-gradient(135deg, ${brandColor}, ${lighterShade})`;
         }
     },
 
@@ -1217,21 +1347,25 @@ const BrandsManager = {
                 bio: document.getElementById('brand-description-input').value.trim(),
                 website: document.getElementById('brand-website-input').value.trim(),
                 brand_color: document.getElementById('brand-color-input').value,
-                status: document.getElementById('brand-status-input').value,
-                social_links: {
-                    facebook: document.getElementById('brand-facebook-input')?.value.trim() || null,
-                    instagram: document.getElementById('brand-instagram-input')?.value.trim() || null,
-                    twitter: document.getElementById('brand-twitter-input')?.value.trim() || null,
-                    linkedin: document.getElementById('brand-linkedin-input')?.value.trim() || null,
-                    youtube: document.getElementById('brand-youtube-input')?.value.trim() || null,
-                    tiktok: document.getElementById('brand-tiktok-input')?.value.trim() || null
-                }
+                social_links: {}
             };
 
-            // Remove empty social links
-            Object.keys(brandData.social_links).forEach(key => {
-                if (!brandData.social_links[key]) delete brandData.social_links[key];
-            });
+            // Collect social links from dynamic fields
+            const container = document.getElementById('brand-social-media-container');
+            if (container) {
+                const socialItems = container.querySelectorAll('.brand-social-link-item');
+                socialItems.forEach((item, index) => {
+                    const platformSelect = item.querySelector(`#brandSocialPlatform${index}`);
+                    const urlInput = item.querySelector(`#brandSocialUrl${index}`);
+                    if (platformSelect && urlInput) {
+                        const platform = platformSelect.value;
+                        const url = urlInput.value.trim();
+                        if (platform && url) {
+                            brandData.social_links[platform] = url;
+                        }
+                    }
+                });
+            }
 
             // Use PUT for edit, POST for create
             const url = isEditing
@@ -1345,7 +1479,6 @@ const BrandsManager = {
         const websiteInput = document.getElementById('brand-website-input');
         const colorInput = document.getElementById('brand-color-input');
         const colorValue = document.getElementById('brand-color-value');
-        const statusInput = document.getElementById('brand-status-input');
 
         if (nameInput) nameInput.value = brand.name || '';
         if (industryInput) industryInput.value = brand.industry || '';
@@ -1353,7 +1486,6 @@ const BrandsManager = {
         if (websiteInput) websiteInput.value = brand.website || '';
         if (colorInput) colorInput.value = brand.brand_color || '#8B5CF6';
         if (colorValue) colorValue.textContent = brand.brand_color || '#8B5CF6';
-        if (statusInput) statusInput.value = brand.status || 'active';
 
         // Logo preview
         const preview = document.getElementById('brand-logo-preview');
@@ -1365,27 +1497,45 @@ const BrandsManager = {
             }
         }
 
-        // Social links
-        const socialLinks = brand.social_links || {};
-        const facebookInput = document.getElementById('brand-facebook-input');
-        const instagramInput = document.getElementById('brand-instagram-input');
-        const twitterInput = document.getElementById('brand-twitter-input');
-        const linkedinInput = document.getElementById('brand-linkedin-input');
-        const youtubeInput = document.getElementById('brand-youtube-input');
-        const tiktokInput = document.getElementById('brand-tiktok-input');
+        // Social links - clear existing and populate
+        const socialLinksContainer = document.getElementById('brand-social-media-container');
+        if (socialLinksContainer) {
+            socialLinksContainer.innerHTML = '';
+            this.brandSocialLinks = [];
 
-        if (facebookInput) facebookInput.value = socialLinks.facebook || '';
-        if (instagramInput) instagramInput.value = socialLinks.instagram || '';
-        if (twitterInput) twitterInput.value = socialLinks.twitter || '';
-        if (linkedinInput) linkedinInput.value = socialLinks.linkedin || '';
-        if (youtubeInput) youtubeInput.value = socialLinks.youtube || '';
-        if (tiktokInput) tiktokInput.value = socialLinks.tiktok || '';
-
-        // Expand social links section if any are filled
-        const hasSocialLinks = Object.values(socialLinks).some(v => v);
-        if (hasSocialLinks) {
-            const collapsible = document.querySelector('.create-brand-collapsible');
-            if (collapsible) collapsible.classList.add('expanded');
+            const socialLinks = brand.social_links || {};
+            Object.entries(socialLinks).forEach(([platform, url]) => {
+                if (url) {
+                    const index = this.brandSocialLinks.length;
+                    const div = document.createElement('div');
+                    div.className = 'brand-social-link-item';
+                    div.innerHTML = `
+                        <select id="brandSocialPlatform${index}" class="brand-social-select" onchange="BrandsManager.updateBrandSocialPlaceholder(${index})">
+                            <option value="">Select Platform</option>
+                            <option value="tiktok" ${platform === 'tiktok' ? 'selected' : ''}>TikTok</option>
+                            <option value="instagram" ${platform === 'instagram' ? 'selected' : ''}>Instagram</option>
+                            <option value="snapchat" ${platform === 'snapchat' ? 'selected' : ''}>Snapchat</option>
+                            <option value="facebook" ${platform === 'facebook' ? 'selected' : ''}>Facebook</option>
+                            <option value="telegram" ${platform === 'telegram' ? 'selected' : ''}>Telegram</option>
+                            <option value="whatsapp" ${platform === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                            <option value="linkedin" ${platform === 'linkedin' ? 'selected' : ''}>LinkedIn</option>
+                            <option value="twitter" ${platform === 'twitter' ? 'selected' : ''}>X</option>
+                            <option value="youtube" ${platform === 'youtube' ? 'selected' : ''}>YouTube</option>
+                            <option value="github" ${platform === 'github' ? 'selected' : ''}>GitHub</option>
+                        </select>
+                        <input type="url"
+                            id="brandSocialUrl${index}"
+                            class="brand-social-input"
+                            value="${url}"
+                            leaderboard-banner="Enter URL">
+                        <button type="button" class="brand-social-remove-btn" onclick="BrandsManager.removeBrandSocialLink(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                    socialLinksContainer.appendChild(div);
+                    this.brandSocialLinks.push({ platform, url });
+                }
+            });
         }
     },
 
@@ -1400,6 +1550,7 @@ const BrandsManager = {
     showCreateCampaignForm() {
         const listView = document.getElementById('campaign-list-view');
         const formSection = document.getElementById('create-campaign-form-section');
+        const deleteBtn = document.getElementById('campaign-delete-btn');
 
         // Hide list view, show form (footer is now inside form section)
         if (listView) listView.style.display = 'none';
@@ -1408,6 +1559,9 @@ const BrandsManager = {
         // Reset edit mode
         this.isEditMode = false;
         this.editingCampaignId = null;
+
+        // Hide delete button in create mode
+        if (deleteBtn) deleteBtn.style.display = 'none';
 
         // Reset form
         const form = document.getElementById('create-campaign-form');
@@ -1460,15 +1614,13 @@ const BrandsManager = {
 
         // Placements
         const placementAll = document.getElementById('placement-all');
-        const placementPlaceholder = document.getElementById('placement-placeholder');
-        const placementWidget = document.getElementById('placement-widget');
-        const placementPopup = document.getElementById('placement-popup');
-        const placementInsession = document.getElementById('placement-insession');
+        const placementLeaderboard = document.getElementById('placement-leaderboard-banner');
+        const placementLogo = document.getElementById('placement-logo');
+        const placementInSessionSkyscrapper = document.getElementById('placement-in-session-skyscrapper-banner');
         if (placementAll) placementAll.checked = true;
-        if (placementPlaceholder) placementPlaceholder.checked = true;
-        if (placementWidget) placementWidget.checked = true;
-        if (placementPopup) placementPopup.checked = true;
-        if (placementInsession) placementInsession.checked = true;
+        if (placementLeaderboard) placementLeaderboard.checked = true;
+        if (placementLogo) placementLogo.checked = true;
+        if (placementInSessionSkyscrapper) placementInSessionSkyscrapper.checked = true;
 
         // Location - reset to global
         const locationInput = document.getElementById('campaign-location-input');
@@ -1510,6 +1662,7 @@ const BrandsManager = {
     showEditCampaignForm(campaign) {
         const listView = document.getElementById('campaign-list-view');
         const formSection = document.getElementById('create-campaign-form-section');
+        const deleteBtn = document.getElementById('campaign-delete-btn');
 
         // Hide list view, show form
         if (listView) listView.style.display = 'none';
@@ -1518,6 +1671,9 @@ const BrandsManager = {
         // Set edit mode
         this.isEditMode = true;
         this.editingCampaignId = campaign.id;
+
+        // Show delete button in edit mode
+        if (deleteBtn) deleteBtn.style.display = 'flex';
 
         // Update form title and button for edit mode
         this.updateFormMode('edit');
@@ -1595,8 +1751,8 @@ const BrandsManager = {
         }
 
         // Target Placements
-        const placements = campaign.target_placements || ['placeholder', 'widget', 'popup', 'insession'];
-        const allPlacements = ['placeholder', 'widget', 'popup', 'insession'];
+        const placements = campaign.target_placements || ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
+        const allPlacements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
 
         allPlacements.forEach(placement => {
             const checkbox = document.getElementById(`placement-${placement}`);
@@ -1694,10 +1850,9 @@ const BrandsManager = {
                         regionExclusionPremiums: data.regionExclusionPremiums || {},  // JSONB format by country
                         countryRegions: data.countryRegions || {},  // Country configuration
                         placementPremiums: data.placementPremiums || {
-                            placeholder: 0.01,
-                            widget: 0.02,
-                            popup: 0.05,
-                            insession: 0.10
+                            'leaderboard-banner': 0.01,
+                            'logo': 0.02,
+                            'in-session-skyscrapper-banner': 0.05
                         },
                         currency: data.currency || 'ETB'
                     };
@@ -1724,7 +1879,7 @@ const BrandsManager = {
                 locationPremiums: { national: 0.01, regional: 0.025 },
                 regionExclusionPremiums: {},  // Will be empty until loaded
                 countryRegions: {},
-                placementPremiums: { placeholder: 0.01, widget: 0.02, popup: 0.05, insession: 0.10 },
+                placementPremiums: { 'leaderboard-banner': 0.01, 'logo': 0.02, 'in-session-skyscrapper-banner': 0.05 },
                 currency: window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'
             };
             badge.classList.remove('loading');
@@ -1854,22 +2009,18 @@ const BrandsManager = {
         // When "All" is checked, all individual checkboxes are checked = base CPI (no premium)
         // When a placement is UNCHECKED, it adds premium (advertiser is being more specific)
         let placementPremium = 0;
-        const placeholderCheck = document.getElementById('placement-placeholder');
-        const widgetCheck = document.getElementById('placement-widget');
-        const popupCheck = document.getElementById('placement-popup');
-        const insessionCheck = document.getElementById('placement-insession');
+        const leaderboardCheck = document.getElementById('placement-leaderboard-banner');
+        const logoCheck = document.getElementById('placement-logo');
+        const inSessionSkyscrapperCheck = document.getElementById('placement-in-session-skyscrapper-banner');
 
-        if (placeholderCheck && !placeholderCheck.checked) {
-            placementPremium += this.cpiRates.placementPremiums?.placeholder || 0;
+        if (leaderboardCheck && !leaderboardCheck.checked) {
+            placementPremium += this.cpiRates.placementPremiums?.['leaderboard-banner'] || 0;
         }
-        if (widgetCheck && !widgetCheck.checked) {
-            placementPremium += this.cpiRates.placementPremiums?.widget || 0;
+        if (logoCheck && !logoCheck.checked) {
+            placementPremium += this.cpiRates.placementPremiums?.logo || 0;
         }
-        if (popupCheck && !popupCheck.checked) {
-            placementPremium += this.cpiRates.placementPremiums?.popup || 0;
-        }
-        if (insessionCheck && !insessionCheck.checked) {
-            placementPremium += this.cpiRates.placementPremiums?.insession || 0;
+        if (inSessionSkyscrapperCheck && !inSessionSkyscrapperCheck.checked) {
+            placementPremium += this.cpiRates.placementPremiums?.['in-session-skyscrapper-banner'] || 0;
         }
 
         // Calculate total CPI
@@ -1920,7 +2071,7 @@ const BrandsManager = {
 
     // Toggle all placement checkboxes (master checkbox)
     toggleAllPlacements(checked) {
-        const placements = ['placeholder', 'widget', 'popup', 'insession'];
+        const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
 
         placements.forEach(placement => {
             const checkbox = document.getElementById(`placement-${placement}`);
@@ -1937,7 +2088,7 @@ const BrandsManager = {
     // Update placement selection when individual checkbox changes
     updatePlacementSelection() {
         const allCheck = document.getElementById('placement-all');
-        const placements = ['placeholder', 'widget', 'popup', 'insession'];
+        const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
 
         // Check if all individual placements are checked
         const allChecked = placements.every(placement => {
@@ -2107,7 +2258,7 @@ const BrandsManager = {
         if (allChecked) {
             badge.textContent = 'All';
         } else {
-            const placements = ['placeholder', 'widget', 'popup', 'insession'];
+            const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
             const checkedCount = placements.filter(pl => {
                 const checkbox = document.getElementById(`placement-${pl}`);
                 return checkbox && checkbox.checked;
@@ -2129,20 +2280,28 @@ const BrandsManager = {
     handleLocationChange() {
         const locationSelect = document.getElementById('campaign-location-input');
         const regionalSection = document.getElementById('regional-selection');
+        const nationalSection = document.getElementById('national-location');
         const locationNotice = document.getElementById('location-cpi-notice');
 
         if (!locationSelect) return;
 
         const value = locationSelect.value;
 
-        // Show/hide regional checkboxes
-        if (regionalSection) {
-            if (value === 'regional') {
+        // Hide all sections first
+        if (regionalSection) regionalSection.style.display = 'none';
+        if (nationalSection) nationalSection.style.display = 'none';
+
+        // Show appropriate section based on selection
+        if (value === 'national') {
+            if (nationalSection) {
+                nationalSection.style.display = 'block';
+                this.loadUserLocationForCampaign();
+            }
+        } else if (value === 'regional') {
+            if (regionalSection) {
                 regionalSection.style.display = 'block';
-                // Render regions for selected country
-                this.renderRegionsForCountry();
-            } else {
-                regionalSection.style.display = 'none';
+                // Load user location first, then load regions for their country
+                this.loadUserLocationForRegional();
             }
         }
 
@@ -2165,28 +2324,452 @@ const BrandsManager = {
         this.updateCpiDisplay();
     },
 
-    // Handle country selector change
-    onCountryChange() {
-        // Render regions for the newly selected country
-        this.renderRegionsForCountry();
-        this.updateCpiDisplay();
+    // Load user's location for campaign targeting
+    async loadUserLocationForCampaign() {
+        const userLocationDisplay = document.getElementById('user-location-display');
+        const noLocationMessage = document.getElementById('no-location-message');
+        const locationDetectionSection = document.getElementById('location-detection-section');
+        const userLocationText = document.getElementById('user-location-text');
+
+        try {
+            // Fetch user profile to get location
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${BRANDS_API_URL}/api/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch user profile');
+
+            const userData = await response.json();
+            const userLocation = userData.location;
+            const countryCode = userData.country_code;
+
+            // Store user's country code for later use
+            this.userCountryCode = countryCode;
+            this.userLocation = userLocation;
+
+            if (userLocation) {
+                // User has location - show it with change button (extract country only)
+                const countryOnly = this.extractCountryFromLocation(userLocation);
+                if (userLocationText) userLocationText.textContent = countryOnly || userLocation;
+                if (userLocationDisplay) userLocationDisplay.style.display = 'block';
+                if (noLocationMessage) noLocationMessage.style.display = 'none';
+                if (locationDetectionSection) locationDetectionSection.style.display = 'none';
+            } else {
+                // No location - show detection UI
+                if (userLocationDisplay) userLocationDisplay.style.display = 'none';
+                if (noLocationMessage) noLocationMessage.style.display = 'block';
+                if (locationDetectionSection) locationDetectionSection.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('[BrandsManager] Error loading user location:', error);
+            // Show detection UI on error
+            if (userLocationDisplay) userLocationDisplay.style.display = 'none';
+            if (noLocationMessage) noLocationMessage.style.display = 'block';
+            if (locationDetectionSection) locationDetectionSection.style.display = 'block';
+        }
     },
 
-    // Render regions dynamically based on selected country
-    renderRegionsForCountry() {
-        const container = document.getElementById('dynamic-regions-container');
-        if (!container) return;
+    // Show location detection UI
+    showLocationDetection() {
+        const userLocationDisplay = document.getElementById('user-location-display');
+        const locationDetectionSection = document.getElementById('location-detection-section');
 
-        const countrySelector = document.getElementById('campaign-country');
-        const countryCode = countrySelector?.value || 'ET';
+        if (userLocationDisplay) userLocationDisplay.style.display = 'none';
+        if (locationDetectionSection) locationDetectionSection.style.display = 'block';
+    },
+
+    // Handle campaign location toggle
+    handleCampaignLocationToggle(checkbox) {
+        const detectBtn = document.getElementById('detectCampaignLocationBtn');
+        const statusDiv = document.getElementById('campaignLocationStatus');
+
+        if (checkbox.checked) {
+            if (detectBtn) detectBtn.style.display = 'block';
+            // Auto-detect when checkbox is checked
+            this.detectCampaignLocation();
+        } else {
+            if (detectBtn) detectBtn.style.display = 'none';
+            if (statusDiv) {
+                statusDiv.style.display = 'none';
+                statusDiv.textContent = '';
+            }
+        }
+    },
+
+    // Detect campaign location using GPS
+    async detectCampaignLocation() {
+        const statusDiv = document.getElementById('campaignLocationStatus');
+        const detectBtn = document.getElementById('detectCampaignLocationBtn');
+
+        // Show loading state
+        this.showCampaignLocationStatus('Detecting your physical location via GPS...', 'loading');
+        if (detectBtn) {
+            detectBtn.disabled = true;
+            detectBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.25rem;"></i> Detecting...';
+        }
+
+        try {
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                throw new Error('Geolocation not supported by browser');
+            }
+
+            // Get current position
+            const position = await this.getCurrentPosition();
+            const { latitude, longitude } = position.coords;
+
+            console.log(`[BrandsManager] GPS coordinates: ${latitude}, ${longitude}`);
+            this.showCampaignLocationStatus('Getting address from coordinates...', 'loading');
+
+            // Reverse geocode to get address and country code
+            const result = await this.reverseGeocode(latitude, longitude);
+
+            if (result && result.address) {
+                // Save location to user profile
+                await this.saveUserLocation(result.address, result.country_code);
+
+                // Update UI
+                this.showCampaignLocationStatus(`Location detected: ${result.address}`, 'success');
+
+                // Reload the national location section
+                setTimeout(() => {
+                    this.loadUserLocationForCampaign();
+                }, 1500);
+            } else {
+                throw new Error('Could not determine address from coordinates');
+            }
+
+        } catch (error) {
+            console.error('[BrandsManager] Location detection error:', error);
+            this.showCampaignLocationStatus('Failed to detect location. Please try again or enter manually.', 'error');
+        } finally {
+            // Reset button state
+            if (detectBtn) {
+                detectBtn.disabled = false;
+                detectBtn.innerHTML = '<i class="fas fa-location-arrow" style="margin-right: 0.25rem;"></i> Detect Location';
+            }
+        }
+    },
+
+    // Get current GPS position as Promise
+    getCurrentPosition() {
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                resolve,
+                reject,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        });
+    },
+
+    // Reverse geocode coordinates to address
+    async reverseGeocode(latitude, longitude) {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Astegni-Campaign-Platform/1.0'
+                }
+            });
+
+            if (!response.ok) throw new Error('Geocoding request failed');
+
+            const data = await response.json();
+
+            if (data && data.address) {
+                // Extract country code
+                const country_code = data.address.country_code ? data.address.country_code.toUpperCase() : null;
+
+                // Build readable address
+                const parts = [];
+                if (data.address.city) parts.push(data.address.city);
+                else if (data.address.town) parts.push(data.address.town);
+                else if (data.address.village) parts.push(data.address.village);
+
+                if (data.address.state && parts.length > 0) parts.push(data.address.state);
+                if (data.address.country) parts.push(data.address.country);
+
+                const address = parts.length > 0 ? parts.join(', ') : data.display_name;
+
+                return {
+                    address: address,
+                    country_code: country_code
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('[BrandsManager] Reverse geocoding error:', error);
+            return null;
+        }
+    },
+
+    // Save user location to profile
+    async saveUserLocation(location, country_code) {
+        try {
+            const token = localStorage.getItem('token');
+            const currentRole = localStorage.getItem('currentRole');
+
+            // Update user's base location (in users table)
+            const userResponse = await fetch(`${BRANDS_API_URL}/api/users/update-location`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    location: location,
+                    country_code: country_code
+                })
+            });
+
+            if (!userResponse.ok) {
+                console.warn('[BrandsManager] Failed to update user location, attempting role-specific update');
+
+                // Fallback: Update role-specific profile
+                const roleEndpoint = currentRole === 'advertiser' ? 'advertiser' : currentRole;
+                const profileResponse = await fetch(`${BRANDS_API_URL}/api/${roleEndpoint}/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        location: [location],  // Advertiser uses array
+                        country_code: country_code  // Also save country code
+                    })
+                });
+
+                if (!profileResponse.ok) {
+                    throw new Error('Failed to save location');
+                }
+            }
+
+            console.log('[BrandsManager] Location saved successfully:', location, country_code);
+            this.userLocation = location;
+            this.userCountryCode = country_code;
+
+        } catch (error) {
+            console.error('[BrandsManager] Error saving location:', error);
+            throw error;
+        }
+    },
+
+    // Show campaign location status message
+    showCampaignLocationStatus(message, type) {
+        const statusDiv = document.getElementById('campaignLocationStatus');
+        if (!statusDiv) return;
+
+        statusDiv.style.display = 'block';
+
+        switch (type) {
+            case 'loading':
+                statusDiv.style.color = 'var(--text-muted)';
+                statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin" style="margin-right: 0.25rem;"></i> ${message}`;
+                break;
+            case 'success':
+                statusDiv.style.color = '#10b981';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 0.25rem;"></i> ${message}`;
+                break;
+            case 'error':
+                statusDiv.style.color = '#ef4444';
+                statusDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 0.25rem;"></i> ${message}`;
+                break;
+            default:
+                statusDiv.textContent = message;
+        }
+    },
+
+    // Helper function to extract country code from location string
+    extractCountryCodeFromLocation(location) {
+        if (!location) return null;
+
+        // Map of country names to codes (add more as needed)
+        const countryMap = {
+            'ethiopia': 'ET',
+            'united states': 'US',
+            'usa': 'US',
+            'united kingdom': 'GB',
+            'uk': 'GB',
+            'canada': 'CA',
+            'kenya': 'KE',
+            'uganda': 'UG',
+            'tanzania': 'TZ',
+            'rwanda': 'RW',
+            'south africa': 'ZA',
+            'nigeria': 'NG',
+            'ghana': 'GH',
+            'egypt': 'EG'
+            // Add more countries as needed
+        };
+
+        const locationLower = location.toLowerCase();
+        for (const [country, code] of Object.entries(countryMap)) {
+            if (locationLower.includes(country)) {
+                console.log(`[BrandsManager] Extracted country code '${code}' from location: ${location}`);
+                return code;
+            }
+        }
+
+        return null;
+    },
+
+    // Helper function to extract country name from full location string
+    extractCountryFromLocation(location) {
+        if (!location) return null;
+
+        // Location format is usually: "City, Region, Country" or "City, Country"
+        // Extract the last part after the last comma
+        const parts = location.split(',').map(part => part.trim());
+
+        // Return the last part (which should be the country)
+        return parts.length > 0 ? parts[parts.length - 1] : location;
+    },
+
+    // Load user location for regional targeting
+    async loadUserLocationForRegional() {
+        console.log('[BrandsManager] loadUserLocationForRegional() called');
+
+        const countryDisplay = document.getElementById('regional-country-display');
+        const countryText = document.getElementById('regional-country-text');
+        const noLocationMessage = document.getElementById('regional-no-location-message');
+        const regionalSelection = document.querySelector('.regional-selection-header');
+
+        console.log('[BrandsManager] Elements found:', {
+            countryDisplay: !!countryDisplay,
+            countryText: !!countryText,
+            noLocationMessage: !!noLocationMessage,
+            regionalSelection: !!regionalSelection
+        });
+
+        // CRITICAL: Wait for CPI rates to load if they haven't loaded yet
+        if (!this.cpiRates || !this.cpiRates.countryRegions || Object.keys(this.cpiRates.countryRegions).length === 0) {
+            console.log('[BrandsManager] CPI rates not loaded yet, waiting...');
+
+            // Show loading state
+            const container = document.getElementById('dynamic-regions-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="loading-regions">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Loading regions...
+                    </div>
+                `;
+            }
+
+            // Wait up to 5 seconds for cpiRates to load
+            let attempts = 0;
+            while ((!this.cpiRates || !this.cpiRates.countryRegions || Object.keys(this.cpiRates.countryRegions).length === 0) && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+
+            if (!this.cpiRates || !this.cpiRates.countryRegions || Object.keys(this.cpiRates.countryRegions).length === 0) {
+                console.error('[BrandsManager] CPI rates failed to load after 5 seconds');
+                if (noLocationMessage) noLocationMessage.style.display = 'block';
+                return;
+            }
+
+            console.log('[BrandsManager] CPI rates loaded successfully after', attempts * 100, 'ms');
+        }
+
+        try {
+            // Fetch user profile to get country code
+            const token = localStorage.getItem('token');
+            console.log('[BrandsManager] Fetching user profile...');
+
+            const response = await fetch(`${BRANDS_API_URL}/api/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch user profile');
+
+            const userData = await response.json();
+            let countryCode = userData.country_code;
+
+            // FALLBACK: If country_code is not set, try to extract it from location string
+            if (!countryCode && userData.location) {
+                countryCode = this.extractCountryCodeFromLocation(userData.location);
+                console.log('[BrandsManager] Country code not set in DB, extracted from location:', countryCode);
+            }
+
+            console.log('[BrandsManager] User data:', {
+                countryCode,
+                location: userData.location,
+                hasCpiRates: !!this.cpiRates,
+                hasCountryRegions: !!this.cpiRates?.countryRegions,
+                hasThisCountry: !!this.cpiRates?.countryRegions?.[countryCode]
+            });
+
+            // Store for later use
+            this.userCountryCode = countryCode;
+            this.userLocation = userData.location;
+
+            if (countryCode && this.cpiRates?.countryRegions?.[countryCode]) {
+                // User has country code - show it and load regions
+                const countryName = this.cpiRates.countryRegions[countryCode].name;
+
+                console.log('[BrandsManager] Found country:', countryName, 'with', this.cpiRates.countryRegions[countryCode].regions?.length, 'regions');
+
+                if (countryText) countryText.textContent = countryName;
+                if (countryDisplay) countryDisplay.style.display = 'block';
+                if (noLocationMessage) noLocationMessage.style.display = 'none';
+                if (regionalSelection) regionalSelection.parentElement.style.display = 'block';
+
+                // Load regions for user's country
+                this.renderRegionsForUserCountry(countryCode);
+            } else {
+                console.log('[BrandsManager] No country code or no regions configured');
+                // No country code - show message to detect location first
+                if (countryDisplay) countryDisplay.style.display = 'none';
+                if (noLocationMessage) noLocationMessage.style.display = 'block';
+                if (regionalSelection) regionalSelection.parentElement.style.display = 'none';
+            }
+
+        } catch (error) {
+            console.error('[BrandsManager] Error loading user location for regional:', error);
+            // Show message to detect location first
+            if (countryDisplay) countryDisplay.style.display = 'none';
+            if (noLocationMessage) noLocationMessage.style.display = 'block';
+            if (regionalSelection) regionalSelection.parentElement.style.display = 'none';
+        }
+    },
+
+    // Render regions dynamically based on user's country
+    renderRegionsForUserCountry(countryCode) {
+        console.log('[BrandsManager] renderRegionsForUserCountry() called with:', countryCode);
+
+        const container = document.getElementById('dynamic-regions-container');
+        console.log('[BrandsManager] Container found:', !!container);
+
+        if (!container) {
+            console.error('[BrandsManager] dynamic-regions-container not found!');
+            return;
+        }
+
+        // Use provided country code or fallback to user's country
+        const targetCountryCode = countryCode || this.userCountryCode || 'ET';
+        console.log('[BrandsManager] Target country code:', targetCountryCode);
 
         // Get country configuration from cpiRates
-        const countryData = this.cpiRates?.countryRegions?.[countryCode];
+        const countryData = this.cpiRates?.countryRegions?.[targetCountryCode];
+        console.log('[BrandsManager] Country data:', countryData);
 
         if (!countryData || !countryData.regions) {
+            console.warn('[BrandsManager] No regions configured for', targetCountryCode);
             container.innerHTML = `
-                <div class="col-span-2 text-center py-2 text-gray-500">
-                    <i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 1rem; color: var(--text-muted);">
+                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 0.5rem;"></i>
                     No regions configured for this country
                 </div>
             `;
@@ -2213,7 +2796,7 @@ const BrandsManager = {
         });
 
         container.innerHTML = html;
-        console.log(`Rendered ${countryData.regions.length} regions for ${countryCode}`);
+        console.log(`[BrandsManager] SUCCESS: Rendered ${countryData.regions.length} regions for ${targetCountryCode} (${countryData.name})`);
     },
 
     // Toggle all region checkboxes (dynamic version)
@@ -2369,7 +2952,7 @@ const BrandsManager = {
             const location = document.getElementById('campaign-location-input')?.value || 'global';
 
             // Get selected placements
-            const placements = ['placeholder', 'widget', 'popup', 'insession'];
+            const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
             const selectedPlacements = placements.filter(pl => {
                 const checkbox = document.getElementById(`placement-${pl}`);
                 return checkbox && checkbox.checked;
@@ -2379,6 +2962,20 @@ const BrandsManager = {
             // We need to calculate the budget change
             const newBudgetInput = parseFloat(document.getElementById('campaign-budget-input').value) || 0;
 
+            // For national targeting, get user's location and country code
+            let nationalLocation = null;
+            let nationalCountryCode = null;
+            if (location === 'national') {
+                nationalLocation = this.userLocation || null;
+                nationalCountryCode = this.userCountryCode || null;
+            }
+
+            // For regional targeting, use user's country code
+            let regionalCountryCode = null;
+            if (location === 'regional') {
+                regionalCountryCode = this.userCountryCode || null;
+            }
+
             const updateData = {
                 name: document.getElementById('campaign-name-input').value.trim(),
                 description: document.getElementById('campaign-description-input').value.trim(),
@@ -2387,6 +2984,9 @@ const BrandsManager = {
                 target_placements: selectedPlacements,
                 target_location: location,
                 target_regions: location === 'regional' ? selectedRegions : [],
+                national_location: nationalLocation,
+                national_country_code: nationalCountryCode,
+                regional_country_code: regionalCountryCode,
                 start_date: document.getElementById('campaign-start-date-input').value,
                 // Only update budget if it's different from current remaining_balance
                 campaign_budget: newBudgetInput
@@ -2488,15 +3088,13 @@ const BrandsManager = {
 
         // Placement premium (exclusion logic)
         let placementPremium = 0;
-        const placeholderCheck = document.getElementById('placement-placeholder');
-        const widgetCheck = document.getElementById('placement-widget');
-        const popupCheck = document.getElementById('placement-popup');
-        const insessionCheck = document.getElementById('placement-insession');
+        const leaderboardCheck = document.getElementById('placement-leaderboard-banner');
+        const logoCheck = document.getElementById('placement-logo');
+        const inSessionSkyscrapperCheck = document.getElementById('placement-in-session-skyscrapper-banner');
 
-        if (placeholderCheck && !placeholderCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.placeholder || 0;
-        if (widgetCheck && !widgetCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.widget || 0;
-        if (popupCheck && !popupCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.popup || 0;
-        if (insessionCheck && !insessionCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.insession || 0;
+        if (leaderboardCheck && !leaderboardCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.['leaderboard-banner'] || 0;
+        if (logoCheck && !logoCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.logo || 0;
+        if (inSessionSkyscrapperCheck && !inSessionSkyscrapperCheck.checked) placementPremium += this.cpiRates?.placementPremiums?.['in-session-skyscrapper-banner'] || 0;
 
         const totalCpi = baseRate + audiencePremium + locationPremium + regionExclusionPremium + placementPremium;
 
@@ -2532,7 +3130,9 @@ const BrandsManager = {
         if (location === 'global') {
             return { type: 'Global', regions: [] };
         } else if (location === 'national') {
-            return { type: 'National (Ethiopia)', regions: [] };
+            // Use user's actual location for national targeting (country only)
+            const countryOnly = this.userLocation ? this.extractCountryFromLocation(this.userLocation) : 'Your Country';
+            return { type: `National (${countryOnly})`, regions: [] };
         } else if (location === 'regional') {
             // Get region names from checkboxes
             const regionNames = [];
@@ -2543,7 +3143,13 @@ const BrandsManager = {
                     if (label) regionNames.push(label.trim());
                 }
             });
-            return { type: 'Regional', regions: regionNames };
+
+            // Get country name for regional targeting
+            const countrySelector = document.getElementById('campaign-country');
+            const selectedCountry = countrySelector?.selectedOptions[0]?.textContent || '';
+            const regionType = selectedCountry ? `Regional (${selectedCountry})` : 'Regional';
+
+            return { type: regionType, regions: regionNames };
         }
         return { type: 'Global', regions: [] };
     },
@@ -2551,19 +3157,18 @@ const BrandsManager = {
     // Format placements for display
     formatPlacementsForDisplay() {
         const placementMap = {
-            'placeholder': 'Ad Placeholder',
-            'widget': 'Widget',
-            'popup': 'Pop-up',
-            'insession': 'In-Session'
+            'leaderboard-banner': 'Leaderboard Banner',
+            'logo': 'Logo',
+            'in-session-skyscrapper-banner': 'In-Session Skyscrapper Banner'
         };
 
-        const placements = ['placeholder', 'widget', 'popup', 'insession'];
+        const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
         const selected = placements.filter(pl => {
             const checkbox = document.getElementById(`placement-${pl}`);
             return checkbox && checkbox.checked;
         });
 
-        if (selected.length === 0 || selected.length === 4) {
+        if (selected.length === 0 || selected.length === 3) {
             return ['All Placements'];
         }
 
@@ -2590,11 +3195,25 @@ const BrandsManager = {
             const location = document.getElementById('campaign-location-input')?.value || 'global';
 
             // Get selected placements
-            const placements = ['placeholder', 'widget', 'popup', 'insession'];
+            const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
             const selectedPlacements = placements.filter(pl => {
                 const checkbox = document.getElementById(`placement-${pl}`);
                 return checkbox && checkbox.checked;
             });
+
+            // For national targeting, get user's location and country code
+            let nationalLocation = null;
+            let nationalCountryCode = null;
+            if (location === 'national') {
+                nationalLocation = this.userLocation || null;
+                nationalCountryCode = this.userCountryCode || null;
+            }
+
+            // For regional targeting, use user's country code
+            let regionalCountryCode = null;
+            if (location === 'regional') {
+                regionalCountryCode = this.userCountryCode || null;
+            }
 
             const campaignData = {
                 brand_id: this.currentBrand.id,
@@ -2607,6 +3226,9 @@ const BrandsManager = {
                 start_date: document.getElementById('campaign-start-date-input').value,
                 target_location: location,
                 target_regions: location === 'regional' ? selectedRegions : [],
+                national_location: nationalLocation,
+                national_country_code: nationalCountryCode,
+                regional_country_code: regionalCountryCode,
                 cpi_rate: confirmationData.total_cpi
             };
 
@@ -2623,24 +3245,37 @@ const BrandsManager = {
             if (response.ok) {
                 const result = await response.json();
 
-                // Backend returns payment link - redirect to Chapa
+                // Campaign created successfully
                 if (result.payment && result.payment.payment_url) {
-                    alert('Campaign created! Redirecting to payment gateway for 20% deposit...');
-
-                    // TODO: Replace placeholder with actual Chapa integration
-                    console.log('Payment URL:', result.payment.payment_url);
-                    console.log('Deposit amount:', result.payment.deposit_amount);
-
-                    // For now, just show success and reload
+                    // Hide create campaign form first
                     this.hideCreateCampaignForm();
-                    await this.loadBrandCampaigns(this.currentBrand.id);
 
-                    if (typeof showNotification === 'function') {
-                        showNotification(`Campaign created! Please complete ${result.payment.deposit_amount} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} deposit payment.`, 'success');
+                    // Show success notification with toast
+                    if (window.Utils && window.Utils.showToast) {
+                        window.Utils.showToast('✅ Campaign created successfully!', 'success');
                     }
 
-                    // In production, redirect to payment gateway:
-                    // window.location.href = result.payment.payment_url;
+                    // Show success in confirmation modal
+                    this.showConfirmationModal({
+                        title: 'Campaign Created Successfully!',
+                        message: `Your campaign "${result.campaign?.name || 'campaign'}" has been created and saved as a draft.`,
+                        details: `
+                            <ul>
+                                <li>Upload your images and videos in the campaign tabs</li>
+                                <li>Submit for verification when ready</li>
+                                <li>Payment will be required when you launch the campaign</li>
+                            </ul>
+                        `,
+                        confirmText: 'OK',
+                        type: 'success',
+                        icon: 'check-circle',
+                        showCancel: false,
+                        onConfirm: async () => {
+                            // Reload campaigns to show the new campaign
+                            await this.loadBrandCampaigns(this.currentBrand.id);
+                            this.closeConfirmationModal();
+                        }
+                    });
                 } else {
                     throw new Error('Payment link not received from server');
                 }
@@ -2720,40 +3355,121 @@ const BrandsManager = {
 
     // Pause current campaign
     pauseCurrentCampaign() {
+        // Delegate to the async pauseCampaign function
+        this.pauseCampaign();
+    },
+
+    // Submit campaign for verification
+    async submitForVerification() {
         if (!this.currentCampaign) return;
 
         const campaign = this.currentCampaign;
 
-        const confirmed = confirm(`Pause campaign "${campaign.name}"?\n\nYou can resume it at any time.`);
+        // Check if already submitted - show media modal instead of alert
+        if (campaign.submit_for_verification) {
+            this.showAlreadySubmittedModal(campaign);
+            return;
+        }
 
-        if (confirmed) {
-            // TODO: Implement actual API call to pause campaign
-            campaign.status = 'paused';
+        // Check if already verified
+        if (campaign.is_verified) {
+            alert('This campaign is already verified!');
+            return;
+        }
 
-            // Update header status
-            const headerStatus = document.getElementById('header-campaign-status');
-            if (headerStatus) {
-                headerStatus.innerHTML = `<i class="fas fa-circle" style="color: #f59e0b; font-size: 0.5rem;"></i> Paused`;
-                headerStatus.className = 'header-campaign-status paused';
+        // Show confirmation modal instead of browser confirm
+        this.showConfirmationModal({
+            title: `Submit "${campaign.name}" for Verification?`,
+            message: 'Once submitted, the campaign will be reviewed by our admin team.',
+            details: `
+                <ul>
+                    <li>Your campaign will be reviewed by our admin team</li>
+                    <li>You will not be able to edit it until the review is complete</li>
+                    <li>You will be notified once verification is complete</li>
+                </ul>
+            `,
+            confirmText: 'Submit for Verification',
+            cancelText: 'Cancel',
+            type: 'primary',
+            onConfirm: async () => {
+                await this.submitCampaignForVerification(campaign);
+            }
+        });
+    },
+
+    // Actual submission function (called after confirmation)
+    async submitCampaignForVerification(campaign) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Authentication required. Please log in again.');
+                return;
             }
 
-            // Update card in list
-            const card = document.querySelector(`.campaign-card-small[data-campaign-id="${campaign.id}"]`);
-            if (card) {
-                const statusBadge = card.querySelector('.campaign-card-small-status');
-                if (statusBadge) {
-                    statusBadge.className = 'campaign-card-small-status paused';
-                    statusBadge.textContent = 'Paused';
+            const response = await fetch(
+                `${API_BASE_URL}/api/advertiser/campaigns/${campaign.id}/submit-for-verification`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
+            );
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Update local campaign data
+                campaign.submit_for_verification = true;
+
+                // Update UI
+                this.updateFooterButtons();
+
+                // Update card in list
+                const card = document.querySelector(`.campaign-card-small[data-campaign-id="${campaign.id}"]`);
+                if (card) {
+                    const statusBadge = card.querySelector('.campaign-card-small-status');
+                    if (statusBadge) {
+                        statusBadge.className = 'campaign-card-small-status pending';
+                        statusBadge.textContent = 'Pending Verification';
+                    }
+                }
+
+                // Log activity
+                this.addCampaignActivity(
+                    'submit_verification',
+                    'Submitted for Verification',
+                    'Campaign submitted for admin review'
+                );
+
+                // Show success confirmation modal
+                this.showConfirmationModal({
+                    title: 'Campaign Submitted!',
+                    message: `Campaign "${campaign.name}" has been submitted for verification.`,
+                    details: `
+                        <ul>
+                            <li>Your campaign is now pending admin review</li>
+                            <li>You will be notified once verification is complete</li>
+                            <li>The campaign cannot be edited until the review is complete</li>
+                        </ul>
+                    `,
+                    confirmText: 'Got it',
+                    type: 'success',
+                    icon: 'check-circle',
+                    onConfirm: () => {
+                        // Just close the modal
+                        this.closeConfirmationModal();
+                    },
+                    // Hide cancel button for success notification
+                    showCancel: false
+                });
+            } else {
+                throw new Error(data.detail || 'Failed to submit campaign for verification');
             }
-
-            // Update footer buttons (hide Pause, show Resume)
-            this.updateFooterButtons();
-
-            // Log activity
-            this.addCampaignActivity('pause', 'Campaign Paused', 'Campaign was paused and is no longer running');
-
-            alert(`Campaign "${campaign.name}" has been paused.`);
+        } catch (error) {
+            console.error('[BrandsManager] Error submitting for verification:', error);
+            alert('Failed to submit campaign for verification. Please try again.');
         }
     },
 
@@ -2763,6 +3479,79 @@ const BrandsManager = {
 
         // Show the edit form with campaign data (campaign details stay visible)
         this.showEditCampaignForm(this.currentCampaign);
+    },
+
+    // Edit campaign by ID (from campaign card)
+    editCampaignById(campaignId) {
+        const campaign = this.campaigns.find(c => c.id === campaignId);
+        if (!campaign) {
+            console.error('[BrandsManager] Campaign not found:', campaignId);
+            return;
+        }
+
+        // Check if campaign is under verification
+        if (campaign.submit_for_verification) {
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('❌ Cannot edit campaign while under verification', 'error');
+            } else {
+                alert('Cannot edit campaign while under verification');
+            }
+            return;
+        }
+
+        // Set as current campaign
+        this.currentCampaign = campaign;
+
+        // Select the campaign first (to show details)
+        this.selectCampaign(campaignId);
+
+        // Then show edit form
+        setTimeout(() => {
+            this.showEditCampaignForm(campaign);
+        }, 100);
+    },
+
+    // Delete campaign
+    async deleteCampaign() {
+        if (!this.editingCampaignId) {
+            console.error('[BrandsManager] No campaign selected for deletion');
+            return;
+        }
+
+        const campaign = this.campaigns.find(c => c.id === this.editingCampaignId);
+        if (!campaign) {
+            console.error('[BrandsManager] Campaign not found:', this.editingCampaignId);
+            return;
+        }
+
+        // Confirm deletion
+        const confirmed = confirm(
+            `Are you sure you want to delete "${campaign.name}"?\n\n` +
+            `This action cannot be undone. All campaign data, media, and analytics will be permanently removed.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            // TODO: Implement actual API call to delete campaign
+            console.log('[BrandsManager] Deleting campaign:', this.editingCampaignId);
+
+            // Remove from campaigns array
+            this.campaigns = this.campaigns.filter(c => c.id !== this.editingCampaignId);
+
+            // Close form and go back to list
+            this.hideCreateCampaignForm();
+
+            // Re-render campaigns
+            this.renderCampaigns();
+
+            // Show success message
+            alert(`Campaign "${campaign.name}" has been deleted successfully.`);
+
+        } catch (error) {
+            console.error('[BrandsManager] Error deleting campaign:', error);
+            alert('Failed to delete campaign. Please try again.');
+        }
     },
 
     // Launch current campaign
@@ -2775,12 +3564,126 @@ const BrandsManager = {
             return;
         }
 
-        // Confirm launch
-        const confirmed = confirm(`Are you sure you want to launch "${this.currentCampaign.name}"?\n\nOnce launched, the campaign will start running and your budget will be spent.`);
+        // Open payment confirmation modal
+        this.openPaymentConfirmationModal();
+    },
 
-        if (confirmed) {
-            // TODO: Implement actual API call to launch campaign
+    // Open payment confirmation modal
+    openPaymentConfirmationModal() {
+        if (!this.currentCampaign) return;
+
+        const modal = document.getElementById('payment-confirmation-modal-overlay');
+        if (!modal) return;
+
+        // Populate campaign details
+        const campaignNameEl = document.getElementById('payment-campaign-name');
+        const brandNameEl = document.getElementById('payment-brand-name');
+        const startDateEl = document.getElementById('payment-start-date');
+
+        if (campaignNameEl) campaignNameEl.textContent = this.currentCampaign.name || '-';
+        if (brandNameEl) brandNameEl.textContent = this.currentBrand?.name || '-';
+        if (startDateEl) {
+            const startDate = this.currentCampaign.start_date
+                ? new Date(this.currentCampaign.start_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : '-';
+            startDateEl.textContent = startDate;
+        }
+
+        // Populate payment breakdown
+        const totalBudget = this.currentCampaign.campaign_budget || 0;
+        const advanceAmount = totalBudget * 0.2; // 20%
+        const remainingAmount = totalBudget * 0.8; // 80%
+
+        const totalBudgetEl = document.getElementById('payment-total-budget');
+        const advanceAmountEl = document.getElementById('payment-advance-amount');
+        const remainingAmountEl = document.getElementById('payment-remaining-amount');
+
+        if (totalBudgetEl) totalBudgetEl.textContent = `${totalBudget.toLocaleString()} ETB`;
+        if (advanceAmountEl) advanceAmountEl.textContent = `${advanceAmount.toLocaleString()} ETB`;
+        if (remainingAmountEl) remainingAmountEl.textContent = `${remainingAmount.toLocaleString()} ETB`;
+
+        // Check if payment method exists (placeholder for now)
+        // TODO: Fetch actual payment method from user profile
+        const hasPaymentMethod = true; // Placeholder
+        const paymentMethodDetails = document.getElementById('payment-method-details');
+        const paymentMethodEmpty = document.getElementById('payment-method-empty');
+
+        if (hasPaymentMethod) {
+            if (paymentMethodDetails) paymentMethodDetails.style.display = 'flex';
+            if (paymentMethodEmpty) paymentMethodEmpty.style.display = 'none';
+
+            // Populate payment method details (placeholder data)
+            const paymentMethodType = document.getElementById('payment-method-type');
+            const paymentMethodNumber = document.getElementById('payment-method-number');
+
+            if (paymentMethodType) paymentMethodType.textContent = 'Credit Card';
+            if (paymentMethodNumber) paymentMethodNumber.textContent = '**** **** **** 1234';
+        } else {
+            if (paymentMethodDetails) paymentMethodDetails.style.display = 'none';
+            if (paymentMethodEmpty) paymentMethodEmpty.style.display = 'flex';
+        }
+
+        // Show modal
+        modal.classList.add('active');
+    },
+
+    // Close payment confirmation modal
+    closePaymentConfirmationModal() {
+        const modal = document.getElementById('payment-confirmation-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    },
+
+    // Process payment and launch campaign
+    async processPaymentAndLaunch() {
+        if (!this.currentCampaign) return;
+
+        // Get campaign currency (default to ETB)
+        const currency = this.currentCampaign.currency || 'ETB';
+        const depositPercent = this.currentCampaign.deposit_percent || 20;
+        const advanceAmount = (this.currentCampaign.campaign_budget || 0) * (depositPercent / 100);
+
+        // Close payment modal
+        this.closePaymentConfirmationModal();
+
+        // Show processing message
+        alert(`Processing payment of ${advanceAmount.toLocaleString()} ${currency}...`);
+
+        try {
+            // Get auth token
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                throw new Error('Authentication token not found. Please log in again.');
+            }
+
+            // Call actual API to launch campaign
+            const response = await fetch(`${API_BASE_URL}/api/campaigns/${this.currentCampaign.id}/launch`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to launch campaign');
+            }
+
+            // Get actual payment info from response
+            const actualPayment = data.advance_payment || advanceAmount;
+            const actualCurrency = data.currency || currency;
+
+            // Update campaign status to active
             this.currentCampaign.status = 'active';
+            this.currentCampaign.verification_status = 'active';
 
             // Update modal header status
             const headerStatus = document.getElementById('header-campaign-status');
@@ -2803,17 +3706,41 @@ const BrandsManager = {
             this.updateFooterButtons();
 
             // Log activity
-            this.addCampaignActivity('launch', 'Campaign Launched', 'Campaign was launched and is now running');
+            const activityMessage = actualPayment > 0
+                ? `Campaign was launched and is now running. Advance payment of ${actualPayment.toLocaleString()} ${actualCurrency} processed.`
+                : `Campaign was launched and is now running.`;
+            this.addCampaignActivity('launch', 'Campaign Launched', activityMessage);
 
-            alert(`Campaign "${this.currentCampaign.name}" has been launched successfully!`);
+            // Show success message
+            const successMessage = actualPayment > 0
+                ? `Campaign "${this.currentCampaign.name}" has been launched successfully!\n\nAdvance payment of ${actualPayment.toLocaleString()} ${actualCurrency} has been charged.`
+                : `Campaign "${this.currentCampaign.name}" has been launched successfully!`;
+            alert(successMessage);
+
+        } catch (error) {
+            console.error('Error launching campaign:', error);
+            alert(`Failed to launch campaign: ${error.message}`);
         }
+    },
+
+    // Change payment method
+    changePaymentMethod() {
+        // TODO: Implement payment method change functionality
+        alert('Change payment method functionality will be implemented soon.');
+    },
+
+    // Add payment method
+    addPaymentMethod() {
+        // TODO: Implement add payment method functionality
+        alert('Add payment method functionality will be implemented soon.');
     },
 
     // Handle primary action button (Launch or Cancel based on status)
     handlePrimaryAction() {
         if (!this.currentCampaign) return;
 
-        const status = this.currentCampaign.status;
+        // Use campaign_status from database (preferred) or fallback to status (legacy)
+        const status = this.currentCampaign.campaign_status || this.currentCampaign.status;
 
         if (status === 'active' || status === 'running') {
             // Campaign is active - show cancellation modal
@@ -2834,72 +3761,213 @@ const BrandsManager = {
 
         const pauseBtn = document.getElementById('campaign-pause-btn');
         const primaryBtn = document.getElementById('campaign-primary-action-btn');
+        const submitVerificationBtn = document.getElementById('campaign-submit-verification-btn');
         const primaryIcon = document.getElementById('campaign-primary-action-icon');
         const primaryText = document.getElementById('campaign-primary-action-text');
 
-        const status = campaign.status;
+        // Use campaign_status from database (preferred) or fallback to status (legacy)
+        const status = campaign.campaign_status || campaign.status;
+        const isVerified = campaign.is_verified || campaign.verification_status === 'verified' || campaign.verification_status === 'approved';
+        const submitForVerification = campaign.submit_for_verification;
+
+        console.log('[BrandsManager] updateFooterButtons:', { status, isVerified, submitForVerification });
+
+        // Hide all buttons initially
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (primaryBtn) primaryBtn.style.display = 'none';
+        if (submitVerificationBtn) submitVerificationBtn.style.display = 'none';
 
         if (status === 'active' || status === 'running') {
             // Show Pause button, change primary to Cancel
             if (pauseBtn) pauseBtn.style.display = 'inline-flex';
             if (primaryIcon) primaryIcon.className = 'fas fa-ban';
             if (primaryText) primaryText.textContent = 'Cancel';
-            if (primaryBtn) primaryBtn.classList.add('danger');
+            if (primaryBtn) {
+                primaryBtn.classList.add('danger');
+                primaryBtn.style.display = 'inline-flex';
+            }
         } else if (status === 'paused') {
             // Hide Pause button, change primary to Resume
-            if (pauseBtn) pauseBtn.style.display = 'none';
             if (primaryIcon) primaryIcon.className = 'fas fa-play';
             if (primaryText) primaryText.textContent = 'Resume';
-            if (primaryBtn) primaryBtn.classList.remove('danger');
+            if (primaryBtn) {
+                primaryBtn.classList.remove('danger');
+                primaryBtn.style.display = 'inline-flex';
+            }
         } else if (status === 'cancelled') {
-            // Cancelled - Hide Pause, show Launch (to relaunch)
-            if (pauseBtn) pauseBtn.style.display = 'none';
-            if (primaryIcon) primaryIcon.className = 'fas fa-rocket';
-            if (primaryText) primaryText.textContent = 'Launch';
-            if (primaryBtn) primaryBtn.classList.remove('danger');
+            // Cancelled - show Launch (to relaunch) only if verified
+            if (isVerified) {
+                if (primaryIcon) primaryIcon.className = 'fas fa-rocket';
+                if (primaryText) primaryText.textContent = 'Launch';
+                if (primaryBtn) {
+                    primaryBtn.classList.remove('danger');
+                    primaryBtn.style.display = 'inline-flex';
+                }
+            } else if (submitForVerification) {
+                // Already submitted, waiting for verification - show disabled "Under Verification" button
+                if (submitVerificationBtn) {
+                    submitVerificationBtn.innerHTML = '<i class="fas fa-clock"></i> Under Verification';
+                    submitVerificationBtn.disabled = true;
+                    submitVerificationBtn.style.opacity = '0.6';
+                    submitVerificationBtn.style.cursor = 'not-allowed';
+                    submitVerificationBtn.style.display = 'inline-flex';
+                }
+            } else {
+                // Not submitted for verification yet
+                if (submitVerificationBtn) {
+                    submitVerificationBtn.disabled = false;
+                    submitVerificationBtn.style.opacity = '1';
+                    submitVerificationBtn.style.cursor = 'pointer';
+                    submitVerificationBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit for Verification';
+                    submitVerificationBtn.style.display = 'inline-flex';
+                }
+            }
         } else {
-            // Draft/pending - Hide Pause, show Launch
-            if (pauseBtn) pauseBtn.style.display = 'none';
-            if (primaryIcon) primaryIcon.className = 'fas fa-rocket';
-            if (primaryText) primaryText.textContent = 'Launch';
-            if (primaryBtn) primaryBtn.classList.remove('danger');
+            // Draft/pending - show appropriate button based on verification status
+            if (isVerified) {
+                // Verified - show Launch button
+                if (primaryIcon) primaryIcon.className = 'fas fa-rocket';
+                if (primaryText) primaryText.textContent = 'Launch';
+                if (primaryBtn) {
+                    primaryBtn.classList.remove('danger');
+                    primaryBtn.style.display = 'inline-flex';
+                }
+            } else if (submitForVerification) {
+                // Submitted for verification but not yet verified - show disabled "Under Verification" button
+                if (submitVerificationBtn) {
+                    submitVerificationBtn.innerHTML = '<i class="fas fa-clock"></i> Under Verification';
+                    submitVerificationBtn.disabled = true;
+                    submitVerificationBtn.style.opacity = '0.6';
+                    submitVerificationBtn.style.cursor = 'not-allowed';
+                    submitVerificationBtn.style.display = 'inline-flex';
+                }
+            } else {
+                // Not submitted for verification yet - show Submit for Verification button
+                if (submitVerificationBtn) {
+                    submitVerificationBtn.disabled = false;
+                    submitVerificationBtn.style.opacity = '1';
+                    submitVerificationBtn.style.cursor = 'pointer';
+                    submitVerificationBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit for Verification';
+                    submitVerificationBtn.style.display = 'inline-flex';
+                }
+            }
         }
     },
 
+    // Update upload buttons state based on campaign verification status
+    updateUploadButtonsState() {
+        const campaign = this.currentCampaign;
+        if (!campaign) return;
+
+        const isUnderVerification = campaign.submit_for_verification;
+
+        // Get all upload buttons in the Images and Videos tabs
+        const uploadButtons = document.querySelectorAll('.media-upload-btn');
+
+        uploadButtons.forEach(btn => {
+            if (isUnderVerification) {
+                // Disable upload buttons
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = 'Cannot upload while campaign is under verification';
+            } else {
+                // Enable upload buttons
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.title = '';
+            }
+        });
+
+        // Also disable/enable edit buttons on campaign cards
+        const editButtons = document.querySelectorAll('.campaign-card-edit-btn-bottom');
+        editButtons.forEach(btn => {
+            const cardId = btn.closest('.campaign-card-small')?.dataset.campaignId;
+            if (cardId && parseInt(cardId) === campaign.id) {
+                if (isUnderVerification) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.title = 'Cannot edit while campaign is under verification';
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.title = '';
+                }
+            }
+        });
+    },
+
     // Resume paused campaign
-    resumeCampaign() {
-        if (!this.currentCampaign) return;
+    async resumeCampaign() {
+        if (!this.currentCampaign) {
+            alert('No campaign selected');
+            return;
+        }
 
         const campaign = this.currentCampaign;
 
         const confirmed = confirm(`Resume campaign "${campaign.name}"?`);
-        if (confirmed) {
-            // TODO: Implement actual API call to resume campaign
-            campaign.status = 'active';
+        if (!confirmed) return;
 
-            // Update header status
-            const headerStatus = document.getElementById('header-campaign-status');
-            if (headerStatus) {
-                headerStatus.innerHTML = `<i class="fas fa-circle" style="color: #10b981; font-size: 0.5rem;"></i> Active`;
-                headerStatus.className = 'header-campaign-status active';
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Not authenticated');
+                return;
             }
 
-            // Update card in list
-            const card = document.querySelector(`.campaign-card-small[data-campaign-id="${campaign.id}"]`);
-            if (card) {
-                const statusBadge = card.querySelector('.campaign-card-small-status');
-                if (statusBadge) {
-                    statusBadge.className = 'campaign-card-small-status active';
-                    statusBadge.textContent = 'Active';
+            const response = await fetch(`${API_BASE_URL}/api/campaigns/${campaign.id}/resume`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Update local campaign status
+                campaign.campaign_status = 'active';
+                campaign.pause_reason = null;
+
+                // Update header status
+                const headerStatus = document.getElementById('header-campaign-status');
+                if (headerStatus) {
+                    headerStatus.innerHTML = `<i class="fas fa-circle" style="color: #10b981; font-size: 0.5rem;"></i> Active`;
+                    headerStatus.className = 'header-campaign-status active';
+                }
+
+                // Update card in list
+                const card = document.querySelector(`.campaign-card-small[data-campaign-id="${campaign.id}"]`);
+                if (card) {
+                    const statusBadge = card.querySelector('.campaign-card-small-status');
+                    if (statusBadge) {
+                        statusBadge.className = 'campaign-card-small-status active';
+                        statusBadge.textContent = 'Active';
+                    }
+                }
+
+                this.updateFooterButtons();
+
+                // Log activity
+                this.addCampaignActivity('resume', 'Campaign Resumed', 'Campaign was resumed and is now running');
+
+                // Refresh all ads globally to include resumed campaign
+                if (window.adRotationManager) {
+                    window.adRotationManager.destroy();
+                    window.adRotationManager.init();
+                }
+
+                alert(`Campaign "${campaign.name}" has been resumed!`);
+            } else {
+                alert(data.detail || 'Failed to resume campaign');
             }
-
-            this.updateFooterButtons();
-
-            // Log activity
-            this.addCampaignActivity('resume', 'Campaign Resumed', 'Campaign was resumed and is now running');
-
-            alert(`Campaign "${campaign.name}" has been resumed!`);
+        } catch (error) {
+            console.error('Error resuming campaign:', error);
+            alert('Error resuming campaign. Please try again.');
         }
     },
 
@@ -2964,51 +4032,11 @@ const BrandsManager = {
 
     // Confirm campaign cancellation
     confirmCancelCampaign() {
-        const campaign = this.currentCampaign;
-        if (!campaign) return;
+        // Close the modal first
+        this.closeCancellationModal();
 
-        const totalBudget = campaign.total_budget || campaign.budget || 0;
-        const amountUsed = campaign.amount_used || 0;
-        const remaining = totalBudget - amountUsed;
-        const feePercentage = 5;
-        const refund = remaining * (1 - feePercentage / 100);
-
-        const confirmed = confirm(
-            `Are you sure you want to cancel "${campaign.name}"?\n\n` +
-            `You will receive ${this.formatCurrency(refund)} as a refund.\n\n` +
-            `This action cannot be undone.`
-        );
-
-        if (confirmed) {
-            // TODO: Implement actual API call to cancel campaign
-            campaign.status = 'cancelled';
-            this.closeCancellationModal();
-
-            // Update UI
-            const headerStatus = document.getElementById('header-campaign-status');
-            if (headerStatus) {
-                headerStatus.innerHTML = `<i class="fas fa-circle" style="color: #ef4444; font-size: 0.5rem;"></i> Cancelled`;
-                headerStatus.className = 'header-campaign-status cancelled';
-            }
-
-            // Update card in list
-            const card = document.querySelector(`.campaign-card-small[data-campaign-id="${campaign.id}"]`);
-            if (card) {
-                const statusBadge = card.querySelector('.campaign-card-small-status');
-                if (statusBadge) {
-                    statusBadge.className = 'campaign-card-small-status cancelled';
-                    statusBadge.textContent = 'Cancelled';
-                }
-            }
-
-            // Update footer buttons (Cancel → Launch, hide Pause)
-            this.updateFooterButtons();
-
-            // Log activity
-            this.addCampaignActivity('cancel', 'Campaign Cancelled', `Campaign was cancelled. Refund of ${this.formatCurrency(refund)} will be processed.`);
-
-            alert(`Campaign "${campaign.name}" has been cancelled.\n\nRefund of ${this.formatCurrency(refund)} will be processed.`);
-        }
+        // Delegate to the real cancelCampaign function which handles API call
+        this.cancelCampaign();
     },
 
     // Format currency
@@ -3249,6 +4277,29 @@ const BrandsManager = {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     },
 
+    // Adjust color brightness (negative = darker, positive = lighter)
+    adjustColorBrightness(hex, percent) {
+        // Remove # if present
+        hex = hex.replace('#', '');
+
+        // Convert to RGB
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+
+        // Adjust brightness
+        r = Math.max(0, Math.min(255, r + (r * percent / 100)));
+        g = Math.max(0, Math.min(255, g + (g * percent / 100)));
+        b = Math.max(0, Math.min(255, b + (b * percent / 100)));
+
+        // Convert back to hex
+        const rr = Math.round(r).toString(16).padStart(2, '0');
+        const gg = Math.round(g).toString(16).padStart(2, '0');
+        const bb = Math.round(b).toString(16).padStart(2, '0');
+
+        return `#${rr}${gg}${bb}`;
+    },
+
     // ============================================
     // MEDIA UPLOAD FUNCTIONS (Images & Videos)
     // ============================================
@@ -3359,7 +4410,58 @@ const BrandsManager = {
         event.target.value = '';
     },
 
-    // Remove media item
+    // Delete media item from database and Backblaze
+    async deleteMediaItem(mediaId, btn) {
+        if (!confirm('Are you sure you want to delete this media file?')) {
+            return;
+        }
+
+        try {
+            console.log(`Deleting media ${mediaId}...`);
+
+            // Determine media type from the parent gallery
+            const mediaItem = btn.closest('.media-item');
+            const gallery = mediaItem?.closest('.media-gallery');
+            const isImages = gallery?.id === 'campaign-images-gallery';
+            const mediaType = isImages ? 'image' : 'video';
+
+            // Call API to delete from database and Backblaze
+            await AdvertiserProfileAPI.deleteCampaignMedia(mediaId);
+
+            // Remove from UI
+            if (mediaItem) {
+                mediaItem.remove();
+
+                // Check if gallery is empty and show empty state
+                if (gallery && gallery.children.length === 0) {
+                    gallery.innerHTML = `
+                        <div class="media-empty-state">
+                            <i class="fas fa-${isImages ? 'images' : 'video'}"></i>
+                            <p>No ${isImages ? 'images' : 'videos'} uploaded yet</p>
+                        </div>
+                    `;
+                }
+            }
+
+            console.log('✅ Media deleted successfully');
+
+            // Show success toast notification
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`✅ ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} deleted successfully!`, 'success');
+            }
+
+        } catch (error) {
+            console.error('Error deleting media:', error);
+            // Show error toast notification
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`❌ Failed to delete media: ${error.message}`, 'error');
+            } else {
+                alert('Failed to delete media: ' + error.message);
+            }
+        }
+    },
+
+    // Remove media item (for newly uploaded items not yet saved)
     removeMediaItem(btn) {
         const mediaItem = btn.closest('.media-item');
         if (mediaItem) {
@@ -3379,7 +4481,7 @@ const BrandsManager = {
         }
     },
 
-    // Preview media in modal (placeholder)
+    // Preview media in modal (leaderboard-banner)
     previewMedia(src, type) {
         // TODO: Implement full-screen preview modal
         if (type === 'video') {
@@ -3503,7 +4605,7 @@ const BrandsManager = {
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/campaign/pause/${this.currentCampaign.id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/campaigns/${this.currentCampaign.id}/pause`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -3515,11 +4617,21 @@ const BrandsManager = {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                alert(`Campaign paused successfully!\n\nNo fee charged. Your budget (${data.finances.remaining_balance.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}) remains locked.\n\nYou can resume this campaign anytime or cancel to get a refund (minus cancellation fee).`);
+                // Update local campaign status
+                this.currentCampaign.campaign_status = 'paused';
+                this.currentCampaign.pause_reason = reason;
+
+                alert(`Campaign paused successfully!`);
+
+                // Refresh all ads globally to remove paused campaign
+                if (window.adRotationManager) {
+                    window.adRotationManager.destroy();
+                    window.adRotationManager.init();
+                }
 
                 // Refresh campaign list
                 this.loadBrands();
-                this.hideCampaignModal();
+                this.closeCampaignModal();
             } else {
                 alert(data.detail || 'Failed to pause campaign');
             }
@@ -3607,9 +4719,15 @@ const BrandsManager = {
 
                 alert(successMsg);
 
+                // Refresh all ads globally to remove cancelled campaign
+                if (window.adRotationManager) {
+                    window.adRotationManager.destroy();
+                    window.adRotationManager.init();
+                }
+
                 // Refresh campaign list
                 this.loadBrands();
-                this.hideCampaignModal();
+                this.closeCampaignModal();
             } else {
                 alert(cancelData.detail || 'Failed to cancel campaign');
             }
@@ -3634,6 +4752,16 @@ const BrandsManager = {
 
     // Open media upload modal
     openMediaUploadModal(type = 'image') {
+        // Check if campaign is under verification
+        if (this.currentCampaign && this.currentCampaign.submit_for_verification) {
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('❌ Cannot upload media while campaign is under verification', 'error');
+            } else {
+                alert('Cannot upload media while campaign is under verification');
+            }
+            return;
+        }
+
         this.mediaUploadState.type = type;
         this.mediaUploadState.files = [];
 
@@ -3702,55 +4830,35 @@ const BrandsManager = {
 
         console.log('📤 Upload modal placements from campaign:', placements);
 
-        // Placement options
+        // Placement options - using radio buttons since each upload targets ONE placement
         const placementContainer = document.getElementById('upload-placement-options');
-        const placementAllCheckbox = document.getElementById('upload-placement-all')?.closest('.targeting-checkbox-item.master');
         if (placementContainer) {
             const placementConfig = {
-                placeholder: { icon: 'fa-rectangle-ad', label: 'Ad Placeholder', hint: 'Banner ads (1200x628)' },
-                widget: { icon: 'fa-window-maximize', label: 'Ad Widget', hint: 'Sidebar widget (300x250)' },
-                popup: { icon: 'fa-window-restore', label: 'WB Pop-up', hint: 'Whiteboard popup (600x400)' },
-                insession: { icon: 'fa-chalkboard', label: 'WB In-Session', hint: 'During sessions (800x600)' }
+                'leaderboard-banner': { icon: 'fa-rectangle-ad', label: 'Leaderboard Banner', hint: 'Banner ads (1200x628)' },
+                'logo': { icon: 'fa-window-maximize', label: 'Logo', hint: 'Sidebar logo (300x250)' },
+                'in-session-skyscrapper-banner': { icon: 'fa-window-restore', label: 'In-Session Skyscrapper Banner', hint: 'Whiteboard skyscrapper banner (600x400)' }
             };
 
-            placementContainer.innerHTML = placements.map(pl => `
-                <div class="targeting-checkbox-item">
-                    <label class="targeting-checkbox-label">
-                        <input type="checkbox" id="upload-placement-${pl}" checked onchange="BrandsManager.updateUploadPlacementSelection()">
-                        <span class="targeting-checkbox-custom"></span>
-                        <span class="targeting-checkbox-text">
+            placementContainer.innerHTML = placements.map((pl, index) => `
+                <div class="targeting-radio-item">
+                    <label class="targeting-radio-label">
+                        <input type="radio" name="upload-placement" id="upload-placement-${pl}" value="${pl}" ${index === 0 ? 'checked' : ''} onchange="BrandsManager.updateUploadPlacementSelection()">
+                        <span class="targeting-radio-content">
                             <i class="fas ${placementConfig[pl]?.icon || 'fa-ad'}"></i>
-                            ${placementConfig[pl]?.label || pl}
+                            <span class="placement-label">${placementConfig[pl]?.label || pl}</span>
                             <small class="placement-hint">${placementConfig[pl]?.hint || ''}</small>
                         </span>
                     </label>
                 </div>
             `).join('');
-
-            // Hide "All Placements" checkbox if only one placement
-            if (placementAllCheckbox) {
-                placementAllCheckbox.style.display = placements.length > 1 ? '' : 'none';
-            }
         }
 
         // Also populate media filter dropdowns
         this.populateMediaFilters();
     },
 
-    // Toggle all upload placements
-    toggleAllUploadPlacements(checked) {
-        document.querySelectorAll('#upload-placement-options input[type="checkbox"]').forEach(cb => {
-            cb.checked = checked;
-        });
-        this.updateUploadSummary();
-    },
-
-    // Update placement selection state
+    // Update placement selection state (now using radio buttons)
     updateUploadPlacementSelection() {
-        const checkboxes = document.querySelectorAll('#upload-placement-options input[type="checkbox"]');
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        const masterCheckbox = document.getElementById('upload-placement-all');
-        if (masterCheckbox) masterCheckbox.checked = allChecked;
         this.updateUploadSummary();
     },
 
@@ -3895,37 +5003,35 @@ const BrandsManager = {
 
     // Update upload summary
     updateUploadSummary() {
-        // Get total and selected counts for each category
-        // Only placement summary needed - audience/location are set at campaign level
-        const placementTotal = document.querySelectorAll('#upload-placement-options input[type="checkbox"]').length;
-        const placementChecked = document.querySelectorAll('#upload-placement-options input[type="checkbox"]:checked');
-        const placements = Array.from(placementChecked).map(cb => {
+        // Get selected placement (now using radio button)
+        const selectedRadio = document.querySelector('#upload-placement-options input[type="radio"]:checked');
+
+        let placementText = 'None selected';
+        if (selectedRadio) {
             // Get label text without the hint
-            const labelSpan = cb.closest('.targeting-checkbox-label').querySelector('.targeting-checkbox-text');
-            if (!labelSpan) return '';
-            // Clone to avoid modifying the original, then remove the hint
-            const clone = labelSpan.cloneNode(true);
-            const hint = clone.querySelector('.placement-hint');
-            if (hint) hint.remove();
-            return clone.textContent.trim();
-        });
+            const placementLabelSpan = selectedRadio.closest('.targeting-radio-label').querySelector('.placement-label');
+            if (placementLabelSpan) {
+                placementText = placementLabelSpan.textContent.trim();
+            }
+        }
 
         // Update summary display
         const summaryPlacement = document.getElementById('summary-placement');
         const summaryFiles = document.getElementById('summary-files');
 
         if (summaryPlacement) {
-            const allSelected = placementChecked.length === placementTotal && placementTotal > 0;
-            if (allSelected && placementTotal > 1) {
-                summaryPlacement.textContent = 'All Placements';
-            } else {
-                summaryPlacement.textContent = placements.join(', ') || 'None selected';
-            }
+            summaryPlacement.textContent = placementText;
         }
 
         if (summaryFiles) {
             const fileCount = this.mediaUploadState.files.length;
             summaryFiles.textContent = fileCount === 0 ? '0 files ready' : `${fileCount} file${fileCount > 1 ? 's' : ''} ready`;
+        }
+
+        // Enable/disable upload button based on whether placement and files are selected
+        const submitBtn = document.getElementById('media-upload-submit-btn');
+        if (submitBtn) {
+            submitBtn.disabled = !selectedRadio || this.mediaUploadState.files.length === 0;
         }
     },
 
@@ -3943,14 +5049,16 @@ const BrandsManager = {
             return;
         }
 
-        // Get selected placements (audience/location come from campaign)
-        const placementCheckboxes = document.querySelectorAll('#upload-placement-options input[type="checkbox"]:checked');
-        const selectedPlacements = Array.from(placementCheckboxes).map(cb => cb.id.replace('upload-placement-', ''));
+        // Get selected placement (now using radio button - single selection)
+        const selectedRadio = document.querySelector('#upload-placement-options input[type="radio"]:checked');
 
-        if (selectedPlacements.length === 0) {
-            alert('Please select at least one ad placement.');
+        if (!selectedRadio) {
+            alert('Please select an ad placement.');
             return;
         }
+
+        const selectedPlacement = selectedRadio.value;
+        const selectedPlacements = [selectedPlacement]; // Keep as array for compatibility with existing code
 
         const submitBtn = document.getElementById('media-upload-submit-btn');
         const uploadBtnText = document.getElementById('upload-btn-text');
@@ -3980,25 +5088,34 @@ const BrandsManager = {
                     // Get brand and campaign names for folder organization
                     const brandName = this.currentBrand?.name || 'Unknown_Brand';
                     const campaignName = campaign.name || 'Unknown_Campaign';
-                    // Combine selected placements for folder name (e.g., "Feed_Stories_Reels")
-                    const adPlacement = selectedPlacements.join('_') || 'General';
+                    // Get selected placement for folder name (e.g., "leaderboard-banner", "logo")
+                    const adPlacement = selectedPlacement || 'General';
 
                     console.log(`📤 Uploading file ${i + 1}/${files.length}: ${file.name} to ${brandName}/${campaignName}/${adPlacement}/`);
 
-                    // Upload to Backblaze via API with folder organization
-                    const response = await AdvertiserProfileAPI.uploadCampaignMedia(file, brandName, campaignName, adPlacement);
+                    // Upload to Backblaze via API with folder organization and save to database
+                    const response = await AdvertiserProfileAPI.uploadCampaignMedia(
+                        file,
+                        brandName,
+                        campaignName,
+                        adPlacement,
+                        campaign.id,  // campaign_id
+                        this.currentBrand?.id  // brand_id
+                    );
 
                     if (response && response.url) {
                         console.log(`✅ Upload successful: ${file.name}`, response);
 
                         // Store uploaded media info with campaign context
                         const mediaItem = {
-                            id: Date.now() + i,
+                            id: response.media_id || Date.now() + i,
                             url: response.url,
                             file_name: response.file_name || file.name,
                             file_type: response.file_type || this.mediaUploadState.type,
                             placements: selectedPlacements,
                             campaign_id: campaign.id,
+                            placement: response.placement || adPlacement,
+                            file_size: response.file_size,
                             uploaded_at: new Date().toISOString()
                         };
 
@@ -4026,27 +5143,23 @@ const BrandsManager = {
                 const mediaType = this.mediaUploadState.type;
                 const activityType = mediaType === 'image' ? 'upload_image' : 'upload_video';
                 const mediaLabel = mediaType === 'image' ? 'image' : 'video';
-                const placementLabels = selectedPlacements.map(p => {
-                    const labels = { placeholder: 'Placeholder', widget: 'Widget', popup: 'Pop-up', insession: 'In-Session' };
-                    return labels[p] || p;
-                }).join(', ');
+                const placementLabels = {
+                    'leaderboard-banner': 'Leaderboard Banner',
+                    'logo': 'Logo',
+                    'in-session-skyscrapper-banner': 'In-Session Skyscrapper Banner'
+                };
+                const placementLabel = placementLabels[selectedPlacement] || selectedPlacement;
 
                 // Log activity
                 this.addCampaignActivity(
                     activityType,
                     `${successCount} ${mediaLabel}${successCount > 1 ? 's' : ''} Uploaded`,
-                    `Uploaded to ${placementLabels} placement${selectedPlacements.length > 1 ? 's' : ''}`
+                    `Uploaded to ${placementLabel} placement`
                 );
 
-                // Show result message
-                let message = `Successfully uploaded ${successCount} file(s) to Backblaze!`;
-                if (failCount > 0) {
-                    message += `\n${failCount} file(s) failed to upload.`;
-                }
-
+                // Show success panel instead of alert
                 setTimeout(() => {
-                    alert(message);
-                    this.closeMediaUploadModal();
+                    this.showUploadSuccessPanel(successCount, failCount, selectedPlacement, mediaType);
 
                     // Add uploaded media to the gallery
                     this.addUploadedMediaToGallery(uploadedMedia, mediaType);
@@ -4068,6 +5181,156 @@ const BrandsManager = {
                 }, 1000);
             }
         }
+    },
+
+    // Load campaign media from backend
+    async loadCampaignMediaFromBackend(campaignId) {
+        try {
+            console.log(`🔄 Loading media for campaign ${campaignId}...`);
+
+            // Fetch all media for this campaign
+            const response = await AdvertiserProfileAPI.getCampaignMedia(campaignId);
+
+            if (!response || !response.media) {
+                console.log('No media found for this campaign');
+                return;
+            }
+
+            console.log(`✅ Loaded ${response.total} media items`);
+
+            // Separate images and videos
+            const images = response.media.filter(m => m.media_type === 'image');
+            const videos = response.media.filter(m => m.media_type === 'video');
+
+            // Render images
+            this.renderMediaGallery(images, 'images');
+
+            // Render videos
+            this.renderMediaGallery(videos, 'videos');
+
+        } catch (error) {
+            console.error('Error loading campaign media:', error);
+            // Don't show error to user - just log it
+        }
+    },
+
+    // Render media gallery (images or videos)
+    renderMediaGallery(mediaItems, galleryType) {
+        const galleryId = galleryType === 'images' ? 'campaign-images-gallery' : 'campaign-videos-gallery';
+        const gallery = document.getElementById(galleryId);
+
+        if (!gallery) {
+            console.warn('Gallery not found:', galleryId);
+            return;
+        }
+
+        // Clear existing content
+        gallery.innerHTML = '';
+
+        if (mediaItems.length === 0) {
+            // Show empty state
+            const mediaType = galleryType === 'images' ? 'image' : 'video';
+            gallery.innerHTML = `
+                <div class="media-empty-state">
+                    <i class="fas fa-${galleryType === 'images' ? 'images' : 'video'}"></i>
+                    <p>No ${galleryType} uploaded yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Render each media item
+        mediaItems.forEach(media => {
+            const mediaItem = document.createElement('div');
+            mediaItem.className = 'media-item';
+            mediaItem.dataset.mediaId = media.id;
+            mediaItem.dataset.placements = JSON.stringify([media.placement] || []);
+
+            // Get stats (default to 0 if not available)
+            const impressions = media.impressions || 0;
+            const clicks = media.clicks || 0;
+            const conversions = media.conversions || 0;
+
+            if (galleryType === 'images') {
+                mediaItem.innerHTML = `
+                    <div class="media-item-content">
+                        <img src="${media.file_url}" alt="${media.file_name}">
+                        <div class="media-item-overlay">
+                            <button class="media-item-btn" onclick="BrandsManager.previewMedia('${media.file_url}', 'image')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="media-item-stats">
+                        <div class="media-stats-info">
+                            <div class="media-stat" title="Impressions">
+                                <i class="fas fa-eye"></i>
+                                <span class="media-stat-value">${impressions.toLocaleString()}</span>
+                            </div>
+                            <div class="media-stat" title="Clicks">
+                                <i class="fas fa-mouse-pointer"></i>
+                                <span class="media-stat-value">${clicks.toLocaleString()}</span>
+                            </div>
+                            <div class="media-stat" title="Conversions">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="media-stat-value">${conversions.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="media-item-actions">
+                            <button class="media-action-btn" onclick="BrandsManager.previewMedia('${media.file_url}', 'image')" title="Preview">
+                                <i class="fas fa-eye"></i>
+                                <span>Preview</span>
+                            </button>
+                            <button class="media-action-btn delete" onclick="BrandsManager.deleteMediaItem(${media.id}, this)" title="Delete">
+                                <i class="fas fa-trash"></i>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                mediaItem.innerHTML = `
+                    <div class="media-item-content">
+                        <video src="${media.file_url}" muted></video>
+                        <div class="media-item-overlay">
+                            <button class="media-item-btn" onclick="BrandsManager.previewMedia('${media.file_url}', 'video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="media-item-stats">
+                        <div class="media-stats-info">
+                            <div class="media-stat" title="Impressions">
+                                <i class="fas fa-eye"></i>
+                                <span class="media-stat-value">${impressions.toLocaleString()}</span>
+                            </div>
+                            <div class="media-stat" title="Clicks">
+                                <i class="fas fa-mouse-pointer"></i>
+                                <span class="media-stat-value">${clicks.toLocaleString()}</span>
+                            </div>
+                            <div class="media-stat" title="Conversions">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="media-stat-value">${conversions.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="media-item-actions">
+                            <button class="media-action-btn" onclick="BrandsManager.previewMedia('${media.file_url}', 'video')" title="Preview">
+                                <i class="fas fa-play"></i>
+                                <span>Preview</span>
+                            </button>
+                            <button class="media-action-btn delete" onclick="BrandsManager.deleteMediaItem(${media.id}, this)" title="Delete">
+                                <i class="fas fa-trash"></i>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            gallery.appendChild(mediaItem);
+        });
+
+        console.log(`✅ Rendered ${mediaItems.length} ${galleryType} in gallery`);
     },
 
     // Add uploaded media to the gallery
@@ -4120,6 +5383,9 @@ const BrandsManager = {
         });
 
         console.log(`✅ Added ${uploadedMedia.length} ${mediaType}(s) to gallery`);
+
+        // Apply current filter to show/hide items based on selected placement
+        this.filterCampaignMedia(mediaType === 'image' ? 'images' : 'videos');
     },
 
     // ============================================
@@ -4137,10 +5403,9 @@ const BrandsManager = {
         console.log('🔍 Media filter placements from campaign:', placements);
 
         const placementConfig = {
-            placeholder: { label: 'Placeholder', icon: 'fas fa-square' },
-            widget: { label: 'Widget', icon: 'fas fa-puzzle-piece' },
-            popup: { label: 'Pop-up', icon: 'fas fa-window-restore' },
-            insession: { label: 'In-Session', icon: 'fas fa-chalkboard' }
+            'leaderboard-banner': { label: 'Leaderboard Banner', icon: 'fas fa-square' },
+            'logo': { label: 'Logo', icon: 'fas fa-puzzle-piece' },
+            'in-session-skyscrapper-banner': { label: 'In-Session Skyscrapper Banner', icon: 'fas fa-window-restore' }
         };
 
         // Initialize selected filters
@@ -4224,9 +5489,17 @@ const BrandsManager = {
         const mediaItems = gallery.querySelectorAll('.media-item');
 
         mediaItems.forEach(item => {
-            const itemPlacement = item.dataset.placement || 'all';
+            // Parse placements array from dataset
+            let itemPlacements = [];
+            try {
+                itemPlacements = JSON.parse(item.dataset.placements || '[]');
+            } catch (e) {
+                console.warn('Failed to parse placements for media item:', e);
+                itemPlacements = [];
+            }
 
-            if (placement === 'all' || itemPlacement === placement) {
+            // Show item if "All" is selected OR if the item's placements include the selected placement
+            if (placement === 'all' || itemPlacements.includes(placement)) {
                 item.style.display = '';
             } else {
                 item.style.display = 'none';
@@ -4303,16 +5576,245 @@ const BrandsManager = {
 
         if (placementFilter) {
             const placementConfig = {
-                placeholder: 'Ad Placeholder',
-                widget: 'Ad Widget',
-                popup: 'WB Pop-up',
-                insession: 'WB In-Session'
+                'leaderboard-banner': 'Leaderboard Banner',
+                'logo': 'Logo',
+                'in-session-skyscrapper-banner': 'In-Session Skyscrapper Banner'
             };
 
             const allOption = placements.length > 1 ? '<option value="all">All Placements</option>' : '';
             placementFilter.innerHTML = allOption +
                 placements.map(pl => `<option value="${pl}">${placementConfig[pl] || pl}</option>`).join('');
         }
+    },
+
+    // Show already submitted modal with campaign media
+    showAlreadySubmittedModal: async function(campaign) {
+        const modal = document.getElementById('already-submitted-modal-overlay');
+        if (!modal) return;
+
+        // Load campaign media
+        try {
+            const response = await AdvertiserProfileAPI.getCampaignMedia(campaign.id);
+            const media = response?.media || [];
+
+            // Separate images and videos
+            const images = media.filter(m => m.media_type === 'image');
+            const videos = media.filter(m => m.media_type === 'video');
+
+            // Update counts
+            const imagesCount = document.getElementById('submitted-images-count');
+            const videosCount = document.getElementById('submitted-videos-count');
+            if (imagesCount) imagesCount.textContent = images.length;
+            if (videosCount) videosCount.textContent = videos.length;
+
+            // Store media for tab switching
+            this.submittedMediaData = { images, videos };
+
+            // Show images by default
+            this.switchSubmittedMediaTab('images');
+
+            // Show modal
+            modal.classList.add('active');
+        } catch (error) {
+            console.error('Error loading campaign media:', error);
+            alert('Unable to load campaign media. Please try again.');
+        }
+    },
+
+    // Close already submitted modal
+    closeAlreadySubmittedModal: function() {
+        const modal = document.getElementById('already-submitted-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    },
+
+    // Switch tab in already submitted modal
+    switchSubmittedMediaTab: function(tab) {
+        // Update active tab
+        const tabs = document.querySelectorAll('.submitted-media-tab');
+        tabs.forEach(t => {
+            if (t.dataset.tab === tab) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
+            }
+        });
+
+        // Render media gallery
+        const gallery = document.getElementById('submitted-media-gallery');
+        if (!gallery) return;
+
+        const media = tab === 'images' ? this.submittedMediaData?.images || [] : this.submittedMediaData?.videos || [];
+
+        if (media.length === 0) {
+            gallery.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-${tab === 'images' ? 'images' : 'video'}" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                    <p>No ${tab} uploaded yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        gallery.innerHTML = media.map(m => `
+            <div class="submitted-media-item">
+                ${tab === 'images'
+                    ? `<img src="${m.file_url}" alt="Campaign media" class="submitted-media-thumbnail">`
+                    : `<video src="${m.file_url}" class="submitted-media-thumbnail" controls></video>`
+                }
+                <div class="submitted-media-info">
+                    <div class="submitted-media-placement">
+                        <i class="fas fa-ad"></i>
+                        ${this.formatPlacementName(m.ad_placement)}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // Format placement name for display
+    formatPlacementName: function(placement) {
+        if (!placement) return 'General';
+        return placement.split('-').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+    },
+
+    // Show success notification (top-right toast)
+    showUploadSuccessPanel: function(successCount, failCount, placement, mediaType) {
+        // Build notification message
+        let messageText = `✅ ${successCount} ${mediaType}${successCount > 1 ? 's' : ''} uploaded successfully!`;
+        let toastType = 'success';
+
+        if (failCount > 0) {
+            messageText = `⚠️ ${successCount} file(s) uploaded, ${failCount} failed`;
+            toastType = 'error';
+        }
+
+        // Show toast notification at top-right
+        if (window.Utils && window.Utils.showToast) {
+            window.Utils.showToast(messageText, toastType);
+        }
+
+        // Close the upload modal
+        this.closeMediaUploadModal();
+
+        // Refresh the media gallery to show newly uploaded files
+        if (this.currentCampaign) {
+            this.loadCampaignMedia(this.currentCampaign.id);
+        }
+    },
+
+    // closeMediaUploadModalAfterSuccess removed - no longer needed with toast notifications
+
+    // Show confirmation modal
+    showConfirmationModal: function(options) {
+        const {
+            title = 'Confirm Action',
+            message = 'Are you sure you want to proceed?',
+            details = null,
+            confirmText = 'Confirm',
+            cancelText = 'Cancel',
+            type = 'primary', // 'primary', 'warning', 'danger', 'success'
+            icon = 'question-circle',
+            onConfirm = null,
+            onCancel = null,
+            showCancel = true // Whether to show cancel button
+        } = options;
+
+        const modal = document.getElementById('confirmation-modal-overlay');
+        const titleEl = document.getElementById('confirmation-modal-title');
+        const messageEl = document.getElementById('confirmation-modal-message');
+        const detailsEl = document.getElementById('confirmation-modal-details');
+        const iconEl = document.getElementById('confirmation-modal-icon');
+        const confirmBtn = document.getElementById('confirmation-confirm-btn');
+        const confirmTextEl = document.getElementById('confirmation-confirm-text');
+        const cancelTextEl = document.getElementById('confirmation-cancel-text');
+        const cancelBtn = document.querySelector('.confirmation-modal-btn.cancel');
+
+        if (!modal) return;
+
+        // Set content
+        if (titleEl) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+
+        // Set details (optional)
+        if (detailsEl) {
+            if (details) {
+                detailsEl.innerHTML = details;
+                detailsEl.style.display = 'block';
+            } else {
+                detailsEl.style.display = 'none';
+            }
+        }
+
+        // Set icon
+        if (iconEl) {
+            iconEl.innerHTML = `<i class="fas fa-${icon}"></i>`;
+            iconEl.className = 'confirmation-modal-icon';
+            if (type === 'warning') iconEl.classList.add('warning');
+            if (type === 'danger') iconEl.classList.add('danger');
+            if (type === 'success') iconEl.classList.add('success');
+        }
+
+        // Set button texts
+        if (confirmTextEl) confirmTextEl.textContent = confirmText;
+        if (cancelTextEl) cancelTextEl.textContent = cancelText;
+
+        // Show/hide cancel button
+        if (cancelBtn) {
+            cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+        }
+
+        // Set button type
+        if (confirmBtn) {
+            confirmBtn.className = 'confirmation-modal-btn confirm';
+            if (type === 'warning') confirmBtn.classList.add('warning');
+            if (type === 'danger') confirmBtn.classList.add('danger');
+        }
+
+        // Store callbacks
+        this.confirmationModalCallbacks = {
+            onConfirm,
+            onCancel
+        };
+
+        // Show modal
+        modal.classList.add('active');
+    },
+
+    // Close confirmation modal
+    closeConfirmationModal: function() {
+        const modal = document.getElementById('confirmation-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+
+        // Call cancel callback if exists
+        if (this.confirmationModalCallbacks?.onCancel) {
+            this.confirmationModalCallbacks.onCancel();
+        }
+
+        // Clear callbacks
+        this.confirmationModalCallbacks = null;
+    },
+
+    // Confirm action
+    confirmAction: function() {
+        // Call confirm callback if exists
+        if (this.confirmationModalCallbacks?.onConfirm) {
+            this.confirmationModalCallbacks.onConfirm();
+        }
+
+        // Close modal
+        const modal = document.getElementById('confirmation-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+
+        // Clear callbacks
+        this.confirmationModalCallbacks = null;
     }
 };
 

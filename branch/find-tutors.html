@@ -677,24 +677,8 @@
             </section>
 
             <!-- Promo Container -->
-            <div class="promo-container premium-promo" style="margin-top: 2rem;" onclick="openComingSoonModal('Advertising')">
-                <div class="promo-animation">
-                    <div class="pulse-ring"></div>
-                    <div class="pulse-ring"></div>
-                </div>
-                <div class="promo-content">
-                    <span class="promo-label">Featured</span>
-                    <h3 class="promo-title">Premium Advertising Space</h3>
-                    <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-                    <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-                </div>
-                <div class="promo-visual">
-                    <div class="promo-circles">
-                        <div class="circle circle-1"></div>
-                        <div class="circle circle-2"></div>
-                        <div class="circle circle-3"></div>
-                    </div>
-                </div>
+            <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="tutor" data-location="find_tutors">
+                <!-- Ads will be loaded dynamically via adRotationManager -->
             </div>
         </div>
 
@@ -860,206 +844,6 @@
     <!-- Add Role Modal - Loaded by common-modal-loader.js -->
     <!-- Coming Soon Modal - Loaded by common-modal-loader.js -->
 
-
-    <!-- Ad Analytics Modal -->
-    <div class="modal" id="adAnalyticsModal">
-        <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
-        <div class="modal-content promo-analytics-modal">
-            <div class="modal-header">
-                <h2>Advertisement Analytics & Information</h2>
-                <button class="modal-close" onclick="closeAdAnalyticsModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="promo-stats-grid">
-                    <div class="promo-stat-card">
-                        <div class="promo-stat-icon">👁️</div>
-                        <div class="promo-stat-info">
-                            <h3>2.5M+</h3>
-                            <p>Monthly Impressions</p>
-                        </div>
-                        <span>Mock</span>
-                    </div>
-                    <div class="promo-stat-card">
-                        <div class="promo-stat-icon">🎯</div>
-                        <div class="promo-stat-info">
-                            <h3>4.2%</h3>
-                            <p>Average CTR</p>
-                        </div>
-                        <span>Mock</span>
-                    </div>
-                    <div class="promo-stat-card">
-                        <div class="promo-stat-icon">💰</div>
-                        <div class="promo-stat-info">
-                            <h3>$0.45</h3>
-                            <p>Average CPC</p>
-                        </div>
-                        <span>Mock</span>
-                    </div>
-                    <div class="promo-stat-card">
-                        <div class="promo-stat-icon">📈</div>
-                        <div class="promo-stat-info">
-                            <h3>325%</h3>
-                            <p>Average ROI</p>
-                        </div>
-                        <span>Mock</span>
-                    </div>
-                </div>
-
-                <div class="advertisers-section">
-                    <h3>Our Premium Advertisers</h3>
-                    <div class="advertisers-grid">
-                        <div class="advertiser-card">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='%23e5e7eb'%3E%3Crect width='80' height='80' rx='8'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='sans-serif' font-size='14'%3EAdobe%3C/text%3E%3C/svg%3E"
-                                alt="Adobe">
-                            <span>Your company name</span>
-                        </div>
-                        <div class="advertiser-card">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='%23e5e7eb'%3E%3Crect width='80' height='80' rx='8'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='sans-serif' font-size='14'%3ECanon%3C/text%3E%3C/svg%3E"
-                                alt="Canon">
-                            <span>Your company name</span>
-                        </div>
-                        <div class="advertiser-card">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='%23e5e7eb'%3E%3Crect width='80' height='80' rx='8'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='sans-serif' font-size='14'%3ENetflix%3C/text%3E%3C/svg%3E"
-                                alt="Netflix">
-                            <span>Your company name</span>
-                        </div>
-                        <div class="advertiser-card">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='%23e5e7eb'%3E%3Crect width='80' height='80' rx='8'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='sans-serif' font-size='14'%3ESony%3C/text%3E%3C/svg%3E"
-                                alt="Sony">
-                            <span>Your company name</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonials-section">
-                    <h3>Client Testimonials</h3>
-                    <div class="testimonials-carousel">
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                <p>"Advertising on Astegni has been game-changing for our film equipment business. We've
-                                    seen a 400% increase in qualified leads."</p>
-                            </div>
-                            <div class="testimonial-author">
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40' fill='%23e5e7eb'%3E%3Ccircle cx='20' cy='20' r='20'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' transform='translate(8,8)' fill='none' stroke='%236b7280' stroke-width='1.5'/%3E%3Ccircle cx='20' cy='15' r='4' fill='none' stroke='%236b7280' stroke-width='1.5'/%3E%3C/svg%3E"
-                                    alt="Author">
-                                <div>
-                                    <h4>Sarah Yohannes</h4>
-                                    <span>Marketing Director, FilmGear Pro</span>
-                                    <span>Mock</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                <p>"The targeted audience on this platform is exactly what we needed. Our course
-                                    enrollments have doubled since we started advertising here."</p>
-                            </div>
-                            <div class="testimonial-author">
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40' fill='%23e5e7eb'%3E%3Ccircle cx='20' cy='20' r='20'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' transform='translate(8,8)' fill='none' stroke='%236b7280' stroke-width='1.5'/%3E%3Ccircle cx='20' cy='15' r='4' fill='none' stroke='%236b7280' stroke-width='1.5'/%3E%3C/svg%3E"
-                                    alt="Author">
-                                <div>
-                                    <h4>Christian Abebe</h4>
-                                    <span>CEO, Digital Arts Academy</span>
-                                    <span>Mock</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ad-packages">
-                    <h3>Advertising Packages</h3>
-                    <div class="packages-grid">
-                        <div class="package-card">
-                            <h4>Upto Three days</h4>
-                            <div class="package-price">2000 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card featured">
-                            <div class="featured-badge">Most Popular</div>
-                            <h4>Upto seven days</h4>
-                            <div class="package-price">/1800 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Half a month</h4>
-                            <div class="package-price">1500 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto a Month</h4>
-                            <div class="package-price">1200 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Three Months</h4>
-                            <div class="package-price">1000 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Up to Six Months</h4>
-                            <div class="package-price">800 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Nine Months</h4>
-                            <div class="package-price">600 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto a Year</h4>
-                            <div class="package-price">400 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeAdAnalyticsModal()">Close</button>
-                <button class="btn-primary" onclick="startAdvertising()">Start Advertising</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
@@ -1286,7 +1070,6 @@
 
     <!-- Shared Modal Scripts -->
     <script src="../js/common-modals/coming-soon-modal.js"></script>
-    <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
 
@@ -1524,8 +1307,6 @@
         });
     </script>
 
-    <!-- Ad Rotation Manager -->
-    <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <!-- Appearance Manager - Theme & Color Palette Sync -->
     <script src="../js/common-modals/appearance-manager.js?v=20260127"></script>
 </body>

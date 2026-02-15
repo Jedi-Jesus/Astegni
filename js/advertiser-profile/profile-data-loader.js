@@ -136,27 +136,42 @@ const AdvertiserProfileDataLoader = {
     populateProfileHeader() {
         const data = this.profileData;
 
+        console.log('[AdvertiserProfileDataLoader] Starting to populate profile header with data:', data);
+
         // Full Name - constructed from users table (first_name + father_name + grandfather_name)
         // OR use full_name if available
         if (data.full_name) {
             this.updateElement('advertiserName', data.full_name);
+            console.log('[AdvertiserProfileDataLoader] ✓ Full name set:', data.full_name);
+        } else {
+            console.warn('[AdvertiserProfileDataLoader] ⚠ Missing full_name in data');
         }
 
         // Username - display below name (replaces hero-title in profile header)
         if (data.username) {
             this.updateElement('advertiser-username-display', `@${data.username}`);
+            console.log('[AdvertiserProfileDataLoader] ✓ Username set:', data.username);
+        } else {
+            // Hide username display if no username
+            const usernameEl = document.getElementById('advertiser-username-display');
+            if (usernameEl) {
+                usernameEl.style.display = 'none';
+            }
+            console.log('[AdvertiserProfileDataLoader] ⚠ No username found');
         }
 
         // Hero Section Title (array) - displayed in top hero banner with typing effect
         if (data.hero_title && Array.isArray(data.hero_title) && data.hero_title.length > 0) {
             const heroTitleText = data.hero_title.join(' ');
             this.updateElement('typedText', heroTitleText);
+            console.log('[AdvertiserProfileDataLoader] ✓ Hero title set:', heroTitleText);
         }
 
         // Hero Subtitle (array) - displayed in top hero banner below title
         if (data.hero_subtitle && Array.isArray(data.hero_subtitle) && data.hero_subtitle.length > 0) {
             const subtitleText = data.hero_subtitle.join(' ');
             this.updateElement('hero-subtitle', subtitleText);
+            console.log('[AdvertiserProfileDataLoader] ✓ Hero subtitle set:', subtitleText);
         }
 
         // Bio - update in About section and show it
@@ -167,27 +182,48 @@ const AdvertiserProfileDataLoader = {
             if (aboutSection) {
                 aboutSection.style.display = 'block';
             }
+            console.log('[AdvertiserProfileDataLoader] ✓ Bio set');
         }
 
         // Quote/Tagline
         if (data.quote) {
             this.updateElement('advertiser-quote', `"${data.quote}"`);
+            console.log('[AdvertiserProfileDataLoader] ✓ Quote set:', data.quote);
         }
 
-        // Location (array) - join with comma
-        if (data.location && Array.isArray(data.location) && data.location.length > 0) {
-            const locationText = data.location.join(', ');
-            this.updateElement('advertiser-location', locationText);
+        // Location - handle both array and string formats
+        if (data.location) {
+            let locationText = '';
+            if (Array.isArray(data.location) && data.location.length > 0) {
+                locationText = data.location.join(', ');
+            } else if (typeof data.location === 'string' && data.location.trim() !== '') {
+                locationText = data.location;
+            }
+
+            if (locationText) {
+                this.updateElement('advertiser-location', locationText);
+                console.log('[AdvertiserProfileDataLoader] ✓ Location set:', locationText);
+            } else {
+                this.updateElement('advertiser-location', 'No location yet');
+            }
+        } else {
+            this.updateElement('advertiser-location', 'No location yet');
         }
 
         // Email (from user data if available)
         if (data.email) {
             this.updateElement('advertiser-email', data.email);
+            console.log('[AdvertiserProfileDataLoader] ✓ Email set:', data.email);
+        } else {
+            this.updateElement('advertiser-email', 'No email yet');
         }
 
         // Phone (from user data if available)
         if (data.phone) {
             this.updateElement('advertiser-phone', data.phone);
+            console.log('[AdvertiserProfileDataLoader] ✓ Phone set:', data.phone);
+        } else {
+            this.updateElement('advertiser-phone', 'No phone yet');
         }
 
         // Hobbies & Interests - always show, with "No hobbies yet" if empty
@@ -209,9 +245,13 @@ const AdvertiserProfileDataLoader = {
             }
         }
 
-        // Social links (JSONB object) - only show section if there are socials
-        if (data.socials && typeof data.socials === 'object' && Object.keys(data.socials).length > 0) {
-            this.populateSocialLinks(data.socials);
+        // Social links (JSONB object) - handle both 'socials' and 'social_links' field names
+        const socialLinksData = data.socials || data.social_links;
+        if (socialLinksData && typeof socialLinksData === 'object' && Object.keys(socialLinksData).length > 0) {
+            this.populateSocialLinks(socialLinksData);
+            console.log('[AdvertiserProfileDataLoader] ✓ Social links populated');
+        } else {
+            console.log('[AdvertiserProfileDataLoader] ⚠ No social links found');
         }
 
         // Profile picture - update avatar
@@ -222,6 +262,9 @@ const AdvertiserProfileDataLoader = {
             profileAvatars.forEach(img => {
                 if (img) img.src = data.profile_picture;
             });
+            console.log('[AdvertiserProfileDataLoader] ✓ Profile picture set');
+        } else {
+            console.log('[AdvertiserProfileDataLoader] ⚠ No profile picture found, using default');
         }
 
         // Cover image
@@ -231,12 +274,16 @@ const AdvertiserProfileDataLoader = {
             coverImages.forEach(img => {
                 if (img) img.src = data.cover_image;
             });
+            console.log('[AdvertiserProfileDataLoader] ✓ Cover image set');
+        } else {
+            console.log('[AdvertiserProfileDataLoader] ⚠ No cover image found, using default');
         }
 
         // Verified badge
         const verificationBadge = document.getElementById('verification-badge');
         if (verificationBadge) {
             verificationBadge.style.display = data.is_verified ? 'inline-flex' : 'none';
+            console.log('[AdvertiserProfileDataLoader] ✓ Verification badge set:', data.is_verified);
         }
 
         // Member since date (created_at from advertiser_profiles)
@@ -246,17 +293,28 @@ const AdvertiserProfileDataLoader = {
             if (!isNaN(joinDate.getTime()) && joinDate <= new Date()) {
                 const formattedDate = joinDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 this.updateElement('advertiser-joined', formattedDate);
+                console.log('[AdvertiserProfileDataLoader] ✓ Member since date set:', formattedDate);
             } else {
-                console.warn('[AdvertiserProfileDataLoader] Invalid created_at date:', data.created_at);
+                console.warn('[AdvertiserProfileDataLoader] ⚠ Invalid created_at date:', data.created_at);
+                this.updateElement('advertiser-joined', 'Recently');
             }
+        } else {
+            console.log('[AdvertiserProfileDataLoader] ⚠ No created_at date found');
+            this.updateElement('advertiser-joined', 'Recently');
         }
 
         // Rating data from advertiser_reviews table
         if (data.rating_data) {
             this.populateRatingSection(data.rating_data);
+        } else {
+            // Set default rating display
+            this.updateElement('advertiser-rating', '0.0');
+            this.updateElement('rating-stars', '☆☆☆☆☆');
+            this.updateElement('rating-count', '(No reviews yet)');
+            console.log('[AdvertiserProfileDataLoader] ⚠ No rating data found, using defaults');
         }
 
-        console.log('[AdvertiserProfileDataLoader] Profile header populated with database data');
+        console.log('[AdvertiserProfileDataLoader] ✅ Profile header populated with database data');
     },
 
     // Populate rating section from advertiser_reviews

@@ -71,7 +71,54 @@ async def get_parent_profile(
         db.commit()
         db.refresh(parent_profile)
 
-    return parent_profile
+    # Build name based on naming convention
+    # Ethiopian: first_name + father_name + grandfather_name
+    # International: first_name + last_name
+    if current_user.last_name:
+        # International naming convention
+        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+    else:
+        # Ethiopian naming convention
+        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
+        display_name = " ".join(part for part in name_parts if part)
+
+    # Return complete profile with data from both users and parent_profiles tables
+    return {
+        "id": parent_profile.id,
+        "user_id": parent_profile.user_id,
+        "username": parent_profile.username,
+        "name": display_name or "Parent",
+        # Individual name fields
+        "first_name": current_user.first_name,
+        "father_name": current_user.father_name,
+        "grandfather_name": current_user.grandfather_name,
+        "last_name": current_user.last_name,
+        # Contact info
+        "email": current_user.email,
+        "phone": current_user.phone,
+        # Profile data from parent_profiles table
+        "bio": parent_profile.bio,
+        "quote": parent_profile.quote,
+        "relationship_type": parent_profile.relationship_type,
+        "children_ids": parent_profile.children_ids or [],
+        "coparent_ids": parent_profile.coparent_ids or [],
+        "total_children": parent_profile.total_children or 0,
+        "rating": parent_profile.rating or 0.0,
+        "rating_count": parent_profile.rating_count or 0,
+        # Data from users table
+        "location": current_user.location,
+        "social_links": current_user.social_links or {},
+        "languages": current_user.languages or [],
+        "is_verified": current_user.is_verified or False,
+        "profile_picture": current_user.profile_picture,  # Fixed: Now fetching from users table
+        "cover_image": parent_profile.cover_image,
+        # Hero fields
+        "hero_title": parent_profile.hero_title or [],
+        "hero_subtitle": parent_profile.hero_subtitle,
+        # Timestamps
+        "created_at": parent_profile.created_at,
+        "updated_at": parent_profile.updated_at
+    }
 
 
 @router.put("/api/parent/profile")

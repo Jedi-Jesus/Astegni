@@ -765,7 +765,7 @@ function requireAuth(page) {
         'manage-credentials': ['manage-credentials.html'],
         'manage-customers': ['manage-customers.html'],
         'manage-contents': ['manage-contents.html'],
-        'manage-campaigns': ['manage-campaigns.html'],
+        'manage-campaign': ['manage-campaign.html'],
         'manage-admins': ['manage-admins.html'],
         'manage-system-settings': [  // Full access (super admin)
             'manage-advertisers.html',
@@ -774,7 +774,7 @@ function requireAuth(page) {
             'manage-credentials.html',
             'manage-customers.html',
             'manage-contents.html',
-            'manage-campaigns.html',
+            'manage-campaign.html',
             'manage-admins.html',
             'manage-system-settings.html'
         ]
@@ -1042,7 +1042,7 @@ function getDepartmentIcon(dept) {
     const icons = {
         'manage-courses': 'fa-graduation-cap',
         'manage-schools': 'fa-school',
-        'manage-campaigns': 'fa-bullhorn',
+        'manage-campaign': 'fa-bullhorn',
         'manage-credentials': 'fa-certificate',
         'manage-contents': 'fa-photo-video',
         'manage-customers': 'fa-users',

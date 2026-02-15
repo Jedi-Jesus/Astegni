@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - Student Profile</title>
-    <!-- LOADING SCREEN FIX - MUST LOAD FIRST -->
-    <script src="../js/fix-loading-screen.js"></script>
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v=20251217"></script>
     <!-- Safe wrapper for openChatModal - waits for function to be available -->
@@ -1204,13 +1202,41 @@
 </head>
 
 <body class="font-sans">
-    <!-- Loading Overlay -->
-    <div id="profile-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center;">
-            <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-            <p style="margin-top: 1rem; color: #666; font-family: system-ui, -apple-system, sans-serif;">Loading profile...</p>
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
         </div>
+        <h2 class="loading-text">ASTEGNI</h2>
     </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300); // Reduced delay since we're already waiting for full load
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Early Parent Portal Functions (needed before scripts load) -->
     <script>
@@ -1412,7 +1438,6 @@
                         </button>
                     </div>
                 </div>
-
 
                 <!-- Notification Icon -->
                 <button class="icon-btn" aria-label="Notifications">
@@ -1640,31 +1665,14 @@
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="student" data-location="student_profile">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
     
     <!-- Main Content -->
     <section class="py-8" style="padding-top: 1rem;">
         <div class="container mx-auto px-4">
-
 
             <!-- Main Content with Widgets -->
             <div class="flex gap-6">
@@ -1674,7 +1682,6 @@
                     <div class="panels-container">
                         <!-- Dashboard Panel (Default) -->
                         <div id="dashboard-panel" class="panel-content active">
-
 
                             <!-- Hero Section -->
                             <section class="hero-section animate__animated animate__fadeIn">
@@ -1736,19 +1743,8 @@
                                                 alt="Student Profile" class="profile-avatar">
                                             <span class="online-indicator"></span>
 
-                                            <!-- Add Story Button (Ring around profile picture) -->
-                                            <button onclick="openUploadStoryModal()"
-                                                style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-                                                border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #8b5cf6, #3b82f6);
-                                                border: none; cursor: pointer; padding: 3px; z-index: 0; transition: all 0.3s ease;" title="Add Story">
-                                                <div
-                                                    style="width: 100%; height: 100%; border-radius: 50%; background: var(--card-bg);">
-                                                </div>
-                                            </button>
-
                                             <!-- Profile Picture Upload Button -->
-                                            <button onclick="openProfileUploadModal()" class="avatar-upload-btn"
-                                                style="z-index: 10;">
+                                            <button onclick="openProfileUploadModal()" class="avatar-upload-btn">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -1758,16 +1754,6 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 </svg>
-                                            </button>
-
-                                            <!-- Add Story Plus Icon -->
-                                            <button onclick="openUploadStoryModal()"
-                                                style="position: absolute; bottom: 0; right: 0; background: linear-gradient(135deg, #f59e0b, #ef4444);
-                                                color: white; border: 3px solid var(--card-bg); border-radius: 50%; width: 32px; height: 32px;
-                                                display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 15;
-                                                font-size: 18px; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"
-                                                title="Add Story">
-                                                +
                                             </button>
                                         </div>
 
@@ -1790,7 +1776,6 @@
                                                     <span class="profile-badge expert">⭐ Honor Roll Student</span>
                                                 </div>
                                             </div>
-
 
                                             <div class="rating-section" style="margin-bottom: 1rem;">
                                                 <div class="rating-wrapper"
@@ -2089,14 +2074,12 @@
                                 <p id="student-bio" style="color: var(--text-muted); line-height: 1.7; font-style: italic;">No bio yet</p>
                             </section>
 
-
                             <!-- Page Header -->
                             <div class="mb-8 animate-fadeIn">
                                 <h1 class="text-3xl font-bold mb-2">Student Statistics</h1>
                                 <p class="text-gray-600">Statstics of your academic activities, courses, and performance
                                 </p>
                             </div>
-
 
                             <!-- All Statistics Cards -->
                             <div class="dashboard-grid mb-8">
@@ -2175,7 +2158,6 @@
                                     <span class="text-sm text-gray-500">Current</span>
                                 </div>
                             </div>
-
 
                             <!-- Reviews Section -->
                             <div class="card p-6 mb-8">
@@ -4694,68 +4676,21 @@
                 <div class="right-widgets">
 
                     <!-- Ad Widget -->
+                                        <!-- Dynamic Logo Ad Widget -->
                     <div class="widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                         <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="promo-content" id="promo-container-student" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <div id="ad-message-container-student" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message-student active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
-                                </div>
-                                <div class="ad-message-student" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
-                                </div>
-                                <div class="ad-message-student" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
-                                </div>
-                                <div class="ad-message-student" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
-                                </div>
-                                <div class="ad-message-student" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
-                                </div>
-                            </div>
-                            <div id="ad-ticker-student" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content-student" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
+                        <!-- Dynamic ad container loaded by AdRotationManager -->
+                        <div
+                            data-placement="logo"
+                            data-profile-type="student"
+                            class="leaderboard-banner premium-promo"
+                            style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                            <!-- Ads will be dynamically loaded here -->
                         </div>
-                        <style>
-                            @keyframes tickerScrollStudent { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-                            #ad-ticker-content-student { animation: tickerScrollStudent 20s linear infinite; }
-                            .ad-message-student { visibility: hidden; }
-                            .ad-message-student.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
-                            .ad-message-student.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
-                        </style>
-                        <script>
-                            (function() {
-                                const messages = document.querySelectorAll('#ad-message-container-student .ad-message-student');
-                                let currentIndex = 0;
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-                                    messages[currentIndex].classList.add('active');
-                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
-                                }
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
                     </div>
-                    
+
                     <!-- Overall Progress Widget -->
                     <div class="widget-card" style="position: relative;">
                         <h3 class="text-lg font-semibold mb-4">📊 Overall Progress</h3>
@@ -5801,7 +5736,6 @@
             <!-- TODO: counting cards should count from users where role = 'parent', 'student', 'tutor', etc... register-modal, reviews section professional-reviews-card should be enhanced. -->
         </div>
     </footer>
-
 
     <!-- Core Page Structure Scripts -->
     <script src="../js/page-structure/loadingManager.js"></script>

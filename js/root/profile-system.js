@@ -405,45 +405,60 @@ const ProfileSystem = (function() {
     }
 
 function updateProfilePictures() {
+    console.log('[updateProfilePictures] Called');
+
     // Use inline SVG placeholder instead of non-existent image
     const defaultPicture = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E";
 
     // Get user data from localStorage or global state
     const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    console.log('[updateProfilePictures] User data:', {
+        id: userData.id,
+        profile_picture: userData.profile_picture,
+        hasProfilePicture: !!userData.profile_picture
+    });
 
     // Helper function to fix image URLs
     const fixImageUrl = (url) => {
         if (!url) return defaultPicture;
-        
+
         // If already a full URL, return as is
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
-        
+
         // Use UrlHelper if available
         if (typeof UrlHelper !== 'undefined') {
             return UrlHelper.getAssetUrl(url);
         }
-        
+
         // Fallback for file protocol without UrlHelper
         if (window.location.protocol === 'file:') {
             return `${window.API_BASE_URL || 'http://localhost:8000'}${url}`;
         }
-        
+
         return url;
     };
-    
+
     // Update main profile picture in navigation
     const profilePic = document.getElementById('profile-pic');
+    console.log('[updateProfilePictures] profile-pic element:', profilePic);
+
     if (profilePic) {
         if (userData.profile_picture) {
-            profilePic.src = fixImageUrl(userData.profile_picture);
+            const fixedUrl = fixImageUrl(userData.profile_picture);
+            console.log('[updateProfilePictures] Setting profile-pic src to:', fixedUrl);
+            profilePic.src = fixedUrl;
             profilePic.onerror = function() {
+                console.warn('[updateProfilePictures] Failed to load profile picture, using default');
                 this.src = defaultPicture;
             };
         } else {
+            console.log('[updateProfilePictures] No profile_picture, using default');
             profilePic.src = defaultPicture;
         }
+    } else {
+        console.warn('[updateProfilePictures] profile-pic element not found in DOM');
     }
     
     // Update dropdown profile picture

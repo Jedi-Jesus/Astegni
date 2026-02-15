@@ -22,14 +22,13 @@
                         <option value="story">📱 Story (Image/Video)</option>
                         <option value="cover">🖼️ Cover Image</option>
                         <option value="profile">👤 Profile Picture</option>
-                        <option value="image">🎨 General Image</option>
                     </select>
                 </div>
 
                 <div class="upload-area" id="storyUploadArea" onclick="document.getElementById('storyInput').click()">
                     <span class="upload-icon" id="uploadIcon">📱</span>
                     <p class="upload-text">Click to upload or drag and drop</p>
-                    <p class="upload-hint" id="uploadHint">Images (JPG, PNG, GIF) or Videos (MP4, WebM) - Max 50MB</p>
+                    <p class="upload-hint" id="uploadHint">Loading limits...</p>
                     <input type="file" id="storyInput" class="upload-input" accept="image/*,video/*"
                         onchange="handleStorySelect(event)">
                 </div>

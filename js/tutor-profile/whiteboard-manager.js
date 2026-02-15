@@ -111,9 +111,7 @@ class WhiteboardManager {
         this.textPositions = []; // Array of {x, y, width, height} for collision detection
         this.textBoundingBoxes = []; // Array of text bounding boxes for collision detection
 
-        // Ad panel and popup timing system
-        this.adPanelTimer = null;
-        this.adPanelCountdown = null;
+        // Popup timing system
         this.popupTimers = [];
         this.shownPopups = new Set(); // Track which popups have been shown
 
@@ -128,7 +126,7 @@ class WhiteboardManager {
 
         // Pop-up schedule (in minutes from session start)
         this.popupSchedule = [
-            { minute: 6, title: 'Quick Tip', icon: 'fa-lightbulb', message: 'Take short breaks every 25 minutes for better retention!', cta: 'Learn More' },
+            { minute: 0, title: 'Quick Tip', icon: 'fa-lightbulb', message: 'Take short breaks every 25 minutes for better retention!', cta: 'Learn More' }, // TEST: Changed from 6 to 0
             { minute: 19, title: 'Premium Feature', icon: 'fa-star', message: 'Upgrade to record your sessions and review them anytime!', cta: 'Upgrade Now' },
             { minute: 41, title: 'Did You Know?', icon: 'fa-info-circle', message: 'You can invite parents to view session recordings.', cta: 'Invite Parents' },
             { minute: 55, title: 'Session Ending Soon', icon: 'fa-clock', message: 'Your session is approaching 1 hour. Consider scheduling a follow-up!', cta: 'Schedule Next' }
@@ -1130,6 +1128,13 @@ class WhiteboardManager {
                     await this.loadCallHistory();
                     await this.loadMissedCalls();
 
+                    // Initialize ads for whiteboard skyscraper banner
+                    if (window.adRotationManager && window.adRotationManager.isInitialized) {
+                        // Re-initialize to pick up the whiteboard modal's skyscraper banner
+                        window.adRotationManager.destroy();
+                        window.adRotationManager.init();
+                    }
+
                     this.showNotification('Whiteboard opened for selected student. Start teaching!', 'info');
                     return;
                 }
@@ -1168,6 +1173,13 @@ class WhiteboardManager {
                     await this.loadCallHistory();
                     await this.loadMissedCalls();
 
+                    // Initialize ads for whiteboard skyscraper banner
+                    if (window.adRotationManager && window.adRotationManager.isInitialized) {
+                        // Re-initialize to pick up the whiteboard modal's skyscraper banner
+                        window.adRotationManager.destroy();
+                        window.adRotationManager.init();
+                    }
+
                     return;
                 }
             }
@@ -1194,6 +1206,13 @@ class WhiteboardManager {
             // Load call history and check for missed calls
             await this.loadCallHistory();
             await this.loadMissedCalls();
+
+            // Initialize ads for whiteboard skyscraper banner
+            if (window.adRotationManager && window.adRotationManager.isInitialized) {
+                // Re-initialize to pick up the whiteboard modal's skyscraper banner
+                window.adRotationManager.destroy();
+                window.adRotationManager.init();
+            }
 
             console.log('✅ Whiteboard opened successfully (context:', this.context, ')');
         } catch (error) {
@@ -4430,11 +4449,6 @@ class WhiteboardManager {
      * Check and trigger timed events (ad panel at 28 min, pop-ups at specific times)
      */
     checkTimedEvents(minutes, seconds) {
-        // Show ad panel at 28 minutes (stays for 5 minutes)
-        if (minutes === 28 && seconds === 0 && !this.adPanelTimer) {
-            this.showAdPanel();
-        }
-
         // Check for scheduled pop-ups
         this.popupSchedule.forEach(popup => {
             if (minutes === popup.minute && seconds === 0 && !this.shownPopups.has(popup.minute)) {
@@ -4445,58 +4459,10 @@ class WhiteboardManager {
     }
 
     /**
-     * Show the ad panel (slides in from right)
-     */
-    showAdPanel() {
-        const adPanel = document.getElementById('whiteboardAdPanel');
-        if (!adPanel) return;
-
-        adPanel.classList.add('active');
-
-        // Start 5 minute countdown
-        let timeLeft = 5 * 60; // 5 minutes in seconds
-        const timerSpan = document.getElementById('adPanelTimer');
-
-        this.adPanelCountdown = setInterval(() => {
-            timeLeft--;
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            if (timerSpan) {
-                timerSpan.textContent = `Closes in ${mins}:${String(secs).padStart(2, '0')}`;
-            }
-
-            if (timeLeft <= 0) {
-                this.hideAdPanel();
-            }
-        }, 1000);
-
-        // Also allow manual close
-        const closeBtn = document.getElementById('closeAdPanelBtn');
-        if (closeBtn) {
-            closeBtn.onclick = () => this.hideAdPanel();
-        }
-    }
-
-    /**
-     * Hide the ad panel
-     */
-    hideAdPanel() {
-        const adPanel = document.getElementById('whiteboardAdPanel');
-        if (adPanel) {
-            adPanel.classList.remove('active');
-        }
-
-        if (this.adPanelCountdown) {
-            clearInterval(this.adPanelCountdown);
-            this.adPanelCountdown = null;
-        }
-    }
-
-    /**
      * Show a timed pop-up notification
      */
     showTimedPopup(popupConfig) {
-        const container = document.getElementById('whiteboardPopupContainer');
+        const container = document.getElementById('whiteboardSkyscrapperBanner');
         if (!container) return;
 
         const popupId = `popup_${popupConfig.minute}`;
@@ -4524,10 +4490,10 @@ class WhiteboardManager {
 
         container.appendChild(popupEl);
 
-        // Auto-dismiss after 12 seconds
+        // Auto-dismiss after 15 seconds
         setTimeout(() => {
             this.closePopup(popupId);
-        }, 12000);
+        }, 15000);
     }
 
     /**

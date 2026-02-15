@@ -37,14 +37,69 @@ const TutorProfileUI = {
         this.updateElement('tutor-students', profile.totalStudents || 0);
         this.updateElement('tutor-hourly-rate', `${profile.hourlyRate || 0} ETB/hr`);
 
-        // Update profile images
-        if (profile.profilePicture) {
-            this.updateImage('profile-pic', profile.profilePicture);
-            this.updateImage('tutor-avatar', profile.profilePicture);
+        // Update profile images from Backblaze
+        // Default placeholder SVGs
+        const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect width="150" height="150" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+        const defaultCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="300"%3E%3Crect width="1200" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="20"%3ENo Cover Image%3C/text%3E%3C/svg%3E';
+
+        // Profile picture (from users.profile_picture)
+        const profilePicture = profile.profile_picture || profile.profilePicture;
+        if (profilePicture) {
+            // Update main profile avatar
+            const profileAvatar = document.getElementById('profile-avatar');
+            if (profileAvatar) {
+                profileAvatar.src = profilePicture;
+                profileAvatar.onerror = () => {
+                    // Fallback to SVG placeholder if Backblaze image fails
+                    profileAvatar.src = defaultAvatar;
+                };
+            }
+
+            // Update mobile profile pics
+            const mobileProfilePic = document.getElementById('mobile-profile-pic');
+            if (mobileProfilePic) {
+                mobileProfilePic.src = profilePicture;
+                mobileProfilePic.onerror = () => { mobileProfilePic.src = defaultAvatar; };
+            }
+
+            const mobileDropdownPic = document.getElementById('mobile-dropdown-pic');
+            if (mobileDropdownPic) {
+                mobileDropdownPic.src = profilePicture;
+                mobileDropdownPic.onerror = () => { mobileDropdownPic.src = defaultAvatar; };
+            }
+
+            // Update any other profile picture references
+            this.updateImage('profile-pic', profilePicture);
+            this.updateImage('tutor-avatar', profilePicture);
+        } else {
+            // No profile picture from backend, use default
+            const profileAvatar = document.getElementById('profile-avatar');
+            if (profileAvatar) profileAvatar.src = defaultAvatar;
+
+            const mobileProfilePic = document.getElementById('mobile-profile-pic');
+            if (mobileProfilePic) mobileProfilePic.src = defaultAvatar;
+
+            const mobileDropdownPic = document.getElementById('mobile-dropdown-pic');
+            if (mobileDropdownPic) mobileDropdownPic.src = defaultAvatar;
         }
 
-        if (profile.coverPhoto) {
-            this.updateImage('cover-photo', profile.coverPhoto);
+        // Cover image (from tutor_profiles.cover_image)
+        const coverImage = profile.cover_image || profile.cover_photo || profile.coverPhoto;
+        if (coverImage) {
+            const coverImg = document.getElementById('cover-img');
+            if (coverImg) {
+                coverImg.src = coverImage;
+                coverImg.onerror = () => {
+                    // Fallback to SVG placeholder if Backblaze image fails
+                    coverImg.src = defaultCover;
+                };
+            }
+
+            this.updateImage('cover-photo', coverImage);
+        } else {
+            // No cover image from backend, use default
+            const coverImg = document.getElementById('cover-img');
+            if (coverImg) coverImg.src = defaultCover;
         }
 
         // Update subjects/courses

@@ -42,6 +42,7 @@ class BackblazeService:
         'news_image': 'images/news/',
         'story_image': 'images/stories/',  # Image stories (profile-based separation)
         'campaign_image': 'images/campaigns/',  # Campaign ad images
+        'brand_logo': 'images/brands/',  # Brand logos
 
         # Audio specific folders
         'lecture_audio': 'audio/lectures/',

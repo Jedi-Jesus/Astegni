@@ -245,7 +245,7 @@
 // Setup ad button event listeners - NOW OPENS COMING SOON MODAL
 document.addEventListener('DOMContentLoaded', function () {
     // For the ad container (clicking anywhere on it)
-    document.querySelectorAll('.promo-container').forEach(container => {
+    document.querySelectorAll('.leaderboard-banner').forEach(container => {
         container.style.cursor = 'pointer';
         container.addEventListener('click', function (e) {
             // Don't trigger if clicking the button inside or promo-slide (which has its own onclick)

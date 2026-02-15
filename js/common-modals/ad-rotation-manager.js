@@ -1,7 +1,7 @@
 /**
  * Ad Rotation Manager
- * Handles smooth 10-second ad rotation with fade transitions
- * Works with .promo-container.premium-promo structure
+ * Handles ad fetching, rotation, and impression tracking
+ * Works with dynamic campaign ads from API
  */
 
 class AdRotationManager {
@@ -13,26 +13,209 @@ class AdRotationManager {
 
         this.containers = new Map();
         this.isInitialized = false;
+        this.trackedImpressions = new Set(); // Track which ads have been viewed
+        this.impressionIds = new Map(); // Store impression IDs for click tracking
     }
 
     /**
      * Initialize all ad containers on the page
      */
-    init() {
+    async init() {
         if (this.isInitialized) return;
 
-        // Find all ad containers with slides
-        const adContainers = document.querySelectorAll('.promo-container.premium-promo');
+        // Find all ad containers - check for data-placement attribute
+        const adContainers = document.querySelectorAll('[data-placement]');
 
-        adContainers.forEach((container, index) => {
+        for (const container of adContainers) {
+            const placementType = container.dataset.placement;
+            const profileType = container.dataset.profileType || null;
+            const location = container.dataset.location || null;
+            const audience = container.dataset.audience || null;
+
+            // Fetch ads for this placement
+            await this.loadAdsForPlacement(container, placementType, profileType, location, audience);
+        }
+
+        // Also handle legacy static ad containers
+        const staticContainers = document.querySelectorAll('.leaderboard-banner.premium-promo');
+        staticContainers.forEach((container, index) => {
             const slides = container.querySelectorAll('.promo-slide');
-            if (slides.length > 1) {
-                this.initContainer(container, `ad-${index}`);
+            if (slides.length > 1 && !container.dataset.placement) {
+                this.initContainer(container, `static-ad-${index}`);
             }
         });
 
         this.isInitialized = true;
-        console.log(`[AdRotationManager] Initialized ${this.containers.size} rotating ad container(s)`);
+        console.log(`[AdRotationManager] Initialized ${this.containers.size} ad container(s)`);
+    }
+
+    /**
+     * Fetch ads from API for a specific placement
+     */
+    async loadAdsForPlacement(container, placementType, profileType = null, location = null, audience = null) {
+        try {
+            // Build query params
+            const params = new URLSearchParams({
+                limit: '20'  // Fetch up to 20 ads for better rotation variety
+            });
+            if (profileType) params.append('profile_type', profileType);
+            if (location) params.append('page_location', location);  // Changed from 'location' to 'page_location'
+            if (audience) params.append('audience', audience);
+
+            const response = await fetch(`${API_BASE_URL}/api/campaigns/ads/placement/${placementType}?${params}`);
+
+            if (!response.ok) {
+                console.warn(`[AdRotationManager] No ads available for ${placementType}`);
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.success && data.ads && data.ads.length > 0) {
+                // Render ads into container
+                this.renderAds(container, data.ads, placementType);
+
+                // Initialize rotation
+                const containerId = `${placementType}-${Date.now()}`;
+                this.initContainer(container, containerId);
+            } else {
+                console.log(`[AdRotationManager] No ads for ${placementType}`);
+            }
+        } catch (error) {
+            console.error(`[AdRotationManager] Error loading ads:`, error);
+        }
+    }
+
+    /**
+     * Render ads into container
+     */
+    renderAds(container, ads, placementType) {
+        container.innerHTML = ''; // Clear existing content
+
+        ads.forEach((ad, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'promo-slide' + (index === 0 ? ' active' : '');
+            slide.dataset.campaignId = ad.campaign_id;
+            slide.dataset.mediaId = ad.media_id;
+            slide.dataset.placement = placementType;
+            slide.dataset.cpiRate = ad.cpi_rate;
+
+            // Create ad content based on media type
+            if (ad.media_type === 'video') {
+                slide.innerHTML = `
+                    <video class="promo-video" autoplay muted loop playsinline>
+                        <source src="${ad.file_url}" type="${ad.file_type}">
+                    </video>
+                `;
+            } else {
+                slide.innerHTML = `
+                    <img src="${ad.file_url}" alt="${ad.campaign_name}" class="promo-image">
+                `;
+            }
+
+            // Add click tracking
+            slide.addEventListener('click', () => {
+                this.trackClick(ad.campaign_id, ad.media_id);
+            });
+
+            container.appendChild(slide);
+        });
+
+        // Track impression for first ad (after it becomes visible)
+        setTimeout(() => {
+            const firstAd = ads[0];
+            this.trackImpression(firstAd.campaign_id, firstAd.media_id, placementType);
+        }, 1000);
+    }
+
+    /**
+     * Track impression when ad becomes visible
+     */
+    async trackImpression(campaignId, mediaId, placement) {
+        const impressionKey = `${campaignId}-${mediaId}-${placement}`;
+
+        // Only track once per page load
+        if (this.trackedImpressions.has(impressionKey)) {
+            return;
+        }
+
+        this.trackedImpressions.add(impressionKey);
+
+        try {
+            const userData = JSON.parse(localStorage.getItem('user') || 'null');
+            const profileType = localStorage.getItem('currentRole') || null;
+
+            const response = await fetch(`${API_BASE_URL}/api/campaign/track-impression`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    campaign_id: campaignId,
+                    user_id: userData?.id || null,
+                    profile_id: userData?.profile_id || null,
+                    profile_type: profileType,
+                    placement: placement,
+                    location: null,
+                    audience: null,
+                    region: null,
+                    device_type: this.getDeviceType()
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`[AdRotationManager] Impression tracked:`, data);
+
+                // Store impression ID for click tracking
+                if (data.impression_id) {
+                    const clickKey = `${campaignId}-${mediaId}`;
+                    this.impressionIds.set(clickKey, data.impression_id);
+                }
+            }
+        } catch (error) {
+            console.error('[AdRotationManager] Error tracking impression:', error);
+        }
+    }
+
+    /**
+     * Track click on ad
+     */
+    async trackClick(campaignId, mediaId) {
+        try {
+            // Get impression ID from stored impressions
+            const clickKey = `${campaignId}-${mediaId}`;
+            const impressionId = this.impressionIds.get(clickKey);
+
+            if (!impressionId) {
+                console.warn(`[AdRotationManager] No impression ID found for campaign ${campaignId}, media ${mediaId}`);
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/campaign/track-click?campaign_id=${campaignId}&impression_id=${impressionId}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                console.log(`[AdRotationManager] Click tracked for campaign ${campaignId}, impression ${impressionId}`);
+            }
+        } catch (error) {
+            console.error('[AdRotationManager] Error tracking click:', error);
+        }
+    }
+
+    /**
+     * Get device type
+     */
+    getDeviceType() {
+        const ua = navigator.userAgent;
+        if (/tablet|ipad|playbook|silk/i.test(ua)) {
+            return 'tablet';
+        }
+        if (/mobile|iphone|ipod|android|blackberry|opera mini|opera mobi|skyfire|maemo|windows phone|palm|iemobile|symbian|symbianos|fennec/i.test(ua)) {
+            return 'mobile';
+        }
+        return 'desktop';
     }
 
     /**
@@ -95,11 +278,11 @@ class AdRotationManager {
         styles.id = 'ad-rotation-styles';
         styles.textContent = `
             /* Ad Slide Transitions */
-            .promo-container.premium-promo {
+            .leaderboard-banner.premium-promo {
                 position: relative;
             }
 
-            .promo-container.premium-promo .promo-slide {
+            .leaderboard-banner.premium-promo .promo-slide {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -113,14 +296,14 @@ class AdRotationManager {
                 justify-content: center;
             }
 
-            .promo-container.premium-promo .promo-slide.active {
+            .leaderboard-banner.premium-promo .promo-slide.active {
                 position: relative;
                 opacity: 1;
                 visibility: visible;
                 z-index: 2;
             }
 
-            .promo-container.premium-promo .promo-slide.fade-out {
+            .leaderboard-banner.premium-promo .promo-slide.fade-out {
                 opacity: 0;
                 z-index: 1;
             }
@@ -171,7 +354,7 @@ class AdRotationManager {
             }
 
             /* Pause progress on hover */
-            .promo-container.premium-promo:hover .ad-indicator.active .ad-indicator-progress {
+            .leaderboard-banner.premium-promo:hover .ad-indicator.active .ad-indicator-progress {
                 animation-play-state: paused;
             }
 
@@ -242,6 +425,18 @@ class AdRotationManager {
         // Fade in new slide
         slides[index].classList.remove('fade-out');
         slides[index].classList.add('active');
+
+        // Track impression for new slide
+        const newSlide = slides[index];
+        if (newSlide.dataset.campaignId) {
+            setTimeout(() => {
+                this.trackImpression(
+                    parseInt(newSlide.dataset.campaignId),
+                    parseInt(newSlide.dataset.mediaId),
+                    newSlide.dataset.placement
+                );
+            }, 1000); // Track after 1 second of visibility
+        }
 
         // Update indicators
         indicators.forEach((ind, i) => {

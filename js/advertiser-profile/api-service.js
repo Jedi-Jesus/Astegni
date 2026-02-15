@@ -42,6 +42,7 @@ const AdvertiserProfileAPI = {
         try {
             const token = this.getAuthToken();
             if (!token) {
+                console.error('[AdvertiserProfileAPI] No auth token found');
                 throw new Error('No auth token found');
             }
 
@@ -50,6 +51,8 @@ const AdvertiserProfileAPI = {
                 ? `${this.baseURL}/api/advertiser/${advertiserId}`
                 : `${this.baseURL}/api/advertiser/profile`;
 
+            console.log('[AdvertiserProfileAPI] Fetching profile from:', url);
+
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -57,12 +60,22 @@ const AdvertiserProfileAPI = {
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[AdvertiserProfileAPI] HTTP error!', response.status, errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log('[AdvertiserProfileAPI] Profile data received:', data);
+
+            // Validate required fields
+            if (!data.full_name && !data.first_name) {
+                console.warn('[AdvertiserProfileAPI] ⚠ Profile data missing name fields');
+            }
+
+            return data;
         } catch (error) {
-            console.error('Error getting advertiser profile:', error);
+            console.error('[AdvertiserProfileAPI] Error getting advertiser profile:', error);
             throw error;
         }
     },
@@ -299,7 +312,7 @@ const AdvertiserProfileAPI = {
     },
 
     // Upload campaign media (image or video) with organized folder structure
-    async uploadCampaignMedia(file, brandName, campaignName, adPlacement) {
+    async uploadCampaignMedia(file, brandName, campaignName, adPlacement, campaignId = null, brandId = null) {
         try {
             const token = this.getAuthToken();
             if (!token) {
@@ -311,6 +324,14 @@ const AdvertiserProfileAPI = {
             formData.append('brand_name', brandName);
             formData.append('campaign_name', campaignName);
             formData.append('ad_placement', adPlacement);
+
+            // Add campaign_id and brand_id if provided
+            if (campaignId) {
+                formData.append('campaign_id', campaignId);
+            }
+            if (brandId) {
+                formData.append('brand_id', brandId);
+            }
 
             const response = await fetch(`${this.baseURL}/api/upload/campaign-media`, {
                 method: 'POST',
@@ -328,6 +349,76 @@ const AdvertiserProfileAPI = {
             return await response.json();
         } catch (error) {
             console.error('Error uploading campaign media:', error);
+            throw error;
+        }
+    },
+
+    // Get campaign media (images and videos)
+    async getCampaignMedia(campaignId, mediaType = null, placement = null) {
+        try {
+            const token = this.getAuthToken();
+            if (!token) {
+                throw new Error('No auth token found');
+            }
+
+            let url = `${this.baseURL}/api/campaign/${campaignId}/media`;
+            const params = new URLSearchParams();
+
+            if (mediaType) {
+                params.append('media_type', mediaType);
+            }
+            if (placement) {
+                params.append('placement', placement);
+            }
+
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching campaign media:', error);
+            throw error;
+        }
+    },
+
+    // Delete campaign media
+    async deleteCampaignMedia(mediaId) {
+        try {
+            const token = this.getAuthToken();
+            if (!token) {
+                throw new Error('No auth token found');
+            }
+
+            const response = await fetch(`${this.baseURL}/api/campaign/media/${mediaId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting campaign media:', error);
             throw error;
         }
     },

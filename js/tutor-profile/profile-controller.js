@@ -106,7 +106,8 @@ const TutorProfileController = {
                 this.loadBlogPosts(),
                 this.loadSessionRequests(),
                 this.loadConfirmedStudents(),
-                this.loadConnections()
+                this.loadConnections(),
+                this.loadStories()  // Load stories from Backblaze
             ]);
         } catch (error) {
             console.error('Error loading profile data:', error);
@@ -136,8 +137,8 @@ const TutorProfileController = {
             certifications: [],
             experiences: [],
             achievements: [],
-            profilePicture: '../uploads/system_images/system_profile_pictures/tutor-.jpg',
-            coverPhoto: '../uploads/system_images/system_cover_pictures/tutor cover.png'
+            profilePicture: null,  // Will use SVG placeholder from UI manager
+            coverPhoto: null  // Will use SVG placeholder from UI manager
         };
 
         TutorProfileState.setTutorProfile(emptyProfile);
@@ -196,6 +197,21 @@ const TutorProfileController = {
             TutorProfileUI.displayConnections(connections, filter);
         } catch (error) {
             console.error('Error loading connections:', error);
+        }
+    },
+
+    // Load stories from Backblaze
+    async loadStories() {
+        try {
+            // Use new StoriesLoader instead of old loadTutorStories
+            if (typeof StoriesLoader !== 'undefined' && StoriesLoader.loadStories) {
+                await StoriesLoader.loadStories();
+                console.log('✅ Stories loaded successfully');
+            } else {
+                console.log('ℹ️ StoriesLoader not available yet');
+            }
+        } catch (error) {
+            console.error('Error loading stories:', error);
         }
     },
 

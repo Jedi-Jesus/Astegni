@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Picture Debug</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        img {
+            max-width: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Profile Picture Diagnostic Tool</h1>
+
+    <div class="section">
+        <h2>1. LocalStorage Check</h2>
+        <div id="localStorage-check"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. API Response Check</h2>
+        <button onclick="checkAPIResponse()">Test /api/me Endpoint</button>
+        <div id="api-check"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Image Loading Test</h2>
+        <div id="image-test"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. Profile-System Functions</h2>
+        <div id="functions-check"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // 1. Check localStorage
+        function checkLocalStorage() {
+            const output = document.getElementById('localStorage-check');
+            const token = localStorage.getItem('token');
+            const currentUser = localStorage.getItem('currentUser');
+
+            let html = '';
+
+            if (!token) {
+                html += '<div class="test-result error">❌ No token found - user not logged in</div>';
+            } else {
+                html += '<div class="test-result success">✅ Token exists</div>';
+            }
+
+            if (!currentUser) {
+                html += '<div class="test-result error">❌ No currentUser in localStorage</div>';
+            } else {
+                try {
+                    const user = JSON.parse(currentUser);
+                    html += '<div class="test-result success">✅ currentUser exists</div>';
+                    html += `<div class="test-result info">
+                        <strong>User Data:</strong><br>
+                        ID: ${user.id}<br>
+                        Name: ${user.first_name} ${user.father_name}<br>
+                        Email: ${user.email}<br>
+                        Active Role: ${user.active_role}<br>
+                        Roles: ${JSON.stringify(user.roles)}<br>
+                        <strong>Profile Picture:</strong> ${user.profile_picture || '(not set)'}
+                    </div>`;
+
+                    if (user.profile_picture) {
+                        html += '<div class="test-result success">✅ profile_picture field exists in currentUser</div>';
+                    } else {
+                        html += '<div class="test-result error">❌ profile_picture field is missing or null</div>';
+                    }
+                } catch (e) {
+                    html += `<div class="test-result error">❌ Error parsing currentUser: ${e.message}</div>`;
+                }
+            }
+
+            output.innerHTML = html;
+        }
+
+        // 2. Check API Response
+        async function checkAPIResponse() {
+            const output = document.getElementById('api-check');
+            output.innerHTML = '<div class="test-result info">⏳ Loading...</div>';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                output.innerHTML = '<div class="test-result error">❌ No token - cannot call API</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                let html = '<div class="test-result success">✅ API call successful</div>';
+                html += `<div class="test-result info">
+                    <strong>API Response:</strong><br>
+                    ID: ${data.id}<br>
+                    Name: ${data.name}<br>
+                    Active Role: ${data.active_role}<br>
+                    Roles: ${JSON.stringify(data.roles)}<br>
+                    <strong>Profile Picture:</strong> ${data.profile_picture || '(not returned)'}
+                </div>`;
+
+                if (data.profile_picture) {
+                    html += '<div class="test-result success">✅ API returns profile_picture</div>';
+                    testImageLoad(data.profile_picture);
+                } else {
+                    html += '<div class="test-result error">❌ API does not return profile_picture</div>';
+                }
+
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<div class="test-result error">❌ API Error: ${error.message}</div>`;
+            }
+        }
+
+        // 3. Test Image Loading
+        function testImageLoad(url) {
+            const output = document.getElementById('image-test');
+            output.innerHTML = '<div class="test-result info">⏳ Testing image load...</div>';
+
+            const img = new Image();
+            img.onload = function() {
+                output.innerHTML = `
+                    <div class="test-result success">✅ Image loads successfully</div>
+                    <div class="test-result info">
+                        <strong>Image URL:</strong><br>
+                        <code>${url}</code><br><br>
+                        <img src="${url}" alt="Profile Picture">
+                    </div>
+                `;
+            };
+            img.onerror = function() {
+                output.innerHTML = `
+                    <div class="test-result error">❌ Image failed to load</div>
+                    <div class="test-result info">
+                        <strong>Image URL:</strong><br>
+                        <code>${url}</code><br><br>
+                        <strong>Possible causes:</strong>
+                        <ul>
+                            <li>Invalid URL</li>
+                            <li>CORS issue</li>
+                            <li>File doesn't exist on server</li>
+                            <li>Network error</li>
+                        </ul>
+                    </div>
+                `;
+            };
+            img.src = url;
+        }
+
+        // 4. Check profile-system functions
+        function checkFunctions() {
+            const output = document.getElementById('functions-check');
+            let html = '';
+
+            if (typeof updateProfilePictures === 'function') {
+                html += '<div class="test-result success">✅ updateProfilePictures function exists</div>';
+            } else {
+                html += '<div class="test-result error">❌ updateProfilePictures function not found</div>';
+            }
+
+            if (typeof updateProfileDropdown === 'function') {
+                html += '<div class="test-result success">✅ updateProfileDropdown function exists</div>';
+            } else {
+                html += '<div class="test-result error">❌ updateProfileDropdown function not found</div>';
+            }
+
+            // Check if profile-pic element exists
+            const profilePic = document.getElementById('profile-pic');
+            if (profilePic) {
+                html += '<div class="test-result success">✅ #profile-pic element exists</div>';
+                html += `<div class="test-result info">Current src: <code>${profilePic.src}</code></div>`;
+            } else {
+                html += '<div class="test-result error">❌ #profile-pic element not found (not on profile page)</div>';
+            }
+
+            output.innerHTML = html;
+        }
+
+        // Run checks on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkLocalStorage();
+            checkFunctions();
+        });
+    </script>
+</body>
+</html>

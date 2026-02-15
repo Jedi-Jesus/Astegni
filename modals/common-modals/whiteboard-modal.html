@@ -695,6 +695,10 @@
                             <i class="fas fa-trash tool-icon"></i>
                             Clear
                         </button>
+                        <button class="tool-button" id="testBannerBtn" title="Test Skyscraper Banner" onclick="whiteboardManager.showTimedPopup({minute: 0, title: 'Test Banner', icon: 'fa-star', message: 'This is a full-height skyscraper banner test!', cta: 'Got it'})">
+                            <i class="fas fa-vial tool-icon"></i>
+                            Test Banner
+                        </button>
                         <div class="allow-interaction-wrapper" id="allowInteractionWrapper">
                             <!-- HOST VIEW: Allow Interaction button with dropdown -->
                             <div class="host-interaction-view" id="hostInteractionView">
@@ -828,31 +832,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- Ad Panel (slides in from right at 28 minutes) -->
-                <div class="whiteboard-ad-panel" id="whiteboardAdPanel">
-                    <div class="ad-panel-header">
-                        <span class="ad-label">Sponsored</span>
-                        <button class="ad-close-btn" id="closeAdPanelBtn" title="Close">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="ad-panel-content" id="adPanelContent">
-                        <!-- Ad content loaded dynamically -->
-                        <div class="ad-placeholder">
-                            <i class="fas fa-ad"></i>
-                            <p>Advertisement</p>
-                        </div>
-                    </div>
-                    <div class="ad-panel-footer">
-                        <span class="ad-timer" id="adPanelTimer">Closes in 5:00</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pop-up Notifications (bottom right, timed) -->
-            <div class="whiteboard-popup-container" id="whiteboardPopupContainer">
-                <!-- Pop-ups will be dynamically inserted here -->
             </div>
 
             <!-- RIGHT SIDEBAR: VS Code Style with Icon Bar -->
@@ -1035,6 +1014,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Skyscraper Banner (overlays right sidebar, timed) -->
+            <div class="whiteboard-skyscrapper-banner" id="whiteboardSkyscrapperBanner" data-placement="in_session_skyscraper" data-profile-type="tutor" data-location="whiteboard_session">
+                <!-- Banner ads will be dynamically inserted here -->
             </div>
         </div>
     </div>

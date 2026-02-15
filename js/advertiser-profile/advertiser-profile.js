@@ -2781,7 +2781,7 @@ window.closeModal = closeModal;
 // - uploadImage
 // window.openEditProfileModal is defined in inline script in advertiser-profile.html
 window.saveProfile = saveProfile;
-window.openShareModal = openShareModal;
+window.openShareModal = typeof shareProfile !== 'undefined' ? shareProfile : function() { console.error('shareProfile not loaded'); };
 window.switchShareImage = switchShareImage;
 window.copyShareLink = copyShareLink;
 window.openContactModal = openContactModal;

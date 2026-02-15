@@ -14,7 +14,7 @@ class Utils {
 
         toast.style.cssText = `
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
             padding: 1rem 1.5rem;
             background: ${backgrounds[type] || backgrounds.info};
@@ -22,7 +22,7 @@ class Utils {
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             z-index: 10000;
-            animation: slideInUp 0.3s ease, slideOutDown 0.3s ease 2.7s;
+            animation: slideInDown 0.3s ease, slideOutUp 0.3s ease 2.7s;
             display: flex;
             align-items: center;
             gap: 0.5rem;

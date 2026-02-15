@@ -977,6 +977,7 @@ class UserResponse(BaseModel):
     role_ids: Optional[dict] = None  # Include role-specific profile IDs
     account_balance: float = 0.0  # User's account balance for payments
     location: Optional[str] = None  # User's location for location-based filtering
+    country_code: Optional[str] = None  # ISO country code (e.g., 'ET', 'US', 'GB')
     social_links: Optional[dict] = None  # Social media links (TikTok, Instagram, etc.)
 
 class TokenResponse(BaseModel):
@@ -1449,6 +1450,7 @@ class AdvertiserProfileUpdate(BaseModel):
     bio: Optional[str] = None
     quote: Optional[str] = None
     location: Optional[List[str]] = None  # Array of locations
+    country_code: Optional[str] = None  # ISO country code (e.g., 'ET', 'US')
     display_location: Optional[bool] = None  # Will be saved to users table
     socials: Optional[dict] = None  # {"website": "", "facebook": "", "twitter": "", etc.}
     profile_picture: Optional[str] = None
@@ -2344,6 +2346,62 @@ class Blog(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class Story(Base):
+    """
+    User stories (Instagram/WhatsApp style)
+    Stories expire after 24 hours
+    """
+    __tablename__ = "stories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    profile_id = Column(Integer, nullable=False, index=True)
+    profile_type = Column(String(20), nullable=False, index=True)  # 'tutor', 'student', 'parent', 'advertiser'
+    media_url = Column(String(500), nullable=False)
+    media_type = Column(String(10), nullable=False)  # 'image', 'video'
+    caption = Column(Text, nullable=True)
+    views = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    is_active = Column(Boolean, default=True, index=True)
+
+    # Relationship
+    user = relationship("User")
+
+
+class UserStorageUsage(Base):
+    """
+    Track user's storage consumption across all media types
+    Enforces subscription-based storage quotas
+    """
+    __tablename__ = "user_storage_usage"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=True, index=True)
+
+    # Storage usage by media type (in bytes)
+    images_size = Column(Integer, default=0)  # Total size of all images
+    videos_size = Column(Integer, default=0)  # Total size of all videos
+    documents_size = Column(Integer, default=0)  # Total size of all documents
+    audios_size = Column(Integer, default=0)  # Total size of all audio files
+
+    # Total storage used (in bytes)
+    total_size = Column(Integer, default=0)  # Sum of all above
+
+    # File counts by type
+    images_count = Column(Integer, default=0)
+    videos_count = Column(Integer, default=0)
+    documents_count = Column(Integer, default=0)
+    audios_count = Column(Integer, default=0)
+
+    # Timestamps
+    last_calculated_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationship
+    user = relationship("User")
+
 
 class Club(Base):
     __tablename__ = "clubs"

@@ -134,7 +134,7 @@ async def get_cancellation_calculator(campaign_id: int, current_user = Depends(g
                 cur.execute("""
                     SELECT
                         id, name, campaign_budget, amount_used, remaining_balance,
-                        verification_status, created_at, advertiser_id
+                        verification_status, created_at, advertiser_id, campaign_status
                     FROM campaign_profile
                     WHERE id = %s AND advertiser_id = %s
                 """, (campaign_id, advertiser_profile_id))
@@ -143,7 +143,7 @@ async def get_cancellation_calculator(campaign_id: int, current_user = Depends(g
                 if not campaign:
                     raise HTTPException(status_code=404, detail="Campaign not found or you don't own it")
 
-                if campaign['verification_status'] == 'cancelled':
+                if campaign['campaign_status'] == 'cancelled':
                     raise HTTPException(status_code=400, detail="Campaign already cancelled")
 
                 # Calculate values
@@ -196,7 +196,7 @@ async def get_cancellation_calculator(campaign_id: int, current_user = Depends(g
                         "final_fee_percent": final_fee_percent,
                         "fee_amount": cancellation_fee,
                         "refund_amount": refund_amount,
-                        "fee_tier_reason": self._get_fee_tier_reason(base_fee_percent),
+                        "fee_tier_reason": _get_fee_tier_reason(base_fee_percent),
                         "grace_period_note": "Cancel within 24 hours for 0% fee!" if within_grace_period else None
                     },
                     "breakdown": {
@@ -267,7 +267,7 @@ async def pause_campaign(campaign_id: int, request: CampaignPauseRequest, curren
                 if campaign['verification_status'] == 'paused':
                     raise HTTPException(status_code=400, detail="Campaign already paused")
 
-                if campaign['verification_status'] == 'cancelled':
+                if campaign['campaign_status'] == 'cancelled':
                     raise HTTPException(status_code=400, detail="Campaign already cancelled")
 
                 # Pause campaign (no financial transactions)
@@ -412,7 +412,7 @@ async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellati
                 if not campaign:
                     raise HTTPException(status_code=404, detail="Campaign not found or you don't own it")
 
-                if campaign['verification_status'] == 'cancelled':
+                if campaign['campaign_status'] == 'cancelled':
                     raise HTTPException(status_code=400, detail="Campaign already cancelled")
 
                 # Get campaign finance details
@@ -439,14 +439,12 @@ async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellati
                 # Update campaign status
                 cur.execute("""
                     UPDATE campaign_profile
-                    SET verification_status = 'cancelled',
-                        is_verified = FALSE,
+                    SET campaign_status = 'cancelled',
                         cancellation_fee_percent = %s,
                         cancellation_fee_amount = %s,
                         cancelled_by_user_id = %s,
                         cancellation_reason = %s,
                         ended_at = NOW(),
-                        pause_reason = 'cancelled_by_advertiser',
                         updated_at = NOW()
                     WHERE id = %s
                 """, (

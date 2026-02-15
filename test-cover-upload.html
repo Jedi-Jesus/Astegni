@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cover Upload</title>
+</head>
+<body>
+    <h1>Test Cover Upload</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="testUpload()">Upload</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        async function testUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+            console.log('User:', user);
+            console.log('Active Role:', user.active_role);
+            console.log('Token:', token);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/upload/cover-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response:', response);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    document.getElementById('result').innerHTML = `<pre>ERROR ${response.status}: ${errorText}</pre>`;
+                    return;
+                }
+
+                const result = await response.json();
+                console.log('Success:', result);
+                document.getElementById('result').innerHTML = `<pre>SUCCESS: ${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Upload error:', error);
+                document.getElementById('result').innerHTML = `<pre>ERROR: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

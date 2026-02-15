@@ -110,6 +110,15 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 planned_budget = float(campaign.planned_budget)
                 cpi_rate = float(campaign.cpi_rate)
 
+                # Validate budget doesn't exceed database limits
+                # deposit_amount, outstanding_balance have precision(10,2) = max 99,999,999.99
+                if planned_budget > 99999999.99:
+                    raise HTTPException(status_code=400, detail="Planned budget cannot exceed 99,999,999.99")
+
+                # Validate CPI rate is reasonable (not too small to cause overflow)
+                if cpi_rate < 0.0001:
+                    raise HTTPException(status_code=400, detail="CPI rate must be at least 0.0001")
+
                 # Calculate 20% deposit
                 deposit_percent = 20.00
                 deposit_amount = planned_budget * (deposit_percent / 100)
@@ -118,51 +127,59 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 # Calculate total planned impressions
                 total_impressions_planned = int(planned_budget / cpi_rate)
 
+                # Validate total impressions doesn't overflow bigint (max: 9,223,372,036,854,775,807)
+                if total_impressions_planned > 9223372036854775807:
+                    raise HTTPException(status_code=400, detail="Total impressions planned exceeds maximum. Please increase CPI rate or reduce budget.")
+
+                # Debug logging to help identify overflow
+                print(f"DEBUG Campaign Creation:")
+                print(f"  planned_budget: {planned_budget}")
+                print(f"  cpi_rate: {cpi_rate}")
+                print(f"  deposit_amount: {deposit_amount}")
+                print(f"  outstanding_balance: {outstanding_balance}")
+                print(f"  total_impressions_planned: {total_impressions_planned}")
+
                 # Set default targeting arrays
                 target_audiences = campaign.target_audiences or ['tutor', 'student', 'parent', 'advertiser', 'user']
                 target_regions = campaign.target_regions or []
                 target_placements = campaign.target_placements or ['placeholder', 'widget', 'popup', 'insession']
 
-                # Create the campaign
+                # Create the campaign (without removed/deprecated fields)
+                # Removed fields: thumbnail_url, file_url (→ campaign_media table)
+                # Removed fields: target_audience (singular) (→ use target_audiences array instead)
+                # Removed fields: impressions, impressions_delivered, impressions_charged, conversions, likes, shares, comments (→ calculated from other tables)
+                # Removed fields: payment_status, paid_at, payment_model, deposit_paid, invoice_status (→ campaign_invoices table)
                 cur.execute("""
                     INSERT INTO campaign_profile (
-                        name, description, thumbnail_url, file_url, objective,
-                        target_audience, target_location, start_date, call_to_action,
+                        name, description, objective,
+                        start_date, call_to_action, target_location,
                         verification_status, is_verified,
-                        impressions, impressions_delivered, impressions_charged,
-                        conversions, likes, shares, comments,
                         target_audiences, target_regions, target_placements,
                         cpi_rate, total_charged, billing_frequency,
                         campaign_budget, amount_used, remaining_balance,
-                        payment_status, paid_at, advertiser_id, brand_id,
-                        payment_model, deposit_percent, deposit_amount, deposit_paid,
+                        advertiser_id, brand_id,
+                        deposit_percent, deposit_amount,
                         outstanding_balance, total_impressions_planned,
-                        invoice_status,
                         created_at, updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s,
                         'pending', FALSE,
-                        0, 0, 0, 0, 0, 0, 0,
                         %s, %s, %s,
                         %s, 0.00, 1000,
                         %s, 0.00, 0.00,
-                        'deposit_paid', NOW(), %s, %s,
-                        'deposit', %s, %s, TRUE,
                         %s, %s,
-                        'pending',
+                        %s, %s,
+                        %s, %s,
                         NOW(), NOW()
                     )
                     RETURNING *
                 """, (
                     campaign.name,
                     campaign.description,
-                    campaign.thumbnail_url,
-                    campaign.file_url,
                     campaign.objective,
-                    campaign.target_audience,
-                    campaign.target_location,
                     campaign.start_date,
                     campaign.call_to_action,
+                    campaign.target_location,
                     target_audiences,
                     target_regions,
                     target_placements,
@@ -176,6 +193,44 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                     total_impressions_planned
                 ))
                 new_campaign = cur.fetchone()
+
+                # Insert media files into campaign_media table if provided
+                if campaign.thumbnail_url:
+                    cur.execute("""
+                        INSERT INTO campaign_media (
+                            campaign_id, brand_id, advertiser_id,
+                            media_type, file_url, file_name, placement
+                        ) VALUES (
+                            %s, %s, %s, 'image', %s, %s, 'widget'
+                        )
+                    """, (
+                        new_campaign['id'],
+                        campaign.brand_id,
+                        advertiser_profile_id,
+                        campaign.thumbnail_url,
+                        campaign.thumbnail_url.split('/')[-1]  # Extract filename from URL
+                    ))
+
+                if campaign.file_url:
+                    # Determine media type from file extension
+                    file_ext = campaign.file_url.split('.')[-1].lower()
+                    media_type = 'video' if file_ext in ['mp4', 'mov', 'avi', 'webm'] else 'image'
+
+                    cur.execute("""
+                        INSERT INTO campaign_media (
+                            campaign_id, brand_id, advertiser_id,
+                            media_type, file_url, file_name, placement
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, 'placeholder'
+                        )
+                    """, (
+                        new_campaign['id'],
+                        campaign.brand_id,
+                        advertiser_profile_id,
+                        media_type,
+                        campaign.file_url,
+                        campaign.file_url.split('/')[-1]  # Extract filename from URL
+                    ))
 
                 # NOTE: Payment handled by external gateway (Chapa)
                 # Campaign will be marked as deposit_paid via webhook after successful payment

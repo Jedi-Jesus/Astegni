@@ -298,9 +298,13 @@ app.include_router(cpi_settings_router)
 from advertiser_balance_endpoints import router as advertiser_balance_router
 app.include_router(advertiser_balance_router)
 
-# Include campaign impression tracking routes
-from campaign_impression_endpoints import router as campaign_impression_router
+# Include campaign impression tracking routes (simplified version)
+from simple_impression_tracking import router as campaign_impression_router
 app.include_router(campaign_impression_router)
+
+# Include campaign launch and ad serving routes
+from campaign_launch_endpoints import router as campaign_launch_router
+app.include_router(campaign_launch_router)
 
 # Tutor packages routes already included above (before routes.py to avoid conflicts)
 
@@ -487,6 +491,10 @@ app.include_router(payment_router)
 # Role Management Routes
 from role_management_endpoints import router as role_management_router
 app.include_router(role_management_router)
+
+# Storage endpoints
+from storage_endpoints import router as storage_router
+app.include_router(storage_router)
 
 # Student documents routes already included above (before student reviews to avoid route conflicts)
 

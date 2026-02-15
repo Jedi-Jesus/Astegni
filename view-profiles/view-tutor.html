@@ -258,7 +258,7 @@
         }
 
         /* Ad containers animation */
-        .promo-container.sidebar-active,
+        .leaderboard-banner.sidebar-active,
         .ad-placeholder.sidebar-active {
             transform: translateX(280px) !important;
         }
@@ -609,7 +609,7 @@
                 transform: translateX(0) !important;
             }
 
-            .promo-container.sidebar-active,
+            .leaderboard-banner.sidebar-active,
             .ad-placeholder.sidebar-active {
                 transform: translateX(0) !important;
             }
@@ -742,6 +742,41 @@
 </head>
 
 <body class="font-sans">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <h2 class="loading-text">ASTEGNI</h2>
+    </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300);
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Navigation -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
@@ -996,25 +1031,9 @@
         </div>
     </div>
 
-    <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <!-- Rotating Ad Section -->
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="tutor" data-location="view_tutor">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
     <!-- Sidebar -->
@@ -1052,10 +1071,6 @@
                     <span>Similar Tutors</span>
                 </a>
                 <hr class="my-4 border-gray-300">
-                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">⚙️</span>
-                    <span>Settings</span>
-                </a>
                 <a href="#" onclick="showLogoutModal(); return false;"
                     class="sidebar-link text-red-500 hover:bg-red-50">
                     <span class="sidebar-icon">🚪</span>
@@ -1104,8 +1119,8 @@
                                         <div class="profile-avatar-container"
                                             style="position: relative; flex-shrink: 0;">
                                             <!-- Story Ring Container -->
-                                            <div class="story-ring-container" onclick="openStory()"
-                                                style="position: relative; padding: 4px; background: var(--button-bg); border-radius: 50%; cursor: pointer; animation: astegniPulse 3s infinite;">
+                                            <div class="story-ring-container"
+                                                style="position: relative; padding: 0; background: transparent; border-radius: 50%; cursor: default; display: block;">
                                                 <img id="profile-avatar" src="../pictures/tutor-male-young.jpg"
                                                     alt="Tutor Profile" class="profile-avatar"
                                                     style="width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--card-bg); box-shadow: 0 8px 24px rgba(0,0,0,0.15); object-fit: cover;">
@@ -1114,7 +1129,7 @@
                                                 style="position: absolute; bottom: 10px; right: 10px; width: 24px; height: 24px; background: #22c55e; border: 4px solid var(--card-bg); border-radius: 50%; box-shadow: 0 2px 8px rgba(34,197,94,0.4);"></span>
                                             <!-- Story Text -->
                                             <div class="story-text"
-                                                style="text-align: center; margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary); font-weight: 600;">
+                                                style="text-align: center; margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; display: none;">
                                                 View Story</div>
                                         </div>
 
@@ -1348,34 +1363,26 @@
                         <!-- Stories Panel -->
                         <div id="stories-panel" class="panel-content">
                             <div class="card p-6 mb-8">
-                                <h3 class="text-2xl font-bold mb-6" style="color: var(--heading);">📸 Tutor's
-                                    Stories</h3>
-                                <p class="text-gray-600 mb-8">Educational moments and teaching highlights shared by
-                                    Dr. Abebe Kebede</p>
+                                <h3 class="text-2xl font-bold mb-6" style="color: var(--heading);">📸 Tutor's Stories</h3>
+                                <p class="text-gray-600 mb-8" id="stories-description">Educational moments and teaching highlights</p>
 
                                 <!-- Story Stats -->
                                 <div class="story-stats"
                                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; padding: 1.5rem; background: var(--section-bg); border-radius: 12px;">
                                     <div style="text-align: center;">
-                                        <div style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">
-                                            24</div>
-                                        <div style="font-size: 0.875rem; color: var(--text-muted);">Total Stories
-                                        </div>
+                                        <div style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">0</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted);">Total Stories</div>
                                     </div>
                                     <div style="text-align: center;">
-                                        <div style="font-size: 1.875rem; font-weight: 700; color: #22c55e;">12.5K
-                                        </div>
-                                        <div style="font-size: 0.875rem; color: var(--text-muted);">Total Views
-                                        </div>
+                                        <div style="font-size: 1.875rem; font-weight: 700; color: #22c55e;">0</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted);">Total Views</div>
                                     </div>
                                     <div style="text-align: center;">
-                                        <div style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">847
-                                        </div>
+                                        <div style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">0</div>
                                         <div style="font-size: 0.875rem; color: var(--text-muted);">Reactions</div>
                                     </div>
                                     <div style="text-align: center;">
-                                        <div style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">156
-                                        </div>
+                                        <div style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">0</div>
                                         <div style="font-size: 0.875rem; color: var(--text-muted);">Comments</div>
                                     </div>
                                 </div>
@@ -1383,195 +1390,11 @@
                                 <!-- Tutor's Stories Grid -->
                                 <div class="tutor-stories-grid"
                                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
-
-                                    <!-- Story Card 1 - Math Tips -->
-                                    <div class="story-card" onclick="openStoryViewer('story1')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/Math wallpaper 1.jpeg" alt="Math Tips"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: var(--button-bg); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Math Tips
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Solving Quadratic Equations</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    2 hours ago</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️
-                                                    1.2K views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    89</span>
-                                            </div>
-                                        </div>
+                                    <!-- Stories will be loaded dynamically -->
+                                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                                        <div style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+                                        <p>Loading stories...</p>
                                     </div>
-
-                                    <!-- Story Card 2 - Physics Experiment -->
-                                    <div class="story-card" onclick="openStoryViewer('story2')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/Physics wallpaper 2.jpeg" alt="Physics"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Physics Lab
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Newton's Laws Demo</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    5 hours ago</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️ 856
-                                                    views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    67</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Story Card 3 - Chemistry -->
-                                    <div class="story-card" onclick="openStoryViewer('story3')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/Chemistry wallpaper 3.jpg" alt="Chemistry"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Chemistry
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Periodic Table Tricks</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Yesterday</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️
-                                                    2.3K views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    124</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Story Card 4 - Study Tips -->
-                                    <div class="story-card" onclick="openStoryViewer('story4')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/Biology wallpaper 1.jpeg" alt="Study Tips"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: #f59e0b; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Study Tips
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Exam Preparation Guide</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    2 days ago</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️
-                                                    3.5K views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    201</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Story Card 5 - Q&A Session -->
-                                    <div class="story-card" onclick="openStoryViewer('story5')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/Geography wallpaper 1.jpeg" alt="Q&A"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Q&A
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Student Questions Answered</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    3 days ago</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️
-                                                    1.8K views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    95</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Story Card 6 - Success Story -->
-                                    <div class="story-card" onclick="openStoryViewer('story6')"
-                                        style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div style="position: relative;">
-                                            <img src="../pictures/History wallpaper 1.jpeg" alt="Success"
-                                                style="width: 100%; height: 250px; object-fit: cover;">
-                                            <div
-                                                style="position: absolute; top: 10px; left: 10px; background: #3b82f6; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                                Success
-                                            </div>
-                                            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                                <p
-                                                    style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    Student Got 95% in Finals!</p>
-                                                <p
-                                                    style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                                    1 week ago</p>
-                                            </div>
-                                        </div>
-                                        <div style="padding: 0.75rem;">
-                                            <div
-                                                style="display: flex; justify-content: space-between; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">👁️
-                                                    4.2K views</span>
-                                                <span style="font-size: 0.875rem; color: var(--text-muted);">❤️
-                                                    312</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <!-- Load More Button -->
-                                <div style="margin-top: 2rem; text-align: center;">
-                                    <button onclick="loadMoreStories()"
-                                        style="padding: 0.75rem 2rem; background: transparent; color: var(--button-bg); border: 2px solid var(--button-bg); border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                        Load More Stories
-                                    </button>
                                 </div>
 
                             </div>
@@ -1752,233 +1575,6 @@
                             </div>
                         </div>
 
-                        <!-- Settings Panel -->
-                        <div id="settings-panel" class="panel-content">
-                            <div class="mb-8">
-                                <h1 class="text-3xl font-bold mb-2">Settings</h1>
-                                <p class="text-gray-600">Manage your account settings and preferences</p>
-                            </div>
-
-                            <!-- Account & Security Section -->
-                            <div class="settings-section mb-8">
-                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                    </svg>
-                                    Account & Security
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Verify Personal Info Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
-                                        onclick="openVerifyPersonalInfoModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🔐</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Personal Info</h3>
-                                            <p class="text-sm text-gray-600">Personal details and contact verification</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Two-Factor Authentication Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-indigo-500"
-                                        onclick="openTwoFactorAuthModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🛡️</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Two-Factor Auth</h3>
-                                            <p class="text-sm text-gray-600">Extra security with 2FA</p>
-                                            <span id="2fa-status-badge" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                Not Enabled
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Login Activity Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-cyan-500"
-                                        onclick="openLoginActivityModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">📱</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Login Activity</h3>
-                                            <p class="text-sm text-gray-600">Active sessions and history</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Connected Accounts Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-orange-500"
-                                        onclick="openConnectedAccountsModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🔗</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Connected Accounts</h3>
-                                            <p class="text-sm text-gray-600">Manage Google and other links</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Payments & Subscription Section -->
-                            <div class="settings-section mb-8">
-                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                    </svg>
-                                    Payments & Subscription
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Payment Method Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500"
-                                        onclick="openPaymentMethodModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">💳</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Payment Method</h3>
-                                            <p class="text-sm text-gray-600">Manage your payment options</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Subscription Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
-                                        onclick="openComingSoonModal('Subscription & Storage')">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">⭐</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Subscription & Storage</h3>
-                                            <p class="text-sm text-gray-600">Upgrade plan and unlock features</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Personalization Section -->
-                            <div class="settings-section mb-8">
-                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                                    </svg>
-                                    Personalization
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Appearance Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-violet-500"
-                                        onclick="openAppearanceModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🎨</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Appearance</h3>
-                                            <p class="text-sm text-gray-600">Theme, font size, and display</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Language Preferences Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
-                                        onclick="openComingSoonModal('Language Preferences')">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🌐</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Language</h3>
-                                            <p class="text-sm text-gray-600">UI language and translation</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Data & Privacy Section -->
-                            <div class="settings-section mb-8">
-                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    Data & Privacy
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Export Data Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
-                                        onclick="openComingSoonModal('Export Data')">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">📦</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Export Data</h3>
-                                            <p class="text-sm text-gray-600">Download your personal data</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Feedback & Support Section -->
-                            <div class="settings-section mb-8">
-                                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                    Feedback & Support
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Review & Rate Astegni Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500"
-                                        onclick="openReviewAstegniModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">⭐</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
-                                            <p class="text-sm text-gray-600">Share your feedback with us</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Danger Zone Section -->
-                            <div class="settings-section">
-                                <h2 class="text-xl font-semibold mb-4 text-red-600 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                    </svg>
-                                    Danger Zone
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <!-- Manage Roles Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-rose-500"
-                                        onclick="openManageRoleModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🗑️</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Manage Roles</h3>
-                                            <p class="text-sm text-gray-600">Deactivate or remove your role</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Leave Astegni Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
-                                        onclick="openLeaveAstegniModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🚪</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
-                                            <p class="text-sm text-gray-600">Delete account permanently</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
@@ -1986,119 +1582,21 @@
                 <div class="right-sidebar-container">
                     <div class="right-sidebar-content">
 
-                        <!-- Ad Widget -->
-                        <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
+                        <!-- Dynamic Logo Ad Widget -->
+                        <div class="sidebar-widget ad-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                             <div class="widget-header"
                                 style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                                 <span
                                     style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                             </div>
-                            <div class="promo-content" id="promo-container"
-                                style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                                <!-- Rotating Ad Messages -->
-                                <div id="ad-message-container"
-                                    style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                    <div class="ad-message active"
-                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad
-                                            Goes Here</p>
-                                    </div>
-                                    <div class="ad-message"
-                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target
-                                            Millions of Audience</p>
-                                    </div>
-                                    <div class="ad-message"
-                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your
-                                            Business</p>
-                                    </div>
-                                    <div class="ad-message"
-                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your
-                                            Audience</p>
-                                    </div>
-                                    <div class="ad-message"
-                                        style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise
-                                            With Us</p>
-                                    </div>
-                                </div>
-                                <!-- Ticker at bottom -->
-                                <div id="ad-ticker"
-                                    style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                    <div id="ad-ticker-content"
-                                        style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                        <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                        <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                        <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                        <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                        <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                        <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    </div>
-                                </div>
+                            <!-- Dynamic ad container loaded by AdRotationManager -->
+                            <div
+                                data-placement="logo"
+                                data-profile-type="tutor"
+                                class="leaderboard-banner premium-promo"
+                                style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                                <!-- Ads will be dynamically loaded here -->
                             </div>
-                            <style>
-                                @keyframes tickerScroll {
-                                    0% {
-                                        transform: translateX(0);
-                                    }
-
-                                    100% {
-                                        transform: translateX(-50%);
-                                    }
-                                }
-
-                                #ad-ticker-content {
-                                    animation: tickerScroll 20s linear infinite;
-                                }
-
-                                .ad-message {
-                                    visibility: hidden;
-                                }
-
-                                .ad-message.active {
-                                    opacity: 1 !important;
-                                    transform: scale(1) !important;
-                                    visibility: visible !important;
-                                }
-
-                                .ad-message.fade-out {
-                                    opacity: 0 !important;
-                                    transform: scale(0.8) !important;
-                                    visibility: visible !important;
-                                }
-                            </style>
-                            <script>
-                                (function () {
-                                    const messages = document.querySelectorAll('#ad-message-container .ad-message');
-                                    let currentIndex = 0;
-
-                                    function rotateMessages() {
-                                        const prevIndex = currentIndex;
-                                        currentIndex = (currentIndex + 1) % messages.length;
-
-                                        // Fade out current
-                                        messages[prevIndex].classList.remove('active');
-                                        messages[prevIndex].classList.add('fade-out');
-
-                                        // Fade in next
-                                        messages[currentIndex].classList.add('active');
-
-                                        // Hide previous after animation
-                                        setTimeout(() => {
-                                            messages[prevIndex].classList.remove('fade-out');
-                                        }, 600);
-                                    }
-
-                                    setInterval(rotateMessages, 10000);
-                                })();
-                            </script>
                         </div>
 
                         <!-- Subjects Taught Widget with Ticker -->
@@ -3437,7 +2935,6 @@
             <!-- Scrollable Content -->
             <div style="padding: 24px 28px; max-height: calc(90vh - 180px); overflow-y: auto;">
 
-
                 <!-- Student Information - For Parents Only (with child search) -->
                 <div id="parentChildSelectionSection" class="modal-section"
                     style="background: var(--card-bg); border: 2px solid var(--primary-color); padding: 20px; border-radius: 16px; margin-bottom: 20px; display: none; position: relative; overflow: visible;">
@@ -3855,6 +3352,9 @@
     <!-- Database Loader - Loads all tutor data from API -->
     <script src="../js/view-tutor/view-tutor-db-loader.js?v=5"></script>
 
+    <!-- Stories Loader - Loads tutor's stories dynamically -->
+    <script src="../js/view-tutor/view-tutor-stories-loader.js"></script>
+
     <!-- Connection Manager - Handles connection requests -->
     <script src="../js/view-tutor/connection-manager.js?v=20251218"></script>
 
@@ -3891,6 +3391,12 @@
             if (typeof window.initializeViewTutorCredentials === 'function') {
                 await window.initializeViewTutorCredentials(tutorId);
                 console.log('✅ Initialized tutor credentials for profile_id:', tutorId);
+            }
+
+            // Initialize tutor stories
+            if (typeof window.ViewTutorStoriesLoader !== 'undefined') {
+                await window.ViewTutorStoriesLoader.initialize(tutorId);
+                console.log('✅ Initialized tutor stories for profile_id:', tutorId);
             }
 
             console.log('✅ ViewTutorDBLoader initialization complete');
@@ -4131,142 +3637,6 @@
 
     <!-- Currency Utilities for dynamic currency display -->
     <script src="../js/utils/currency-utils.js"></script>
-
-    <!-- Settings Panel Modal Scripts -->
-    <script src="../js/tutor-profile/settings-panel-personal-verification.js"></script>
-    <script src="../js/tutor-profile/payment-method-modal.js"></script>
-    <!-- Subscription Modal JavaScript (Dynamic - fetches plans based on role) -->
-    <script src="../js/common-modals/subscription-modal.js"></script>
-    <!-- Extended Settings Manager (2FA, Login Activity, Connected Accounts, etc.) -->
-    <script src="../js/common-modals/settings-manager.js?v=20251225"></script>
-    <!-- Two-Factor Authentication Manager -->
-    <script src="../js/common-modals/tfa-manager.js?v=20251227"></script>
-    <!-- Role Manager -->
-    <script src="../js/common-modals/role-manager.js?v=20260126"></script>
-    <script src="../js/common-modals/review-astegni-manager.js"></script>
-
-    <!-- Load Settings Modals HTML -->
-    <script>
-        // Load verify-personal-info-modal
-        fetch('../modals/common-modals/verify-personal-info-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Verify Personal Info Modal loaded');
-            })
-            .catch(error => console.error('Failed to load verify-personal-info-modal:', error));
-
-        // Load payment-method-modal
-        fetch('../modals/common-modals/payment-method-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Payment Method Modal loaded');
-            })
-            .catch(error => console.error('Failed to load payment-method-modal:', error));
-
-        // Load leave-astegni-modal
-        fetch('../modals/common-modals/leave-astegni-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Leave Astegni Modal loaded');
-            })
-            .catch(error => console.error('Failed to load leave-astegni-modal:', error));
-
-        // Load manage-role-modal
-        fetch('../modals/common-modals/manage-role-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Manage Role Modal loaded');
-            })
-            .catch(error => console.error('Failed to load manage-role-modal:', error));
-
-        // Load subscription-modal
-        fetch('../modals/common-modals/subscription-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Subscription Modal loaded');
-            })
-            .catch(error => console.error('Failed to load subscription-modal:', error));
-
-        // Load appearance-modal
-        fetch('../modals/common-modals/appearance-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Appearance Modal loaded');
-            })
-            .catch(error => console.error('Failed to load appearance-modal:', error));
-
-        // Load connected-accounts-modal
-        fetch('../modals/common-modals/connected-accounts-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Connected Accounts Modal loaded');
-            })
-            .catch(error => console.error('Failed to load connected-accounts-modal:', error));
-
-        // Load review-astegni-modal
-        fetch('../modals/common-modals/review-astegni-modal.html')
-            .then(response => response.text())
-            .then(html => {
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                console.log('[OK] Review Astegni Modal loaded');
-            })
-            .catch(error => console.error('Failed to load review-astegni-modal:', error));
-    </script>
 
     <!-- Share Profile Manager - MOVED EARLIER (after nav.js) to ensure onclick handlers work -->
 </body>

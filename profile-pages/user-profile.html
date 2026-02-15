@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="../css/common-modals/appearance-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
     <link rel="stylesheet" href="../css/common-modals/community-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/universal-upload-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -733,174 +734,6 @@
         }
 
         /* ============================================
-           UPLOAD MODAL STYLES
-           ============================================ */
-        .upload-cover-modal,
-        .upload-profile-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .upload-cover-modal .modal-content,
-        .upload-profile-modal .modal-content {
-            background: var(--card-bg);
-            border-radius: 20px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .upload-cover-modal .modal-inner,
-        .upload-profile-modal .modal-inner {
-            padding: 2rem;
-        }
-
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--highlight-bg);
-        }
-
-        .upload-area:hover {
-            border-color: var(--button-bg);
-            background: rgba(var(--button-bg-rgb), 0.05);
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 1rem;
-        }
-
-        .upload-text {
-            font-weight: 600;
-            color: var(--heading);
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-hint {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .upload-input {
-            display: none;
-        }
-
-        .preview-container {
-            margin-top: 1.5rem;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-        }
-
-        .preview-info {
-            padding: 1rem;
-            background: var(--highlight-bg);
-        }
-
-        .file-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .file-info span:first-child {
-            color: var(--text-muted);
-        }
-
-        .file-info span:last-child {
-            font-weight: 600;
-            color: var(--heading);
-        }
-
-        .upload-progress {
-            margin-top: 1.5rem;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--highlight-bg);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--button-bg), #7c3aed);
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .upload-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn-upload {
-            flex: 1;
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .btn-upload.primary {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-
-        .btn-upload.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        }
-
-        .btn-upload.secondary {
-            background: transparent;
-            color: var(--text);
-            border: 2px solid var(--border);
-        }
-
-        .btn-upload.secondary:hover {
-            background: var(--highlight-bg);
-            border-color: var(--button-bg);
-        }
-
-        /* ============================================
            ENGAGEMENT FILTER STYLES
            ============================================ */
 
@@ -964,6 +797,41 @@
 </head>
 
 <body class="font-sans">
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <h2 class="loading-text">ASTEGNI</h2>
+    </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300); // Reduced delay since we're already waiting for full load
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Navigation -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
@@ -1206,24 +1074,8 @@
     </div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="user" data-location="user_profile">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
     <!-- Sidebar -->
@@ -1304,7 +1156,7 @@
                                         alt="Cover" class="cover-img">
                                     <div class="cover-overlay"></div>
                                     <!-- Cover Upload Button -->
-                                    <button onclick="openCoverUploadModal()" class="cover-upload-btn">
+                                    <button onclick="openUniversalUploadModal('cover')" class="cover-upload-btn">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
@@ -1322,7 +1174,7 @@
                                                 alt="User Profile" class="profile-avatar">
                                             <span class="online-indicator"></span>
                                             <!-- Profile Picture Upload Button -->
-                                            <button onclick="openProfileUploadModal()" class="avatar-upload-btn">
+                                            <button onclick="openUniversalUploadModal('profile')" class="avatar-upload-btn">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -2024,66 +1876,19 @@
                 <div class="right-widgets">
 
                     <!-- Ad Widget -->
-                    <div class="widget-card">
+                                        <!-- Dynamic Logo Ad Widget -->
+                    <div class="widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                         <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="promo-content" id="promo-container-user" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <div id="ad-message-container-user" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message-user active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
-                                </div>
-                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
-                                </div>
-                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
-                                </div>
-                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
-                                </div>
-                                <div class="ad-message-user" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
-                                </div>
-                            </div>
-                            <div id="ad-ticker-user" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content-user" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
+                        <!-- Dynamic ad container loaded by AdRotationManager -->
+                        <div
+                            data-placement="logo"
+                            data-profile-type="user"
+                            class="leaderboard-banner premium-promo"
+                            style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                            <!-- Ads will be dynamically loaded here -->
                         </div>
-                        <style>
-                            @keyframes tickerScrollUser { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-                            #ad-ticker-content-user { animation: tickerScrollUser 20s linear infinite; }
-                            .ad-message-user { visibility: hidden; }
-                            .ad-message-user.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
-                            .ad-message-user.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
-                        </style>
-                        <script>
-                            (function() {
-                                const messages = document.querySelectorAll('#ad-message-container-user .ad-message-user');
-                                let currentIndex = 0;
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-                                    messages[currentIndex].classList.add('active');
-                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
-                                }
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
                     </div>
 
                     <!-- Monthly Earnings Widget with Line Graph -->
@@ -2393,7 +2198,6 @@
         </div>
     </section>
 
-
     <!-- Modals -->
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal hidden">
@@ -2521,167 +2325,9 @@
         </div>
     </div>
 
-    <!-- Cover Upload Modal -->
-    <div id="coverUploadModal" class="upload-cover-modal hidden">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Upload Cover Photo</h3>
-                    <button onclick="closeCoverUploadModal()" class="text-2xl">&times;</button>
-                </div>
+    <!-- Modal will be loaded by CommonModalLoader -->
 
-                <div id="coverUploadArea" class="upload-area" onclick="document.getElementById('coverInput').click()">
-                    <span class="upload-icon">📷</span>
-                    <p class="upload-text">Click or drag to upload cover photo</p>
-                    <p class="upload-hint">Recommended: 1200x300px, Max 5MB</p>
-                </div>
-                <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleCoverSelect(event)">
-
-                <div id="coverPreview" class="preview-container hidden">
-                    <img id="coverPreviewImg" class="preview-image" alt="Preview">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File name:</span>
-                            <span id="coverFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File size:</span>
-                            <span id="coverFileSize">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="coverUploadProgress" class="upload-progress hidden">
-                    <div class="progress-bar">
-                        <div id="coverProgressFill" class="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
-                </div>
-
-                <div class="upload-actions">
-                    <button onclick="resetCoverUpload()" class="btn-upload secondary">Reset</button>
-                    <button onclick="uploadCoverImage()" class="btn-upload primary" id="coverUploadBtn" disabled>Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Profile Upload Modal -->
-    <div id="profileUploadModal" class="upload-profile-modal hidden">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Upload Profile Picture</h3>
-                    <button onclick="closeProfileUploadModal()" class="text-2xl">&times;</button>
-                </div>
-
-                <div id="profileUploadArea" class="upload-area" onclick="document.getElementById('profileInput').click()">
-                    <span class="upload-icon">📷</span>
-                    <p class="upload-text">Click or drag to upload profile picture</p>
-                    <p class="upload-hint">Recommended: 500x500px, Max 5MB</p>
-                </div>
-                <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleProfileSelect(event)">
-
-                <div id="profilePreview" class="preview-container hidden">
-                    <img id="profilePreviewImg" class="preview-image" alt="Preview">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File name:</span>
-                            <span id="profileFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File size:</span>
-                            <span id="profileFileSize">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="profileUploadProgress" class="upload-progress hidden">
-                    <div class="progress-bar">
-                        <div id="profileProgressFill" class="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
-                </div>
-
-                <div class="upload-actions">
-                    <button onclick="resetProfileUpload()" class="btn-upload secondary">Reset</button>
-                    <button onclick="uploadProfileImage()" class="btn-upload primary" id="profileUploadBtn" disabled>Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logout Modal -->
-    <div id="logout-modal" class="modal hidden">
-        <div class="modal-content enhanced" style="max-width: 420px;">
-            <button class="modal-close-enhanced" onclick="closeModal('logout-modal')">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-
-            <div class="modal-header" style="text-align: center; padding: 32px 32px 16px;">
-                <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
-                    <svg width="36" height="36" fill="none" stroke="#EF4444" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                        </path>
-                    </svg>
-                </div>
-                <h3 class="modal-title" style="margin-bottom: 8px;">Log Out?</h3>
-                <p class="modal-subtitle" style="margin: 0;">Are you sure you want to log out of your account?</p>
-            </div>
-
-            <div style="padding: 24px 32px 32px;">
-                <!-- Session info -->
-                <div id="logout-session-info" style="background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: none;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div id="logout-user-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0;">
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <p id="logout-user-name" style="margin: 0; font-weight: 600; color: var(--text-primary); font-size: 15px;"></p>
-                            <p id="logout-user-email" style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);"></p>
-                            <div id="logout-user-roles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Warning message -->
-                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 24px;">
-                    <div style="display: flex; align-items: start; gap: 10px;">
-                        <svg style="width: 20px; height: 20px; color: #F59E0B; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-                            You will need to sign in again to access your account and continue your learning journey.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Action buttons -->
-                <div style="display: flex; gap: 12px;">
-                    <button onclick="closeModal('logout-modal')" class="submit-btn" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
-                        Stay Logged In
-                    </button>
-                    <button onclick="confirmLogout()" class="submit-btn" style="flex: 1; background: #EF4444; border-color: #EF4444;">
-                        <svg style="width: 18px; height: 18px; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"></path>
-                        </svg>
-                        Log Out
-                    </button>
-                </div>
-
-                <!-- Remember me option -->
-                <div style="margin-top: 20px; text-align: center;">
-                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);">
-                        <input type="checkbox" id="logout-all-devices" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                        <span>Log out from all devices</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Logout Modal will be loaded by CommonModalLoader -->
 
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
@@ -2832,7 +2478,6 @@
         </div>
     </footer>
 
-
     <!-- JavaScript Files -->
     <!-- Root/Shared Scripts -->
     <script src="../js/root/app.js"></script>
@@ -2857,6 +2502,10 @@
 
     <!-- User Profile Specific Scripts -->
     <script src="../js/page-structure/user-profile.js?v=20251218"></script>
+
+    <!-- Universal Upload Handler -->
+    <script src="../js/root/storage-manager.js"></script>
+    <script src="../js/advertiser-profile/universal-upload-handler.js"></script>
 
     <!-- Earnings & Investments Manager -->
     <script src="../js/tutor-profile/earnings-investments-manager.js"></script>
@@ -3066,6 +2715,52 @@
 
     <!-- Referral Dashboard Manager -->
     <script src="../js/common-modals/referral-dashboard-manager.js"></script>
+
+    <!-- Load Universal Upload Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load universal upload modal
+            if (typeof CommonModalLoader !== 'undefined') {
+                CommonModalLoader.load('universal-upload-modal.html')
+                    .then(() => {
+                        console.log('[user-profile.html] ✅ Universal upload modal loaded');
+                    })
+                    .catch(error => {
+                        console.error('[user-profile.html] ❌ Failed to load universal upload modal:', error);
+                    });
+            }
+        });
+    </script>
+
+    <!-- Fix Active Role for User Profile -->
+    <script>
+        // CRITICAL FIX: Ensure active_role is set to "user" when on user-profile.html
+        (function() {
+            const currentActiveRole = localStorage.getItem('active_role');
+            const currentUser = localStorage.getItem('currentUser');
+
+            // Only set to "user" if we're on user-profile.html
+            if (currentActiveRole !== 'user') {
+                console.log('[user-profile.html] Fixing active_role from', currentActiveRole, 'to "user"');
+                localStorage.setItem('active_role', 'user');
+                localStorage.setItem('userRole', 'user');
+
+                // Update currentUser object
+                if (currentUser) {
+                    try {
+                        const userObj = JSON.parse(currentUser);
+                        userObj.active_role = 'user';
+                        localStorage.setItem('currentUser', JSON.stringify(userObj));
+                        console.log('[user-profile.html] ✅ Active role fixed to "user"');
+                    } catch (error) {
+                        console.error('[user-profile.html] Error updating currentUser:', error);
+                    }
+                }
+            } else {
+                console.log('[user-profile.html] ✅ Active role already set to "user"');
+            }
+        })();
+    </script>
 
     <!-- Debug Share Button -->
     <script>

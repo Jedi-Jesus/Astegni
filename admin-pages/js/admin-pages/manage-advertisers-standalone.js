@@ -361,9 +361,12 @@ const ModeManager = {
 
     async loadRecentCampaigns() {
         try {
-            const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/recent/campaigns?limit=5`);
+            // Fetch only pending campaigns (those submitted for verification)
+            const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/campaigns?status=pending&limit=5`);
             if (response.ok) {
-                const campaigns = await response.json();
+                const data = await response.json();
+                // Extract campaigns array from response
+                const campaigns = data.campaigns || [];
                 this.updateLiveCampaignWidget(campaigns);
             }
         } catch (error) {
@@ -408,7 +411,6 @@ const ModeManager = {
             <div class="advertiser-request-item">
                 <div class="request-content">
                     <div class="request-header">
-                        <img src="${campaign.campaign_image || '../system_images/default-campaign.png'}" alt="${campaign.campaign_name}" style="border-radius: 6px;">
                         <span class="item-name">${campaign.campaign_name}</span>
                         <span class="status-tag ${statusClass}">${campaign.verification_status || 'PENDING'}</span>
                     </div>
@@ -491,7 +493,8 @@ const ModeManager = {
         if (quotaPending) quotaPending.textContent = counts.pending || 0;
         if (quotaRejected) quotaRejected.textContent = counts.rejected || 0;
         if (quotaSuspended) quotaSuspended.textContent = counts.suspended || 0;
-        if (totalWidget) totalWidget.textContent = counts.total || 0;
+        // Show only campaigns submitted for verification (regardless of verification status)
+        if (totalWidget) totalWidget.textContent = counts.submitted_for_verification || 0;
 
         // Update progress bars
         const verifiedBar = document.getElementById('quota-campaign-verified-bar');
@@ -806,7 +809,7 @@ const DataLoader = {
 
         container.innerHTML = `
             <tr>
-                <td colspan="6" class="p-8 text-center text-gray-500">
+                <td colspan="4" class="p-8 text-center text-gray-500">
                     <div class="text-4xl mb-4">📭</div>
                     <div>${message || `No ${type}s found with status: ${status}`}</div>
                 </td>
@@ -825,7 +828,7 @@ const DataLoader = {
         if (!items || items.length === 0) {
             container.innerHTML = `
                 <tr>
-                    <td colspan="6" class="p-8 text-center text-gray-500">
+                    <td colspan="4" class="p-8 text-center text-gray-500">
                         <div class="text-4xl mb-4">📭</div>
                         <div>No ${type}s found with status: ${status}</div>
                     </td>
@@ -904,8 +907,6 @@ const DataLoader = {
                         <div class="font-semibold">${campaign.campaign_name}</div>
                     </div>
                 </td>
-                <td class="p-4">${campaign.package_name || 'No Package'}</td>
-                <td class="p-4">${campaign.target_audience || 'All'}</td>
                 <td class="p-4">${displayDate}</td>
                 <td class="p-4">
                     <button onclick="event.stopPropagation(); viewCampaign('${campaignDataStr}', '${status}')"
@@ -1074,34 +1075,91 @@ function viewBrand(brandDataStr, status) {
 /**
  * View Campaign Details - Opens the campaign view modal
  */
-function viewCampaign(campaignDataStr, status) {
+async function viewCampaign(campaignDataStr, status) {
     try {
-        const campaign = JSON.parse(decodeURIComponent(campaignDataStr));
+        const campaignFromList = JSON.parse(decodeURIComponent(campaignDataStr));
+
+        console.log('[ViewModal] Fetching campaign details for ID:', campaignFromList.id);
+        console.log('[ViewModal] API URL:', `${ADVERTISERS_API_URL}/api/admin-advertisers/campaigns/${campaignFromList.id}`);
+
+        // Fetch full campaign details from API
+        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/campaigns/${campaignFromList.id}`);
+
+        let campaign;
+        if (response.ok) {
+            const data = await response.json();
+            console.log('[ViewModal] API Response:', data);
+            campaign = data.campaign || data; // Handle both {campaign: {...}} and direct response
+        } else {
+            console.error('[ViewModal] API request failed:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('[ViewModal] Error response:', errorText);
+            // Fallback to list data if detail endpoint fails
+            campaign = campaignFromList;
+        }
+
         currentViewedItem = campaign;
         currentViewedType = 'campaign';
         currentViewedStatus = status;
 
-        console.log('[ViewModal] Opening campaign modal:', campaign);
+        console.log('[ViewModal] Final campaign data:', campaign);
 
-        // Populate modal fields
-        document.getElementById('view-campaign-name').textContent = campaign.campaign_name || 'Unknown Campaign';
-        document.getElementById('view-campaign-id').textContent = `ID: CMP-${campaign.id}`;
-        document.getElementById('view-campaign-image').src = campaign.campaign_image || '../system_images/default-campaign.png';
-        document.getElementById('view-campaign-brand').textContent = campaign.brand_name || 'Unknown Brand';
-        document.getElementById('view-campaign-type').textContent = campaign.ad_type || campaign.campaign_type || 'Standard';
-        document.getElementById('view-campaign-audience').textContent = campaign.target_audience || 'All';
-        document.getElementById('view-campaign-budget').textContent = `${formatNumber(campaign.budget || 0)} ETB`;
-        document.getElementById('view-campaign-description').textContent = campaign.description || 'No description available.';
+        // A. Populate Brand Details (Header)
+        const brandLogo = document.getElementById('view-brand-logo');
+        if (brandLogo) brandLogo.src = campaign.brand_logo || '../system_images/default-brand.png';
+
+        const brandName = document.getElementById('view-campaign-brand');
+        if (brandName) brandName.textContent = campaign.brand_name || 'Unknown Brand';
+
+        const brandDescription = document.getElementById('view-brand-description');
+        if (brandDescription) brandDescription.textContent = campaign.brand_description || 'No description available';
+
+        const brandCategory = document.getElementById('view-brand-category');
+        if (brandCategory) brandCategory.textContent = campaign.brand_category || 'N/A';
+
+        const brandWebsite = document.getElementById('view-brand-website');
+        if (brandWebsite) brandWebsite.textContent = campaign.brand_website || 'N/A';
+
+        // B. Populate Campaign Details
+        const campaignName = document.getElementById('view-campaign-name');
+        if (campaignName) campaignName.textContent = campaign.campaign_name || 'Unknown Campaign';
+
+        const campaignId = document.getElementById('view-campaign-id');
+        if (campaignId) campaignId.textContent = `ID: CMP-${campaign.id}`;
+
+        const campaignType = document.getElementById('view-campaign-type');
+        if (campaignType) campaignType.textContent = campaign.ad_type || campaign.campaign_type || 'Standard';
+
+        const campaignAudience = document.getElementById('view-campaign-audience');
+        if (campaignAudience) {
+            // Handle both array and string formats
+            let audienceText = 'All';
+            if (Array.isArray(campaign.target_audience) && campaign.target_audience.length > 0) {
+                audienceText = campaign.target_audience.join(', ');
+            } else if (typeof campaign.target_audience === 'string') {
+                audienceText = campaign.target_audience;
+            }
+            campaignAudience.textContent = audienceText;
+        }
+
+        const campaignDescription = document.getElementById('view-campaign-description');
+        if (campaignDescription) campaignDescription.textContent = campaign.description || 'No description available.';
 
         // Format dates
         const startDate = campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'N/A';
         const endDate = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'N/A';
-        document.getElementById('view-campaign-start').textContent = startDate;
-        document.getElementById('view-campaign-end').textContent = endDate;
+
+        const campaignStart = document.getElementById('view-campaign-start');
+        if (campaignStart) campaignStart.textContent = startDate;
+
+        const campaignEnd = document.getElementById('view-campaign-end');
+        if (campaignEnd) campaignEnd.textContent = endDate;
 
         // Status badge
         const statusEl = document.getElementById('view-campaign-status');
-        statusEl.innerHTML = `<span class="px-3 py-1 rounded-full text-xs font-semibold ${ModeManager.getStatusClass(status)}">${status}</span>`;
+        if (statusEl) {
+            statusEl.innerHTML = `<span class="px-3 py-1 rounded-full text-xs font-semibold ${ModeManager.getStatusClass(status)}">${status}</span>`;
+        }
 
         // Show/hide reason section based on status
         const reasonSection = document.getElementById('view-campaign-reason-section');
@@ -1109,33 +1167,46 @@ function viewCampaign(campaignDataStr, status) {
         const reasonText = document.getElementById('view-campaign-reason');
 
         if (status === 'rejected' && campaign.rejection_reason) {
-            reasonSection.classList.remove('hidden');
-            reasonLabel.textContent = 'Rejection Reason';
-            reasonText.textContent = campaign.rejection_reason;
+            if (reasonSection) reasonSection.classList.remove('hidden');
+            if (reasonLabel) reasonLabel.textContent = 'Rejection Reason';
+            if (reasonText) reasonText.textContent = campaign.rejection_reason;
         } else if (status === 'suspended' && campaign.suspension_reason) {
-            reasonSection.classList.remove('hidden');
-            reasonLabel.textContent = 'Suspension Reason';
-            reasonText.textContent = campaign.suspension_reason;
+            if (reasonSection) reasonSection.classList.remove('hidden');
+            if (reasonLabel) reasonLabel.textContent = 'Suspension Reason';
+            if (reasonText) reasonText.textContent = campaign.suspension_reason;
         } else {
-            reasonSection.classList.add('hidden');
+            if (reasonSection) reasonSection.classList.add('hidden');
         }
 
         // Show stats section for verified campaigns
         const statsSection = document.getElementById('view-campaign-stats-section');
         if (status === 'verified') {
-            statsSection.classList.remove('hidden');
-            document.getElementById('view-campaign-impressions').textContent = formatNumber(campaign.impressions || 0);
-            document.getElementById('view-campaign-clicks').textContent = formatNumber(campaign.clicks || 0);
+            if (statsSection) statsSection.classList.remove('hidden');
+
+            const impressions = document.getElementById('view-campaign-impressions');
+            if (impressions) impressions.textContent = formatNumber(campaign.impressions || 0);
+
+            const clicks = document.getElementById('view-campaign-clicks');
+            if (clicks) clicks.textContent = formatNumber(campaign.clicks || 0);
+
             const ctr = campaign.impressions > 0 ? ((campaign.clicks / campaign.impressions) * 100).toFixed(2) : 0;
-            document.getElementById('view-campaign-ctr').textContent = `${ctr}%`;
-            document.getElementById('view-campaign-spent').textContent = `${formatNumber(campaign.spent || 0)} ETB`;
+            const ctrEl = document.getElementById('view-campaign-ctr');
+            if (ctrEl) ctrEl.textContent = `${ctr}%`;
+
+            const spent = document.getElementById('view-campaign-spent');
+            if (spent) spent.textContent = `${formatNumber(campaign.spent || 0)} ETB`;
         } else {
-            statsSection.classList.add('hidden');
+            if (statsSection) statsSection.classList.add('hidden');
         }
+
+        // C. Populate Campaign Media
+        loadCampaignMedia(campaign.id);
 
         // Generate action buttons based on status
         const actionsContainer = document.getElementById('view-campaign-actions');
-        actionsContainer.innerHTML = getCampaignActionButtons(campaign.id, status);
+        if (actionsContainer) {
+            actionsContainer.innerHTML = getCampaignActionButtons(campaign.id, status);
+        }
 
         // Open modal
         openViewCampaignModal();
@@ -1143,6 +1214,89 @@ function viewCampaign(campaignDataStr, status) {
     } catch (error) {
         console.error('[ViewModal] Error parsing campaign data:', error);
         alert('Failed to load campaign details');
+    }
+}
+
+/**
+ * Load campaign media (images and videos)
+ */
+async function loadCampaignMedia(campaignId) {
+    try {
+        // Fetch campaign media from API
+        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/campaigns/${campaignId}/media`);
+
+        if (response.ok) {
+            const data = await response.json();
+            const media = data.media || [];
+
+            // Separate images and videos
+            const images = media.filter(m => m.media_type === 'image');
+            const videos = media.filter(m => m.media_type === 'video');
+
+            // Populate images grid
+            const imagesGrid = document.getElementById('campaign-images-grid');
+            if (imagesGrid) {
+                if (images.length === 0) {
+                    imagesGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">No images uploaded</p>';
+                } else {
+                    imagesGrid.innerHTML = images.map(img => `
+                        <div class="relative group">
+                            <img src="${img.file_url}" alt="Campaign Image"
+                                class="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center">
+                                <button onclick="window.open('${img.file_url}', '_blank')"
+                                    class="opacity-0 group-hover:opacity-100 px-3 py-1 bg-white text-gray-800 rounded-lg text-sm">
+                                    View Full Size
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Populate videos grid
+            const videosGrid = document.getElementById('campaign-videos-grid');
+            if (videosGrid) {
+                if (videos.length === 0) {
+                    videosGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">No videos uploaded</p>';
+                } else {
+                    videosGrid.innerHTML = videos.map(video => `
+                        <div class="relative">
+                            <video controls class="w-full h-48 rounded-lg border border-gray-200 dark:border-gray-600">
+                                <source src="${video.file_url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    `).join('');
+                }
+            }
+        } else {
+            // If endpoint doesn't exist (404), show placeholder message
+            console.log('[ViewModal] Campaign media endpoint not available yet');
+
+            const imagesGrid = document.getElementById('campaign-images-grid');
+            if (imagesGrid) {
+                imagesGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">Media gallery coming soon</p>';
+            }
+
+            const videosGrid = document.getElementById('campaign-videos-grid');
+            if (videosGrid) {
+                videosGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">Media gallery coming soon</p>';
+            }
+        }
+    } catch (error) {
+        console.error('[ViewModal] Error loading campaign media:', error);
+
+        // Show placeholder for missing endpoint
+        const imagesGrid = document.getElementById('campaign-images-grid');
+        if (imagesGrid) {
+            imagesGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">Media gallery coming soon</p>';
+        }
+
+        const videosGrid = document.getElementById('campaign-videos-grid');
+        if (videosGrid) {
+            videosGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-8">Media gallery coming soon</p>';
+        }
     }
 }
 

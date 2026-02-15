@@ -30,8 +30,6 @@
             };
         }
     </script>
-    <!-- Fix Loading Screen - Removes inappropriate loading screens -->
-    <script src="../js/fix-loading-screen.js"></script>
     <!-- Active Role Guard - Prevents access to deactivated roles -->
     <script src="../js/root/active-role-guard.js"></script>
     <!-- Preconnect for faster font loading -->
@@ -60,6 +58,7 @@
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
     <link rel="stylesheet" href="../css/common-modals/appearance-modal.css">
     <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/universal-upload-modal.css">
     <!-- Standalone Chat Call Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/chat-call-modal.css">
     <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
@@ -286,7 +285,6 @@
         /* Enhanced Profile Info Section */
         .profile-main-info {
             padding: 0 2rem 2rem 2rem;
-            margin-top: -60px;
             position: relative;
             z-index: 5;
         }
@@ -295,72 +293,7 @@
             gap: 2rem;
             align-items: flex-start;
         }
-        /* Enhanced Avatar */
-        .profile-avatar-container {
-            position: relative;
-            flex-shrink: 0;
-        }
-        .profile-avatar {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 5px solid var(--card-bg);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            object-fit: cover;
-            transition: all 0.3s ease;
-        }
-        .profile-avatar-container:hover .profile-avatar {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-        }
-        .online-indicator {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 24px;
-            height: 24px;
-            background: #22c55e;
-            border: 4px solid var(--card-bg);
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-            animation: pulse-indicator 2s ease-in-out infinite;
-        }
-        @keyframes pulse-indicator {
-            0%,
-            100% {
-                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-            }
-            50% {
-                box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
-            }
-        }
-        .avatar-upload-btn {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            opacity: 0;
-        }
-        .profile-avatar-container:hover .avatar-upload-btn {
-            opacity: 1;
-        }
-        .avatar-upload-btn:hover {
-            background: white;
-            transform: translateX(-50%) translateY(-2px);
-        }
-        .avatar-upload-btn svg {
-            width: 16px;
-            height: 16px;
-            color: #4f46e5;
-        }
+        /* Avatar styles moved to external CSS - see parent-profile.css */
         /* Enhanced Profile Details */
         .profile-details-section {
             flex: 1;
@@ -1938,91 +1871,7 @@
             }
         }
 
-        /* Profile header centering on mobile */
-        @media (max-width: 768px) {
-            .profile-info-wrapper {
-                flex-direction: column !important;
-                align-items: center !important;
-                text-align: center !important;
-            }
-            .profile-avatar-container {
-                margin-bottom: 1rem;
-            }
-            .profile-avatar {
-                width: 120px !important;
-                height: 120px !important;
-            }
-            .profile-details-section {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                width: 100%;
-            }
-            .profile-name-row {
-                justify-content: center;
-                text-align: center;
-            }
-            .profile-name {
-                font-size: 1.75rem !important;
-                text-align: center;
-            }
-            .badges-row {
-                justify-content: center !important;
-            }
-            .rating-section {
-                justify-content: center !important;
-            }
-            .rating-wrapper {
-                justify-content: center !important;
-            }
-            .profile-location {
-                justify-content: center !important;
-            }
-            .info-item {
-                flex-direction: column !important;
-                text-align: center !important;
-                gap: 0.25rem !important;
-            }
-            .info-label {
-                min-width: auto !important;
-            }
-            .profile-actions {
-                flex-direction: column !important;
-            }
-            .profile-actions .btn-primary,
-            .profile-actions .btn-secondary {
-                width: 100% !important;
-            }
-            .connections-stats {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-            .social-links {
-                justify-content: center !important;
-            }
-            .profile-main-info {
-                padding: 0 1rem 1.5rem 1rem !important;
-            }
-            .cover-image-container {
-                height: 180px !important;
-            }
-        }
-
-        /* Even smaller screens */
-        @media (max-width: 480px) {
-            .profile-avatar {
-                width: 100px !important;
-                height: 100px !important;
-            }
-            .profile-name {
-                font-size: 1.5rem !important;
-            }
-            .cover-image-container {
-                height: 150px !important;
-            }
-            .profile-main-info {
-                margin-top: -40px !important;
-            }
-        }
+        /* Responsive styles moved to external CSS - see parent-profile.css */
     </style>
     <!-- Profile Specific Fixes -->
     <link rel="stylesheet" href="../css/tutor-profile/profile-specific-fix.css">
@@ -2031,13 +1880,41 @@
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile-responsive.css">
 </head>
 <body class="font-sans">
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center;">
-            <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-            <p style="margin-top: 1rem; color: #666; font-family: system-ui, -apple-system, sans-serif;">Loading profile...</p>
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
         </div>
+        <h2 class="loading-text">ASTEGNI</h2>
     </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300); // Reduced delay since we're already waiting for full load
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Navigation -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
@@ -2278,24 +2155,8 @@
         </div>
     </div>
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="parent" data-location="parent_profile">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar-container">
@@ -4346,94 +4207,19 @@
                 <!-- Right Sidebar Widgets (Persistent across all panels) -->
                 <div class="right-widgets">
                     
-                    <!-- Ad Widget -->
-                    <div class="sidebar-widget ad-widget card" style="padding: 1.5rem;">
+                    <!-- Dynamic Logo Ad Widget -->
+                    <div class="sidebar-widget ad-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                         <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="promo-content" id="promo-container" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <!-- Rotating Ad Messages -->
-                            <div id="ad-message-container" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">??</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">??</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">??</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">??</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
-                                </div>
-                                <div class="ad-message" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">??</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
-                                </div>
-                            </div>
-                            <!-- Ticker at bottom -->
-                            <div id="ad-ticker" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
+                        <!-- Dynamic ad container loaded by AdRotationManager -->
+                        <div
+                            data-placement="logo"
+                            data-profile-type="parent"
+                            class="leaderboard-banner premium-promo"
+                            style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                            <!-- Ads will be dynamically loaded here -->
                         </div>
-                        <style>
-                            @keyframes tickerScroll {
-                                0% { transform: translateX(0); }
-                                100% { transform: translateX(-50%); }
-                            }
-                            #ad-ticker-content {
-                                animation: tickerScroll 20s linear infinite;
-                            }
-                            .ad-message {
-                                visibility: hidden;
-                            }
-                            .ad-message.active {
-                                opacity: 1 !important;
-                                transform: scale(1) !important;
-                                visibility: visible !important;
-                            }
-                            .ad-message.fade-out {
-                                opacity: 0 !important;
-                                transform: scale(0.8) !important;
-                                visibility: visible !important;
-                            }
-                        </style>
-                        <script>
-                            (function() {
-                                const messages = document.querySelectorAll('#ad-message-container .ad-message');
-                                let currentIndex = 0;
-
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-
-                                    // Fade out current
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-
-                                    // Fade in next
-                                    messages[currentIndex].classList.add('active');
-
-                                    // Hide previous after animation
-                                    setTimeout(() => {
-                                        messages[prevIndex].classList.remove('fade-out');
-                                    }, 600);
-                                }
-
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
                     </div>
                     
                     <!-- Monthly Earnings Widget with Line Graph -->
@@ -5051,99 +4837,6 @@
     <div id="chat-modal-container"></div>
     <!-- Notes Modal Container -->
     <div id="notes-modal-container"></div>
-    <!-- Cover Upload Modal -->
-    <div class="upload-cover-modal" id="coverUploadModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="modal-header">
-                    <h2 class="modal-title">Upload Cover Photo</h2>
-                    <button class="modal-close" onclick="closeCoverUploadModal()">&times;</button>
-                </div>
-                <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
-                    <span class="upload-icon">📤</span>
-                    <p class="upload-text">Click to upload or drag and drop</p>
-                    <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
-                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
-                        onchange="handleImageSelect(event, 'cover')">
-                </div>
-                <div class="preview-container" id="coverPreview" style="display: none;">
-                    <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File Name:</span>
-                            <span id="coverFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File Size:</span>
-                            <span id="coverFileSize">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>Dimensions:</span>
-                            <span id="coverDimensions">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="upload-progress" id="coverProgress" style="display: none;">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="coverProgressFill"></div>
-                    </div>
-                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
-                </div>
-                <div class="upload-spinner" id="coverSpinner" style="display: none;"></div>
-                <div class="upload-actions">
-                    <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
-                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Profile Upload Modal -->
-    <div class="upload-profile-modal" id="profileUploadModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-inner">
-                <div class="modal-header">
-                    <h2 class="modal-title">Upload Profile Picture</h2>
-                    <button class="modal-close" onclick="closeProfileUploadModal()">&times;</button>
-                </div>
-                <div class="upload-area" id="profileUploadArea"
-                    onclick="document.getElementById('profileInput').click()">
-                    <span class="upload-icon">📤</span>
-                    <p class="upload-text">Click to upload or drag and drop</p>
-                    <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
-                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
-                        onchange="handleImageSelect(event, 'profile')">
-                </div>
-                <div class="preview-container" id="profilePreview" style="display: none;">
-                    <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
-                    <div class="preview-info">
-                        <div class="file-info">
-                            <span>File Name:</span>
-                            <span id="profileFileName">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>File Size:</span>
-                            <span id="profileFileSize">-</span>
-                        </div>
-                        <div class="file-info">
-                            <span>Dimensions:</span>
-                            <span id="profileDimensions">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="upload-progress" id="profileProgress" style="display: none;">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="profileProgressFill"></div>
-                    </div>
-                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
-                </div>
-                <div class="upload-spinner" id="profileSpinner" style="display: none;"></div>
-                <div class="upload-actions">
-                    <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
-                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- Coming Soon Modal -->
     <div id="coming-soon-modal" class="modal hidden">
         <div class="modal-content enhanced coming-soon-content">
@@ -5836,6 +5529,8 @@
     <script src="../js/parent-profile/edit-handler.js"></script>
     <!-- 3. Upload Modal Handler -->
     <script src="../js/parent-profile/upload-modal-handler.js"></script>
+    <!-- 3.1. Universal Upload Handler (for universal-upload-modal) -->
+    <script src="../js/parent-profile/universal-upload-handler.js"></script>
     <!-- 3.3. Protected API Wrapper (2FA protection for settings, requests, my-children, co-parents panels) -->
     <!-- Note: Session requests on view-tutor.html are also 2FA protected (in session-request-handler.js) -->
     <script src="../js/common-modals/protected-api-wrapper.js"></script>
@@ -6229,11 +5924,13 @@
             // Open the modal
             const modal = document.getElementById('editProfileModal');
             if (modal) {
+                modal.classList.remove('hidden');
                 modal.style.display = 'flex';
             }
         }
         function closeEditProfileModal() {
             const modal = document.getElementById('editProfileModal');
+            modal.classList.add('hidden');
             modal.style.display = 'none';
         }
         function handleChangeLocationParent() {
@@ -6651,6 +6348,17 @@
             // Make communityManager available globally for onclick handlers in rendered cards
             window.communityManager = communityManager;
             console.log('? CommunityManager initialized for parent profile');
+
+            // Load universal upload modal
+            if (typeof CommonModalLoader !== 'undefined') {
+                CommonModalLoader.load('universal-upload-modal.html')
+                    .then(() => {
+                        console.log('[parent-profile.html] ✅ Universal upload modal loaded');
+                    })
+                    .catch(error => {
+                        console.error('[parent-profile.html] ❌ Failed to load universal upload modal:', error);
+                    });
+            }
         });
         // ============================================
         // COMMUNITY MODAL: OPEN/CLOSE FUNCTIONS

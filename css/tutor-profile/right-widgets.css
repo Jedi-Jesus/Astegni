@@ -14,14 +14,14 @@
 body.sidebar-active section:not(footer),
 body.sidebar-active .promo-placeholder,
 body.sidebar-active .promo-placeholder-section,
-body.sidebar-active .promo-container {
+body.sidebar-active .leaderboard-banner {
     margin-left: 0 !important;
 }
 
 section:not(footer),
 .promo-placeholder,
 .promo-placeholder-section,
-.promo-container {
+.leaderboard-banner {
     margin-left: 0 !important;
 }
 

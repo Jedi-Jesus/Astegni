@@ -643,6 +643,10 @@ async def get_session(session_id: int, current_user = Depends(get_current_user))
         current_role = current_user.get('active_role')
         current_profile_id = role_ids.get(current_role)
 
+        print(f"🔍 Session access check:")
+        print(f"  Session {session_id}: host={host_profile_type}_{host_profile_id}, participants={participant_profile_types}_{participant_profile_ids}")
+        print(f"  Current user: role={current_role}, profile_id={current_profile_id} (type: {type(current_profile_id)})")
+
         if not current_profile_id:
             raise HTTPException(status_code=403, detail="No valid profile found for current role")
 
@@ -654,13 +658,24 @@ async def get_session(session_id: int, current_user = Depends(get_current_user))
             has_access = True
             print(f"✅ Access granted: User is host ({host_profile_type} profile_id {host_profile_id})")
 
-        # Check if user is a participant
-        if not has_access and current_profile_id in participant_profile_ids:
-            has_access = True
-            print(f"✅ Access granted: User is participant (profile_id {current_profile_id})")
+        # Check if user is a participant (handle both int and string IDs)
+        if not has_access:
+            # Convert current_profile_id to int to match participant_profile_ids
+            try:
+                current_profile_id_int = int(current_profile_id)
+                if current_profile_id_int in participant_profile_ids:
+                    # Also check the profile type matches
+                    idx = participant_profile_ids.index(current_profile_id_int)
+                    if idx < len(participant_profile_types) and participant_profile_types[idx] == current_role:
+                        has_access = True
+                        print(f"✅ Access granted: User is participant (profile_id {current_profile_id})")
+            except (ValueError, TypeError):
+                pass
 
         if not has_access:
             print(f"❌ Access denied: User is not part of this session")
+            print(f"   Host check: {host_profile_id} == {current_profile_id} ({type(host_profile_id)} vs {type(current_profile_id)}) and {host_profile_type} == {current_role}")
+            print(f"   Participant check: {current_profile_id} in {participant_profile_ids}")
             raise HTTPException(status_code=403, detail="Access denied")
 
         # Get user names for host and first participant
@@ -1066,6 +1081,11 @@ async def end_session(session_id: int, notes: Optional[str] = None, current_user
 async def add_canvas_stroke(stroke: CanvasStroke, current_user = Depends(get_current_user)):
     """Add a drawing/text stroke to canvas"""
 
+    print(f"📝 Stroke persistence request:")
+    print(f"  page_id: {stroke.page_id}")
+    print(f"  stroke_type: {stroke.stroke_type}")
+    print(f"  stroke_data keys: {list(stroke.stroke_data.keys()) if stroke.stroke_data else 'None'}")
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -1175,6 +1195,15 @@ async def add_canvas_stroke(stroke: CanvasStroke, current_user = Depends(get_cur
             "stroke_order": stroke_order
         }
 
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        import traceback
+        print(f"❌ Error saving stroke: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error saving stroke: {str(e)}")
     finally:
         cursor.close()
         conn.close()
@@ -3151,21 +3180,21 @@ async def create_call_history(
 
         if current_role == 'tutor':
             cursor.execute("""
-                SELECT CONCAT(u.first_name, ' ', u.father_name), t.profile_picture
+                SELECT CONCAT(u.first_name, ' ', u.father_name), u.profile_picture
                 FROM users u
                 LEFT JOIN tutor_profiles t ON u.id = t.user_id
                 WHERE u.id = %s
             """, (caller_user_id,))
         elif current_role == 'student':
             cursor.execute("""
-                SELECT CONCAT(u.first_name, ' ', u.father_name), s.profile_picture
+                SELECT CONCAT(u.first_name, ' ', u.father_name), u.profile_picture
                 FROM users u
                 LEFT JOIN student_profiles s ON u.id = s.user_id
                 WHERE u.id = %s
             """, (caller_user_id,))
         else:
             cursor.execute("""
-                SELECT CONCAT(first_name, ' ', father_name), NULL
+                SELECT CONCAT(first_name, ' ', father_name), profile_picture
                 FROM users WHERE id = %s
             """, (caller_user_id,))
 

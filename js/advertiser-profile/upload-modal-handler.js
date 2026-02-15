@@ -138,15 +138,43 @@ async function uploadImage(type) {
         if (response && response.url) {
             // Update the image on page immediately
             if (type === 'cover') {
-                const coverImg = document.getElementById('hero-cover');
-                if (coverImg) coverImg.src = response.url;
+                // Update cover image in profile header section
+                const coverImg = document.getElementById('cover-img');
+                if (coverImg) {
+                    coverImg.src = response.url;
+                    console.log('[Upload] ✅ Cover image updated:', response.url);
+                } else {
+                    console.error('[Upload] ❌ Cover image element #cover-img not found!');
+                }
+
+                // Also update any other cover images on the page
+                const allCoverImages = document.querySelectorAll('.cover-img');
+                allCoverImages.forEach(img => {
+                    img.src = response.url;
+                });
             } else {
-                const profileImg = document.getElementById('hero-avatar');
-                if (profileImg) profileImg.src = response.url;
+                // Update profile picture in profile header section
+                const profileImg = document.getElementById('profile-avatar');
+                if (profileImg) {
+                    profileImg.src = response.url;
+                    console.log('[Upload] ✅ Profile picture updated:', response.url);
+                } else {
+                    console.error('[Upload] ❌ Profile picture element #profile-avatar not found!');
+                }
 
                 // Also update nav profile pic
                 const navProfilePic = document.getElementById('nav-profile-pic');
                 if (navProfilePic) navProfilePic.src = response.url;
+
+                // Update dropdown profile pic
+                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+                if (dropdownProfilePic) dropdownProfilePic.src = response.url;
+
+                // Update all profile avatars on page
+                const allProfileAvatars = document.querySelectorAll('.profile-avatar');
+                allProfileAvatars.forEach(img => {
+                    img.src = response.url;
+                });
             }
 
             // Update AdvertiserProfileDataLoader state

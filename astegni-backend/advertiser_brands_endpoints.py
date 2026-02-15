@@ -12,14 +12,16 @@ Relationships:
 - brand_profile.campaign_ids[] → campaign_profile.id
 """
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, File, UploadFile
 from pydantic import BaseModel
 from typing import Optional, List
 import psycopg
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 from dotenv import load_dotenv
 import os
 from utils import get_current_user
+from backblaze_service import get_backblaze_service
 
 load_dotenv()
 
@@ -85,7 +87,11 @@ class CampaignCreate(BaseModel):
     # New array fields for targeting
     target_audiences: Optional[List[str]] = None  # ['tutor', 'student', 'parent', 'advertiser', 'user']
     target_regions: Optional[List[str]] = None    # ['addis-ababa', 'oromia', etc.]
-    target_placements: Optional[List[str]] = None # ['placeholder', 'widget', 'popup', 'insession']
+    target_placements: Optional[List[str]] = None # ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
+    # Location-specific fields
+    national_location: Optional[str] = None       # User's location for national targeting (e.g., "Addis Ababa, Ethiopia")
+    national_country_code: Optional[str] = None   # ISO country code for national targeting (e.g., "ET")
+    regional_country_code: Optional[str] = None   # Country code for regional targeting (e.g., "ET")
 
 class CampaignUpdate(BaseModel):
     name: Optional[str] = None
@@ -101,7 +107,11 @@ class CampaignUpdate(BaseModel):
     # New array fields for targeting
     target_audiences: Optional[List[str]] = None  # ['tutor', 'student', 'parent', 'advertiser', 'user']
     target_regions: Optional[List[str]] = None    # ['addis-ababa', 'oromia', etc.]
-    target_placements: Optional[List[str]] = None # ['placeholder', 'widget', 'popup', 'insession']
+    target_placements: Optional[List[str]] = None # ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
+    # Location-specific fields
+    national_location: Optional[str] = None       # User's location for national targeting (e.g., "Addis Ababa, Ethiopia")
+    national_country_code: Optional[str] = None   # ISO country code for national targeting (e.g., "ET")
+    regional_country_code: Optional[str] = None   # Country code for regional targeting (e.g., "ET")
 
 
 # ============================================================
@@ -138,8 +148,12 @@ async def get_my_brands(current_user = Depends(get_current_user)):
                 cur.execute("""
                     SELECT bp.*,
                            COALESCE(array_length(bp.campaign_ids, 1), 0) as campaigns_count,
-                           (SELECT COALESCE(SUM(impressions), 0) FROM campaign_profile WHERE id = ANY(bp.campaign_ids)) as total_impressions,
-                           (SELECT COALESCE(SUM(campaign_budget), 0) FROM campaign_profile WHERE id = ANY(bp.campaign_ids)) as total_budget
+                           (SELECT COALESCE(COUNT(*), 0) FROM campaign_impressions ci
+                            WHERE bp.campaign_ids IS NOT NULL AND array_length(bp.campaign_ids, 1) > 0
+                            AND ci.campaign_id = ANY(bp.campaign_ids)) as total_impressions,
+                           (SELECT COALESCE(SUM(campaign_budget), 0) FROM campaign_profile cp
+                            WHERE bp.campaign_ids IS NOT NULL AND array_length(bp.campaign_ids, 1) > 0
+                            AND cp.id = ANY(bp.campaign_ids)) as total_budget
                     FROM brand_profile bp
                     WHERE bp.id = ANY(%s)
                     ORDER BY bp.created_at DESC
@@ -165,7 +179,7 @@ async def get_my_brands(current_user = Depends(get_current_user)):
                         'industry': b.get('industry') or 'General',
                         'website': b.get('website'),
                         'brand_color': b.get('brand_color') or '#8B5CF6',
-                        'status': b['status'] or 'pending',
+                        'status': b['status'] or 'active',
                         'is_verified': b['is_verified'],
                         'is_active': b['is_active'],
                         'campaigns_count': b['campaigns_count'] or 0,
@@ -227,7 +241,7 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                     brand.thumbnail,
                     brand.hero_title,
                     brand.hero_subtitle,
-                    brand.social_links or [],
+                    Jsonb(brand.social_links or {}),
                     brand.phone or [],
                     brand.email or [],
                     brand.location or [],
@@ -355,7 +369,7 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
                     values.append(brand.hero_subtitle)
                 if brand.social_links is not None:
                     updates.append("social_links = %s")
-                    values.append(brand.social_links)
+                    values.append(Jsonb(brand.social_links))
                 if brand.phone is not None:
                     updates.append("phone = %s")
                     values.append(brand.phone)
@@ -365,6 +379,18 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
                 if brand.location is not None:
                     updates.append("location = %s")
                     values.append(brand.location)
+                if brand.industry is not None:
+                    updates.append("industry = %s")
+                    values.append(brand.industry)
+                if brand.website is not None:
+                    updates.append("website = %s")
+                    values.append(brand.website)
+                if brand.brand_color is not None:
+                    updates.append("brand_color = %s")
+                    values.append(brand.brand_color)
+                if brand.status is not None:
+                    updates.append("status = %s")
+                    values.append(brand.status)
 
                 if not updates:
                     raise HTTPException(status_code=400, detail="No fields to update")
@@ -435,6 +461,76 @@ async def delete_brand(brand_id: int, current_user = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/brands/{brand_id}/logo")
+async def upload_brand_logo(
+    brand_id: int,
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_user)
+):
+    """Upload brand logo (updates thumbnail field)"""
+    try:
+        # Get advertiser profile ID from role_ids
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+
+        if not advertiser_profile_id:
+            raise HTTPException(status_code=403, detail="Not authorized as advertiser")
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Verify ownership using profile_id
+                cur.execute("""
+                    SELECT brand_ids FROM advertiser_profiles WHERE id = %s
+                """, (advertiser_profile_id,))
+                advertiser = cur.fetchone()
+
+                if not advertiser or brand_id not in (advertiser.get('brand_ids') or []):
+                    raise HTTPException(status_code=403, detail="You don't own this brand")
+
+                # Read file contents
+                contents = await file.read()
+
+                # Get Backblaze service and upload
+                b2_service = get_backblaze_service()
+                result = b2_service.upload_file(
+                    file_data=contents,
+                    file_name=file.filename,
+                    file_type='brand_logo',
+                    user_id=f"brand_{brand_id}"
+                )
+
+                if not result:
+                    raise HTTPException(status_code=500, detail="Upload failed")
+
+                file_url = result['url']
+
+                # Update brand thumbnail
+                cur.execute("""
+                    UPDATE brand_profile
+                    SET thumbnail = %s, updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (file_url, brand_id))
+                updated_brand = cur.fetchone()
+
+                conn.commit()
+
+                return {
+                    "message": "Brand logo uploaded successfully",
+                    "logo_url": file_url,
+                    "brand": {
+                        'id': updated_brand['id'],
+                        'name': updated_brand['name'],
+                        'thumbnail': updated_brand['thumbnail'],
+                        'logo': updated_brand['thumbnail']
+                    }
+                }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================================
 # CAMPAIGN ENDPOINTS
 # ============================================================
@@ -474,11 +570,24 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(get_current_
                 if not campaign_ids:
                     return {"campaigns": [], "total": 0}
 
-                # Get campaigns
+                # Get campaigns with aggregated metrics and media
                 cur.execute("""
-                    SELECT * FROM campaign_profile
-                    WHERE id = ANY(%s)
-                    ORDER BY created_at DESC
+                    SELECT
+                        cp.*,
+                        COALESCE(COUNT(DISTINCT ci.id), 0) as impressions,
+                        COALESCE(COUNT(DISTINCT ci.id) FILTER (WHERE ci.clicked = true), 0) as clicks,
+                        COALESCE(COUNT(DISTINCT ci.id) FILTER (WHERE ci.converted = true), 0) as conversions,
+                        COALESCE(COUNT(DISTINCT ce.id) FILTER (WHERE ce.engagement_type = 'like'), 0) as likes,
+                        COALESCE(COUNT(DISTINCT ce.id) FILTER (WHERE ce.engagement_type = 'share'), 0) as shares,
+                        COALESCE(COUNT(DISTINCT ce.id) FILTER (WHERE ce.engagement_type = 'comment'), 0) as comments,
+                        (SELECT file_url FROM campaign_media WHERE campaign_id = cp.id AND media_type = 'image' LIMIT 1) as thumbnail_url,
+                        (SELECT file_url FROM campaign_media WHERE campaign_id = cp.id LIMIT 1) as file_url
+                    FROM campaign_profile cp
+                    LEFT JOIN campaign_impressions ci ON cp.id = ci.campaign_id
+                    LEFT JOIN campaign_engagement ce ON cp.id = ce.campaign_id
+                    WHERE cp.id = ANY(%s)
+                    GROUP BY cp.id
+                    ORDER BY cp.created_at DESC
                 """, (campaign_ids,))
                 campaigns = cur.fetchall()
 
@@ -493,8 +602,9 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(get_current_
                         'objective': c['objective'],
                         'status': c['verification_status'] or 'pending',
                         'is_verified': c['is_verified'],
+                        'submit_for_verification': c.get('submit_for_verification', False),
                         'impressions': c['impressions'] or 0,
-                        'clicks': c.get('click_through_rate', 0) or 0,
+                        'clicks': c['clicks'] or 0,
                         'conversions': c['conversions'] or 0,
                         'likes': c['likes'] or 0,
                         'shares': c['shares'] or 0,
@@ -502,12 +612,12 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(get_current_
                         'campaign_budget': float(c['campaign_budget']) if c['campaign_budget'] else 0,
                         'amount_used': float(c['amount_used']) if c['amount_used'] else 0,
                         'remaining_balance': float(c['remaining_balance']) if c['remaining_balance'] else 0,
-                        'target_audience': c['target_audience'],
+                        'target_audience': None,  # Legacy field, use target_audiences instead
                         'target_location': c['target_location'] or 'global',
                         # New array targeting fields
                         'target_audiences': c.get('target_audiences') or ['tutor', 'student', 'parent', 'advertiser', 'user'],
                         'target_regions': c.get('target_regions') or [],
-                        'target_placements': c.get('target_placements') or ['placeholder', 'widget', 'popup', 'insession'],
+                        'target_placements': c.get('target_placements') or ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'],
                         'start_date': str(c['start_date']) if c['start_date'] else None,
                         'created_at': str(c['created_at']) if c['created_at'] else None
                     })
@@ -588,41 +698,46 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
                 # Set default targeting arrays
                 target_audiences = campaign.target_audiences or ['tutor', 'student', 'parent', 'advertiser', 'user']
                 target_regions = campaign.target_regions or []
-                target_placements = campaign.target_placements or ['placeholder', 'widget', 'popup', 'insession']
+                target_placements = campaign.target_placements or ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
 
                 # Create the campaign with finance fields
                 # Note: verification_status must be 'pending', 'verified', 'rejected', or 'suspended'
+                # Media files (thumbnail_url, file_url) are now stored in campaign_media table
+                # Engagement metrics (impressions, conversions, etc) are in campaign_engagement table
+                # Payment info (payment_status, paid_at) is in campaign_invoices table
                 cur.execute("""
                     INSERT INTO campaign_profile (
-                        name, description, thumbnail_url, file_url, objective,
-                        target_audience, target_location, start_date,
+                        name, description, objective,
+                        target_location, start_date,
                         call_to_action, verification_status, is_verified,
-                        impressions, conversions, likes, shares, comments,
                         target_audiences, target_regions, target_placements,
+                        national_location, national_country_code, regional_country_code,
                         campaign_budget, amount_used, remaining_balance,
-                        payment_status, paid_at, advertiser_id, brand_id,
+                        advertiser_id, brand_id,
                         created_at, updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        'pending', FALSE, 0, 0, 0, 0, 0, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s,
+                        'pending', FALSE,
+                        %s, %s, %s,
+                        %s, %s, %s,
                         %s, 0.00, %s,
-                        'paid', NOW(), %s, %s,
+                        %s, %s,
                         NOW(), NOW()
                     )
                     RETURNING *
                 """, (
                     campaign.name,
                     campaign.description,
-                    campaign.thumbnail_url,
-                    campaign.file_url,
                     campaign.objective,
-                    campaign.target_audience,
                     campaign.target_location,
                     campaign.start_date,
                     campaign.call_to_action,
                     target_audiences,
                     target_regions,
                     target_placements,
+                    campaign.national_location,
+                    campaign.national_country_code,
+                    campaign.regional_country_code,
                     campaign_budget_amount,
                     campaign_budget_amount,
                     advertiser_profile_id,
@@ -842,10 +957,22 @@ async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_us
                 if campaign.target_placements is not None:
                     updates.append("target_placements = %s")
                     values.append(campaign.target_placements)
+                # Location-specific fields
+                if campaign.national_location is not None:
+                    updates.append("national_location = %s")
+                    values.append(campaign.national_location)
+                if campaign.national_country_code is not None:
+                    updates.append("national_country_code = %s")
+                    values.append(campaign.national_country_code)
+                if campaign.regional_country_code is not None:
+                    updates.append("regional_country_code = %s")
+                    values.append(campaign.regional_country_code)
 
                 if not updates:
                     raise HTTPException(status_code=400, detail="No fields to update")
 
+                # Reset submit_for_verification to false on any edit
+                updates.append("submit_for_verification = false")
                 updates.append("updated_at = NOW()")
                 values.append(campaign_id)
 
@@ -999,5 +1126,98 @@ async def get_advertiser_stats(current_user = Depends(get_current_user)):
                     "active_campaigns": campaign_stats['active_campaigns'] if campaign_stats else 0
                 }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================
+# CAMPAIGN VERIFICATION ENDPOINT
+# ============================================================
+
+@router.post("/campaigns/{campaign_id}/submit-for-verification")
+async def submit_campaign_for_verification(campaign_id: int, current_user = Depends(get_current_user)):
+    """
+    Submit a campaign for admin verification.
+    This marks the campaign as ready for review in the admin dashboard.
+    """
+    try:
+        # Get advertiser profile ID from role_ids
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+
+        if not advertiser_profile_id:
+            raise HTTPException(status_code=403, detail="Not authorized as advertiser")
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Get advertiser's brands using profile_id
+                cur.execute("""
+                    SELECT brand_ids FROM advertiser_profiles WHERE id = %s
+                """, (advertiser_profile_id,))
+                advertiser = cur.fetchone()
+
+                if not advertiser:
+                    raise HTTPException(status_code=403, detail="Not authorized")
+
+                brand_ids = advertiser.get('brand_ids') or []
+
+                # Check if campaign belongs to one of the advertiser's brands
+                cur.execute("""
+                    SELECT bp.id FROM brand_profile bp
+                    WHERE bp.id = ANY(%s) AND %s = ANY(bp.campaign_ids)
+                """, (brand_ids, campaign_id))
+
+                if not cur.fetchone():
+                    raise HTTPException(status_code=403, detail="You don't own this campaign")
+
+                # Check if campaign is already verified
+                cur.execute("""
+                    SELECT is_verified, verification_status, submit_for_verification
+                    FROM campaign_profile
+                    WHERE id = %s
+                """, (campaign_id,))
+                campaign = cur.fetchone()
+
+                if not campaign:
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+
+                # If already verified, don't allow resubmission
+                if campaign['is_verified']:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Campaign is already verified"
+                    )
+
+                # If already submitted for verification
+                if campaign['submit_for_verification']:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Campaign is already submitted for verification"
+                    )
+
+                # Mark campaign as submitted for verification
+                cur.execute("""
+                    UPDATE campaign_profile
+                    SET submit_for_verification = true,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING id, name, submit_for_verification, verification_status
+                """, (campaign_id,))
+                updated_campaign = cur.fetchone()
+
+                conn.commit()
+
+                return {
+                    "success": True,
+                    "message": "Campaign submitted for verification successfully",
+                    "campaign": {
+                        "id": updated_campaign['id'],
+                        "name": updated_campaign['name'],
+                        "submit_for_verification": updated_campaign['submit_for_verification'],
+                        "verification_status": updated_campaign['verification_status']
+                    }
+                }
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

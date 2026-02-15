@@ -145,7 +145,7 @@
                             <select id="admin-department" name="department" required>
                                 <option value="">Select your department</option>
                                 <option value="manage-admins">Manage Admins</option>
-                                <option value="manage-advertisers">Manage Advertisers</option>
+                                <option value="manage-campaign">Manage Campaigns</option>
                                 <option value="manage-contents">Manage Contents</option>
                                 <option value="manage-courses">Manage Courses</option>
                                 <option value="manage-credentials">Manage Credentials</option>
@@ -534,22 +534,22 @@
                     <div class="quick-actions">
                         <h3 class="gradient-text">Quick Actions</h3>
 
-                        <div class="actions-grid">
-                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-advertisers.html')">
+                        <div class="actions-grid">                            
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-admins.html')">
                                 <span class="action-icon">
-                                    <i class="fas fa-ad"></i>
+                                    <i class="fas fa-user-shield"></i>
                                 </span>
-                                <span class="action-label">Manage Advertisers</span>
+                                <span class="action-label">Manage Admins</span>
                                 <span class="auth-lock" title="Login Required">
                                     <i class="fas fa-lock"></i>
                                 </span>
                             </button>
 
-                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-contents.html')">
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-campaign.html')">
                                 <span class="action-icon">
-                                    <i class="fas fa-upload"></i>
+                                    <i class="fas fa-bullhorn"></i>
                                 </span>
-                                <span class="action-label">Manage Contents</span>
+                                <span class="action-label">Manage Campaigns</span>
                                 <span class="auth-lock" title="Login Required">
                                     <i class="fas fa-lock"></i>
                                 </span>
@@ -575,16 +575,6 @@
                                 </span>
                             </button>
 
-                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-customers.html')">
-                                <span class="action-icon">
-                                    <i class="fas fa-users"></i>
-                                </span>
-                                <span class="action-label">Manage Customers</span>
-                                <span class="auth-lock" title="Login Required">
-                                    <i class="fas fa-lock"></i>
-                                </span>
-                            </button>
-
                             <button class="action-btn glass hover-lift" onclick="requireAuth('manage-schools.html')">
                                 <span class="action-icon">
                                     <i class="fas fa-school"></i>
@@ -605,11 +595,21 @@
                                 </span>
                             </button>
 
-                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-admins.html')">
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-contents.html')">
                                 <span class="action-icon">
-                                    <i class="fas fa-user-shield"></i>
+                                    <i class="fas fa-upload"></i>
                                 </span>
-                                <span class="action-label">Manage Admins</span>
+                                <span class="action-label">Manage Contents</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-customers.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-users"></i>
+                                </span>
+                                <span class="action-label">Manage Customers</span>
                                 <span class="auth-lock" title="Login Required">
                                     <i class="fas fa-lock"></i>
                                 </span>

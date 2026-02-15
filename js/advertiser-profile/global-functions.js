@@ -379,6 +379,31 @@ function handleNavLinkClick(event, section) {
     alert(`${section} section coming soon!`);
 }
 
+// ============================================
+// BRANDS PANEL FUNCTIONS
+// Wrapper functions for BrandsManager (defined in brands-manager.js)
+// ============================================
+
+function filterBrandsByStatus(status) {
+    if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.setStatusFilter === 'function') {
+        BrandsManager.setStatusFilter(status);
+    } else {
+        console.warn('[Global Functions] BrandsManager not available yet, queuing filterBrandsByStatus');
+        // Wait for BrandsManager to load
+        setTimeout(() => filterBrandsByStatus(status), 100);
+    }
+}
+
+function searchBrandsInput(event) {
+    if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.searchBrands === 'function') {
+        BrandsManager.searchBrands(event.target.value);
+    } else {
+        console.warn('[Global Functions] BrandsManager not available yet, queuing searchBrandsInput');
+        // Wait for BrandsManager to load
+        setTimeout(() => searchBrandsInput(event), 100);
+    }
+}
+
 // Export all functions to window
 window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
@@ -397,5 +422,7 @@ window.openAdAnalyticsModal = openAdAnalyticsModal;
 window.openVerifyCompanyInfoModal = openVerifyCompanyInfoModal;
 window.closeVerifyCompanyInfoModal = closeVerifyCompanyInfoModal;
 window.handleNavLinkClick = handleNavLinkClick;
+window.filterBrandsByStatus = filterBrandsByStatus;
+window.searchBrandsInput = searchBrandsInput;
 
 console.log('[AdvertiserProfile] Global Functions loaded');

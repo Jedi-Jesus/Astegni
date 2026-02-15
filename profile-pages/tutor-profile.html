@@ -8,8 +8,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>ASTEGNI - Tutor Profile</title>
-    <!-- LOADING SCREEN FIX - MUST LOAD FIRST -->
-    <script src="../js/fix-loading-screen.js"></script>
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v=20251217"></script>
     <!-- Safe wrapper for openChatModal - waits for function to be available -->
@@ -127,6 +125,41 @@
 </head>
 
 <body class="font-sans">
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <h2 class="loading-text">ASTEGNI</h2>
+    </div>
+    <script>
+        // Hide loading screen only after page fully loads
+        window.addEventListener('load', function() {
+            // Wait for all resources (images, styles, scripts) to fully load
+            setTimeout(() => {
+                const loadingScreen = document.getElementById("loading-screen");
+                if (loadingScreen) {
+                    loadingScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                    }, 600);
+                }
+            }, 300); // Reduced delay since we're already waiting for full load
+        });
+
+        // Fallback: Force hide after 10 seconds if something goes wrong
+        setTimeout(() => {
+            const loadingScreen = document.getElementById("loading-screen");
+            if (loadingScreen && loadingScreen.style.display !== "none") {
+                loadingScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                }, 600);
+            }
+        }, 10000);
+    </script>
 
     <!-- Navigation -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
@@ -243,7 +276,6 @@
                         </button>
                     </div>
                 </div>
-
 
                 <!-- Notification Icon -->
                 <button class="icon-btn" aria-label="Notifications">
@@ -382,26 +414,9 @@
     <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="promo-container premium-promo" style="margin-top: 2rem;">
-        <div class="promo-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="promo-content">
-            <span class="promo-label">Featured</span>
-            <h3 class="promo-title">Premium Advertising Space</h3>
-            <p class="promo-text">Reach thousands of students, tutors, and parents across Ethiopia</p>
-            <button class="promo-cta" onclick="event.stopPropagation(); openComingSoonModal('Advertising')">Learn More</button>
-        </div>
-        <div class="promo-visual">
-            <div class="promo-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
-            </div>
-        </div>
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="tutor" data-location="tutor_profile">
+        <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
-
 
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar-container">
@@ -470,8 +485,8 @@
                 <a href="#" onclick="switchPanel('stories'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📸</span>
                     <span>Stories</span>
-                    <span class="badge-count"
-                        style="background: var(--button-bg); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75rem; margin-left: auto;">12</span>
+                    <span id="sidebar-stories-count" class="badge-count"
+                        style="background: var(--button-bg); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75rem; margin-left: auto; display: none;">0</span>
                 </a>
                 <a href="#" onclick="switchPanel('videos'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">🎬</span>
@@ -512,7 +527,6 @@
                     <div class="panels-container">
                         <!-- Dashboard Panel (Default) -->
                         <div id="dashboard-panel" class="panel-content active">
-
 
                             <!-- Hero Section -->
                             <section class="hero-section animate__animated animate__fadeIn">
@@ -563,20 +577,24 @@
                                 <div class="profile-main-info">
                                     <div class="profile-info-wrapper">
                                         <div class="profile-avatar-container">
-                                            <!-- Story Ring Indicator -->
-                                            <div class="story-ring-wrapper" onclick="viewTutorStories()"
-                                                style="position: relative; width: 150px; height: 150px; padding: 3px; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); cursor: pointer; animation: pulse 2s infinite;">
-                                                <div
-                                                    style="background: var(--card-bg); width: 100%; height: 100%; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center;">
-                                                    <img id="profile-avatar"
-                                                        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
-                                                        alt="Admin Profile" class="profile-avatar">
-                                                </div>
+                                            <!-- Story Ring Indicator (only shown when stories exist) -->
+                                            <div class="story-ring-wrapper" id="story-ring-wrapper" onclick="openStoryViewer()"
+                                                style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; padding: 3px; border-radius: 50%; cursor: pointer; display: none; z-index: 1;">
+                                                <!-- Ring gradient border -->
                                             </div>
+
+                                            <!-- Profile Avatar (always visible) -->
+                                            <div id="profile-avatar-wrapper" onclick="handleProfileAvatarClick()" style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--card-bg); padding: 3px; z-index: 2; cursor: pointer;">
+                                                <img id="profile-avatar"
+                                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                                    alt="Profile Picture" class="profile-avatar"
+                                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 5px solid var(--card-bg);">
+                                            </div>
+
                                             <span class="online-indicator"></span>
                                             <!-- Add Story Button -->
                                             <button onclick="openUploadStoryModal()" class="story-add-btn"
-                                                style="position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--button-bg); color: white; border: 3px solid var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 2;">
+                                                style="position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--button-bg); color: white; border: 3px solid var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 3;">
                                                 +
                                             </button>
                                             <!-- Profile Picture Upload Button -->
@@ -697,7 +715,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
 
                                             <!-- Contact Information (Email & Phone) - Populated dynamically by JS -->
                                             <div class="profile-contact-info" id="email-phone-container"
@@ -866,7 +883,6 @@
                                     <span class="text-sm text-gray-500">Average reply time</span>
                                 </div>
                             </div>
-
 
                             <!-- Reviews Section (Success Stories Style) -->
                             <div class="card p-6 mb-8">
@@ -1642,7 +1658,6 @@
                         </div>
                     </div>
 
-
                     <!-- Stories Panel -->
                     <div id="stories-panel" class="panel-content hidden">
                         <div class="mb-8">
@@ -1650,24 +1665,24 @@
                             <p class="text-gray-600">Share educational moments and teaching highlights</p>
                         </div>
 
-                        <!-- Story Stats -->
+                        <!-- Story Stats - Dynamic from Database -->
                         <div class="story-stats-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">12</div>
+                                <div id="total-stories-count" style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Total Stories</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">3.5K</div>
+                                <div id="total-views-count" style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Total Views</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div style="font-size: 1.875rem; font-weight: 700; color: #10b981;">245</div>
-                                <div style="font-size: 0.875rem; color: var(--text-muted);">Total Likes</div>
+                                <div id="active-stories-count" style="font-size: 1.875rem; font-weight: 700; color: #10b981;">0</div>
+                                <div style="font-size: 0.875rem; color: var(--text-muted);">Active Stories</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">89</div>
-                                <div style="font-size: 0.875rem; color: var(--text-muted);">Comments</div>
+                                <div id="avg-views-count" style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">0</div>
+                                <div style="font-size: 0.875rem; color: var(--text-muted);">Avg. Views</div>
                             </div>
                         </div>
 
@@ -1679,66 +1694,13 @@
                             </button>
                         </div>
 
-                        <!-- Stories Grid -->
-                        <div class="stories-grid"
+                        <!-- Stories Grid - Dynamically loaded from database -->
+                        <div id="stories-grid" class="stories-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
-                            <!-- Story Card 1 -->
-                            <div class="story-card" onclick="viewStory('story1')"
-                                style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                <div style="position: relative;">
-                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='250'%3E%3Crect width='200' height='250' fill='%23e5e7eb'/%3E%3C/svg%3E"
-                                        alt="Story" style="width: 100%; height: 250px; object-fit: cover;">
-                                    <div
-                                        style="position: absolute; top: 10px; left: 10px; background: var(--button-bg); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                        Math Tips
-                                    </div>
-                                    <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                        <p
-                                            style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                            Today's Lesson</p>
-                                        <p
-                                            style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                            2 hours ago</p>
-                                    </div>
-                                </div>
-                                <div style="padding: 0.75rem;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">👁️ 245
-                                            views</span>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">❤️ 32</span>
-                                    </div>
-                                </div>
+                            <!-- Stories will be loaded here dynamically -->
+                            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                                <p>Loading stories...</p>
                             </div>
-
-                            <!-- Story Card 2 -->
-                            <div class="story-card" onclick="viewStory('story2')"
-                                style="background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                <div style="position: relative;">
-                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='250'%3E%3Crect width='200' height='250' fill='%23d1d5db'/%3E%3C/svg%3E"
-                                        alt="Story" style="width: 100%; height: 250px; object-fit: cover;">
-                                    <div
-                                        style="position: absolute; top: 10px; left: 10px; background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
-                                        Physics Lab
-                                    </div>
-                                    <div style="position: absolute; bottom: 10px; left: 10px; right: 10px;">
-                                        <p
-                                            style="color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                            Experiment Demo</p>
-                                        <p
-                                            style="color: rgba(255,255,255,0.9); font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin: 0;">
-                                            5 hours ago</p>
-                                    </div>
-                                </div>
-                                <div style="padding: 0.75rem;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">👁️ 189
-                                            views</span>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">❤️ 28</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- More story cards can be added here -->
                         </div>
 
                         <!-- Load More Button -->
@@ -3269,68 +3231,20 @@
                 <div class="right-widgets">
 
                     <!-- Ad Widget -->
+                                        <!-- Dynamic Logo Ad Widget -->
                     <div class="widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
                         <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
                             <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
-                        <div class="promo-content" id="promo-container-tutor" style="min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 1.5rem 1rem 2rem; cursor: pointer; overflow: hidden; position: relative;">
-                            <div id="ad-message-container-tutor" style="text-align: center; position: relative; width: 100%; height: 90px; overflow: hidden;">
-                                <div class="ad-message-tutor active" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 1; transform: scale(1);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📣</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Your Ad Goes Here</p>
-                                </div>
-                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Target Millions of Audience</p>
-                                </div>
-                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📈</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Grow Your Business</p>
-                                </div>
-                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Reach Your Audience</p>
-                                </div>
-                                <div class="ad-message-tutor" style="position: absolute; width: 100%; transition: all 0.6s ease; opacity: 0; transform: scale(0.8);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">💼</div>
-                                    <p style="font-size: 1rem; font-weight: 600; color: var(--heading);">Advertise With Us</p>
-                                </div>
-                            </div>
-                            <div id="ad-ticker-tutor" style="position: absolute; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(0,0,0,0.05); overflow: hidden;">
-                                <div id="ad-ticker-content-tutor" style="position: absolute; white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); line-height: 22px;">
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                    <span style="padding: 0 2rem;">Contact us to advertise</span>
-                                    <span style="padding: 0 2rem;">Boost your brand visibility</span>
-                                    <span style="padding: 0 2rem;">Reach millions of engaged learners</span>
-                                    <span style="padding: 0 2rem;">Premium ad placements available</span>
-                                </div>
-                            </div>
+                        <!-- Dynamic ad container loaded by AdRotationManager -->
+                        <div
+                            data-placement="logo"
+                            data-profile-type="tutor"
+                            class="leaderboard-banner premium-promo"
+                            style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
+                            <!-- Ads will be dynamically loaded here -->
                         </div>
-                        <style>
-                            @keyframes tickerScrollTutor { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-                            #ad-ticker-content-tutor { animation: tickerScrollTutor 20s linear infinite; }
-                            .ad-message-tutor { visibility: hidden; }
-                            .ad-message-tutor.active { opacity: 1 !important; transform: scale(1) !important; visibility: visible !important; }
-                            .ad-message-tutor.fade-out { opacity: 0 !important; transform: scale(0.8) !important; visibility: visible !important; }
-                        </style>
-                        <script>
-                            (function() {
-                                const messages = document.querySelectorAll('#ad-message-container-tutor .ad-message-tutor');
-                                let currentIndex = 0;
-                                function rotateMessages() {
-                                    const prevIndex = currentIndex;
-                                    currentIndex = (currentIndex + 1) % messages.length;
-                                    messages[prevIndex].classList.remove('active');
-                                    messages[prevIndex].classList.add('fade-out');
-                                    messages[currentIndex].classList.add('active');
-                                    setTimeout(() => { messages[prevIndex].classList.remove('fade-out'); }, 600);
-                                }
-                                setInterval(rotateMessages, 10000);
-                            })();
-                        </script>
                     </div>
-
 
                     <!-- Monthly Earnings Widget with Line Graph -->
                     <div class="widget-card"
@@ -3655,7 +3569,6 @@
 
     <!-- ========== END QUIZ MODALS ========== -->
 
-
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
@@ -3811,6 +3724,7 @@
     <script src="../js/root/nav.js?v=20260118"></script>
     <script src="../js/root/auth.js?v=20260124"></script>
     <script src="../js/root/google-oauth.js"></script>
+    <script src="../js/root/storage-manager.js"></script>
     <script src="../js/common-modals/access-restricted-modal.js?v=20251229"></script>
     <script src="../js/root/profile-completion-guard.js?v=20251224"></script>
     <script src="../js/root/theme-toggle.js?v=20260118"></script>
@@ -3881,14 +3795,13 @@
     <!-- 4. Modal Manager -->
     <script src="../js/tutor-profile/modal-manager.js?v=20251217"></script>
 
-
-
-
     <!-- 5. Upload Handler -->
     <script src="../js/tutor-profile/upload-handler.js?v=20260118"></script>
 
     <!-- 6. Main Controller -->
     <script src="../js/tutor-profile/profile-controller.js?v=20260118"></script>
+    <!-- Stories Loader -->
+    <script src="../js/tutor-profile/stories-loader.js?v=20260210"></script>
 
     <!-- 6.25. Session Request Manager (MUST load before panel-manager.js) -->
     <script src="../js/tutor-profile/session-request-manager.js?v=20251230"></script>
@@ -4050,7 +3963,83 @@
 
     <!-- ==================== MODAL LOADER INTEGRATION ==================== -->
     <!-- Modal Container: All modals will be loaded here dynamically -->
-    <div id="modal-container"></div>
+    <div id="modal-container">
+        <!-- Universal Upload Modal (inline for stories) -->
+        <div class="upload-story-modal" id="storyUploadModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-inner">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="uploadModalTitle">Upload File</h2>
+                        <button class="modal-close" onclick="closeStoryUploadModal()">&times;</button>
+                    </div>
+
+                    <!-- Upload Type Selector -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="uploadType" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            What are you uploading?
+                        </label>
+                        <select id="uploadType" class="form-input" onchange="handleUploadTypeChange()"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); font-size: 1rem;">
+                            <option value="story">📱 Story (Image/Video)</option>
+                            <option value="cover">🖼️ Cover Image</option>
+                            <option value="profile">👤 Profile Picture</option>
+                        </select>
+                    </div>
+
+                    <div class="upload-area" id="storyUploadArea" onclick="document.getElementById('storyInput').click()">
+                        <span class="upload-icon" id="uploadIcon">📱</span>
+                        <p class="upload-text">Click to upload or drag and drop</p>
+                        <p class="upload-hint" id="uploadHint">Loading limits...</p>
+                        <input type="file" id="storyInput" class="upload-input" accept="image/*,video/*"
+                            onchange="handleStorySelect(event)">
+                    </div>
+
+                    <div class="preview-container" id="storyPreview" style="display: none;">
+                        <img src="" alt="Story preview" class="preview-image" id="storyPreviewImage" style="display: none;">
+                        <video src="" class="preview-image" id="storyPreviewVideo" controls style="display: none;"></video>
+                        <div class="preview-info">
+                            <div class="file-info">
+                                <span>File Name:</span>
+                                <span id="storyFileName">-</span>
+                            </div>
+                            <div class="file-info">
+                                <span>File Size:</span>
+                                <span id="storyFileSize">-</span>
+                            </div>
+                            <div class="file-info">
+                                <span>Type:</span>
+                                <span id="storyFileType">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Caption input -->
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="storyCaption">Caption (optional)</label>
+                            <textarea id="storyCaption" class="form-input" placeholder="Add a caption to your story..."
+                                rows="3" maxlength="200"></textarea>
+                            <small style="color: var(--text-muted); font-size: 0.875rem;">
+                                <span id="storyCaptionCount">0</span>/200 characters
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="upload-progress" id="storyProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="storyProgressFill"></div>
+                        </div>
+                        <p class="progress-text" id="storyProgressText">Uploading... 0%</p>
+                    </div>
+
+                    <div class="upload-spinner" id="storySpinner"></div>
+
+                    <div class="upload-actions">
+                        <button class="btn-upload secondary" onclick="resetUpload('story')">Change File</button>
+                        <button class="btn-upload primary" id="uploadButton" onclick="uploadFile()">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Loader Script: Moved earlier in load order (before global-functions.js) -->
     <!-- See line 3879 for modal-loader.js script tag -->

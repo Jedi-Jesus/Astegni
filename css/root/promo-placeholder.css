@@ -57,8 +57,8 @@
     }
 }
 
-/* Enhanced Promo Container */
-.promo-container {
+/* Enhanced Leaderboard Banner */
+.leaderboard-banner {
     background: var(--primary-gradient, linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%));
     min-height: 200px;
     border-radius: 1.25rem;
@@ -72,12 +72,12 @@
     cursor: pointer;
 }
 
-.promo-container.premium-promo {
+.leaderboard-banner.premium-promo {
     min-height: 250px;
 }
 
-/* Shimmer effect for promo container */
-.promo-container::before {
+/* Shimmer effect for leaderboard banner */
+.leaderboard-banner::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -319,7 +319,7 @@
 }
 
 @media (max-width: 480px) {
-    .promo-container.premium-promo {
+    .leaderboard-banner.premium-promo {
         min-height: 200px;
     }
 

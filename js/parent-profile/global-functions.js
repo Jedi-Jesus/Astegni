@@ -349,12 +349,83 @@ function messageTutor(tutorProfileId, tutorName) {
     }
 }
 
+// Profile and Cover Upload Modal Functions
+function openCoverUploadModal() {
+    // Open universal upload modal with cover type pre-selected
+    const modal = document.getElementById('storyUploadModal');
+    const uploadTypeSelect = document.getElementById('uploadType');
+
+    if (modal && uploadTypeSelect) {
+        // Initialize parent upload modal (hide story option)
+        if (typeof initializeParentUploadModal === 'function') {
+            initializeParentUploadModal();
+        }
+
+        // Set upload type to cover
+        uploadTypeSelect.value = 'cover';
+
+        // Trigger the type change to update UI
+        if (typeof handleUploadTypeChange === 'function') {
+            handleUploadTypeChange();
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function openProfileUploadModal() {
+    // Open universal upload modal with profile type pre-selected
+    const modal = document.getElementById('storyUploadModal');
+    const uploadTypeSelect = document.getElementById('uploadType');
+
+    if (modal && uploadTypeSelect) {
+        // Initialize parent upload modal (hide story option)
+        if (typeof initializeParentUploadModal === 'function') {
+            initializeParentUploadModal();
+        }
+
+        // Set upload type to profile
+        uploadTypeSelect.value = 'profile';
+
+        // Trigger the type change to update UI
+        if (typeof handleUploadTypeChange === 'function') {
+            handleUploadTypeChange();
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCoverUploadModal() {
+    const modal = document.getElementById('storyUploadModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function closeProfileUploadModal() {
+    const modal = document.getElementById('storyUploadModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
 // Make tutor functions available globally
 window.loadTutorInformation = loadTutorInformation;
 window.viewTutorProfile = viewTutorProfile;
 window.callTutor = callTutor;
 window.emailTutor = emailTutor;
 window.messageTutor = messageTutor;
+window.openCoverUploadModal = openCoverUploadModal;
+window.openProfileUploadModal = openProfileUploadModal;
+window.closeCoverUploadModal = closeCoverUploadModal;
+window.closeProfileUploadModal = closeProfileUploadModal;
 
 // Note: shareProfile() is provided by share-profile-manager.js
 // which is loaded after this file in parent-profile.html

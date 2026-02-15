@@ -196,6 +196,7 @@
     height: calc(100% - 60px);
     gap: 0;
     overflow: hidden;
+    position: relative; /* For absolute positioning of skyscraper banner */
     transition: grid-template-columns 0.3s ease;
 }
 
@@ -4892,137 +4893,35 @@
 }
 
 /* ============================================================================
-   AD PANEL (slides in at 28 minutes)
+   SKYSCRAPER BANNER (overlays right sidebar, exact same dimensions)
    ============================================================================ */
 
-.whiteboard-ad-panel {
+.whiteboard-skyscrapper-banner {
     position: absolute;
-    top: 60px;
-    right: -320px;
-    width: 300px;
-    height: calc(100% - 120px);
-    background: var(--card-background, white);
-    border-left: 1px solid var(--border-color);
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-    z-index: 60;
-    display: flex;
-    flex-direction: column;
-    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.whiteboard-ad-panel.active {
+    top: 0;
     right: 0;
-}
-
-.ad-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-.ad-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.9;
-}
-
-.ad-close-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s ease;
-}
-
-.ad-close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.ad-panel-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
-
-.ad-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 470px; /* Right sidebar width: 420px content + 50px icon bar */
     height: 100%;
-    color: var(--text-secondary);
-    text-align: center;
-}
-
-.ad-placeholder i {
-    font-size: 3rem;
-    margin-bottom: 12px;
-    opacity: 0.3;
-}
-
-.ad-placeholder p {
-    font-size: 0.875rem;
-}
-
-.ad-panel-footer {
-    padding: 12px 16px;
-    background: var(--background-color, #f8fafc);
-    border-top: 1px solid var(--border-color);
-    text-align: center;
-}
-
-.ad-timer {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-[data-theme="dark"] .whiteboard-ad-panel,
-.dark-mode .whiteboard-ad-panel {
-    background: var(--card-background, #1e293b);
-}
-
-[data-theme="dark"] .ad-panel-footer,
-.dark-mode .ad-panel-footer {
-    background: var(--background-color, #0f172a);
-}
-
-/* ============================================================================
-   TIMED POP-UPS (bottom right, at specific intervals)
-   ============================================================================ */
-
-.whiteboard-popup-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9998;
+    background: transparent;
+    z-index: 100; /* Higher than right sidebar to overlay it */
     display: flex;
     flex-direction: column;
-    gap: 12px;
     pointer-events: none;
+    transition: width 0.3s ease;
 }
 
 .whiteboard-popup {
-    min-width: 280px;
-    max-width: 350px;
+    width: 420px; /* Full content width, excluding icon bar */
+    height: 100%; /* Full height */
+    margin-right: 50px; /* Push away from icon bar */
     background: var(--card-background, white);
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
+    border-radius: 0; /* Full height, no border radius */
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    overflow-x: hidden;
     pointer-events: all;
     animation: popupSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: right bottom;
+    transform-origin: right center;
 }
 
 .whiteboard-popup.exiting {
@@ -5134,7 +5033,7 @@
 .popup-timer-progress {
     height: 100%;
     background: var(--primary-color);
-    animation: popupTimer 12s linear forwards;
+    animation: popupTimer 15s linear forwards;
 }
 
 @keyframes popupTimer {
@@ -5331,6 +5230,16 @@
 
     .whiteboard-right-sidebar.collapsed .right-sidebar-content {
         width: 0 !important;
+    }
+
+    /* Skyscraper banner responsive width - matches right sidebar at laptop size */
+    .whiteboard-skyscrapper-banner {
+        width: 300px; /* 250px content + 50px icon bar */
+    }
+
+    .whiteboard-popup {
+        width: 250px; /* Full content width at laptop size */
+        margin-right: 50px;
     }
 }
 
@@ -5663,6 +5572,17 @@
         flex: 1;
     }
 
+    /* Skyscraper banner full width on mobile - overlays entire right sidebar area */
+    .whiteboard-skyscrapper-banner {
+        width: 100%;
+    }
+
+    .whiteboard-popup {
+        width: 100%;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
     /* Video grid mobile */
     .tutor-video-row {
         height: 150px;
@@ -5911,6 +5831,17 @@
         width: 100%;
     }
 
+    /* Skyscraper banner full width on small mobile - overlays entire right sidebar area */
+    .whiteboard-skyscrapper-banner {
+        width: 100%;
+    }
+
+    .whiteboard-popup {
+        width: 100%;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
     /* Smaller icon bar on small mobile */
     .sidebar-icon-bar {
         padding: 6px 8px;
@@ -5979,12 +5910,6 @@
         width: 32px;
         height: 32px;
         font-size: 0.85rem;
-    }
-
-    /* Ad panel mobile */
-    .whiteboard-ad-panel {
-        width: 100%;
-        max-width: 280px;
     }
 
     /* Allow interaction button mobile */

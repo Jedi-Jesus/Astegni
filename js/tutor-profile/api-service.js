@@ -445,11 +445,15 @@ const TutorProfileAPI = {
     // Upload story (image or video)
     async uploadStory(file, caption = '') {
         try {
+            console.log('📤 API uploadStory called with caption:', caption);
+            console.log('📤 Caption type:', typeof caption);
+            console.log('📤 Caption length:', caption?.length);
+
             const formData = new FormData();
             formData.append('file', file);
-            if (caption) {
-                formData.append('caption', caption);
-            }
+            // Always append caption, even if empty
+            formData.append('caption', caption || '');
+            console.log('✅ Caption added to FormData:', caption || '(empty)');
 
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const response = await fetch(`${this.baseURL}/api/upload/story`, {
@@ -473,12 +477,137 @@ const TutorProfileAPI = {
         }
     },
 
+    // Get stories for a specific profile
+    async getStories(profileId, profileType) {
+        try {
+            const params = new URLSearchParams();
+            if (profileId) params.append('profile_id', profileId);
+            if (profileType) params.append('profile_type', profileType);
+
+            const response = await fetch(`${this.baseURL}/api/stories?${params.toString()}`, {
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch stories');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching stories:', error);
+            return { stories: [], total: 0 };
+        }
+    },
+
+    // Delete a story
+    async deleteStory(storyId) {
+        try {
+            const response = await fetch(`${this.baseURL}/api/stories/${storyId}`, {
+                method: 'DELETE',
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete story');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting story:', error);
+            throw error;
+        }
+    },
+
+    // Get current user's stories
+    async getMyStories() {
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const response = await fetch(`${this.baseURL}/api/my-stories`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch my stories');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching my stories:', error);
+            return { stories: [], total: 0 };
+        }
+    },
+
+    // Upload profile picture
+    async uploadProfilePicture(file) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const response = await fetch(`${this.baseURL}/api/upload/profile-picture`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Profile picture upload error:', errorText);
+                throw new Error('Failed to upload profile picture');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error uploading profile picture:', error);
+            throw error;
+        }
+    },
+
+    // Upload cover image
+    async uploadCoverImage(file) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const response = await fetch(`${this.baseURL}/api/upload/cover-image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Cover image upload error:', errorText);
+                throw new Error('Failed to upload cover image');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error uploading cover image:', error);
+            throw error;
+        }
+    },
+
     // Get tutor stories
     async getTutorStories(limit = 20, offset = 0) {
         try {
             const response = await fetch(`${this.baseURL}/api/tutor/stories?limit=${limit}&offset=${offset}`, {
                 headers: this.getAuthHeaders()
             });
+
+            // If endpoint doesn't exist yet (404, 422), return empty array
+            if (response.status === 404 || response.status === 422) {
+                console.log('ℹ️ Stories endpoint not yet implemented, returning empty array');
+                return [];
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to fetch tutor stories');
@@ -491,10 +620,29 @@ const TutorProfileAPI = {
         }
     },
 
+    // Increment story view count
+    async incrementStoryView(storyId) {
+        try {
+            const response = await fetch(`${this.baseURL}/api/stories/${storyId}/view`, {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to increment story view');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error incrementing story view:', error);
+            throw error;
+        }
+    },
+
     // Delete story
     async deleteStory(storyId) {
         try {
-            const response = await fetch(`${this.baseURL}/api/tutor/stories/${storyId}`, {
+            const response = await fetch(`${this.baseURL}/api/stories/${storyId}`, {
                 method: 'DELETE',
                 headers: this.getAuthHeaders()
             });

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad System Debug</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4ec9b0;
+        }
+        .section {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #569cd6;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid;
+            background: #2d2d30;
+        }
+        .test-result.success {
+            border-color: #4ec9b0;
+        }
+        .test-result.error {
+            border-color: #f48771;
+        }
+        .test-result.warning {
+            border-color: #dcdcaa;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            overflow-x: auto;
+            border: 1px solid #3e3e42;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 2px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        .leaderboard-banner {
+            width: 100%;
+            height: 200px;
+            background: #333;
+            border: 2px dashed #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .promo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-badge.pass {
+            background: #4ec9b0;
+            color: #1e1e1e;
+        }
+        .status-badge.fail {
+            background: #f48771;
+            color: #1e1e1e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Leaderboard Banner Ad System Debug</h1>
+
+        <div class="section">
+            <h2>1. Configuration Check</h2>
+            <div id="config-check"></div>
+        </div>
+
+        <div class="section">
+            <h2>2. API Endpoint Test</h2>
+            <button onclick="testAPI()">Test API</button>
+            <div id="api-test"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. DOM Elements Check</h2>
+            <button onclick="checkDOM()">Check DOM</button>
+            <div id="dom-check"></div>
+        </div>
+
+        <div class="section">
+            <h2>4. Ad Manager Check</h2>
+            <button onclick="checkAdManager()">Check Ad Manager</button>
+            <button onclick="reinitAds()">Re-initialize Ads</button>
+            <div id="manager-check"></div>
+        </div>
+
+        <div class="section">
+            <h2>5. Live Test Banner</h2>
+            <p>This banner should load ads automatically:</p>
+            <div class="leaderboard-banner premium-promo"
+                 data-placement="leaderboard_banner"
+                 data-profile-type="all"
+                 data-location="debug">
+                <p style="color: #999;">Waiting for ads...</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>6. Console Logs</h2>
+            <div id="console-logs" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        const logs = [];
+        console.log = function(...args) {
+            logs.push(args.join(' '));
+            updateConsoleLogs();
+            originalLog.apply(console, args);
+        };
+
+        function updateConsoleLogs() {
+            const container = document.getElementById('console-logs');
+            container.innerHTML = logs.map(log => `<div>${escapeHtml(log)}</div>`).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 1. Configuration Check
+        function checkConfig() {
+            const results = [];
+            const configDiv = document.getElementById('config-check');
+
+            // Check if API_BASE_URL is defined
+            if (typeof API_BASE_URL !== 'undefined') {
+                results.push(`<div class="test-result success">✓ API_BASE_URL is defined: <strong>${API_BASE_URL}</strong></div>`);
+            } else if (typeof window.API_BASE_URL !== 'undefined') {
+                results.push(`<div class="test-result success">✓ window.API_BASE_URL is defined: <strong>${window.API_BASE_URL}</strong></div>`);
+            } else {
+                results.push(`<div class="test-result error">✗ API_BASE_URL is NOT defined!</div>`);
+            }
+
+            // Check config object
+            if (typeof window.CONFIG !== 'undefined') {
+                results.push(`<div class="test-result success">✓ window.CONFIG exists</div>`);
+                results.push(`<pre>${JSON.stringify(window.CONFIG, null, 2)}</pre>`);
+            }
+
+            // Check ASTEGNI_CONFIG
+            if (typeof window.ASTEGNI_CONFIG !== 'undefined') {
+                results.push(`<div class="test-result success">✓ window.ASTEGNI_CONFIG exists</div>`);
+                results.push(`<pre>${JSON.stringify(window.ASTEGNI_CONFIG, null, 2)}</pre>`);
+            }
+
+            configDiv.innerHTML = results.join('');
+        }
+
+        // 2. Test API
+        async function testAPI() {
+            const resultsDiv = document.getElementById('api-test');
+            resultsDiv.innerHTML = '<div class="test-result warning">⏳ Testing API...</div>';
+
+            const apiUrl = window.API_BASE_URL || 'http://localhost:8000';
+            const endpoint = `${apiUrl}/api/campaigns/ads/placement/leaderboard_banner?limit=5`;
+
+            try {
+                console.log(`Testing API: ${endpoint}`);
+                const response = await fetch(endpoint);
+
+                if (!response.ok) {
+                    resultsDiv.innerHTML = `<div class="test-result error">✗ API returned status: ${response.status}</div>`;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                let html = `<div class="test-result success">✓ API is working!</div>`;
+                html += `<div class="test-result success">Found ${data.count} ad(s)</div>`;
+
+                if (data.ads && data.ads.length > 0) {
+                    html += `<h3>Ads returned:</h3>`;
+                    data.ads.forEach((ad, i) => {
+                        html += `<div class="test-result success">
+                            <strong>Ad ${i + 1}:</strong> ${ad.campaign_name} (ID: ${ad.campaign_id})<br>
+                            Media Type: ${ad.media_type}<br>
+                            File URL: ${ad.file_url}<br>
+                            <img src="${ad.file_url}" style="max-width: 300px; margin-top: 10px;" onerror="this.style.display='none'; this.parentElement.innerHTML += '<p style=color:#f48771>Image failed to load!</p>'">
+                        </div>`;
+                    });
+                    html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    html += `<div class="test-result warning">⚠ No ads found in response</div>`;
+                }
+
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                console.error('API Test Error:', error);
+                resultsDiv.innerHTML = `<div class="test-result error">✗ API Error: ${error.message}</div>`;
+            }
+        }
+
+        // 3. Check DOM
+        function checkDOM() {
+            const resultsDiv = document.getElementById('dom-check');
+            const results = [];
+
+            // Find all containers with data-placement
+            const containers = document.querySelectorAll('[data-placement]');
+            results.push(`<div class="test-result ${containers.length > 0 ? 'success' : 'error'}">
+                Found ${containers.length} element(s) with [data-placement]
+            </div>`);
+
+            containers.forEach((container, i) => {
+                const placement = container.dataset.placement;
+                const profileType = container.dataset.profileType;
+                const location = container.dataset.location;
+
+                results.push(`<div class="test-result success">
+                    Container ${i + 1}:<br>
+                    - Placement: ${placement}<br>
+                    - Profile Type: ${profileType}<br>
+                    - Location: ${location}<br>
+                    - Classes: ${container.className}<br>
+                    - Has content: ${container.children.length > 0 ? 'Yes (' + container.children.length + ' children)' : 'No (empty)'}
+                </div>`);
+            });
+
+            // Check for leaderboard-banner elements
+            const banners = document.querySelectorAll('.leaderboard-banner');
+            results.push(`<div class="test-result ${banners.length > 0 ? 'success' : 'warning'}">
+                Found ${banners.length} element(s) with class .leaderboard-banner
+            </div>`);
+
+            resultsDiv.innerHTML = results.join('');
+        }
+
+        // 4. Check Ad Manager
+        function checkAdManager() {
+            const resultsDiv = document.getElementById('manager-check');
+            const results = [];
+
+            if (typeof adRotationManager !== 'undefined') {
+                results.push(`<div class="test-result success">✓ adRotationManager exists</div>`);
+                results.push(`<div class="test-result success">Initialized: ${adRotationManager.isInitialized}</div>`);
+                results.push(`<div class="test-result success">Containers managed: ${adRotationManager.containers.size}</div>`);
+                results.push(`<div class="test-result success">Tracked impressions: ${adRotationManager.trackedImpressions.size}</div>`);
+            } else {
+                results.push(`<div class="test-result error">✗ adRotationManager is NOT defined!</div>`);
+            }
+
+            if (typeof AdRotationManager !== 'undefined') {
+                results.push(`<div class="test-result success">✓ AdRotationManager class exists</div>`);
+            } else {
+                results.push(`<div class="test-result error">✗ AdRotationManager class NOT found!</div>`);
+            }
+
+            resultsDiv.innerHTML = results.join('');
+        }
+
+        // Reinitialize ads
+        function reinitAds() {
+            if (typeof adRotationManager !== 'undefined') {
+                console.log('Reinitializing adRotationManager...');
+                adRotationManager.destroy();
+                adRotationManager.init();
+                alert('Ad manager reinitialized! Check the banner above.');
+            } else {
+                alert('adRotationManager not found!');
+            }
+        }
+
+        // Run initial checks
+        window.addEventListener('DOMContentLoaded', () => {
+            checkConfig();
+            setTimeout(() => {
+                checkDOM();
+                checkAdManager();
+            }, 500);
+        });
+    </script>
+
+    <!-- Load ad rotation manager -->
+    <script src="js/common-modals/ad-rotation-manager.js"></script>
+</body>
+</html>

@@ -15,10 +15,18 @@ function showLogoutModal() {
         return;
     }
 
-    // Try to populate user info
-    populateLogoutUserInfo();
+    // CRITICAL FIX: Fetch latest roles from API before showing modal
+    // This ensures we always have the most up-to-date roles list
+    fetchAndPopulateRoles().then(() => {
+        // Populate user info with fresh data
+        populateLogoutUserInfo();
+    }).catch(error => {
+        console.warn('[LogoutModal] Could not fetch fresh roles, using cached data:', error);
+        // Still show modal even if API fetch fails
+        populateLogoutUserInfo();
+    });
 
-    // Show the modal
+    // Show the modal (populate will happen asynchronously)
     if (typeof openModal === 'function') {
         openModal('logout-modal');
     } else {
@@ -69,6 +77,70 @@ function getRoleIcon(role) {
     return icons[role] || '👤';
 }
 
+// Fetch roles from API and populate
+async function fetchAndPopulateRoles() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.warn('[LogoutModal] No token found, cannot fetch roles');
+        return Promise.resolve(); // Return resolved promise
+    }
+
+    try {
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+        console.log('[LogoutModal] Fetching fresh roles from /api/my-roles...');
+
+        const response = await fetch(`${API_BASE_URL}/api/my-roles`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const roles = data.user_roles || [];
+            const activeRole = data.active_role;
+
+            console.log('[LogoutModal] Fresh roles fetched:', roles);
+            console.log('[LogoutModal] Active role:', activeRole);
+
+            // Update localStorage.userRoles (for fallback)
+            localStorage.setItem('userRoles', JSON.stringify(roles));
+            if (activeRole) {
+                localStorage.setItem('userRole', activeRole);
+            }
+
+            // CRITICAL: Also update the currentUser object with fresh roles
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                if (currentUser && currentUser.id) {
+                    currentUser.roles = roles;
+                    currentUser.active_role = activeRole;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    console.log('[LogoutModal] Updated currentUser with fresh roles');
+                }
+            } catch (e) {
+                console.warn('[LogoutModal] Could not update currentUser:', e);
+            }
+
+            // Also update AuthManager if available
+            if (window.AuthManager && window.AuthManager.user) {
+                window.AuthManager.user.roles = roles;
+                window.AuthManager.user.active_role = activeRole;
+                console.log('[LogoutModal] Updated AuthManager.user with fresh roles');
+            }
+
+            return Promise.resolve();
+        } else {
+            console.warn('[LogoutModal] API returned non-OK status:', response.status);
+            return Promise.reject(new Error(`HTTP ${response.status}`));
+        }
+    } catch (error) {
+        console.warn('[LogoutModal] Could not fetch roles from API:', error);
+        return Promise.reject(error);
+    }
+}
+
 // Populate user info in the logout modal
 function populateLogoutUserInfo() {
     const sessionInfo = document.getElementById('logout-session-info');
@@ -85,10 +157,12 @@ function populateLogoutUserInfo() {
     // Check AuthManager (window.AuthManager)
     if (typeof window.AuthManager !== 'undefined' && window.AuthManager.getUser) {
         user = window.AuthManager.getUser();
+        console.log('[LogoutModal] Got user from AuthManager:', user);
     }
     // Check APP_STATE
     else if (typeof APP_STATE !== 'undefined' && APP_STATE.currentUser) {
         user = APP_STATE.currentUser;
+        console.log('[LogoutModal] Got user from APP_STATE:', user);
     }
     // Check localStorage currentUser
     else {
@@ -96,13 +170,29 @@ function populateLogoutUserInfo() {
             const storedUser = localStorage.getItem('currentUser');
             if (storedUser) {
                 user = JSON.parse(storedUser);
+                console.log('[LogoutModal] Got user from localStorage.currentUser:', user);
+                console.log('[LogoutModal] User roles:', user?.roles);
             }
         } catch (e) {
-            console.warn('[LogoutModal] Could not parse stored user data');
+            console.warn('[LogoutModal] Could not parse stored user data:', e);
         }
     }
 
+    if (!user) {
+        console.warn('[LogoutModal] No user found from any source');
+    }
+
     if (user) {
+        console.log('[LogoutModal] Populating modal with user data:', {
+            id: user.id,
+            name: user.name,
+            active_role: user.active_role,
+            roles: user.roles,
+            user_roles: user.user_roles,
+            rolesIsArray: Array.isArray(user.roles),
+            rolesLength: user.roles?.length
+        });
+
         sessionInfo.style.display = 'block';
 
         // Set user name
@@ -125,10 +215,44 @@ function populateLogoutUserInfo() {
             }
         }
 
-        // Set user roles
+        // Set user roles - Try multiple sources
         if (userRoles) {
-            const roles = user.roles || (user.role ? [user.role] : []);
-            const activeRole = user.active_role || user.role;
+            // Try to get roles from multiple possible sources
+            let roles = [];
+
+            // Priority 1: user.roles (array) - MOST COMMON (from localStorage.currentUser)
+            if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+                roles = user.roles;
+                console.log('[LogoutModal] Using user.roles:', roles);
+            }
+            // Priority 2: user.user_roles (from API response)
+            else if (user.user_roles && Array.isArray(user.user_roles) && user.user_roles.length > 0) {
+                roles = user.user_roles;
+                console.log('[LogoutModal] Using user.user_roles:', roles);
+            }
+            // Priority 3: localStorage userRoles (rarely exists, only after fetchAndPopulateRoles)
+            else {
+                try {
+                    const storedRoles = localStorage.getItem('userRoles');
+                    if (storedRoles) {
+                        const parsedRoles = JSON.parse(storedRoles);
+                        if (Array.isArray(parsedRoles) && parsedRoles.length > 0) {
+                            roles = parsedRoles;
+                            console.log('[LogoutModal] Using localStorage.userRoles:', roles);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[LogoutModal] Could not parse userRoles from localStorage');
+                }
+            }
+            // Priority 4: Single role fallback (active_role or role property)
+            if (roles.length === 0 && (user.active_role || user.role)) {
+                roles = [user.active_role || user.role];
+                console.log('[LogoutModal] Using single role fallback:', roles);
+            }
+            // Note: We no longer fetch from API here since showLogoutModal() already does it upfront
+
+            const activeRole = user.active_role || user.role || localStorage.getItem('userRole');
 
             if (roles.length > 0) {
                 userRoles.innerHTML = roles.map(role => {
