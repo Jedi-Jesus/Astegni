@@ -14,20 +14,20 @@
     <script>
         // Temporary stub - will be replaced by chat-modal.js when it loads
         if (!window.openChatModal) {
-            window.openChatModal = function(targetUser = null) {
+            window.openChatModal = function (targetUser = null) {
                 if (typeof ChatModalManager !== 'undefined') {
                     ChatModalManager.open(targetUser);
                 } else {
                     console.log('Chat modal not loaded yet, waiting...');
                     // Wait for chat modal to load
-                    const checkInterval = setInterval(function() {
+                    const checkInterval = setInterval(function () {
                         if (typeof ChatModalManager !== 'undefined') {
                             clearInterval(checkInterval);
                             ChatModalManager.open(targetUser);
                         }
                     }, 100);
                     // Stop checking after 10 seconds
-                    setTimeout(function() {
+                    setTimeout(function () {
                         clearInterval(checkInterval);
                     }, 10000);
                 }
@@ -40,7 +40,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Google Fonts - For Appearance Modal Font Selection -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Dancing+Script:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Animate.css for animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
@@ -104,7 +106,7 @@
 
     <!-- Chart.js for Market Trends -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    
+
     <!-- Debug Script for Rating Tooltip -->
     <script src="../js/tutor-profile/debug-rating-tooltip.js"></script>
 
@@ -136,7 +138,7 @@
     </div>
     <script>
         // Hide loading screen only after page fully loads
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             // Wait for all resources (images, styles, scripts) to fully load
             setTimeout(() => {
                 const loadingScreen = document.getElementById("loading-screen");
@@ -224,8 +226,11 @@
                                     <span id="dropdown-user-email" class="dropdown-user-email"></span>
                                     <span id="dropdown-user-role" class="dropdown-user-role"></span>
                                 </div>
-                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                         </a>
@@ -237,13 +242,15 @@
                             <div class="countdown-content">
                                 <div class="countdown-icon">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
                                 <div class="countdown-text">
                                     <div class="countdown-title">Role Scheduled for Deletion</div>
                                     <div class="countdown-details">
-                                        Your <span id="countdown-role-name" class="font-semibold"></span> role will be deleted in
+                                        Your <span id="countdown-role-name" class="font-semibold"></span> role will be
+                                        deleted in
                                         <span id="countdown-days" class="font-bold text-orange-600"></span> days
                                     </div>
                                 </div>
@@ -346,14 +353,18 @@
             <!-- Mobile Profile Section -->
             <div id="mobile-profile-section" class="mobile-profile-section">
                 <div class="mobile-profile-dropdown">
-                    <button id="mobile-profile-header" class="mobile-profile-header" onclick="toggleMobileProfileDropdown()">
+                    <button id="mobile-profile-header" class="mobile-profile-header"
+                        onclick="toggleMobileProfileDropdown()">
                         <img id="mobile-profile-pic" class="mobile-profile-pic" src="" alt="Profile">
                         <div class="mobile-profile-info">
                             <span id="mobile-profile-name" class="mobile-profile-name"></span>
                             <span id="mobile-profile-role" class="mobile-profile-role">Tutor</span>
                         </div>
-                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
                         </svg>
                     </button>
 
@@ -376,9 +387,12 @@
                         </div>
 
                         <!-- Logout Button -->
-                        <button id="mobile-logout-btn" class="mobile-dropdown-logout" onclick="showLogoutModal(); closeMobileMenu();">
+                        <button id="mobile-logout-btn" class="mobile-dropdown-logout"
+                            onclick="showLogoutModal(); closeMobileMenu();">
                             <svg class="mobile-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
                             </svg>
                             Logout
                         </button>
@@ -389,7 +403,8 @@
 
             <!-- Theme Toggle -->
             <button id="mobile-theme-toggle-btn" class="mobile-menu-item" onclick="toggleTheme(); closeMobileMenu();">
-                <svg id="mobile-theme-icon" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="mobile-theme-icon" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
                     </path>
@@ -398,7 +413,8 @@
             </button>
 
             <!-- Notification Button (Mobile) -->
-            <button id="mobile-notification-btn" class="mobile-menu-item" onclick="openNotificationModal(); closeMobileMenu();">
+            <button id="mobile-notification-btn" class="mobile-menu-item"
+                onclick="openNotificationModal(); closeMobileMenu();">
                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -414,7 +430,8 @@
     <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Rotating Ad Section - 4 Placeholder Ads -->
-    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner" data-profile-type="tutor" data-location="tutor_profile">
+    <div class="leaderboard-banner premium-promo" style="margin-top: 2rem;" data-placement="leaderboard_banner"
+        data-profile-type="tutor" data-location="tutor_profile">
         <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
@@ -436,7 +453,7 @@
                     <span class="sidebar-icon">📊</span>
                     <span>Analysis</span>
                 </a>
-                <hr class="my-4 border-gray-300">                
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('notes'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📋</span>
                     <span>Notes</span>
@@ -492,7 +509,7 @@
                     <span class="sidebar-icon">🎬</span>
                     <span>My Videos</span>
                 </a>
-                <hr class="my-4 border-gray-300">               
+                <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
                     <span class="sidebar-icon"
                         style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 1.1rem;">ℰ</span>
@@ -507,7 +524,8 @@
                     <span class="sidebar-icon">⚙️</span>
                     <span>Settings</span>
                 </a>
-                <a href="#" onclick="showLogoutModal(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                <a href="#" onclick="showLogoutModal(); return false;"
+                    class="sidebar-link text-red-500 hover:bg-red-50">
                     <span class="sidebar-icon">🚪</span>
                     <span>Logout</span>
                 </a>
@@ -578,13 +596,15 @@
                                     <div class="profile-info-wrapper">
                                         <div class="profile-avatar-container">
                                             <!-- Story Ring Indicator (only shown when stories exist) -->
-                                            <div class="story-ring-wrapper" id="story-ring-wrapper" onclick="openStoryViewer()"
+                                            <div class="story-ring-wrapper" id="story-ring-wrapper"
+                                                onclick="openStoryViewer()"
                                                 style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; padding: 3px; border-radius: 50%; cursor: pointer; display: none; z-index: 1;">
                                                 <!-- Ring gradient border -->
                                             </div>
 
                                             <!-- Profile Avatar (always visible) -->
-                                            <div id="profile-avatar-wrapper" onclick="handleProfileAvatarClick()" style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--card-bg); padding: 3px; z-index: 2; cursor: pointer;">
+                                            <div id="profile-avatar-wrapper" onclick="handleProfileAvatarClick()"
+                                                style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--card-bg); padding: 3px; z-index: 2; cursor: pointer;">
                                                 <img id="profile-avatar"
                                                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
                                                     alt="Profile Picture" class="profile-avatar"
@@ -624,7 +644,8 @@
                                                     style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
                                                     <span class="profile-badge verified" id="verification-badge">✔
                                                         Verified Tutor</span>
-                                                    <span class="profile-badge expert" id="expertise-badge">🎓 Expert Educator</span>
+                                                    <span class="profile-badge expert" id="expertise-badge">🎓 Expert
+                                                        Educator</span>
                                                     <span class="profile-badge experience" id="experience-badge">💼 5+
                                                         Years Experience</span>
                                                 </div>
@@ -698,9 +719,11 @@
                                                     style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;">📍</span>
                                                     <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
                                                             Location</div>
-                                                        <div id="tutor-location" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
+                                                        <div id="tutor-location"
+                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
                                                             Loading...</div>
                                                     </div>
                                                 </div>
@@ -708,9 +731,11 @@
                                                     style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
                                                     <span style="font-size: 1.25rem;" id="gender-icon">👤</span>
                                                     <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
                                                             Gender</div>
-                                                        <div id="tutor-gender" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
+                                                        <div id="tutor-gender"
+                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
                                                             Loading...</div>
                                                     </div>
                                                 </div>
@@ -781,7 +806,8 @@
                                             <div class="profile-connections" style="margin-top: 1.5rem;">
                                                 <div class="connections-header"
                                                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
+                                                    <h4
+                                                        style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
                                                         <span style="margin-right: 0.5rem;">📊</span>Activity Stats
                                                     </h4>
                                                 </div>
@@ -792,7 +818,8 @@
                                                         style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
                                                             id="connections-count">0</div>
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                                             Connections</div>
                                                     </div>
                                                     <!-- Pending Requests Card -->
@@ -800,7 +827,8 @@
                                                         style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
                                                             id="pending-requests-count">0</div>
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                                             Pending Requests</div>
                                                     </div>
                                                     <!-- Received Requests Card -->
@@ -808,7 +836,8 @@
                                                         style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
                                                             id="received-requests-count">0</div>
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                                             Received Requests</div>
                                                     </div>
                                                 </div>
@@ -909,16 +938,22 @@
                     <!-- Requests Panel -->
                     <div id="requests-panel" class="panel-content hidden">
                         <div class="mb-8">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                 <div>
                                     <h1 class="text-3xl font-bold mb-2">My Requests</h1>
-                                    <p class="text-gray-600">Manage your courses, schools, sessions, and parenting requests</p>
+                                    <p class="text-gray-600">Manage your courses, schools, sessions, and parenting
+                                        requests</p>
                                 </div>
                                 <div style="display: flex; gap: 0.75rem;">
-                                    <button id="request-course-btn" onclick="openCourseRequestModal()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2" style="display: none;">
+                                    <button id="request-course-btn" onclick="openCourseRequestModal()"
+                                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+                                        style="display: none;">
                                         <i class="fas fa-plus"></i> Request Course
                                     </button>
-                                    <button id="request-school-btn" onclick="openSchoolRequestModal()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2" style="display: none;">
+                                    <button id="request-school-btn" onclick="openSchoolRequestModal()"
+                                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2"
+                                        style="display: none;">
                                         <i class="fas fa-plus"></i> Request School
                                     </button>
                                 </div>
@@ -967,7 +1002,8 @@
                                     <div>
                                         <h3 class="font-bold text-lg">Parenting Invitations</h3>
                                         <p class="text-sm text-gray-600">Students inviting you as parent</p>
-                                        <span id="parenting-invitation-count" class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                                        <span id="parenting-invitation-count"
+                                            class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
                                     </div>
                                 </div>
                             </div>
@@ -978,7 +1014,8 @@
                                     <div>
                                         <h3 class="font-bold text-lg">Child Invitations</h3>
                                         <p class="text-sm text-gray-600">Parents inviting you as child</p>
-                                        <span id="tutor-child-invitation-count" class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                                        <span id="tutor-child-invitation-count"
+                                            class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
                                     </div>
                                 </div>
                             </div>
@@ -987,12 +1024,12 @@
                         <!-- Request Direction Tabs (Received vs Sent) - Only shown for Session Requests -->
                         <div id="tutor-session-direction-tabs" class="request-direction-tabs mb-4 hidden"
                             style="display: none; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-                            <button class="direction-tab active"
-                                onclick="filterRequestDirection('received')" data-direction="received">
+                            <button class="direction-tab active" onclick="filterRequestDirection('received')"
+                                data-direction="received">
                                 <i class="fas fa-inbox"></i> Received
                             </button>
-                            <button class="direction-tab"
-                                onclick="filterRequestDirection('sent')" data-direction="sent">
+                            <button class="direction-tab" onclick="filterRequestDirection('sent')"
+                                data-direction="sent">
                                 <i class="fas fa-paper-plane"></i> Sent
                             </button>
                         </div>
@@ -1000,22 +1037,19 @@
                         <!-- Request Status Sub-Tabs (for filtering within request type) -->
                         <div class="status-tabs mb-6"
                             style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-                            <button class="status-tab active"
-                                onclick="filterTutorRequestStatus('all')" data-status="all">
+                            <button class="status-tab active" onclick="filterTutorRequestStatus('all')"
+                                data-status="all">
                                 All
                             </button>
-                            <button class="status-tab"
-                                onclick="filterTutorRequestStatus('pending')"
+                            <button class="status-tab" onclick="filterTutorRequestStatus('pending')"
                                 data-status="pending">
                                 Pending
                             </button>
-                            <button class="status-tab"
-                                onclick="filterTutorRequestStatus('accepted')"
+                            <button class="status-tab" onclick="filterTutorRequestStatus('accepted')"
                                 data-status="accepted">
                                 Accepted
                             </button>
-                            <button class="status-tab"
-                                onclick="filterTutorRequestStatus('rejected')"
+                            <button class="status-tab" onclick="filterTutorRequestStatus('rejected')"
                                 data-status="rejected">
                                 Rejected
                             </button>
@@ -1053,21 +1087,27 @@
                         <div class="mb-8">
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                                 <h1 class="text-3xl font-bold">My Students</h1>
-                                <span id="student-count-badge" class="hidden" style="background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600;">0 students</span>
+                                <span id="student-count-badge" class="hidden"
+                                    style="background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600;">0
+                                    students</span>
                             </div>
-                            <p class="text-gray-600">View and manage your enrolled students from the enrolled_students table</p>
+                            <p class="text-gray-600">View and manage your enrolled students from the enrolled_students
+                                table</p>
                         </div>
 
                         <div class="card p-6 mb-6">
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <div style="position: relative; flex: 1;">
-                                    <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
-                                    <input type="search" id="student-search" class="w-full p-3 pl-12 border-2 rounded-lg"
+                                    <i class="fas fa-search"
+                                        style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+                                    <input type="search" id="student-search"
+                                        class="w-full p-3 pl-12 border-2 rounded-lg"
                                         placeholder="Search students by name, grade, package, or email..."
-                                        autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
-                                        data-form-type="other" data-lpignore="true">
+                                        autocomplete="new-password" autocorrect="off" autocapitalize="off"
+                                        spellcheck="false" data-form-type="other" data-lpignore="true">
                                 </div>
-                                <button onclick="SessionRequestManager.loadMyStudents()" class="btn-secondary" style="padding: 0.75rem 1.25rem; white-space: nowrap;">
+                                <button onclick="SessionRequestManager.loadMyStudents()" class="btn-secondary"
+                                    style="padding: 0.75rem 1.25rem; white-space: nowrap;">
                                     <i class="fas fa-sync-alt"></i> Refresh
                                 </button>
                             </div>
@@ -1141,19 +1181,23 @@
                                             All
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('urgent')" title="Critical tasks requiring immediate attention">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('urgent')"
+                                            title="Critical tasks requiring immediate attention">
                                             🔴 Urgent
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('high')" title="Important tasks with high priority">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('high')"
+                                            title="Important tasks with high priority">
                                             🟠 High
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('medium')" title="Regular scheduled tasks">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('medium')"
+                                            title="Regular scheduled tasks">
                                             🔵 Medium
                                         </button>
                                         <button class="px-4 py-2 rounded-full bg-gray-200 text-sm"
-                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('low')" title="Optional or flexible tasks">
+                                            onclick="if(typeof filterSchedules === 'function') filterSchedules('low')"
+                                            title="Optional or flexible tasks">
                                             🟢 Low
                                         </button>
                                     </div>
@@ -1202,7 +1246,8 @@
                         <!-- Search Bar -->
                         <div class="card p-6 mb-6">
                             <div class="relative mb-3">
-                                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <i
+                                    class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 <input type="text" id="sessions-search" class="w-full p-3 pl-12 border-2 rounded-lg"
                                     placeholder="Search sessions by subject, student, or topic..."
                                     oninput="if(typeof searchSessions === 'function') searchSessions(this.value)">
@@ -1312,7 +1357,8 @@
                                 </div>
                             </div>
                             <!-- Folders Grid - Rendered dynamically by folder-manager.js -->
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6" id="teaching-docs-folders">
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6"
+                                id="teaching-docs-folders">
                                 <!-- New Folder Card (always shown) -->
                                 <div class="card p-4 text-center cursor-pointer hover:shadow-lg transition border-2 border-dashed border-gray-300 hover:border-blue-400"
                                     onclick="openCreateFolderModal()">
@@ -1328,32 +1374,39 @@
 
                             <!-- Document Filters with Counts + Upload Button -->
                             <div class="flex gap-2 mb-4 flex-wrap items-center">
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-blue-500 text-white flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-blue-500 text-white flex items-center gap-2"
                                     onclick="filterTeachingDocs('all')">
                                     All Docs <span class="bg-white/20 px-2 py-0.5 rounded-full text-xs">40</span>
                                 </button>
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
                                     onclick="filterTeachingDocs('pdf')">
                                     PDFs <span class="bg-gray-300 px-2 py-0.5 rounded-full text-xs">18</span>
                                 </button>
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
                                     onclick="filterTeachingDocs('presentations')">
                                     Presentations <span class="bg-gray-300 px-2 py-0.5 rounded-full text-xs">8</span>
                                 </button>
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
                                     onclick="filterTeachingDocs('worksheets')">
                                     Worksheets <span class="bg-gray-300 px-2 py-0.5 rounded-full text-xs">7</span>
                                 </button>
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
                                     onclick="filterTeachingDocs('exams')">
                                     Exams <span class="bg-gray-300 px-2 py-0.5 rounded-full text-xs">5</span>
                                 </button>
-                                <button class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
+                                <button
+                                    class="teaching-doc-filter px-4 py-2 rounded-full bg-gray-200 flex items-center gap-2"
                                     onclick="filterTeachingDocs('other')">
                                     Other <span class="bg-gray-300 px-2 py-0.5 rounded-full text-xs">2</span>
                                 </button>
                                 <!-- Upload Button - pushed to the right -->
-                                <button class="ml-auto px-4 py-2 rounded-full bg-green-500 text-white flex items-center gap-2 hover:bg-green-600 transition-colors"
+                                <button
+                                    class="ml-auto px-4 py-2 rounded-full bg-green-500 text-white flex items-center gap-2 hover:bg-green-600 transition-colors"
                                     onclick="openUploadTeachingDocModal()">
                                     <i class="fas fa-plus"></i> Upload Document
                                 </button>
@@ -1385,215 +1438,275 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <!-- Teaching Docs Grid -->
-                        <div class="teaching-docs-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                            id="teaching-docs-grid">
-                            <!-- Sample Teaching Docs - Updated Design with data attributes for sorting -->
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="mathematics" data-category="notes" data-grade-level="10" data-upload-date="2024-11-25" data-views="128" data-downloads="45">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">📄</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(1)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-1" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(1)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                            <div class="teaching-docs-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                                id="teaching-docs-grid">
+                                <!-- Sample Teaching Docs - Updated Design with data attributes for sorting -->
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="mathematics"
+                                    data-category="notes" data-grade-level="10" data-upload-date="2024-11-25"
+                                    data-views="128" data-downloads="45">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">📄</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(1)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(1)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-1"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(1)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(1)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <h3><a href="#" onclick="openTeachingDoc(1); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Mathematics
+                                            Grade 10 Notes</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">PDF • 2.5 MB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Mathematics</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            10</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Notes</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 2 days ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>128 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>45 downloads</span>
+                                    </div>
                                 </div>
-                                <h3><a href="#" onclick="openTeachingDoc(1); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Mathematics Grade 10 Notes</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">PDF • 2.5 MB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Mathematics</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 10</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Notes</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 2 days ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>128 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>45 downloads</span>
-                                </div>
-                            </div>
 
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="physics" data-category="presentation" data-grade-level="11" data-upload-date="2024-11-20" data-views="89" data-downloads="32">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">📊</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(2)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-2" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(2)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="physics"
+                                    data-category="presentation" data-grade-level="11" data-upload-date="2024-11-20"
+                                    data-views="89" data-downloads="32">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">📊</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(2)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(2)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-2"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(2)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(2)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <h3><a href="#" onclick="openTeachingDoc(2); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Physics
+                                            Chapter 5 Slides</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">PPTX • 8.3 MB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Physics</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            11</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Presentation</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 1 week ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>89 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>32 downloads</span>
+                                    </div>
                                 </div>
-                                <h3><a href="#" onclick="openTeachingDoc(2); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Physics Chapter 5 Slides</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">PPTX • 8.3 MB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Physics</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 11</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Presentation</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 1 week ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>89 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>32 downloads</span>
-                                </div>
-                            </div>
 
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="chemistry" data-category="worksheet" data-grade-level="9" data-upload-date="2024-11-24" data-views="56" data-downloads="28">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">📝</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(3)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-3" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(3)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="chemistry"
+                                    data-category="worksheet" data-grade-level="9" data-upload-date="2024-11-24"
+                                    data-views="56" data-downloads="28">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">📝</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(3)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(3)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-3"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(3)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(3)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <h3><a href="#" onclick="openTeachingDoc(3); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Chemistry
+                                            Practice Worksheet</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">DOCX • 450 KB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Chemistry</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            9</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Worksheet</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 3 days ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>56 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>28 downloads</span>
+                                    </div>
                                 </div>
-                                <h3><a href="#" onclick="openTeachingDoc(3); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Chemistry Practice Worksheet</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">DOCX • 450 KB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Chemistry</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 9</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Worksheet</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 3 days ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>56 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>28 downloads</span>
-                                </div>
-                            </div>
 
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="biology" data-category="exam" data-grade-level="12" data-upload-date="2024-10-27" data-views="234" data-downloads="67">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">📋</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(4)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-4" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(4)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="biology"
+                                    data-category="exam" data-grade-level="12" data-upload-date="2024-10-27"
+                                    data-views="234" data-downloads="67">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">📋</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(4)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(4)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-4"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(4)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(4)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <h3><a href="#" onclick="openTeachingDoc(4); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Biology
+                                            Final Exam 2024</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">PDF • 1.2 MB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Biology</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            12</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Exam</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 1 month ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>234 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>67 downloads</span>
+                                    </div>
                                 </div>
-                                <h3><a href="#" onclick="openTeachingDoc(4); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Biology Final Exam 2024</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">PDF • 1.2 MB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Biology</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 12</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Exam</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 1 month ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>234 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>67 downloads</span>
-                                </div>
-                            </div>
 
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="english" data-category="notes" data-grade-level="11" data-upload-date="2024-11-15" data-views="78" data-downloads="51">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">📚</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(5)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-5" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(5)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="english"
+                                    data-category="notes" data-grade-level="11" data-upload-date="2024-11-15"
+                                    data-views="78" data-downloads="51">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">📚</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(5)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(5)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-5"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(5)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(5)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <h3><a href="#" onclick="openTeachingDoc(5); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">English
+                                            Literature Guide</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">PDF • 3.8 MB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">English</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            11</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Notes</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 2 weeks ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>78 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>51 downloads</span>
+                                    </div>
                                 </div>
-                                <h3><a href="#" onclick="openTeachingDoc(5); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">English Literature Guide</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">PDF • 3.8 MB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">English</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 11</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Notes</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 2 weeks ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>78 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>51 downloads</span>
-                                </div>
-                            </div>
 
-                            <div class="card p-6 hover:shadow-lg transition" data-subject="mathematics" data-category="worksheet" data-grade-level="8" data-upload-date="2024-11-22" data-views="92" data-downloads="39">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="text-5xl">🧮</div>
-                                    <div class="relative">
-                                        <button class="text-gray-500 hover:text-gray-700 p-2"
-                                            onclick="toggleDocMenu(6)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="doc-menu-6" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
-                                            <button onclick="editTeachingDoc(6)" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-                                                <i class="fas fa-edit mr-2"></i>Edit
+                                <div class="card p-6 hover:shadow-lg transition" data-subject="mathematics"
+                                    data-category="worksheet" data-grade-level="8" data-upload-date="2024-11-22"
+                                    data-views="92" data-downloads="39">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="text-5xl">🧮</div>
+                                        <div class="relative">
+                                            <button class="text-gray-500 hover:text-gray-700 p-2"
+                                                onclick="toggleDocMenu(6)">
+                                                <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <button onclick="deleteTeachingDoc(6)" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
-                                                <i class="fas fa-trash mr-2"></i>Delete
-                                            </button>
+                                            <div id="doc-menu-6"
+                                                class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border z-10">
+                                                <button onclick="editTeachingDoc(6)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                                    <i class="fas fa-edit mr-2"></i>Edit
+                                                </button>
+                                                <button onclick="deleteTeachingDoc(6)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <h3><a href="#" onclick="openTeachingDoc(6); return false;" class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Algebra Problem Set</a></h3>
-                                <p class="text-sm text-gray-600 mb-2">PDF • 890 KB</p>
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Mathematics</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade 8</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Worksheet</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                                    <span>Modified: 5 days ago</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                                    <span><i class="fas fa-eye mr-1"></i>92 views</span>
-                                    <span><i class="fas fa-download mr-1"></i>39 downloads</span>
+                                    <h3><a href="#" onclick="openTeachingDoc(6); return false;"
+                                            class="text-lg font-bold mb-2 hover:text-blue-600 cursor-pointer block">Algebra
+                                            Problem Set</a></h3>
+                                    <p class="text-sm text-gray-600 mb-2">PDF • 890 KB</p>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        <span
+                                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Mathematics</span>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Grade
+                                            8</span>
+                                        <span
+                                            class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Worksheet</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                        <span>Modified: 5 days ago</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                        <span><i class="fas fa-eye mr-1"></i>92 views</span>
+                                        <span><i class="fas fa-download mr-1"></i>39 downloads</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         </div><!-- End documents-view -->
                     </div>
 
@@ -1669,19 +1782,23 @@
                         <div class="story-stats-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div id="total-stories-count" style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">0</div>
+                                <div id="total-stories-count"
+                                    style="font-size: 1.875rem; font-weight: 700; color: var(--button-bg);">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Total Stories</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div id="total-views-count" style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">0</div>
+                                <div id="total-views-count"
+                                    style="font-size: 1.875rem; font-weight: 700; color: #8b5cf6;">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Total Views</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div id="active-stories-count" style="font-size: 1.875rem; font-weight: 700; color: #10b981;">0</div>
+                                <div id="active-stories-count"
+                                    style="font-size: 1.875rem; font-weight: 700; color: #10b981;">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Active Stories</div>
                             </div>
                             <div class="stat-card card p-4" style="text-align: center;">
-                                <div id="avg-views-count" style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">0</div>
+                                <div id="avg-views-count"
+                                    style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">0</div>
                                 <div style="font-size: 0.875rem; color: var(--text-muted);">Avg. Views</div>
                             </div>
                         </div>
@@ -1698,7 +1815,8 @@
                         <div id="stories-grid" class="stories-grid"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                             <!-- Stories will be loaded here dynamically -->
-                            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                            <div
+                                style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
                                 <p>Loading stories...</p>
                             </div>
                         </div>
@@ -2255,19 +2373,24 @@
                         <div class="controls-bar">
                             <div class="search-box">
                                 <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="search-input" id="searchInput" placeholder="Search notes..." oninput="NotesManager.searchNotes(this.value)">
+                                <input type="text" class="search-input" id="searchInput" placeholder="Search notes..."
+                                    oninput="NotesManager.searchNotes(this.value)">
                             </div>
                             <div class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all" onclick="NotesManager.filterNotes('all', this)">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="NotesManager.filterNotes('all', this)">
                                     <i class="fas fa-th"></i> All Notes
                                 </button>
-                                <button class="filter-btn" data-filter="recent" onclick="NotesManager.filterNotes('recent', this)">
+                                <button class="filter-btn" data-filter="recent"
+                                    onclick="NotesManager.filterNotes('recent', this)">
                                     <i class="fas fa-clock"></i> Recent
                                 </button>
-                                <button class="filter-btn" data-filter="favorites" onclick="NotesManager.filterNotes('favorites', this)">
+                                <button class="filter-btn" data-filter="favorites"
+                                    onclick="NotesManager.filterNotes('favorites', this)">
                                     <i class="fas fa-star"></i> Favorites
                                 </button>
-                                <button class="filter-btn" data-filter="media" onclick="NotesManager.filterNotes('media', this)">
+                                <button class="filter-btn" data-filter="media"
+                                    onclick="NotesManager.filterNotes('media', this)">
                                     <i class="fas fa-microphone"></i> Media Notes
                                 </button>
                             </div>
@@ -2452,7 +2575,8 @@
                                         <canvas id="total-earnings-chart"></canvas>
                                     </div>
                                     <!-- Combined List -->
-                                    <div id="total-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
+                                    <div id="total-earnings-list"
+                                        class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -2465,7 +2589,8 @@
                                                 <span class="text-blue-600">🤝</span>
                                                 Affiliate Earnings
                                             </h3>
-                                            <p class="text-sm text-gray-600 mt-1">Earnings from ads, referrals, and connections</p>
+                                            <p class="text-sm text-gray-600 mt-1">Earnings from ads, referrals, and
+                                                connections</p>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <select id="affiliate-period-selector" onchange="loadAffiliateData()"
@@ -2498,7 +2623,8 @@
                                     <div id="advertisement-tab-content" class="affiliate-tab-content">
                                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                             <p class="text-sm text-blue-800">
-                                                <strong>Advertisement Earnings:</strong> Revenue from ads displayed to users who signed up through your referral link.
+                                                <strong>Advertisement Earnings:</strong> Revenue from ads displayed to
+                                                users who signed up through your referral link.
                                             </p>
                                         </div>
                                         <!-- Affiliate Levels Info (Single Row, Clickable) -->
@@ -2508,7 +2634,8 @@
                                         <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
                                             <canvas id="advertisement-earnings-chart"></canvas>
                                         </div>
-                                        <div id="advertisement-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                        <div id="advertisement-earnings-list"
+                                            class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
                                             <!-- Will be populated by JS -->
                                         </div>
                                     </div>
@@ -2517,7 +2644,8 @@
                                     <div id="subscription-tab-content" class="affiliate-tab-content hidden">
                                         <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
                                             <p class="text-sm text-purple-800">
-                                                <strong>Subscription Earnings:</strong> Commission from users you referred who subscribed to premium plans.
+                                                <strong>Subscription Earnings:</strong> Commission from users you
+                                                referred who subscribed to premium plans.
                                             </p>
                                         </div>
                                         <!-- Affiliate Levels Info (Single Row, Clickable) -->
@@ -2527,7 +2655,8 @@
                                         <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
                                             <canvas id="subscription-earnings-chart"></canvas>
                                         </div>
-                                        <div id="subscription-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                        <div id="subscription-earnings-list"
+                                            class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
                                             <!-- Will be populated by JS -->
                                         </div>
                                     </div>
@@ -2536,7 +2665,8 @@
                                     <div id="commission-tab-content" class="affiliate-tab-content hidden">
                                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                                             <p class="text-sm text-green-800">
-                                                <strong>Commission Earnings:</strong> Your share from tutor-student connections you facilitated.
+                                                <strong>Commission Earnings:</strong> Your share from tutor-student
+                                                connections you facilitated.
                                             </p>
                                         </div>
                                         <!-- Affiliate Levels Info (Single Row, Clickable) -->
@@ -2546,7 +2676,8 @@
                                         <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
                                             <canvas id="commission-earnings-chart"></canvas>
                                         </div>
-                                        <div id="commission-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
+                                        <div id="commission-earnings-list"
+                                            class="space-y-3 max-h-96 overflow-y-auto min-h-[200px]">
                                             <!-- Will be populated by JS -->
                                         </div>
                                     </div>
@@ -2577,7 +2708,8 @@
                                         <canvas id="tutoring-earnings-chart"></canvas>
                                     </div>
                                     <!-- List of Sessions -->
-                                    <div id="tutoring-earnings-list" class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
+                                    <div id="tutoring-earnings-list"
+                                        class="space-y-3 max-h-96 overflow-y-auto min-h-[300px]">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -2623,7 +2755,9 @@
 
                                 <!-- Loading State -->
                                 <div id="subscriptions-loading" class="hidden text-center py-16">
-                                    <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+                                    <div
+                                        class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4">
+                                    </div>
                                     <p class="text-gray-600 text-lg">Loading subscriptions...</p>
                                 </div>
 
@@ -2649,7 +2783,8 @@
                                 <div class="text-center py-16 card">
                                     <div class="text-6xl mb-4">🚧</div>
                                     <h3 class="text-2xl font-bold text-gray-800 mb-2">Coming Soon</h3>
-                                    <p class="text-gray-600 mb-4">Purchase history for materials and resources will be available soon.</p>
+                                    <p class="text-gray-600 mb-4">Purchase history for materials and resources will be
+                                        available soon.</p>
                                     <p class="text-sm text-gray-500">Stay tuned for updates!</p>
                                 </div>
                             </div>
@@ -2684,7 +2819,8 @@
                                     <span class="text-blue-600" style="font-size: 2.5rem; line-height: 1;">📤</span>
                                     <span class="text-xs text-blue-600 font-semibold">SENT</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests Sent</h3>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests Sent
+                                </h3>
                                 <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">
                                     <span class="text-2xl font-bold" id="sent-requests-count-main">0</span> pending
                                 </p>
@@ -2697,11 +2833,13 @@
                                     <span class="text-green-600" style="font-size: 2.5rem; line-height: 1;">📥</span>
                                     <span class="text-xs text-green-600 font-semibold">RECEIVED</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests Received</h3>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2" style="line-height: 1.3;">Requests
+                                    Received</h3>
                                 <p class="text-sm text-gray-600 mb-2" style="line-height: 1.4; flex-grow: 1;">
                                     <span class="text-2xl font-bold" id="received-requests-count-main">0</span> pending
                                 </p>
-                                <p class="text-xs text-green-600 font-medium" style="margin-top: auto;">Click to open</p>
+                                <p class="text-xs text-green-600 font-medium" style="margin-top: auto;">Click to open
+                                </p>
                             </div>
                         </div>
 
@@ -2858,7 +2996,8 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div id="sent-requests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                    <div id="sent-requests-list"
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -2894,7 +3033,8 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div id="received-requests-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                    <div id="received-requests-list"
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -2934,7 +3074,8 @@
                                             <span class="text-gray-600">🕐</span>
                                             Past Events
                                         </h3>
-                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined that already happened</p>
+                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined that already
+                                            happened</p>
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <input type="text" id="past-events-search" placeholder="Search past events..."
@@ -2942,8 +3083,7 @@
                                             oninput="if(typeof searchPastEvents === 'function') searchPastEvents(this.value)">
                                     </div>
                                 </div>
-                                <div id="past-events-grid"
-                                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div id="past-events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <!-- Will be populated by JS -->
                                 </div>
                             </div>
@@ -2958,10 +3098,12 @@
                                             <span class="text-green-600">📅</span>
                                             Upcoming Events
                                         </h3>
-                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined yet that are scheduled for the future</p>
+                                        <p class="text-sm text-gray-600 mt-1">Events you haven't joined yet that are
+                                            scheduled for the future</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <input type="text" id="upcoming-events-panel-search" placeholder="Search upcoming events..."
+                                        <input type="text" id="upcoming-events-panel-search"
+                                            placeholder="Search upcoming events..."
                                             class="p-2 border-2 rounded-lg text-sm"
                                             oninput="if(typeof searchUpcomingPanelEvents === 'function') searchUpcomingPanelEvents(this.value)">
                                     </div>
@@ -2982,10 +3124,12 @@
                                             <span class="text-blue-600">✅</span>
                                             Joined Events
                                         </h3>
-                                        <p class="text-sm text-gray-600 mt-1">All events you have joined (past and upcoming)</p>
+                                        <p class="text-sm text-gray-600 mt-1">All events you have joined (past and
+                                            upcoming)</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <input type="text" id="joined-events-panel-search" placeholder="Search joined events..."
+                                        <input type="text" id="joined-events-panel-search"
+                                            placeholder="Search joined events..."
                                             class="p-2 border-2 rounded-lg text-sm"
                                             oninput="if(typeof searchJoinedPanelEvents === 'function') searchJoinedPanelEvents(this.value)">
                                     </div>
@@ -3009,7 +3153,9 @@
                         <div class="settings-section mb-8">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                    </path>
                                 </svg>
                                 Account & Security
                             </h2>
@@ -3019,7 +3165,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-500"
                                     onclick="openVerifyPersonalInfoModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🔐</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Personal Info</h3>
@@ -3031,12 +3178,14 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-indigo-500"
                                     onclick="openTwoFactorAuthModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🛡️</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Two-Factor Auth</h3>
                                         <p class="text-sm text-gray-600">Extra security with 2FA</p>
-                                        <span id="2fa-status-badge" class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <span id="2fa-status-badge"
+                                            class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                             Not Enabled
                                         </span>
                                     </div>
@@ -3046,7 +3195,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-cyan-500"
                                     onclick="openLoginActivityModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">📱</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Login Activity</h3>
@@ -3058,7 +3208,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-orange-500"
                                     onclick="openConnectedAccountsModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🔗</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Connected Accounts</h3>
@@ -3072,7 +3223,9 @@
                         <div class="settings-section mb-8">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                    </path>
                                 </svg>
                                 Payments & Subscription
                             </h2>
@@ -3082,7 +3235,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-green-500"
                                     onclick="openPaymentMethodModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">💳</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Payment Method</h3>
@@ -3094,7 +3248,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-purple-500"
                                     onclick="openComingSoonModal('Subscription & Storage')">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">⭐</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Subscription & Storage</h3>
@@ -3108,7 +3263,9 @@
                         <div class="settings-section mb-8">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01">
+                                    </path>
                                 </svg>
                                 Personalization
                             </h2>
@@ -3118,7 +3275,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-violet-500"
                                     onclick="openAppearanceModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🎨</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Appearance</h3>
@@ -3130,7 +3288,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-sky-500"
                                     onclick="openComingSoonModal('Language Preferences')">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🌐</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Language</h3>
@@ -3144,7 +3303,9 @@
                         <div class="settings-section mb-8">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
                                 </svg>
                                 Data & Privacy
                             </h2>
@@ -3154,7 +3315,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-teal-500"
                                     onclick="openComingSoonModal('Export Data')">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">📦</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Export Data</h3>
@@ -3168,7 +3330,9 @@
                         <div class="settings-section mb-8">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                    </path>
                                 </svg>
                                 Feedback & Support
                             </h2>
@@ -3178,7 +3342,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-yellow-500"
                                     onclick="openReviewAstegniModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">⭐</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Review Astegni</h3>
@@ -3192,7 +3357,9 @@
                         <div class="settings-section">
                             <h2 class="text-xl font-semibold mb-4 text-red-600 flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                    </path>
                                 </svg>
                                 Danger Zone
                             </h2>
@@ -3202,7 +3369,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-rose-500"
                                     onclick="openManageRoleModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🗑️</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Manage Roles</h3>
@@ -3214,7 +3382,8 @@
                                 <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-red-500"
                                     onclick="openLeaveAstegniModal()">
                                     <div class="flex flex-col items-center text-center">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-lg mb-4">
                                             <span class="text-3xl">🚪</span>
                                         </div>
                                         <h3 class="text-lg font-bold mb-2 text-gray-800">Leave Astegni</h3>
@@ -3231,16 +3400,15 @@
                 <div class="right-widgets">
 
                     <!-- Ad Widget -->
-                                        <!-- Dynamic Logo Ad Widget -->
+                    <!-- Dynamic Logo Ad Widget -->
                     <div class="widget-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="widget-header" style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
-                            <span style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
+                        <div class="widget-header"
+                            style="margin-bottom: 0.75rem; display: flex; justify-content: flex-end;">
+                            <span
+                                style="font-size: 0.65rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">Ad</span>
                         </div>
                         <!-- Dynamic ad container loaded by AdRotationManager -->
-                        <div
-                            data-placement="logo"
-                            data-profile-type="tutor"
-                            class="leaderboard-banner premium-promo"
+                        <div data-placement="logo" data-profile-type="tutor" class="leaderboard-banner premium-promo"
                             style="min-height: 170px; border-radius: 12px; overflow: hidden; position: relative; background: var(--bg-secondary);">
                             <!-- Ads will be dynamically loaded here -->
                         </div>
@@ -3259,7 +3427,8 @@
                         </div>
 
                         <div class="mb-4">
-                            <div class="text-3xl font-bold mb-1"><span id="earnings-currency-symbol"></span> <span id="current-month-earnings">0</span></div>
+                            <div class="text-3xl font-bold mb-1"><span id="earnings-currency-symbol"></span> <span
+                                    id="current-month-earnings">0</span></div>
                             <div class="flex items-center gap-2 text-sm">
                                 <span id="earnings-change" class="text-green-300">+0%</span>
                                 <span id="change-label" style="opacity: 0.8;">vs last month</span>
@@ -3283,7 +3452,7 @@
                             View Details →
                         </button>
                     </div>
-                    
+
                     <!-- Today's Schedule Widget -->
                     <div class="widget-card">
                         <h3 class="text-lg font-semibold mb-4">📅 Today's Schedule</h3>
@@ -3295,7 +3464,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- This Week's Schedule Widget -->
                     <div class="widget-card">
                         <h3 class="text-lg font-semibold mb-4">📅 This Week's Schedule</h3>
@@ -3558,7 +3727,7 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Coursework Loading Spinner -->
     <div id="courseworkLoadingSpinner" class="coursework-loading-spinner">
         <div class="coursework-spinner"></div>
@@ -3918,11 +4087,11 @@
     <script src="../js/tutor-profile/hero-section.js"></script>
 
     <!-- Profile Header Data Loading JavaScript -->
-     <script src="../js/tutor-profile/profile-data-loader.js"></script>
+    <script src="../js/tutor-profile/profile-data-loader.js"></script>
 
     <!-- Initialize Folder Manager and Parenting Invitations -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Initialize folder manager for tutor profile
             if (typeof initializeFolderManager === 'function') {
                 initializeFolderManager('tutor');
@@ -3942,7 +4111,7 @@
             }
         });
     </script>
-    
+
     <!-- Rating Display Update JavaScript (4-Factor Rating System) -->
     <script src="../js/tutor-profile/rating-display-update.js?v=20251218"></script>
 
@@ -3975,18 +4144,20 @@
 
                     <!-- Upload Type Selector -->
                     <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label for="uploadType" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        <label for="uploadType"
+                            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
                             What are you uploading?
                         </label>
                         <select id="uploadType" class="form-input" onchange="handleUploadTypeChange()"
-                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); font-size: 1rem;">
+                            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); font-size: 1rem;">
                             <option value="story">📱 Story (Image/Video)</option>
                             <option value="cover">🖼️ Cover Image</option>
                             <option value="profile">👤 Profile Picture</option>
                         </select>
                     </div>
 
-                    <div class="upload-area" id="storyUploadArea" onclick="document.getElementById('storyInput').click()">
+                    <div class="upload-area" id="storyUploadArea"
+                        onclick="document.getElementById('storyInput').click()">
                         <span class="upload-icon" id="uploadIcon">📱</span>
                         <p class="upload-text">Click to upload or drag and drop</p>
                         <p class="upload-hint" id="uploadHint">Loading limits...</p>
@@ -3995,8 +4166,10 @@
                     </div>
 
                     <div class="preview-container" id="storyPreview" style="display: none;">
-                        <img src="" alt="Story preview" class="preview-image" id="storyPreviewImage" style="display: none;">
-                        <video src="" class="preview-image" id="storyPreviewVideo" controls style="display: none;"></video>
+                        <img src="" alt="Story preview" class="preview-image" id="storyPreviewImage"
+                            style="display: none;">
+                        <video src="" class="preview-image" id="storyPreviewVideo" controls
+                            style="display: none;"></video>
                         <div class="preview-info">
                             <div class="file-info">
                                 <span>File Name:</span>
@@ -4188,7 +4361,7 @@
     <!-- Helper Functions and Review Modal Loader -->
     <script>
         // Helper function to get current location value
-        window.getLocations = function() {
+        window.getLocations = function () {
             const locationInput = document.getElementById('editLocation');
             return locationInput ? [locationInput.value.trim()].filter(v => v) : [];
         };
@@ -4231,4 +4404,5 @@
     </script>
 
 </body>
+
 </html>
