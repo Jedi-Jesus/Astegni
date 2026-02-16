@@ -127,6 +127,10 @@ const BrandsManager = {
     // Load brands from API
     async loadBrands() {
         console.log('🏷️ Loading brands from API...');
+
+        // Show loading state
+        this.renderLoadingState();
+
         try {
             const token = localStorage.getItem('token');
             const apiUrl = BRANDS_API_URL || API_BASE_URL || 'http://localhost:8000';
@@ -143,17 +147,18 @@ const BrandsManager = {
                 this.brands = data.brands || [];
                 console.log('🏷️ Loaded brands from API:', this.brands.length);
                 console.log('🏷️ Brand colors:', this.brands.map(b => ({ name: b.name, color: b.brand_color })));
+                this.loadError = false;
             } else {
                 console.warn('🏷️ API returned non-OK status:', response.status);
-                // Empty brands array - no fallback to sample data
                 this.brands = [];
+                this.loadError = true;
             }
 
             this.renderBrands();
         } catch (error) {
             console.error('🏷️ Error loading brands:', error);
-            // Empty brands array on error - no fallback to sample data
             this.brands = [];
+            this.loadError = true;
             this.renderBrands();
         }
     },
@@ -210,6 +215,12 @@ const BrandsManager = {
         // Clear container
         container.innerHTML = '';
 
+        // Show error state if load failed
+        if (this.loadError) {
+            container.innerHTML = this.createErrorState();
+            return;
+        }
+
         // Add new brand card first
         const newBrandCardHTML = this.createNewBrandCard();
         console.log('🏷️ Creating new brand card, HTML length:', newBrandCardHTML.length);
@@ -218,7 +229,11 @@ const BrandsManager = {
         // Add brand cards
         const filteredBrands = this.filterBrands(this.brands);
 
-        if (filteredBrands.length === 0 && this.currentFilter !== 'all') {
+        // Show empty state if no brands at all
+        if (this.brands.length === 0) {
+            container.innerHTML += this.createEmptyState();
+        } else if (filteredBrands.length === 0 && this.currentFilter !== 'all') {
+            // Show filter empty state
             container.innerHTML += `
                 <div class="brands-empty-state">
                     <div class="brands-empty-icon">
@@ -229,6 +244,7 @@ const BrandsManager = {
                 </div>
             `;
         } else {
+            // Show brand cards
             filteredBrands.forEach(brand => {
                 container.innerHTML += this.createBrandCard(brand);
             });
@@ -236,6 +252,52 @@ const BrandsManager = {
 
         // Update stats
         this.updateBrandStats();
+    },
+
+    // Render loading state
+    renderLoadingState() {
+        const container = document.getElementById('brandsGrid');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="brands-loading-state">
+                <div class="loading-spinner"></div>
+                <h3>Loading brands...</h3>
+                <p>Please wait while we fetch your brands</p>
+            </div>
+        `;
+    },
+
+    // Create empty state HTML
+    createEmptyState() {
+        return `
+            <div class="brands-empty-state">
+                <div class="brands-empty-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h3>No brands yet</h3>
+                <p>Create your first brand to start managing campaigns</p>
+                <button class="btn-primary" onclick="BrandsManager.openCreateBrandModal()" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i> Create Your First Brand
+                </button>
+            </div>
+        `;
+    },
+
+    // Create error state HTML
+    createErrorState() {
+        return `
+            <div class="brands-error-state">
+                <div class="brands-error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Failed to load brands</h3>
+                <p>There was an error loading your brands. Please try again.</p>
+                <button class="btn-secondary" onclick="BrandsManager.loadBrands()" style="margin-top: 1rem;">
+                    <i class="fas fa-redo"></i> Retry
+                </button>
+            </div>
+        `;
     },
 
     // Filter brands
