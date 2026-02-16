@@ -145,15 +145,15 @@ const BrandsManager = {
                 console.log('🏷️ Brand colors:', this.brands.map(b => ({ name: b.name, color: b.brand_color })));
             } else {
                 console.warn('🏷️ API returned non-OK status:', response.status);
-                // Use sample data for now
-                this.brands = this.getSampleBrands();
+                // Empty brands array - no fallback to sample data
+                this.brands = [];
             }
 
             this.renderBrands();
         } catch (error) {
             console.error('🏷️ Error loading brands:', error);
-            // Use sample data on error
-            this.brands = this.getSampleBrands();
+            // Empty brands array on error - no fallback to sample data
+            this.brands = [];
             this.renderBrands();
         }
     },
@@ -391,12 +391,13 @@ const BrandsManager = {
                 const data = await response.json();
                 this.campaigns = data.campaigns || [];
             } else {
-                // Use sample campaigns
-                this.campaigns = this.getSampleCampaigns(brandId);
+                // Empty campaigns array - no fallback to sample data
+                this.campaigns = [];
             }
         } catch (error) {
             console.error('Error loading campaigns:', error);
-            this.campaigns = this.getSampleCampaigns(brandId);
+            // Empty campaigns array on error - no fallback to sample data
+            this.campaigns = [];
         }
 
         this.renderCampaignList();
