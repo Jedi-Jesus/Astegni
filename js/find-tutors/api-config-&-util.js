@@ -27,7 +27,7 @@ const FindTutorsAPI = {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (!token) {
             console.log('[Currency] User not logged in, using default ETB');
-            this.userCurrency = 'ETB';
+            this.userCurrency = CurrencyManager.getCurrency();
             this.userCurrencySymbol = 'Br';
             return;
         }
@@ -39,17 +39,17 @@ const FindTutorsAPI = {
 
             if (response.ok) {
                 const userData = await response.json();
-                this.userCurrency = userData.currency || 'ETB';
+                this.userCurrency = userData.currency || CurrencyManager.getCurrency();
                 this.userCurrencySymbol = this.getCurrencySymbol(this.userCurrency);
                 console.log(`[Currency] User currency set to: ${this.userCurrency} (${this.userCurrencySymbol})`);
             } else {
                 console.warn('[Currency] Failed to fetch user data, using default ETB');
-                this.userCurrency = 'ETB';
+                this.userCurrency = CurrencyManager.getCurrency();
                 this.userCurrencySymbol = 'Br';
             }
         } catch (error) {
             console.error('[Currency] Error fetching user currency:', error);
-            this.userCurrency = 'ETB';
+            this.userCurrency = CurrencyManager.getCurrency();
             this.userCurrencySymbol = 'Br';
         }
     },

@@ -88,7 +88,7 @@ function createTutorCard(tutor, index) {
     const rating = ratingValue.toFixed(1);
 
     // Currency symbol
-    const currencySymbol = window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br';
+    const currencySymbol = CurrencyManager.getSymbol();
     const price = tutor.hourly_rate || 0;
 
     const location = tutor.location || 'Not specified';

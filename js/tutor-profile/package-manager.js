@@ -335,7 +335,7 @@ window.addNewPackageEntry = function() {
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Hourly Rate (${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'})</label>
+                <label class="form-label">Hourly Rate (${CurrencyManager.getSymbol()})</label>
                 <input type="number" class="hourly-rate form-input" placeholder="Enter hourly rate" min="0" required>
             </div>
             <div class="form-group">
@@ -657,7 +657,7 @@ function createPackageDisplayCard(pkg, index) {
             </div>
             <div class="package-info-item">
                 <div class="package-info-label">Hourly Rate</div>
-                <div class="package-info-value">${hourlyRate} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                <div class="package-info-value">${hourlyRate} ${CurrencyManager.getSymbol()}</div>
             </div>
             <div class="package-info-item">
                 <div class="package-info-label">1 Month Discount</div>
@@ -750,19 +750,19 @@ function calculateAndDisplayFeesForPackage(pkg) {
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">Base ${fees.paymentFrequency === '2-weeks' ? '2-Week' : 'Monthly'} Fee</span>
-                <span class="package-calc-value">${fees.basePayment.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                <span class="package-calc-value">${fees.basePayment.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">3 Months Total (${discounts.threeMonths}% off)</span>
-                <span class="package-calc-value">${fees.threeMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                <span class="package-calc-value">${fees.threeMonths.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
             </div>
             <div class="package-calc-row">
                 <span class="package-calc-label">6 Months Total (${discounts.sixMonths}% off)</span>
-                <span class="package-calc-value">${fees.sixMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                <span class="package-calc-value">${fees.sixMonths.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
             </div>
             <div class="package-calc-row total">
                 <span class="package-calc-label">Yearly Total (${discounts.yearly}% off)</span>
-                <span class="package-calc-value">${fees.yearly.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                <span class="package-calc-value">${fees.yearly.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
             </div>
         `;
     }

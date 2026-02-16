@@ -462,7 +462,7 @@ class UpdatedContentLoader extends ContentLoader {
                 title: 'Complete Guide to Film Production',
                 author: 'Zenith Academy',
                 price: 899,
-                currency: 'ETB',
+                currency: CurrencyManager.getCurrency(),
                 cover: 'https://picsum.photos/200/300?random=book1',
                 sales: 234,
                 rating: 4.8
@@ -483,7 +483,7 @@ class UpdatedContentLoader extends ContentLoader {
                 type: 'software',
                 purchaseDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
                 price: 2499,
-                currency: 'ETB',
+                currency: CurrencyManager.getCurrency(),
                 status: 'active',
                 expiryDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000)
             },
@@ -493,7 +493,7 @@ class UpdatedContentLoader extends ContentLoader {
                 type: 'courses',
                 purchaseDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
                 price: 1299,
-                currency: 'ETB',
+                currency: CurrencyManager.getCurrency(),
                 status: 'active',
                 progress: 65
             },
@@ -503,7 +503,7 @@ class UpdatedContentLoader extends ContentLoader {
                 type: 'books',
                 purchaseDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
                 price: 599,
-                currency: 'ETB',
+                currency: CurrencyManager.getCurrency(),
                 status: 'delivered'
             }
         ];

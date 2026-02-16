@@ -141,7 +141,7 @@
         const planName = plan.package_title || plan.name || 'Untitled';
         const price = parseFloat(plan.package_price || plan.monthly_price || 0);
         const storageGB = plan.duration_days || plan.storage_gb || 0; // duration_days is repurposed as storage_gb
-        const currency = plan.currency || 'ETB';
+        const currency = plan.currency || CurrencyManager.getCurrency();
         const features = plan.features || [];
         const label = plan.label || 'none';
         const isPopular = label === 'popular' || label === 'recommended';

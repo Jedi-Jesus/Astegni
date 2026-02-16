@@ -135,7 +135,7 @@ const TutorsPanelManager = {
         const packageName = tutor.package_name || 'Not specified';
         const languages = Array.isArray(tutor.languages) ? tutor.languages.join(', ') : (tutor.languages || 'Not specified');
         const gradeLevel = tutor.grade_level || 'All levels';
-        const price = tutor.hourly_rate ? `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${tutor.hourly_rate}/hr` : 'Contact for price';
+        const price = tutor.hourly_rate ? `${CurrencyManager.getSymbol()}${tutor.hourly_rate}/hr` : 'Contact for price';
         const verifiedBadge = tutor.is_verified ? `
             <span class="verified-badge inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">

@@ -144,7 +144,7 @@ function renderClubCard(club) {
                     ${club.is_paid ? `
                         <div class="club-info-item club-fee">
                             <i class="fas fa-money-bill-wave"></i>
-                            <span>${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                            <span>${club.membership_fee} ${CurrencyManager.getSymbol()}</span>
                         </div>
                     ` : `
                         <div class="club-info-item club-free">

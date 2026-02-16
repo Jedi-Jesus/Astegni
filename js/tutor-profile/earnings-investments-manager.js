@@ -223,19 +223,19 @@ const EarningsInvestmentsManager = {
         // Total earnings
         const totalEarningsEl = document.getElementById('total-earnings');
         if (totalEarningsEl) {
-            totalEarningsEl.textContent = `${totalEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            totalEarningsEl.textContent = `${totalEarnings.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
 
         // Combined affiliate earnings
         const affiliateEarningsEl = document.getElementById('affiliate-earnings');
         if (affiliateEarningsEl) {
-            affiliateEarningsEl.textContent = `${affiliateEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            affiliateEarningsEl.textContent = `${affiliateEarnings.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
 
         // Tutoring earnings
         const tutoringEarningsEl = document.getElementById('tutoring-earnings');
         if (tutoringEarningsEl) {
-            tutoringEarningsEl.textContent = `${tutoringEarnings.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            tutoringEarningsEl.textContent = `${tutoringEarnings.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
 
         // Update widget in sidebar
@@ -317,8 +317,8 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-blue-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
-                    <p class="text-xs text-gray-600">CPM: ${item.cpm?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xl font-bold text-blue-600">${item.amount?.toFixed(2) || '0.00'} ${CurrencyManager.getSymbol()}</p>
+                    <p class="text-xs text-gray-600">CPM: ${item.cpm?.toFixed(2) || '0.00'} ${CurrencyManager.getSymbol()}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }">${item.status || 'pending'}</span>
@@ -385,7 +385,7 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-purple-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xl font-bold text-purple-600">${item.amount?.toFixed(2) || '0.00'} ${CurrencyManager.getSymbol()}</p>
                     <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -448,8 +448,8 @@ const EarningsInvestmentsManager = {
                     <p class="text-xs text-gray-500">${new Date(item.earned_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-green-600">${item.amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
-                    <p class="text-xs text-gray-600">${item.commission_rate || 0}% of ${item.transaction_amount?.toFixed(2) || '0.00'} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xl font-bold text-green-600">${item.amount?.toFixed(2) || '0.00'} ${CurrencyManager.getSymbol()}</p>
+                    <p class="text-xs text-gray-600">${item.commission_rate || 0}% of ${item.transaction_amount?.toFixed(2) || '0.00'} ${CurrencyManager.getSymbol()}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }">${item.status || 'pending'}</span>
@@ -505,7 +505,7 @@ const EarningsInvestmentsManager = {
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xl font-bold text-orange-600">${item.amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                    <p class="text-xl font-bold text-orange-600">${item.amount.toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                     <p class="text-xs text-gray-600">${item.payment_method || 'Payment'}</p>
                     <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -591,7 +591,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-blue-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                            <p class="text-xl font-bold text-blue-600">${(item.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                             }">${item.status || 'pending'}</span>
@@ -610,7 +610,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-purple-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                            <p class="text-xl font-bold text-purple-600">${(item.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                             <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -630,7 +630,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-green-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                            <p class="text-xl font-bold text-green-600">${(item.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                             <p class="text-xs text-gray-600">${item.commission_rate || 0}% commission</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -653,7 +653,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-orange-600">${(item.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                            <p class="text-xl font-bold text-orange-600">${(item.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                             <p class="text-xs text-gray-600">${item.payment_method || 'Payment'}</p>
                             <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
                                 item.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -739,7 +739,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (CurrencyManager.getSymbol()) } }
                     }
                 }
             });
@@ -809,7 +809,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (CurrencyManager.getSymbol()) } }
                     }
                 }
             });
@@ -879,7 +879,7 @@ const EarningsInvestmentsManager = {
                             title: { display: true, text: 'Date', font: { size: 12 } },
                             ticks: { font: { size: 11 } }
                         },
-                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB') } }
+                        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(0) + ' ' + (CurrencyManager.getSymbol()) } }
                     }
                 }
             });
@@ -969,7 +969,7 @@ const EarningsInvestmentsManager = {
                             callbacks: {
                                 label: function(context) {
                                     if (context.parsed.y !== null) {
-                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
+                                        return 'Total Earnings: ' + context.parsed.y.toFixed(2) + ' ' + (CurrencyManager.getSymbol());
                                     }
                                     return '';
                                 }
@@ -981,7 +981,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
+                                    return value.toFixed(0) + ' ' + (CurrencyManager.getSymbol());
                                 },
                                 font: {
                                     size: 11
@@ -1071,7 +1071,7 @@ const EarningsInvestmentsManager = {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(0) + ' ' + (window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB');
+                                    return value.toFixed(0) + ' ' + (CurrencyManager.getSymbol());
                                 }
                             }
                         }
@@ -1111,7 +1111,7 @@ const EarningsInvestmentsManager = {
         const avgCpmEl = document.getElementById('average-cpm');
 
         if (totalInvestedEl) {
-            totalInvestedEl.textContent = `${data.total_invested.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            totalInvestedEl.textContent = `${data.total_invested.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
 
         if (totalImpressionsEl) {
@@ -1121,7 +1121,7 @@ const EarningsInvestmentsManager = {
         if (avgCpmEl) {
             // Calculate average CPM
             const avgCpm = data.total_impressions > 0 ? (data.total_invested / data.total_impressions) * 1000 : 0;
-            avgCpmEl.textContent = `${avgCpm.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            avgCpmEl.textContent = `${avgCpm.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
     },
 
@@ -1160,13 +1160,13 @@ const EarningsInvestmentsManager = {
                     <div class="grid grid-cols-2 gap-6 mt-4">
                         <div>
                             <p class="text-xs text-gray-600 mb-1">Invested</p>
-                            <p class="text-2xl font-bold text-blue-600">${inv.amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                            <p class="text-2xl font-bold text-blue-600">${inv.amount.toFixed(2)} ${CurrencyManager.getSymbol()}</p>
                             <p class="text-xs text-gray-500 mt-1">${new Date(inv.investment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600 mb-1">Total Impressions</p>
                             <p class="text-2xl font-bold text-gray-800">${impressions.toLocaleString()}</p>
-                            <p class="text-xs text-gray-500 mt-1">CPM: <span class="font-semibold text-green-600">${cpm.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></p>
+                            <p class="text-xs text-gray-500 mt-1">CPM: <span class="font-semibold text-green-600">${cpm.toFixed(2)} ${CurrencyManager.getSymbol()}</span></p>
                         </div>
                     </div>
                 </div>
@@ -1266,7 +1266,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
                             <div class="text-xs text-gray-500 mt-1">${startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
                         </div>
                     </div>
@@ -1414,7 +1414,7 @@ const EarningsInvestmentsManager = {
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-bold text-purple-600">${(pkg.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="text-2xl font-bold text-purple-600">${(pkg.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
                             <div class="text-xs text-gray-500 mt-1">${purchaseDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
                         </div>
                     </div>
@@ -1422,7 +1422,7 @@ const EarningsInvestmentsManager = {
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
                         <div>
                             <div class="text-xs text-gray-500 mb-1">Amount</div>
-                            <div class="font-semibold text-gray-800">${(pkg.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="font-semibold text-gray-800">${(pkg.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
                         </div>
                         <div>
                             <div class="text-xs text-gray-500 mb-1">Date</div>
@@ -1766,7 +1766,7 @@ function populateMetricsSidebar(subscriptions, selectedIndex = 0) {
                     <span class="text-xs text-gray-500">${startDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                 </div>
                 <h4 class="font-bold text-gray-800 mb-1 text-sm">${sub.plan_name || 'Subscription Plan'}</h4>
-                <p class="text-sm text-gray-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</p>
+                <p class="text-sm text-gray-600">${(sub.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</p>
             </div>
         `;
     }).join('');
@@ -1855,7 +1855,7 @@ async function openPerformanceMetricsModal(subscriptionIndex = 0) {
     const ctr = totalImpressions > 0 ? ((clicks / totalImpressions) * 100) : 0;
     const conversionRate = profileViews > 0 ? ((studentConnections / profileViews) * 100) : 0;
 
-    // ROI calculation (assuming 100 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} estimated value per connection)
+    // ROI calculation (assuming 100 ${CurrencyManager.getSymbol()} estimated value per connection)
     const valuePerConnection = 100;
     const estimatedValue = studentConnections * valuePerConnection;
     const netGain = estimatedValue - amount;
@@ -1867,7 +1867,7 @@ async function openPerformanceMetricsModal(subscriptionIndex = 0) {
 
     // Populate modal header
     document.getElementById('metrics-plan-name').textContent = sub.plan_name || 'Subscription Plan';
-    document.getElementById('metrics-amount').textContent = `${amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('metrics-amount').textContent = `${amount.toFixed(2)} ${CurrencyManager.getSymbol()}`;
     document.getElementById('metrics-period').textContent = endDate
         ? `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1888,16 +1888,16 @@ async function openPerformanceMetricsModal(subscriptionIndex = 0) {
     document.getElementById('metrics-ctr-bar').style.width = `${Math.min(ctr * 10, 100)}%`;
 
     // ROI breakdown
-    document.getElementById('roi-investment').textContent = `${amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
-    document.getElementById('roi-value').textContent = `${estimatedValue.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
-    document.getElementById('roi-gain').textContent = `${netGain >= 0 ? '+' : ''}${netGain.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('roi-investment').textContent = `${amount.toFixed(2)} ${CurrencyManager.getSymbol()}`;
+    document.getElementById('roi-value').textContent = `${estimatedValue.toFixed(2)} ${CurrencyManager.getSymbol()}`;
+    document.getElementById('roi-gain').textContent = `${netGain >= 0 ? '+' : ''}${netGain.toFixed(2)} ${CurrencyManager.getSymbol()}`;
     document.getElementById('roi-percentage').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
-    document.getElementById('roi-per-connection').textContent = `${valuePerConnection} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('roi-per-connection').textContent = `${valuePerConnection} ${CurrencyManager.getSymbol()}`;
 
     // Cost analysis
-    document.getElementById('cost-cpi').textContent = `${cpi.toFixed(4)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
-    document.getElementById('cost-cpc').textContent = `${cpc.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
-    document.getElementById('cost-connection').textContent = `${costPerConnection.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+    document.getElementById('cost-cpi').textContent = `${cpi.toFixed(4)} ${CurrencyManager.getSymbol()}`;
+    document.getElementById('cost-cpc').textContent = `${cpc.toFixed(2)} ${CurrencyManager.getSymbol()}`;
+    document.getElementById('cost-connection').textContent = `${costPerConnection.toFixed(2)} ${CurrencyManager.getSymbol()}`;
 
     // Performance tips
     document.getElementById('tips-ctr').textContent = `${ctr.toFixed(1)}%`;
@@ -1989,7 +1989,7 @@ function viewSubscriptionDetails(subscriptionIndex) {
                                 <p class="text-sm text-gray-600">${sub.description || 'Premium access'}</p>
                             </div>
                             <div class="text-right">
-                                <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                                <div class="text-2xl font-bold text-blue-600">${(sub.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
                                 <span class="bg-${isActive ? 'green' : 'gray'}-100 text-${isActive ? 'green' : 'gray'}-800 text-xs px-3 py-1 rounded-full font-semibold">
                                     ${isActive ? 'Active' : 'Expired'}
                                 </span>
@@ -2014,7 +2014,7 @@ function viewSubscriptionDetails(subscriptionIndex) {
                         </div>
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                             <div class="text-sm text-gray-500 mb-2">Amount Paid</div>
-                            <div class="text-lg font-semibold text-gray-800">${(sub.amount || 0).toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</div>
+                            <div class="text-lg font-semibold text-gray-800">${(sub.amount || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
                         </div>
                     </div>
 

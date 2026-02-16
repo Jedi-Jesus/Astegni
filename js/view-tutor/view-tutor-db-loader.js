@@ -1385,7 +1385,7 @@ class ViewTutorDBLoader {
                         <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
                             <div>
                                 <p style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px;">Per Session</p>
-                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></p>
+                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">${CurrencyManager.getSymbol()}</span></p>
                             </div>
                             <div style="text-align: right;">
                                 <i class="fas fa-money-bill-wave" style="font-size: 2.5rem; color: rgba(255,255,255,0.3);"></i>
@@ -1600,11 +1600,11 @@ class ViewTutorDBLoader {
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
                 priceDisplay = minPrice === maxPrice ?
-                    `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${minPrice}` :
-                    `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${minPrice}-${maxPrice}`;
+                    `${CurrencyManager.getSymbol()}${minPrice}` :
+                    `${CurrencyManager.getSymbol()}${minPrice}-${maxPrice}`;
             }
         } else if (profile && profile.price && profile.price > 0) {
-            priceDisplay = `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${profile.price}`;
+            priceDisplay = `${CurrencyManager.getSymbol()}${profile.price}`;
         }
 
         // Generate styled HTML matching the beautiful design from HTML
@@ -2164,7 +2164,7 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
         const price = packageData.session_price || packageData.package_price || 0;
         const listedPriceDisplay = document.getElementById('listedPriceDisplay');
         if (listedPriceDisplay) {
-            listedPriceDisplay.textContent = `${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${Math.round(price)}`;
+            listedPriceDisplay.textContent = `${CurrencyManager.getSymbol()}${Math.round(price)}`;
         }
 
         // Clear any previous counter-offer
@@ -2306,7 +2306,7 @@ function populatePackageDetails(pkg) {
                 </div>
                 <div style="text-align: right;">
                     <div style="background: var(--primary-color, #3b82f6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.3);">
-                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">${window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br'}${Math.round(price)}</div>
+                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">${CurrencyManager.getSymbol()}${Math.round(price)}</div>
                         <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 2px;">per session</div>
                     </div>
                 </div>

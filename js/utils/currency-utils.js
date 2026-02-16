@@ -260,9 +260,10 @@ const CurrencyManager = {
      * Updates all elements with class 'earnings-currency-symbol'
      */
     updateWidgetCurrencySymbols() {
-        const currencySymbol = this.getCurrency();
+        const currencyCode = this.getCurrency();
+        const currencySymbol = this.getSymbol();
 
-        // Update earnings widget currency symbols
+        // Update earnings widget currency symbols (by ID)
         const earningsSymbol = document.getElementById('earnings-currency-symbol');
         if (earningsSymbol) {
             earningsSymbol.textContent = currencySymbol;
@@ -274,7 +275,19 @@ const CurrencyManager = {
             earningsSymbolUser.textContent = currencySymbol;
         }
 
-        console.log(`[CurrencyManager] Updated widget currency symbols to ${currencySymbol}`);
+        // Update all elements with class 'earnings-currency' (new pattern)
+        const earningsCurrencyElements = document.querySelectorAll('.earnings-currency');
+        earningsCurrencyElements.forEach(el => {
+            el.textContent = currencySymbol;
+        });
+
+        // Update all elements with class 'stat-currency'
+        const statCurrencyElements = document.querySelectorAll('.stat-currency');
+        statCurrencyElements.forEach(el => {
+            el.textContent = currencySymbol;
+        });
+
+        console.log(`[CurrencyManager] Updated ${earningsCurrencyElements.length + statCurrencyElements.length + 2} currency symbols to ${currencyCode} (${currencySymbol})`);
     }
 };
 

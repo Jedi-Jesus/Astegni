@@ -34,7 +34,7 @@ const TutorCardCreator = {
 
         // Use logged-in user's currency symbol (based on their GPS-detected location)
         // Falls back to 'Br' (Ethiopian Birr) if user hasn't set location yet
-        const currencySymbol = window.CurrencyManager ? CurrencyManager.getSymbol() : 'Br';
+        const currencySymbol = CurrencyManager.getSymbol();
 
         const location = tutor.location || 'Not specified';
 

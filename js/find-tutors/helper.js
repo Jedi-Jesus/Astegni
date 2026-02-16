@@ -99,7 +99,7 @@ window.debounce = function(func, wait) {
 };
 
 // Format price helper
-window.formatPrice = function(price, currency = 'ETB') {
+window.formatPrice = function(price, currency = CurrencyManager.getCurrency()) {
     if (typeof price === 'number') {
         return `${currency} ${price.toLocaleString()}`;
     }

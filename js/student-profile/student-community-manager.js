@@ -928,7 +928,7 @@ function displayClubsInGrid(gridId, clubs, type, page = 1) {
           </div>
           <div class="club-detail-item">
             <span>💰</span>
-            <span>${club.is_paid ? `${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}` : 'Free to join'}</span>
+            <span>${club.is_paid ? `${club.membership_fee} ${CurrencyManager.getSymbol()}` : 'Free to join'}</span>
           </div>
         </div>
         <p class="club-description">${club.description || 'No description available'}</p>

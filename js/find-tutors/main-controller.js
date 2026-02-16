@@ -38,7 +38,7 @@ const FindTutorsController = {
         // Update the "Price Range (ETB/hr)" label to show user's currency
         const priceFilterLabel = document.querySelector('.filter-section h3');
         if (priceFilterLabel && priceFilterLabel.textContent.includes('Price Range')) {
-            const currency = window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB';
+            const currency = CurrencyManager.getSymbol();
             priceFilterLabel.innerHTML = `
                 <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -507,7 +507,7 @@ function renderPackagesList() {
                 <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent); animation: shimmerContainer 3s infinite; pointer-events: none;"></div>
                 <div style="position: relative; z-index: 1; text-align: center;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: white; line-height: 1;">${pkg.hourlyRate}</div>
-                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-top: 0.25rem; font-weight: 500;">${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}/hr</div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-top: 0.25rem; font-weight: 500;">${CurrencyManager.getSymbol()}/hr</div>
                 </div>
             </div>
 
@@ -1293,7 +1293,7 @@ function renderPackageEditor() {
                             </select>
                         </div>
                         <div class="form-field">
-                            <label><i class="fas fa-dollar-sign"></i> Hourly Rate (${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'})</label>
+                            <label><i class="fas fa-dollar-sign"></i> Hourly Rate (${CurrencyManager.getSymbol()})</label>
                             <input type="number" id="hourlyRate" value="${pkg.hourlyRate}" min="0" placeholder="200" oninput="updateCalculator()">
                         </div>
                     </div>
@@ -2163,19 +2163,19 @@ window.updateCalculator = function() {
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">Base ${paymentFreq === '2-weeks' ? '2-Week' : 'Monthly'} Fee</span>
-            <span class="calc-result-value">${fees.basePayment.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+            <span class="calc-result-value">${fees.basePayment.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">3 Months Total (${discount3}% off)</span>
-            <span class="calc-result-value">${fees.threeMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+            <span class="calc-result-value">${fees.threeMonths.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
         </div>
         <div class="calc-result-row">
             <span class="calc-result-label">6 Months Total (${discount6}% off)</span>
-            <span class="calc-result-value">${fees.sixMonths.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+            <span class="calc-result-value">${fees.sixMonths.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
         </div>
         <div class="calc-result-row total">
             <span class="calc-result-label">Yearly Total (${discountYear}% off)</span>
-            <span class="calc-result-value">${fees.yearly.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+            <span class="calc-result-value">${fees.yearly.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
         </div>
     `;
 };

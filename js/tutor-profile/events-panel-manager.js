@@ -243,7 +243,7 @@
                             ${event.price > 0 ? `
                             <div class="flex items-center gap-2 text-sm text-gray-600">
                                 <span>💰</span>
-                                <span>${event.price} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                                <span>${event.price} ${CurrencyManager.getSymbol()}</span>
                             </div>
                             ` : '<div class="flex items-center gap-2 text-sm text-green-600"><span>🎁</span><span>Free</span></div>'}
                         </div>

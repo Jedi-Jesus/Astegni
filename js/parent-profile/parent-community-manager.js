@@ -711,7 +711,7 @@ class ParentCommunityManager {
               <span>👥</span>
               <span>${event.registered_count || 0}/${event.available_seats || 'Unlimited'} registered</span>
             </div>
-            ${event.price > 0 ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${event.price} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
+            ${event.price > 0 ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${event.price} ${CurrencyManager.getSymbol()}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
           </div>
           <p style="color: var(--text); font-size: 0.9rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">${event.description || 'No description available'}</p>
         </div>
@@ -918,7 +918,7 @@ class ParentCommunityManager {
               <span>👥</span>
               <span>${club.member_count || 0}/${club.member_limit || 'Unlimited'} members</span>
             </div>
-            ${club.is_paid ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${club.membership_fee} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
+            ${club.is_paid ? `<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>💰</span><span>${club.membership_fee} ${CurrencyManager.getSymbol()}</span></div>` : '<div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"><span>🎁</span><span>Free</span></div>'}
           </div>
           <p style="color: var(--text); font-size: 0.9rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">${club.description || 'No description available'}</p>
         </div>
