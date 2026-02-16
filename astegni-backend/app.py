@@ -278,10 +278,6 @@ app.include_router(admin_auth_router)
 from pricing_settings_endpoints import router as pricing_router
 app.include_router(pricing_router)
 
-# Include debug endpoints (development only)
-from debug_endpoints import router as debug_router
-app.include_router(debug_router)
-
 # Include base price rules routes (starting prices for new tutors)
 from base_price_endpoints import router as base_price_router
 app.include_router(base_price_router)
