@@ -163,44 +163,6 @@ const BrandsManager = {
         }
     },
 
-    // Get sample brands data
-    getSampleBrands() {
-        return [
-            {
-                id: 1,
-                name: 'Astegni Education',
-                logo: null,
-                industry: 'Education Technology',
-                status: 'active',
-                description: 'Ethiopia\'s premier educational platform connecting students with expert tutors.',
-                campaigns_count: 5,
-                impressions: 245000,
-                revenue: 125000
-            },
-            {
-                id: 2,
-                name: 'EthioTech Solutions',
-                logo: null,
-                industry: 'Technology',
-                status: 'active',
-                description: 'Innovative tech solutions for Ethiopian businesses and enterprises.',
-                campaigns_count: 3,
-                impressions: 180000,
-                revenue: 85000
-            },
-            {
-                id: 3,
-                name: 'Addis Academy',
-                logo: null,
-                industry: 'Education',
-                status: 'paused',
-                description: 'Premium tutoring and coaching services for university students.',
-                campaigns_count: 2,
-                impressions: 95000,
-                revenue: 45000
-            }
-        ];
-    },
 
     // Render brands grid
     renderBrands() {
@@ -467,83 +429,6 @@ const BrandsManager = {
     },
 
     // Get sample campaigns (with targeting data for analytics filters)
-    getSampleCampaigns(brandId) {
-        const campaigns = [
-            {
-                id: 1,
-                brand_id: brandId,
-                name: 'Back to School 2024',
-                status: 'active',
-                budget: 50000,
-                spent: 32500,
-                impressions: 125000,
-                clicks: 8750,
-                ctr: 7.0,
-                start_date: '2024-01-15',
-                end_date: '2024-03-15',
-                // Targeting: All audiences, National location, All placements
-                target_audiences: ['tutor', 'student', 'parent', 'advertiser', 'user'],
-                target_location: 'national',
-                target_regions: [],
-                target_placements: ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
-            },
-            {
-                id: 2,
-                brand_id: brandId,
-                name: 'University Prep Campaign',
-                status: 'active',
-                budget: 35000,
-                spent: 18200,
-                impressions: 85000,
-                clicks: 5950,
-                ctr: 7.0,
-                start_date: '2024-02-01',
-                end_date: '2024-04-30',
-                // Targeting: Only students, Regional (Addis + Oromia), Widget + Popup only
-                target_audiences: ['student'],
-                target_location: 'regional',
-                target_regions: ['addis-ababa', 'oromia'],
-                target_placements: ['logo', 'in-session-skyscrapper-banner']
-            },
-            {
-                id: 3,
-                brand_id: brandId,
-                name: 'Summer Tutoring Promo',
-                status: 'paused',
-                budget: 25000,
-                spent: 12000,
-                impressions: 45000,
-                clicks: 2700,
-                ctr: 6.0,
-                start_date: '2024-06-01',
-                end_date: '2024-08-31',
-                // Targeting: Tutors only, Global location, All placements
-                target_audiences: ['tutor'],
-                target_location: 'global',
-                target_regions: [],
-                target_placements: ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
-            },
-            {
-                id: 4,
-                brand_id: brandId,
-                name: 'Holiday Special 2023',
-                status: 'completed',
-                budget: 20000,
-                spent: 20000,
-                impressions: 95000,
-                clicks: 7600,
-                ctr: 8.0,
-                start_date: '2023-12-01',
-                end_date: '2024-01-05',
-                // Targeting: Parents + Students, National, Placeholder + Widget
-                target_audiences: ['parent', 'student'],
-                target_location: 'national',
-                target_regions: [],
-                target_placements: ['leaderboard-banner', 'logo']
-            }
-        ];
-        return campaigns;
-    },
 
     // Render campaign list
     renderCampaignList() {
@@ -577,7 +462,7 @@ const BrandsManager = {
                     <span class="campaign-card-small-status ${statusClass}">${this.capitalizeFirst(statusClass)}</span>
                 </div>
                 <div class="campaign-card-small-meta">
-                    <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</span>
+                    <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${CurrencyManager.getSymbol()}</span>
                     <span><i class="fas fa-eye"></i> ${this.formatNumber(campaign.impressions || 0)}</span>
                 </div>
                 <button class="campaign-card-edit-btn-bottom" onclick="event.stopPropagation(); BrandsManager.editCampaignById(${campaign.id})">
@@ -1867,9 +1752,9 @@ const BrandsManager = {
                 <strong style="color: #ff9800;">Budget Already Used</strong>
             </div>
             <div style="color: var(--text-secondary);">
-                Original budget: <strong>${campaign.campaign_budget.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong><br>
-                Already spent: <strong>${campaign.amount_used.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong> (non-refundable)<br>
-                Remaining: <strong>${campaign.remaining_balance.toLocaleString()} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}</strong>
+                Original budget: <strong>${campaign.campaign_budget.toLocaleString()} ${CurrencyManager.getSymbol()}</strong><br>
+                Already spent: <strong>${campaign.amount_used.toLocaleString()} ${CurrencyManager.getSymbol()}</strong> (non-refundable)<br>
+                Remaining: <strong>${campaign.remaining_balance.toLocaleString()} ${CurrencyManager.getSymbol()}</strong>
             </div>
         `;
 
@@ -1917,7 +1802,7 @@ const BrandsManager = {
                             'logo': 0.02,
                             'in-session-skyscrapper-banner': 0.05
                         },
-                        currency: data.currency || 'ETB'
+                        currency: data.currency || CurrencyManager.getCurrency()
                     };
 
                     badge.classList.remove('loading');
@@ -1943,7 +1828,7 @@ const BrandsManager = {
                 regionExclusionPremiums: {},  // Will be empty until loaded
                 countryRegions: {},
                 placementPremiums: { 'leaderboard-banner': 0.01, 'logo': 0.02, 'in-session-skyscrapper-banner': 0.05 },
-                currency: window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'
+                currency: CurrencyManager.getSymbol()
             };
             badge.classList.remove('loading');
             this.updateCpiDisplay();
@@ -2012,7 +1897,7 @@ const BrandsManager = {
             if (audiencePremium > 0) {
                 audienceNotice.style.display = 'flex';
                 if (audienceAmountEl) {
-                    audienceAmountEl.textContent = `+${audiencePremium.toFixed(3)} ${this.cpiRates.currency || 'ETB'}`;
+                    audienceAmountEl.textContent = `+${audiencePremium.toFixed(3)} ${this.cpiRates.currency || CurrencyManager.getCurrency()}`;
                 }
             } else {
                 audienceNotice.style.display = 'none';
@@ -2061,7 +1946,7 @@ const BrandsManager = {
             if (totalLocationPremium > 0) {
                 locationNotice.style.display = 'flex';
                 if (locationAmountEl) {
-                    locationAmountEl.textContent = `+${totalLocationPremium.toFixed(3)} ${this.cpiRates.currency || 'ETB'}`;
+                    locationAmountEl.textContent = `+${totalLocationPremium.toFixed(3)} ${this.cpiRates.currency || CurrencyManager.getCurrency()}`;
                 }
             } else {
                 locationNotice.style.display = 'none';
@@ -2088,7 +1973,7 @@ const BrandsManager = {
 
         // Calculate total CPI
         const totalCpi = this.cpiRates.baseRate + audiencePremium + locationPremium + regionExclusionPremium + placementPremium;
-        const currency = this.cpiRates.currency || 'ETB';
+        const currency = this.cpiRates.currency || CurrencyManager.getCurrency();
 
         // Update display
         valueEl.textContent = `${totalCpi.toFixed(3)} ${currency}`;
@@ -2377,7 +2262,7 @@ const BrandsManager = {
                     const premium = value === 'national'
                         ? this.cpiRates.locationPremiums.national || 0
                         : this.cpiRates.locationPremiums.regional || 0;
-                    amountEl.textContent = `+${premium.toFixed(3)} ${this.cpiRates.currency || 'ETB'}`;
+                    amountEl.textContent = `+${premium.toFixed(3)} ${this.cpiRates.currency || CurrencyManager.getCurrency()}`;
                 }
             } else {
                 locationNotice.style.display = 'none';
@@ -2971,7 +2856,7 @@ const BrandsManager = {
             // Terms
             cancellation_fee_percent: 5,
             min_threshold: 100,
-            currency: this.cpiCurrency || 'ETB'
+            currency: this.cpiCurrency || CurrencyManager.getCurrency()
         };
 
         console.log('[BrandsManager] Confirmation data prepared:', confirmationData);
@@ -3368,7 +3253,7 @@ const BrandsManager = {
 
         if (!estimateEl || !budgetValue || budgetValue <= 0) {
             if (estimateEl) {
-                estimateEl.textContent = `Estimated: ~0 impressions at 0.00 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}/impression`;
+                estimateEl.textContent = `Estimated: ~0 impressions at 0.00 ${CurrencyManager.getSymbol()}/impression`;
             }
             return;
         }
@@ -3377,7 +3262,7 @@ const BrandsManager = {
         const cpiBreakdown = this.calculateCpiBreakdown();
         const cpiRate = cpiBreakdown.totalCpi;
         const estimatedImpressions = Math.floor(budgetValue / cpiRate);
-        const currency = this.cpiCurrency || 'ETB';
+        const currency = this.cpiCurrency || CurrencyManager.getCurrency();
 
         estimateEl.textContent = `Estimated: ~${this.formatNumber(estimatedImpressions)} impressions at ${cpiRate.toFixed(3)} ${currency}/impression`;
     },
@@ -3707,7 +3592,7 @@ const BrandsManager = {
         if (!this.currentCampaign) return;
 
         // Get campaign currency (default to ETB)
-        const currency = this.currentCampaign.currency || 'ETB';
+        const currency = this.currentCampaign.currency || CurrencyManager.getCurrency();
         const depositPercent = this.currentCampaign.deposit_percent || 20;
         const advanceAmount = (this.currentCampaign.campaign_budget || 0) * (depositPercent / 100);
 
@@ -4107,7 +3992,7 @@ const BrandsManager = {
         return new Intl.NumberFormat('en-ET', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }).format(amount) + ` ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+        }).format(amount) + ` ${CurrencyManager.getSymbol()}`;
     },
 
     // ============================================
@@ -4634,19 +4519,19 @@ const BrandsManager = {
         const calcEl = document.getElementById('finance-cancellation-calculation');
         if (calcEl) {
             const feePercent = cancellation.final_fee_percent || cancellation.base_fee_percent;
-            calcEl.textContent = `Remaining: ${finances.remaining_balance.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} × ${feePercent}% = ${cancellation.fee_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} fee`;
+            calcEl.textContent = `Remaining: ${finances.remaining_balance.toFixed(2)} ${CurrencyManager.getSymbol()} × ${feePercent}% = ${cancellation.fee_amount.toFixed(2)} ${CurrencyManager.getSymbol()} fee`;
         }
 
         // Update refund amount
         const refundEl = document.getElementById('finance-refund-amount');
         if (refundEl) {
-            refundEl.textContent = `${cancellation.refund_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            refundEl.textContent = `${cancellation.refund_amount.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
 
         // Update used amount in note
         const usedNoteEl = document.getElementById('finance-used-in-note');
         if (usedNoteEl) {
-            usedNoteEl.textContent = `${finances.amount_used.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+            usedNoteEl.textContent = `${finances.amount_used.toFixed(2)} ${CurrencyManager.getSymbol()}`;
         }
     },
 
@@ -4737,17 +4622,17 @@ const BrandsManager = {
 
             // Confirmation message
             let confirmMsg = `Are you sure you want to CANCEL this campaign?\n\n`;
-            confirmMsg += `Campaign Budget: ${breakdown.total_budget.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
-            confirmMsg += `Amount Used (non-refundable): ${breakdown.non_refundable_used.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
-            confirmMsg += `Remaining Balance: ${breakdown.remaining.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
+            confirmMsg += `Campaign Budget: ${breakdown.total_budget.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
+            confirmMsg += `Amount Used (non-refundable): ${breakdown.non_refundable_used.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
+            confirmMsg += `Remaining Balance: ${breakdown.remaining.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
 
             if (cancellation.within_grace_period) {
                 confirmMsg += `🎉 GRACE PERIOD ACTIVE!\n`;
-                confirmMsg += `Cancellation Fee: 0.00 ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'} (0%)\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
+                confirmMsg += `Cancellation Fee: 0.00 ${CurrencyManager.getSymbol()} (0%)\n`;
+                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
             } else {
-                confirmMsg += `Cancellation Fee (${feePercent}%): ${breakdown.cancellation_fee.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n\n`;
+                confirmMsg += `Cancellation Fee (${feePercent}%): ${breakdown.cancellation_fee.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
+                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
                 confirmMsg += `💡 TIP: Use "Pause" instead to avoid fees!\n\n`;
             }
 
@@ -4774,11 +4659,11 @@ const BrandsManager = {
             if (cancelResponse.ok && cancelData.success) {
                 const summary = cancelData.cancellation_summary;
                 let successMsg = `Campaign cancelled successfully!\n\n`;
-                successMsg += `Refund: ${summary.refund_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
+                successMsg += `Refund: ${summary.refund_amount.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
                 if (summary.cancellation_fee_amount > 0) {
-                    successMsg += `Cancellation Fee (${summary.final_fee_percent}%): ${summary.cancellation_fee_amount.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}\n`;
+                    successMsg += `Cancellation Fee (${summary.final_fee_percent}%): ${summary.cancellation_fee_amount.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
                 }
-                successMsg += `\nYour new balance: ${cancelData.advertiser_balance.balance_after.toFixed(2)} ${window.CurrencyManager ? CurrencyManager.getCurrency() : 'ETB'}`;
+                successMsg += `\nYour new balance: ${cancelData.advertiser_balance.balance_after.toFixed(2)} ${CurrencyManager.getSymbol()}`;
 
                 alert(successMsg);
 
