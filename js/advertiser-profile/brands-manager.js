@@ -133,8 +133,10 @@ const BrandsManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = BRANDS_API_URL || API_BASE_URL || 'http://localhost:8000';
+            const apiUrl = window.BRANDS_API_URL || window.API_BASE_URL || 'http://localhost:8000';
             console.log('🏷️ API URL:', apiUrl);
+            console.log('🏷️ window.API_BASE_URL:', window.API_BASE_URL);
+            console.log('🏷️ hostname:', window.location.hostname);
 
             const response = await fetch(`${apiUrl}/api/advertiser/brands`, {
                 headers: {
