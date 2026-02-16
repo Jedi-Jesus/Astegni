@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - Parent Profile</title>
     <!-- TailwindCSS CDN -->
-    <script src="../js/config.js?v=20251217"></script>
+    <script src="../js/config.js?v=20260216"></script>
     <!-- Safe wrapper for openChatModal - waits for function to be available -->
     <script>
         // Temporary stub - will be replaced by chat-modal.js when it loads
@@ -2269,7 +2269,7 @@
                                     </div>
                                     <div class="stat-item animate__animated animate__fadeInUp"
                                         style="animation-delay: 0.4s">
-                                        <span class="stat-number" data-target="12500" data-suffix=" ETB">0</span>
+                                        <span class="stat-number" data-target="12500" data-suffix="">0</span><span class="stat-currency"></span>
                                         <span class="stat-label">Monthly Investment</span>
                                     </div>
                                 </div>
@@ -2587,7 +2587,7 @@
                                         <h3 class="text-lg font-semibold">Monthly Investment</h3>
                                     </div>
                                     <p class="text-2xl font-bold" id="stat-investment">12,500</p>
-                                    <span class="text-sm text-gray-500">ETB per month</span>
+                                    <span class="text-sm text-gray-500"><span class="stat-currency"></span> per month</span>
                                 </div>
                                 <div class="card p-4">
                                     <div class="flex items-center gap-3 mb-2">
@@ -3504,7 +3504,7 @@
                                             <span class="text-xs text-green-600 font-semibold">ALL SOURCES</span>
                                         </div>
                                         <p class="text-sm text-gray-600 mb-1">Total Earnings</p>
-                                        <h3 class="text-2xl font-bold text-gray-800" id="total-earnings">0 ETB</h3>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="total-earnings"><span class="earnings-amount">0</span> <span class="earnings-currency"></span></h3>
                                         <p class="text-xs text-green-600 mt-2 font-medium">Click to view all</p>
                                     </div>
                                     <div onclick="toggleEarningsSection('affiliate')"
@@ -3514,7 +3514,7 @@
                                             <span class="text-xs text-blue-600 font-semibold">AFFILIATE</span>
                                         </div>
                                         <p class="text-sm text-gray-600 mb-1">Affiliate Earnings</p>
-                                        <h3 class="text-2xl font-bold text-gray-800" id="affiliate-earnings">0 ETB</h3>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="affiliate-earnings"><span class="earnings-amount">0</span> <span class="earnings-currency"></span></h3>
                                         <p class="text-xs text-blue-600 mt-2 font-medium">Click to view</p>
                                     </div>
                                 </div>
@@ -4971,7 +4971,7 @@
                     <div class="packages-grid">
                         <div class="package-card">
                             <h4>Up to Three days</h4>
-                            <div class="package-price">2000 ETB/day</div>
+                            <div class="package-price">2000 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -4982,7 +4982,7 @@
                         <div class="package-card featured">
                             <div class="featured-badge">Most Popular</div>
                             <h4>Up to seven days</h4>
-                            <div class="package-price">1800 ETB/day</div>
+                            <div class="package-price">1800 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -4992,7 +4992,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to Half a month</h4>
-                            <div class="package-price">1500 ETB/day</div>
+                            <div class="package-price">1500 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -5002,7 +5002,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to a Month</h4>
-                            <div class="package-price">1200 ETB/day</div>
+                            <div class="package-price">1200 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -5012,7 +5012,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to Three Months</h4>
-                            <div class="package-price">1000 ETB/day</div>
+                            <div class="package-price">1000 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -5022,7 +5022,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to Six Months</h4>
-                            <div class="package-price">800 ETB/day</div>
+                            <div class="package-price">800 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -5032,7 +5032,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to Nine Months</h4>
-                            <div class="package-price">600 ETB/day</div>
+                            <div class="package-price">600 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -5042,7 +5042,7 @@
                         </div>
                         <div class="package-card">
                             <h4>Up to a Year</h4>
-                            <div class="package-price">400 ETB/day</div>
+                            <div class="package-price">400 <span class="stat-currency"></span>/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
