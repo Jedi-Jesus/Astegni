@@ -49,7 +49,7 @@ const TeamManager = {
     async loadTeamMembers() {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -77,7 +77,7 @@ const TeamManager = {
     async loadTeamStats() {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/stats`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/stats`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -324,7 +324,7 @@ const TeamManager = {
             resultsContainer.style.display = 'block';
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/search-users?q=${encodeURIComponent(query)}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/search-users?q=${encodeURIComponent(query)}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -627,7 +627,7 @@ const TeamManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/invite`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/invite`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -723,7 +723,7 @@ const TeamManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/${memberId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/${memberId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -763,7 +763,7 @@ const TeamManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/${memberId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/${memberId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -792,7 +792,7 @@ const TeamManager = {
     async resendInvite(memberId) {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/team/${memberId}/resend`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/team/${memberId}/resend`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
