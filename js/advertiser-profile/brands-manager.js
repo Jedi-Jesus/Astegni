@@ -146,17 +146,21 @@ const BrandsManager = {
                 const data = await response.json();
                 this.brands = data.brands || [];
                 console.log('🏷️ Loaded brands from API:', this.brands.length);
-                console.log('🏷️ Brand colors:', this.brands.map(b => ({ name: b.name, color: b.brand_color })));
+                if (this.brands.length > 0) {
+                    console.log('🏷️ Brand colors:', this.brands.map(b => ({ name: b.name, color: b.brand_color })));
+                }
                 this.loadError = false;
             } else {
-                console.warn('🏷️ API returned non-OK status:', response.status);
+                // API returned error (401, 404, 500, etc.) - show error state
+                console.error('🏷️ API returned error status:', response.status, await response.text());
                 this.brands = [];
                 this.loadError = true;
             }
 
             this.renderBrands();
         } catch (error) {
-            console.error('🏷️ Error loading brands:', error);
+            // Network error (failed to fetch, CORS, timeout) - show error state
+            console.error('🏷️ Network error loading brands:', error);
             this.brands = [];
             this.loadError = true;
             this.renderBrands();
