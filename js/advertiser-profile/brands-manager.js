@@ -3,12 +3,8 @@
 // Handles brand cards and campaign modal with card-dealing animation
 // ============================================
 
-// Use existing API_BASE_URL from config.js or window, with fallback
-const BRANDS_API_URL = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : null)
-    || window.API_BASE_URL
-    || 'http://localhost:8000';
-
-console.log('🏷️ Brands Manager loaded, API URL:', BRANDS_API_URL);
+// Note: API_BASE_URL is read from window.API_BASE_URL at runtime (set by config.js)
+console.log('🏷️ Brands Manager loaded');
 
 const BrandsManager = {
     // Current state
@@ -133,7 +129,7 @@ const BrandsManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = window.BRANDS_API_URL || window.API_BASE_URL || 'http://localhost:8000';
+            const apiUrl = window.API_BASE_URL || 'http://localhost:8000';
             console.log('🏷️ API URL:', apiUrl);
             console.log('🏷️ window.API_BASE_URL:', window.API_BASE_URL);
             console.log('🏷️ hostname:', window.location.hostname);
