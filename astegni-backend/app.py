@@ -435,6 +435,10 @@ app.include_router(chat_router)
 from call_log_endpoints import router as call_log_router
 app.include_router(call_log_router)
 
+# Include TURN credentials route
+from turn_endpoints import router as turn_router
+app.include_router(turn_router)
+
 # Include poll routes
 from poll_endpoints import router as poll_router
 app.include_router(poll_router)

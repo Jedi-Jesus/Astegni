@@ -13973,17 +13973,29 @@ const ChatModalManager = {
     // WEBRTC VOICE & VIDEO CALL FUNCTIONS
     // =============================================
 
-    // WebRTC Configuration
-    getWebRTCConfiguration() {
-        return {
+    // WebRTC Configuration — fetches time-limited TURN credentials from backend
+    async getWebRTCConfiguration() {
+        const fallback = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
+                { urls: 'stun:stun1.l.google.com:19302' }
             ]
         };
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const profileParams = this.getProfileParams();
+            const response = await fetch(
+                `${this.API_BASE_URL}/api/turn-credentials?${profileParams}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            if (!response.ok) throw new Error(`TURN credentials fetch failed: ${response.status}`);
+            const data = await response.json();
+            console.log('📡 TURN credentials fetched, ICE servers:', data.iceServers.length);
+            return { iceServers: data.iceServers };
+        } catch (e) {
+            console.warn('📡 Could not fetch TURN credentials, using STUN only:', e.message);
+            return fallback;
+        }
     },
 
     // Call Logging Functions
@@ -14191,7 +14203,7 @@ const ChatModalManager = {
 
     // Set up WebRTC Peer Connection
     async setupPeerConnection() {
-        const config = this.getWebRTCConfiguration();
+        const config = await this.getWebRTCConfiguration();
         this.state.peerConnection = new RTCPeerConnection(config);
 
         // Add local stream tracks
