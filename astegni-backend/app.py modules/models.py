@@ -3009,8 +3009,8 @@ class CallLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
-    caller_profile_id = Column(Integer, nullable=False)
-    caller_profile_type = Column(String(50), nullable=False)
+    caller_profile_id = Column(Integer, nullable=True)   # Legacy: optional, superseded by caller_user_id
+    caller_profile_type = Column(String(50), nullable=True)  # Legacy: optional
     caller_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     call_type = Column(String(20), nullable=False)  # 'voice', 'video'
     status = Column(String(20), default="initiated")  # 'initiated', 'ringing', 'answered', 'missed', 'declined', 'cancelled', 'ended', 'failed'
