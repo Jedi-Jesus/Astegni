@@ -106,6 +106,7 @@ const ChatModalManager = {
         isVideoOff: false,
         iceCandidateQueue: [],
         currentCallLogId: null,  // Store call log ID for database updates
+        pendingCallLogPromise: null,  // Tracks in-flight createCallLog to avoid race conditions
 
         // Multi-party call support (mesh topology)
         peerConnections: new Map(),  // Map of participantId -> RTCPeerConnection
@@ -14032,6 +14033,10 @@ const ChatModalManager = {
     },
 
     async updateCallLog(status, duration = null) {
+        // If createCallLog hasn't resolved yet, wait for it first
+        if (!this.state.currentCallLogId && this.state.pendingCallLogPromise) {
+            await this.state.pendingCallLogPromise;
+        }
         if (!this.state.currentCallLogId) {
             console.log('📝 No call log ID to update');
             return;
@@ -14296,7 +14301,7 @@ const ChatModalManager = {
             call_type: callType,  // 'voice' or 'video'
             conversation_id: conversation.id,
             from_user_id: this.state.currentUser?.user_id,
-            from_name: (this.state.currentUser?.full_name || this.state.currentUser?.first_name || this.state.currentUser?.email),
+            from_name: (this.state.currentUser?.name || this.state.currentUser?.full_name || this.state.currentUser?.first_name || this.state.currentUser?.email),
             from_avatar: this.state.currentUser.profile_picture,
             to_user_id: conversation.other_user_id,
             offer: offer
@@ -14308,8 +14313,8 @@ const ChatModalManager = {
         console.log('✅ Call invitation sent via WebSocket');
         console.log('🔍 ========================================');
 
-        // Log call initiation to database
-        this.createCallLog(callType);
+        // Log call initiation to database (store promise for race-condition safety)
+        this.state.pendingCallLogPromise = this.createCallLog(callType);
 
         // Update UI to show calling
         const statusEl = document.getElementById('chatCallStatus');
@@ -14406,8 +14411,8 @@ const ChatModalManager = {
         this.state.isVideoCall = data.call_type === 'video';
         this.state.isIncomingCall = true;
 
-        // Create call log for receiver
-        this.createCallLog(data.call_type, true);  // true = incoming call
+        // Create call log for receiver (store promise for race-condition safety)
+        this.state.pendingCallLogPromise = this.createCallLog(data.call_type, true);  // true = incoming call
 
         // Show incoming call screen
         const callModal = document.getElementById('chatCallModal');
@@ -15604,6 +15609,7 @@ const ChatModalManager = {
         this.state.iceCandidateQueue = [];
         this.state.callStartTime = null;
         this.state.currentCallLogId = null;  // Clear call log ID
+        this.state.pendingCallLogPromise = null;
 
         // Stop ringtone (ensures incoming call sounds stop)
         this.stopRingtone();
