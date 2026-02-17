@@ -92,26 +92,50 @@
     object-fit: cover;
 }
 
+/* ============================================
+   PROFILE MAIN INFO & WRAPPER
+   ============================================ */
+
+.profile-main-info {
+    padding: 1.5rem 2rem 2rem 2rem;
+    position: relative;
+    z-index: 5;
+}
+
+.profile-info-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* ============================================
+   PROFILE AVATAR CONTAINER - CLEAN & RESPONSIVE
+   ============================================ */
+
+/* Main container - holds all avatar elements */
 .profile-avatar-container {
     position: relative;
-    margin-top: -35px; /* 25% of 140px avatar overlays cover (35px on cover, 105px outside) */
+    margin-top: 0; /* No overlap - sits below cover */
     margin-left: 2rem;
     z-index: 10;
     width: 140px;
     height: 140px;
     flex-shrink: 0;
+    aspect-ratio: 1 / 1; /* Ensure perfect square */
 }
 
+/* Profile avatar image */
 .profile-avatar {
-    width: 140px;
-    height: 140px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     border: 5px solid var(--card-bg);
     object-fit: cover;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1; /* Ensure perfect circle */
     display: block;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .profile-avatar-container:hover .profile-avatar {
@@ -119,6 +143,7 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
 }
 
+/* Online indicator */
 .online-indicator {
     position: absolute;
     bottom: 10px;
@@ -129,19 +154,11 @@
     border: 4px solid var(--card-bg);
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+    z-index: 3;
     animation: pulse-indicator 2s ease-in-out infinite;
 }
 
-@keyframes pulse-indicator {
-    0%,
-    100% {
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-    }
-    50% {
-        box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
-    }
-}
-
+/* Avatar upload button - shown on hover */
 .avatar-upload-btn {
     position: absolute;
     bottom: 5px;
@@ -156,10 +173,13 @@
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     opacity: 0;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .profile-avatar-container:hover .avatar-upload-btn {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .avatar-upload-btn:hover {
@@ -173,6 +193,16 @@
     color: #4f46e5;
 }
 
+/* Animations */
+@keyframes pulse-indicator {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+    }
+    50% {
+        box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
+    }
+}
+
 .profile-info {
     padding: 1rem 2rem 2rem;
 }
@@ -184,6 +214,37 @@
 
 .profile-name-row {
     margin-bottom: 1.25rem;
+}
+
+.parent-username {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.rating-section {
+    margin-bottom: 1rem;
+}
+
+.rating-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rating-stars {
+    color: #f59e0b;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
 }
 
 .profile-name {
@@ -989,16 +1050,35 @@
         height: 160px;
     }
 
-    .profile-avatar {
+    /* Reduce avatar size */
+    .profile-avatar-container {
         width: 120px;
         height: 120px;
+        margin-top: 0; /* No overlap */
+        margin-left: 1.5rem;
     }
 
-    .profile-avatar-container {
-        margin-top: -30px; /* 25% of 120px = 30px overlay */
-        margin-left: 1.5rem;
-        width: 120px;
-        height: 120px;
+    /* Adjust online indicator */
+    .online-indicator {
+        width: 20px;
+        height: 20px;
+        border-width: 3px;
+        bottom: 8px;
+        right: 8px;
+    }
+
+    /* Adjust upload button */
+    .avatar-upload-btn {
+        padding: 0.4rem;
+    }
+
+    .avatar-upload-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .rating-stars {
+        font-size: 1.25rem;
     }
 
     .profile-main-info {
@@ -1044,19 +1124,42 @@
         border-radius: 12px 12px 0 0;
     }
 
+    /* Further reduce avatar size and center */
     .profile-avatar-container {
-        margin-top: -30px; /* 25% of 120px = 30px overlay */
+        width: 110px;
+        height: 110px;
+        margin-top: 0; /* No overlap */
         margin-left: 0;
         display: flex;
         justify-content: center;
-        width: 120px;
-        height: 120px;
     }
 
     .profile-avatar {
-        width: 120px;
-        height: 120px;
         border-width: 4px;
+    }
+
+    /* Adjust online indicator */
+    .online-indicator {
+        width: 18px;
+        height: 18px;
+        border-width: 3px;
+        bottom: 6px;
+        right: 6px;
+    }
+
+    /* Adjust upload button */
+    .avatar-upload-btn {
+        padding: 0.35rem;
+        bottom: 4px;
+    }
+
+    .avatar-upload-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .rating-stars {
+        font-size: 1.125rem;
     }
 
     .profile-main-info {
@@ -1312,15 +1415,47 @@
         border-radius: 10px 10px 0 0;
     }
 
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
+    /* Smaller avatar for mobile */
+    .profile-avatar-container {
+        width: 100px !important;
+        height: 100px !important;
+        min-width: 100px;
+        min-height: 100px;
+        max-width: 100px;
+        max-height: 100px;
+        margin-top: 0; /* No overlap */
     }
 
-    .profile-avatar-container {
-        margin-top: -25px; /* 25% of 100px = 25px overlay */
-        width: 100px;
-        height: 100px;
+    .profile-avatar {
+        width: 100px !important;
+        height: 100px !important;
+        min-width: 100px;
+        min-height: 100px;
+    }
+
+    /* Adjust online indicator */
+    .online-indicator {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    /* Adjust upload button */
+    .avatar-upload-btn {
+        padding: 0.3rem;
+        border-radius: 6px;
+        bottom: 3px;
+    }
+
+    .avatar-upload-btn svg {
+        width: 10px;
+        height: 10px;
+    }
+
+    .rating-stars {
+        font-size: 1rem;
     }
 
     .profile-main-info {
@@ -1397,24 +1532,130 @@
 /* ============================================
    ULTRA SMALL MOBILE (400px)
    ============================================ */
+/* ============================================
+   SMALL MOBILE (420px and below) - NEW BREAKPOINT
+   ============================================ */
+@media (max-width: 420px) {
+    .cover-image-container {
+        height: 130px;
+    }
+
+    /* Force perfect circle at small sizes */
+    .profile-avatar-container {
+        width: 95px !important;
+        height: 95px !important;
+        min-width: 95px;
+        min-height: 95px;
+        max-width: 95px;
+        max-height: 95px;
+        margin-top: 0; /* No overlap */
+    }
+
+    .profile-avatar {
+        width: 95px !important;
+        height: 95px !important;
+        min-width: 95px;
+        min-height: 95px;
+    }
+
+    /* Adjust online indicator */
+    .online-indicator {
+        width: 14px;
+        height: 14px;
+        border-width: 2px;
+        bottom: 4px;
+        right: 4px;
+    }
+
+    /* Adjust upload button */
+    .avatar-upload-btn {
+        padding: 0.25rem;
+        bottom: 2px;
+    }
+
+    .avatar-upload-btn svg {
+        width: 9px;
+        height: 9px;
+    }
+
+    .profile-name {
+        font-size: 1.4rem;
+    }
+
+    .parent-username {
+        font-size: 0.825rem;
+    }
+
+    .rating-stars {
+        font-size: 0.95rem;
+    }
+
+    .badges-row {
+        gap: 0.5rem;
+    }
+
+    .profile-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.725rem;
+    }
+}
+
+/* ============================================
+   ULTRA SMALL MOBILE (400px and below)
+   ============================================ */
 @media (max-width: 400px) {
     .cover-image-container {
         height: 120px;
     }
 
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
+    /* Even smaller but still perfectly circular */
+    .profile-avatar-container {
+        width: 90px !important;
+        height: 90px !important;
+        min-width: 90px;
+        min-height: 90px;
+        max-width: 90px;
+        max-height: 90px;
+        margin-top: 0; /* No overlap */
     }
 
-    .profile-avatar-container {
-        margin-top: -20px; /* 25% of 80px = 20px overlay */
-        width: 80px;
-        height: 80px;
+    .profile-avatar {
+        width: 90px !important;
+        height: 90px !important;
+        min-width: 90px;
+        min-height: 90px;
+    }
+
+    /* Adjust online indicator */
+    .online-indicator {
+        width: 13px;
+        height: 13px;
+        border-width: 2px;
+        bottom: 3px;
+        right: 3px;
+    }
+
+    /* Adjust upload button */
+    .avatar-upload-btn {
+        padding: 0.2rem;
+        bottom: 2px;
+    }
+
+    .avatar-upload-btn svg {
+        width: 8px;
+        height: 8px;
     }
 
     .profile-name {
         font-size: 1.1rem;
+    }
+
+    .parent-username {
+        font-size: 0.8rem;
+    }
+
+    .rating-stars {
+        font-size: 0.9rem;
     }
 
     .badges-row {
@@ -1435,15 +1676,40 @@
         height: 100px;
     }
 
-    .profile-avatar {
-        width: 60px;
-        height: 60px;
+    /* Force perfect circle in landscape */
+    .profile-avatar-container {
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px;
+        min-height: 60px;
+        max-width: 60px;
+        max-height: 60px;
+        margin-top: 0; /* No overlap */
     }
 
-    .profile-avatar-container {
-        margin-top: -15px; /* 25% of 60px = 15px overlay */
-        width: 60px;
-        height: 60px;
+    .profile-avatar {
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    .online-indicator {
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+        bottom: 2px;
+        right: 2px;
+    }
+
+    .avatar-upload-btn {
+        padding: 0.15rem;
+        bottom: 1px;
+    }
+
+    .avatar-upload-btn svg {
+        width: 7px;
+        height: 7px;
     }
 
     .profile-main-info {

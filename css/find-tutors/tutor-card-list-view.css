@@ -381,52 +381,116 @@
     }
 }
 
-/* Mobile - Back to vertical stack */
+/* Mobile - Match Grid View Structure Exactly */
 @media (max-width: 768px) {
+    /* Reset list view to match grid view structure */
     .tutor-cards-list .tutor-card {
-        grid-template-columns: 1fr !important;
-        grid-template-areas:
-            "left-col"
-            "content-col"
-            "right-col" !important;
-        padding: 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: unset !important;
+        grid-template-areas: unset !important;
+        column-gap: unset !important;
+        row-gap: unset !important;
+        padding: var(--tutor-card-padding, 1.75rem) !important;
     }
 
+    /* Header - Match Grid View */
     .tutor-cards-list .tutor-header {
-        min-width: 100% !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        margin-bottom: 1rem !important;
+        min-width: unset !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
     }
 
+    /* Avatar Row - Match Grid View */
     .tutor-cards-list .tutor-avatar-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         flex-direction: row !important;
         width: 100% !important;
+        gap: unset !important;
     }
 
     .tutor-cards-list .tutor-avatar-container {
-        order: 1 !important;
-    }
-
-    .tutor-cards-list .tutor-name {
-        order: 2 !important;
-        text-align: left !important;
-        flex: 1 !important;
-        margin-top: 0 !important;
-        margin-left: 1rem !important;
-    }
-
-    .tutor-cards-list .tutor-actions-top {
-        order: 3 !important;
+        flex-shrink: 0 !important;
+        order: unset !important;
     }
 
     .tutor-cards-list .tutor-avatar {
-        width: 64px !important;
-        height: 64px !important;
+        width: 70px !important;
+        height: 70px !important;
     }
 
+    /* Action buttons - Match Grid View */
+    .tutor-cards-list .tutor-actions-top {
+        display: flex !important;
+        gap: 0.5rem !important;
+        order: unset !important;
+        flex-direction: row !important;
+        justify-content: unset !important;
+    }
+
+    /* Name - Match Grid View */
+    .tutor-cards-list .tutor-name {
+        font-size: 1.1rem !important;
+        text-align: left !important;
+        order: unset !important;
+        flex: unset !important;
+        margin-top: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    /* Meta Row - Match Grid View */
+    .tutor-cards-list .tutor-meta-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        flex-wrap: wrap !important;
+        flex-direction: row !important;
+        order: unset !important;
+        margin-top: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Rating Row - Match Grid View */
+    .tutor-cards-list .tutor-rating-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        flex-wrap: wrap !important;
+        flex-direction: row !important;
+        order: unset !important;
+        margin-top: 0 !important;
+        width: 100% !important;
+    }
+
+    .tutor-cards-list .tutor-rating {
+        justify-content: flex-start !important;
+    }
+
+    .tutor-cards-list .verified-badge {
+        margin-top: 0 !important;
+    }
+
+    /* Quote Section */
     .tutor-cards-list .tutor-quote {
+        grid-column: unset !important;
+        grid-row: unset !important;
         padding: 0.75rem !important;
         margin: 1rem 0 !important;
+        align-self: unset !important;
+    }
+
+    /* Content Section */
+    .tutor-cards-list .tutor-content {
+        grid-column: unset !important;
+        grid-row: unset !important;
+        margin-top: 0 !important;
+        align-self: unset !important;
     }
 
     .tutor-cards-list .tutor-details-grid {
@@ -446,18 +510,29 @@
         -webkit-line-clamp: 4 !important;
     }
 
-    .tutor-cards-list .price-section,
-    .tutor-cards-list .tutor-actions {
-        grid-column: 1 !important;
-        min-width: 100% !important;
-    }
-
+    /* Price Section */
     .tutor-cards-list .price-section {
-        margin-bottom: 1rem !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
+        min-width: 100% !important;
+        margin: 1rem 0 !important;
+        align-self: unset !important;
     }
 
+    /* Actions - Match Grid View */
     .tutor-cards-list .tutor-actions {
-        margin-top: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        align-self: unset !important;
+    }
+
+    .tutor-cards-list .tutor-actions > button {
+        width: 100% !important;
     }
 }
 

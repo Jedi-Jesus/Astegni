@@ -294,6 +294,7 @@
     flex-shrink: 0 !important;
     margin-top: -80px !important;
     z-index: 20 !important;
+    aspect-ratio: 1 / 1 !important; /* Ensure perfect square */
 }
 
 .profile-avatar {
@@ -306,6 +307,8 @@
     object-fit: cover !important;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     background: var(--card-bg) !important;
+    aspect-ratio: 1 / 1 !important; /* Ensure perfect circle */
+    display: block !important;
 }
 
 .profile-avatar-container:hover .profile-avatar {
@@ -442,18 +445,42 @@
 }
 
 /* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .profile-avatar-container {
+        width: 140px !important;
+        height: 140px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 140px !important;
+        height: 140px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+}
+
 @media (max-width: 768px) {
     .cover-image-container {
         height: 220px !important;
     }
 
-    .profile-avatar {
+    .profile-avatar-container {
         width: 120px !important;
         height: 120px !important;
+        margin-top: -60px !important;
+        flex-shrink: 0 !important;
     }
 
-    .profile-avatar-container {
-        margin-top: -60px !important;
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
     }
 
     .profile-name {
@@ -462,5 +489,94 @@
 
     .profile-main-info {
         padding: 0 1.5rem 2rem 1.5rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-avatar-container {
+        width: 120px !important;
+        height: 120px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-avatar-container {
+        width: 110px !important;
+        height: 110px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 110px !important;
+        height: 110px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .online-indicator {
+        width: 22px !important;
+        height: 22px !important;
+        border-width: 3px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .profile-avatar-container {
+        width: 100px !important;
+        height: 100px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 100px !important;
+        height: 100px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .online-indicator {
+        width: 20px !important;
+        height: 20px !important;
+        bottom: 8px !important;
+        right: 8px !important;
+    }
+}
+
+@media (max-width: 320px) {
+    .profile-avatar-container {
+        width: 90px !important;
+        height: 90px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 90px !important;
+        height: 90px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .online-indicator {
+        width: 18px !important;
+        height: 18px !important;
+        border-width: 2px !important;
+        bottom: 5px !important;
+        right: 5px !important;
     }
 }

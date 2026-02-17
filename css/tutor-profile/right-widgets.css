@@ -71,8 +71,34 @@ section:not(footer),
     }
 }
 
-@media (max-width: 1024px) {
+/* Between 768px and 1024px - Move widgets below panel */
+@media (max-width: 1024px) and (min-width: 769px) {
     /* On tablets, move widgets below main content */
+    .right-widgets {
+        width: 100%;
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+        order: 2; /* Place after the main content */
+        margin-top: 1.5rem;
+    }
+
+    /* Ensure the flex container allows reordering */
+    .container .flex.gap-6 {
+        flex-direction: column;
+    }
+
+    /* Main content should come first */
+    .flex-1 {
+        order: 1;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* On tablets and below, move widgets below main content */
     .right-widgets {
         width: 100%;
         position: static;

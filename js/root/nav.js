@@ -48,6 +48,13 @@ function initializeNavigation() {
             console.log('[Nav] mobileMenu computed display:', mobileMenu ? getComputedStyle(mobileMenu).display : 'N/A');
             console.log('[Nav] mobileMenu computed transform:', mobileMenu ? getComputedStyle(mobileMenu).transform : 'N/A');
             document.body.style.overflow = mobileMenu?.classList.contains("hidden") ? "" : "hidden";
+
+            // Update mobile profile section when menu opens
+            if (!mobileMenu?.classList.contains("hidden")) {
+                if (typeof window.updateMobileProfileSection === 'function') {
+                    window.updateMobileProfileSection();
+                }
+            }
         });
     } else {
         console.warn('[Nav] menuBtn not found, cannot attach click handler');

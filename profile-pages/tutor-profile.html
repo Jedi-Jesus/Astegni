@@ -53,7 +53,7 @@
     <!-- Shared Profile Responsive Styles -->
     <link rel="stylesheet" href="../css/shared/profile-responsive.css">
     <!-- Tutor Profile Specific Right Widgets -->
-    <link rel="stylesheet" href="../css/tutor-profile/right-widgets.css">
+    <link rel="stylesheet" href="../css/tutor-profile/right-widgets.css?v=20260216-responsive-fix">
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
     <link rel="stylesheet" href="../css/view-tutor/view-tutor.css">
     <!-- Package Modal Unified Styles (consolidated from enhanced, fix, and responsive) -->
@@ -99,7 +99,7 @@
     <link rel="stylesheet" href="../css/tutor-profile/market-trend-styles.css">
 
     <!-- Minimal inline styles - only for profile-specific fixes -->
-    <link rel="stylesheet" href="../css/tutor-profile/profile-specific-fix.css">
+    <link rel="stylesheet" href="../css/tutor-profile/profile-specific-fix.css?v=20260216-inherit">
 
     <!-- Comprehensive Responsive Styles - MUST be loaded LAST for responsive overrides -->
     <link rel="stylesheet" href="../css/tutor-profile/tutor-profile-responsive.css">
@@ -593,25 +593,20 @@
                                     <div class="profile-info-wrapper">
                                         <div class="profile-avatar-container">
                                             <!-- Story Ring Indicator (only shown when stories exist) -->
-                                            <div class="story-ring-wrapper" id="story-ring-wrapper"
-                                                onclick="openStoryViewer()"
-                                                style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; padding: 3px; border-radius: 50%; cursor: pointer; display: none; z-index: 1;">
+                                            <div class="story-ring-wrapper" id="story-ring-wrapper" onclick="openStoryViewer()">
                                                 <!-- Ring gradient border -->
                                             </div>
 
                                             <!-- Profile Avatar (always visible) -->
-                                            <div id="profile-avatar-wrapper" onclick="handleProfileAvatarClick()"
-                                                style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--card-bg); padding: 3px; z-index: 2; cursor: pointer;">
+                                            <div id="profile-avatar-wrapper" onclick="handleProfileAvatarClick()">
                                                 <img id="profile-avatar"
                                                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
-                                                    alt="Profile Picture" class="profile-avatar"
-                                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 5px solid var(--card-bg);">
+                                                    alt="Profile Picture" class="profile-avatar">
                                             </div>
 
                                             <span class="online-indicator"></span>
                                             <!-- Add Story Button -->
-                                            <button onclick="openUploadStoryModal()" class="story-add-btn"
-                                                style="position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--button-bg); color: white; border: 3px solid var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 3;">
+                                            <button onclick="openUploadStoryModal()" class="story-add-btn">
                                                 +
                                             </button>
                                             <!-- Profile Picture Upload Button -->

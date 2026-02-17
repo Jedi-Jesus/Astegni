@@ -283,16 +283,7 @@
             color: #4f46e5;
         }
         /* Enhanced Profile Info Section */
-        .profile-main-info {
-            padding: 0 2rem 2rem 2rem;
-            position: relative;
-            z-index: 5;
-        }
-        .profile-info-wrapper {
-            display: flex;
-            gap: 2rem;
-            align-items: flex-start;
-        }
+        /* Profile main info and wrapper styles moved to parent-profile.css */
         /* Avatar styles moved to external CSS - see parent-profile.css */
         /* Enhanced Profile Details */
         .profile-details-section {
@@ -2313,22 +2304,21 @@
                                             </button>
                                         </div>
                                         <div class="profile-details-section">
-                                            <div class="profile-name-row" style="margin-bottom: 1.25rem;">
+                                            <div class="profile-name-row">
                                                 <h1 class="profile-name" id="parentName">Parent Name</h1>
                                                 <!-- Username field under name -->
-                                                <div id="parentUsername"
-                                                    style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem;">
+                                                <div id="parentUsername" class="parent-username">
                                                     <!-- Username will be populated dynamically -->
                                                 </div>
-                                            <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
+                                            <div class="badges-row">
                                                 <span class="profile-badge verified" id="verification-badge">?</span>
                                                 <span class="profile-badge active">? Active Parent</span>
                                             </div>
                                             </div>
-                                            <div class="rating-section" style="margin-bottom: 1rem;">
-                                                <div class="rating-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="rating-section">
+                                                <div class="rating-wrapper">
                                                     <div class="rating-tooltip-container">
-                                                        <div class="rating-stars" id="rating-stars" style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 2px;">⭐⭐⭐⭐⭐</div>
+                                                        <div class="rating-stars" id="rating-stars">⭐⭐⭐⭐⭐</div>
                                                         <div class="rating-tooltip" id="rating-tooltip">
                                                             <h4
                                                                 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">

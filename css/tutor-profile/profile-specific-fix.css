@@ -232,21 +232,62 @@
             align-items: flex-start;
         }
 
-        /* Enhanced Avatar */
+        /* ============================================
+           PROFILE AVATAR CONTAINER - CLEAN & RESPONSIVE
+           ============================================ */
+
+        /* Main container - holds all avatar elements */
         .profile-avatar-container {
             position: relative;
+            width: 150px;
+            height: 150px;
             flex-shrink: 0;
+            aspect-ratio: 1 / 1; /* Ensure perfect square */
         }
 
-        /* Remove conflicting styles - now handled by inline styles and new CSS */
-        .profile-avatar {
-            /* width: 140px; removed - set by parent */
-            /* height: 140px; removed - set by parent */
+        /* Story ring wrapper - animated gradient border when stories exist */
+        .story-ring-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 3px;
             border-radius: 50%;
-            /* border: 5px solid var(--card-bg); removed - handled by wrapper */
+            cursor: pointer;
+            display: none; /* Hidden by default, shown via JS when stories exist */
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .story-ring-wrapper:hover {
+            transform: scale(1.05);
+        }
+
+        /* Avatar wrapper - contains the actual image */
+        #profile-avatar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--card-bg);
+            padding: 3px;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        /* Profile avatar image */
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid var(--card-bg);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
             object-fit: cover;
             transition: all 0.3s ease;
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1; /* Ensure perfect circle */
+            display: block;
         }
 
         .profile-avatar-container:hover .profile-avatar {
@@ -254,6 +295,7 @@
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
         }
 
+        /* Online indicator */
         .online-indicator {
             position: absolute;
             bottom: 10px;
@@ -264,56 +306,40 @@
             border: 4px solid var(--card-bg);
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+            z-index: 3;
             animation: pulse-indicator 2s ease-in-out infinite;
         }
 
-        @keyframes pulse-indicator {
-
-            0%,
-            100% {
-                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-            }
-
-            50% {
-                box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
-            }
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
-            }
-        }
-
-        .story-ring-wrapper {
-            transition: transform 0.3s ease;
-        }
-
-        .story-ring-wrapper:hover {
-            transform: scale(1.05);
-        }
-
-        .story-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        /* Fix profile avatar to display properly */
-        .profile-avatar-container .profile-avatar {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Add Story Button */
+        .story-add-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            background: var(--button-bg);
+            color: white;
+            border: 3px solid var(--card-bg);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 4;
+            transition: all 0.3s ease;
         }
 
+        .story-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.4);
+        }
+
+        .story-add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Avatar upload button - shown on hover */
         .avatar-upload-btn {
             position: absolute;
             bottom: 5px;
@@ -346,6 +372,34 @@
             width: 16px;
             height: 16px;
             color: #4f46e5;
+        }
+
+        /* Animations */
+        @keyframes pulse-indicator {
+            0%, 100% {
+                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+            }
+            50% {
+                box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
+
+        /* Story card hover effect (for story list) */
+        .story-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
         }
 
         /* Enhanced Profile Details */
@@ -846,7 +900,58 @@
             color: var(--text-muted);
         }
 
-        /* Responsive Design */
+        /* Responsive Design - Tablet & Above (1024px and below) */
+        /* ============================================
+           RESPONSIVE: TABLET (1024px and below)
+           ============================================ */
+        @media (max-width: 1024px) {
+            .profile-main-info {
+                padding: 0 1.5rem 1.5rem 1.5rem;
+            }
+
+            .profile-info-wrapper {
+                gap: 1.5rem;
+            }
+
+            /* Reduce avatar size */
+            .profile-avatar-container {
+                width: 130px;
+                height: 130px;
+            }
+
+            /* Adjust online indicator */
+            .online-indicator {
+                width: 20px;
+                height: 20px;
+                border-width: 3px;
+                bottom: 8px;
+                right: 8px;
+            }
+
+            /* Adjust story add button */
+            .story-add-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 15px;
+                bottom: 8px;
+                right: 8px;
+                border-width: 3px;
+            }
+
+            /* Adjust upload button */
+            .avatar-upload-btn {
+                padding: 0.4rem;
+            }
+
+            .avatar-upload-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE: MOBILE & TABLET (768px and below)
+           ============================================ */
         @media (max-width: 768px) {
             .profile-info-wrapper {
                 flex-direction: column;
@@ -854,20 +959,41 @@
                 text-align: center;
             }
 
+            /* Further reduce avatar size */
             .profile-avatar-container {
-                margin-bottom: 1.5rem;
-                position: relative;
-                z-index: 1;
-            }
-
-            .profile-avatar-container .story-ring-wrapper {
-                width: 120px !important;
-                height: 120px !important;
-            }
-
-            .profile-avatar {
                 width: 120px;
                 height: 120px;
+                margin-bottom: 1.5rem;
+            }
+
+            /* Adjust online indicator */
+            .online-indicator {
+                width: 18px;
+                height: 18px;
+                border-width: 3px;
+                bottom: 6px;
+                right: 6px;
+            }
+
+            /* Adjust story add button */
+            .story-add-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 14px;
+                bottom: 6px;
+                right: 6px;
+                border-width: 2px;
+            }
+
+            /* Adjust upload button */
+            .avatar-upload-btn {
+                padding: 0.35rem;
+                bottom: 4px;
+            }
+
+            .avatar-upload-btn svg {
+                width: 12px;
+                height: 12px;
             }
 
             .profile-details-section {
@@ -929,6 +1055,134 @@
 
             .social-links {
                 justify-content: center;
+            }
+
+            /* Cover upload button responsive */
+            .cover-upload-btn {
+                top: 0.75rem;
+                right: 0.75rem;
+                padding: 0.6rem;
+            }
+
+            .cover-upload-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            /* Adjust story add button */
+            .story-add-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 13px;
+                bottom: 7px;
+                right: 7px;
+                border-width: 2.5px;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE: EXTRA SMALL MOBILE (480px and below)
+           ============================================ */
+        @media (max-width: 480px) {
+            .profile-main-info {
+                padding: 0 1rem 1rem 1rem;
+            }
+
+            .profile-info-wrapper {
+                gap: 1rem;
+            }
+
+            /* Smaller avatar for mobile */
+            .profile-avatar-container {
+                width: 100px;
+                height: 100px;
+            }
+
+            /* Adjust online indicator */
+            .online-indicator {
+                width: 16px;
+                height: 16px;
+                border-width: 2px;
+                bottom: 5px;
+                right: 5px;
+            }
+
+            /* Adjust story add button */
+            .story-add-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+                bottom: 5px;
+                right: 5px;
+                border-width: 2px;
+            }
+
+            /* Adjust upload button */
+            .avatar-upload-btn {
+                padding: 0.3rem;
+                border-radius: 6px;
+                bottom: 3px;
+            }
+
+            .avatar-upload-btn svg {
+                width: 10px;
+                height: 10px;
+            }
+
+            .cover-upload-btn {
+                padding: 0.5rem;
+                border-radius: 8px;
+            }
+
+            .cover-upload-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .profile-header-section .profile-name,
+            .profile-details-section .profile-name {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE: ULTRA SMALL MOBILE (400px and below)
+           ============================================ */
+        @media (max-width: 400px) {
+            /* Even smaller avatar */
+            .profile-avatar-container {
+                width: 90px;
+                height: 90px;
+            }
+
+            /* Adjust online indicator */
+            .online-indicator {
+                width: 14px;
+                height: 14px;
+                border-width: 2px;
+                bottom: 4px;
+                right: 4px;
+            }
+
+            /* Adjust story add button */
+            .story-add-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+                bottom: 4px;
+                right: 4px;
+                border-width: 2px;
+            }
+
+            /* Adjust upload button */
+            .avatar-upload-btn {
+                padding: 0.25rem;
+                bottom: 2px;
+            }
+
+            .avatar-upload-btn svg {
+                width: 9px;
+                height: 9px;
             }
         }
 

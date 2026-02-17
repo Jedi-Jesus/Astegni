@@ -327,6 +327,43 @@
             color: var(--text-muted);
             margin-top: 0.25rem;
         }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .profile-avatar-container {
+                width: 140px !important;
+                height: 140px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .profile-avatar {
+                width: 140px !important;
+                height: 140px !important;
+                aspect-ratio: 1 / 1 !important;
+                object-fit: cover !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-info-wrapper {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-avatar-container {
+                width: 120px !important;
+                height: 120px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .profile-avatar {
+                width: 120px !important;
+                height: 120px !important;
+                aspect-ratio: 1 / 1 !important;
+                object-fit: cover !important;
+            }
+        }
     </style>
     <!-- Profile Dropdown Fix - MUST load last -->
     <link rel="stylesheet" href="../css/view-advertiser/profile-specific-fix.css">
@@ -506,10 +543,12 @@
                     </svg>
                 </button>
                 <!-- Mobile Menu Button -->
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                    <span class="mobile-hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -2101,6 +2140,24 @@
 
             // Initialize sidebar
             initializeSidebar();
+
+            // Initialize mobile menu button event listener
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            }
+
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', () => {
+                    if (typeof closeMobileMenu === 'function') {
+                        closeMobileMenu();
+                    }
+                });
+            }
+
+            // Update mobile profile section on page load
+            updateMobileProfileSection();
         });
 
         // Load advertiser data from database
@@ -2404,6 +2461,181 @@
             event.preventDefault();
             console.log('Navigation to:', section);
         }
+
+        // Mobile Menu Functions
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+            if (!mobileMenu) return;
+
+            mobileMenu.classList.remove('hidden');
+            if (mobileMenuBtn) mobileMenuBtn.classList.add('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('hidden');
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+
+            // Update mobile profile section visibility
+            updateMobileProfileSection();
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const isOpen = !mobileMenu?.classList.contains('hidden');
+
+            if (isOpen) {
+                if (typeof closeMobileMenu === 'function') {
+                    closeMobileMenu();
+                }
+            } else {
+                openMobileMenu();
+            }
+        }
+
+        function toggleMobileProfileDropdown() {
+            const dropdown = document.querySelector('.mobile-profile-dropdown');
+            const header = document.getElementById('mobile-profile-header');
+
+            if (dropdown) {
+                dropdown.classList.toggle('open');
+            }
+            if (header) {
+                header.classList.toggle('expanded');
+            }
+        }
+
+        function updateMobileProfileSection() {
+            const mobileProfileSection = document.querySelector('.mobile-profile-section');
+
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+            if (token && currentUser) {
+                // User is logged in
+                if (mobileProfileSection) {
+                    mobileProfileSection.classList.remove('hidden');
+
+                    // Update profile info
+                    const profilePic = document.getElementById('mobile-profile-pic');
+                    const profileName = document.getElementById('mobile-profile-name');
+                    const profileRole = document.getElementById('mobile-profile-role');
+                    const profileLink = document.getElementById('mobile-my-profile-link');
+
+                    const avatarUrl = currentUser.profile_picture || currentUser.profile_picture_url ||
+                                    currentUser.profilePicture || '../images/default-avatar.png';
+                    const name = currentUser.name || currentUser.full_name || 'User';
+                    const role = localStorage.getItem('userRole') || localStorage.getItem('active_role') ||
+                               currentUser.active_role || currentUser.role || 'student';
+
+                    if (profilePic) profilePic.src = avatarUrl;
+                    if (profileName) profileName.textContent = name;
+                    if (profileRole) {
+                        const formattedRole = role.charAt(0).toUpperCase() + role.slice(1);
+                        profileRole.textContent = formattedRole;
+                    }
+
+                    // Set profile link based on role
+                    if (profileLink) {
+                        const profilePages = {
+                            'tutor': '../profile-pages/tutor-profile.html',
+                            'student': '../profile-pages/student-profile.html',
+                            'parent': '../profile-pages/parent-profile.html',
+                            'advertiser': '../profile-pages/advertiser-profile.html'
+                        };
+                        profileLink.href = profilePages[role] || '../profile-pages/user-profile.html';
+                    }
+
+                    // Update role switcher if user has multiple roles
+                    updateMobileRoleSwitcher();
+                }
+            } else {
+                // User is logged out
+                if (mobileProfileSection) mobileProfileSection.classList.add('hidden');
+            }
+        }
+
+        function updateMobileRoleSwitcher() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser) return;
+
+            const roles = currentUser.roles || [];
+            const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role') ||
+                              currentUser.active_role || currentUser.role;
+
+            // If user has multiple roles, show role switcher
+            const roleSwitcherSection = document.getElementById('mobile-role-switcher');
+            if (roles.length > 1 && roleSwitcherSection) {
+                roleSwitcherSection.classList.remove('hidden');
+
+                const roleOptionsContainer = document.getElementById('mobile-role-options');
+                if (roleOptionsContainer) {
+                    roleOptionsContainer.innerHTML = '';
+
+                    roles.forEach(role => {
+                        if (role !== activeRole) {
+                            const roleButton = document.createElement('button');
+                            roleButton.className = 'mobile-dropdown-item';
+                            roleButton.innerHTML = `
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01"></path>
+                                </svg>
+                                Switch to ${role.charAt(0).toUpperCase() + role.slice(1)}
+                            `;
+                            roleButton.onclick = () => switchRole(role);
+                            roleOptionsContainer.appendChild(roleButton);
+                        }
+                    });
+                }
+            } else if (roleSwitcherSection) {
+                roleSwitcherSection.classList.add('hidden');
+            }
+        }
+
+        async function switchRole(newRole) {
+            try {
+                const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('userRole', newRole);
+                    localStorage.setItem('active_role', newRole);
+
+                    // Update mobile profile section
+                    updateMobileProfileSection();
+
+                    // Redirect to appropriate profile page
+                    const profilePages = {
+                        'tutor': '../profile-pages/tutor-profile.html',
+                        'student': '../profile-pages/student-profile.html',
+                        'parent': '../profile-pages/parent-profile.html',
+                        'advertiser': '../profile-pages/advertiser-profile.html'
+                    };
+
+                    const profilePage = profilePages[newRole] || '../profile-pages/user-profile.html';
+                    window.location.href = profilePage;
+                }
+            } catch (error) {
+                console.error('Error switching role:', error);
+            }
+        }
+
+        // Make functions globally available
+        window.openMobileMenu = openMobileMenu;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.toggleMobileProfileDropdown = toggleMobileProfileDropdown;
+        window.updateMobileProfileSection = updateMobileProfileSection;
+        window.switchRole = switchRole;
 
         // Modal and action functions
         function viewPortfolio() {

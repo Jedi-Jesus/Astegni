@@ -437,11 +437,6 @@
                 padding-top: 56px !important;
             }
 
-            .profile-avatar-container img {
-                width: 80px !important;
-                height: 80px !important;
-            }
-
             .profile-name {
                 font-size: 1.25rem !important;
             }
@@ -1123,10 +1118,12 @@
                     </svg>
                 </button>
                 <!-- Mobile Menu Button -->
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                    <span class="mobile-hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -1178,21 +1175,24 @@
                         <span id="mobile-profile-name" class="mobile-profile-name"></span>
                         <span id="mobile-profile-role" class="mobile-profile-role"></span>
                     </div>
-                    <svg class="mobile-dropdown-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="mobile-profile-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                             clip-rule="evenodd"></path>
                     </svg>
                 </div>
                 <div class="mobile-profile-dropdown">
-                    <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-item">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        My Profile
-                    </a>
-                    <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
+                    <div class="mobile-profile-dropdown-content">
+                        <!-- Dropdown Profile Picture Section - Clickable Link -->
+                        <a href="#" id="mobile-my-profile-link" class="mobile-dropdown-user-info">
+                            <img id="mobile-dropdown-profile-pic" class="mobile-dropdown-profile-pic" alt="Profile">
+                            <div class="mobile-dropdown-user-details">
+                                <span id="mobile-dropdown-profile-name" class="mobile-dropdown-profile-name"></span>
+                                <span id="mobile-dropdown-profile-role" class="mobile-dropdown-profile-role"></span>
+                            </div>
+                        </a>
+
+                        <div id="mobile-role-switcher" class="mobile-role-switcher hidden">
                         <div class="mobile-dropdown-divider"></div>
                         <div class="mobile-dropdown-label">Switch Role</div>
                         <div id="mobile-role-options"></div>
@@ -1206,6 +1206,7 @@
                         </svg>
                         Logout
                     </button>
+                    </div>
                 </div>
             </div>
 
@@ -2232,6 +2233,15 @@
 
             // Initialize animations
             animateStats();
+
+            // Mobile menu is handled by nav.js, just update mobile profile section on load
+            // Update mobile profile section on page load
+            updateMobileProfileSection();
+        });
+
+        // Also update on window load to ensure everything is ready
+        window.addEventListener('load', () => {
+            updateMobileProfileSection();
         });
 
         // Load student data
@@ -2292,6 +2302,240 @@
             event.preventDefault();
             console.log('Navigation to:', section);
         }
+
+        // Mobile Menu Functions
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+            if (!mobileMenu) return;
+
+            mobileMenu.classList.remove('hidden');
+            if (mobileMenuBtn) mobileMenuBtn.classList.add('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('hidden');
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+
+            // Update mobile profile section visibility
+            updateMobileProfileSection();
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+            if (!mobileMenu) return;
+
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuBtn) mobileMenuBtn.classList.remove('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('hidden');
+
+            // Restore body scroll
+            document.body.style.overflow = '';
+
+            // Close mobile profile dropdown if open
+            const dropdown = document.querySelector('.mobile-profile-dropdown');
+            const header = document.getElementById('mobile-profile-header');
+            if (dropdown) dropdown.classList.remove('open');
+            if (header) header.classList.remove('expanded');
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const isOpen = !mobileMenu?.classList.contains('hidden');
+
+            if (isOpen) {
+                if (typeof closeMobileMenu === 'function') {
+                    closeMobileMenu();
+                }
+            } else {
+                openMobileMenu();
+            }
+        }
+
+        function toggleMobileProfileDropdown() {
+            const dropdown = document.querySelector('.mobile-profile-dropdown');
+            const header = document.getElementById('mobile-profile-header');
+
+            if (dropdown) {
+                dropdown.classList.toggle('open');
+            }
+            if (header) {
+                header.classList.toggle('expanded');
+            }
+        }
+
+        function updateMobileProfileSection() {
+            const mobileProfileSection = document.querySelector('.mobile-profile-section');
+
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+            if (token && currentUser) {
+                // User is logged in
+                if (mobileProfileSection) {
+                    mobileProfileSection.classList.remove('hidden');
+
+                    // Update profile info
+                    const profilePic = document.getElementById('mobile-profile-pic');
+                    const profileName = document.getElementById('mobile-profile-name');
+                    const profileRole = document.getElementById('mobile-profile-role');
+                    const profileLink = document.getElementById('mobile-my-profile-link');
+
+                    const avatarUrl = currentUser.profile_picture || currentUser.profile_picture_url ||
+                                    currentUser.profilePicture || '../images/default-avatar.png';
+                    const name = currentUser.name || currentUser.full_name || 'User';
+                    const role = localStorage.getItem('userRole') || localStorage.getItem('active_role') ||
+                               currentUser.active_role || currentUser.role || 'student';
+
+                    // Update mobile header profile info
+                    if (profilePic) profilePic.src = avatarUrl;
+                    if (profileName) profileName.textContent = name;
+                    if (profileRole) {
+                        const formattedRole = role.charAt(0).toUpperCase() + role.slice(1);
+                        profileRole.textContent = formattedRole;
+                    }
+
+                    // Update dropdown profile info
+                    const dropdownProfilePic = document.getElementById('mobile-dropdown-profile-pic');
+                    const dropdownProfileName = document.getElementById('mobile-dropdown-profile-name');
+                    const dropdownProfileRole = document.getElementById('mobile-dropdown-profile-role');
+
+                    console.log('[MobileMenu] Updating dropdown profile:', {
+                        pic: !!dropdownProfilePic,
+                        name: !!dropdownProfileName,
+                        role: !!dropdownProfileRole,
+                        avatarUrl,
+                        userName: name,
+                        userRole: role
+                    });
+
+                    if (dropdownProfilePic) dropdownProfilePic.src = avatarUrl;
+                    if (dropdownProfileName) dropdownProfileName.textContent = name;
+                    if (dropdownProfileRole) {
+                        const formattedRole = role.charAt(0).toUpperCase() + role.slice(1);
+                        dropdownProfileRole.textContent = formattedRole;
+                    }
+
+                    // Set profile link based on role
+                    if (profileLink) {
+                        const profilePages = {
+                            'tutor': '../profile-pages/tutor-profile.html',
+                            'student': '../profile-pages/student-profile.html',
+                            'parent': '../profile-pages/parent-profile.html',
+                            'advertiser': '../profile-pages/advertiser-profile.html'
+                        };
+                        profileLink.href = profilePages[role] || '../profile-pages/user-profile.html';
+                    }
+
+                    // Update role switcher if user has multiple roles
+                    updateMobileRoleSwitcher();
+                }
+            } else {
+                // User is logged out
+                if (mobileProfileSection) mobileProfileSection.classList.add('hidden');
+            }
+        }
+
+        function updateMobileRoleSwitcher() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser) {
+                console.log('[MobileMenu] No currentUser found in localStorage');
+                return;
+            }
+
+            const roles = currentUser.roles || [];
+            const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role') ||
+                              currentUser.active_role || currentUser.role;
+
+            console.log('[MobileMenu] User roles:', roles);
+            console.log('[MobileMenu] Active role:', activeRole);
+
+            // If user has multiple roles, show role switcher
+            const roleSwitcherSection = document.getElementById('mobile-role-switcher');
+            if (roles.length > 1 && roleSwitcherSection) {
+                roleSwitcherSection.classList.remove('hidden');
+
+                const roleOptionsContainer = document.getElementById('mobile-role-options');
+                if (roleOptionsContainer) {
+                    roleOptionsContainer.innerHTML = '';
+                    console.log('[MobileMenu] Populating role switcher with', roles.length, 'roles');
+
+                    // Role icon mapping
+                    const roleIcons = {
+                        'student': '🎓',
+                        'tutor': '👨‍🏫',
+                        'parent': '👪',
+                        'advertiser': '📢'
+                    };
+
+                    roles.forEach(role => {
+                        if (role !== activeRole) {
+                            const roleButton = document.createElement('button');
+                            roleButton.className = 'mobile-dropdown-item';
+                            const roleIcon = roleIcons[role.toLowerCase()] || '👤';
+                            const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+
+                            roleButton.innerHTML = `
+                                <span class="mobile-role-icon">${roleIcon}</span>
+                                Switch to ${roleName}
+                            `;
+                            roleButton.onclick = () => switchRole(role);
+                            roleOptionsContainer.appendChild(roleButton);
+                        }
+                    });
+                }
+            } else if (roleSwitcherSection) {
+                roleSwitcherSection.classList.add('hidden');
+            }
+        }
+
+        async function switchRole(newRole) {
+            try {
+                const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('userRole', newRole);
+                    localStorage.setItem('active_role', newRole);
+
+                    // Update mobile profile section
+                    updateMobileProfileSection();
+
+                    // Redirect to appropriate profile page
+                    const profilePages = {
+                        'tutor': '../profile-pages/tutor-profile.html',
+                        'student': '../profile-pages/student-profile.html',
+                        'parent': '../profile-pages/parent-profile.html',
+                        'advertiser': '../profile-pages/advertiser-profile.html'
+                    };
+
+                    const profilePage = profilePages[newRole] || '../profile-pages/user-profile.html';
+                    window.location.href = profilePage;
+                }
+            } catch (error) {
+                console.error('Error switching role:', error);
+            }
+        }
+
+        // Make functions globally available
+        window.openMobileMenu = openMobileMenu;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.toggleMobileProfileDropdown = toggleMobileProfileDropdown;
+        window.updateMobileProfileSection = updateMobileProfileSection;
+        window.switchRole = switchRole;
 
         // Open community modal
         function openCommunityModal() {

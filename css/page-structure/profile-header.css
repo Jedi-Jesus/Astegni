@@ -65,6 +65,7 @@
   width: 150px;
   height: 150px;
   flex-shrink: 0;
+  aspect-ratio: 1 / 1; /* Ensure perfect square */
 }
 
 .profile-avatar {
@@ -74,6 +75,8 @@
   border: 5px solid var(--background);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   object-fit: cover;
+  aspect-ratio: 1 / 1; /* Ensure perfect square */
+  display: block;
 }
 
 .avatar-ring {

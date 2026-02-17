@@ -45,6 +45,21 @@
 
 /* Tablet Landscape (1024px) - 2 columns grid */
 @media (max-width: 1024px) {
+    .profile-avatar-container {
+        flex-shrink: 0 !important;
+        width: 140px !important;
+        height: 140px !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 140px !important;
+        height: 140px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
     .admin-right-widgets {
         width: 100% !important;
         position: static !important;
@@ -122,9 +137,19 @@
     }
 
     .profile-avatar-container {
-        width: 100px !important;
-        height: 100px !important;
+        width: 120px !important;
+        height: 120px !important;
         margin: 0 auto;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
     }
 
     .profile-details-section {
@@ -207,8 +232,18 @@
     }
 
     .profile-avatar-container {
-        width: 80px !important;
-        height: 80px !important;
+        width: 110px !important;
+        height: 110px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 110px !important;
+        height: 110px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
     }
 
     .profile-name {
@@ -250,8 +285,18 @@
     }
 
     .profile-avatar-container {
-        width: 70px !important;
-        height: 70px !important;
+        width: 100px !important;
+        height: 100px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 100px !important;
+        height: 100px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
     }
 
     .profile-name {
@@ -289,6 +334,65 @@
     .admin-right-widgets .sidebar-widget {
         padding: 0.75rem !important;
         border-radius: 10px;
+    }
+}
+
+/* Extra Small Mobile (400px) - Larger avatar */
+@media (max-width: 400px) {
+    .profile-avatar-container {
+        width: 90px !important;
+        height: 90px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 90px !important;
+        height: 90px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .online-indicator {
+        width: 16px;
+        height: 16px;
+        bottom: 4px;
+        right: 4px;
+    }
+
+    .profile-name {
+        font-size: 1rem !important;
+    }
+}
+
+/* Minimum Viable Screen (320px) */
+@media (max-width: 320px) {
+    .profile-avatar-container {
+        width: 85px !important;
+        height: 85px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .profile-avatar-container img,
+    .profile-avatar-container .profile-avatar {
+        width: 85px !important;
+        height: 85px !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .online-indicator {
+        width: 14px;
+        height: 14px;
+        bottom: 3px;
+        right: 3px;
+        border-width: 2px;
+    }
+
+    .profile-name {
+        font-size: 0.95rem !important;
     }
 }
 
