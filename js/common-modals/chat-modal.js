@@ -14206,9 +14206,23 @@ const ChatModalManager = {
             console.log('📹 Received remote track:', event.track.kind);
             this.state.remoteStream = event.streams[0];
 
-            const remoteVideo = document.getElementById('chatRemoteVideo');
-            if (remoteVideo) {
-                remoteVideo.srcObject = this.state.remoteStream;
+            if (event.track.kind === 'video') {
+                const remoteVideo = document.getElementById('chatRemoteVideo');
+                if (remoteVideo) {
+                    remoteVideo.srcObject = this.state.remoteStream;
+                }
+            } else if (event.track.kind === 'audio') {
+                // Ensure audio plays even on voice-only calls (video element may be hidden)
+                let remoteAudio = document.getElementById('chatRemoteAudio');
+                if (!remoteAudio) {
+                    remoteAudio = document.createElement('audio');
+                    remoteAudio.id = 'chatRemoteAudio';
+                    remoteAudio.autoplay = true;
+                    remoteAudio.playsInline = true;
+                    document.body.appendChild(remoteAudio);
+                }
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.warn('Remote audio play failed:', e));
             }
 
             // Update status
@@ -15610,6 +15624,13 @@ const ChatModalManager = {
         this.state.callStartTime = null;
         this.state.currentCallLogId = null;  // Clear call log ID
         this.state.pendingCallLogPromise = null;
+
+        // Remove dynamically-created remote audio element
+        const remoteAudio = document.getElementById('chatRemoteAudio');
+        if (remoteAudio) {
+            remoteAudio.srcObject = null;
+            remoteAudio.remove();
+        }
 
         // Stop ringtone (ensures incoming call sounds stop)
         this.stopRingtone();
