@@ -1591,7 +1591,11 @@ class WhiteboardManager {
 
             if (!token || !user || !user.id) return [];
 
-            const userType = (user.roles && user.roles.includes('tutor')) ? 'tutor' : 'student';
+            const activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole') || '';
+            const isTutor = (user.roles && user.roles.includes('tutor'))
+                || activeRole === 'tutor'
+                || window.location.pathname.toLowerCase().includes('tutor-profile');
+            const userType = isTutor ? 'tutor' : 'student';
             const response = await fetch(
                 `${this.API_BASE}/sessions/history/${userType}/${user.id}`,
                 {

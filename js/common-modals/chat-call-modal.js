@@ -68,6 +68,10 @@ class StandaloneChatCallManagerClass {
 
             const userData = await response.json();
             let activeRole = localStorage.getItem('active_role');
+            // 'user' is not a valid role — fall back to userRole
+            if (!activeRole || activeRole === 'user') {
+                activeRole = localStorage.getItem('userRole') || null;
+            }
 
             console.log('[StandaloneChatCall] User data:', userData);
             console.log('[StandaloneChatCall] User data keys:', Object.keys(userData));

@@ -4,7 +4,7 @@
  */
 
 // Ensure API_BASE_URL is defined (fallback if not)
-if (typeof API_BASE_URL === 'undefined') {
+if (typeof API_BASE_URL === 'undefined' && !window.API_BASE_URL) {
     console.warn('⚠️ API_BASE_URL not defined, using default');
     window.API_BASE_URL = 'http://localhost:8000';
 }

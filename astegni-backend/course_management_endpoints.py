@@ -1105,3 +1105,44 @@ async def send_course_notification(course_id: str, notification: NotificationReq
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send notification: {str(e)}")
+
+
+# ============================================
+# TUTOR COURSES ENDPOINT (used by tutor profile page)
+# ============================================
+
+@router.get("/tutor/{tutor_id}/courses")
+async def get_tutor_courses(tutor_id: int):
+    """Get all verified courses uploaded by a specific tutor"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, course_name, course_category, course_level, status
+            FROM courses
+            WHERE uploader_id = %s AND status = 'verified'
+            ORDER BY created_at DESC
+        """, (tutor_id,))
+
+        rows = cursor.fetchall()
+        courses = [
+            {
+                "id": row[0],
+                "course_name": row[1],
+                "course_category": row[2],
+                "course_level": row[3],
+                "status": row[4],
+            }
+            for row in rows
+        ]
+
+        categories = list({c["course_category"] for c in courses if c["course_category"]})
+
+        cursor.close()
+        conn.close()
+
+        return {"courses": courses, "categories": categories}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch tutor courses: {str(e)}")
