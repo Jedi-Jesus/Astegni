@@ -32,7 +32,7 @@ class KYCVerificationManager {
         let modal = document.getElementById('kyc-verification-modal');
         if (!modal) {
             try {
-                const response = await fetch('../modals/common-modals/kyc-verification-modal.html');
+                const response = await fetch('/modals/common-modals/kyc-verification-modal.html');
                 if (response.ok) {
                     const html = await response.text();
                     let container = document.getElementById('modal-container');
@@ -648,6 +648,7 @@ class KYCVerificationManager {
                 // Update user's KYC status in localStorage
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 user.kyc_verified = true;
+                user.is_verified = true;
                 localStorage.setItem('user', JSON.stringify(user));
 
                 // Update KYC status badge on profile page (if function exists)
@@ -815,7 +816,7 @@ class KYCVerificationManager {
      */
     async checkKYCRequired() {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) return { kyc_required: false };
 
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/check`, {
