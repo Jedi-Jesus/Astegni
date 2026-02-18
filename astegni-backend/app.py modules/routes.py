@@ -2829,7 +2829,7 @@ def update_tutor_profile(
     # username removed - now saved to tutor_profiles.username instead of users.username
     # Fields that belong to users table
     user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name', 'gender',
-                   'location', 'display_location', 'profile_picture', 'social_links', 'languages', 'hobbies'}
+                   'location', 'country_code', 'display_location', 'profile_picture', 'social_links', 'languages', 'hobbies'}
 
     # Update user fields if provided
     for field in user_fields:
@@ -2842,6 +2842,18 @@ def update_tutor_profile(
             else:
                 # For non-string fields (JSON, arrays, etc.)
                 setattr(current_user, field, value)
+
+    # Auto-deduce country_code from location if not explicitly provided
+    if 'location' in profile_data and profile_data['location'] and not profile_data.get('country_code'):
+        from currency_utils import get_country_code_from_location, get_currency_from_country
+        deduced_code = get_country_code_from_location(profile_data['location'])
+        if deduced_code:
+            current_user.country_code = deduced_code
+            current_user.currency = get_currency_from_country(deduced_code)
+            print(f"[Tutor] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
+    elif profile_data.get('country_code'):
+        from currency_utils import get_currency_from_country
+        current_user.currency = get_currency_from_country(profile_data['country_code'])
 
     # Update tutor profile fields - only update non-None, non-empty values to prevent overwriting with blanks
     for field, value in profile_data.items():
@@ -6967,6 +6979,15 @@ def update_student_profile(
                 # For non-string fields (JSON, arrays, etc.)
                 setattr(current_user, field, value)
 
+    # Auto-deduce country_code and currency from location
+    if profile_data.get('location'):
+        from currency_utils import get_country_code_from_location, get_currency_from_country
+        deduced_code = get_country_code_from_location(profile_data['location'])
+        if deduced_code:
+            current_user.country_code = deduced_code
+            current_user.currency = get_currency_from_country(deduced_code)
+            print(f"[Student] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
+
     # Update student profile fields (NEW SCHEMA - matching current database)
     if "username" in profile_data:
         student.username = profile_data["username"]
@@ -7259,10 +7280,25 @@ async def update_parent_profile(
             raise HTTPException(status_code=400, detail="Phone number already in use")
         current_user.phone = user_update_data['phone']
 
+    # Fields that belong to users table (not parent_profile table)
+    parent_user_fields = {'location', 'display_location', 'languages', 'social_links', 'profile_picture'}
+
     # Update parent profile fields
     for key, value in update_data.items():
-        if hasattr(parent_profile, key):
+        if key in parent_user_fields:
+            if hasattr(current_user, key):
+                setattr(current_user, key, value)
+        elif hasattr(parent_profile, key):
             setattr(parent_profile, key, value)
+
+    # Auto-deduce country_code and currency from location
+    if 'location' in update_data and update_data['location']:
+        from currency_utils import get_country_code_from_location, get_currency_from_country
+        deduced_code = get_country_code_from_location(update_data['location'])
+        if deduced_code:
+            current_user.country_code = deduced_code
+            current_user.currency = get_currency_from_country(deduced_code)
+            print(f"[Parent] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
 
     # Calculate profile completion
     completion = 0
@@ -7416,6 +7452,18 @@ async def update_advertiser_profile(
         elif hasattr(advertiser_profile, key):
             # Update advertiser_profile table
             setattr(advertiser_profile, key, value)
+
+    # Auto-deduce country_code and currency from location if not explicitly provided
+    if update_data.get('location') and not update_data.get('country_code'):
+        from currency_utils import get_country_code_from_location, get_currency_from_country
+        deduced_code = get_country_code_from_location(update_data['location'])
+        if deduced_code:
+            current_user.country_code = deduced_code
+            current_user.currency = get_currency_from_country(deduced_code)
+            print(f"[Advertiser] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
+    elif update_data.get('country_code'):
+        from currency_utils import get_currency_from_country
+        current_user.currency = get_currency_from_country(update_data['country_code'])
 
     db.commit()
     db.refresh(advertiser_profile)

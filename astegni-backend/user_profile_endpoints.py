@@ -160,12 +160,19 @@ async def update_user_profile(
     # Fields that belong to users table
     user_fields = ['location', 'languages', 'hobbies', 'social_links', 'country_code']
 
-    # Auto-detect currency from country_code if provided
+    # Auto-detect currency from country_code if provided, else deduce from location
     if 'country_code' in update_data and update_data['country_code']:
         country_code = update_data['country_code']
         currency = get_currency_from_country(country_code)
         current_user.currency = currency
         print(f"[Currency Auto-Detection] Country: {country_code} -> Currency: {currency}")
+    elif update_data.get('location'):
+        from currency_utils import get_country_code_from_location
+        deduced_code = get_country_code_from_location(update_data['location'])
+        if deduced_code:
+            current_user.country_code = deduced_code
+            current_user.currency = get_currency_from_country(deduced_code)
+            print(f"[User Profile] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
 
     for key, value in update_data.items():
         if key in user_fields:

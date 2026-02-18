@@ -69,7 +69,7 @@ class KYCVerificationManager {
 
             if (!countryCode) {
                 // No country set — block the step and prompt user to set location
-                instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
+                instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); if(typeof openEditProfileModal === \'function\') openEditProfileModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
                 // Hide camera and capture controls until location is set
                 const cameraContainer = modal.querySelector('.camera-container');
                 const captureControls = modal.querySelector('.capture-controls');

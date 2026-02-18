@@ -56,12 +56,7 @@ def reset_kyc(user_email=None):
         attempts_deleted = cur.rowcount
         print(f"[OK] Deleted {attempts_deleted} verification attempts")
 
-        # Delete KYC verifications
-        cur.execute("DELETE FROM kyc_verifications WHERE user_id = %s", (user_id,))
-        verifications_deleted = cur.rowcount
-        print(f"[OK] Deleted {verifications_deleted} verifications")
-
-        # Reset user's KYC status (both legacy and canonical fields)
+        # Clear FK reference on users first to allow deleting kyc_verifications
         cur.execute("""
             UPDATE users
             SET kyc_verified = FALSE,
@@ -73,6 +68,10 @@ def reset_kyc(user_email=None):
         """, (user_id,))
         print(f"[OK] Reset user's KYC status")
 
+        # Delete KYC verifications (safe now that FK is cleared)
+        cur.execute("DELETE FROM kyc_verifications WHERE user_id = %s", (user_id,))
+        verifications_deleted = cur.rowcount
+        print(f"[OK] Deleted {verifications_deleted} verifications")
         conn.commit()
         print("\n[SUCCESS] KYC reset complete! User can now start verification again.")
 

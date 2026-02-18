@@ -240,6 +240,75 @@ def get_currency_from_country(country_code: str) -> str:
     return COUNTRY_TO_CURRENCY.get(country_code, 'USD')
 
 
+# Mapping of country names (and common variants) to ISO country codes
+COUNTRY_NAME_TO_CODE = {
+    'ethiopia': 'ET', 'ethiopian': 'ET',
+    'nigeria': 'NG', 'nigerian': 'NG',
+    'kenya': 'KE', 'kenyan': 'KE',
+    'ghana': 'GH', 'ghanaian': 'GH',
+    'south africa': 'ZA', 'south african': 'ZA',
+    'egypt': 'EG', 'egyptian': 'EG',
+    'tanzania': 'TZ', 'tanzanian': 'TZ',
+    'uganda': 'UG', 'ugandan': 'UG',
+    'rwanda': 'RW', 'rwandan': 'RW',
+    'senegal': 'SN', 'senegalese': 'SN',
+    'cameroon': 'CM', 'cameroonian': 'CM',
+    "ivory coast": 'CI', "côte d'ivoire": 'CI', 'cote divoire': 'CI',
+    'morocco': 'MA', 'moroccan': 'MA',
+    'algeria': 'DZ', 'algerian': 'DZ',
+    'tunisia': 'TN', 'tunisian': 'TN',
+    'sudan': 'SD', 'sudanese': 'SD',
+    'united states': 'US', 'usa': 'US', 'united states of america': 'US',
+    'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB',
+    'canada': 'CA', 'canadian': 'CA',
+    'australia': 'AU', 'australian': 'AU',
+    'germany': 'DE', 'german': 'DE',
+    'france': 'FR', 'french': 'FR',
+    'india': 'IN', 'indian': 'IN',
+    'china': 'CN', 'chinese': 'CN',
+    'japan': 'JP', 'japanese': 'JP',
+    'brazil': 'BR', 'brazilian': 'BR',
+    'mexico': 'MX', 'mexican': 'MX',
+    'spain': 'ES', 'spanish': 'ES',
+    'italy': 'IT', 'italian': 'IT',
+    'netherlands': 'NL', 'dutch': 'NL',
+    'sweden': 'SE', 'swedish': 'SE',
+    'norway': 'NO', 'norwegian': 'NO',
+    'denmark': 'DK', 'danish': 'DK',
+    'switzerland': 'CH', 'swiss': 'CH',
+    'turkey': 'TR', 'turkish': 'TR',
+    'russia': 'RU', 'russian': 'RU',
+    'saudi arabia': 'SA',
+    'uae': 'AE', 'united arab emirates': 'AE',
+    'israel': 'IL', 'israeli': 'IL',
+    'south korea': 'KR', 'korea': 'KR',
+    'indonesia': 'ID', 'indonesian': 'ID',
+    'pakistan': 'PK', 'pakistani': 'PK',
+    'bangladesh': 'BD', 'bangladeshi': 'BD',
+}
+
+
+def get_country_code_from_location(location: str) -> str | None:
+    """
+    Deduce ISO country code from a location string by matching the last
+    comma-separated segment (usually the country name).
+
+    Examples:
+        'Megenagna, Yeka, Addis Ababa, Ethiopia' -> 'ET'
+        'New York, United States'                -> 'US'
+        'London, United Kingdom'                 -> 'GB'
+    """
+    if not location:
+        return None
+    parts = [p.strip().lower() for p in location.split(',')]
+    # Try from the end of the string inward (country is usually last)
+    for part in reversed(parts):
+        code = COUNTRY_NAME_TO_CODE.get(part)
+        if code:
+            return code
+    return None
+
+
 def get_currency_symbol(currency_code: str) -> str:
     """
     Get currency symbol from currency code

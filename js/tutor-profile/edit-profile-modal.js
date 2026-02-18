@@ -484,6 +484,12 @@
                     locationInput.value = user.location || '';
                 }
 
+                // Load country_code into hidden field
+                const countryCodeInput = document.getElementById('editCountryCode');
+                if (countryCodeInput) {
+                    countryCodeInput.value = user.country_code || '';
+                }
+
                 // Load display_location checkbox (show/hide location on public profile)
                 const displayLocationCheckbox = document.getElementById('editDisplayLocation');
                 if (displayLocationCheckbox) {
@@ -659,6 +665,7 @@
                 .map(select => select.value)
                 .filter(value => value !== '');
             const location = document.getElementById('editLocation')?.value?.trim();
+            const countryCode = document.getElementById('editCountryCode')?.value?.trim() || null;
             const displayLocation = document.getElementById('editDisplayLocation')?.checked || false;
             const quote = document.getElementById('profileQuote')?.value?.trim();
             const aboutUs = document.getElementById('aboutUs')?.value?.trim();
@@ -674,6 +681,7 @@
                 username: username,  // Saves to tutor_profiles.username (NOT users.username)
                 languages: languages,
                 location: location,  // Saves to tutor_profiles.location
+                country_code: countryCode,  // Saves to users.country_code
                 display_location: displayLocation,  // Saves to users.display_location
                 quote: quote,
                 bio: aboutUs,  // FIXED: Backend expects bio, not about
