@@ -2330,12 +2330,10 @@
                         </h3>
                         <div class="form-group">
                             <label>Social Media Links (Optional)</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                                <input type="url" id="editTwitter" class="form-input" placeholder="Twitter/X URL">
-                                <input type="url" id="editLinkedIn" class="form-input" placeholder="LinkedIn URL">
-                                <input type="url" id="editFacebook" class="form-input" placeholder="Facebook URL">
-                                <input type="url" id="editInstagram" class="form-input" placeholder="Instagram URL">
-                            </div>
+                            <div id="socialMediaContainer" style="margin-bottom: 0.5rem;"></div>
+                            <button type="button" onclick="addSocialLink()" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                ➕ Add Social Link
+                            </button>
                         </div>
                     </div>
 
@@ -2518,7 +2516,7 @@
     <script src="../js/common-modals/ad-rotation-manager.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
     <!-- Chat Modal -->
-    <script src="../js/common-modals/chat-modal.js?v=20260218"></script>
+    <script src="../js/common-modals/chat-modal.js?v=20260217b"></script>
     <!-- Community Modal (load communityManager.js BEFORE community-modal-manager.js) -->
     <script src="../js/common-modals/communityManager.js"></script>
     <script src="../js/common-modals/community-modal-manager.js"></script>

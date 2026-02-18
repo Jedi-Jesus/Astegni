@@ -5500,7 +5500,7 @@
     <script src="../js/common-modals/logout-modal.js"></script>
     <!-- Subscription Modal JavaScript (Dynamic - fetches plans based on role) -->
     <script src="../js/common-modals/subscription-modal.js"></script>
-    <script src="../js/common-modals/chat-modal.js?v=20260218"></script>
+    <script src="../js/common-modals/chat-modal.js?v=20260217b"></script>
     <!-- Standalone Chat Call Modal JavaScript -->
     <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
@@ -5879,12 +5879,8 @@
                 editLanguagesField.value = Array.isArray(languages) ? languages.join(', ') : '';
             }
 
-            // Populate social links (if using old individual input approach)
-            const socialLinks = profile.social_links || {};
-            setValueIfExists('editFacebook', socialLinks.facebook);
-            setValueIfExists('editTwitter', socialLinks.twitter);
-            setValueIfExists('editLinkedIn', socialLinks.linkedin);
-            setValueIfExists('editInstagram', socialLinks.instagram);
+            // Load social links into dynamic container
+            loadSocialLinks(profile.social_links || {});
 
             // Load display_location checkbox (show/hide location on public profile)
             const displayLocationCheckbox = document.getElementById('editDisplayLocation');
@@ -5949,17 +5945,8 @@
             const languagesInput = document.getElementById('editLanguages').value.trim();
             const languages = languagesInput ? languagesInput.split(',').map(lang => lang.trim()).filter(lang => lang) : [];
 
-            // Get social links and build object
-            const facebook = document.getElementById('editFacebook').value.trim();
-            const twitter = document.getElementById('editTwitter').value.trim();
-            const linkedin = document.getElementById('editLinkedIn').value.trim();
-            const instagram = document.getElementById('editInstagram').value.trim();
-
-            const social_links = {};
-            if (facebook) social_links.facebook = facebook;
-            if (twitter) social_links.twitter = twitter;
-            if (linkedin) social_links.linkedin = linkedin;
-            if (instagram) social_links.instagram = instagram;
+            // Get social links from dynamic container
+            const social_links = getSocialLinks();
 
             // Get display_location checkbox value
             const displayLocationCheckbox = document.getElementById('editDisplayLocation');

@@ -3237,36 +3237,10 @@
                         </h3>
                         <div class="form-group">
                             <label>Social Media Links (Optional)</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-globe" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialWebsite" class="form-input" placeholder="Website URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-facebook-f" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialFacebook" class="form-input" placeholder="Facebook URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-twitter" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialTwitter" class="form-input" placeholder="Twitter URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-linkedin-in" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialLinkedin" class="form-input" placeholder="LinkedIn URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-instagram" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialInstagram" class="form-input" placeholder="Instagram URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-youtube" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialYoutube" class="form-input" placeholder="YouTube URL">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fab fa-tiktok" style="width: 20px; color: var(--text-muted);"></i>
-                                    <input type="url" id="editSocialTiktok" class="form-input" placeholder="TikTok URL">
-                                </div>
-                            </div>
+                            <div id="socialMediaContainer" style="margin-bottom: 0.5rem;"></div>
+                            <button type="button" onclick="addSocialLink()" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                ➕ Add Social Link
+                            </button>
                         </div>
                     </div>
 
@@ -3769,7 +3743,7 @@
     <script src="../js/common-modals/role-manager.js?v=20260126"></script>
     <script src="../js/common-modals/protected-api-wrapper.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
-    <script src="../js/common-modals/chat-modal.js?v=20260218"></script>
+    <script src="../js/common-modals/chat-modal.js?v=20260217b"></script>
     <!-- Standalone Chat Call Modal JavaScript -->
     <script src="../js/common-modals/chat-call-modal.js"></script>
     <script src="../js/common-modals/truevoice-manager.js"></script>
@@ -4151,14 +4125,7 @@
     }
 
     // Social links (from socials JSONB)
-    const socials = data.socials || {};
-    document.getElementById('editSocialWebsite').value = socials.website || '';
-    document.getElementById('editSocialFacebook').value = socials.facebook || '';
-    document.getElementById('editSocialTwitter').value = socials.twitter || '';
-    document.getElementById('editSocialLinkedin').value = socials.linkedin || '';
-    document.getElementById('editSocialInstagram').value = socials.instagram || '';
-    document.getElementById('editSocialYoutube').value = socials.youtube || '';
-    document.getElementById('editSocialTiktok').value = socials.tiktok || '';
+    loadSocialLinks(data.socials || {});
 
     // Load display_location checkbox (show/hide location on public profile)
     const displayLocationCheckbox = document.getElementById('editDisplayLocation');
