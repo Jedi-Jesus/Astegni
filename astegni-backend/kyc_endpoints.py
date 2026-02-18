@@ -491,42 +491,32 @@ def detect_liveliness(frames: List[bytes]) -> dict:
 
 
 def save_image_to_storage(image_data: bytes, user_id: int, image_type: str) -> str:
-    """Save image to Backblaze B2 storage and return URL"""
+    """Save image to Backblaze B2 storage and return URL. Raises on failure."""
     import uuid
     from backblaze_service import get_backblaze_service
 
     b2_service = get_backblaze_service()
     filename = f"{image_type}_{uuid.uuid4().hex[:8]}.jpg"
 
-    # Try Backblaze B2 first
-    if b2_service.configured:
-        try:
-            # Upload to B2 with KYC-specific folder structure
-            result = b2_service.upload_file(
-                file_data=image_data,
-                file_name=filename,
-                file_type='kyc_document' if image_type == 'document' else 'kyc_selfie',
-                content_type='image/jpeg',
-                user_id=str(user_id)
-            )
+    if not b2_service.configured:
+        raise RuntimeError(
+            "Backblaze B2 is not configured. "
+            "Set BACKBLAZE_KEY_ID, BACKBLAZE_APPLICATION_KEY, and BACKBLAZE_BUCKET_NAME in .env"
+        )
 
-            if result and result.get('url'):
-                print(f"[KYC] Uploaded {image_type} to Backblaze B2: {result['url']}")
-                return result['url']
-        except Exception as e:
-            print(f"[KYC] B2 upload failed, falling back to local: {e}")
+    result = b2_service.upload_file(
+        file_data=image_data,
+        file_name=filename,
+        file_type='kyc_document' if image_type == 'document' else 'kyc_selfie',
+        content_type='image/jpeg',
+        user_id=str(user_id)
+    )
 
-    # Fallback to local filesystem
-    upload_dir = f"uploads/kyc/user_{user_id}"
-    os.makedirs(upload_dir, exist_ok=True)
+    if not result or not result.get('url'):
+        raise RuntimeError(f"Backblaze B2 upload failed for KYC {image_type} (user {user_id})")
 
-    filepath = os.path.join(upload_dir, filename)
-
-    with open(filepath, 'wb') as f:
-        f.write(image_data)
-
-    print(f"[KYC] Saved {image_type} locally: {filepath}")
-    return f"/uploads/kyc/user_{user_id}/{filename}"
+    print(f"[KYC] Uploaded {image_type} to Backblaze B2: {result['url']}")
+    return result['url']
 
 
 # ============================================
@@ -802,14 +792,15 @@ async def upload_selfie(
             except Exception as e:
                 print(f"[KYC] Error downloading from B2: {str(e)}")
 
-        # Perform face comparison if we have the document
-        if document_bytes:
-            comparison_result = compare_faces(document_bytes, selfie_bytes)
-            print(f"[KYC] Face comparison result: {comparison_result}")
-        else:
-            # If document not found, use placeholder
-            print(f"[KYC] Document not found, using placeholder comparison")
-            comparison_result = {"match": True, "score": 0.92, "method": "placeholder"}
+        # Perform face comparison - document bytes are required
+        if not document_bytes:
+            raise HTTPException(
+                status_code=500,
+                detail="Could not retrieve document image from storage for face comparison. Please try again."
+            )
+
+        comparison_result = compare_faces(document_bytes, selfie_bytes)
+        print(f"[KYC] Face comparison result: {comparison_result}")
 
         # Check liveliness from already-completed challenges
         # The challenges are verified in real-time via /verify-liveliness endpoint
