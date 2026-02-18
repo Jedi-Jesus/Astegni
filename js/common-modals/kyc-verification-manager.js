@@ -65,10 +65,10 @@ class KYCVerificationManager {
         const instructionEl = document.getElementById('kyc-document-instruction');
         if (instructionEl) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const location = user.location || user.country_code || null;
+            const countryCode = user.country_code || null;
 
-            if (!location) {
-                // No location set — block the step and prompt user to set location
+            if (!countryCode) {
+                // No country set — block the step and prompt user to set location
                 instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
                 // Hide camera and capture controls until location is set
                 const cameraContainer = modal.querySelector('.camera-container');
@@ -80,18 +80,14 @@ class KYCVerificationManager {
                 return;
             }
 
-            // Derive a country name from location string or country_code
-            let countryName = location;
-            if (user.country_code) {
-                const countryNames = {
-                    'ET': 'Ethiopian', 'US': 'US', 'GB': 'British', 'CA': 'Canadian',
-                    'AU': 'Australian', 'DE': 'German', 'FR': 'French', 'IN': 'Indian',
-                    'NG': 'Nigerian', 'KE': 'Kenyan', 'GH': 'Ghanaian', 'ZA': 'South African',
-                    'EG': 'Egyptian', 'TZ': 'Tanzanian', 'UG': 'Ugandan', 'RW': 'Rwandan',
-                    'SN': 'Senegalese', 'CM': 'Cameroonian', 'CI': 'Ivorian', 'SD': 'Sudanese'
-                };
-                countryName = countryNames[user.country_code] || user.country_code;
-            }
+            const countryNames = {
+                'ET': 'Ethiopian', 'US': 'US', 'GB': 'British', 'CA': 'Canadian',
+                'AU': 'Australian', 'DE': 'German', 'FR': 'French', 'IN': 'Indian',
+                'NG': 'Nigerian', 'KE': 'Kenyan', 'GH': 'Ghanaian', 'ZA': 'South African',
+                'EG': 'Egyptian', 'TZ': 'Tanzanian', 'UG': 'Ugandan', 'RW': 'Rwandan',
+                'SN': 'Senegalese', 'CM': 'Cameroonian', 'CI': 'Ivorian', 'SD': 'Sudanese'
+            };
+            const countryName = countryNames[countryCode] || countryCode;
 
             instructionEl.textContent = `Hold your ${countryName} ID clearly in front of the camera`;
         }
