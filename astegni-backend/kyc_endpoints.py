@@ -259,6 +259,151 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         return {"match": False, "score": 0, "error": str(e)}
 
 
+def detect_blink_in_frame(frame_bytes: bytes) -> dict:
+    """
+    Detect blink in a single frame using OpenCV Haar cascades.
+    A blink is detected when no eyes are found in the face region
+    (eyes closed) while a face is still present.
+    Returns dict with detected, confidence, and debug info.
+    """
+    if not OPENCV_AVAILABLE:
+        return {"detected": True, "method": "placeholder", "confidence": 1.0}
+
+    try:
+        nparr = np.frombuffer(frame_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            return {"detected": False, "error": "Could not decode frame"}
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)  # Improve contrast
+
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+        if len(faces) == 0:
+            return {"detected": False, "error": "No face detected in frame"}
+
+        # Use the largest face
+        (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
+
+        # Only look in the upper half of the face (where eyes are)
+        eye_roi = gray[y:y + int(h * 0.6), x:x + w]
+        eyes = eye_cascade.detectMultiScale(eye_roi, scaleFactor=1.1, minNeighbors=4, minSize=(20, 20))
+
+        # Blink = face detected but eyes NOT detected (eyes closed)
+        blink_detected = len(eyes) == 0
+        confidence = 0.9 if blink_detected else 0.4
+
+        print(f"[KYC] Blink detection: face={len(faces)}, eyes={len(eyes)}, blink={blink_detected}")
+        return {
+            "detected": blink_detected,
+            "method": "opencv_cascade",
+            "confidence": confidence,
+            "face_count": int(len(faces)),
+            "eye_count": int(len(eyes))
+        }
+    except Exception as e:
+        print(f"[KYC] Blink detection error: {e}")
+        return {"detected": False, "error": str(e)}
+
+
+def detect_smile_in_frame(frame_bytes: bytes) -> dict:
+    """
+    Detect smile in a single frame using OpenCV smile Haar cascade.
+    """
+    if not OPENCV_AVAILABLE:
+        return {"detected": True, "method": "placeholder", "confidence": 1.0}
+
+    try:
+        nparr = np.frombuffer(frame_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            return {"detected": False, "error": "Could not decode frame"}
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
+
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
+
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+        if len(faces) == 0:
+            return {"detected": False, "error": "No face detected in frame"}
+
+        (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
+
+        # Only search the lower half of the face for smile (mouth region)
+        mouth_roi = gray[y + int(h * 0.5):y + h, x:x + w]
+        smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.7, minNeighbors=20, minSize=(25, 15))
+
+        smile_detected = len(smiles) > 0
+        confidence = 0.85 if smile_detected else 0.3
+
+        print(f"[KYC] Smile detection: face={len(faces)}, smiles={len(smiles)}, detected={smile_detected}")
+        return {
+            "detected": smile_detected,
+            "method": "opencv_cascade",
+            "confidence": confidence,
+            "face_count": int(len(faces)),
+            "smile_count": int(len(smiles))
+        }
+    except Exception as e:
+        print(f"[KYC] Smile detection error: {e}")
+        return {"detected": False, "error": str(e)}
+
+
+def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
+    """
+    Detect head turn across multiple frames by tracking face center X position.
+    Requires the face center to move significantly left or right across frames.
+    """
+    if not OPENCV_AVAILABLE:
+        return {"detected": True, "method": "placeholder", "confidence": 1.0}
+
+    try:
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        x_centers = []
+
+        for frame_bytes in frame_bytes_list:
+            nparr = np.frombuffer(frame_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                continue
+
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+            if len(faces) == 0:
+                continue
+
+            (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
+            frame_width = img.shape[1]
+            # Normalize face center X to 0.0–1.0 relative to frame width
+            x_center_norm = (x + w / 2) / frame_width
+            x_centers.append(x_center_norm)
+
+        if len(x_centers) < 2:
+            return {"detected": False, "error": "Not enough frames with face detected", "x_centers": x_centers}
+
+        x_range = max(x_centers) - min(x_centers)
+        # Require at least 12% of frame width movement (normalized)
+        head_turn_detected = x_range >= 0.12
+        confidence = min(x_range / 0.25, 1.0)  # scales 0.12–0.25+ to 0.48–1.0
+
+        print(f"[KYC] Head turn detection: x_centers={[round(v,3) for v in x_centers]}, range={x_range:.3f}, detected={head_turn_detected}")
+        return {
+            "detected": head_turn_detected,
+            "method": "opencv_face_tracking",
+            "confidence": float(confidence),
+            "x_range": float(x_range),
+            "frames_analyzed": len(x_centers)
+        }
+    except Exception as e:
+        print(f"[KYC] Head turn detection error: {e}")
+        return {"detected": False, "error": str(e)}
+
+
 def calculate_eye_aspect_ratio(eye_landmarks):
     """
     Calculate Eye Aspect Ratio (EAR) for blink detection.
@@ -917,16 +1062,18 @@ async def upload_selfie(
 @router.post("/verify-liveliness")
 async def verify_liveliness_challenge(
     verification_id: int = Form(...),
-    challenge_type: str = Form(...),  # blink, smile, turn_left, turn_right
-    frame_data: str = Form(...),  # Base64 encoded frame
+    challenge_type: str = Form(...),  # blink, smile, turn
+    frame_data: str = Form(...),      # Base64 encoded frame (used for blink/smile; first frame for turn)
+    extra_frames: str = Form(None),   # JSON array of base64 frames (used for head turn)
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Verify a specific liveliness challenge.
-    Called for each challenge step (blink, smile, head turn).
+    Verify a specific liveliness challenge using real OpenCV detection.
+    - blink: detects eyes-closed state in the submitted frame
+    - smile: detects smile via Haar cascade in the submitted frame
+    - turn: tracks face X position across multiple frames for head movement
     """
-    # Get verification
     verification = db.query(KYCVerification).filter(
         KYCVerification.id == verification_id,
         KYCVerification.user_id == current_user.id
@@ -936,23 +1083,44 @@ async def verify_liveliness_challenge(
         raise HTTPException(status_code=404, detail="Verification not found")
 
     try:
-        # Decode frame
         frame_bytes = base64.b64decode(frame_data.split(',')[1] if ',' in frame_data else frame_data)
 
-        # For now, use simple detection
-        # In production, this would use proper facial landmark analysis
-        import random
-        challenge_passed = random.random() > 0.15  # 85% chance of passing each challenge
+        if challenge_type == 'blink':
+            result = detect_blink_in_frame(frame_bytes)
+            challenge_passed = result.get("detected", False)
 
-        # Update verification based on challenge type
+        elif challenge_type == 'smile':
+            result = detect_smile_in_frame(frame_bytes)
+            challenge_passed = result.get("detected", False)
+
+        elif challenge_type in ['turn', 'turn_left', 'turn_right']:
+            # Collect all frames: primary frame + any extra frames
+            all_frame_bytes = [frame_bytes]
+            if extra_frames:
+                try:
+                    extra_list = json.loads(extra_frames)
+                    for ef in extra_list:
+                        ef_data = ef.split(',')[1] if ',' in ef else ef
+                        all_frame_bytes.append(base64.b64decode(ef_data))
+                except Exception as e:
+                    print(f"[KYC] Could not parse extra_frames: {e}")
+
+            result = detect_head_turn_in_frames(all_frame_bytes)
+            challenge_passed = result.get("detected", False)
+
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown challenge type: {challenge_type}")
+
+        print(f"[KYC] Challenge '{challenge_type}' result: passed={challenge_passed}, detail={result}")
+
+        # Update verification record
         if challenge_type == 'blink':
             verification.blink_detected = challenge_passed
         elif challenge_type == 'smile':
             verification.smile_detected = challenge_passed
-        elif challenge_type in ['turn_left', 'turn_right', 'turn']:
+        elif challenge_type in ['turn', 'turn_left', 'turn_right']:
             verification.head_turn_detected = challenge_passed
 
-        # Create attempt record
         attempt = KYCVerificationAttempt(
             verification_id=verification.id,
             user_id=current_user.id,
@@ -960,10 +1128,7 @@ async def verify_liveliness_challenge(
             step=f'liveliness_{challenge_type}',
             image_type='liveliness_frame',
             status='passed' if challenge_passed else 'failed',
-            analysis_result={
-                "challenge_type": challenge_type,
-                "passed": challenge_passed
-            },
+            analysis_result={"challenge_type": challenge_type, "passed": challenge_passed, "detail": result},
             completed_at=datetime.utcnow()
         )
         db.add(attempt)
@@ -972,9 +1137,11 @@ async def verify_liveliness_challenge(
         return {
             "success": challenge_passed,
             "challenge_type": challenge_type,
-            "message": f"{'Challenge passed!' if challenge_passed else 'Please try again'}"
+            "message": "Challenge passed!" if challenge_passed else "Please try again — make sure your face is well lit and clearly visible"
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error verifying challenge: {str(e)}")
 

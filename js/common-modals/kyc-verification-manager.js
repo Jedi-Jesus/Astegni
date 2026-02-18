@@ -458,7 +458,25 @@ class KYCVerificationManager {
     }
 
     /**
-     * Start a liveliness challenge
+     * Capture a single frame from the selfie video into a canvas (mirrored).
+     * Returns a base64 JPEG string.
+     */
+    captureFrame(video, canvas, width = 320, height = 240, quality = 0.6) {
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, -width, 0, width, height);
+        ctx.restore();
+        return canvas.toDataURL('image/jpeg', quality);
+    }
+
+    /**
+     * Start a liveliness challenge.
+     * - blink: captures a frame mid-challenge when user has blinked
+     * - smile: captures a frame mid-challenge when user is smiling
+     * - turn: captures multiple frames across the 3s window for head movement tracking
      */
     async startChallenge(type) {
         const instructionEl = document.getElementById('challenge-instruction');
@@ -466,78 +484,82 @@ class KYCVerificationManager {
         const canvas = document.getElementById('kyc-canvas-selfie');
 
         const instructions = {
-            blink: 'Blink your eyes slowly',
-            smile: 'Smile naturally',
-            turn: 'Turn your head slowly left and right'
+            blink: 'Blink your eyes slowly now...',
+            smile: 'Smile naturally now...',
+            turn: 'Turn your head left, then right slowly...'
         };
 
         instructionEl.textContent = instructions[type] || 'Follow the instruction';
 
-        // Capture frames during challenge (reduced quality and size for faster upload)
+        // Collect frames across the challenge window
         const frames = [];
-        const captureInterval = setInterval(() => {
-            if (frames.length < 3) {  // Reduced from 5 to 3 frames per challenge
-                // Use smaller canvas size for liveliness frames (320x240)
-                canvas.width = 320;
-                canvas.height = 240;
-                const ctx = canvas.getContext('2d');
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-                ctx.restore();
-                frames.push(canvas.toDataURL('image/jpeg', 0.5));  // Reduced quality from 0.8 to 0.5
-            }
-        }, 600);  // Slightly slower capture (600ms instead of 500ms)
+        const totalDuration = 3000; // ms
+        const interval = type === 'turn' ? 400 : 600; // faster capture for turn (more frames needed)
 
-        // Wait for challenge duration
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        const captureInterval = setInterval(() => {
+            frames.push(this.captureFrame(video, canvas));
+        }, interval);
+
+        await new Promise(resolve => setTimeout(resolve, totalDuration));
         clearInterval(captureInterval);
 
-        // Add frames to liveliness frames
+        // Also add to global liveliness frames for reference
         this.livelinessFrames.push(...frames);
 
-        // Verify challenge with backend
+        if (frames.length === 0) {
+            instructionEl.textContent = 'No frames captured. Please try again.';
+            return;
+        }
+
+        // For blink/smile: use the middle frame (most likely mid-action)
+        // For turn: send first frame as primary + rest as extra_frames
+        const primaryFrame = type === 'turn'
+            ? frames[0]
+            : frames[Math.floor(frames.length / 2)];
+        const extraFrames = type === 'turn' ? frames.slice(1) : [];
+
+        console.log(`[KYC] Challenge '${type}': ${frames.length} frames captured, sending ${extraFrames.length} extra`);
+
         try {
             let token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const formData = new FormData();
             formData.append('verification_id', this.verificationId);
             formData.append('challenge_type', type);
-            formData.append('frame_data', frames[frames.length - 1] || '');
+            formData.append('frame_data', primaryFrame);
+            if (extraFrames.length > 0) {
+                formData.append('extra_frames', JSON.stringify(extraFrames));
+            }
 
             let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/verify-liveliness`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
-            // If 401, try to refresh token and retry
             if (response.status === 401) {
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
                     response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/verify-liveliness`, {
                         method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
+                        headers: { 'Authorization': `Bearer ${token}` },
                         body: formData
                     });
                 }
             }
 
             const data = await response.json();
+            console.log(`[KYC] Challenge '${type}' response:`, data);
 
             if (data.success) {
                 this.challengesCompleted[type] = true;
                 this.updateChallengeStatus(type, true);
-                instructionEl.textContent = 'Challenge passed!';
+                instructionEl.textContent = '✓ Challenge passed!';
             } else {
-                instructionEl.textContent = 'Please try again';
+                instructionEl.textContent = data.message || 'Please try again';
             }
 
-            // Check if all challenges completed
+            // Show complete button once all 3 challenges pass
             if (this.challengesCompleted.blink && this.challengesCompleted.smile && this.challengesCompleted.turn) {
                 document.getElementById('btn-complete-liveliness').style.display = 'inline-flex';
             }
