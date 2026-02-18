@@ -4040,7 +4040,7 @@ const ChatModalManager = {
 
         // Insert message BEFORE typing indicators so they stay at the bottom
         const typingIndicator = document.getElementById('chatTypingIndicator');
-        if (typingIndicator) {
+        if (typingIndicator && typingIndicator.parentNode === chatArea) {
             chatArea.insertBefore(div, typingIndicator);
         } else {
             chatArea.appendChild(div);

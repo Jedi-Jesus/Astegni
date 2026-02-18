@@ -68,10 +68,19 @@ window.connectWithTutor = async function(tutorProfileId, tutorName) {
 
         const data = await response.json();
 
+        // Normalize API detail to a readable string (FastAPI can return detail as array or object)
+        const getDetailMessage = (detail) => {
+            if (!detail) return null;
+            if (typeof detail === 'string') return detail;
+            if (Array.isArray(detail)) return detail.map(e => e.msg || JSON.stringify(e)).join(', ');
+            return JSON.stringify(detail);
+        };
+
         if (response.ok) {
             alert(`Connection request sent to ${tutorName || 'tutor'} successfully!`);
             // Update button state if needed
-            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId}"]`);
+            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId})"]`) ||
+                           document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId},"]`);
             if (button) {
                 button.innerHTML = `<span class="flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,8 +94,10 @@ window.connectWithTutor = async function(tutorProfileId, tutorName) {
             }
         } else if (response.status === 400 && data.detail) {
             // Connection already exists - check the status and update button
-            const detail = data.detail.toLowerCase();
-            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId}"]`);
+            const detailMsg = getDetailMessage(data.detail);
+            const detail = detailMsg ? detailMsg.toLowerCase() : '';
+            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId})"]`) ||
+                           document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId},"]`);
 
             if (detail.includes('already connected')) {
                 alert(`You are already connected with ${tutorName || 'this tutor'}.`);
@@ -126,10 +137,10 @@ window.connectWithTutor = async function(tutorProfileId, tutorName) {
                     button.classList.remove('connect-btn');
                 }
             } else {
-                alert(data.detail);
+                alert(detailMsg || 'Failed to send connection request');
             }
         } else {
-            alert(data.detail || 'Failed to send connection request');
+            alert(getDetailMessage(data.detail) || 'Failed to send connection request');
         }
     } catch (error) {
         console.error('Error connecting with tutor:', error);
