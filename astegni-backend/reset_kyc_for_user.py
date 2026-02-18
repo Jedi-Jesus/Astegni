@@ -61,12 +61,14 @@ def reset_kyc(user_email=None):
         verifications_deleted = cur.rowcount
         print(f"[OK] Deleted {verifications_deleted} verifications")
 
-        # Reset user's KYC status
+        # Reset user's KYC status (both legacy and canonical fields)
         cur.execute("""
             UPDATE users
             SET kyc_verified = FALSE,
                 kyc_verified_at = NULL,
-                kyc_verification_id = NULL
+                kyc_verification_id = NULL,
+                is_verified = FALSE,
+                verified_at = NULL
             WHERE id = %s
         """, (user_id,))
         print(f"[OK] Reset user's KYC status")
