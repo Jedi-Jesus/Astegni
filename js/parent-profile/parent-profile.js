@@ -3910,76 +3910,108 @@ function collectHobbies() {
  * Add new social link field
  */
 function addSocialLink() {
-    const container = document.getElementById('social-media-container');
+    const container = document.getElementById('socialMediaContainer');
     if (!container) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.style.display = 'flex';
-    wrapper.style.gap = '0.5rem';
-    wrapper.style.marginBottom = '0.5rem';
-
-    const platformSelect = document.createElement('select');
-    platformSelect.className = 'form-input social-platform-select';
-    platformSelect.style.minWidth = '150px';
-    platformSelect.innerHTML = `
-        <option value="">Select Platform</option>
-        <option value="facebook">Facebook</option>
-        <option value="twitter">Twitter</option>
-        <option value="linkedin">LinkedIn</option>
-        <option value="instagram">Instagram</option>
-        <option value="youtube">YouTube</option>
-        <option value="telegram">Telegram</option>
-        <option value="website">Website</option>
+    const index = socialLinksList.length;
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center mb-2';
+    div.innerHTML = `
+        <select id="socialPlatform${index}" class="p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); min-width: 150px;">
+            <option value="">Select Platform</option>
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="snapchat">Snapchat</option>
+            <option value="facebook">Facebook</option>
+            <option value="telegram">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="twitter">X</option>
+            <option value="youtube">YouTube</option>
+            <option value="github">GitHub</option>
+        </select>
+        <input type="url"
+            id="socialUrl${index}"
+            class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+            style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+            placeholder="URL (e.g., https://facebook.com/yourpage)">
+        <button type="button"
+            class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            onclick="removeSocialLink(${index})">
+            🗑️
+        </button>
     `;
+    container.appendChild(div);
+    socialLinksList.push({ platform: '', url: '' });
+}
 
-    const urlInput = document.createElement('input');
-    urlInput.type = 'url';
-    urlInput.className = 'form-input social-url-input';
-    urlInput.placeholder = 'URL (e.g., https://facebook.com/yourpage)';
-    urlInput.style.flex = '1';
+function removeSocialLink(index) {
+    const container = document.getElementById('socialMediaContainer');
+    if (!container) return;
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = '×';
-    removeBtn.className = 'btn-secondary';
-    removeBtn.style.padding = '0.5rem 1rem';
-    removeBtn.style.minWidth = 'auto';
-    removeBtn.onclick = () => wrapper.remove();
-
-    wrapper.appendChild(platformSelect);
-    wrapper.appendChild(urlInput);
-    wrapper.appendChild(removeBtn);
-
-    container.appendChild(wrapper);
+    const children = Array.from(container.children);
+    if (children[index]) {
+        children[index].remove();
+        socialLinksList.splice(index, 1);
+    }
 }
 
 /**
  * Load existing social links into form
  */
-function loadSocialLinks(socialLinks) {
-    const container = document.getElementById('social-media-container');
+function loadSocialLinks(socialLinksData) {
+    const container = document.getElementById('socialMediaContainer');
     if (!container) return;
 
     container.innerHTML = '';
+    socialLinksList = [];
 
-    if (socialLinks && typeof socialLinks === 'object') {
-        Object.entries(socialLinks).forEach(([platform, url]) => {
-            if (platform && url) {
-                addSocialLink();
-                const wrappers = container.querySelectorAll('div');
-                const lastWrapper = wrappers[wrappers.length - 1];
-                if (lastWrapper) {
-                    const platformSelect = lastWrapper.querySelector('.social-platform-select');
-                    const urlInput = lastWrapper.querySelector('.social-url-input');
-                    if (platformSelect) platformSelect.value = platform;
-                    if (urlInput) urlInput.value = url;
-                }
-            }
-        });
+    // Handle both object and array formats
+    let linksArray = [];
+    if (socialLinksData && typeof socialLinksData === 'object') {
+        if (Array.isArray(socialLinksData)) {
+            linksArray = socialLinksData;
+        } else {
+            linksArray = Object.entries(socialLinksData)
+                .filter(([platform, url]) => url && url.trim() !== '')
+                .map(([platform, url]) => ({ platform, url }));
+        }
     }
 
-    // Add one empty field if no links exist
-    if (!container.children.length) {
+    if (linksArray.length > 0) {
+        linksArray.forEach((link, index) => {
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center mb-2';
+            div.innerHTML = `
+                <select id="socialPlatform${index}" class="p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); min-width: 150px;">
+                    <option value="">Select Platform</option>
+                    <option value="tiktok" ${link.platform === 'tiktok' ? 'selected' : ''}>TikTok</option>
+                    <option value="instagram" ${link.platform === 'instagram' ? 'selected' : ''}>Instagram</option>
+                    <option value="snapchat" ${link.platform === 'snapchat' ? 'selected' : ''}>Snapchat</option>
+                    <option value="facebook" ${link.platform === 'facebook' ? 'selected' : ''}>Facebook</option>
+                    <option value="telegram" ${link.platform === 'telegram' ? 'selected' : ''}>Telegram</option>
+                    <option value="whatsapp" ${link.platform === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                    <option value="linkedin" ${link.platform === 'linkedin' ? 'selected' : ''}>LinkedIn</option>
+                    <option value="twitter" ${link.platform === 'twitter' ? 'selected' : ''}>X</option>
+                    <option value="youtube" ${link.platform === 'youtube' ? 'selected' : ''}>YouTube</option>
+                    <option value="github" ${link.platform === 'github' ? 'selected' : ''}>GitHub</option>
+                </select>
+                <input type="url"
+                    id="socialUrl${index}"
+                    class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                    style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+                    placeholder="URL (e.g., https://facebook.com/yourpage)"
+                    value="${link.url || ''}">
+                <button type="button"
+                    class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    onclick="removeSocialLink(${index})">
+                    🗑️
+                </button>
+            `;
+            container.appendChild(div);
+            socialLinksList.push(link);
+        });
+    } else {
         addSocialLink();
     }
 }
@@ -3987,19 +4019,17 @@ function loadSocialLinks(socialLinks) {
 /**
  * Collect social links from form
  */
-function collectSocialLinks() {
-    const container = document.getElementById('social-media-container');
+function getSocialLinks() {
+    const container = document.getElementById('socialMediaContainer');
     if (!container) return {};
 
+    const platformSelects = container.querySelectorAll('select[id^="socialPlatform"]');
+    const urlInputs = container.querySelectorAll('input[id^="socialUrl"]');
+
     const socialLinks = {};
-    const wrappers = container.querySelectorAll('div');
-
-    wrappers.forEach(wrapper => {
-        const platformSelect = wrapper.querySelector('.social-platform-select');
-        const urlInput = wrapper.querySelector('.social-url-input');
-        const platform = platformSelect?.value?.trim();
-        const url = urlInput?.value?.trim();
-
+    platformSelects.forEach((select, index) => {
+        const platform = select.value;
+        const url = urlInputs[index]?.value.trim();
         if (platform && url) {
             socialLinks[platform] = url;
         }
@@ -4027,3 +4057,4 @@ window.changeAttendanceMonth = changeAttendanceMonth;
 window.addLanguage = addLanguage;
 window.addHobby = addHobby;
 window.addSocialLink = addSocialLink;
+window.removeSocialLink = removeSocialLink;

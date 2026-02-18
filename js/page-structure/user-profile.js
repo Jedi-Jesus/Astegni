@@ -1,6 +1,130 @@
 // User Profile JavaScript Module
 // Handles user profile functionality, panel switching, and profile management
 
+let socialLinksList = [];
+
+function addSocialLink() {
+    const container = document.getElementById('socialMediaContainer');
+    if (!container) return;
+
+    const index = socialLinksList.length;
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center mb-2';
+    div.innerHTML = `
+        <select id="socialPlatform${index}" class="p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); min-width: 150px;">
+            <option value="">Select Platform</option>
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="snapchat">Snapchat</option>
+            <option value="facebook">Facebook</option>
+            <option value="telegram">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="twitter">X</option>
+            <option value="youtube">YouTube</option>
+            <option value="github">GitHub</option>
+        </select>
+        <input type="url"
+            id="socialUrl${index}"
+            class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+            style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+            placeholder="URL (e.g., https://facebook.com/yourpage)">
+        <button type="button"
+            class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            onclick="removeSocialLink(${index})">
+            🗑️
+        </button>
+    `;
+    container.appendChild(div);
+    socialLinksList.push({ platform: '', url: '' });
+}
+
+function removeSocialLink(index) {
+    const container = document.getElementById('socialMediaContainer');
+    if (!container) return;
+
+    const children = Array.from(container.children);
+    if (children[index]) {
+        children[index].remove();
+        socialLinksList.splice(index, 1);
+    }
+}
+
+function loadSocialLinks(socialLinksData) {
+    const container = document.getElementById('socialMediaContainer');
+    if (!container) return;
+
+    container.innerHTML = '';
+    socialLinksList = [];
+
+    let linksArray = [];
+    if (socialLinksData && typeof socialLinksData === 'object') {
+        if (Array.isArray(socialLinksData)) {
+            linksArray = socialLinksData;
+        } else {
+            linksArray = Object.entries(socialLinksData)
+                .filter(([platform, url]) => url && url.trim() !== '')
+                .map(([platform, url]) => ({ platform, url }));
+        }
+    }
+
+    if (linksArray.length > 0) {
+        linksArray.forEach((link, index) => {
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center mb-2';
+            div.innerHTML = `
+                <select id="socialPlatform${index}" class="p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); min-width: 150px;">
+                    <option value="">Select Platform</option>
+                    <option value="tiktok" ${link.platform === 'tiktok' ? 'selected' : ''}>TikTok</option>
+                    <option value="instagram" ${link.platform === 'instagram' ? 'selected' : ''}>Instagram</option>
+                    <option value="snapchat" ${link.platform === 'snapchat' ? 'selected' : ''}>Snapchat</option>
+                    <option value="facebook" ${link.platform === 'facebook' ? 'selected' : ''}>Facebook</option>
+                    <option value="telegram" ${link.platform === 'telegram' ? 'selected' : ''}>Telegram</option>
+                    <option value="whatsapp" ${link.platform === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                    <option value="linkedin" ${link.platform === 'linkedin' ? 'selected' : ''}>LinkedIn</option>
+                    <option value="twitter" ${link.platform === 'twitter' ? 'selected' : ''}>X</option>
+                    <option value="youtube" ${link.platform === 'youtube' ? 'selected' : ''}>YouTube</option>
+                    <option value="github" ${link.platform === 'github' ? 'selected' : ''}>GitHub</option>
+                </select>
+                <input type="url"
+                    id="socialUrl${index}"
+                    class="flex-1 p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                    style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);"
+                    placeholder="URL (e.g., https://facebook.com/yourpage)"
+                    value="${link.url || ''}">
+                <button type="button"
+                    class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    onclick="removeSocialLink(${index})">
+                    🗑️
+                </button>
+            `;
+            container.appendChild(div);
+            socialLinksList.push(link);
+        });
+    } else {
+        addSocialLink();
+    }
+}
+
+function getSocialLinks() {
+    const container = document.getElementById('socialMediaContainer');
+    if (!container) return {};
+
+    const platformSelects = container.querySelectorAll('select[id^="socialPlatform"]');
+    const urlInputs = container.querySelectorAll('input[id^="socialUrl"]');
+
+    const socialLinks = {};
+    platformSelects.forEach((select, index) => {
+        const platform = select.value;
+        const url = urlInputs[index]?.value.trim();
+        if (platform && url) {
+            socialLinks[platform] = url;
+        }
+    });
+
+    return socialLinks;
+}
+
 // Panel switching functionality
 function switchPanel(panelName) {
     // Hide all panels
@@ -1143,11 +1267,7 @@ function openEditProfileModal() {
         document.getElementById('editInterestedIn').value = Array.isArray(interests) ? interests.join(', ') : '';
 
         // Social links - from users table
-        const socialLinks = currentUserProfile.social_links || {};
-        document.getElementById('editTwitter').value = socialLinks.twitter || '';
-        document.getElementById('editLinkedIn').value = socialLinks.linkedin || '';
-        document.getElementById('editFacebook').value = socialLinks.facebook || '';
-        document.getElementById('editInstagram').value = socialLinks.instagram || '';
+        loadSocialLinks(currentUserProfile.social_links || {});
 
         // Load display_location checkbox (show/hide location on public profile)
         const displayLocationCheckbox = document.getElementById('editDisplayLocation');
@@ -1213,12 +1333,7 @@ async function saveUserProfile() {
         const interestedIn = interestedInStr ? interestedInStr.split(',').map(i => i.trim()).filter(Boolean) : [];
 
         // Social links
-        const socialLinks = {
-            twitter: document.getElementById('editTwitter').value.trim(),
-            linkedin: document.getElementById('editLinkedIn').value.trim(),
-            facebook: document.getElementById('editFacebook').value.trim(),
-            instagram: document.getElementById('editInstagram').value.trim()
-        };
+        const socialLinks = getSocialLinks();
 
         // Get display_location checkbox value
         const displayLocationCheckbox = document.getElementById('editDisplayLocation');

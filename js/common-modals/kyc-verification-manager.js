@@ -61,6 +61,41 @@ class KYCVerificationManager {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
 
+        // Set document instruction based on user's location
+        const instructionEl = document.getElementById('kyc-document-instruction');
+        if (instructionEl) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const location = user.location || user.country_code || null;
+
+            if (!location) {
+                // No location set — block the step and prompt user to set location
+                instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
+                // Hide camera and capture controls until location is set
+                const cameraContainer = modal.querySelector('.camera-container');
+                const captureControls = modal.querySelector('.capture-controls');
+                const tipsSection = modal.querySelector('.tips-section');
+                if (cameraContainer) cameraContainer.style.display = 'none';
+                if (captureControls) captureControls.style.display = 'none';
+                if (tipsSection) tipsSection.style.display = 'none';
+                return;
+            }
+
+            // Derive a country name from location string or country_code
+            let countryName = location;
+            if (user.country_code) {
+                const countryNames = {
+                    'ET': 'Ethiopian', 'US': 'US', 'GB': 'British', 'CA': 'Canadian',
+                    'AU': 'Australian', 'DE': 'German', 'FR': 'French', 'IN': 'Indian',
+                    'NG': 'Nigerian', 'KE': 'Kenyan', 'GH': 'Ghanaian', 'ZA': 'South African',
+                    'EG': 'Egyptian', 'TZ': 'Tanzanian', 'UG': 'Ugandan', 'RW': 'Rwandan',
+                    'SN': 'Senegalese', 'CM': 'Cameroonian', 'CI': 'Ivorian', 'SD': 'Sudanese'
+                };
+                countryName = countryNames[user.country_code] || user.country_code;
+            }
+
+            instructionEl.textContent = `Hold your ${countryName} ID clearly in front of the camera`;
+        }
+
         // Start verification session
         await this.startVerification();
 
