@@ -477,7 +477,7 @@
             // Load KYC manager script if not already loaded
             if (typeof kycManager === 'undefined') {
                 const script = document.createElement('script');
-                script.src = '../js/common-modals/kyc-verification-manager.js';
+                script.src = '../js/common-modals/kyc-verification-manager.js?v=20260218';
                 script.onload = () => {
                     console.log('[KYC] Manager loaded, opening modal');
                     if (typeof openKYCModal === 'function') {
