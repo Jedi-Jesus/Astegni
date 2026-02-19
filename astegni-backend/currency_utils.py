@@ -10,9 +10,9 @@ Usage:
 """
 
 # Comprehensive country code to currency mapping
-# Covers 195+ countries worldwide
+# Covers all 195 UN-recognized countries worldwide
 COUNTRY_TO_CURRENCY = {
-    # Africa
+    # Africa (54 countries)
     'ET': 'ETB',  # Ethiopia - Ethiopian Birr
     'NG': 'NGN',  # Nigeria - Nigerian Naira
     'EG': 'EGP',  # Egypt - Egyptian Pound
@@ -25,9 +25,9 @@ COUNTRY_TO_CURRENCY = {
     'DZ': 'DZD',  # Algeria - Algerian Dinar
     'TN': 'TND',  # Tunisia - Tunisian Dinar
     'RW': 'RWF',  # Rwanda - Rwandan Franc
-    'SN': 'XOF',  # Senegal - West African CFA franc
-    'CI': 'XOF',  # Ivory Coast - West African CFA franc
-    'CM': 'XAF',  # Cameroon - Central African CFA franc
+    'SN': 'XOF',  # Senegal - West African CFA Franc
+    'CI': 'XOF',  # Ivory Coast - West African CFA Franc
+    'CM': 'XAF',  # Cameroon - Central African CFA Franc
     'AO': 'AOA',  # Angola - Angolan Kwanza
     'BW': 'BWP',  # Botswana - Botswana Pula
     'MU': 'MUR',  # Mauritius - Mauritian Rupee
@@ -36,17 +36,39 @@ COUNTRY_TO_CURRENCY = {
     'MW': 'MWK',  # Malawi - Malawian Kwacha
     'MZ': 'MZN',  # Mozambique - Mozambican Metical
     'NA': 'NAD',  # Namibia - Namibian Dollar
-    'BJ': 'XOF',  # Benin - West African CFA franc
-    'BF': 'XOF',  # Burkina Faso - West African CFA franc
-    'ML': 'XOF',  # Mali - West African CFA franc
-    'NE': 'XOF',  # Niger - West African CFA franc
-    'TG': 'XOF',  # Togo - West African CFA franc
+    'BJ': 'XOF',  # Benin - West African CFA Franc
+    'BF': 'XOF',  # Burkina Faso - West African CFA Franc
+    'ML': 'XOF',  # Mali - West African CFA Franc
+    'NE': 'XOF',  # Niger - West African CFA Franc
+    'TG': 'XOF',  # Togo - West African CFA Franc
     'GN': 'GNF',  # Guinea - Guinean Franc
     'LR': 'LRD',  # Liberia - Liberian Dollar
     'SL': 'SLE',  # Sierra Leone - Sierra Leonean Leone
     'GM': 'GMD',  # Gambia - Gambian Dalasi
+    'SD': 'SDG',  # Sudan - Sudanese Pound
+    'SS': 'SSP',  # South Sudan - South Sudanese Pound
+    'SO': 'SOS',  # Somalia - Somali Shilling
+    'DJ': 'DJF',  # Djibouti - Djiboutian Franc
+    'ER': 'ERN',  # Eritrea - Eritrean Nakfa
+    'LY': 'LYD',  # Libya - Libyan Dinar
+    'MR': 'MRU',  # Mauritania - Mauritanian Ouguiya
+    'CV': 'CVE',  # Cape Verde - Cape Verdean Escudo
+    'ST': 'STN',  # São Tomé and Príncipe - São Tomé Dobra
+    'GQ': 'XAF',  # Equatorial Guinea - Central African CFA Franc
+    'GA': 'XAF',  # Gabon - Central African CFA Franc
+    'CG': 'XAF',  # Congo (Republic) - Central African CFA Franc
+    'CD': 'CDF',  # Congo (DRC) - Congolese Franc
+    'CF': 'XAF',  # Central African Republic - Central African CFA Franc
+    'TD': 'XAF',  # Chad - Central African CFA Franc
+    'BI': 'BIF',  # Burundi - Burundian Franc
+    'KM': 'KMF',  # Comoros - Comorian Franc
+    'MG': 'MGA',  # Madagascar - Malagasy Ariary
+    'SC': 'SCR',  # Seychelles - Seychellois Rupee
+    'LS': 'LSL',  # Lesotho - Lesotho Loti
+    'SZ': 'SZL',  # Eswatini - Swazi Lilangeni
+    'GW': 'XOF',  # Guinea-Bissau - West African CFA Franc
 
-    # Americas
+    # Americas (35 countries)
     'US': 'USD',  # United States - US Dollar
     'CA': 'CAD',  # Canada - Canadian Dollar
     'MX': 'MXN',  # Mexico - Mexican Peso
@@ -73,8 +95,17 @@ COUNTRY_TO_CURRENCY = {
     'BS': 'BSD',  # Bahamas - Bahamian Dollar
     'HT': 'HTG',  # Haiti - Haitian Gourde
     'CU': 'CUP',  # Cuba - Cuban Peso
+    'GY': 'GYD',  # Guyana - Guyanese Dollar
+    'SR': 'SRD',  # Suriname - Surinamese Dollar
+    'BZ': 'BZD',  # Belize - Belize Dollar
+    'LC': 'XCD',  # Saint Lucia - East Caribbean Dollar
+    'VC': 'XCD',  # Saint Vincent and the Grenadines - East Caribbean Dollar
+    'GD': 'XCD',  # Grenada - East Caribbean Dollar
+    'AG': 'XCD',  # Antigua and Barbuda - East Caribbean Dollar
+    'DM': 'XCD',  # Dominica - East Caribbean Dollar
+    'KN': 'XCD',  # Saint Kitts and Nevis - East Caribbean Dollar
 
-    # Europe
+    # Europe (44 countries)
     'GB': 'GBP',  # United Kingdom - British Pound
     'DE': 'EUR',  # Germany - Euro
     'FR': 'EUR',  # France - Euro
@@ -111,11 +142,19 @@ COUNTRY_TO_CURRENCY = {
     'MD': 'MDL',  # Moldova - Moldovan Leu
     'AL': 'ALL',  # Albania - Albanian Lek
     'MK': 'MKD',  # North Macedonia - Macedonian Denar
-    'BA': 'BAM',  # Bosnia - Bosnia Mark
+    'BA': 'BAM',  # Bosnia and Herzegovina - Bosnian Mark
     'ME': 'EUR',  # Montenegro - Euro
     'XK': 'EUR',  # Kosovo - Euro
+    'LU': 'EUR',  # Luxembourg - Euro
+    'MT': 'EUR',  # Malta - Euro
+    'CY': 'EUR',  # Cyprus - Euro
+    'LI': 'CHF',  # Liechtenstein - Swiss Franc
+    'MC': 'EUR',  # Monaco - Euro
+    'SM': 'EUR',  # San Marino - Euro
+    'VA': 'EUR',  # Vatican City - Euro
+    'AD': 'EUR',  # Andorra - Euro
 
-    # Asia
+    # Asia (48 countries)
     'CN': 'CNY',  # China - Chinese Yuan
     'IN': 'INR',  # India - Indian Rupee
     'JP': 'JPY',  # Japan - Japanese Yen
@@ -145,8 +184,14 @@ COUNTRY_TO_CURRENCY = {
     'HK': 'HKD',  # Hong Kong - Hong Kong Dollar
     'MO': 'MOP',  # Macau - Macanese Pataca
     'TW': 'TWD',  # Taiwan - New Taiwan Dollar
+    'KP': 'KPW',  # North Korea - North Korean Won
+    'TL': 'USD',  # Timor-Leste - US Dollar
+    'BN': 'BND',  # Brunei - Brunei Dollar
+    'GE': 'GEL',  # Georgia - Georgian Lari
+    'AM': 'AMD',  # Armenia - Armenian Dram
+    'AZ': 'AZN',  # Azerbaijan - Azerbaijani Manat
 
-    # Middle East
+    # Middle East (14 countries)
     'SA': 'SAR',  # Saudi Arabia - Saudi Riyal
     'AE': 'AED',  # UAE - UAE Dirham
     'IL': 'ILS',  # Israel - Israeli Shekel
@@ -162,7 +207,7 @@ COUNTRY_TO_CURRENCY = {
     'SY': 'SYP',  # Syria - Syrian Pound
     'PS': 'ILS',  # Palestine - Israeli Shekel
 
-    # Oceania
+    # Oceania (14 countries)
     'AU': 'AUD',  # Australia - Australian Dollar
     'NZ': 'NZD',  # New Zealand - New Zealand Dollar
     'PG': 'PGK',  # Papua New Guinea - Papua New Guinean Kina
@@ -171,12 +216,51 @@ COUNTRY_TO_CURRENCY = {
     'VU': 'VUV',  # Vanuatu - Vanuatu Vatu
     'WS': 'WST',  # Samoa - Samoan Tala
     'TO': 'TOP',  # Tonga - Tongan Paʻanga
+    'KI': 'AUD',  # Kiribati - Australian Dollar
+    'FM': 'USD',  # Micronesia - US Dollar
+    'MH': 'USD',  # Marshall Islands - US Dollar
+    'PW': 'USD',  # Palau - US Dollar
+    'NR': 'AUD',  # Nauru - Australian Dollar
+    'TV': 'AUD',  # Tuvalu - Australian Dollar
 
-    # Caribbean & Others
+    # Territories & Dependencies (commonly used)
     'PR': 'USD',  # Puerto Rico - US Dollar
     'VI': 'USD',  # US Virgin Islands - US Dollar
     'GU': 'USD',  # Guam - US Dollar
     'AS': 'USD',  # American Samoa - US Dollar
+    'MP': 'USD',  # Northern Mariana Islands - US Dollar
+    'GF': 'EUR',  # French Guiana - Euro
+    'GP': 'EUR',  # Guadeloupe - Euro
+    'MQ': 'EUR',  # Martinique - Euro
+    'RE': 'EUR',  # Réunion - Euro
+    'YT': 'EUR',  # Mayotte - Euro
+    'NC': 'XPF',  # New Caledonia - CFP Franc
+    'PF': 'XPF',  # French Polynesia - CFP Franc
+    'WF': 'XPF',  # Wallis and Futuna - CFP Franc
+    'PM': 'EUR',  # Saint Pierre and Miquelon - Euro
+    'MF': 'EUR',  # Saint Martin - Euro
+    'BL': 'EUR',  # Saint Barthélemy - Euro
+    'AW': 'AWG',  # Aruba - Aruban Florin
+    'CW': 'ANG',  # Curaçao - Netherlands Antillean Guilder
+    'SX': 'ANG',  # Sint Maarten - Netherlands Antillean Guilder
+    'BQ': 'USD',  # Bonaire - US Dollar
+    'TC': 'USD',  # Turks and Caicos - US Dollar
+    'KY': 'KYD',  # Cayman Islands - Cayman Islands Dollar
+    'BM': 'BMD',  # Bermuda - Bermudian Dollar
+    'VG': 'USD',  # British Virgin Islands - US Dollar
+    'MS': 'XCD',  # Montserrat - East Caribbean Dollar
+    'AI': 'XCD',  # Anguilla - East Caribbean Dollar
+    'FK': 'FKP',  # Falkland Islands - Falkland Islands Pound
+    'GI': 'GIP',  # Gibraltar - Gibraltar Pound
+    'JE': 'GBP',  # Jersey - British Pound
+    'GG': 'GBP',  # Guernsey - British Pound
+    'IM': 'GBP',  # Isle of Man - British Pound
+    'SH': 'SHP',  # Saint Helena - Saint Helena Pound
+    'IO': 'USD',  # British Indian Ocean Territory - US Dollar
+    'CK': 'NZD',  # Cook Islands - New Zealand Dollar
+    'NU': 'NZD',  # Niue - New Zealand Dollar
+    'TK': 'NZD',  # Tokelau - New Zealand Dollar
+    'PN': 'NZD',  # Pitcairn Islands - New Zealand Dollar
 }
 
 # Currency symbols mapping
@@ -195,18 +279,137 @@ CURRENCY_SYMBOLS = {
     'EGP': 'E£',
     'CAD': 'C$',
     'AUD': 'A$',
+    'NZD': 'NZ$',
     'BRL': 'R$',
     'MXN': '$',
     'CHF': 'CHF',
     'SEK': 'kr',
     'NOK': 'kr',
     'DKK': 'kr',
+    'ISK': 'kr',
     'TRY': '₺',
     'RUB': '₽',
     'KRW': '₩',
-    'SAR': 'SAR',
-    'AED': 'AED',
+    'KPW': '₩',
+    'SAR': '﷼',
+    'AED': 'د.إ',
     'ILS': '₪',
+    'THB': '฿',
+    'VND': '₫',
+    'PHP': '₱',
+    'IDR': 'Rp',
+    'PKR': '₨',
+    'BDT': '৳',
+    'LKR': '₨',
+    'NPR': '₨',
+    'MYR': 'RM',
+    'SGD': 'S$',
+    'HKD': 'HK$',
+    'TWD': 'NT$',
+    'CNY': '¥',
+    'KZT': '₸',
+    'UAH': '₴',
+    'PLN': 'zł',
+    'HUF': 'Ft',
+    'CZK': 'Kč',
+    'RON': 'lei',
+    'BGN': 'лв',
+    'HRK': 'kn',
+    'RSD': 'din',
+    'TZS': 'TSh',
+    'UGX': 'USh',
+    'RWF': 'RF',
+    'MAD': 'MAD',
+    'DZD': 'DA',
+    'TND': 'DT',
+    'SDG': 'SDG',
+    'LYD': 'LD',
+    'IQD': 'IQD',
+    'IRR': '﷼',
+    'JOD': 'JD',
+    'KWD': 'KD',
+    'LBP': 'L£',
+    'OMR': 'OMR',
+    'QAR': 'QR',
+    'BHD': 'BD',
+    'YER': '﷼',
+    'SYP': 'S£',
+    'GEL': '₾',
+    'AMD': '֏',
+    'AZN': '₼',
+    'XOF': 'CFA',
+    'XAF': 'FCFA',
+    'XCD': 'EC$',
+    'XPF': 'CFP',
+    'AOA': 'Kz',
+    'BWP': 'P',
+    'MUR': '₨',
+    'ZMW': 'ZK',
+    'ZWL': 'Z$',
+    'MWK': 'MK',
+    'MZN': 'MT',
+    'NAD': 'N$',
+    'GNF': 'FG',
+    'LRD': 'L$',
+    'SLE': 'Le',
+    'GMD': 'D',
+    'SSP': 'SSP',
+    'SOS': 'Sh',
+    'DJF': 'Fdj',
+    'ERN': 'Nfk',
+    'MRU': 'UM',
+    'CVE': '$',
+    'STN': 'Db',
+    'CDF': 'FC',
+    'BIF': 'Fr',
+    'KMF': 'Fr',
+    'MGA': 'Ar',
+    'SCR': '₨',
+    'LSL': 'L',
+    'SZL': 'L',
+    'ARS': '$',
+    'COP': '$',
+    'CLP': '$',
+    'PEN': 'S/',
+    'VES': 'Bs.',
+    'BOB': 'Bs.',
+    'PYG': '₲',
+    'UYU': '$',
+    'CRC': '₡',
+    'PAB': 'B/.',
+    'GTQ': 'Q',
+    'HNL': 'L',
+    'NIO': 'C$',
+    'DOP': 'RD$',
+    'JMD': 'J$',
+    'TTD': 'TT$',
+    'BBD': 'Bds$',
+    'BSD': 'B$',
+    'HTG': 'G',
+    'CUP': '$',
+    'GYD': 'G$',
+    'SRD': '$',
+    'BZD': 'BZ$',
+    'AFN': '؋',
+    'KHR': '៛',
+    'LAK': '₭',
+    'MMK': 'K',
+    'BTN': 'Nu',
+    'MVR': 'Rf',
+    'UZS': 'so\'m',
+    'TMT': 'T',
+    'KGS': 'с',
+    'TJS': 'SM',
+    'MNT': '₮',
+    'MOP': 'P',
+    'KYD': 'CI$',
+    'BMD': 'BD$',
+    'AWG': 'ƒ',
+    'ANG': 'ƒ',
+    'FKP': '£',
+    'GIP': '£',
+    'SHP': '£',
+    'BND': 'B$',
 }
 
 
@@ -242,6 +445,7 @@ def get_currency_from_country(country_code: str) -> str:
 
 # Mapping of country names (and common variants) to ISO country codes
 COUNTRY_NAME_TO_CODE = {
+    # Africa
     'ethiopia': 'ET', 'ethiopian': 'ET',
     'nigeria': 'NG', 'nigerian': 'NG',
     'kenya': 'KE', 'kenyan': 'KE',
@@ -253,38 +457,205 @@ COUNTRY_NAME_TO_CODE = {
     'rwanda': 'RW', 'rwandan': 'RW',
     'senegal': 'SN', 'senegalese': 'SN',
     'cameroon': 'CM', 'cameroonian': 'CM',
-    "ivory coast": 'CI', "côte d'ivoire": 'CI', 'cote divoire': 'CI',
+    "ivory coast": 'CI', "côte d'ivoire": 'CI', 'cote divoire': 'CI', "cote d'ivoire": 'CI',
     'morocco': 'MA', 'moroccan': 'MA',
     'algeria': 'DZ', 'algerian': 'DZ',
     'tunisia': 'TN', 'tunisian': 'TN',
     'sudan': 'SD', 'sudanese': 'SD',
-    'united states': 'US', 'usa': 'US', 'united states of america': 'US',
-    'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB',
+    'south sudan': 'SS', 'south sudanese': 'SS',
+    'somalia': 'SO', 'somali': 'SO',
+    'djibouti': 'DJ', 'djiboutian': 'DJ',
+    'eritrea': 'ER', 'eritrean': 'ER',
+    'libya': 'LY', 'libyan': 'LY',
+    'mauritania': 'MR', 'mauritanian': 'MR',
+    'cape verde': 'CV', 'cabo verde': 'CV',
+    'sao tome and principe': 'ST', 'são tomé and príncipe': 'ST',
+    'equatorial guinea': 'GQ',
+    'gabon': 'GA', 'gabonese': 'GA',
+    'congo': 'CG', 'republic of the congo': 'CG',
+    'democratic republic of the congo': 'CD', 'drc': 'CD', 'dr congo': 'CD',
+    'central african republic': 'CF',
+    'chad': 'TD', 'chadian': 'TD',
+    'burundi': 'BI', 'burundian': 'BI',
+    'comoros': 'KM', 'comorian': 'KM',
+    'madagascar': 'MG', 'malagasy': 'MG',
+    'seychelles': 'SC',
+    'lesotho': 'LS', 'basotho': 'LS',
+    'eswatini': 'SZ', 'swaziland': 'SZ',
+    'angola': 'AO', 'angolan': 'AO',
+    'botswana': 'BW',
+    'mauritius': 'MU', 'mauritian': 'MU',
+    'zambia': 'ZM', 'zambian': 'ZM',
+    'zimbabwe': 'ZW', 'zimbabwean': 'ZW',
+    'malawi': 'MW', 'malawian': 'MW',
+    'mozambique': 'MZ', 'mozambican': 'MZ',
+    'namibia': 'NA', 'namibian': 'NA',
+    'benin': 'BJ', 'beninese': 'BJ',
+    'burkina faso': 'BF',
+    'mali': 'ML', 'malian': 'ML',
+    'niger': 'NE', 'nigerien': 'NE',
+    'togo': 'TG', 'togolese': 'TG',
+    'guinea': 'GN', 'guinean': 'GN',
+    'liberia': 'LR', 'liberian': 'LR',
+    'sierra leone': 'SL',
+    'gambia': 'GM', 'gambian': 'GM',
+    'guinea-bissau': 'GW',
+
+    # Americas
+    'united states': 'US', 'usa': 'US', 'united states of america': 'US', 'america': 'US',
     'canada': 'CA', 'canadian': 'CA',
-    'australia': 'AU', 'australian': 'AU',
+    'mexico': 'MX', 'mexican': 'MX',
+    'brazil': 'BR', 'brazilian': 'BR',
+    'argentina': 'AR', 'argentinian': 'AR', 'argentine': 'AR',
+    'colombia': 'CO', 'colombian': 'CO',
+    'chile': 'CL', 'chilean': 'CL',
+    'peru': 'PE', 'peruvian': 'PE',
+    'venezuela': 'VE', 'venezuelan': 'VE',
+    'ecuador': 'EC', 'ecuadorian': 'EC',
+    'bolivia': 'BO', 'bolivian': 'BO',
+    'paraguay': 'PY', 'paraguayan': 'PY',
+    'uruguay': 'UY', 'uruguayan': 'UY',
+    'costa rica': 'CR', 'costa rican': 'CR',
+    'panama': 'PA', 'panamanian': 'PA',
+    'guatemala': 'GT', 'guatemalan': 'GT',
+    'honduras': 'HN', 'honduran': 'HN',
+    'nicaragua': 'NI', 'nicaraguan': 'NI',
+    'el salvador': 'SV', 'salvadoran': 'SV',
+    'dominican republic': 'DO',
+    'jamaica': 'JM', 'jamaican': 'JM',
+    'trinidad and tobago': 'TT', 'trinidadian': 'TT',
+    'barbados': 'BB', 'barbadian': 'BB',
+    'bahamas': 'BS', 'bahamian': 'BS',
+    'haiti': 'HT', 'haitian': 'HT',
+    'cuba': 'CU', 'cuban': 'CU',
+    'guyana': 'GY', 'guyanese': 'GY',
+    'suriname': 'SR', 'surinamese': 'SR',
+    'belize': 'BZ', 'belizean': 'BZ',
+    'saint lucia': 'LC',
+    'saint vincent and the grenadines': 'VC',
+    'grenada': 'GD', 'grenadian': 'GD',
+    'antigua and barbuda': 'AG',
+    'dominica': 'DM', 'dominican': 'DM',
+    'saint kitts and nevis': 'KN',
+
+    # Europe
+    'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB',
+    'scotland': 'GB', 'wales': 'GB', 'northern ireland': 'GB',
     'germany': 'DE', 'german': 'DE',
     'france': 'FR', 'french': 'FR',
-    'india': 'IN', 'indian': 'IN',
-    'china': 'CN', 'chinese': 'CN',
-    'japan': 'JP', 'japanese': 'JP',
-    'brazil': 'BR', 'brazilian': 'BR',
-    'mexico': 'MX', 'mexican': 'MX',
-    'spain': 'ES', 'spanish': 'ES',
     'italy': 'IT', 'italian': 'IT',
-    'netherlands': 'NL', 'dutch': 'NL',
+    'spain': 'ES', 'spanish': 'ES',
+    'netherlands': 'NL', 'dutch': 'NL', 'holland': 'NL',
+    'belgium': 'BE', 'belgian': 'BE',
+    'austria': 'AT', 'austrian': 'AT',
+    'portugal': 'PT', 'portuguese': 'PT',
+    'ireland': 'IE', 'irish': 'IE',
+    'greece': 'GR', 'greek': 'GR',
+    'finland': 'FI', 'finnish': 'FI',
     'sweden': 'SE', 'swedish': 'SE',
     'norway': 'NO', 'norwegian': 'NO',
     'denmark': 'DK', 'danish': 'DK',
     'switzerland': 'CH', 'swiss': 'CH',
-    'turkey': 'TR', 'turkish': 'TR',
+    'poland': 'PL', 'polish': 'PL',
+    'czech republic': 'CZ', 'czechia': 'CZ', 'czech': 'CZ',
+    'hungary': 'HU', 'hungarian': 'HU',
+    'romania': 'RO', 'romanian': 'RO',
+    'bulgaria': 'BG', 'bulgarian': 'BG',
+    'croatia': 'HR', 'croatian': 'HR',
+    'serbia': 'RS', 'serbian': 'RS',
+    'slovakia': 'SK', 'slovak': 'SK',
+    'slovenia': 'SI', 'slovenian': 'SI',
+    'lithuania': 'LT', 'lithuanian': 'LT',
+    'latvia': 'LV', 'latvian': 'LV',
+    'estonia': 'EE', 'estonian': 'EE',
+    'iceland': 'IS', 'icelandic': 'IS',
+    'ukraine': 'UA', 'ukrainian': 'UA',
+    'turkey': 'TR', 'turkish': 'TR', 'turkiye': 'TR',
     'russia': 'RU', 'russian': 'RU',
-    'saudi arabia': 'SA',
-    'uae': 'AE', 'united arab emirates': 'AE',
-    'israel': 'IL', 'israeli': 'IL',
-    'south korea': 'KR', 'korea': 'KR',
+    'belarus': 'BY', 'belarusian': 'BY',
+    'moldova': 'MD', 'moldovan': 'MD',
+    'albania': 'AL', 'albanian': 'AL',
+    'north macedonia': 'MK', 'macedonian': 'MK',
+    'bosnia and herzegovina': 'BA', 'bosnia': 'BA',
+    'montenegro': 'ME', 'montenegrin': 'ME',
+    'kosovo': 'XK',
+    'luxembourg': 'LU', 'luxembourgish': 'LU',
+    'malta': 'MT', 'maltese': 'MT',
+    'cyprus': 'CY', 'cypriot': 'CY',
+    'liechtenstein': 'LI',
+    'monaco': 'MC', 'monégasque': 'MC',
+    'san marino': 'SM',
+    'vatican': 'VA', 'holy see': 'VA',
+    'andorra': 'AD', 'andorran': 'AD',
+
+    # Asia
+    'china': 'CN', 'chinese': 'CN',
+    'india': 'IN', 'indian': 'IN',
+    'japan': 'JP', 'japanese': 'JP',
+    'south korea': 'KR', 'korea': 'KR', 'korean': 'KR',
+    'north korea': 'KP',
+    'singapore': 'SG', 'singaporean': 'SG',
+    'malaysia': 'MY', 'malaysian': 'MY',
+    'thailand': 'TH', 'thai': 'TH',
+    'vietnam': 'VN', 'vietnamese': 'VN',
+    'philippines': 'PH', 'philippine': 'PH', 'filipino': 'PH',
     'indonesia': 'ID', 'indonesian': 'ID',
     'pakistan': 'PK', 'pakistani': 'PK',
     'bangladesh': 'BD', 'bangladeshi': 'BD',
+    'sri lanka': 'LK', 'sri lankan': 'LK',
+    'myanmar': 'MM', 'burmese': 'MM', 'burma': 'MM',
+    'cambodia': 'KH', 'cambodian': 'KH',
+    'laos': 'LA', 'lao': 'LA',
+    'nepal': 'NP', 'nepalese': 'NP', 'nepali': 'NP',
+    'bhutan': 'BT', 'bhutanese': 'BT',
+    'maldives': 'MV', 'maldivian': 'MV',
+    'afghanistan': 'AF', 'afghan': 'AF',
+    'kazakhstan': 'KZ', 'kazakh': 'KZ',
+    'uzbekistan': 'UZ', 'uzbek': 'UZ',
+    'turkmenistan': 'TM', 'turkmen': 'TM',
+    'kyrgyzstan': 'KG', 'kyrgyz': 'KG',
+    'tajikistan': 'TJ', 'tajik': 'TJ',
+    'mongolia': 'MN', 'mongolian': 'MN',
+    'hong kong': 'HK',
+    'macau': 'MO', 'macao': 'MO',
+    'taiwan': 'TW', 'taiwanese': 'TW',
+    'timor-leste': 'TL', 'east timor': 'TL',
+    'brunei': 'BN', 'bruneian': 'BN',
+    'georgia': 'GE', 'georgian': 'GE',
+    'armenia': 'AM', 'armenian': 'AM',
+    'azerbaijan': 'AZ', 'azerbaijani': 'AZ',
+
+    # Middle East
+    'saudi arabia': 'SA', 'saudi': 'SA',
+    'uae': 'AE', 'united arab emirates': 'AE', 'emirates': 'AE',
+    'israel': 'IL', 'israeli': 'IL',
+    'iraq': 'IQ', 'iraqi': 'IQ',
+    'iran': 'IR', 'iranian': 'IR',
+    'jordan': 'JO', 'jordanian': 'JO',
+    'kuwait': 'KW', 'kuwaiti': 'KW',
+    'lebanon': 'LB', 'lebanese': 'LB',
+    'oman': 'OM', 'omani': 'OM',
+    'qatar': 'QA', 'qatari': 'QA',
+    'bahrain': 'BH', 'bahraini': 'BH',
+    'yemen': 'YE', 'yemeni': 'YE',
+    'syria': 'SY', 'syrian': 'SY',
+    'palestine': 'PS', 'palestinian': 'PS',
+
+    # Oceania
+    'australia': 'AU', 'australian': 'AU',
+    'new zealand': 'NZ', 'new zealander': 'NZ',
+    'papua new guinea': 'PG',
+    'fiji': 'FJ', 'fijian': 'FJ',
+    'solomon islands': 'SB',
+    'vanuatu': 'VU',
+    'samoa': 'WS', 'samoan': 'WS',
+    'tonga': 'TO', 'tongan': 'TO',
+    'kiribati': 'KI',
+    'micronesia': 'FM',
+    'marshall islands': 'MH',
+    'palau': 'PW',
+    'nauru': 'NR', 'nauruan': 'NR',
+    'tuvalu': 'TV', 'tuvaluan': 'TV',
 }
 
 
