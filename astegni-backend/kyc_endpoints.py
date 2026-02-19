@@ -388,9 +388,10 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
             return {"detected": False, "error": "Not enough frames with face detected", "x_centers": x_centers}
 
         x_range = max(x_centers) - min(x_centers)
-        # Require at least 12% of frame width movement (normalized)
-        head_turn_detected = bool(x_range >= 0.12)
-        confidence = min(x_range / 0.25, 1.0)  # scales 0.12–0.25+ to 0.48–1.0
+        # Require at least 8% of frame width movement (normalized)
+        # 8% is enough to distinguish deliberate head turn from natural sway
+        head_turn_detected = bool(x_range >= 0.08)
+        confidence = min(x_range / 0.20, 1.0)  # scales 0.08–0.20+ to 0.4–1.0
 
         print(f"[KYC] Head turn detection: x_centers={[round(v,3) for v in x_centers]}, range={x_range:.3f}, detected={head_turn_detected}")
         return {

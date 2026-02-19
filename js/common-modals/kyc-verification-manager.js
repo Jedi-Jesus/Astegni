@@ -617,16 +617,17 @@ class KYCVerificationManager {
         const instructions = {
             blink: 'Blink your eyes slowly now...',
             smile: 'Smile naturally now...',
-            turn: 'Turn your head left, then right slowly...'
+            turn: 'Slowly turn your head left… then right… (4 seconds)'
         };
 
         instructionEl.textContent = instructions[type] || 'Follow the instruction';
 
         // Collect frames across the challenge window
-        // Use 400ms interval for all types to get more frames — backend checks all of them
+        // Turn gets more time (4s) and faster capture (300ms) so we catch the full arc.
+        // Blink/smile use 3s at 400ms — enough frames to catch a momentary action.
         const frames = [];
-        const totalDuration = 3000; // ms
-        const interval = 400; // 400ms for all challenge types (~7 frames each)
+        const totalDuration = type === 'turn' ? 4000 : 3000; // ms
+        const interval = type === 'turn' ? 300 : 400; // ~13 frames for turn, ~7 for others
 
         const captureInterval = setInterval(() => {
             frames.push(this.captureFrame(video, canvas));
