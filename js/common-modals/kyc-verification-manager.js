@@ -140,7 +140,7 @@ class KYCVerificationManager {
         // Set document instruction based on user's location
         const instructionEl = document.getElementById('kyc-document-instruction');
         if (instructionEl) {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
             const countryCode = user.country_code || null;
             kycDebug(`User countryCode from localStorage: ${countryCode || '(none)'}`, 'info');
 
@@ -847,10 +847,10 @@ class KYCVerificationManager {
                 this.showSuccessResult(data);
 
                 // Update user's KYC status in localStorage
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
                 user.kyc_verified = true;
                 user.is_verified = true;
-                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('currentUser', JSON.stringify(user));
 
                 // Update KYC status badge on profile page (if function exists)
                 if (typeof updateKYCStatusBadge === 'function') {
