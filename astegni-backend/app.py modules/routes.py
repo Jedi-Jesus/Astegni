@@ -6160,7 +6160,7 @@ def get_complete_tutor_profile(tutor_id: int, db: Session = Depends(get_db)):
         month_name = calendar.month_abbr[month_date.month]
 
         # For now, generate sample data based on current earnings with some variance
-        base_earnings = tutor.monthly_earnings or 10000
+        base_earnings = getattr(tutor, 'monthly_earnings', None) or 10000
         variance = (i - 6) * 500
         random_factor = (hash(f"{tutor.user_id}{i}") % 3000) - 1500
         earnings = max(0, int(base_earnings + variance + random_factor))

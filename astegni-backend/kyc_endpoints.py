@@ -281,7 +281,7 @@ def detect_blink_in_frame(frame_bytes: bytes) -> dict:
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
         if len(faces) == 0:
             return {"detected": False, "error": "No face detected in frame"}
 
@@ -290,7 +290,7 @@ def detect_blink_in_frame(frame_bytes: bytes) -> dict:
 
         # Only look in the upper half of the face (where eyes are)
         eye_roi = gray[y:y + int(h * 0.6), x:x + w]
-        eyes = eye_cascade.detectMultiScale(eye_roi, scaleFactor=1.1, minNeighbors=4, minSize=(20, 20))
+        eyes = eye_cascade.detectMultiScale(eye_roi, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
 
         # Blink = face detected but eyes NOT detected (eyes closed)
         blink_detected = len(eyes) == 0
@@ -328,7 +328,7 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
 
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
         if len(faces) == 0:
             return {"detected": False, "error": "No face detected in frame"}
 
@@ -336,7 +336,7 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
 
         # Only search the lower half of the face for smile (mouth region)
         mouth_roi = gray[y + int(h * 0.5):y + h, x:x + w]
-        smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.7, minNeighbors=20, minSize=(25, 15))
+        smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.5, minNeighbors=10, minSize=(15, 10))
 
         smile_detected = len(smiles) > 0
         confidence = 0.85 if smile_detected else 0.3
@@ -373,7 +373,7 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
                 continue
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
             if len(faces) == 0:
                 continue
 
