@@ -250,8 +250,12 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         distance = face_recognition.face_distance([encodings1[0]], encodings2[0])[0]
         similarity = 1 - distance  # Convert distance to similarity (0-1)
 
+        # face_recognition distance <= 0.6 means "same person" by the library's own standard.
+        # Converted to similarity: 1 - 0.6 = 0.40.
+        # We use 0.45 (distance 0.55) — stricter than the default but realistic for
+        # webcam-captured ID photos which suffer from glare, blur, and angle differences.
         return {
-            "match": bool(similarity >= 0.85),
+            "match": bool(similarity >= 0.45),
             "score": float(similarity),
             "method": "face_recognition"
         }
