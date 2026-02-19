@@ -623,9 +623,9 @@ async def create_package_course_request(
     current_user = Depends(get_current_user)
 ):
     """
-    Create a course request from the package modal.
-    The course is saved to the courses table with 'pending' status.
-    When approved by admin, the status is changed to 'approved'.
+    Create a course directly from the package modal.
+    The course is saved to the courses table with 'verified' status and is immediately live.
+    Students/parents can later report it, which sets status to 'reported' for admin review.
     """
     import json
 
@@ -633,7 +633,7 @@ async def create_package_course_request(
     cur = conn.cursor()
 
     try:
-        # Insert into courses table with 'pending' status
+        # Insert into courses table with 'verified' status — live immediately
         # lesson_title, language, and tags are JSONB columns in the courses table
         lesson_title_json = course.lesson_title if course.lesson_title else []
         language_json = course.language if course.language else ["English"]
@@ -644,7 +644,7 @@ async def create_package_course_request(
             (uploader_id, course_name, course_category, course_level, course_description,
              thumbnail, duration, lessons, lesson_title, language, tags,
              status, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'verified', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id, course_name, course_category, course_level, course_description,
                       thumbnail, duration, lessons, lesson_title, language, tags, status, created_at
         """, (
@@ -665,7 +665,6 @@ async def create_package_course_request(
         course_id = row[0]
 
         # If package_id is provided, add this course to the package's course_ids
-        # (course status is 'pending' so it will show in pending_courses when fetched)
         if course.package_id:
             cur.execute("""
                 UPDATE tutor_packages
@@ -677,7 +676,7 @@ async def create_package_course_request(
         conn.commit()
 
         return {
-            "message": "Course request created successfully",
+            "message": "Course added successfully",
             "id": course_id,
             "request_id": f"CRS-{course_id:06d}",
             "course_name": row[1],

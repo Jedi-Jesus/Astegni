@@ -355,14 +355,7 @@ function updateSubmitButtonText() {
     const submitBtn = document.getElementById('submitCourseRequestBtn');
     if (!submitBtn) return;
 
-    // Check if we're on tutor-profile page
-    const isTutorProfile = window.location.pathname.includes('tutor-profile');
-
-    if (isTutorProfile) {
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Approval';
-    } else {
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-    }
+    submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Course';
 }
 
 /**
@@ -879,7 +872,7 @@ window.submitCourseRequest = async function() {
             console.log('Course request submitted:', result);
 
             // Show success message
-            alert('Course request submitted successfully! It will be reviewed by an admin.');
+            alert('Course added successfully! It is now live on the platform.');
 
             // Close modal
             closeCourseRequestModal();

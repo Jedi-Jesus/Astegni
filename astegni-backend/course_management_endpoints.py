@@ -743,8 +743,8 @@ async def reinstate_course(suspended_id: str, admin_id: Optional[int] = None):
         if not row:
             raise HTTPException(status_code=404, detail="Course not found")
 
-        if row[3] != 'suspended':
-            raise HTTPException(status_code=400, detail=f"Course is not suspended (current status: {row[3]})")
+        if row[3] not in ('suspended', 'reported'):
+            raise HTTPException(status_code=400, detail=f"Course cannot be reinstated (current status: {row[3]})")
 
         # Update status to verified
         cursor.execute("""
@@ -847,8 +847,8 @@ async def reject_active_course(course_id: str, rejection: StatusUpdateRequest, a
         if not row:
             raise HTTPException(status_code=404, detail="Course not found")
 
-        if row[3] != 'verified':
-            raise HTTPException(status_code=400, detail=f"Course is not verified (current status: {row[3]})")
+        if row[3] not in ('verified', 'reported'):
+            raise HTTPException(status_code=400, detail=f"Course cannot be rejected (current status: {row[3]})")
 
         # Update status to rejected
         cursor.execute("""
@@ -955,6 +955,70 @@ async def reject_suspended_course(suspended_id: str, rejection: StatusUpdateRequ
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to reject suspended course: {str(e)}")
+
+@router.post("/{course_id}/report")
+async def report_course(course_id: str, report: StatusUpdateRequest, current_user = None):
+    """
+    Report a verified course — called by students or parents.
+    Changes status from 'verified' to 'reported' so admin can review.
+    The course remains visible until admin acts on the report.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if course_id.startswith("CRS-"):
+            numeric_id = int(course_id.replace("CRS-", ""))
+        else:
+            numeric_id = int(course_id)
+
+        cursor.execute("""
+            SELECT id, uploader_id, course_name, status FROM courses
+            WHERE id = %s
+        """, (numeric_id,))
+
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Course not found")
+
+        if row[3] != 'verified':
+            raise HTTPException(status_code=400, detail=f"Only verified courses can be reported (current status: {row[3]})")
+
+        cursor.execute("""
+            UPDATE courses
+            SET status = 'reported', status_reason = %s, status_at = %s, updated_at = %s
+            WHERE id = %s
+        """, (report.reason, datetime.now(timezone.utc), datetime.now(timezone.utc), numeric_id))
+
+        conn.commit()
+
+        # Notify tutor that their course has been reported
+        if row[1]:
+            try:
+                cursor.execute("""
+                    INSERT INTO notifications (user_id, title, message, type, created_at)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (row[1], "Course Reported",
+                      f"Your course '{row[2]}' has been reported and is under admin review. Reason: {report.reason}",
+                      "course_reported", datetime.now(timezone.utc)))
+                conn.commit()
+            except:
+                pass
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "message": "Course reported successfully. Admin will review it.",
+            "course_id": f"CRS-{numeric_id:06d}",
+            "id": numeric_id,
+            "status": "reported"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to report course: {str(e)}")
 
 # ============================================
 # UPDATE ENDPOINTS
