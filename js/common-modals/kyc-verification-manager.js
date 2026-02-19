@@ -623,9 +623,10 @@ class KYCVerificationManager {
         instructionEl.textContent = instructions[type] || 'Follow the instruction';
 
         // Collect frames across the challenge window
+        // Use 400ms interval for all types to get more frames — backend checks all of them
         const frames = [];
         const totalDuration = 3000; // ms
-        const interval = type === 'turn' ? 400 : 600; // faster capture for turn (more frames needed)
+        const interval = 400; // 400ms for all challenge types (~7 frames each)
 
         const captureInterval = setInterval(() => {
             frames.push(this.captureFrame(video, canvas));
@@ -644,12 +645,11 @@ class KYCVerificationManager {
             return;
         }
 
-        // For blink/smile: use the middle frame (most likely mid-action)
-        // For turn: send first frame as primary + rest as extra_frames
-        const primaryFrame = type === 'turn'
-            ? frames[0]
-            : frames[Math.floor(frames.length / 2)];
-        const extraFrames = type === 'turn' ? frames.slice(1) : [];
+        // Send first frame as primary + rest as extra_frames for ALL challenge types.
+        // Backend checks extra_frames for blink/smile (any frame with detection passes)
+        // and uses all frames for turn (face tracking across frames).
+        const primaryFrame = frames[0];
+        const extraFrames = frames.slice(1);
 
         kycDebug(`Challenge '${type}': ${frames.length} frames captured, sending ${extraFrames.length} extra`, 'info');
 

@@ -262,8 +262,8 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
 def detect_blink_in_frame(frame_bytes: bytes) -> dict:
     """
     Detect blink in a single frame using OpenCV Haar cascades.
-    A blink is detected when no eyes are found in the face region
-    (eyes closed) while a face is still present.
+    A blink is detected when ≤1 eye is found in the face region
+    (eyes fully or partially closed) while a face is still present.
     Returns dict with detected, confidence, and debug info.
     """
     if not OPENCV_AVAILABLE:
@@ -292,9 +292,10 @@ def detect_blink_in_frame(frame_bytes: bytes) -> dict:
         eye_roi = gray[y:y + int(h * 0.6), x:x + w]
         eyes = eye_cascade.detectMultiScale(eye_roi, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
 
-        # Blink = face detected but eyes NOT detected (eyes closed)
-        blink_detected = len(eyes) == 0
-        confidence = 0.9 if blink_detected else 0.4
+        # Blink = face detected but ≤1 eye detected (fully or partially closed)
+        # Using ≤1 instead of 0 to handle partial blinks and one-eye-visible frames
+        blink_detected = bool(len(eyes) <= 1)
+        confidence = 0.9 if len(eyes) == 0 else (0.7 if len(eyes) == 1 else 0.4)
 
         print(f"[KYC] Blink detection: face={len(faces)}, eyes={len(eyes)}, blink={blink_detected}")
         return {
@@ -336,14 +337,14 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
 
         # Only search the lower half of the face for smile (mouth region)
         mouth_roi = gray[y + int(h * 0.5):y + h, x:x + w]
-        smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.5, minNeighbors=10, minSize=(15, 10))
+        smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.3, minNeighbors=5, minSize=(15, 10))
 
-        smile_detected = len(smiles) > 0
+        smile_detected = bool(len(smiles) > 0)
         confidence = 0.85 if smile_detected else 0.3
 
         print(f"[KYC] Smile detection: face={len(faces)}, smiles={len(smiles)}, detected={smile_detected}")
         return {
-            "detected": smile_detected,
+            "detected": bool(smile_detected),
             "method": "opencv_cascade",
             "confidence": confidence,
             "face_count": int(len(faces)),
@@ -388,7 +389,7 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
 
         x_range = max(x_centers) - min(x_centers)
         # Require at least 12% of frame width movement (normalized)
-        head_turn_detected = x_range >= 0.12
+        head_turn_detected = bool(x_range >= 0.12)
         confidence = min(x_range / 0.25, 1.0)  # scales 0.12–0.25+ to 0.48–1.0
 
         print(f"[KYC] Head turn detection: x_centers={[round(v,3) for v in x_centers]}, range={x_range:.3f}, detected={head_turn_detected}")
@@ -1124,12 +1125,40 @@ async def verify_liveliness_challenge(
         print(f"  opencv_available: {OPENCV_AVAILABLE}")
 
         if challenge_type == 'blink':
+            # Try primary frame first; if not detected, try extra frames (any frame with blink passes)
             result = detect_blink_in_frame(frame_bytes)
-            challenge_passed = result.get("detected", False)
+            challenge_passed = bool(result.get("detected", False))
+            if not challenge_passed and extra_frames:
+                try:
+                    extra_list = json.loads(extra_frames)
+                    for ef in extra_list:
+                        ef_data = ef.split(',')[1] if ',' in ef else ef
+                        extra_result = detect_blink_in_frame(base64.b64decode(ef_data))
+                        if extra_result.get("detected", False):
+                            challenge_passed = True
+                            result = extra_result
+                            print(f"[KYC] Blink detected in extra frame")
+                            break
+                except Exception as e:
+                    print(f"[KYC] Could not parse extra_frames for blink: {e}")
 
         elif challenge_type == 'smile':
+            # Try primary frame first; if not detected, try extra frames
             result = detect_smile_in_frame(frame_bytes)
-            challenge_passed = result.get("detected", False)
+            challenge_passed = bool(result.get("detected", False))
+            if not challenge_passed and extra_frames:
+                try:
+                    extra_list = json.loads(extra_frames)
+                    for ef in extra_list:
+                        ef_data = ef.split(',')[1] if ',' in ef else ef
+                        extra_result = detect_smile_in_frame(base64.b64decode(ef_data))
+                        if extra_result.get("detected", False):
+                            challenge_passed = True
+                            result = extra_result
+                            print(f"[KYC] Smile detected in extra frame")
+                            break
+                except Exception as e:
+                    print(f"[KYC] Could not parse extra_frames for smile: {e}")
 
         elif challenge_type in ['turn', 'turn_left', 'turn_right']:
             # Collect all frames: primary frame + any extra frames
@@ -1144,7 +1173,7 @@ async def verify_liveliness_challenge(
                     print(f"[KYC] Could not parse extra_frames: {e}")
 
             result = detect_head_turn_in_frames(all_frame_bytes)
-            challenge_passed = result.get("detected", False)
+            challenge_passed = bool(result.get("detected", False))
 
         else:
             raise HTTPException(status_code=400, detail=f"Unknown challenge type: {challenge_type}")
