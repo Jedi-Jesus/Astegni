@@ -159,11 +159,32 @@ class KYCVerificationManager {
             }
 
             const countryNames = {
-                'ET': 'Ethiopian', 'US': 'US', 'GB': 'British', 'CA': 'Canadian',
-                'AU': 'Australian', 'DE': 'German', 'FR': 'French', 'IN': 'Indian',
-                'NG': 'Nigerian', 'KE': 'Kenyan', 'GH': 'Ghanaian', 'ZA': 'South African',
-                'EG': 'Egyptian', 'TZ': 'Tanzanian', 'UG': 'Ugandan', 'RW': 'Rwandan',
-                'SN': 'Senegalese', 'CM': 'Cameroonian', 'CI': 'Ivorian', 'SD': 'Sudanese'
+                // Africa
+                'ET': 'Ethiopian', 'NG': 'Nigerian', 'KE': 'Kenyan', 'GH': 'Ghanaian',
+                'ZA': 'South African', 'EG': 'Egyptian', 'TZ': 'Tanzanian', 'UG': 'Ugandan',
+                'RW': 'Rwandan', 'SN': 'Senegalese', 'CM': 'Cameroonian', 'CI': 'Ivorian',
+                'SD': 'Sudanese', 'MA': 'Moroccan', 'DZ': 'Algerian', 'TN': 'Tunisian',
+                'LY': 'Libyan', 'AO': 'Angolan', 'MZ': 'Mozambican', 'ZM': 'Zambian',
+                'ZW': 'Zimbabwean', 'BF': 'Burkinabe', 'ML': 'Malian', 'MG': 'Malagasy',
+                'SO': 'Somali', 'ER': 'Eritrean', 'DJ': 'Djiboutian', 'SS': 'South Sudanese',
+                // Europe
+                'GB': 'British', 'DE': 'German', 'FR': 'French', 'IT': 'Italian',
+                'ES': 'Spanish', 'NL': 'Dutch', 'BE': 'Belgian', 'SE': 'Swedish',
+                'NO': 'Norwegian', 'DK': 'Danish', 'FI': 'Finnish', 'PL': 'Polish',
+                'RO': 'Romanian', 'CZ': 'Czech', 'HU': 'Hungarian', 'AT': 'Austrian',
+                'CH': 'Swiss', 'PT': 'Portuguese', 'GR': 'Greek', 'UA': 'Ukrainian',
+                'RU': 'Russian', 'TR': 'Turkish', 'BG': 'Bulgarian', 'RS': 'Serbian',
+                'HR': 'Croatian', 'SK': 'Slovak', 'SI': 'Slovenian', 'IE': 'Irish',
+                // Americas
+                'US': 'US', 'CA': 'Canadian', 'MX': 'Mexican', 'BR': 'Brazilian',
+                'AR': 'Argentine', 'CO': 'Colombian', 'CL': 'Chilean', 'PE': 'Peruvian',
+                'VE': 'Venezuelan', 'EC': 'Ecuadorian', 'BO': 'Bolivian', 'PY': 'Paraguayan',
+                // Asia & Oceania
+                'IN': 'Indian', 'CN': 'Chinese', 'JP': 'Japanese', 'KR': 'Korean',
+                'PK': 'Pakistani', 'BD': 'Bangladeshi', 'PH': 'Filipino', 'VN': 'Vietnamese',
+                'TH': 'Thai', 'ID': 'Indonesian', 'MY': 'Malaysian', 'SG': 'Singaporean',
+                'AU': 'Australian', 'NZ': 'New Zealand', 'AE': 'Emirati', 'SA': 'Saudi',
+                'IL': 'Israeli', 'IR': 'Iranian', 'IQ': 'Iraqi', 'JO': 'Jordanian'
             };
             const countryName = countryNames[countryCode] || countryCode;
 
