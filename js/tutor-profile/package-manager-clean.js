@@ -1032,9 +1032,9 @@ function renderPackageEditor() {
                                            autocomplete="off"
                                            style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; transition: all 0.2s;">
                                 </div>
-                                <button class="btn-request-course" onclick="openCourseRequestModal()" title="Request new course"
+                                <button class="btn-request-course" onclick="openCourseRequestModal()" title="Add new course"
                                         style="padding: 0.75rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; white-space: nowrap;">
-                                    <i class="fas fa-plus"></i> Request New
+                                    <i class="fas fa-plus"></i> Add New
                                 </button>
                             </div>
                             <!-- Search Results Dropdown -->
