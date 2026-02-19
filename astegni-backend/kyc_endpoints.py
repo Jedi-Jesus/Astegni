@@ -358,14 +358,18 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
 def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
     """
     Detect head turn across multiple frames by tracking face center X position.
-    Requires the face center to move significantly left or right across frames.
+    Uses both frontal and profile cascades so partial side-on faces are still tracked.
+    Falls back to motion-based detection if cascades miss too many frames.
     """
     if not OPENCV_AVAILABLE:
         return {"detected": True, "method": "placeholder", "confidence": 1.0}
 
     try:
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        frontal_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        profile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_profileface.xml')
+
         x_centers = []
+        gray_frames = []  # keep for motion fallback
 
         for frame_bytes in frame_bytes_list:
             nparr = np.frombuffer(frame_bytes, np.uint8)
@@ -374,33 +378,78 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
                 continue
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
+            gray_frames.append(gray)
+            frame_width = img.shape[1]
+
+            # Try frontal first (relaxed params so partially-turned faces still register)
+            faces = frontal_cascade.detectMultiScale(
+                gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30)
+            )
+
+            # If frontal missed, try profile (left-facing), then flipped (right-facing)
+            if len(faces) == 0:
+                faces = profile_cascade.detectMultiScale(
+                    gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30)
+                )
+            if len(faces) == 0:
+                gray_flipped = cv2.flip(gray, 1)
+                profile_faces = profile_cascade.detectMultiScale(
+                    gray_flipped, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30)
+                )
+                if len(profile_faces) > 0:
+                    # Mirror X coordinates back to original frame space
+                    faces = [(frame_width - (x + w), y, w, h) for (x, y, w, h) in profile_faces]
+
             if len(faces) == 0:
                 continue
 
             (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
-            frame_width = img.shape[1]
-            # Normalize face center X to 0.0–1.0 relative to frame width
             x_center_norm = (x + w / 2) / frame_width
             x_centers.append(x_center_norm)
 
-        if len(x_centers) < 2:
-            return {"detected": False, "error": "Not enough frames with face detected", "x_centers": x_centers}
+        print(f"[KYC] Head turn detection: frames_in={len(frame_bytes_list)}, faces_found={len(x_centers)}, x_centers={[round(v,3) for v in x_centers]}")
 
-        x_range = max(x_centers) - min(x_centers)
-        # Require at least 8% of frame width movement (normalized)
-        # 8% is enough to distinguish deliberate head turn from natural sway
-        head_turn_detected = bool(x_range >= 0.08)
-        confidence = min(x_range / 0.20, 1.0)  # scales 0.08–0.20+ to 0.4–1.0
+        # ── Primary path: face-tracking ──────────────────────────────────────
+        if len(x_centers) >= 2:
+            x_range = max(x_centers) - min(x_centers)
+            # Lower threshold slightly (0.07 vs 0.08) to account for smaller webcam movements
+            head_turn_detected = bool(x_range >= 0.07)
+            confidence = min(x_range / 0.18, 1.0)
+            print(f"[KYC] Head turn (face-track): range={x_range:.3f}, detected={head_turn_detected}")
+            return {
+                "detected": head_turn_detected,
+                "method": "opencv_face_tracking",
+                "confidence": float(confidence),
+                "x_range": float(x_range),
+                "frames_analyzed": len(x_centers)
+            }
 
-        print(f"[KYC] Head turn detection: x_centers={[round(v,3) for v in x_centers]}, range={x_range:.3f}, detected={head_turn_detected}")
-        return {
-            "detected": head_turn_detected,
-            "method": "opencv_face_tracking",
-            "confidence": float(confidence),
-            "x_range": float(x_range),
-            "frames_analyzed": len(x_centers)
-        }
+        # ── Fallback: optical-flow / pixel-motion across all gray frames ─────
+        # If cascades couldn't track, use frame-to-frame motion to detect movement.
+        if len(gray_frames) >= 4:
+            motions = []
+            for i in range(1, len(gray_frames)):
+                diff = cv2.absdiff(gray_frames[i - 1], gray_frames[i])
+                motions.append(float(diff.mean()))
+
+            if motions:
+                max_motion = max(motions)
+                avg_motion = sum(motions) / len(motions)
+                # A deliberate head turn produces noticeable per-frame change
+                # Threshold tuned for 320x240 @ 60% JPEG quality
+                motion_detected = bool(max_motion > 4.0 and avg_motion > 1.5)
+                confidence = min(max_motion / 12.0, 1.0)
+                print(f"[KYC] Head turn (motion-fallback): max={max_motion:.2f}, avg={avg_motion:.2f}, detected={motion_detected}")
+                return {
+                    "detected": motion_detected,
+                    "method": "motion_fallback",
+                    "confidence": float(confidence),
+                    "max_motion": float(max_motion),
+                    "frames_analyzed": len(gray_frames)
+                }
+
+        return {"detected": False, "error": "Not enough frames with face detected", "x_centers": x_centers}
+
     except Exception as e:
         print(f"[KYC] Head turn detection error: {e}")
         return {"detected": False, "error": str(e)}
