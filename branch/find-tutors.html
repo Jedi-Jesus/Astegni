@@ -1107,13 +1107,12 @@
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             const activeRole = currentUser.active_role || '';
             const courseLabel = activeRole === 'tutor' ? 'Add a Course' : 'Request a Course';
-            const courseLabelShort = activeRole === 'tutor' ? 'Add Course' : 'Request Course';
 
             const sidebarLabel = document.getElementById('sidebarCourseLabel');
             if (sidebarLabel) sidebarLabel.textContent = courseLabel;
 
             const noResultsBtn = document.getElementById('requestCourseNoResults');
-            if (noResultsBtn) noResultsBtn.textContent = courseLabelShort;
+            if (noResultsBtn) noResultsBtn.textContent = courseLabel;
         });
 
         // Global function to open chat modal with a specific user
