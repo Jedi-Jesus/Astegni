@@ -140,14 +140,10 @@
                             +
                         </button>
                     </div>
-                    <!-- Suggestions (below input) -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                    <!-- Suggestions (below input) — populated dynamically based on user country -->
+                    <div id="courseRequestLanguageSuggestions" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                         <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
-                        <button type="button" onclick="addCourseRequestLanguageSuggestion('English')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">English</button>
-                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Amharic')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Amharic</button>
-                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Oromo')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Oromo</button>
-                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Tigrinya')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Tigrinya</button>
-                        <button type="button" onclick="addCourseRequestLanguageSuggestion('French')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">French</button>
+                        <!-- Buttons injected by course-request-manager.js -->
                     </div>
                 </div>
 
@@ -169,16 +165,6 @@
                                 style="padding: 0.75rem 1rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.25rem; line-height: 1;">
                             +
                         </button>
-                    </div>
-                    <!-- Suggestions (below input) -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-                        <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('beginner')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">beginner</button>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('advanced')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">advanced</button>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('exam-prep')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">exam-prep</button>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('practical')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">practical</button>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('theory')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">theory</button>
-                        <button type="button" onclick="addCourseRequestTagSuggestion('online')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">online</button>
                     </div>
                 </div>
 

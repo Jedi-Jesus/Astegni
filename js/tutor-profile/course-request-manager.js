@@ -14,6 +14,285 @@ let courseRequestLessonTitles = [];
 let courseRequestTags = [];
 
 /**
+ * Primary languages spoken per country (ISO 3166-1 alpha-2 → language names).
+ * English is always appended as a universal suggestion if not already present.
+ */
+const COUNTRY_TO_LANGUAGES = {
+    // ── East Africa ──────────────────────────────────────────────
+    ET: ['Amharic', 'Oromo', 'Tigrinya', 'Somali', 'Sidama', 'Afar'],
+    ER: ['Tigrinya', 'Arabic', 'Tigre', 'Afar'],
+    DJ: ['Somali', 'Afar', 'Arabic', 'French'],
+    SO: ['Somali', 'Arabic'],
+    KE: ['Swahili', 'Kikuyu', 'Luo', 'Kamba', 'Luhya'],
+    TZ: ['Swahili', 'Sukuma', 'Chaga', 'Nyamwezi'],
+    UG: ['Luganda', 'Swahili', 'Acholi', 'Luo', 'Lugbara'],
+    RW: ['Kinyarwanda', 'French', 'Swahili'],
+    BI: ['Kirundi', 'French', 'Swahili'],
+    SS: ['Dinka', 'Nuer', 'Zande', 'Bari', 'Arabic'],
+    SD: ['Arabic', 'Nubian', 'Beja', 'Fur'],
+
+    // ── North Africa ─────────────────────────────────────────────
+    EG: ['Arabic', 'Masri'],
+    MA: ['Arabic', 'Tamazight', 'Darija', 'French'],
+    DZ: ['Arabic', 'Tamazight', 'Darija', 'French'],
+    TN: ['Arabic', 'Tunisian Arabic', 'Tamazight', 'French'],
+    LY: ['Arabic', 'Tamazight'],
+    // MR (Mauritania) — merged from both West Africa and North Africa sections
+    MR: ['Hassaniya Arabic', 'Wolof', 'Soninke', 'Pulaar', 'French'],
+
+    // ── West Africa ──────────────────────────────────────────────
+    NG: ['Hausa', 'Yoruba', 'Igbo', 'Fulani', 'Ijaw', 'Kanuri', 'Tiv'],
+    GH: ['Twi', 'Ewe', 'Ga', 'Hausa', 'Dagbani'],
+    SN: ['Wolof', 'Pulaar', 'Serer', 'Mandinka', 'French'],
+    CI: ['Dioula', 'Baoulé', 'Bété', 'Sénoufo', 'French'],
+    CM: ['French', 'Fulfulde', 'Ewondo', 'Hausa', 'Bassa'],
+    ML: ['Bambara', 'Fulfulde', 'Soninke', 'Tamasheq', 'French'],
+    BF: ['Mossi', 'Dyula', 'Fulfuldé', 'Gurma', 'French'],
+    NE: ['Hausa', 'Zarma', 'Tamasheq', 'Fulfulde', 'French'],
+    GN: ['Pular', 'Mandinka', 'Susu', 'Kpelle', 'French'],
+    TG: ['Ewe', 'Kabiyé', 'Tem', 'French'],
+    BJ: ['Fon', 'Yoruba', 'Bariba', 'Dendi', 'French'],
+    SL: ['Mende', 'Temne', 'Limba', 'Krio'],
+    LR: ['Kpelle', 'Bassa', 'Grebo', 'Kru'],
+    GM: ['Mandinka', 'Wolof', 'Pulaar', 'Jola'],
+    GW: ['Crioulo', 'Balanta', 'Fulani', 'Mandinka', 'Portuguese'],
+    CV: ['Cape Verdean Creole', 'Portuguese'],
+
+    // ── Central Africa ───────────────────────────────────────────
+    CD: ['Lingala', 'Swahili', 'Tshiluba', 'Kikongo', 'French'],
+    CG: ['Lingala', 'Kituba', 'Monokutuba', 'French'],
+    CF: ['Sango', 'Gbaya', 'Banda', 'French'],
+    TD: ['Arabic', 'Sara', 'Kanuri', 'Maba', 'French'],
+    GA: ['French', 'Fang', 'Myene', 'Nzebi'],
+    GQ: ['Spanish', 'French', 'Fang', 'Bubi', 'Ndowe'],
+
+    // ── Southern Africa ──────────────────────────────────────────
+    ZA: ['Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Tsonga', 'Venda', 'Ndebele'],
+    ZW: ['Shona', 'Ndebele', 'Chewa', 'Nambya'],
+    ZM: ['Bemba', 'Nyanja', 'Tonga', 'Lozi', 'Kaonde'],
+    MW: ['Chichewa', 'Tumbuka', 'Yao', 'Lomwe'],
+    MZ: ['Makhuwa', 'Tsonga', 'Sena', 'Ndau', 'Portuguese'],
+    BW: ['Tswana', 'Kalanga', 'Afrikaans', 'Kgalagadi'],
+    NA: ['Oshiwambo', 'Afrikaans', 'Otjiherero', 'Damara/Nama'],
+    SZ: ['Swati', 'Zulu'],
+    LS: ['Sotho', 'Zulu'],
+    AO: ['Umbundu', 'Kimbundu', 'Kikongo', 'Chokwe', 'Portuguese'],
+    MG: ['Malagasy', 'French'],
+    MU: ['Mauritian Creole', 'French', 'Bhojpuri'],
+    SC: ['Seychellois Creole', 'French'],
+    KM: ['Comorian', 'Arabic', 'French'],
+    ST: ['Portuguese', 'Forro', 'Angolar'],
+
+    // ── Middle East ──────────────────────────────────────────────
+    SA: ['Arabic'],
+    AE: ['Arabic'],
+    IQ: ['Arabic', 'Kurdish', 'Neo-Aramaic'],
+    IR: ['Persian', 'Azerbaijani', 'Kurdish', 'Gilaki', 'Mazanderani'],
+    TR: ['Turkish', 'Kurdish', 'Zaza'],
+    IL: ['Hebrew', 'Arabic'],
+    JO: ['Arabic'],
+    LB: ['Arabic', 'French'],
+    SY: ['Arabic', 'Kurdish', 'Neo-Aramaic'],
+    YE: ['Arabic', 'Socotri'],
+    OM: ['Arabic', 'Baluchi', 'Swahili'],
+    KW: ['Arabic'],
+    QA: ['Arabic'],
+    BH: ['Arabic'],
+    PS: ['Arabic'],
+
+    // ── South Asia ───────────────────────────────────────────────
+    IN: ['Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Urdu', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi', 'Odia', 'Assamese'],
+    PK: ['Urdu', 'Punjabi', 'Sindhi', 'Pashto', 'Balochi', 'Saraiki'],
+    BD: ['Bengali', 'Chittagonian', 'Sylheti'],
+    LK: ['Sinhala', 'Tamil'],
+    NP: ['Nepali', 'Maithili', 'Bhojpuri', 'Tharu', 'Tamang'],
+    AF: ['Pashto', 'Dari', 'Uzbek', 'Turkmen'],
+    MV: ['Dhivehi'],
+    BT: ['Dzongkha', 'Nepali', 'Tshangla'],
+
+    // ── Southeast Asia ───────────────────────────────────────────
+    ID: ['Indonesian', 'Javanese', 'Sundanese', 'Madurese', 'Minangkabau', 'Batak'],
+    PH: ['Filipino', 'Cebuano', 'Ilocano', 'Waray', 'Hiligaynon', 'Kapampangan'],
+    VN: ['Vietnamese', 'Tay', 'Muong', 'Khmer'],
+    TH: ['Thai', 'Isan', 'Northern Thai', 'Southern Thai'],
+    MM: ['Burmese', 'Shan', 'Karen', 'Kachin', 'Chin'],
+    KH: ['Khmer', 'Cham'],
+    LA: ['Lao', 'Khmu', 'Hmong'],
+    MY: ['Malay', 'Mandarin', 'Tamil', 'Iban', 'Kadazan'],
+    SG: ['Malay', 'Mandarin', 'Tamil', 'Hokkien'],
+    TL: ['Tetum', 'Portuguese', 'Mambai'],
+    BN: ['Malay'],
+
+    // ── East Asia ────────────────────────────────────────────────
+    CN: ['Mandarin', 'Cantonese', 'Wu', 'Min', 'Hakka', 'Tibetan', 'Uyghur'],
+    JP: ['Japanese'],
+    KR: ['Korean'],
+    KP: ['Korean'],
+    TW: ['Mandarin', 'Taiwanese Hokkien', 'Hakka'],
+    HK: ['Cantonese', 'Mandarin'],
+    MN: ['Mongolian', 'Kazakh'],
+
+    // ── Central Asia ─────────────────────────────────────────────
+    KZ: ['Kazakh', 'Russian'],
+    UZ: ['Uzbek', 'Russian', 'Tajik', 'Kazakh'],
+    TM: ['Turkmen', 'Russian', 'Uzbek'],
+    TJ: ['Tajik', 'Russian', 'Uzbek'],
+    KG: ['Kyrgyz', 'Russian'],
+
+    // ── Europe ───────────────────────────────────────────────────
+    RU: ['Russian', 'Tatar', 'Bashkir', 'Chechen', 'Chuvash'],
+    DE: ['German', 'Low German', 'Sorbian'],
+    FR: ['French', 'Alsatian', 'Breton', 'Occitan'],
+    ES: ['Spanish', 'Catalan', 'Galician', 'Basque', 'Valencian'],
+    IT: ['Italian', 'Sicilian', 'Neapolitan', 'Sardinian', 'Venetian'],
+    PT: ['Portuguese', 'Mirandese'],
+    PL: ['Polish', 'Silesian', 'Kashubian'],
+    UA: ['Ukrainian', 'Russian', 'Rusyn'],
+    NL: ['Dutch', 'Frisian', 'Zeelandic'],
+    BE: ['Dutch', 'French', 'German', 'Walloon'],
+    SE: ['Swedish', 'Sami'],
+    NO: ['Norwegian', 'Sami', 'Kven'],
+    DK: ['Danish', 'Faroese'],
+    FI: ['Finnish', 'Swedish', 'Sami'],
+    CZ: ['Czech', 'Slovak', 'Romani'],
+    SK: ['Slovak', 'Hungarian', 'Rusyn'],
+    HU: ['Hungarian', 'Romani', 'German'],
+    RO: ['Romanian', 'Hungarian', 'Romani'],
+    BG: ['Bulgarian', 'Turkish', 'Romani'],
+    HR: ['Croatian', 'Italian'],
+    RS: ['Serbian', 'Hungarian', 'Romani', 'Albanian'],
+    GR: ['Greek'],
+    AL: ['Albanian', 'Greek'],
+    MK: ['Macedonian', 'Albanian'],
+    BA: ['Bosnian', 'Serbian', 'Croatian'],
+    SI: ['Slovenian', 'Hungarian', 'Italian'],
+    LT: ['Lithuanian', 'Russian', 'Polish'],
+    LV: ['Latvian', 'Russian'],
+    EE: ['Estonian', 'Russian'],
+    AT: ['German', 'Bavarian', 'Alemannic'],
+    CH: ['German', 'French', 'Italian', 'Romansh'],
+    LU: ['Luxembourgish', 'French', 'German'],
+    IE: ['Irish', 'Hiberno-English'],
+    GB: ['Welsh', 'Scottish Gaelic', 'Scots', 'Cornish'],
+    IS: ['Icelandic'],
+    MT: ['Maltese'],
+    CY: ['Greek', 'Turkish'],
+    MD: ['Romanian', 'Russian', 'Gagauz'],
+    GE: ['Georgian', 'Mingrelian', 'Armenian', 'Azerbaijani'],
+    AM: ['Armenian'],
+    AZ: ['Azerbaijani', 'Russian', 'Armenian'],
+    BY: ['Belarusian', 'Russian'],
+    ME: ['Montenegrin', 'Serbian'],
+    XK: ['Albanian', 'Serbian'],
+    SM: ['Italian'],
+    MC: ['French'],
+    AD: ['Catalan', 'Spanish', 'French'],
+    LI: ['German', 'Alemannic'],
+    VA: ['Italian', 'Latin'],
+
+    // ── Americas — North & Central ───────────────────────────────
+    US: ['Spanish', 'Navajo', 'Cherokee', 'Yupik', 'Hawaiian'],
+    CA: ['French', 'Cree', 'Inuktitut', 'Ojibwe'],
+    MX: ['Spanish', 'Nahuatl', 'Mayan', 'Zapotec', 'Mixtec'],
+    GT: ['Spanish', "K'iche'", 'Mam', 'Kaqchikel', "Q'eqchi'"],
+    BZ: ['Kriol', 'Spanish', 'Mayan', 'Garifuna'],
+    HN: ['Spanish', 'Miskito', 'Garifuna'],
+    SV: ['Spanish', 'Nawat'],
+    NI: ['Spanish', 'Miskito', 'Creole'],
+    CR: ['Spanish'],
+    PA: ['Spanish', 'Ngäbere', 'Kuna'],
+    CU: ['Spanish'],
+    DO: ['Spanish', 'Haitian Creole'],
+    HT: ['Haitian Creole', 'French'],
+    JM: ['Jamaican Patois'],
+    TT: ['Trinidadian Creole', 'Hindi', 'French Creole'],
+    BB: ['Bajan Creole'],
+    LC: ['Saint Lucian Creole', 'French'],
+    VC: ['Vincentian Creole'],
+    GD: ['Grenadian Creole'],
+    AG: ['Antiguan Creole'],
+    DM: ['Dominican Creole', 'French'],
+    KN: ['Saint Kitts Creole'],
+    BS: ['Bahamian Creole'],
+    TC: ['Turks and Caicos Creole'],
+    PR: ['Spanish'],
+    CW: ['Papiamentu', 'Dutch'],
+    AW: ['Papiamentu', 'Dutch'],
+    SX: ['Sint Maarten Creole', 'Dutch'],
+
+    // ── Americas — South ─────────────────────────────────────────
+    BR: ['Portuguese', 'Nheengatu', 'Caipira'],
+    CO: ['Spanish', 'Wayuu', 'Palenquero'],
+    VE: ['Spanish', 'Wayuu', 'Pemón'],
+    AR: ['Spanish', 'Quechua', 'Guaraní'],
+    PE: ['Spanish', 'Quechua', 'Aymara', 'Shipibo'],
+    CL: ['Spanish', 'Mapuche', 'Aymara'],
+    EC: ['Spanish', 'Quechua', 'Shuar'],
+    BO: ['Spanish', 'Quechua', 'Aymara', 'Guaraní'],
+    PY: ['Spanish', 'Guaraní'],
+    UY: ['Spanish', 'Uruguayan Creole'],
+    GY: ['Guyanese Creole', 'Hindi', 'Arawak'],
+    SR: ['Dutch', 'Sranan Tongo', 'Sarnami Hindustani'],
+    GF: ['French', 'French Guianese Creole'],
+
+    // ── Oceania ──────────────────────────────────────────────────
+    AU: ['Pitjantjatjara', 'Warlpiri', 'Arrernte', 'Yolŋu Matha'],
+    NZ: ['Māori', 'Samoan', 'Cook Islands Māori'],
+    PG: ['Tok Pisin', 'Hiri Motu', 'Enga', 'Melpa'],
+    FJ: ['Fijian', 'Hindi', 'Rotuman'],
+    SB: ['Pijin', 'Kwara\'ae', 'Are\'are'],
+    VU: ['Bislama', 'French', 'Nahuatl'],
+    WS: ['Samoan'],
+    TO: ['Tongan'],
+    KI: ['Gilbertese', 'Tuvaluan'],
+    FM: ['Chuukese', 'Pohnpeian', 'Kosraean'],
+    PW: ['Palauan'],
+    MH: ['Marshallese'],
+    NR: ['Nauruan'],
+    TV: ['Tuvaluan'],
+    CK: ['Cook Islands Māori'],
+    NU: ['Niuean'],
+    WF: ['Wallisian', 'Futunan', 'French'],
+    PF: ['Tahitian', 'French'],
+    NC: ['French', 'Kanak languages'],
+};
+
+/**
+ * Get language suggestions for the current user's country.
+ * Always includes English; deduplicates and preserves order.
+ */
+function getLanguageSuggestionsForUser() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const countryCode = (userData.country_code || '').toUpperCase();
+        const countryLanguages = COUNTRY_TO_LANGUAGES[countryCode] || [];
+        // Merge country languages + English, deduplicated, English last if not in country list
+        const suggestions = [...countryLanguages];
+        if (!suggestions.includes('English')) suggestions.push('English');
+        return suggestions;
+    } catch (e) {
+        return ['English'];
+    }
+}
+
+/**
+ * Render language suggestion buttons based on user's country
+ */
+function renderCourseRequestLanguageSuggestions() {
+    const container = document.getElementById('courseRequestLanguageSuggestions');
+    if (!container) return;
+
+    const suggestions = getLanguageSuggestionsForUser();
+    const btnStyle = 'padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;';
+
+    container.innerHTML =
+        '<span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>' +
+        suggestions.map(lang =>
+            `<button type="button" onclick="addCourseRequestLanguageSuggestion('${lang}')" style="${btnStyle}">${lang}</button>`
+        ).join('');
+}
+
+/**
  * Open the course request modal
  */
 window.openCourseRequestModal = async function() {
@@ -57,6 +336,9 @@ window.openCourseRequestModal = async function() {
 
         // Reset form
         resetCourseRequestForm();
+
+        // Populate language suggestions based on user's country
+        renderCourseRequestLanguageSuggestions();
 
         // Update submit button text based on page context
         updateSubmitButtonText();
