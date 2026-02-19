@@ -407,3 +407,92 @@
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    // Self-contained KYC loader for verify-personal-info-modal.
+    // Ensures kyc-verification-manager.js is loaded regardless of which page opens this modal.
+    var KYC_SCRIPT_URL = '/js/common-modals/kyc-verification-manager.js?v=20260219';
+
+    function ensureKYCManagerLoaded(callback) {
+        if (window.kycVerificationManager) {
+            if (callback) callback();
+            return;
+        }
+        // Check if script tag already exists
+        if (document.querySelector('script[src*="kyc-verification-manager"]')) {
+            // Script tag exists but manager may still be loading — poll
+            var attempts = 0;
+            var poll = setInterval(function() {
+                attempts++;
+                if (window.kycVerificationManager) {
+                    clearInterval(poll);
+                    if (callback) callback();
+                } else if (attempts > 50) {
+                    clearInterval(poll);
+                    console.error('[KYC Modal] Manager failed to initialize after 5s');
+                }
+            }, 100);
+            return;
+        }
+        // Load it fresh
+        var script = document.createElement('script');
+        script.src = KYC_SCRIPT_URL;
+        script.onload = function() {
+            var attempts = 0;
+            var poll = setInterval(function() {
+                attempts++;
+                if (window.kycVerificationManager) {
+                    clearInterval(poll);
+                    if (callback) callback();
+                } else if (attempts > 50) {
+                    clearInterval(poll);
+                    console.error('[KYC Modal] Manager failed to initialize after load');
+                }
+            }, 100);
+        };
+        script.onerror = function() {
+            console.error('[KYC Modal] Failed to load kyc-verification-manager.js');
+        };
+        document.head.appendChild(script);
+    }
+
+    // Override switchVerifyTab to hook into identity tab activation
+    var _origSwitchVerifyTab = window.switchVerifyTab;
+    window.switchVerifyTab = function(tab) {
+        if (_origSwitchVerifyTab) _origSwitchVerifyTab(tab);
+        if (tab === 'identity') {
+            ensureKYCManagerLoaded(function() {
+                if (window.kycVerificationManager && typeof window.kycVerificationManager.loadKYCStatus === 'function') {
+                    window.kycVerificationManager.loadKYCStatus();
+                }
+            });
+        }
+    };
+
+    // Ensure global KYC functions exist for onclick handlers in this modal
+    window.startKYCVerification = window.startKYCVerification || function() {
+        ensureKYCManagerLoaded(function() {
+            if (window.kycVerificationManager && typeof window.kycVerificationManager.openModal === 'function') {
+                window.kycVerificationManager.openModal();
+            }
+        });
+    };
+
+    window.continueKYCVerification = window.continueKYCVerification || function() {
+        ensureKYCManagerLoaded(function() {
+            if (window.kycVerificationManager && typeof window.kycVerificationManager.openModal === 'function') {
+                window.kycVerificationManager.openModal();
+            }
+        });
+    };
+
+    window.retryKYCVerification = window.retryKYCVerification || function() {
+        ensureKYCManagerLoaded(function() {
+            if (window.kycVerificationManager && typeof window.kycVerificationManager.openModal === 'function') {
+                window.kycVerificationManager.openModal();
+            }
+        });
+    };
+})();
+</script>
