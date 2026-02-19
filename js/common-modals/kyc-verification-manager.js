@@ -96,7 +96,8 @@ class KYCVerificationManager {
      * Open the KYC verification modal
      */
     async openModal() {
-        kycDebug('Opening modal', 'info');
+        kycDebug('━━━ openModal() called ━━━', 'info');
+        kycDebug(`currentStep=${this.currentStep} | verificationId=${this.verificationId}`, 'info');
 
         // Load modal if not already in DOM
         let modal = document.getElementById('kyc-verification-modal');
@@ -113,7 +114,9 @@ class KYCVerificationManager {
                     }
                     container.insertAdjacentHTML('beforeend', html);
                     modal = document.getElementById('kyc-verification-modal');
-                    kycDebug('Modal HTML loaded', 'ok');
+                    kycDebug('Modal HTML loaded from fetch', 'ok');
+                } else {
+                    kycDebug(`Modal fetch failed — HTTP ${response.status}`, 'err');
                 }
             } catch (error) {
                 kycDebug(`Failed to load modal: ${error.message}`, 'err');
@@ -123,9 +126,12 @@ class KYCVerificationManager {
         }
 
         if (!modal) {
+            kycDebug('Modal element not found in DOM after load attempt', 'err');
             console.error('[KYC] Modal element not found');
             return;
         }
+
+        kycDebug('Modal element found — showing', 'ok');
 
         // Show modal
         modal.classList.remove('hidden');
@@ -136,8 +142,10 @@ class KYCVerificationManager {
         if (instructionEl) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const countryCode = user.country_code || null;
+            kycDebug(`User countryCode from localStorage: ${countryCode || '(none)'}`, 'info');
 
             if (!countryCode) {
+                kycDebug('No country_code set — blocking step 1, prompting profile edit', 'warn');
                 // No country set — block the step and prompt user to set location
                 instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); if(typeof openEditProfileModal === \'function\') openEditProfileModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
                 // Hide camera and capture controls until location is set
@@ -159,24 +167,32 @@ class KYCVerificationManager {
             };
             const countryName = countryNames[countryCode] || countryCode;
 
+            kycDebug(`Document instruction set for country: ${countryCode} → "${countryName}"`, 'ok');
             instructionEl.textContent = `Hold your ${countryName} ID clearly in front of the camera`;
         }
 
         // Start verification session
+        kycDebug('Calling startVerification()…', 'info');
         await this.startVerification();
 
         // Initialize camera for document capture
+        kycDebug('Calling initDocumentCamera()…', 'info');
         await this.initDocumentCamera();
+        kycDebug('━━━ openModal() complete — STEP 1 active ━━━', 'ok');
     }
 
     /**
      * Close the KYC modal
      */
     closeModal() {
+        kycDebug('closeModal() called', 'info');
         const modal = document.getElementById('kyc-verification-modal');
         if (modal) {
             modal.classList.add('hidden');
             modal.style.display = 'none';
+            kycDebug('Modal hidden', 'ok');
+        } else {
+            kycDebug('closeModal: modal element not found', 'warn');
         }
 
         // Stop all camera streams
@@ -190,25 +206,34 @@ class KYCVerificationManager {
      * Reset manager state
      */
     reset() {
+        kycDebug('reset() — clearing all state', 'info');
         this.currentStep = 'document';
         this.documentImage = null;
         this.selfieImage = null;
         this.livelinessFrames = [];
         this.challengesCompleted = { blink: false, smile: false, turn: false };
         this.isProcessing = false;
+        kycDebug('State reset complete', 'ok');
     }
 
     /**
      * Stop all camera streams
      */
     stopAllCameras() {
+        kycDebug('stopAllCameras()', 'info');
         if (this.documentStream) {
             this.documentStream.getTracks().forEach(track => track.stop());
             this.documentStream = null;
+            kycDebug('Document camera stream stopped', 'ok');
+        } else {
+            kycDebug('Document camera: no active stream', 'info');
         }
         if (this.selfieStream) {
             this.selfieStream.getTracks().forEach(track => track.stop());
             this.selfieStream = null;
+            kycDebug('Selfie camera stream stopped', 'ok');
+        } else {
+            kycDebug('Selfie camera: no active stream', 'info');
         }
     }
 
@@ -339,9 +364,11 @@ class KYCVerificationManager {
      * Initialize camera for document capture
      */
     async initDocumentCamera() {
+        kycDebug('initDocumentCamera() — requesting rear camera', 'info');
         try {
             const video = document.getElementById('kyc-video-document');
             if (!video) {
+                kycDebug('kyc-video-document element not found in DOM', 'err');
                 console.error('[KYC] Document video element not found');
                 return;
             }
@@ -355,12 +382,16 @@ class KYCVerificationManager {
                 }
             };
 
+            kycDebug('getUserMedia constraints: facingMode=environment 1280x720', 'info');
             this.documentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            const tracks = this.documentStream.getVideoTracks();
+            kycDebug(`Camera granted — track: "${tracks[0]?.label || 'unknown'}"`, 'ok');
             video.srcObject = this.documentStream;
             await video.play();
 
-            kycDebug('Document camera initialized', 'ok');
+            kycDebug('Document camera initialized and playing', 'ok');
         } catch (error) {
+            kycDebug(`initDocumentCamera failed: ${error.name} — ${error.message}`, 'err');
             console.error('[KYC] Camera error:', error);
             alert('Unable to access camera. Please ensure camera permissions are granted.');
         }
@@ -370,9 +401,11 @@ class KYCVerificationManager {
      * Initialize camera for selfie/liveliness
      */
     async initSelfieCamera() {
+        kycDebug('initSelfieCamera() — requesting front camera', 'info');
         try {
             const video = document.getElementById('kyc-video-selfie');
             if (!video) {
+                kycDebug('kyc-video-selfie element not found in DOM', 'err');
                 console.error('[KYC] Selfie video element not found');
                 return;
             }
@@ -386,12 +419,16 @@ class KYCVerificationManager {
                 }
             };
 
+            kycDebug('getUserMedia constraints: facingMode=user 1280x720', 'info');
             this.selfieStream = await navigator.mediaDevices.getUserMedia(constraints);
+            const tracks = this.selfieStream.getVideoTracks();
+            kycDebug(`Front camera granted — track: "${tracks[0]?.label || 'unknown'}"`, 'ok');
             video.srcObject = this.selfieStream;
             await video.play();
 
-            kycDebug('Selfie camera initialized', 'ok');
+            kycDebug('Selfie camera initialized and playing', 'ok');
         } catch (error) {
+            kycDebug(`initSelfieCamera failed: ${error.name} — ${error.message}`, 'err');
             console.error('[KYC] Camera error:', error);
             alert('Unable to access camera for selfie. Please ensure camera permissions are granted.');
         }
@@ -401,11 +438,16 @@ class KYCVerificationManager {
      * Capture document photo
      */
     captureDocument() {
+        kycDebug('━━━ STEP 1: captureDocument() ━━━', 'info');
         const video = document.getElementById('kyc-video-document');
         const canvas = document.getElementById('kyc-canvas-document');
         const preview = document.getElementById('kyc-preview-document');
 
-        if (!video || !canvas) return;
+        if (!video || !canvas) {
+            kycDebug('captureDocument: video or canvas element missing', 'err');
+            return;
+        }
+        kycDebug(`Video dimensions: ${video.videoWidth}x${video.videoHeight}`, 'info');
 
         // Set canvas size to video size
         canvas.width = video.videoWidth;
@@ -430,13 +472,14 @@ class KYCVerificationManager {
         document.getElementById('btn-retake-document').style.display = 'inline-flex';
         document.getElementById('btn-continue-document').style.display = 'inline-flex';
 
-        kycDebug('Document image ready for upload', 'info');
+        kycDebug('Document captured — ready for upload. Click "Continue" to proceed.', 'ok');
     }
 
     /**
      * Retake document photo
      */
     retakeDocument() {
+        kycDebug('retakeDocument() — discarding captured image, restarting video', 'warn');
         const video = document.getElementById('kyc-video-document');
         const preview = document.getElementById('kyc-preview-document');
 
@@ -448,23 +491,31 @@ class KYCVerificationManager {
         document.getElementById('btn-continue-document').style.display = 'none';
 
         this.documentImage = null;
+        kycDebug('documentImage cleared — camera live again', 'info');
     }
 
     /**
      * Proceed to liveliness step
      */
     async proceedToLiveliness() {
+        kycDebug('━━━ STEP 1→2: proceedToLiveliness() ━━━', 'info');
         if (!this.documentImage) {
+            kycDebug('proceedToLiveliness: no documentImage — user must capture first', 'warn');
             alert('Please capture your document first');
             return;
         }
+        kycDebug(`documentImage present — ${Math.round(this.documentImage.length / 1024)} KB`, 'info');
 
-        if (this.isProcessing) return;
+        if (this.isProcessing) {
+            kycDebug('Already processing — ignoring duplicate call', 'warn');
+            return;
+        }
         this.isProcessing = true;
 
         try {
             // Upload document to backend
             let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            kycDebug(`Uploading document to /api/kyc/upload-document (verification_id=${this.verificationId})`, 'info');
             const formData = new FormData();
             formData.append('verification_id', this.verificationId);
             formData.append('image_data', this.documentImage);
@@ -509,6 +560,8 @@ class KYCVerificationManager {
                 this.documentStream.getTracks().forEach(track => track.stop());
             }
 
+            kycDebug('Document accepted — transitioning to STEP 2 (liveliness)', 'ok');
+
             // Show liveliness step
             this.showStep('liveliness');
 
@@ -517,6 +570,7 @@ class KYCVerificationManager {
 
             // Initialize selfie camera
             await this.initSelfieCamera();
+            kycDebug('━━━ STEP 2 active — liveliness challenges ready ━━━', 'ok');
 
         } catch (error) {
             kycDebug(`Document upload failed: ${error.message}`, 'err');
@@ -548,9 +602,17 @@ class KYCVerificationManager {
      * - turn: captures multiple frames across the 3s window for head movement tracking
      */
     async startChallenge(type) {
+        kycDebug(`━━━ STEP 2: startChallenge('${type}') ━━━`, 'info');
+        kycDebug(`Challenges so far — blink:${this.challengesCompleted.blink} smile:${this.challengesCompleted.smile} turn:${this.challengesCompleted.turn}`, 'info');
         const instructionEl = document.getElementById('challenge-instruction');
         const video = document.getElementById('kyc-video-selfie');
         const canvas = document.getElementById('kyc-canvas-selfie');
+
+        if (!video || !canvas) {
+            kycDebug(`startChallenge('${type}'): video or canvas element missing`, 'err');
+            return;
+        }
+        kycDebug(`Video ready: ${video.videoWidth}x${video.videoHeight} | readyState=${video.readyState}`, 'info');
 
         const instructions = {
             blink: 'Blink your eyes slowly now...',
@@ -574,8 +636,10 @@ class KYCVerificationManager {
 
         // Also add to global liveliness frames for reference
         this.livelinessFrames.push(...frames);
+        kycDebug(`Frame capture complete — ${frames.length} frames for '${type}' (total liveliness frames: ${this.livelinessFrames.length})`, 'info');
 
         if (frames.length === 0) {
+            kycDebug(`No frames captured for '${type}' — video may not be playing`, 'err');
             instructionEl.textContent = 'No frames captured. Please try again.';
             return;
         }
@@ -634,12 +698,15 @@ class KYCVerificationManager {
             }
 
             // Show complete button once all 3 challenges pass
-            if (this.challengesCompleted.blink && this.challengesCompleted.smile && this.challengesCompleted.turn) {
+            const allDone = this.challengesCompleted.blink && this.challengesCompleted.smile && this.challengesCompleted.turn;
+            kycDebug(`All challenges done: ${allDone} (blink=${this.challengesCompleted.blink}, smile=${this.challengesCompleted.smile}, turn=${this.challengesCompleted.turn})`, allDone ? 'ok' : 'info');
+            if (allDone) {
                 document.getElementById('btn-complete-liveliness').style.display = 'inline-flex';
+                kycDebug('"Complete Verification" button revealed', 'ok');
             }
 
         } catch (error) {
-            kycDebug(`Challenge '${type}' error: ${error.message}`, 'err');
+            kycDebug(`Challenge '${type}' error: ${error.name} — ${error.message}`, 'err');
             instructionEl.textContent = 'Error. Please try again.';
         }
     }
@@ -664,12 +731,17 @@ class KYCVerificationManager {
      * Complete liveliness and submit for final verification
      */
     async completeLiveliness() {
-        if (this.isProcessing) return;
+        kycDebug('━━━ STEP 2→3: completeLiveliness() ━━━', 'info');
+        if (this.isProcessing) {
+            kycDebug('Already processing — ignoring duplicate call', 'warn');
+            return;
+        }
         this.isProcessing = true;
 
         // Capture final selfie (optimized for upload)
         const video = document.getElementById('kyc-video-selfie');
         const canvas = document.getElementById('kyc-canvas-selfie');
+        kycDebug(`Capturing final selfie — video: ${video?.videoWidth}x${video?.videoHeight}`, 'info');
 
         // Use reasonable resolution for face comparison (640x480)
         canvas.width = 640;
@@ -784,6 +856,14 @@ class KYCVerificationManager {
      * Show verification success result
      */
     showSuccessResult(data) {
+        kycDebug('━━━ STEP 3: showSuccessResult() ━━━', 'ok');
+        kycDebug('Result', 'ok', {
+            face_match_score: data.face_match_score,
+            liveliness_score: data.liveliness_score,
+            blink: data.blink_detected,
+            smile: data.smile_detected,
+            head_turn: data.head_turn_detected
+        });
         document.getElementById('kyc-result-processing').style.display = 'none';
         document.getElementById('kyc-result-failed').style.display = 'none';
         document.getElementById('kyc-result-success').style.display = 'block';
@@ -801,6 +881,13 @@ class KYCVerificationManager {
      * Show verification failed result
      */
     showFailedResult(data) {
+        kycDebug('━━━ STEP 3: showFailedResult() ━━━', 'err');
+        kycDebug('Failure details', 'err', {
+            rejection_reason: data.rejection_reason,
+            attempts_remaining: data.attempts_remaining,
+            face_match_passed: data.face_match_passed,
+            liveliness_passed: data.liveliness_passed
+        });
         document.getElementById('kyc-result-processing').style.display = 'none';
         document.getElementById('kyc-result-success').style.display = 'none';
         document.getElementById('kyc-result-failed').style.display = 'block';
@@ -821,6 +908,7 @@ class KYCVerificationManager {
      * Retry KYC verification
      */
     async retryKYC() {
+        kycDebug('━━━ retryKYC() — starting over ━━━', 'warn');
         // Reset state
         this.reset();
 
@@ -828,6 +916,7 @@ class KYCVerificationManager {
         this.resetUI();
 
         // Start new verification
+        kycDebug('Starting new verification session…', 'info');
         await this.startVerification();
 
         // Show document step
@@ -836,12 +925,14 @@ class KYCVerificationManager {
 
         // Initialize document camera
         await this.initDocumentCamera();
+        kycDebug('━━━ Retry ready — STEP 1 active ━━━', 'ok');
     }
 
     /**
      * Reset UI elements
      */
     resetUI() {
+        kycDebug('resetUI() — restoring all UI elements to initial state', 'info');
         // Reset document step
         const video = document.getElementById('kyc-video-document');
         const preview = document.getElementById('kyc-preview-document');
@@ -878,20 +969,25 @@ class KYCVerificationManager {
      * Show a specific step
      */
     showStep(step) {
+        kycDebug(`showStep('${step}') — hiding others`, 'info');
         const steps = ['document', 'liveliness', 'result'];
         steps.forEach(s => {
             const el = document.getElementById(`kyc-step-${s}`);
             if (el) {
                 el.style.display = s === step ? 'block' : 'none';
+            } else {
+                kycDebug(`showStep: element #kyc-step-${s} not found in DOM`, 'warn');
             }
         });
         this.currentStep = step;
+        kycDebug(`currentStep is now: ${this.currentStep}`, 'ok');
     }
 
     /**
      * Update progress indicator
      */
     updateProgress(step) {
+        kycDebug(`updateProgress(${step}) — updating step circles`, 'info');
         for (let i = 1; i <= 3; i++) {
             const stepEl = document.getElementById(`step${i}`);
             if (stepEl) {
