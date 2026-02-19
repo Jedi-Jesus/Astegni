@@ -3,6 +3,32 @@
  * Handles liveliness verification with document + face comparison
  */
 
+/**
+ * Append a timestamped entry to the on-screen debug panel and console.
+ * color: 'info' (white) | 'ok' (green) | 'warn' (yellow) | 'err' (red)
+ */
+function kycDebug(msg, color = 'info', data = null) {
+    const colors = { info: '#d4d4d4', ok: '#4ec9b0', warn: '#dcdcaa', err: '#f44747' };
+    const time = new Date().toTimeString().slice(0, 8);
+    const line = data ? `${msg} → ${JSON.stringify(data)}` : msg;
+
+    // Console
+    const fn = color === 'err' ? console.error : color === 'warn' ? console.warn : console.log;
+    fn(`[KYC ${time}] ${line}`);
+
+    // On-screen panel
+    const container = document.getElementById('kyc-debug-entries');
+    if (container) {
+        const el = document.createElement('span');
+        el.style.color = colors[color] || colors.info;
+        el.textContent = `[${time}] ${line}`;
+        container.appendChild(el);
+        // Auto-scroll to bottom
+        const body = document.getElementById('kyc-debug-body');
+        if (body) body.scrollTop = body.scrollHeight;
+    }
+}
+
 class KYCVerificationManager {
     constructor() {
         this.verificationId = null;
@@ -19,14 +45,14 @@ class KYCVerificationManager {
         };
         this.isProcessing = false;
 
-        console.log('[KYC] Manager initialized');
+        kycDebug('Manager initialized', 'info');
     }
 
     /**
      * Open the KYC verification modal
      */
     async openModal() {
-        console.log('[KYC] Opening modal...');
+        kycDebug('Opening modal', 'info');
 
         // Load modal if not already in DOM
         let modal = document.getElementById('kyc-verification-modal');
@@ -43,10 +69,10 @@ class KYCVerificationManager {
                     }
                     container.insertAdjacentHTML('beforeend', html);
                     modal = document.getElementById('kyc-verification-modal');
-                    console.log('[KYC] Modal loaded');
+                    kycDebug('Modal HTML loaded', 'ok');
                 }
             } catch (error) {
-                console.error('[KYC] Failed to load modal:', error);
+                kycDebug(`Failed to load modal: ${error.message}`, 'err');
                 alert('Failed to load verification modal. Please refresh the page.');
                 return;
             }
@@ -150,8 +176,7 @@ class KYCVerificationManager {
             // Check both token keys (app uses both 'token' and 'access_token')
             let token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
-            // Debug: log what we found
-            console.log('[KYC] Token check:', {
+            kycDebug('Token check', 'info', {
                 token: localStorage.getItem('token') ? 'exists' : 'null',
                 access_token: localStorage.getItem('access_token') ? 'exists' : 'null',
                 using: token ? 'found' : 'none'
@@ -159,7 +184,7 @@ class KYCVerificationManager {
 
             // Check if token exists
             if (!token) {
-                console.error('[KYC] No token found in localStorage');
+                kycDebug('No token found in localStorage', 'err');
                 alert('Please log in to continue with verification.');
                 this.closeModal();
                 window.location.href = '/index.html';
@@ -177,7 +202,7 @@ class KYCVerificationManager {
 
             // If 401, try to refresh token
             if (response.status === 401) {
-                console.log('[KYC] Token expired, attempting refresh...');
+                kycDebug('Token expired on /start, attempting refresh', 'warn');
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     // Retry with new token
@@ -217,10 +242,10 @@ class KYCVerificationManager {
             }
 
             this.verificationId = data.verification_id;
-            console.log('[KYC] Verification started:', this.verificationId);
+            kycDebug(`Session started — verification_id=${this.verificationId}`, 'ok');
 
         } catch (error) {
-            console.error('[KYC] Error starting verification:', error);
+            kycDebug(`Error starting verification: ${error.message}`, 'err');
             alert('Failed to start verification: ' + error.message);
             this.closeModal();
         }
@@ -290,7 +315,7 @@ class KYCVerificationManager {
             video.srcObject = this.documentStream;
             await video.play();
 
-            console.log('[KYC] Document camera initialized');
+            kycDebug('Document camera initialized', 'ok');
         } catch (error) {
             console.error('[KYC] Camera error:', error);
             alert('Unable to access camera. Please ensure camera permissions are granted.');
@@ -321,7 +346,7 @@ class KYCVerificationManager {
             video.srcObject = this.selfieStream;
             await video.play();
 
-            console.log('[KYC] Selfie camera initialized');
+            kycDebug('Selfie camera initialized', 'ok');
         } catch (error) {
             console.error('[KYC] Camera error:', error);
             alert('Unable to access camera for selfie. Please ensure camera permissions are granted.');
@@ -349,7 +374,7 @@ class KYCVerificationManager {
         // Get image data (high quality)
         this.documentImage = canvas.toDataURL('image/jpeg', 0.9);
 
-        console.log('[KYC] Document image size:', Math.round(this.documentImage.length / 1024), 'KB');
+        kycDebug(`Document captured — ${Math.round(this.documentImage.length / 1024)} KB`, 'ok');
 
         // Show preview
         preview.src = this.documentImage;
@@ -361,7 +386,7 @@ class KYCVerificationManager {
         document.getElementById('btn-retake-document').style.display = 'inline-flex';
         document.getElementById('btn-continue-document').style.display = 'inline-flex';
 
-        console.log('[KYC] Document captured');
+        kycDebug('Document image ready for upload', 'info');
     }
 
     /**
@@ -411,7 +436,7 @@ class KYCVerificationManager {
 
             // If 401, try to refresh token and retry
             if (response.status === 401) {
-                console.log('[KYC] Token expired during document upload, refreshing...');
+                kycDebug('Token expired during document upload, refreshing', 'warn');
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
@@ -433,7 +458,7 @@ class KYCVerificationManager {
                 throw new Error(data.detail || 'Failed to upload document');
             }
 
-            console.log('[KYC] Document uploaded:', data);
+            kycDebug('Document uploaded', 'ok', { face_detected: data.face_detected, next_step: data.next_step });
 
             // Stop document camera
             if (this.documentStream) {
@@ -450,7 +475,7 @@ class KYCVerificationManager {
             await this.initSelfieCamera();
 
         } catch (error) {
-            console.error('[KYC] Error uploading document:', error);
+            kycDebug(`Document upload failed: ${error.message}`, 'err');
             alert(error.message);
         } finally {
             this.isProcessing = false;
@@ -518,7 +543,7 @@ class KYCVerificationManager {
             : frames[Math.floor(frames.length / 2)];
         const extraFrames = type === 'turn' ? frames.slice(1) : [];
 
-        console.log(`[KYC] Challenge '${type}': ${frames.length} frames captured, sending ${extraFrames.length} extra`);
+        kycDebug(`Challenge '${type}': ${frames.length} frames captured, sending ${extraFrames.length} extra`, 'info');
 
         try {
             let token = localStorage.getItem('token') || localStorage.getItem('access_token');
@@ -549,9 +574,14 @@ class KYCVerificationManager {
             }
 
             const data = await response.json();
-            console.log(`[KYC] Challenge '${type}' response:`, data);
+            const passed = data.success;
+            kycDebug(
+                `Challenge '${type}' → ${passed ? 'PASSED' : 'FAILED'}`,
+                passed ? 'ok' : 'err',
+                { message: data.message }
+            );
 
-            if (data.success) {
+            if (passed) {
                 this.challengesCompleted[type] = true;
                 this.updateChallengeStatus(type, true);
                 instructionEl.textContent = '✓ Challenge passed!';
@@ -565,7 +595,7 @@ class KYCVerificationManager {
             }
 
         } catch (error) {
-            console.error('[KYC] Challenge error:', error);
+            kycDebug(`Challenge '${type}' error: ${error.message}`, 'err');
             instructionEl.textContent = 'Error. Please try again.';
         }
     }
@@ -607,7 +637,7 @@ class KYCVerificationManager {
         ctx.restore();
 
         this.selfieImage = canvas.toDataURL('image/jpeg', 0.75);  // Reduced from 0.9 to 0.75
-        console.log('[KYC] Selfie image size:', Math.round(this.selfieImage.length / 1024), 'KB');
+        kycDebug(`Selfie captured — ${Math.round(this.selfieImage.length / 1024)} KB`, 'info');
 
         // Show result step with processing
         this.showStep('result');
@@ -621,10 +651,10 @@ class KYCVerificationManager {
             formData.append('image_data', this.selfieImage);
             formData.append('liveliness_frames', JSON.stringify(this.livelinessFrames));
 
-            console.log('[KYC] Sending selfie upload request:', {
+            kycDebug('Sending selfie + liveliness frames', 'info', {
                 verification_id: this.verificationId,
-                image_data_length: this.selfieImage ? this.selfieImage.length : 0,
-                liveliness_frames_count: this.livelinessFrames ? this.livelinessFrames.length : 0
+                selfie_kb: Math.round((this.selfieImage || '').length / 1024),
+                liveliness_frames: this.livelinessFrames.length
             });
 
             let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/upload-selfie`, {
@@ -637,7 +667,7 @@ class KYCVerificationManager {
 
             // If 401, try to refresh token and retry
             if (response.status === 401) {
-                console.log('[KYC] Token expired during selfie upload, refreshing...');
+                kycDebug('Token expired during selfie upload, refreshing', 'warn');
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
@@ -652,11 +682,21 @@ class KYCVerificationManager {
             }
 
             const data = await response.json();
-            console.log('[KYC] Selfie upload response:', response.status, data);
+            kycDebug(`Selfie upload response: HTTP ${response.status}`, response.ok ? 'ok' : 'err', {
+                status: data.status,
+                face_match_passed: data.face_match_passed,
+                face_match_score: data.face_match_score,
+                liveliness_passed: data.liveliness_passed,
+                liveliness_score: data.liveliness_score,
+                blink: data.blink_detected,
+                smile: data.smile_detected,
+                head_turn: data.head_turn_detected,
+                rejection_reason: data.rejection_reason || null
+            });
 
             // Handle 400 errors with specific message
             if (response.status === 400) {
-                console.error('[KYC] Bad request error:', data.detail);
+                kycDebug(`Bad request: ${data.detail}`, 'err');
                 throw new Error(data.detail || 'Verification failed');
             }
 
@@ -665,6 +705,7 @@ class KYCVerificationManager {
             }
 
             if (data.success) {
+                kycDebug('VERIFICATION PASSED', 'ok');
                 this.showSuccessResult(data);
 
                 // Update user's KYC status in localStorage
@@ -679,11 +720,12 @@ class KYCVerificationManager {
                 }
 
             } else {
+                kycDebug(`VERIFICATION FAILED: ${data.rejection_reason}`, 'err');
                 this.showFailedResult(data);
             }
 
         } catch (error) {
-            console.error('[KYC] Verification error:', error);
+            kycDebug(`Verification exception: ${error.message}`, 'err');
             this.showFailedResult({
                 rejection_reason: error.message,
                 attempts_remaining: 2

@@ -858,6 +858,18 @@ async def upload_selfie(
         raise HTTPException(status_code=400, detail="Maximum attempts exceeded")
 
     try:
+        print(f"[KYC DEBUG] /upload-selfie called")
+        print(f"  user_id         : {current_user.id}")
+        print(f"  verification_id : {verification_id}")
+        print(f"  image_data_len  : {len(image_data)} chars")
+        print(f"  liveliness_frames provided: {liveliness_frames is not None}")
+        print(f"  doc_verified    : {verification.document_verified}")
+        print(f"  blink_detected  : {verification.blink_detected}")
+        print(f"  smile_detected  : {verification.smile_detected}")
+        print(f"  head_turn_detected: {verification.head_turn_detected}")
+        print(f"  opencv_available: {OPENCV_AVAILABLE}")
+        print(f"  face_recognition_available: {FACE_RECOGNITION_AVAILABLE}")
+
         # Decode base64 selfie
         selfie_bytes = base64.b64decode(image_data.split(',')[1] if ',' in image_data else image_data)
 
@@ -1039,6 +1051,17 @@ async def upload_selfie(
             print(f"  Traceback: {traceback.format_exc()}")
             raise
 
+        print(f"[KYC DEBUG] /upload-selfie final result:")
+        print(f"  status              : {verification.status}")
+        print(f"  face_match_passed   : {verification.face_match_passed}")
+        print(f"  face_match_score    : {verification.face_match_score}")
+        print(f"  liveliness_passed   : {verification.liveliness_passed}")
+        print(f"  liveliness_score    : {verification.liveliness_score}")
+        print(f"  blink_detected      : {verification.blink_detected}")
+        print(f"  smile_detected      : {verification.smile_detected}")
+        print(f"  head_turn_detected  : {verification.head_turn_detected}")
+        print(f"  rejection_reason    : {verification.rejection_reason}")
+
         return {
             "success": verification.status == 'passed',
             "status": verification.status,
@@ -1085,6 +1108,21 @@ async def verify_liveliness_challenge(
     try:
         frame_bytes = base64.b64decode(frame_data.split(',')[1] if ',' in frame_data else frame_data)
 
+        print(f"[KYC DEBUG] /verify-liveliness called")
+        print(f"  user_id       : {current_user.id}")
+        print(f"  verification_id: {verification_id}")
+        print(f"  challenge_type : {challenge_type}")
+        print(f"  frame_size     : {len(frame_bytes)} bytes")
+        if extra_frames:
+            try:
+                extra_count = len(json.loads(extra_frames))
+            except Exception:
+                extra_count = '?'
+        else:
+            extra_count = 0
+        print(f"  extra_frames   : {extra_count}")
+        print(f"  opencv_available: {OPENCV_AVAILABLE}")
+
         if challenge_type == 'blink':
             result = detect_blink_in_frame(frame_bytes)
             challenge_passed = result.get("detected", False)
@@ -1111,7 +1149,9 @@ async def verify_liveliness_challenge(
         else:
             raise HTTPException(status_code=400, detail=f"Unknown challenge type: {challenge_type}")
 
-        print(f"[KYC] Challenge '{challenge_type}' result: passed={challenge_passed}, detail={result}")
+        print(f"[KYC DEBUG] Challenge '{challenge_type}' result:")
+        print(f"  passed    : {challenge_passed}")
+        print(f"  detail    : {result}")
 
         # Update verification record
         if challenge_type == 'blink':
