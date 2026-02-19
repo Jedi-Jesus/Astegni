@@ -7,6 +7,49 @@
  * Append a timestamped entry to the on-screen debug panel and console.
  * color: 'info' (white) | 'ok' (green) | 'warn' (yellow) | 'err' (red)
  */
+/**
+ * Ensure the KYC debug panel exists as a fixed overlay in the bottom-right corner.
+ * Creates it once and reuses it across sessions.
+ */
+function kycEnsureDebugPanel() {
+    if (document.getElementById('kyc-debug-panel')) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'kyc-debug-panel';
+    panel.style.cssText = [
+        'position: fixed',
+        'bottom: 16px',
+        'right: 16px',
+        'width: 380px',
+        'max-width: calc(100vw - 32px)',
+        'z-index: 99999',
+        'border: 1px solid #f59e0b',
+        'border-radius: 8px',
+        'overflow: hidden',
+        'font-family: monospace',
+        'font-size: 11px',
+        'box-shadow: 0 4px 20px rgba(0,0,0,0.5)'
+    ].join('; ');
+
+    panel.innerHTML = `
+        <div onclick="var b=document.getElementById('kyc-debug-body');b.style.display=b.style.display==='none'?'block':'none'"
+             style="background:#fef3c7;padding:6px 12px;cursor:pointer;font-weight:700;color:#92400e;display:flex;justify-content:space-between;align-items:center;user-select:none;">
+            <span>&#x1F6E0; KYC Debug</span>
+            <span style="font-size:10px;font-weight:400;">click to toggle</span>
+        </div>
+        <div id="kyc-debug-body" style="background:#1e1e1e;color:#d4d4d4;padding:8px 10px;max-height:220px;overflow-y:auto;">
+            <div id="kyc-debug-entries" style="display:flex;flex-direction:column;gap:2px;">
+                <span style="color:#6a9955;"># KYC debug output will appear here</span>
+            </div>
+        </div>`;
+
+    document.body.appendChild(panel);
+}
+
+/**
+ * Append a timestamped entry to the on-screen debug panel and console.
+ * color: 'info' (white) | 'ok' (green) | 'warn' (yellow) | 'err' (red)
+ */
 function kycDebug(msg, color = 'info', data = null) {
     const colors = { info: '#d4d4d4', ok: '#4ec9b0', warn: '#dcdcaa', err: '#f44747' };
     const time = new Date().toTimeString().slice(0, 8);
@@ -16,14 +59,15 @@ function kycDebug(msg, color = 'info', data = null) {
     const fn = color === 'err' ? console.error : color === 'warn' ? console.warn : console.log;
     fn(`[KYC ${time}] ${line}`);
 
-    // On-screen panel
+    // Ensure panel exists (it may not be in DOM yet if modal hasn't loaded)
+    kycEnsureDebugPanel();
+
     const container = document.getElementById('kyc-debug-entries');
     if (container) {
         const el = document.createElement('span');
         el.style.color = colors[color] || colors.info;
         el.textContent = `[${time}] ${line}`;
         container.appendChild(el);
-        // Auto-scroll to bottom
         const body = document.getElementById('kyc-debug-body');
         if (body) body.scrollTop = body.scrollHeight;
     }
