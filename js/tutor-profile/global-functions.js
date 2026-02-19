@@ -8487,7 +8487,7 @@ function renderTutorRequests(requests) {
         const emptyMessage = currentTutorRequestType === 'courses'
             ? `<p class="text-gray-600 mb-4">No course requests found</p>
                <button onclick="openCourseRequestModal()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-                   <i class="fas fa-plus mr-2"></i>Request New Course
+                   <i class="fas fa-plus mr-2"></i>Add New Course
                </button>`
             : `<p class="text-gray-600">No ${currentTutorRequestType} requests found</p>`;
 

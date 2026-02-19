@@ -2717,7 +2717,7 @@ function renderCourseSearchResults(courses) {
                 <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-weight: 500;">No courses found</p>
                 <p style="margin: 0; font-size: 0.875rem; color: #9ca3af;">Try a different search or request a new course</p>
                 <button onclick="openCourseRequestModal()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
-                    <i class="fas fa-plus"></i> Request New Course
+                    <i class="fas fa-plus"></i> Add New Course
                 </button>
             </div>
         `;
