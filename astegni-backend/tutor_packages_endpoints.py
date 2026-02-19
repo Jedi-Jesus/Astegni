@@ -624,8 +624,9 @@ async def create_package_course_request(
 ):
     """
     Create a course directly from the package modal.
-    The course is saved to the courses table with 'verified' status and is immediately live.
-    Students/parents can later report it, which sets status to 'reported' for admin review.
+    - Tutors: course is inserted with 'verified' status and is immediately live.
+    - Students/parents: course is inserted with 'pending' status for admin review.
+    Students/parents can later report verified courses, which sets status to 'reported'.
     """
     import json
 
@@ -633,7 +634,10 @@ async def create_package_course_request(
     cur = conn.cursor()
 
     try:
-        # Insert into courses table with 'verified' status — live immediately
+        # Determine status based on caller's active role
+        active_role = current_user.get('active_role', '')
+        course_status = 'verified' if active_role == 'tutor' else 'pending'
+
         # lesson_title, language, and tags are JSONB columns in the courses table
         lesson_title_json = course.lesson_title if course.lesson_title else []
         language_json = course.language if course.language else ["English"]
@@ -644,7 +648,7 @@ async def create_package_course_request(
             (uploader_id, course_name, course_category, course_level, course_description,
              thumbnail, duration, lessons, lesson_title, language, tags,
              status, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'verified', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id, course_name, course_category, course_level, course_description,
                       thumbnail, duration, lessons, lesson_title, language, tags, status, created_at
         """, (
@@ -658,7 +662,8 @@ async def create_package_course_request(
             course.lessons or 0,
             json.dumps(lesson_title_json),
             json.dumps(language_json),
-            json.dumps(tags_json)
+            json.dumps(tags_json),
+            course_status
         ))
 
         row = cur.fetchone()
@@ -675,8 +680,9 @@ async def create_package_course_request(
 
         conn.commit()
 
+        message = "Course added successfully" if course_status == 'verified' else "Course request submitted for review"
         return {
-            "message": "Course added successfully",
+            "message": message,
             "id": course_id,
             "request_id": f"CRS-{course_id:06d}",
             "course_name": row[1],
