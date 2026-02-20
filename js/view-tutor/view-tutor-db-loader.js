@@ -1599,12 +1599,14 @@ class ViewTutorDBLoader {
             if (prices.length > 0) {
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
+                const tutorSymbol = CurrencyManager.getCurrencySymbol((window.currentTutorData && window.currentTutorData.currency) || 'ETB');
                 priceDisplay = minPrice === maxPrice ?
-                    `${CurrencyManager.getSymbol()}${minPrice}` :
-                    `${CurrencyManager.getSymbol()}${minPrice}-${maxPrice}`;
+                    `${tutorSymbol}${minPrice}` :
+                    `${tutorSymbol}${minPrice}-${maxPrice}`;
             }
         } else if (profile && profile.price && profile.price > 0) {
-            priceDisplay = `${CurrencyManager.getSymbol()}${profile.price}`;
+            const tutorSymbol = CurrencyManager.getCurrencySymbol((window.currentTutorData && window.currentTutorData.currency) || 'ETB');
+            priceDisplay = `${tutorSymbol}${profile.price}`;
         }
 
         // Generate styled HTML matching the beautiful design from HTML
@@ -2162,9 +2164,14 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
 
         // Update the listed price display for counter-offer reference
         const price = packageData.session_price || packageData.package_price || 0;
+        const tutorCurrencySymbol = CurrencyManager.getCurrencySymbol((window.currentTutorData && window.currentTutorData.currency) || 'ETB');
         const listedPriceDisplay = document.getElementById('listedPriceDisplay');
         if (listedPriceDisplay) {
-            listedPriceDisplay.textContent = `${CurrencyManager.getSymbol()}${Math.round(price)}`;
+            listedPriceDisplay.textContent = `${tutorCurrencySymbol}${Math.round(price)}`;
+        }
+        const counterOfferCurrencySymbol = document.getElementById('counterOfferCurrencySymbol');
+        if (counterOfferCurrencySymbol) {
+            counterOfferCurrencySymbol.textContent = tutorCurrencySymbol;
         }
 
         // Clear any previous counter-offer
@@ -2308,7 +2315,7 @@ function populatePackageDetails(pkg) {
                 </div>
                 <div style="text-align: right;">
                     <div style="background: var(--primary-color, #3b82f6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.3);">
-                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">${CurrencyManager.getSymbol()}${Math.round(price)}</div>
+                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">${CurrencyManager.getCurrencySymbol((window.currentTutorData && window.currentTutorData.currency) || 'ETB')}${Math.round(price)}</div>
                         <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 2px;">per session</div>
                     </div>
                 </div>
