@@ -342,7 +342,7 @@ class StandaloneChatCallManagerClass {
             this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
             // Set local video
-            const localVideo = document.getElementById('chatLocalVideo');
+            const localVideo = document.getElementById('standaloneLocalVideo');
             if (localVideo && this.callMode === 'video') {
                 localVideo.srcObject = this.localStream;
                 localVideo.style.display = 'block';
@@ -351,7 +351,7 @@ class StandaloneChatCallManagerClass {
             }
 
             // Show/hide voice animation
-            const voiceAnimation = document.getElementById('chatVoiceCallAnimation');
+            const voiceAnimation = document.getElementById('standaloneVoiceCallAnimation');
             if (voiceAnimation) {
                 voiceAnimation.style.display = this.callMode === 'voice' ? 'flex' : 'none';
             }
@@ -374,7 +374,7 @@ class StandaloneChatCallManagerClass {
                 console.log('[StandaloneChatCall] Received remote track');
                 if (!this.remoteStream) {
                     this.remoteStream = new MediaStream();
-                    const remoteVideo = document.getElementById('chatRemoteVideo');
+                    const remoteVideo = document.getElementById('standaloneRemoteVideo');
                     if (remoteVideo) {
                         remoteVideo.srcObject = this.remoteStream;
                     }
@@ -508,7 +508,7 @@ class StandaloneChatCallManagerClass {
             }
         }
 
-        const muteBtn = document.getElementById('chatMuteBtn');
+        const muteBtn = document.getElementById('standaloneMuteBtn');
         if (muteBtn) {
             muteBtn.classList.toggle('muted', this.isMuted);
             muteBtn.title = this.isMuted ? 'Unmute' : 'Mute';
@@ -532,7 +532,7 @@ class StandaloneChatCallManagerClass {
             }
         }
 
-        const videoBtn = document.getElementById('chatSwitchVideoModeBtn');
+        const videoBtn = document.getElementById('standaloneSwitchVideoModeBtn');
         if (videoBtn) {
             videoBtn.classList.toggle('video-off', !this.isVideoEnabled);
             videoBtn.title = this.isVideoEnabled ? 'Turn Off Video' : 'Turn On Video';
@@ -563,7 +563,7 @@ class StandaloneChatCallManagerClass {
             this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
             // Update local video
-            const localVideo = document.getElementById('chatLocalVideo');
+            const localVideo = document.getElementById('standaloneLocalVideo');
             if (localVideo) {
                 if (newMode === 'video') {
                     localVideo.srcObject = this.localStream;
@@ -574,7 +574,7 @@ class StandaloneChatCallManagerClass {
             }
 
             // Show/hide voice animation
-            const voiceAnimation = document.getElementById('chatVoiceCallAnimation');
+            const voiceAnimation = document.getElementById('standaloneVoiceCallAnimation');
             if (voiceAnimation) {
                 voiceAnimation.style.display = newMode === 'voice' ? 'flex' : 'none';
             }
@@ -595,7 +595,7 @@ class StandaloneChatCallManagerClass {
             this.callMode = newMode;
 
             // Update button
-            const switchBtn = document.getElementById('chatSwitchCallModeBtn');
+            const switchBtn = document.getElementById('standaloneSwitchCallModeBtn');
             if (switchBtn) {
                 switchBtn.title = newMode === 'video' ? 'Switch to Voice' : 'Switch to Video';
             }
@@ -684,7 +684,7 @@ class StandaloneChatCallManagerClass {
             const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const seconds = (elapsed % 60).toString().padStart(2, '0');
 
-            const timerElement = document.getElementById('chatCallTimer');
+            const timerElement = document.getElementById('standaloneCallTimer');
             if (timerElement) {
                 timerElement.textContent = `${minutes}:${seconds}`;
             }
