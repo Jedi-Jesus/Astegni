@@ -168,6 +168,46 @@ def get_db():
         db.close()
 
 
+def _auto_orient_pil(image_data: bytes):
+    """
+    Open image bytes as a PIL RGB image and auto-rotate it to upright orientation.
+    Tries EXIF orientation tag first, then brute-forces all 4 rotations using
+    face_recognition HOG to find which rotation contains a detectable face.
+    Returns (PIL.Image in RGB, rotation_applied_degrees).
+    """
+    from PIL import Image as PilImage
+    import io as _io
+
+    pil_img = PilImage.open(_io.BytesIO(image_data)).convert("RGB")
+
+    # --- EXIF auto-orient ---
+    try:
+        from PIL import ExifTags
+        exif = pil_img._getexif()
+        if exif:
+            orient_tag = next((t for t, n in ExifTags.TAGS.items() if n == "Orientation"), None)
+            if orient_tag and orient_tag in exif:
+                orientation = exif[orient_tag]
+                rotation_map = {3: 180, 6: 270, 8: 90}
+                if orientation in rotation_map:
+                    pil_img = pil_img.rotate(rotation_map[orientation], expand=True)
+                    return pil_img, rotation_map[orientation]
+    except Exception:
+        pass
+
+    # --- Brute-force rotation: find which rotation has a face ---
+    if FACE_RECOGNITION_AVAILABLE:
+        import numpy as _np
+        for deg in [0, 90, 180, 270]:
+            candidate = pil_img.rotate(deg, expand=True) if deg != 0 else pil_img
+            arr = _np.array(candidate)
+            locs = face_recognition.face_locations(arr, number_of_times_to_upsample=1, model="hog")
+            if locs:
+                return candidate, deg
+
+    return pil_img, 0
+
+
 def detect_face_in_image(image_data: bytes) -> dict:
     """Detect face in image and return face location/landmarks"""
     if not OPENCV_AVAILABLE:
@@ -180,9 +220,10 @@ def detect_face_in_image(image_data: bytes) -> dict:
         }
 
     try:
-        # Decode image
-        nparr = np.frombuffer(image_data, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # Auto-orient the image before detection
+        pil_img, rotation = _auto_orient_pil(image_data)
+        img_rgb = np.array(pil_img)
+        img = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
 
         if img is None:
             return {"face_detected": False, "error": "Could not decode image"}
@@ -193,8 +234,8 @@ def detect_face_in_image(image_data: bytes) -> dict:
         # Load face cascade
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-        # Detect faces
-        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        # Detect faces (relaxed parameters for better recall on real-world ID photos)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(20, 20))
 
         if len(faces) == 0:
             return {"face_detected": False, "face_count": 0}
@@ -213,6 +254,43 @@ def detect_face_in_image(image_data: bytes) -> dict:
         return {"face_detected": False, "error": str(e)}
 
 
+def _get_face_encodings_robust(image_data: bytes, label: str = "image") -> list:
+    """
+    Extract face encodings from image bytes with full robustness:
+    - Auto-orient/rotate the image (handles landscape IDs captured in portrait mode)
+    - Falls back from HOG to CNN model when HOG finds no face
+    - Tries up to 2x upsampling for small/low-res images
+    Returns list of encodings (may be empty).
+    """
+    try:
+        pil_img, rotation = _auto_orient_pil(image_data)
+        arr = np.array(pil_img)
+        print(f"[KYC] {label}: size={pil_img.size}, rotation_applied={rotation}deg")
+
+        # 1. Try HOG (fast) with upsampling
+        for upsample in [1, 2]:
+            locs = face_recognition.face_locations(arr, number_of_times_to_upsample=upsample, model="hog")
+            if locs:
+                encs = face_recognition.face_encodings(arr, known_face_locations=locs, num_jitters=1)
+                if encs:
+                    print(f"[KYC] {label}: HOG found {len(locs)} face(s) at upsample={upsample}")
+                    return encs
+
+        # 2. Fall back to CNN (slower but handles difficult angles/lighting)
+        locs = face_recognition.face_locations(arr, number_of_times_to_upsample=0, model="cnn")
+        if locs:
+            encs = face_recognition.face_encodings(arr, known_face_locations=locs, num_jitters=1)
+            if encs:
+                print(f"[KYC] {label}: CNN found {len(locs)} face(s)")
+                return encs
+
+        print(f"[KYC] {label}: No face found with HOG or CNN")
+        return []
+    except Exception as e:
+        print(f"[KYC] {label}: encoding error: {e}")
+        return []
+
+
 def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
     """Compare two face images and return similarity score"""
     if not FACE_RECOGNITION_AVAILABLE:
@@ -226,18 +304,9 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         }
 
     try:
-        # Load images
-        nparr1 = np.frombuffer(image1_data, np.uint8)
-        img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
-        img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
-
-        nparr2 = np.frombuffer(image2_data, np.uint8)
-        img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
-        img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
-
-        # Get face encodings
-        encodings1 = face_recognition.face_encodings(img1_rgb)
-        encodings2 = face_recognition.face_encodings(img2_rgb)
+        # Robust encoding: auto-orient + HOG→CNN fallback
+        encodings1 = _get_face_encodings_robust(image1_data, label="document")
+        encodings2 = _get_face_encodings_robust(image2_data, label="selfie")
 
         if len(encodings1) == 0 or len(encodings2) == 0:
             return {
@@ -254,6 +323,7 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         # Converted to similarity: 1 - 0.6 = 0.40.
         # We use 0.45 (distance 0.55) — stricter than the default but realistic for
         # webcam-captured ID photos which suffer from glare, blur, and angle differences.
+        print(f"[KYC] Face comparison: distance={distance:.4f}, similarity={similarity:.4f}")
         return {
             "match": bool(similarity >= 0.45),
             "score": float(similarity),
