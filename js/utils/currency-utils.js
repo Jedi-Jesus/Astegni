@@ -36,6 +36,9 @@ const CurrencyManager = {
 
             // Update widget currency symbols on page
             this.updateWidgetCurrencySymbols();
+
+            // Re-render any package grids that may have rendered before currency resolved
+            if (typeof renderPackagesGrid === 'function') renderPackagesGrid();
         } catch (error) {
             console.error('[CurrencyManager] Failed to initialize:', error);
             this.setDefaultCurrency();
