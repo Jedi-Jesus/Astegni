@@ -134,6 +134,11 @@ class WhiteboardManager {
 
         // Event listener setup tracking (prevents duplicate setup)
         this._eventListenersSetup = false;
+
+        // Live chat via the main chat system
+        this.whiteboardConversationId = null; // ID of the group conversation for this session
+        this.chatPollingInterval = null; // Interval handle for polling new messages
+        this.lastMessageId = 0; // Track last seen message ID to show only new ones
     }
 
     /**
@@ -1200,8 +1205,8 @@ class WhiteboardManager {
             // Initialize interaction wrapper (host view by default since no session yet)
             this.updateInteractionWrapperRole();
 
-            // Load chat messages
-            await this.loadChatMessages();
+            // Initialize live chat via the main chat system
+            await this.initWhiteboardChat();
 
             // Load call history and check for missed calls
             await this.loadCallHistory();
@@ -1335,6 +1340,11 @@ class WhiteboardManager {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
+
+        // Stop chat polling
+        this.stopChatPolling();
+        this.whiteboardConversationId = null;
+        this.lastMessageId = 0;
 
         // Disconnect WebSocket
         if (this.ws) {
@@ -1501,6 +1511,14 @@ class WhiteboardManager {
             p.classList.toggle('active', isActive);
             console.log(`🎨 Right panel ${p.id}: ${isActive ? 'active' : 'inactive'}`);
         });
+
+        // Start or stop chat polling based on whether the chat panel is now active
+        if (panel === 'chat') {
+            this.loadChatMessages(); // Immediate refresh when switching to chat
+            this.startChatPolling();
+        } else {
+            this.stopChatPolling();
+        }
     }
 
     /**
@@ -2606,10 +2624,16 @@ class WhiteboardManager {
     }
 
     /**
-     * Save stroke to server
+     * Save stroke to server and persist locally so page navigation restores strokes
      */
     async saveStroke(stroke) {
         if (!this.currentPage) return;
+
+        // Persist stroke locally so loadPage() can redraw it on navigation
+        if (!this.currentPage.strokes) {
+            this.currentPage.strokes = [];
+        }
+        this.currentPage.strokes.push(stroke);
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
@@ -4328,47 +4352,165 @@ class WhiteboardManager {
     }
 
     /**
-     * Load chat messages
+     * Initialize the whiteboard live chat by getting or creating a group
+     * conversation for the current session participants using the main chat API.
      */
-    async loadChatMessages() {
+    async initWhiteboardChat() {
         if (!this.currentSession) return;
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+            if (!token || !user.id) return;
+
+            const CHAT_BASE = `${window.API_BASE_URL || 'http://localhost:8000'}/api/chat`;
+
+            // Build the list of all participant user IDs (everyone except the current user)
+            const participantUserIds = this._getSessionParticipantUserIds(user.id);
+
+            if (participantUserIds.length === 0) {
+                // No participants yet — chat will be initialised when someone joins
+                console.log('[WB Chat] No other participants yet, skipping conversation init');
+                return;
+            }
+
+            const sessionTitle = this.currentSession.session_title || 'Whiteboard Session';
+
+            // Create (or get existing) group conversation for this session
             const response = await fetch(
-                `${this.API_BASE}/chat/${this.currentSession.id}`,
+                `${CHAT_BASE}/conversations?user_id=${user.id}`,
                 {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'group',
+                        name: `[WB] ${sessionTitle}`,
+                        description: `Whiteboard session chat — session #${this.currentSession.id}`,
+                        participant_user_ids: participantUserIds
+                    })
                 }
             );
 
-            const data = await response.json();
-
-            if (data.success) {
-                this.renderChatMessages(data.messages);
+            if (!response.ok) {
+                console.error('[WB Chat] Failed to create conversation:', response.status);
+                return;
             }
+
+            const data = await response.json();
+            this.whiteboardConversationId = data.conversation?.id || null;
+            console.log('[WB Chat] Conversation ready:', this.whiteboardConversationId);
+
+            // Load existing messages immediately
+            await this.loadChatMessages();
+
         } catch (error) {
-            console.error('Error loading chat messages:', error);
+            console.error('[WB Chat] initWhiteboardChat error:', error);
         }
     }
 
     /**
-     * Render chat messages
+     * Gather user IDs for all session participants, excluding the current user.
+     * Uses the enrolled students/tutors list which already has user IDs.
+     */
+    _getSessionParticipantUserIds(currentUserId) {
+        const ids = new Set();
+
+        // From enrolled students (tutor perspective)
+        for (const s of (this.enrolledStudents || [])) {
+            if (s.student_user_id && s.student_user_id !== currentUserId) {
+                ids.add(s.student_user_id);
+            }
+        }
+
+        // From enrolled tutors (student perspective)
+        for (const t of (this.enrolledTutors || [])) {
+            if (t.tutor_user_id && t.tutor_user_id !== currentUserId) {
+                ids.add(t.tutor_user_id);
+            }
+        }
+
+        // If we only have the session object (no enrolled list loaded yet),
+        // fall back to whatever user IDs are embedded in currentSession
+        if (ids.size === 0 && this.currentSession) {
+            const s = this.currentSession;
+            if (s.host_user_id && s.host_user_id !== currentUserId) ids.add(s.host_user_id);
+            if (s.participant_user_id && s.participant_user_id !== currentUserId) ids.add(s.participant_user_id);
+        }
+
+        return [...ids];
+    }
+
+    /**
+     * Load chat messages from the main chat API.
+     * Messages are returned newest-first so we reverse before rendering.
+     */
+    async loadChatMessages() {
+        if (!this.whiteboardConversationId) {
+            // Try to initialise if we have a session but no conversation yet
+            if (this.currentSession) await this.initWhiteboardChat();
+            if (!this.whiteboardConversationId) return;
+        }
+
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+            if (!token || !user.id) return;
+
+            const CHAT_BASE = `${window.API_BASE_URL || 'http://localhost:8000'}/api/chat`;
+            const response = await fetch(
+                `${CHAT_BASE}/messages/${this.whiteboardConversationId}?user_id=${user.id}&limit=50`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const messages = (data.messages || []).reverse(); // API returns newest-first
+            this.renderChatMessages(messages);
+
+            // Track last message for polling
+            if (messages.length > 0) {
+                this.lastMessageId = messages[messages.length - 1].id;
+            }
+        } catch (error) {
+            console.error('[WB Chat] loadChatMessages error:', error);
+        }
+    }
+
+    /**
+     * Render chat messages.
+     * Handles the real chat API format: content, sender_user_id, sender_name, sender_avatar.
      */
     renderChatMessages(messages) {
         const container = document.getElementById('whiteboardChatMessages');
+        if (!container) return;
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
+        if (!messages || messages.length === 0) {
+            container.innerHTML = `
+                <div class="chat-empty-state">
+                    <i class="fas fa-comments"></i>
+                    <p>No messages yet. Say hello!</p>
+                </div>`;
+            return;
+        }
+
         container.innerHTML = messages.map(msg => {
-            const isSent = msg.sender_id === user.id;
-            const initials = this.getInitials(msg.sender_name);
+            // Real chat API uses sender_user_id; legacy used sender_id
+            const senderId = msg.sender_user_id ?? msg.sender_id;
+            const isSent = senderId === user.id;
+            const senderName = msg.sender_name || 'Unknown';
+            const initials = this.getInitials(senderName);
+            const text = msg.content ?? msg.message_text ?? '';
+
             const avatarHtml = msg.sender_avatar && !msg.sender_avatar.includes('user-default') ?
                 `<img src="${msg.sender_avatar}"
-                     alt="${msg.sender_name}"
+                     alt="${senderName}"
                      class="message-avatar"
-                     onerror="whiteboardManager.handleAvatarError(this, '${msg.sender_name.replace(/'/g, "\\'")}')">` :
+                     onerror="whiteboardManager.handleAvatarError(this, '${senderName.replace(/'/g, "\\'")}')">` :
                 `<div class="message-avatar initials-avatar" style="
                     width: 32px; height: 32px; border-radius: 50%;
                     background: linear-gradient(135deg, var(--primary-color, #6366f1), #4f46e5);
@@ -4376,14 +4518,19 @@ class WhiteboardManager {
                     font-weight: 600; font-size: 0.7rem; flex-shrink: 0;
                 ">${initials}</div>`;
 
+            const timeStr = msg.created_at
+                ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : '';
+
             return `
                 <div class="chat-message ${isSent ? 'sent' : ''}">
-                    ${avatarHtml}
+                    ${!isSent ? avatarHtml : ''}
                     <div class="message-content">
-                        <div class="message-sender">${msg.sender_name}</div>
-                        <div class="message-bubble">${msg.message_text}</div>
-                        <div class="message-time">${new Date(msg.created_at).toLocaleTimeString()}</div>
+                        ${!isSent ? `<div class="message-sender">${senderName}</div>` : ''}
+                        <div class="message-bubble">${this._escapeHtml(text)}</div>
+                        <div class="message-time">${timeStr}</div>
                     </div>
+                    ${isSent ? avatarHtml : ''}
                 </div>
             `;
         }).join('');
@@ -4392,37 +4539,122 @@ class WhiteboardManager {
         container.scrollTop = container.scrollHeight;
     }
 
+    /** Escape HTML to prevent XSS in chat messages */
+    _escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     /**
-     * Send chat message
+     * Send chat message via the main chat API.
+     * Optimistically appends the message, then reloads to confirm.
      */
     async sendChatMessage() {
         const input = document.getElementById('whiteboardChatInput');
-        const message = input.value.trim();
+        const message = input?.value?.trim();
 
-        if (!message || !this.currentSession) return;
+        if (!message) return;
+
+        // If no conversation yet, try to initialise first
+        if (!this.whiteboardConversationId && this.currentSession) {
+            await this.initWhiteboardChat();
+        }
+
+        if (!this.whiteboardConversationId) {
+            this.showNotification('Chat is not available — no active session participants yet.', 'warning');
+            return;
+        }
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const response = await fetch(`${this.API_BASE}/chat/send`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    session_id: this.currentSession.id,
-                    message_text: message
-                })
-            });
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+            if (!token || !user.id) return;
 
-            const data = await response.json();
+            const CHAT_BASE = `${window.API_BASE_URL || 'http://localhost:8000'}/api/chat`;
 
-            if (data.success) {
+            // Disable input while sending
+            if (input) input.disabled = true;
+            const sendBtn = document.getElementById('whiteboardSendBtn');
+            if (sendBtn) sendBtn.disabled = true;
+
+            const response = await fetch(
+                `${CHAT_BASE}/messages?user_id=${user.id}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        conversation_id: this.whiteboardConversationId,
+                        message_type: 'text',
+                        content: message
+                    })
+                }
+            );
+
+            if (response.ok) {
                 input.value = '';
                 await this.loadChatMessages();
+            } else {
+                console.error('[WB Chat] Send failed:', response.status);
+                this.showNotification('Failed to send message.', 'error');
             }
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('[WB Chat] sendChatMessage error:', error);
+        } finally {
+            const input2 = document.getElementById('whiteboardChatInput');
+            if (input2) { input2.disabled = false; input2.focus(); }
+            const sendBtn2 = document.getElementById('whiteboardSendBtn');
+            if (sendBtn2) sendBtn2.disabled = false;
+        }
+    }
+
+    /**
+     * Start polling for new chat messages every 3 seconds.
+     * Called when the chat panel becomes visible.
+     */
+    startChatPolling() {
+        if (this.chatPollingInterval) return; // Already polling
+        this.chatPollingInterval = setInterval(async () => {
+            if (!this.whiteboardConversationId) return;
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+                if (!token || !user.id) return;
+
+                const CHAT_BASE = `${window.API_BASE_URL || 'http://localhost:8000'}/api/chat`;
+                const response = await fetch(
+                    `${CHAT_BASE}/messages/${this.whiteboardConversationId}?user_id=${user.id}&limit=50`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const messages = (data.messages || []).reverse();
+
+                // Only re-render if there are new messages
+                const newestId = messages.length > 0 ? messages[messages.length - 1].id : 0;
+                if (newestId > this.lastMessageId) {
+                    this.lastMessageId = newestId;
+                    this.renderChatMessages(messages);
+                }
+            } catch (_) { /* silently ignore polling errors */ }
+        }, 3000);
+    }
+
+    /**
+     * Stop polling for new chat messages.
+     * Called when the chat panel is hidden or the whiteboard is closed.
+     */
+    stopChatPolling() {
+        if (this.chatPollingInterval) {
+            clearInterval(this.chatPollingInterval);
+            this.chatPollingInterval = null;
         }
     }
 
@@ -12058,26 +12290,32 @@ class WhiteboardManager {
     }
 
     /**
-     * Populate student dropdown for chat recipients
+     * Populate chat recipient dropdown with real session participants.
      */
     populateStudentDropdown() {
         const dropdown = document.getElementById('chatRecipient');
-        if (!dropdown || !this.currentSession) return;
+        if (!dropdown) return;
 
-        // Get existing options
-        const baseOptions = `
-            <option value="group">Everyone</option>
-            <option value="tutor">Tutor</option>
-        `;
+        // Always keep "Everyone" option first
+        let options = `<option value="group">Everyone</option>`;
 
-        // Add student options (mock data for now)
-        const studentOptions = `
-            <option value="student_1">Student 1</option>
-            <option value="student_2">Student 2</option>
-            <option value="student_3">Student 3</option>
-        `;
+        if (this.userRole === 'tutor') {
+            // Tutor sees each enrolled student as a recipient option
+            for (const s of (this.enrolledStudents || [])) {
+                const uid = s.student_user_id;
+                const name = s.name || 'Student';
+                if (uid) options += `<option value="${uid}">${name}</option>`;
+            }
+        } else {
+            // Student/parent sees their tutor(s) as recipient options
+            for (const t of (this.enrolledTutors || [])) {
+                const uid = t.tutor_user_id;
+                const name = t.name || 'Tutor';
+                if (uid) options += `<option value="${uid}">${name}</option>`;
+            }
+        }
 
-        dropdown.innerHTML = baseOptions + studentOptions;
+        dropdown.innerHTML = options;
     }
 
     /**

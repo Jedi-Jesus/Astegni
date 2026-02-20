@@ -6,6 +6,12 @@
 // Global Variables
 let currentStudentDetailsId = null;
 
+// Tutor requests panel filter state (declared at top to prevent TDZ)
+let currentTutorRequestType = 'courses';
+let currentTutorRequestStatus = 'all';
+let currentTutorRequestDirection = 'received';
+let currentParentingDirection = 'invited';
+
 // Universal Modal Handler - Routes to correct modal manager
 // NOTE: Must be synchronous for HTML onclick compatibility, uses .then() for async operations
 function openModal(modalId) {
@@ -8066,11 +8072,6 @@ window.updateStudentReview = updateStudentReview;
 //   TUTOR REQUESTS PANEL - FILTER FUNCTIONS
 // ============================================
 
-// Current filter state for tutor requests
-let currentTutorRequestType = 'courses';
-let currentTutorRequestStatus = 'all';
-let currentTutorRequestDirection = 'received'; // 'received' or 'sent'
-
 // Filter by request type (courses, schools, sessions, parenting)
 function filterTutorRequestType(type) {
     currentTutorRequestType = type;
@@ -8185,9 +8186,6 @@ function filterTutorRequestType(type) {
     // Load requests based on type and status
     loadTutorRequests();
 }
-
-// Track current parenting direction (invited or invites)
-let currentParentingDirection = 'invited';
 
 // Filter parenting invitations by direction (invited = received, invites = sent)
 function filterParentingDirection(direction) {

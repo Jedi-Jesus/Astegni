@@ -196,6 +196,9 @@ const FindTutorsUI = {
         if (!this.elements.tutorGrid) return;
 
         if (tutors.length === 0) {
+            const activeRole = localStorage.getItem('userRole') || '';
+            const courseLabel = activeRole === 'tutor' ? 'Add a Course' : 'Request a Course';
+
             this.elements.tutorGrid.innerHTML = `
                 <div class="col-span-full text-center py-12">
                     <div class="text-gray-400 mb-6">
@@ -208,13 +211,13 @@ const FindTutorsUI = {
                     <p class="text-gray-500 dark:text-gray-400 mb-6">We couldn't find any tutors matching your criteria</p>
 
                     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button onclick="requestCourse()" class="request-btn bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <button onclick="openRequestCourseModal()" class="request-btn bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
                             <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                             </svg>
-                            Request Course
+                            ${courseLabel}
                         </button>
-                        <button onclick="requestSchool()" class="request-btn bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <button onclick="openSchoolRequestModal()" class="request-btn bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
                             <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>

@@ -2196,13 +2196,15 @@ function populatePackageDetails(pkg) {
     // Build features array - mark ones with long content for full-width display
     const features = [];
 
-    // Courses/Subjects (likely long - full width)
+    // Courses (likely long - full width)
     if (pkg.courses) {
         const coursesText = typeof pkg.courses === 'string'
             ? pkg.courses
-            : (Array.isArray(pkg.courses) ? pkg.courses.join(', ') : '');
+            : (Array.isArray(pkg.courses)
+                ? pkg.courses.map(c => typeof c === 'object' ? (c.course_name || '') : c).filter(Boolean).join(', ')
+                : '');
         if (coursesText) {
-            features.push({ icon: 'fa-book', label: 'Subjects', value: coursesText, fullWidth: true });
+            features.push({ icon: 'fa-book', label: 'Courses', value: coursesText, fullWidth: true });
         }
     }
 

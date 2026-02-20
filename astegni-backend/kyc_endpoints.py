@@ -1040,6 +1040,8 @@ async def upload_selfie(
                 user.verified_at = datetime.utcnow()
                 user.verification_method = 'kyc'
 
+                user.verification_status = 'verified'
+
                 # DEPRECATED: Keep kyc_verified for backward compatibility
                 user.kyc_verified = True
                 user.kyc_verified_at = datetime.utcnow()

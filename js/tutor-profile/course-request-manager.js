@@ -352,10 +352,22 @@ window.openCourseRequestModal = async function() {
  * Update submit button text based on page context
  */
 function updateSubmitButtonText() {
-    const submitBtn = document.getElementById('submitCourseRequestBtn');
-    if (!submitBtn) return;
+    const activeRole = localStorage.getItem('userRole') || '';
+    const isTutor = activeRole === 'tutor';
 
-    submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Course';
+    const title       = document.getElementById('courseRequestModalTitle');
+    const subtitle    = document.getElementById('courseRequestModalSubtitle');
+    const submitLabel = document.getElementById('submitCourseRequestLabel');
+
+    if (isTutor) {
+        if (title)       title.innerHTML         = '<i class="fas fa-plus-circle"></i> Add New Course';
+        if (subtitle)    subtitle.textContent    = 'Your course will be live immediately';
+        if (submitLabel) submitLabel.textContent = 'Add Course';
+    } else {
+        if (title)       title.innerHTML         = '<i class="fas fa-plus-circle"></i> Request a Course';
+        if (subtitle)    subtitle.textContent    = 'Submit a request and our team will review it';
+        if (submitLabel) submitLabel.textContent = 'Request Course';
+    }
 }
 
 /**
@@ -872,7 +884,7 @@ window.submitCourseRequest = async function() {
             console.log('Course request submitted:', result);
 
             // Show success message
-            alert('Course added successfully! It is now live on the platform.');
+            alert(result.message || 'Course submitted successfully.');
 
             // Close modal
             closeCourseRequestModal();

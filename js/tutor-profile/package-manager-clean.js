@@ -1293,7 +1293,7 @@ function renderPackageEditor() {
                             </select>
                         </div>
                         <div class="form-field">
-                            <label><i class="fas fa-dollar-sign"></i> Hourly Rate (${CurrencyManager.getSymbol()})</label>
+                            <label><i class="fas fa-money-bill-wave"></i> Hourly Rate (${CurrencyManager.getSymbol()})</label>
                             <input type="number" id="hourlyRate" value="${pkg.hourlyRate}" min="0" placeholder="200" oninput="updateCalculator()">
                         </div>
                     </div>

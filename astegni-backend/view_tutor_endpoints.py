@@ -959,6 +959,7 @@ async def get_similar_tutors(
                     JOIN users u ON tp.user_id = u.id
                     WHERE tp.id != %s
                     AND tp.is_active = TRUE
+                    AND u.is_verified = TRUE
                     AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
                 )
                 SELECT
@@ -1042,6 +1043,7 @@ async def get_similar_tutors(
                     JOIN users u ON tp.user_id = u.id
                     WHERE tp.id != ALL(%s)
                     AND tp.is_active = TRUE
+                    AND u.is_verified = TRUE
                     AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
                     ORDER BY avg_rating DESC, review_count DESC
                     LIMIT %s

@@ -451,6 +451,28 @@ function openRequestCourseModal() {
     }
 }
 
+// Update course request modal labels based on active role.
+// Called every time the modal is shown — does not rely on the modal's inline script
+// (insertAdjacentHTML does not execute <script> tags).
+function applyCourseRequestModalLabels() {
+    const activeRole = localStorage.getItem('userRole') || '';
+    const isTutor = activeRole === 'tutor';
+
+    const title       = document.getElementById('courseRequestModalTitle');
+    const subtitle    = document.getElementById('courseRequestModalSubtitle');
+    const submitLabel = document.getElementById('submitCourseRequestLabel');
+
+    if (isTutor) {
+        if (title)       title.innerHTML      = '<i class="fas fa-plus-circle"></i> Add New Course';
+        if (subtitle)    subtitle.textContent = 'Your course will be live immediately';
+        if (submitLabel) submitLabel.textContent = 'Add Course';
+    } else {
+        if (title)       title.innerHTML      = '<i class="fas fa-plus-circle"></i> Request a Course';
+        if (subtitle)    subtitle.textContent = 'Submit a request and our team will review it';
+        if (submitLabel) submitLabel.textContent = 'Request Course';
+    }
+}
+
 // Helper function to load and open course request modal
 async function loadAndOpenCourseRequestModal() {
     let modal = document.getElementById('course-request-modal');
@@ -462,6 +484,8 @@ async function loadAndOpenCourseRequestModal() {
             if (response.ok) {
                 const html = await response.text();
                 const container = document.getElementById('modal-container') || document.body;
+                // Note: insertAdjacentHTML does NOT execute <script> tags in the injected HTML,
+                // so all label logic must live here, not in the modal's inline script.
                 container.insertAdjacentHTML('beforeend', html);
                 modal = document.getElementById('course-request-modal');
 
@@ -486,6 +510,9 @@ async function loadAndOpenCourseRequestModal() {
         modal.style.visibility = 'visible';
         modal.style.opacity = '1';
         document.body.style.overflow = 'hidden';
+
+        // Always apply role-based labels when showing the modal
+        applyCourseRequestModalLabels();
     } else {
         console.error('[RequestModals] Course request modal not found');
         alert('Failed to load course request modal. Please refresh the page.');

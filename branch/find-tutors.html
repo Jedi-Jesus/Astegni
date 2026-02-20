@@ -802,8 +802,7 @@
             <p class="text-xl font-medium text-gray-500 dark:text-gray-400">No tutors found</p>
             <p class="mt-2 text-gray-400 dark:text-gray-500">Try adjusting your filters or search terms</p>
             <div class="mt-6 space-x-4">
-                <button id="requestCourseNoResults" onclick="openRequestCourseModal()" class="request-btn">Request
-                    Course</button>
+                <button id="requestCourseNoResults" onclick="openRequestCourseModal()" class="request-btn">Request a Course</button>
                 <button id="requestSchoolNoResults" onclick="openSchoolRequestModal()" class="request-btn">Request
                     School</button>
             </div>
@@ -1104,8 +1103,8 @@
                 .catch(error => console.error('Failed to load chat-call-modal:', error));
 
             // Update course button labels based on active role
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const activeRole = currentUser.active_role || '';
+            // userRole is the source of truth (auth.js always syncs it from active_role)
+            const activeRole = localStorage.getItem('userRole') || '';
             const courseLabel = activeRole === 'tutor' ? 'Add a Course' : 'Request a Course';
 
             const sidebarLabel = document.getElementById('sidebarCourseLabel');

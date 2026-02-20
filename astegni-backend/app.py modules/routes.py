@@ -1836,7 +1836,7 @@ def get_tutors(
             "experience": experience_count,  # Count of experience credentials
             "price": price,  # From tutor_packages.hourly_rate (min)
             "price_max": max_price,  # From tutor_packages.hourly_rate (max)
-            "currency": "ETB",
+            "currency": tutor.user.currency or "ETB",
             # Ratings from tutor_reviews table
             "rating": rating_data["rating"],
             "rating_count": rating_data["rating_count"],
@@ -2531,7 +2531,7 @@ def get_tutors_tiered(
             "languages": tutor.user.languages or [],  # From users table (migrated from tutor_profiles)
             "price": min_price if min_price > 0 else 0,
             "price_max": max_price if max_price > 0 else 0,
-            "currency": "ETB",
+            "currency": tutor.user.currency or "ETB",
             "rating": float(rating_data.rating) if rating_data else 0.0,
             "rating_count": int(rating_data.rating_count) if rating_data else 0,
             "subject_matter": float(rating_data.subject_matter) if rating_data else 0.0,

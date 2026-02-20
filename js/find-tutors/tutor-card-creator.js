@@ -32,9 +32,8 @@ const TutorCardCreator = {
         // Use ACTUAL price from database
         const price = tutor.price || 0;
 
-        // Use logged-in user's currency symbol (based on their GPS-detected location)
-        // Falls back to 'Br' (Ethiopian Birr) if user hasn't set location yet
-        const currencySymbol = CurrencyManager.getSymbol();
+        // Use tutor's own currency symbol (from their profile/location)
+        const currencySymbol = CurrencyManager.getCurrencySymbol(tutor.currency || 'ETB');
 
         const location = tutor.location || 'Not specified';
 
