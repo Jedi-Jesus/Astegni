@@ -188,7 +188,7 @@
 }
 
 .counter-flip-back .counter-icon {
-    filter: brightness(0) invert(1);
+    filter: none;
 }
 
 .counter-flip-back .counter-number,
