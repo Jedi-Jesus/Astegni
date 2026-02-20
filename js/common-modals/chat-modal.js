@@ -14378,15 +14378,11 @@ const ChatModalManager = {
                 // Send cancellation to recipient
                 const conversation = this.state.selectedConversation;
                 if (conversation && this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                    const otherProfileId = conversation.other_profile_id;
-                    const otherProfileType = conversation.other_profile_type;
-
                     const message = {
                         type: 'call_cancelled',
                         conversation_id: conversation.id,
-                        from_profile_id: this.state.userId,
-                        to_profile_id: otherProfileId,
-                        to_profile_type: otherProfileType,
+                        from_user_id: this.state.currentUser?.user_id,
+                        to_user_id: conversation.other_user_id,
                         call_type: callType
                     };
                     this.websocket.send(JSON.stringify(message));
@@ -14714,9 +14710,8 @@ const ChatModalManager = {
             const message = {
                 type: 'call_declined',
                 conversation_id: this.state.pendingCallInvitation.conversation_id,
-                from_profile_id: this.state.userId,
-                to_profile_id: this.state.pendingCallInvitation.from_profile_id,
-                to_profile_type: this.state.pendingCallInvitation.from_profile_type
+                from_user_id: this.state.currentUser?.user_id,
+                to_user_id: this.state.pendingCallInvitation.from_user_id
             };
             this.websocket.send(JSON.stringify(message));
         }
@@ -14999,13 +14994,9 @@ const ChatModalManager = {
 
             // Send mode switch notification to other user via WebSocket
             if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                const otherProfileId = this.state.isIncomingCall
-                    ? this.state.pendingCallInvitation?.from_profile_id
-                    : this.state.selectedConversation?.other_profile_id;
-
-                const otherProfileType = this.state.isIncomingCall
-                    ? this.state.pendingCallInvitation?.from_profile_type
-                    : this.state.selectedConversation?.other_profile_type;
+                const otherUserId = this.state.isIncomingCall
+                    ? this.state.pendingCallInvitation?.from_user_id
+                    : this.state.selectedConversation?.other_user_id;
 
                 const conversationId = this.state.selectedConversation?.id ||
                                      this.state.pendingCallInvitation?.conversation_id;
@@ -15013,9 +15004,8 @@ const ChatModalManager = {
                 const message = {
                     type: 'call_mode_switched',
                     conversation_id: conversationId,
-                    from_profile_id: this.state.userId,
-                    to_profile_id: otherProfileId,
-                    to_profile_type: otherProfileType,
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: otherUserId,
                     new_mode: targetMode
                 };
 
@@ -15029,13 +15019,9 @@ const ChatModalManager = {
 
                 // Send new offer to peer via WebSocket
                 if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                    const otherProfileId = this.state.isIncomingCall
-                        ? this.state.pendingCallInvitation?.from_profile_id
-                        : this.state.selectedConversation?.other_profile_id;
-
-                    const otherProfileType = this.state.isIncomingCall
-                        ? this.state.pendingCallInvitation?.from_profile_type
-                        : this.state.selectedConversation?.other_profile_type;
+                    const otherUserId = this.state.isIncomingCall
+                        ? this.state.pendingCallInvitation?.from_user_id
+                        : this.state.selectedConversation?.other_user_id;
 
                     const conversationId = this.state.selectedConversation?.id ||
                                          this.state.pendingCallInvitation?.conversation_id;
@@ -15043,9 +15029,8 @@ const ChatModalManager = {
                     const message = {
                         type: 'webrtc_offer',
                         conversation_id: conversationId,
-                        from_profile_id: this.state.userId,
-                        to_profile_id: otherProfileId,
-                        to_profile_type: otherProfileType,
+                        from_user_id: this.state.currentUser?.user_id,
+                        to_user_id: otherUserId,
                         offer: offer
                     };
 
