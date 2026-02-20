@@ -1027,6 +1027,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0,
         location=current_user.location,  # Add location field for location filter
         country_code=current_user.country_code,  # Add country code for regional targeting
+        currency=current_user.currency,  # Add currency for price display
         social_links=current_user.social_links  # Add social media links
     )
 
@@ -6057,6 +6058,15 @@ def get_statistics(db: Session = Depends(get_db)):
             total_courses = result_courses.scalar() or 0
         except:
             total_courses = 0
+
+        # Count distinct countries from users table
+        try:
+            result_countries = db.execute(text(
+                "SELECT COUNT(DISTINCT country_code) FROM users WHERE country_code IS NOT NULL AND country_code != ''"
+            ))
+            unique_countries = result_countries.scalar() or 0
+        except:
+            unique_countries = 0
     except Exception as e:
         print(f"Error fetching statistics: {e}")
         total_users = 0
@@ -6066,6 +6076,7 @@ def get_statistics(db: Session = Depends(get_db)):
         total_videos = 0
         total_schools = 0
         total_courses = 0
+        unique_countries = 0
 
     return {
         "total_users": total_users,
@@ -6075,6 +6086,7 @@ def get_statistics(db: Session = Depends(get_db)):
         "schools": total_schools,
         "courses": total_courses,
         "total_videos": total_videos,
+        "unique_countries": unique_countries,
         "training_centers": 0,  # Hidden in frontend
         "books_available": 0,   # Hidden in frontend
         "job_opportunities": 0, # Hidden in frontend

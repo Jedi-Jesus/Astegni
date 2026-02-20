@@ -52,7 +52,8 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                     u.social_links,
                     u.first_name, u.father_name, u.grandfather_name, u.email, u.phone, u.gender,
                     tp.expertise_badge, u.is_suspended, u.suspended_at,
-                    tp.is_active, tp.created_at, tp.updated_at
+                    tp.is_active, tp.created_at, tp.updated_at,
+                    u.currency
                 FROM tutor_profiles tp
                 JOIN users u ON tp.user_id = u.id
                 WHERE {where_clause}
@@ -106,6 +107,7 @@ async def get_complete_tutor_profile(tutor_id: int, by_user_id: bool = Query(Fal
                 "is_active": row[24],                                   # 24: tp.is_active
                 "created_at": row[25].isoformat() if row[25] else None, # 25: tp.created_at
                 "updated_at": row[26].isoformat() if row[26] else None, # 26: tp.updated_at
+                "currency": row[27] or "ETB",                           # 27: u.currency
 
                 # Default values for fields not in database
                 "rating": 0.0,

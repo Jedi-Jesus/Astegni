@@ -55,7 +55,7 @@ const CurrencyManager = {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/api/me', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

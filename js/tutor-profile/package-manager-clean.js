@@ -2354,7 +2354,7 @@ function renderPackagesGrid() {
                     <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
                         <div>
                             <p style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px;">Hourly Rate</p>
-                            <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${pkg.hourlyRate} <span style="font-size: 1rem; font-weight: 500;">ETB</span></p>
+                            <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${pkg.hourlyRate} <span style="font-size: 1rem; font-weight: 500;">${CurrencyManager.getSymbol()}</span></p>
                         </div>
                         <div style="text-align: right;">
                             <i class="fas fa-money-bill-wave" style="font-size: 2.5rem; color: rgba(255,255,255,0.3); animation: float 3s ease-in-out infinite;"></i>

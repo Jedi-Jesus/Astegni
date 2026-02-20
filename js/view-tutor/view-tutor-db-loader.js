@@ -1385,7 +1385,7 @@ class ViewTutorDBLoader {
                         <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
                             <div>
                                 <p style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px;">Per Session</p>
-                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">${CurrencyManager.getSymbol()}</span></p>
+                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">${CurrencyManager.getCurrencySymbol((window.currentTutorData && window.currentTutorData.currency) || 'ETB')}</span></p>
                             </div>
                             <div style="text-align: right;">
                                 <i class="fas fa-money-bill-wave" style="font-size: 2.5rem; color: rgba(255,255,255,0.3);"></i>

@@ -978,6 +978,7 @@ class UserResponse(BaseModel):
     account_balance: float = 0.0  # User's account balance for payments
     location: Optional[str] = None  # User's location for location-based filtering
     country_code: Optional[str] = None  # ISO country code (e.g., 'ET', 'US', 'GB')
+    currency: Optional[str] = None  # Currency code (e.g., 'ETB', 'USD', 'XAF')
     social_links: Optional[dict] = None  # Social media links (TikTok, Instagram, etc.)
 
 class TokenResponse(BaseModel):
