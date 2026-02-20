@@ -590,148 +590,52 @@ window.createNewPackage = async function() {
  */
 
 window.togglePackageSidebar = function() {
+    const iconBar = document.getElementById('sidebarIconBar');
     const sidebar = document.getElementById('packageManagementSidebar');
-    const layout = document.querySelector('.package-layout');
     const backdrop = document.getElementById('sidebarBackdrop');
-    const sidebarContent = document.getElementById('sidebarContent');
-    const isMobile = window.innerWidth <= 1024;
+    const layout = document.querySelector('.package-layout');
 
-    if (!sidebar || !layout) {
-        console.warn('⚠️ Sidebar or layout not found');
+    if (!iconBar) {
+        console.warn('⚠️ Icon bar not found');
         return;
     }
 
-    if (isMobile) {
-        // ═══════════════════════════════════════════════════════════
-        // MOBILE/TABLET (≤1024px): Overlay behavior
-        // ═══════════════════════════════════════════════════════════
+    const isHidden = iconBar.classList.toggle('hidden');
+    if (layout) layout.classList.toggle('iconbar-hidden', isHidden);
 
-        const isVisible = sidebar.classList.toggle('visible');
-
-        // Toggle backdrop
-        if (backdrop) {
-            backdrop.classList.toggle('active', isVisible);
+    if (isHidden) {
+        // Closing: hide both icon bar and content sidebar
+        if (sidebar) {
+            sidebar.classList.remove('visible');
+            sidebar.classList.add('collapsed');
         }
-
-        // Always show sidebar content when sidebar is visible
-        if (sidebarContent) {
-            if (isVisible) {
-                sidebarContent.classList.add('active');
-                sidebarContent.style.display = ''; // Reset display
-
-                // Restore last active panel instead of forcing packages
-                const packagesPanel = document.getElementById('packagesPanel');
-                const marketTrendPanel = document.getElementById('marketTrendPanel');
-
-                if (lastActivePanel === 'market-trend') {
-                    if (packagesPanel) packagesPanel.classList.remove('active');
-                    if (marketTrendPanel) marketTrendPanel.classList.add('active');
-                } else {
-                    if (packagesPanel) packagesPanel.classList.add('active');
-                    if (marketTrendPanel) marketTrendPanel.classList.remove('active');
-                }
-
-                // Set corresponding icon button as active
-                const iconButtons = document.querySelectorAll('.sidebar-icon-btn');
-                iconButtons.forEach(btn => {
-                    if (btn.getAttribute('data-panel') === lastActivePanel) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-
-                // Restore corresponding main view
-                const packageEditorContainer = document.getElementById('packageEditorContainer');
-                const marketTrendView = document.getElementById('marketTrendView');
-
-                if (lastActivePanel === 'market-trend') {
-                    if (packageEditorContainer) packageEditorContainer.classList.add('hidden');
-                    if (marketTrendView) {
-                        marketTrendView.classList.add('active');
-                        marketTrendView.style.display = 'flex';
-                    }
-                } else {
-                    if (packageEditorContainer) packageEditorContainer.classList.remove('hidden');
-                    if (marketTrendView) {
-                        marketTrendView.classList.remove('active');
-                        marketTrendView.style.display = 'none';
-                    }
-                }
-            } else {
-                sidebarContent.classList.remove('active');
-            }
-        }
-
-        console.log(`📱 Mobile: Sidebar ${isVisible ? 'opened' : 'closed'} (overlay)`);
-    } else {
-        // ═══════════════════════════════════════════════════════════
-        // DESKTOP (>1024px): Collapse/expand behavior
-        // ═══════════════════════════════════════════════════════════
-
-        const isCollapsed = sidebar.classList.toggle('collapsed');
-        layout.classList.toggle('sidebar-collapsed');
-
-        // FIX A: Toggle sidebar content on desktop (not just close)
-        if (sidebarContent) {
-            if (isCollapsed) {
-                sidebarContent.classList.remove('active');
-            } else {
-                sidebarContent.classList.add('active');
-                sidebarContent.style.display = ''; // Reset display
-
-                // Restore last active panel instead of forcing packages
-                const packagesPanel = document.getElementById('packagesPanel');
-                const marketTrendPanel = document.getElementById('marketTrendPanel');
-
-                if (lastActivePanel === 'market-trend') {
-                    if (packagesPanel) packagesPanel.classList.remove('active');
-                    if (marketTrendPanel) marketTrendPanel.classList.add('active');
-                } else {
-                    if (packagesPanel) packagesPanel.classList.add('active');
-                    if (marketTrendPanel) marketTrendPanel.classList.remove('active');
-                }
-
-                // Set corresponding icon button as active
-                const iconButtons = document.querySelectorAll('.sidebar-icon-btn');
-                iconButtons.forEach(btn => {
-                    if (btn.getAttribute('data-panel') === lastActivePanel) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-
-                // Restore corresponding main view
-                const packageEditorContainer = document.getElementById('packageEditorContainer');
-                const marketTrendView = document.getElementById('marketTrendView');
-
-                if (lastActivePanel === 'market-trend') {
-                    if (packageEditorContainer) packageEditorContainer.classList.add('hidden');
-                    if (marketTrendView) {
-                        marketTrendView.classList.add('active');
-                        marketTrendView.style.display = 'flex';
-                    }
-                } else {
-                    if (packageEditorContainer) packageEditorContainer.classList.remove('hidden');
-                    if (marketTrendView) {
-                        marketTrendView.classList.remove('active');
-                        marketTrendView.style.display = 'none';
-                    }
-                }
-            }
-        }
-
-        // Resize chart if it exists (after sidebar toggle animation)
-        setTimeout(() => {
-            if (window.marketChartInstance && typeof window.marketChartInstance.resize === 'function') {
-                window.marketChartInstance.resize();
-                console.log('📊 Chart resized after sidebar toggle');
-            }
-        }, 450); // Wait for CSS transition to complete (0.4s + buffer)
-
-        console.log(`🖥️ Desktop: Sidebar ${isCollapsed ? 'collapsed' : 'expanded'} (content + packages panel)`);
+        if (backdrop) backdrop.classList.remove('active');
     }
+    // Opening: only reveal icon bar — content sidebar stays closed
+    // until the user clicks an icon button (switchPackagePanel)
+
+    // Resize chart after transition
+    setTimeout(() => {
+        if (window.marketChartInstance && typeof window.marketChartInstance.resize === 'function') {
+            window.marketChartInstance.resize();
+        }
+    }, 450);
+
+    console.log(`🔀 Icon bar ${isHidden ? 'hidden (sidebar closed too)' : 'shown'}`);
+};
+
+/**
+ * Closes only the sidebar panel overlay (on mobile) without hiding the icon bar.
+ * Called by tapping the backdrop.
+ */
+window.closePackageSidebarPanel = function() {
+    const sidebar = document.getElementById('packageManagementSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (sidebar) {
+        sidebar.classList.remove('visible');
+        sidebar.classList.add('collapsed');
+    }
+    if (backdrop) backdrop.classList.remove('active');
 };
 
 /**
@@ -827,15 +731,22 @@ window.switchPackagePanel = function(panelName) {
             marketTrendPanel.classList.add('active');
         }
 
-        // Ensure sidebar is not collapsed
+        // Ensure sidebar is visible
         if (sidebar) {
             sidebar.classList.remove('collapsed');
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.add('visible');
+            }
         }
         if (packageLayout) {
             packageLayout.classList.remove('sidebar-collapsed');
         }
         if (backdrop) {
-            backdrop.classList.remove('active');
+            if (window.innerWidth <= 1024) {
+                backdrop.classList.add('active');
+            } else {
+                backdrop.classList.remove('active');
+            }
         }
 
         // Hide Save Package button (not relevant for market trends)
@@ -893,12 +804,22 @@ window.switchPackagePanel = function(panelName) {
             marketTrendPanel.classList.remove('active');
         }
 
-        // Ensure sidebar is not collapsed
+        // Ensure sidebar is visible
         if (sidebar) {
             sidebar.classList.remove('collapsed');
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.add('visible');
+            }
         }
         if (packageLayout) {
             packageLayout.classList.remove('sidebar-collapsed');
+        }
+        if (backdrop) {
+            if (window.innerWidth <= 1024) {
+                backdrop.classList.add('active');
+            } else {
+                backdrop.classList.remove('active');
+            }
         }
 
         // IMPORTANT: Populate packages list when switching to packages panel

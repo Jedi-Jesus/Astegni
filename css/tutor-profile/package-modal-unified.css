@@ -1604,7 +1604,25 @@
     gap: 0.5rem;
     flex-shrink: 0;
     box-shadow: 2px 0 12px rgba(245, 158, 11, 0.2);
-    z-index: 10; /* Always on top */
+    z-index: 10;
+    overflow: hidden;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hidden state — collapses the icon bar out of the layout */
+#package-management-modal .sidebar-icon-bar.hidden {
+    width: 0;
+    padding: 0;
+    border-right: none;
+    box-shadow: none;
+}
+
+/* When icon bar is hidden, editor/market view fills the full width */
+#package-management-modal .package-layout.iconbar-hidden #packageEditorContainer,
+#package-management-modal .package-layout.iconbar-hidden #marketTrendView {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 #package-management-modal .package-management-sidebar {
@@ -2684,22 +2702,79 @@
 #package-management-modal .universal-filters-wrapper {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Labels row (desktop: aligned above inputs) */
+#package-management-modal .filters-labels-row {
+    display: flex;
     gap: 1.5rem;
+    align-items: center;
+}
+
+#package-management-modal .filter-label-cell {
+    text-align: left;
+}
+
+#package-management-modal .filter-label-grade  { width: 295px; }
+#package-management-modal .filter-label-format { width: 200px; }
+#package-management-modal .filter-label-time   { width: 220px; }
+
+/* Inputs row */
+#package-management-modal .filters-inputs-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Inline labels (shown only on mobile where labels row is hidden) */
+#package-management-modal .filter-label-inline {
+    display: none;
+}
+
+/* Grade level selects */
+#package-management-modal .grade-level-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+#package-management-modal .grade-select {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border-color, #e2e8f0);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+    cursor: pointer;
+    width: 130px;
+}
+
+[data-theme="dark"] #package-management-modal .grade-select {
+    background: #0f172a;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+
+#package-management-modal .grade-to-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
 /* Session Format Filter */
 #package-management-modal .session-format-filter {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
+    gap: 1rem;
+    flex-shrink: 0;
 }
 
 #package-management-modal .filter-label {
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 #package-management-modal .radio-label {
@@ -2717,11 +2792,10 @@
 #package-management-modal .time-period-filter {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-}
-
-#package-management-modal .time-period-filter .filter-label {
-    text-align: center;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 180px;
+    max-width: 260px;
 }
 
 #package-management-modal .time-value {
@@ -2733,39 +2807,101 @@
     cursor: pointer;
 }
 
-/* Desktop: Filters in same row (768px and above) */
-@media (min-width: 768px) {
-    #package-management-modal .universal-filters-wrapper {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 2rem;
+/* Calculate Price Button */
+#package-management-modal .btn-calculate-price {
+    padding: 0.875rem 1.75rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+#package-management-modal .btn-calculate-price:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* Market graph row: chart + metric toggles side by side on desktop */
+#package-management-modal .market-graph-row {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    flex: 1;
+    min-height: 400px;
+}
+
+/* Mobile: stack filters vertically and show inline labels */
+@media (max-width: 767px) {
+    #package-management-modal .filters-labels-row {
+        display: none;
+    }
+
+    #package-management-modal .filter-label-inline {
+        display: block;
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    #package-management-modal .filters-inputs-row {
+        flex-direction: column;
+        gap: 0.875rem;
+        align-items: stretch;
+    }
+
+    #package-management-modal .grade-level-filter {
+        width: 100%;
+    }
+
+    #package-management-modal .grade-select {
+        flex: 1;
+        width: auto;
+        min-width: 0;
     }
 
     #package-management-modal .session-format-filter {
-        flex: 0 0 auto;
-        justify-content: flex-start;
+        width: 100%;
     }
 
     #package-management-modal .time-period-filter {
-        flex: 1;
-        min-width: 300px;
-        max-width: 500px;
+        max-width: 100%;
+        width: 100%;
     }
 
-    #package-management-modal .time-period-filter .filter-label {
-        text-align: left;
-    }
-}
-
-/* Tablet and Mobile: Stack filters vertically */
-@media (max-width: 767px) {
-    #package-management-modal .universal-filters-container {
-        padding: 1rem;
+    #package-management-modal .btn-calculate-price {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
     }
 
-    #package-management-modal .session-format-filter {
-        gap: 1rem;
+    #package-management-modal .market-graph-row {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    #package-management-modal .market-dataset-toggles {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        min-width: 0;
+        width: 100%;
+    }
+
+    #package-management-modal .market-dataset-label {
+        flex: 1 1 auto;
+        min-width: 120px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
     }
 }
 
@@ -3866,113 +4002,155 @@
     }
 }
 /* ═══════════════════════════════════════════════════════════
-   PACKAGE MODAL - RESPONSIVE DESIGN (CLEAN REBUILD)
-   Built from scratch to avoid conflicts
+   PACKAGE MODAL - RESPONSIVE DESIGN
    ═══════════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════
-   DESKTOP (> 1024px)
-   Default behavior - sidebar visible, both containers transition
-   ═══════════════════════════════════════════════════════════ */
-
-/* Smooth transitions for main containers when sidebar toggles */
+/* ─── DESKTOP (> 1024px) ─────────────────────────────────── */
 @media (min-width: 1025px) {
     #package-management-modal #packageEditorContainer,
     #package-management-modal #marketTrendView {
-        transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Sidebar backdrop not needed on desktop */
     #package-management-modal .sidebar-backdrop {
         display: none !important;
     }
 
-    /* Calculator widget backdrop not needed on desktop */
     .calculator-widget-backdrop {
         display: none !important;
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MOBILE/TABLET (≤ 1024px)
-   Overlay behavior - sidebar and calculator as full overlays
-   ═══════════════════════════════════════════════════════════ */
+/* ─── MEDIUM (≤ 1200px): market view cards 2-up ─────────── */
+@media (max-width: 1200px) {
+    #package-management-modal .market-view-cards:not(#marketTrendPanel .market-view-cards) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
+/* ─── TABLET + MOBILE (≤ 1024px) ────────────────────────── */
 @media (max-width: 1024px) {
-    /* Remove gap around modal */
+    /* Modal fills screen */
     #package-management-modal .package-modal-redesigned {
         width: 100% !important;
-        max-height: 100vh !important;
+        max-width: 100% !important;
+        max-height: 100dvh !important;
+        height: 100dvh !important;
         border-radius: 0 !important;
+        margin: 0 !important;
     }
 
-    /* FIX B: Ensure modal-header is on top */
+    #package-management-modal {
+        padding: 0 !important;
+        align-items: stretch !important;
+    }
+
+    /* Header stays on top of overlays */
     #package-management-modal .modal-header {
         position: relative;
-        z-index: 1004; /* Above sidebar and calculator */
+        z-index: 1004;
+        padding: 0.875rem 1.25rem;
+        flex-shrink: 0;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       SIDEBAR AS OVERLAY (Z-INDEX: 1003)
-       Below modal-header, above calculator
-       ═══════════════════════════════════════════════════════════ */
+    #package-management-modal .modal-title {
+        font-size: 1.15rem;
+    }
 
-    #package-management-modal .package-management-sidebar {
-        position: fixed;
+    /* Icon bar: absolute overlay — does NOT push main content */
+    #package-management-modal .sidebar-icon-bar {
+        position: absolute;
         left: 0;
-        top: 60px; /* Start below modal-header */
+        top: 0;
         bottom: 0;
-        height: calc(100vh - 60px) !important; /* Full height minus header */
-        max-height: none !important; /* Override base CSS max-height: 200px */
-        width: 85%;
+        z-index: 1004;
+        width: 50px;
+        flex-shrink: 0;
+    }
+
+    /* Icon bar hidden: collapse out of view */
+    #package-management-modal .sidebar-icon-bar.hidden {
+        width: 0;
+        padding: 0;
+        border-right: none;
+        box-shadow: none;
+        overflow: hidden;
+    }
+
+    /* Layout: position:relative so absolute icon bar is contained */
+    #package-management-modal .package-layout {
+        position: relative;
+        gap: 0;
+        overflow: hidden;
+    }
+
+    /* Main content always fills full width; icon bar hovers above it */
+    #package-management-modal #packageEditorContainer,
+    #package-management-modal #marketTrendView {
+        margin-left: 0 !important;
+        width: 100% !important;
+        flex: 1;
+    }
+
+    /* Sidebar as slide-in overlay from left, next to icon bar — anchored within package-layout so it stays below the header */
+    #package-management-modal .package-management-sidebar {
+        position: absolute;
+        left: 50px; /* offset by icon bar width */
+        top: 0;
+        bottom: 0;
+        height: 100% !important;
+        max-height: none !important;
+        width: min(85%, 320px);
         max-width: 320px;
-        z-index: 1003; /* Above calculator, below modal-header */
-        transform: translateX(-100%);
+        z-index: 1003;
+        transform: translateX(-120%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
     }
 
-    /* Show sidebar when visible class is added */
+    /* Icon bar hidden: sidebar anchors to left edge */
+    #package-management-modal .package-layout.iconbar-hidden .package-management-sidebar {
+        left: 0;
+    }
+
     #package-management-modal .package-management-sidebar.visible {
         transform: translateX(0);
     }
 
-    /* FIX 2: Sidebar content always visible when sidebar is shown */
+    /* Sidebar content always flex when sidebar is open */
     #package-management-modal .package-management-sidebar .sidebar-content {
         display: flex !important;
         flex-direction: column;
-        height: 100%; /* Full height of parent */
-        min-height: 0; /* Allow flexbox to shrink */
+        height: 100%;
+        min-height: 0;
     }
 
-    /* FIX 2: Ensure panels inside sidebar-content also take full height */
     #package-management-modal .package-management-sidebar .sidebar-panel {
         height: 100%;
         min-height: 0;
-        overflow-y: auto; /* Allow scrolling if content overflows */
+        overflow-y: auto;
     }
 
-    /* FIX 2: Ensure packages list can scroll */
     #package-management-modal .packages-list {
         flex: 1;
         overflow-y: auto;
         min-height: 0;
-        /* Override package-modal-clean.css horizontal scroll on mobile */
         display: block !important;
-        flex-direction: column !important;
         overflow-x: hidden !important;
     }
 
-    /* Sidebar backdrop (Z-INDEX: 1002) */
+    /* Sidebar backdrop — fills only the package-layout area (below the header) */
     #package-management-modal .sidebar-backdrop {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 1002; /* Below sidebar, above calculator */
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(3px);
+        z-index: 1002;
         display: none;
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -3985,118 +4163,192 @@
         pointer-events: auto;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       CALCULATOR AS OVERLAY (Z-INDEX: 1001)
-       Below modal-header and sidebar, above main content
-       ═══════════════════════════════════════════════════════════ */
-
+    /* Calculator as slide-in overlay from right — anchored within package-layout, below the header */
     #package-management-modal .calculator-widget {
-        position: fixed;
+        position: absolute;
         right: 0;
-        top: 60px; /* Start below modal-header */
+        top: 0;
         bottom: 0;
-        height: calc(100vh - 60px); /* Full height minus header */
-        width: 90%;
+        height: 100%;
+        width: min(90%, 400px);
         max-width: 400px;
-        z-index: 1001; /* Below sidebar and modal-header */
+        max-height: 100%;
+        z-index: 1001;
         border-radius: 0;
         box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
         transform: translateX(100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Show calculator when NOT hidden */
     #package-management-modal .calculator-widget:not(.hidden) {
         transform: translateX(0);
     }
 
     #package-management-modal .calculator-widget.hidden {
         transform: translateX(100%);
+        width: min(90%, 400px); /* keep width so transition is smooth */
+        max-width: 400px;
     }
 
-    /* FIX C: Calculator backdrop removed - calculator no longer blurs page */
     .calculator-widget-backdrop {
-        display: none !important; /* Never show backdrop for calculator */
+        display: none !important;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       MAIN CONTENT AREA
-       No transitions needed - overlays don't affect layout
-       ═══════════════════════════════════════════════════════════ */
-
-    #package-management-modal .package-layout {
-        position: relative;
-    }
-
+    /* Main content takes full width — overlays float above */
     #package-management-modal .package-main {
+        position: relative; /* needed so calculator positions within it */
         margin-left: 0 !important;
         width: 100% !important;
+        flex-direction: column;
+        gap: 0;
     }
 
     #package-management-modal #packageEditorContainer {
         margin-left: 0 !important;
         width: 100% !important;
+        flex: 1;
+        min-height: 0;
     }
 
     #package-management-modal #marketTrendView {
         margin-left: 0 !important;
         width: 100% !important;
     }
-}
 
-/* ═══════════════════════════════════════════════════════════
-   TABLET LANDSCAPE (769px - 1024px)
-   Specific adjustments for medium tablets
-   ═══════════════════════════════════════════════════════════ */
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    #package-management-modal .modal-content {
-        width: 95%;
-        max-width: 100%;
+    /* Package editor padding */
+    #package-management-modal .package-editor {
+        padding: 1.25rem;
     }
 
+    /* Form rows: 2-col → 1-col */
+    #package-management-modal .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Market trend: reduce min-height and padding */
+    #package-management-modal .market-trend-content {
+        min-height: 0;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    /* Market trend graph row: wrap on tablet */
+    #package-management-modal #marketGraphContainer > div[style*="flex-direction: row"] {
+        flex-direction: column !important;
+    }
+
+    #package-management-modal .market-dataset-toggles {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        min-width: 0;
+        width: 100%;
+    }
+
+    #package-management-modal .market-dataset-label {
+        flex: 1 1 auto;
+        min-width: 130px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    /* Market view cards: 2-col on tablet */
+    #package-management-modal .market-view-cards:not(#marketTrendPanel .market-view-cards) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+        padding: 1rem;
+        padding-bottom: 0;
+    }
+
+    /* Universal filters: override hardcoded inline widths */
+    #package-management-modal .universal-filters-container {
+        padding: 1rem;
+    }
+
+    #package-management-modal .universal-filters-wrapper {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Hide fixed-width label row — labels will be shown inline */
+    #package-management-modal .universal-filters-wrapper > div:first-child {
+        display: none !important;
+    }
+
+    /* Inputs row: wrap into column */
+    #package-management-modal .universal-filters-wrapper > div:last-child {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }
+
+    /* Grade level filter: remove fixed width, show stacked label */
+    #package-management-modal .grade-level-filter {
+        width: 100% !important;
+        flex-wrap: wrap;
+    }
+
+    #package-management-modal .grade-level-filter select {
+        flex: 1 !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    /* Session format filter: remove fixed width */
+    #package-management-modal .session-format-filter {
+        width: 100% !important;
+        justify-content: flex-start;
+    }
+
+    /* Time period filter: remove fixed width */
+    #package-management-modal .time-period-filter {
+        width: 100% !important;
+    }
+
+    /* Calculate button: don't push to margin: auto */
+    #package-management-modal .btn-calculate-price {
+        margin-left: 0 !important;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Market table: horizontal scroll */
+    #package-management-modal .market-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Footer */
+    #package-management-modal .modal-footer {
+        padding: 0.875rem 1.25rem;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+}
+
+/* ─── TABLET LANDSCAPE (769px – 1024px) extra tweaks ─────── */
+@media (min-width: 769px) and (max-width: 1024px) {
     #package-management-modal .package-management-sidebar {
-        width: 75%;
+        width: min(75%, 300px);
         max-width: 300px;
     }
 
     #package-management-modal .calculator-widget {
-        width: 70%;
+        width: min(70%, 380px);
         max-width: 380px;
-    }
-
-    #package-management-modal .package-main {
-        padding: 1.25rem;
-    }
-
-    #package-management-modal .modal-title {
-        font-size: 1.35rem;
-    }
-
-    /* Market view cards - 2 columns */
-    #package-management-modal .market-view-cards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TABLET PORTRAIT (481px - 768px)
-   Single column cards, compact layout
-   ═══════════════════════════════════════════════════════════ */
-
-@media (min-width: 481px) and (max-width: 768px) {
-    #package-management-modal .modal-content {
-        width: 98%;
-        border-radius: 16px;
-    }
-
+/* ─── TABLET PORTRAIT + MOBILE (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
     #package-management-modal .modal-header {
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
     }
 
     #package-management-modal .modal-title {
-        font-size: 1.25rem;
+        font-size: 1rem;
     }
 
     #package-management-modal .sidebar-toggle,
@@ -4104,149 +4356,151 @@
     #package-management-modal .modal-close {
         width: 36px;
         height: 36px;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
     }
 
-    #package-management-modal .package-management-sidebar {
-        width: 85%;
-        max-width: 320px;
-    }
-
-    #package-management-modal .calculator-widget {
-        width: 90%;
-        max-width: 400px;
-    }
-
-    #package-management-modal .package-main {
-        padding: 1rem;
-    }
-
-    #package-management-modal .modal-footer {
-        padding: 1rem 1.25rem;
+    #package-management-modal .market-view-cards:not(#marketTrendPanel .market-view-cards) {
+        grid-template-columns: 1fr;
         gap: 0.75rem;
     }
 
+    #package-management-modal .market-view-card {
+        padding: 1rem 0.875rem;
+        gap: 0.75rem;
+    }
+
+    #package-management-modal .modal-footer {
+        padding: 0.75rem 1rem;
+    }
+
     #package-management-modal .modal-footer button {
-        padding: 0.625rem 1.125rem;
+        padding: 0.625rem 1rem;
         font-size: 0.9rem;
     }
 
-    /* Market view cards - Single column */
-    #package-management-modal .market-view-cards {
-        grid-template-columns: 1fr;
-        gap: 0.875rem;
-        padding: 1.25rem;
-        padding-bottom: 0;
-    }
+    /* Landscape: keep 2-col cards and hide descriptions */
+    @media (orientation: landscape) {
+        #package-management-modal .market-view-cards:not(#marketTrendPanel .market-view-cards) {
+            grid-template-columns: repeat(2, 1fr);
+        }
 
-    #package-management-modal .market-view-card {
-        padding: 1.125rem 1rem;
+        #package-management-modal .market-view-card-description {
+            display: none;
+        }
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MOBILE (≤ 480px)
-   Full-screen overlays, minimal spacing
-   ═══════════════════════════════════════════════════════════ */
-
+/* ─── MOBILE (≤ 480px) ───────────────────────────────────── */
 @media (max-width: 480px) {
-    #package-management-modal .modal-content {
-        width: 100%;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
-        margin: 0;
-    }
-
     #package-management-modal .modal-header {
         display: flex !important;
         flex-direction: row !important;
-        padding: 0.75rem 1rem !important;
-        gap: 0.5rem !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: space-between !important;
+        padding: 0.625rem 0.875rem !important;
+        gap: 0.375rem !important;
     }
 
-    /* All in one row: hamburger + title + calculator + close */
     #package-management-modal .modal-header .sidebar-toggle {
+        display: flex !important;
+        flex-direction: row !important;
         width: 32px !important;
         height: 32px !important;
+        min-height: unset !important;
         font-size: 0.75rem !important;
         flex-shrink: 0 !important;
-        order: 1 !important;
     }
 
     #package-management-modal .modal-header .modal-title-container {
-        flex: 1 !important;
+        flex: 1 1 0 !important;
         min-width: 0 !important;
-        order: 2 !important;
+        max-width: none !important;
+        align-self: center !important;
     }
 
     #package-management-modal .modal-header .modal-header-actions {
         display: flex !important;
         flex-direction: row !important;
-        gap: 0.75rem !important;
-        flex-shrink: 0 !important;
-        order: 3 !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
+        gap: 0.375rem !important;
+        flex-shrink: 0 !important;
     }
 
-    #package-management-modal .calculator-toggle-btn {
+    #package-management-modal .modal-header .calculator-toggle-btn {
         width: 32px !important;
         height: 32px !important;
-        font-size: 0.875rem !important;
+        min-height: unset !important;
+        font-size: 0.8rem !important;
         flex-shrink: 0 !important;
-        position: relative !important;
-        z-index: 1 !important;
     }
 
-    #package-management-modal .modal-close {
+    #package-management-modal .modal-header .modal-close {
+        position: static !important;
+        top: unset !important;
+        right: unset !important;
         width: 32px !important;
         height: 32px !important;
-        font-size: 1.5rem !important;
-        line-height: 1 !important;
-        flex-shrink: 0 !important;
-        position: relative !important;
-        z-index: 1 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        min-height: unset !important;
+        font-size: 1.25rem !important;
         padding: 0 !important;
+        flex-shrink: 0 !important;
     }
 
     #package-management-modal .modal-title {
-        font-size: 0.95rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        font-size: 0.875rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     #package-management-modal .modal-subtitle {
         display: none !important;
     }
 
+    /* Icon bar: smaller */
+    #package-management-modal .sidebar-icon-bar {
+        width: 44px;
+        padding: 0.75rem 0;
+    }
+
+    #package-management-modal .sidebar-icon-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
+
+    /* Sidebar full-width on small phones */
     #package-management-modal .package-management-sidebar {
-        width: 100%;
-        max-width: 100%;
+        left: 44px; /* offset by smaller icon bar */
+        width: calc(100% - 44px);
+        max-width: none;
     }
 
+    /* When icon bar hidden, sidebar goes full-width from left edge */
+    #package-management-modal .package-layout.iconbar-hidden .package-management-sidebar {
+        left: 0;
+        width: 100%;
+    }
+
+    /* Calculator full-width */
     #package-management-modal .calculator-widget {
-        width: 100%;
-        max-width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
-    #package-management-modal .package-main {
-        padding: 0.875rem;
-        gap: 0;
+    #package-management-modal .calculator-widget.hidden {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     #package-management-modal .package-editor {
-        padding: 0;
+        padding: 0.875rem;
     }
 
     #package-management-modal .modal-footer {
-        padding: 0.875rem 1rem;
+        padding: 0.75rem 0.875rem;
         flex-direction: column-reverse;
         gap: 0.5rem;
     }
@@ -4257,17 +4511,29 @@
         font-size: 0.875rem;
     }
 
-    /* Market view cards - Compact */
-    #package-management-modal .market-view-cards {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-        padding: 1rem;
-        padding-bottom: 0;
+    /* Larger tap targets for form elements */
+    #package-management-modal input,
+    #package-management-modal select,
+    #package-management-modal textarea,
+    #package-management-modal button {
+        min-height: 44px;
     }
 
-    #package-management-modal .market-view-card {
-        padding: 1rem 0.875rem;
-        gap: 0.75rem;
+    /* Header buttons: already handled with full overrides above */
+
+    /* Prevent iOS input zoom */
+    #package-management-modal .form-field input,
+    #package-management-modal .form-field select,
+    #package-management-modal .form-field textarea {
+        font-size: 16px;
+    }
+
+    #package-management-modal .calculator-widget-header {
+        padding: 0.875rem 1rem;
+    }
+
+    #package-management-modal .calculator-widget-body {
+        padding: 1rem;
     }
 
     #package-management-modal .market-view-card-icon {
@@ -4280,67 +4546,24 @@
     }
 
     #package-management-modal .market-view-card-description {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         line-height: 1.3;
     }
 
-    /* Form elements - Larger tap targets */
-    #package-management-modal input,
-    #package-management-modal select,
-    #package-management-modal textarea,
-    #package-management-modal button {
-        min-height: 44px;
+    #package-management-modal .market-trend-content {
+        padding: 0.875rem;
     }
 
-    #package-management-modal .form-field input,
-    #package-management-modal .form-field select,
-    #package-management-modal .form-field textarea {
-        font-size: 16px; /* Prevent iOS zoom */
+    #package-management-modal .market-graph-wrapper {
+        min-height: 260px;
     }
 
-    #package-management-modal .calculator-widget-header {
-        padding: 1rem 1.125rem;
-    }
-
-    #package-management-modal .calculator-widget-body {
-        padding: 1.125rem;
+    #package-management-modal .market-chart {
+        height: 260px !important;
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LANDSCAPE ORIENTATION ADJUSTMENTS
-   ═══════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) and (orientation: landscape) {
-    #package-management-modal .modal-content {
-        height: 100vh;
-        overflow-y: auto;
-    }
-
-    #package-management-modal .modal-header {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    #package-management-modal .market-view-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    #package-management-modal .market-view-card {
-        padding: 0.75rem;
-    }
-
-    #package-management-modal .market-view-card-description {
-        display: none;
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ACCESSIBILITY
-   ═══════════════════════════════════════════════════════════ */
-
-/* Reduce motion for users who prefer it */
+/* ─── ACCESSIBILITY ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     #package-management-modal *,
     #package-management-modal *::before,
@@ -4351,7 +4574,6 @@
     }
 }
 
-/* High contrast mode */
 @media (prefers-contrast: high) {
     #package-management-modal .calculator-toggle-btn,
     #package-management-modal .modal-close,

@@ -28,10 +28,10 @@
 
         <div class="package-layout">
             <!-- Sidebar Backdrop (for mobile overlay) -->
-            <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="togglePackageSidebar()"></div>
+            <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closePackageSidebarPanel()"></div>
 
             <!-- Icon Bar (Always Visible) -->
-            <div class="sidebar-icon-bar">
+            <div class="sidebar-icon-bar" id="sidebarIconBar">
                 <button class="sidebar-icon-btn active" data-panel="packages" title="My Packages"
                     onclick="switchPackagePanel('packages')">
                     <i class="fas fa-box"></i>
@@ -166,32 +166,29 @@
 
                     <!-- Universal Filters (v2.3) -->
                     <div class="universal-filters-container">
-                        <div class="universal-filters-wrapper" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div class="universal-filters-wrapper">
 
-                            <!-- Labels Row -->
-                            <div style="display: flex; gap: 1.5rem; align-items: center;">
-                                <!-- Grade Level Label - width matches two dropdowns + "to" span -->
-                                <div style="width: 295px; text-align: left;">
-                                    <label class="filter-label" style="text-align: left;">Grade Level:</label>
+                            <!-- Labels Row (desktop only, hidden on mobile via CSS) -->
+                            <div class="filters-labels-row">
+                                <div class="filter-label-cell filter-label-grade">
+                                    <label class="filter-label">Grade Level:</label>
                                 </div>
-                                <!-- Session Format Label - width matches radio buttons -->
-                                <div style="width: 200px; text-align: left;">
-                                    <label class="filter-label" style="text-align: left;">Session Format:</label>
+                                <div class="filter-label-cell filter-label-format">
+                                    <label class="filter-label">Session Format:</label>
                                 </div>
-                                <!-- Time Period Label - width matches slider -->
-                                <div style="width: 220px; text-align: left;">
-                                    <label class="filter-label" style="text-align: left;">
+                                <div class="filter-label-cell filter-label-time">
+                                    <label class="filter-label">
                                         Time Period: <span id="universalTimeValue" class="time-value">3 months</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Inputs Row -->
-                            <div style="display: flex; gap: 1.5rem; align-items: center;">
-                                <!-- Grade Level Filter (v2.3) - Range Selector -->
-                                <div class="grade-level-filter" style="display: flex; align-items: center; gap: 0.5rem; width: 295px;">
-                                    <select id="universalGradeLevelFrom" onchange="handleUniversalFilterChange()"
-                                        style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer; width: 130px;">
+                            <div class="filters-inputs-row">
+                                <!-- Grade Level Filter -->
+                                <div class="grade-level-filter">
+                                    <label class="filter-label filter-label-inline">Grade Level:</label>
+                                    <select id="universalGradeLevelFrom" onchange="handleUniversalFilterChange()" class="grade-select">
                                         <option value="">All Levels</option>
                                         <option value="Grade 1">Grade 1</option>
                                         <option value="Grade 2">Grade 2</option>
@@ -208,9 +205,8 @@
                                         <option value="University">University</option>
                                         <option value="Certification">Certification</option>
                                     </select>
-                                    <span style="color: var(--text-secondary); font-size: 0.9rem; width: 20px; text-align: center;">to</span>
-                                    <select id="universalGradeLevelTo" onchange="handleUniversalFilterChange()"
-                                        style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer; width: 130px;">
+                                    <span class="grade-to-label">to</span>
+                                    <select id="universalGradeLevelTo" onchange="handleUniversalFilterChange()" class="grade-select">
                                         <option value="">All Levels</option>
                                         <option value="Grade 1">Grade 1</option>
                                         <option value="Grade 2">Grade 2</option>
@@ -230,7 +226,8 @@
                                 </div>
 
                                 <!-- Session Format Filter -->
-                                <div class="session-format-filter" style="display: flex; gap: 1rem; align-items: center; width: 200px;">
+                                <div class="session-format-filter">
+                                    <label class="filter-label filter-label-inline">Session Format:</label>
                                     <label class="radio-label">
                                         <input type="radio" name="universalSessionFormat" value="Online" checked
                                             onchange="handleUniversalFilterChange()">
@@ -244,14 +241,14 @@
                                 </div>
 
                                 <!-- Time Period Filter -->
-                                <div class="time-period-filter" style="width: 220px;">
+                                <div class="time-period-filter">
+                                    <label class="filter-label filter-label-inline">Time Period: <span class="time-value">3 months</span></label>
                                     <input type="range" id="universalTimePeriod" min="1" max="12" step="1" value="3"
-                                        oninput="handleUniversalTimePeriodChange(this.value)" class="time-slider" style="width: 100%;">
+                                        oninput="handleUniversalTimePeriodChange(this.value)" class="time-slider">
                                 </div>
 
                                 <!-- Calculate Price Button -->
-                                <button class="btn-calculate-price" onclick="suggestMarketPrice()"
-                                    style="padding: 0.875rem 1.75rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; margin-left: auto;">
+                                <button class="btn-calculate-price" onclick="suggestMarketPrice()">
                                     <i class="fas fa-calculator"></i> Calculate Price
                                 </button>
                             </div>
@@ -273,7 +270,7 @@
                                 </span>
                             </p>
                         </div>
-                        <div style="display: flex; flex-direction: row; gap: 2rem; flex: 1; min-height: 400px;">
+                        <div class="market-graph-row">
                             <div class="market-graph-wrapper">
                                 <div id="marketSpinner" class="market-spinner"></div>
                                 <canvas id="marketChart" class="market-chart hidden"></canvas>
