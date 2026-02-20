@@ -316,8 +316,9 @@ class StandaloneChatCallManagerClass {
         if (this.incomingCallData && window.chatWebSocket && window.chatWebSocket.readyState === WebSocket.OPEN) {
             window.chatWebSocket.send(JSON.stringify({
                 type: 'call_declined',
-                call_id: this.incomingCallData.call_id,
-                conversation_id: this.incomingCallData.conversation_id
+                conversation_id: this.incomingCallData.conversation_id,
+                from_user_id: this.incomingCallData.to_user_id || (typeof ChatModalManager !== 'undefined' ? ChatModalManager.state.currentUser?.user_id : null),
+                to_user_id: this.incomingCallData.from_user_id
             }));
         }
 
@@ -475,7 +476,19 @@ class StandaloneChatCallManagerClass {
         try {
             console.log('[StandaloneChatCall] Received ICE candidate');
             if (this.peerConnection && data.candidate) {
+                // Standalone manager has an active peer connection — add directly
                 await this.peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } else if (typeof ChatModalManager !== 'undefined') {
+                // No local peer connection — forward to chat modal
+                const pc = ChatModalManager.state.peerConnection;
+                if (pc && pc.remoteDescription) {
+                    // Remote description already set — add immediately
+                    await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } else {
+                    // Queue for when chat modal sets remote description
+                    ChatModalManager.state.iceCandidateQueue.push(data.candidate);
+                    console.log('[StandaloneChatCall] Queued ICE candidate for chat modal');
+                }
             }
         } catch (error) {
             console.error('[StandaloneChatCall] Error adding ICE candidate:', error);
