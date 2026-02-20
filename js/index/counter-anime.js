@@ -21,6 +21,7 @@ async function fetchStatistics() {
                 { id: "counter-courses", target: stats.courses ?? 0, current: 0, suffix: "+" },
                 { id: "counter-tutors", target: stats.expert_tutors ?? 0, current: 0, suffix: "+" },
                 { id: "counter-schools", target: stats.schools ?? 0, current: 0, suffix: "+" },
+                { id: "counter-countries", target: stats.unique_countries ?? 0, current: 0, suffix: "+" },
             ];
         } else {
             console.error('[Counter Cards] API response not OK:', response.status, response.statusText);
@@ -37,6 +38,7 @@ async function fetchStatistics() {
         { id: "counter-courses", target: 156, current: 0, suffix: "+" },
         { id: "counter-tutors", target: 327, current: 0, suffix: "+" },
         { id: "counter-schools", target: 10, current: 0, suffix: "+" },
+        { id: "counter-countries", target: 1, current: 0, suffix: "+" },
     ];
 }
 
