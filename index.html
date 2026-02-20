@@ -361,29 +361,51 @@
     <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Enhanced Hero Section -->
-    <section class="hero-section text-center">
-        <div class="hero-slideshow"></div>
-        <div class="hero-overlay"></div>
+    <section class="hero-section">
         <div class="hero-particles" id="hero-particles"></div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="hero-content">
-                <h1 id="hero-text" class="hero-text mb-4 font-bold mt-24 md:mt-32">
+
+        <!-- Left Panel: Text + Counters + CTA -->
+        <div class="hero-left">
+            <div class="hero-left-inner">
+                <h1 id="hero-text" class="hero-text font-bold">
                     <span id="hero-text-content"></span>
                     <span class="typing-cursor">|</span>
                 </h1>
+                <p class="hero-subtitle">Ethiopia's premier platform connecting students, tutors, and parents for a brighter future.</p>
 
-                <!-- Animated Counter Cards -->
+                <!-- CTA Buttons -->
+                <div class="hero-buttons">
+                    <button id="hero-login-btn" class="cta-button primary pulse-animation">
+                        <span>Get Started</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </button>
+                    <button id="hero-register-btn" class="cta-button secondary">
+                        <span>Join as Tutor</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                    </button>
+                    <button class="cta-button ghost" onclick="scrollToSection('features')">
+                        <span>Learn More</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Animated Counter Cards (2x2 grid) -->
                 <div class="counter-grid-wrapper">
-                    <!-- Single row: 4 cards (1 static + 3 flip cards) -->
                     <div class="counter-grid">
-                        <!-- Card 1: Total Users (Static - No Flip) -->
+                        <!-- Card 1: Total Users (Static) -->
                         <div class="counter-static-card">
                             <div class="counter-icon">👥</div>
                             <h3 id="counter-total-users" class="counter-number">0</h3>
                             <p class="counter-label">Total Users</p>
                         </div>
 
-                        <!-- Card 2: Resources (Tutors + Schools) -->
+                        <!-- Card 2: Tutors / Courses -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
@@ -399,7 +421,7 @@
                             </div>
                         </div>
 
-                        <!-- Card 3: Courses (Middle) -->
+                        <!-- Card 3: Students / Countries -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
@@ -415,7 +437,7 @@
                             </div>
                         </div>
 
-                        <!-- Card 4: Community (Parents + Students) -->
+                        <!-- Card 4: Parents / Schools -->
                         <div class="counter-flip-card">
                             <div class="counter-flip-inner">
                                 <div class="counter-flip-front">
@@ -430,35 +452,23 @@
                                 </div>
                             </div>
                         </div>
-                        
                     </div>
                 </div>
-
-                <!-- CTA Buttons -->
-                <div class="hero-buttons flex justify-center items-center gap-4 mb-6 mt-6 max-w-4xl mx-auto">
-                    <button id="hero-login-btn" class="cta-button primary pulse-animation">
-                        <span>Get Started</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                    </button>
-                    <button id="hero-register-btn" class="cta-button secondary">
-                        <span>Join as Tutor</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                            </path>
-                        </svg>
-                    </button>
-                    <button class="cta-button ghost" onclick="scrollToSection('features')">
-                        <span>Learn More</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
             </div>
+        </div>
+
+        <!-- Wave Divider (SVG, sits between left and right) -->
+        <div class="hero-wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 100 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50,0 C30,160 70,320 50,480 C30,640 70,720 50,800 L100,800 L100,0 Z" fill="rgba(0,0,0,0.18)"/>
+                <path d="M50,0 C28,150 72,310 50,480 C28,650 72,725 50,800 L100,800 L100,0 Z" fill="rgba(255,255,255,0.06)"/>
+            </svg>
+        </div>
+
+        <!-- Right Panel: Slideshow -->
+        <div class="hero-right">
+            <div class="hero-slideshow" id="hero-slideshow"></div>
+            <div class="hero-right-overlay"></div>
         </div>
 
         <!-- Scroll Indicator -->

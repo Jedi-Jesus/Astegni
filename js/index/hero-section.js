@@ -108,7 +108,7 @@ function initializeHeroSlideshow() {
     ];
 
     let currentImage = 0;
-    const heroSection = document.querySelector(".hero-slideshow");
+    const heroSection = document.getElementById("hero-slideshow") || document.querySelector(".hero-slideshow");
 
     if (heroSection) {
         // Set initial image
@@ -116,8 +116,12 @@ function initializeHeroSlideshow() {
 
         // Change images every 5 seconds with smooth transition
         setInterval(() => {
-            currentImage = (currentImage + 1) % images.length;
-            heroSection.style.backgroundImage = `url(${images[currentImage]})`;
+            heroSection.style.opacity = '0';
+            setTimeout(() => {
+                currentImage = (currentImage + 1) % images.length;
+                heroSection.style.backgroundImage = `url(${images[currentImage]})`;
+                heroSection.style.opacity = '1';
+            }, 500);
         }, 5000);
     }
 }
