@@ -10,7 +10,7 @@ VERSION="v$(date +%Y%m%d%H%M)"
 echo "Busting cache with version: $VERSION"
 
 # 1. Update already-versioned HTML refs (?v...)
-find . -name "*.html" -exec sed -i "s|?v[0-9]*|?$VERSION|g" {} +
+find . -name "*.html" -exec sed -i "s|?v[^\"' >]*|?$VERSION|g" {} +
 echo "✓ Updated existing versioned HTML refs"
 
 # 2. Add version to unversioned local CSS refs in HTML
@@ -22,7 +22,7 @@ find . -name "*.html" -exec sed -i "s|src=\"\(\.\./\)*js/\([^\"?]*\)\.js\"|src=\
 echo "✓ Added version to unversioned JS refs in HTML"
 
 # 4. Update already-versioned @import refs in CSS files
-find ./css -name "*.css" -exec sed -i "s|\.css?v[0-9]*|.css?$VERSION|g" {} +
+find ./css -name "*.css" -exec sed -i "s|\.css?v[^\"' )]*|.css?$VERSION|g" {} +
 echo "✓ Updated existing versioned @import refs in CSS"
 
 # 5. Add version to unversioned @import refs in CSS files
