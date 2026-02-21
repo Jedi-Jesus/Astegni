@@ -536,13 +536,12 @@ def health_check():
 @app.get("/api/footer-stats")
 def footer_stats():
     """Public endpoint: live counts shown in the site footer."""
-    from models import SessionLocal, User, Video, VideoReel
+    from models import SessionLocal, User
+    from sqlalchemy import text
     db = SessionLocal()
     try:
         active_users = db.query(User).count()
-        total_videos = db.query(Video).count()
-        total_reels = db.query(VideoReel).count()
-        total_courses = total_videos + total_reels
+        total_courses = db.execute(text("SELECT COUNT(*) FROM courses")).scalar() or 0
         return {
             "active_users": active_users,
             "total_courses": total_courses,
