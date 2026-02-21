@@ -541,7 +541,7 @@ def footer_stats():
     db = SessionLocal()
     try:
         active_users = db.query(User).count()
-        total_courses = db.execute(text("SELECT COUNT(*) FROM courses")).scalar() or 0
+        total_courses = db.execute(text("SELECT COUNT(*) FROM courses WHERE status = 'verified'")).scalar() or 0
         return {
             "active_users": active_users,
             "total_courses": total_courses,
