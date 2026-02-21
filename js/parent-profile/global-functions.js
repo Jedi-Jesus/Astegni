@@ -306,9 +306,9 @@ function createTutorCard(tutor, index) {
 }
 
 // Tutor action functions
-function viewTutorProfile(userId) {
-    console.log('[viewTutorProfile] Opening tutor profile:', userId);
-    window.open(`/view-profiles/view-tutor.html?user_id=${userId}`, '_blank');
+function viewTutorProfile(tutorId) {
+    console.log('[viewTutorProfile] Opening tutor profile:', tutorId);
+    window.location.href = `../view-profiles/view-tutor.html?id=${tutorId}`;
 }
 
 function callTutor(phone) {
