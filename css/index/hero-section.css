@@ -445,30 +445,18 @@
 
 /* ── RESPONSIVE ──────────────────────────── */
 @media (max-width: 1024px) {
-    .hero-left {
-        width: 60%;
-        padding: 5rem 2rem 4rem 2.5rem;
-    }
-    .hero-wave-divider {
-        left: calc(60% - 40px);
-        width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    /* Stack vertically on mobile — text first, image second */
+    /* Stack vertically — image top, text/counters below */
     .hero-section {
         flex-direction: column;
     }
 
-    /* Image on top, text/counters below on mobile */
     .hero-right { order: 1; }
     .hero-left  { order: 2; }
 
     .hero-left {
         width: 100%;
         min-height: auto;
-        padding: 7rem 1.5rem 3rem;
+        padding: 4rem 1.5rem 3rem;
     }
 
     .hero-left-inner {
@@ -486,7 +474,7 @@
 
     .hero-right {
         width: 100%;
-        min-height: 320px;
+        min-height: 400px;
         flex: none;
     }
 
