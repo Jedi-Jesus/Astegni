@@ -456,10 +456,14 @@
 }
 
 @media (max-width: 768px) {
-    /* Stack vertically on mobile */
+    /* Stack vertically on mobile — text first, image second */
     .hero-section {
         flex-direction: column;
     }
+
+    /* Text/counters panel comes first on mobile */
+    .hero-left  { order: 1; }
+    .hero-right { order: 2; }
 
     .hero-left {
         width: 100%;
