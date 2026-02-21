@@ -6564,7 +6564,7 @@ def get_student_tutors(
             },
             "price": 0,  # hourly_rate column doesn't exist
             "hourly_rate": None,
-            "currency": "ETB",
+            "currency": tutor_user.currency or "ETB",
             "courses": [],  # Column removed
             "subjects": [],  # Column removed
             "languages": tutor_user.languages or [],
