@@ -307,7 +307,7 @@
     position: absolute;
     top: 0;
     /* Sits right at the boundary between left (55%) and right panels */
-    left: calc(55% - 48px);
+    left: calc(45% - 48px);
     width: 96px;
     height: 100%;
     z-index: 5;
@@ -344,7 +344,7 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(
-        to right,
+        to left,
         rgba(10, 15, 40, 0.55) 0%,
         rgba(10, 15, 40, 0.15) 60%,
         rgba(0, 0, 0, 0.1) 100%
@@ -356,7 +356,7 @@
 .scroll-indicator {
     position: absolute;
     bottom: 28px;
-    left: 27.5%; /* centre it on the left panel */
+    left: 22.5%; /* centre it on the left (image) panel */
     transform: translateX(-50%);
     z-index: 10;
 }
@@ -450,7 +450,7 @@
         padding: 5rem 2rem 4rem 2.5rem;
     }
     .hero-wave-divider {
-        left: calc(60% - 40px);
+        left: calc(40% - 40px);
         width: 80px;
     }
 }
