@@ -364,21 +364,7 @@
     <section class="hero-section">
         <div class="hero-particles" id="hero-particles"></div>
 
-        <!-- Left Panel: Slideshow -->
-        <div class="hero-right">
-            <div class="hero-slideshow" id="hero-slideshow"></div>
-            <div class="hero-right-overlay"></div>
-        </div>
-
-        <!-- Wave Divider (SVG, sits between left and right) -->
-        <div class="hero-wave-divider" aria-hidden="true">
-            <svg viewBox="0 0 100 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50,0 C70,160 30,320 50,480 C70,640 30,720 50,800 L0,800 L0,0 Z" fill="rgba(0,0,0,0.18)"/>
-                <path d="M50,0 C72,150 28,310 50,480 C72,650 28,725 50,800 L0,800 L0,0 Z" fill="rgba(255,255,255,0.06)"/>
-            </svg>
-        </div>
-
-        <!-- Right Panel: Text + Counters + CTA -->
+        <!-- Left Panel: Text + Counters + CTA -->
         <div class="hero-left">
             <div class="hero-left-inner">
                 <h1 id="hero-text" class="hero-text font-bold">
@@ -469,6 +455,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Wave Divider -->
+        <div class="hero-wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 100 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50,0 C30,160 70,320 50,480 C30,640 70,720 50,800 L100,800 L100,0 Z" fill="rgba(0,0,0,0.18)"/>
+                <path d="M50,0 C28,150 72,310 50,480 C28,650 72,725 50,800 L100,800 L100,0 Z" fill="rgba(255,255,255,0.06)"/>
+            </svg>
+        </div>
+
+        <!-- Right Panel: Slideshow -->
+        <div class="hero-right">
+            <div class="hero-slideshow" id="hero-slideshow"></div>
+            <div class="hero-right-overlay"></div>
         </div>
 
         <!-- Scroll Indicator -->
