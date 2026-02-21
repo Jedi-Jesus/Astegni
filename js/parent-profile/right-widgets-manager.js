@@ -6,7 +6,7 @@
 
 class ParentRightWidgetsManager {
     constructor() {
-        this.API_BASE_URL = 'http://localhost:8000';
+        this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
         this.user = null;
         this.childrenProgressData = null;
         this.tutorCarouselInterval = null; // Store carousel interval
