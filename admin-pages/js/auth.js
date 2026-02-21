@@ -1118,8 +1118,11 @@ function showNotification(message, type = 'info') {
         <span>${message}</span>
     `;
 
-    // Add to body
-    document.body.appendChild(notification);
+    // Add to active modal overlay if open (backdrop-filter creates isolated stacking context)
+    // otherwise append to body
+    const activeModal = document.querySelector('.modal-overlay.active');
+    const container = activeModal || document.body;
+    container.appendChild(notification);
 
     // Animate in
     setTimeout(() => {

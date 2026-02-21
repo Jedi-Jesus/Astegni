@@ -12,7 +12,7 @@ const EarningsInvestmentsManager = {
         total: 6
     },
     currentSection: 'total', // Track which section is active (total, affiliate, tutoring)
-    currentAffiliateTab: 'advertisement', // Track affiliate sub-tab (advertisement, subscription, commission)
+    currentAffiliateTab: 'referrals', // Track affiliate sub-tab (advertisement, subscription, commission, referrals)
     affiliateTiers: [], // Cache affiliate tiers from admin db
     selectedTierLevel: null, // Currently selected tier level filter (null = All)
 
@@ -1475,99 +1475,62 @@ const EarningsInvestmentsManager = {
     },
 
     /**
-     * Load shares data for the Shares tab
+     * Load total referred users list
      */
-    async loadSharesData() {
-        const sharesEmpty = document.getElementById('shares-empty');
-        const sharesLoading = document.getElementById('shares-loading');
-        const sharesList = document.getElementById('shares-list');
+    async loadReferralsData() {
+        const referralsEmpty = document.getElementById('referrals-empty');
+        const referralsLoading = document.getElementById('referrals-loading');
+        const referralsList = document.getElementById('referrals-list');
 
-        if (!sharesList) return;
+        if (!referralsList) return;
 
         try {
-            sharesLoading?.classList.remove('hidden');
-            sharesEmpty?.classList.add('hidden');
-            sharesList.classList.add('hidden');
+            referralsLoading?.classList.remove('hidden');
+            referralsEmpty?.classList.add('hidden');
+            referralsList.classList.add('hidden');
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/shares`, {
+            const response = await fetch(`${API_BASE_URL}/api/referrals`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!response.ok) throw new Error('Failed to fetch shares');
+            if (!response.ok) throw new Error('Failed to fetch referred users');
 
             const data = await response.json();
-            const shares = data.shares || data || [];
+            const referrals = data.referrals || data || [];
 
-            sharesLoading?.classList.add('hidden');
+            referralsLoading?.classList.add('hidden');
 
-            if (!shares.length) {
-                sharesEmpty?.classList.remove('hidden');
+            if (!referrals.length) {
+                referralsEmpty?.classList.remove('hidden');
                 return;
             }
 
-            // Update summary counts
-            const ownedCount = document.getElementById('shares-owned-count');
-            if (ownedCount) ownedCount.textContent = shares.length;
-
-            const totalValue = shares.reduce((sum, s) => sum + (s.current_value || s.value || 0), 0);
-            const totalValueEl = document.getElementById('shares-total-value');
-            if (totalValueEl) totalValueEl.textContent = totalValue.toFixed(2);
-
-            const totalDividends = shares.reduce((sum, s) => sum + (s.dividends || 0), 0);
-            const dividendsEl = document.getElementById('shares-dividends-total');
-            if (dividendsEl) dividendsEl.textContent = totalDividends.toFixed(2);
-
-            sharesList.innerHTML = shares.map(share => {
-                const acquiredDate = new Date(share.acquired_at || share.created_at);
-                const statusColor = share.status === 'active' ? 'green' : share.status === 'pending' ? 'yellow' : 'gray';
+            referralsList.innerHTML = referrals.map(user => {
+                const joinedDate = new Date(user.referred_at || user.created_at);
+                const statusColor = user.status === 'active' ? 'green' : user.status === 'pending' ? 'yellow' : 'gray';
                 return `
-                    <div class="card p-5 hover:shadow-lg transition-all duration-300 border-l-4 border-violet-500">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
-                                    📊
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-800">${share.name || share.share_name || 'Share'}</h4>
-                                    <p class="text-sm text-gray-500">${share.description || ''}</p>
-                                    <span class="inline-block mt-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs px-2 py-0.5 rounded-full font-semibold">
-                                        ${share.status || 'Active'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xl font-bold text-violet-600">${(share.current_value || share.value || 0).toFixed(2)} <span class="text-sm font-normal">${CurrencyManager.getSymbol()}</span></div>
-                                <div class="text-xs text-gray-500 mt-1">${acquiredDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
-                            </div>
+                    <div class="flex items-center gap-4 p-4 card hover:shadow-md transition-all duration-200">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            ${(user.full_name || user.name || 'U').charAt(0).toUpperCase()}
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg text-sm">
-                            <div>
-                                <div class="text-xs text-gray-500 mb-0.5">Units</div>
-                                <div class="font-semibold text-gray-800">${share.units || share.quantity || 1}</div>
-                            </div>
-                            <div>
-                                <div class="text-xs text-gray-500 mb-0.5">Purchase Price</div>
-                                <div class="font-semibold text-gray-800">${(share.purchase_price || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
-                            </div>
-                            <div>
-                                <div class="text-xs text-gray-500 mb-0.5">Dividends</div>
-                                <div class="font-semibold text-teal-600">${(share.dividends || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
-                            </div>
-                            <div>
-                                <div class="text-xs text-gray-500 mb-0.5">Acquired</div>
-                                <div class="font-semibold text-gray-800">${acquiredDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                            </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-800 truncate">${user.full_name || user.name || 'Unknown User'}</p>
+                            <p class="text-sm text-gray-500 truncate">${user.email || ''}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="inline-block bg-${statusColor}-100 text-${statusColor}-800 text-xs px-2 py-0.5 rounded-full font-semibold">${user.status || 'Active'}</span>
+                            <p class="text-xs text-gray-400 mt-1">${joinedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            sharesList.classList.remove('hidden');
+            referralsList.classList.remove('hidden');
         } catch (error) {
-            console.error('Error loading shares:', error);
-            sharesLoading?.classList.add('hidden');
-            sharesEmpty?.classList.remove('hidden');
+            console.error('Error loading referred users:', error);
+            referralsLoading?.classList.add('hidden');
+            referralsEmpty?.classList.remove('hidden');
         }
     }
 };
@@ -1577,8 +1540,8 @@ const EarningsInvestmentsManager = {
  */
 function switchEarningsTab(tab) {
     // All tab buttons and content divs
-    const tabIds = ['earnings', 'investments', 'shares'];
-    const contentIds = ['earnings-tab-content', 'investments-tab-content', 'shares-tab-content'];
+    const tabIds = ['earnings', 'investments'];
+    const contentIds = ['earnings-tab-content', 'investments-tab-content'];
 
     // Deactivate all tabs
     tabIds.forEach(t => {
@@ -1615,18 +1578,9 @@ function switchEarningsTab(tab) {
         }
         // Load subscriptions when switching to investments tab
         EarningsInvestmentsManager.loadStudentSubscriptions();
-    } else if (tab === 'shares') {
-        EarningsInvestmentsManager.loadSharesData();
     }
 }
 
-/**
- * Toggle shares sub-section highlight (owned / value / dividends)
- */
-function toggleSharesSection(section) {
-    // No sub-panels to toggle yet — placeholder for future expansion
-    console.log('Shares section selected:', section);
-}
 
 /**
  * Global reload functions for period selectors
@@ -1648,6 +1602,8 @@ function loadAffiliateData() {
     } else if (currentTab === 'commission') {
         EarningsInvestmentsManager.loadCommissionData();
         EarningsInvestmentsManager.initializeCommissionChart();
+    } else if (currentTab === 'referrals') {
+        EarningsInvestmentsManager.loadReferralsData();
     }
 }
 
@@ -1664,7 +1620,7 @@ function switchAffiliateTab(tab) {
     EarningsInvestmentsManager.currentAffiliateTab = tab;
 
     // Get all tab buttons and content
-    const tabs = ['advertisement', 'subscription', 'commission'];
+    const tabs = ['advertisement', 'subscription', 'commission', 'referrals'];
 
     tabs.forEach(t => {
         const tabBtn = document.getElementById(`${t}-tab`);
@@ -1736,7 +1692,7 @@ function toggleEarningsSection(section) {
 
     // If affiliate section, initialize the default tab
     if (section === 'affiliate') {
-        switchAffiliateTab(EarningsInvestmentsManager.currentAffiliateTab || 'advertisement');
+        switchAffiliateTab(EarningsInvestmentsManager.currentAffiliateTab || 'referrals');
     }
 }
 
@@ -2271,4 +2227,3 @@ window.closeSubscriptionDetailsModal = closeSubscriptionDetailsModal;
 window.exportMetricsReport = exportMetricsReport;
 window.toggleSubscriptionsSection = toggleSubscriptionsSection;
 window.togglePurchaseHistorySection = togglePurchaseHistorySection;
-window.toggleSharesSection = toggleSharesSection;

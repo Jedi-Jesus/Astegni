@@ -9,7 +9,8 @@ const StatsCounter = {
         tutors_count: 500,
         courses_count: 50,
         schools_count: 10,
-        average_rating: 4.5
+        average_rating: 4.5,
+        unique_countries: 1
     },
 
     async init() {
@@ -63,6 +64,12 @@ const StatsCounter = {
         const ratingEl = document.getElementById('stat-rating');
         if (ratingEl) {
             ratingEl.setAttribute('data-target', stats.average_rating ?? this.defaultStats.average_rating);
+        }
+
+        // Update countries count
+        const countriesEl = document.getElementById('stat-countries');
+        if (countriesEl) {
+            countriesEl.setAttribute('data-target', stats.unique_countries ?? this.defaultStats.unique_countries);
         }
     },
 

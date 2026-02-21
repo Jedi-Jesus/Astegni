@@ -539,10 +539,13 @@ async function handleRegister(e) {
     }
 
     // Store data temporarily (no role - user will add roles later)
+    // Read referral code from URL ?ref= param if present
+    const referralCode = new URLSearchParams(window.location.search).get('ref') || null;
     tempRegistrationData = {
         email: email,
         phone: '',
         password: password,
+        referral_code: referralCode,
     };
 
     // Show confirmation modal
@@ -681,7 +684,8 @@ window.verifyRegistrationOTP = async function() {
                 father_name: tempRegistrationData.father_name,
                 grandfather_name: tempRegistrationData.grandfather_name,
                 password: tempRegistrationData.password,
-                role: tempRegistrationData.role
+                role: tempRegistrationData.role,
+                referral_code: tempRegistrationData.referral_code || undefined
             })
         });
 

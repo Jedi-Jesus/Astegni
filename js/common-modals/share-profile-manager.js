@@ -14,6 +14,55 @@ if (typeof currentReferralData === 'undefined') {
 }
 
 /**
+ * Detect if we're on a view-profiles page and return the viewed person's data.
+ * Returns null if we're on a profile-pages page (own profile).
+ */
+function getViewedProfileData() {
+    const path = window.location.pathname;
+    if (path.includes('view-tutor')) {
+        const data = window.currentTutorData;
+        if (!data) return null;
+        return {
+            name: data.full_name || data.name || 'Tutor',
+            picture: data.profile_picture || null,
+            role: 'tutor',
+            profileUrl: window.location.href.split('?')[0] + '?id=' + (data.id || new URLSearchParams(window.location.search).get('id'))
+        };
+    }
+    if (path.includes('view-student')) {
+        const data = window.currentStudentData;
+        if (!data) return null;
+        return {
+            name: data.name || data.first_name || 'Student',
+            picture: data.profile_picture || null,
+            role: 'student',
+            profileUrl: window.location.href.split('?')[0] + '?id=' + (data.id || new URLSearchParams(window.location.search).get('id'))
+        };
+    }
+    if (path.includes('view-parent')) {
+        const data = window.currentParentData;
+        if (!data) return null;
+        return {
+            name: data.name || data.first_name || 'Parent',
+            picture: data.profile_picture || null,
+            role: 'parent',
+            profileUrl: window.location.href.split('?')[0] + '?id=' + (data.id || new URLSearchParams(window.location.search).get('id'))
+        };
+    }
+    if (path.includes('view-advertiser')) {
+        const data = window.currentAdvertiserData;
+        if (!data) return null;
+        return {
+            name: data.company_name || data.name || 'Advertiser',
+            picture: data.profile_picture || data.logo || null,
+            role: 'advertiser',
+            profileUrl: window.location.href.split('?')[0] + '?id=' + (data.id || new URLSearchParams(window.location.search).get('id'))
+        };
+    }
+    return null;
+}
+
+/**
  * Open share modal for current profile
  */
 async function shareProfile(event) {
@@ -35,15 +84,23 @@ async function shareProfile(event) {
         }
 
         const user = JSON.parse(userStr);
-        const activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole') || user?.active_role;
 
         if (!user) {
             alert('Please login to share your profile');
             return;
         }
 
+        const VALID_REFERRAL_ROLES = ['tutor', 'student', 'parent', 'advertiser'];
+        let activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole') || user?.active_role;
+
+        // "user" is not a valid referral profile type — fall back to the first real role the user has
+        if (!activeRole || !VALID_REFERRAL_ROLES.includes(activeRole)) {
+            const roles = user.roles || (user.role ? [user.role] : []);
+            activeRole = roles.find(r => VALID_REFERRAL_ROLES.includes(r)) || null;
+        }
+
         if (!activeRole) {
-            alert('Please select a role first');
+            alert('Please select a role first (tutor, student, parent, or advertiser)');
             return;
         }
 
@@ -90,7 +147,8 @@ async function shareProfile(event) {
         }
 
         // Load referral data
-        await loadReferralData(activeRole, user, token);
+        const viewedProfile = getViewedProfileData();
+        await loadReferralData(activeRole, user, token, viewedProfile);
 
         // Check if native share is available (mobile)
         if (navigator.share) {
@@ -114,7 +172,7 @@ async function ensureShareModalLoaded() {
     try {
         // Use relative path that works from any profile page
         // Cache-busting version parameter to ensure latest HTML/CSS is loaded
-        const response = await fetch('../modals/common-modals/share-profile-modal.html?v=20260204k');
+        const response = await fetch('../modals/common-modals/share-profile-modal.html?v=20260221b');
         if (!response.ok) throw new Error('Failed to load share modal');
 
         const html = await response.text();
@@ -129,27 +187,35 @@ async function ensureShareModalLoaded() {
 
 /**
  * Load referral data from API
+ * @param {string} profileType - The logged-in user's active role
+ * @param {object} user - The logged-in user object
+ * @param {string} token - Auth token
+ * @param {object|null} viewedProfile - If on a view-profiles page, the viewed person's data
  */
-async function loadReferralData(profileType, user, token) {
+async function loadReferralData(profileType, user, token, viewedProfile) {
     try {
-        // Update profile info
+        // Update profile info in the popup.
+        // On view-profiles pages, show the viewed person's name/picture.
+        // On profile-pages, show the logged-in user's own info.
         const profilePic = document.getElementById('shareProfilePic');
         const profileName = document.getElementById('shareProfileName');
         const profileTypeEl = document.getElementById('shareProfileType');
 
-        if (profilePic && user.profile_picture) {
-            profilePic.src = user.profile_picture;
-        }
-        if (profileName) {
-            const fullName = [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-                .filter(n => n).join(' ') || 'User';
-            profileName.textContent = fullName;
-        }
-        if (profileTypeEl) {
-            profileTypeEl.textContent = profileType;
+        if (viewedProfile) {
+            if (profilePic && viewedProfile.picture) profilePic.src = viewedProfile.picture;
+            if (profileName) profileName.textContent = viewedProfile.name;
+            if (profileTypeEl) profileTypeEl.textContent = viewedProfile.role;
+        } else {
+            if (profilePic && user.profile_picture) profilePic.src = user.profile_picture;
+            if (profileName) {
+                const fullName = [user.first_name, user.father_name, user.grandfather_name, user.last_name]
+                    .filter(n => n).join(' ') || 'User';
+                profileName.textContent = fullName;
+            }
+            if (profileTypeEl) profileTypeEl.textContent = profileType;
         }
 
-        // Fetch referral code
+        // Fetch the logged-in user's referral code
         const response = await fetch(
             `${API_BASE_URL}/api/referrals/my-code?profile_type=${profileType}`,
             {
@@ -166,9 +232,16 @@ async function loadReferralData(profileType, user, token) {
         const data = await response.json();
         currentReferralData = data;
 
+        // Build the share URL:
+        // - On view-profiles: link to the viewed person's profile page + referral code appended
+        // - On profile-pages: use the API-provided share_url (own profile)
+        const shareUrl = viewedProfile
+            ? `${viewedProfile.profileUrl}&ref=${data.referral_code}`
+            : data.share_url;
+
         // Update UI
         document.getElementById('shareReferralCode').value = data.referral_code;
-        document.getElementById('shareProfileLink').value = data.share_url;
+        document.getElementById('shareProfileLink').value = shareUrl;
 
         // Fetch and update stats
         await loadReferralStats(profileType, token);
@@ -219,21 +292,30 @@ function closeShareModal() {
 }
 
 /**
+ * Temporarily change a copy button to "Copied!" then revert to "Copy"
+ */
+function showButtonCopied(btn) {
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    btn.style.background = 'var(--success, #22c55e)';
+    setTimeout(() => {
+        btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+        btn.style.background = '';
+    }, 2000);
+}
+
+/**
  * Copy referral code to clipboard
  */
 async function copyReferralCode() {
     const codeInput = document.getElementById('shareReferralCode');
-    const code = codeInput.value;
-
+    const btn = codeInput.closest('div').querySelector('.share-copy-btn');
     try {
-        await navigator.clipboard.writeText(code);
-        showCopyFeedback(codeInput, 'Referral code copied!');
+        await navigator.clipboard.writeText(codeInput.value);
     } catch (error) {
-        // Fallback for older browsers
         codeInput.select();
         document.execCommand('copy');
-        showCopyFeedback(codeInput, 'Referral code copied!');
     }
+    if (btn) showButtonCopied(btn);
 }
 
 /**
@@ -241,17 +323,14 @@ async function copyReferralCode() {
  */
 async function copyShareLink() {
     const linkInput = document.getElementById('shareProfileLink');
-    const link = linkInput.value;
-
+    const btn = linkInput.closest('div').querySelector('.share-copy-btn');
     try {
-        await navigator.clipboard.writeText(link);
-        showCopyFeedback(linkInput, 'Link copied to clipboard!');
+        await navigator.clipboard.writeText(linkInput.value);
     } catch (error) {
-        // Fallback for older browsers
         linkInput.select();
         document.execCommand('copy');
-        showCopyFeedback(linkInput, 'Link copied to clipboard!');
     }
+    if (btn) showButtonCopied(btn);
 }
 
 /**
@@ -301,6 +380,33 @@ if (!document.getElementById('copyFeedbackAnimation')) {
 }
 
 /**
+ * Get share message context.
+ * On view-profiles pages, messaging refers to the viewed person.
+ * On profile-pages, messaging refers to the logged-in user (own profile).
+ */
+function getShareContext() {
+    const link = document.getElementById('shareProfileLink').value;
+    const viewed = getViewedProfileData();
+
+    if (viewed) {
+        return {
+            link,
+            isOwnProfile: false,
+            name: viewed.name,
+            role: viewed.role
+        };
+    }
+
+    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const role = localStorage.getItem('active_role') || localStorage.getItem('userRole') || user?.active_role || 'user';
+    const name = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
+        .filter(n => n).join(' ') || 'User' : 'User';
+
+    return { link, isOwnProfile: true, name, role };
+}
+
+/**
  * Share via native share API (mobile)
  */
 async function shareViaNative() {
@@ -309,17 +415,16 @@ async function shareViaNative() {
         return;
     }
 
-    const link = document.getElementById('shareProfileLink').value;
-    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role');
-    const fullName = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-        .filter(n => n).join(' ') || 'User' : 'User';
+    const { link, isOwnProfile, name, role } = getShareContext();
 
     try {
         await navigator.share({
-            title: `${fullName}'s ${activeRole} profile on Astegni`,
-            text: `Check out my profile on Astegni! Register using my link and join our community.`,
+            title: isOwnProfile
+                ? `${name}'s ${role} profile on Astegni`
+                : `${name} on Astegni`,
+            text: isOwnProfile
+                ? `Check out my profile on Astegni! Register using my link and join our community.`
+                : `Check out ${name}'s ${role} profile on Astegni!`,
             url: link
         });
     } catch (error) {
@@ -333,14 +438,10 @@ async function shareViaNative() {
  * Share via WhatsApp
  */
 function shareViaWhatsApp() {
-    const link = document.getElementById('shareProfileLink').value;
-    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role');
-    const fullName = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-        .filter(n => n).join(' ') || 'User' : 'User';
-
-    const text = encodeURIComponent(`Hi! I'm ${fullName}, a ${activeRole} on Astegni. Join me on this amazing educational platform: ${link}`);
+    const { link, isOwnProfile, name, role } = getShareContext();
+    const text = isOwnProfile
+        ? encodeURIComponent(`Hi! I'm ${name}, a ${role} on Astegni. Join me on this amazing educational platform: ${link}`)
+        : encodeURIComponent(`Check out ${name}'s ${role} profile on Astegni: ${link}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 
@@ -348,57 +449,45 @@ function shareViaWhatsApp() {
  * Share via Facebook
  */
 function shareViaFacebook() {
-    const link = document.getElementById('shareProfileLink').value;
-    const url = encodeURIComponent(link);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+    const { link } = getShareContext();
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`, '_blank', 'width=600,height=400');
 }
 
 /**
  * Share via Twitter
  */
 function shareViaTwitter() {
-    const link = document.getElementById('shareProfileLink').value;
-    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role');
-    const fullName = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-        .filter(n => n).join(' ') || 'User' : 'User';
-
-    const text = encodeURIComponent(`Check out my ${activeRole} profile on Astegni!`);
-    const url = encodeURIComponent(link);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'width=600,height=400');
+    const { link, isOwnProfile, name, role } = getShareContext();
+    const text = isOwnProfile
+        ? encodeURIComponent(`Check out my ${role} profile on Astegni!`)
+        : encodeURIComponent(`Check out ${name}'s ${role} profile on Astegni!`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(link)}`, '_blank', 'width=600,height=400');
 }
 
 /**
  * Share via Telegram
  */
 function shareViaTelegram() {
-    const link = document.getElementById('shareProfileLink').value;
-    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role');
-    const fullName = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-        .filter(n => n).join(' ') || 'User' : 'User';
-
-    const text = encodeURIComponent(`Hi! I'm ${fullName}, a ${activeRole} on Astegni. Join me: ${link}`);
-    window.open(`https://t.me/share/url?url=${link}&text=${text}`, '_blank');
+    const { link, isOwnProfile, name, role } = getShareContext();
+    const text = isOwnProfile
+        ? encodeURIComponent(`Hi! I'm ${name}, a ${role} on Astegni. Join me: ${link}`)
+        : encodeURIComponent(`Check out ${name}'s ${role} profile on Astegni: ${link}`);
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`, '_blank');
 }
 
 /**
  * Share via Email
  */
 function shareViaEmail() {
-    const link = document.getElementById('shareProfileLink').value;
-    const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const activeRole = localStorage.getItem('userRole') || localStorage.getItem('active_role');
-    const fullName = user ? [user.first_name, user.father_name, user.grandfather_name, user.last_name]
-        .filter(n => n).join(' ') || 'User' : 'User';
+    const { link, isOwnProfile, name, role } = getShareContext();
 
-    const subject = encodeURIComponent(`Join me on Astegni`);
-    const body = encodeURIComponent(`Hi,
+    let subject, body;
 
-I'm ${fullName}, a ${activeRole} on Astegni - an educational platform connecting students, tutors, and parents.
+    if (isOwnProfile) {
+        subject = encodeURIComponent(`Join me on Astegni`);
+        body = encodeURIComponent(`Hi,
+
+I'm ${name}, a ${role} on Astegni - an educational platform connecting students, tutors, and parents.
 
 I'd love for you to join me on Astegni! Use my referral link to register:
 ${link}
@@ -406,9 +495,84 @@ ${link}
 Looking forward to seeing you there!
 
 Best regards,
-${fullName}`);
+${name}`);
+    } else {
+        subject = encodeURIComponent(`Check out this ${role} on Astegni`);
+        body = encodeURIComponent(`Hi,
+
+I found ${name}'s ${role} profile on Astegni - an educational platform connecting students, tutors, and parents.
+
+Check them out here:
+${link}
+
+If you sign up using that link, we both benefit!`);
+    }
 
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+/**
+ * Share via LinkedIn
+ */
+function shareViaLinkedIn() {
+    const { link } = getShareContext();
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`, '_blank', 'width=600,height=400');
+}
+
+/**
+ * Share via Instagram (copy link — Instagram has no web share URL)
+ */
+function shareViaInstagram() {
+    const { link } = getShareContext();
+    navigator.clipboard.writeText(link).then(() => {
+        alert('Link copied! Open Instagram and paste it in your bio or story.');
+    }).catch(() => {
+        const input = document.getElementById('shareProfileLink');
+        if (input) { input.select(); document.execCommand('copy'); }
+        alert('Link copied! Open Instagram and paste it in your bio or story.');
+    });
+}
+
+/**
+ * Share via TikTok (copy link — TikTok has no web share URL)
+ */
+function shareViaTikTok() {
+    const { link } = getShareContext();
+    navigator.clipboard.writeText(link).then(() => {
+        alert('Link copied! Open TikTok and paste it in your bio or video description.');
+    }).catch(() => {
+        const input = document.getElementById('shareProfileLink');
+        if (input) { input.select(); document.execCommand('copy'); }
+        alert('Link copied! Open TikTok and paste it in your bio or video description.');
+    });
+}
+
+/**
+ * Share via YouTube (copy link — YouTube has no web share URL)
+ */
+function shareViaYouTube() {
+    const { link } = getShareContext();
+    navigator.clipboard.writeText(link).then(() => {
+        alert('Link copied! Paste it in your YouTube video description or community post.');
+    }).catch(() => {
+        const input = document.getElementById('shareProfileLink');
+        if (input) { input.select(); document.execCommand('copy'); }
+        alert('Link copied! Paste it in your YouTube video description or community post.');
+    });
+}
+
+/**
+ * Share via Snapchat (copy link — Snapchat has no web share URL)
+ */
+function shareViaSnapchat() {
+    const { link } = getShareContext();
+    navigator.clipboard.writeText(link).then(() => {
+        alert('Link copied! Paste it in your Snapchat story or message.');
+    }).catch(() => {
+        const input = document.getElementById('shareProfileLink');
+        if (input) { input.select(); document.execCommand('copy'); }
+        alert('Link copied! Paste it in your Snapchat story or message.');
+    });
 }
 
 /**
