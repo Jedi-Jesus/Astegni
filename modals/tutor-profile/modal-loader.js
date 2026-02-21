@@ -59,6 +59,7 @@ const ModalLoader = (function() {
 
     // Modals in common-modals folder (shared across profiles)
     const COMMON_MODALS = [
+        'about-astegni-modal.html',
         'accept-parent-invitation-modal.html',
         'access-restricted-modal.html',
         'ad-analytics-modal.html',
@@ -133,6 +134,7 @@ const ModalLoader = (function() {
         // Common modals (shared across profiles)
         'accept-parent-invitation-modal': { file: 'accept-parent-invitation-modal.html', path: 'common-modals' },
         'access-restricted-modal': { file: 'access-restricted-modal.html', path: 'common-modals' },
+        'about-astegni-modal': { file: 'about-astegni-modal.html', path: 'common-modals' },
         'accessRestrictedModal': { file: 'access-restricted-modal.html', path: 'common-modals' },
         'adAnalyticsModal': { file: 'ad-analytics-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },

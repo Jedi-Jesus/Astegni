@@ -46,6 +46,7 @@ const IndexModalLoader = (function() {
 
     // Modals in common-modals folder (shared across pages)
     const COMMON_MODALS = [
+        'about-astegni-modal.html',
         'access-restricted-modal.html',
         'add-role-modal.html',
         'otp-verification-modal.html',
@@ -68,6 +69,7 @@ const IndexModalLoader = (function() {
         'login-coming-soon-modal': { file: 'login-coming-soon-modal.html', path: 'index' },
 
         // Common modals (shared across pages)
+        'about-astegni-modal': { file: 'about-astegni-modal.html', path: 'common-modals' },
         'access-restricted-modal': { file: 'access-restricted-modal.html', path: 'common-modals' },
         'accessRestrictedModal': { file: 'access-restricted-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },

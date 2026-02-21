@@ -15,7 +15,7 @@ function initializeHeroSection() {
         "Discover Expert Tutors with Astegni",
         "Learn Anytime, Anywhere",
         "Your Learning Partner",
-        "Ethiopia's Premier Educational Platform"
+        "World's Premier Educational Platform"
     ];
 
     let textIndex = 0;

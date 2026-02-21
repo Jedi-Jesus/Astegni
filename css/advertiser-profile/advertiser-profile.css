@@ -4867,3 +4867,19 @@ body {
         gap: 12px;
     }
 }
+
+/* ============================================
+   FOOTER LINK LIST RESET
+   (overrides old .footer-links grid layout)
+   ============================================ */
+.footer-section-item .footer-links {
+    display: block;
+    list-style: none;
+    padding: 0;
+    grid-template-columns: unset;
+    gap: unset;
+}
+
+.footer-section-item .footer-links li {
+    margin-bottom: 0.75rem;
+}

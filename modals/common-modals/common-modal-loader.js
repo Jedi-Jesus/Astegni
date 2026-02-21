@@ -24,6 +24,7 @@ const CommonModalLoader = (function() {
 
     // Common modals shared across all pages
     const COMMON_MODALS = [
+        'about-astegni-modal.html',
         'access-restricted-modal.html',
         'add-role-modal.html',
         'appearance-modal.html',
@@ -45,6 +46,7 @@ const CommonModalLoader = (function() {
 
     // Modal ID to filename mapping
     const MODAL_ID_MAP = {
+        'about-astegni-modal': 'about-astegni-modal.html',
         'access-restricted-modal': 'access-restricted-modal.html',
         'accessRestrictedModal': 'access-restricted-modal.html',
         'add-role-modal': 'add-role-modal.html',

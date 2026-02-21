@@ -97,6 +97,14 @@
     gap: 2rem;
 }
 
+.footer-stats .stat-item {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
 .footer-links {
     list-style: none;
     padding: 0;
@@ -136,8 +144,19 @@
 
 .social-links {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.6rem;
     margin: 1.5rem 0;
+}
+
+.footer-section-item .social-links {
+    max-width: calc(4 * 2.5rem + 3 * 0.6rem); /* 4 icons per row → 3 rows for 10 icons */
+    gap: 0.6rem;
+}
+
+.footer-section-item .social-link {
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .social-link {
@@ -168,10 +187,12 @@
 .footer-bottom-content {
     padding-top: 2rem;
     position: relative;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     align-items: center;
-    gap: 2rem;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: nowrap;
+    font-size: 0.9rem;
 }
 
 .footer-bottom-content::before {
@@ -210,20 +231,26 @@
 .footer-badges {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .footer-badges:first-child {
     justify-content: flex-start;
+    flex-shrink: 1;
 }
 
 .footer-badges:nth-child(2) {
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .footer-badges:last-child {
     justify-content: flex-end;
+    flex-shrink: 1;
 }
 
 .company-brand {
@@ -310,12 +337,14 @@
     }
 
     .footer-bottom-content {
-        grid-template-columns: 1fr 1fr;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 
     .footer-badges:nth-child(2) {
-        grid-column: 1 / -1;
         order: -1;
+        width: 100%;
+        justify-content: center;
     }
 
     .ad-stats-grid,
@@ -419,13 +448,15 @@
     }
 
     .footer-bottom-content {
-        grid-template-columns: 1fr;
+        flex-direction: column;
         text-align: center;
-        gap: 1.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
 
     .footer-badges {
         justify-content: center !important;
+        white-space: normal;
     }
 
     .footer-stats {

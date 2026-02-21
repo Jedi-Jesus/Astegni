@@ -1,0 +1,87 @@
+<!--
+  Modal: about-astegni-modal
+  Purpose: Brief story about Astegni - shown when "About Us" is clicked in the footer Quick Links
+-->
+
+<div id="about-astegni-modal" class="modal hidden" style="display:none;">
+    <div class="modal-content enhanced about-astegni-content" style="max-width:600px;width:90%;padding:0;overflow:hidden;border-radius:16px;max-height:90vh;display:flex;flex-direction:column;">
+
+        <!-- Header with gradient -->
+        <div style="background:linear-gradient(135deg,var(--accent-color,#4f46e5),var(--accent-hover,#6366f1));padding:32px 28px 24px;position:relative;text-align:center;">
+            <button class="modal-close-enhanced" onclick="closeAboutAstegniModal()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Logo mark -->
+            <div style="width:64px;height:64px;border-radius:16px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="36" height="36" fill="none" stroke="white" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+            </div>
+
+            <h2 style="color:#fff;font-size:24px;font-weight:700;margin:0 0 6px;">About Astegni</h2>
+            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0;">Connecting learners with knowledge, everywhere.</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:28px;background:var(--bg-primary,#fff);color:var(--text-primary,#111);overflow-y:auto;flex:1;">
+
+            <div style="margin-bottom:20px;">
+                <h3 style="font-size:16px;font-weight:600;margin:0 0 8px;color:var(--accent-color,#4f46e5);">Our Story</h3>
+                <p style="font-size:14px;line-height:1.7;margin:0;color:var(--text-secondary,#444);">
+                    Astegni was born from a simple conviction — that quality education should have no borders.
+                    Founded in Ethiopia, we set out to bridge the gap between passionate tutors and eager learners by
+                    building a platform that is accessible, trustworthy, and genuinely useful. The name <em>Astegni</em>
+                    reflects our core belief: every learner deserves to feel empowered and equipped.
+                </p>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <h3 style="font-size:16px;font-weight:600;margin:0 0 8px;color:var(--accent-color,#4f46e5);">What We Do</h3>
+                <p style="font-size:14px;line-height:1.7;margin:0;color:var(--text-secondary,#444);">
+                    We connect students, tutors, parents, and institutions through a smart marketplace featuring a
+                    4-factor tutor rating system, verified reviews, live sessions via our IP-protected Digital Whiteboard,
+                    rich educational content, and a vibrant community of clubs and events. Whether you are a student
+                    looking for the right tutor or a teacher ready to reach more learners, Astegni is your platform.
+                </p>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <h3 style="font-size:16px;font-weight:600;margin:0 0 8px;color:var(--accent-color,#4f46e5);">Where We Are Going</h3>
+                <p style="font-size:14px;line-height:1.7;margin:0;color:var(--text-secondary,#444);">
+                    Starting from Ethiopia, our vision stretches across Africa and beyond. We are building the
+                    infrastructure for world-class education to reach every corner of the globe — because every learner,
+                    regardless of geography, deserves a world-class teacher.
+                </p>
+            </div>
+
+            <!-- Pillars -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+                <div style="text-align:center;padding:14px 8px;border-radius:10px;background:var(--bg-secondary,#f5f5f5);">
+                    <div style="font-size:22px;margin-bottom:6px;">🎯</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-primary,#111);">Quality</div>
+                    <div style="font-size:11px;color:var(--text-muted,#888);margin-top:3px;">Verified tutors &amp; content</div>
+                </div>
+                <div style="text-align:center;padding:14px 8px;border-radius:10px;background:var(--bg-secondary,#f5f5f5);">
+                    <div style="font-size:22px;margin-bottom:6px;">🌍</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-primary,#111);">Reach</div>
+                    <div style="font-size:11px;color:var(--text-muted,#888);margin-top:3px;">Ethiopia → World</div>
+                </div>
+                <div style="text-align:center;padding:14px 8px;border-radius:10px;background:var(--bg-secondary,#f5f5f5);">
+                    <div style="font-size:22px;margin-bottom:6px;">🔒</div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-primary,#111);">Trust</div>
+                    <div style="font-size:11px;color:var(--text-muted,#888);margin-top:3px;">Secure &amp; transparent</div>
+                </div>
+            </div>
+
+            <!-- Footer note -->
+            <p style="font-size:12px;color:var(--text-muted,#888);text-align:center;margin:0;">
+                Version 2.1.0 &nbsp;·&nbsp; Founded in Ethiopia &nbsp;·&nbsp;
+                <a href="mailto:info@astegni.com" style="color:var(--accent-color,#4f46e5);text-decoration:none;">info@astegni.com</a>
+            </p>
+        </div>
+    </div>
+</div>
