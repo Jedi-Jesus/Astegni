@@ -371,7 +371,7 @@ async function handleLogin(event) {
 
     } catch (error) {
         console.error('Login error:', error);
-        showFieldError('login-password', error.message || 'Invalid credentials');
+        showNotification(error.message || 'Invalid credentials', 'error');
         shakeForm(form);
     } finally {
         // Reset button state
@@ -1114,7 +1114,7 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
         <span>${message}</span>
     `;
 
