@@ -1472,6 +1472,103 @@ const EarningsInvestmentsManager = {
                 </div>
             `;
         }).join('');
+    },
+
+    /**
+     * Load shares data for the Shares tab
+     */
+    async loadSharesData() {
+        const sharesEmpty = document.getElementById('shares-empty');
+        const sharesLoading = document.getElementById('shares-loading');
+        const sharesList = document.getElementById('shares-list');
+
+        if (!sharesList) return;
+
+        try {
+            sharesLoading?.classList.remove('hidden');
+            sharesEmpty?.classList.add('hidden');
+            sharesList.classList.add('hidden');
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/shares`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch shares');
+
+            const data = await response.json();
+            const shares = data.shares || data || [];
+
+            sharesLoading?.classList.add('hidden');
+
+            if (!shares.length) {
+                sharesEmpty?.classList.remove('hidden');
+                return;
+            }
+
+            // Update summary counts
+            const ownedCount = document.getElementById('shares-owned-count');
+            if (ownedCount) ownedCount.textContent = shares.length;
+
+            const totalValue = shares.reduce((sum, s) => sum + (s.current_value || s.value || 0), 0);
+            const totalValueEl = document.getElementById('shares-total-value');
+            if (totalValueEl) totalValueEl.textContent = totalValue.toFixed(2);
+
+            const totalDividends = shares.reduce((sum, s) => sum + (s.dividends || 0), 0);
+            const dividendsEl = document.getElementById('shares-dividends-total');
+            if (dividendsEl) dividendsEl.textContent = totalDividends.toFixed(2);
+
+            sharesList.innerHTML = shares.map(share => {
+                const acquiredDate = new Date(share.acquired_at || share.created_at);
+                const statusColor = share.status === 'active' ? 'green' : share.status === 'pending' ? 'yellow' : 'gray';
+                return `
+                    <div class="card p-5 hover:shadow-lg transition-all duration-300 border-l-4 border-violet-500">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
+                                    📊
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">${share.name || share.share_name || 'Share'}</h4>
+                                    <p class="text-sm text-gray-500">${share.description || ''}</p>
+                                    <span class="inline-block mt-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs px-2 py-0.5 rounded-full font-semibold">
+                                        ${share.status || 'Active'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-bold text-violet-600">${(share.current_value || share.value || 0).toFixed(2)} <span class="text-sm font-normal">${CurrencyManager.getSymbol()}</span></div>
+                                <div class="text-xs text-gray-500 mt-1">${acquiredDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg text-sm">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">Units</div>
+                                <div class="font-semibold text-gray-800">${share.units || share.quantity || 1}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">Purchase Price</div>
+                                <div class="font-semibold text-gray-800">${(share.purchase_price || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">Dividends</div>
+                                <div class="font-semibold text-teal-600">${(share.dividends || 0).toFixed(2)} ${CurrencyManager.getSymbol()}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-0.5">Acquired</div>
+                                <div class="font-semibold text-gray-800">${acquiredDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            sharesList.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error loading shares:', error);
+            sharesLoading?.classList.add('hidden');
+            sharesEmpty?.classList.remove('hidden');
+        }
     }
 };
 
@@ -1479,36 +1576,56 @@ const EarningsInvestmentsManager = {
  * Switch between earnings and investments tabs
  */
 function switchEarningsTab(tab) {
-    // Update tab buttons
-    const earningsTab = document.getElementById('earnings-tab');
-    const investmentsTab = document.getElementById('investments-tab');
-    const earningsContent = document.getElementById('earnings-tab-content');
-    const investmentsContent = document.getElementById('investments-tab-content');
+    // All tab buttons and content divs
+    const tabIds = ['earnings', 'investments', 'shares'];
+    const contentIds = ['earnings-tab-content', 'investments-tab-content', 'shares-tab-content'];
 
-    if (tab === 'earnings') {
-        earningsTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
-        earningsTab.classList.remove('text-gray-500');
-        investmentsTab.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-        investmentsTab.classList.add('text-gray-500');
-        earningsContent.classList.remove('hidden');
-        investmentsContent.classList.add('hidden');
-    } else {
-        investmentsTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
-        investmentsTab.classList.remove('text-gray-500');
-        earningsTab.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-        earningsTab.classList.add('text-gray-500');
-        investmentsContent.classList.remove('hidden');
-        earningsContent.classList.add('hidden');
+    // Deactivate all tabs
+    tabIds.forEach(t => {
+        const btn = document.getElementById(`${t}-tab`);
+        if (btn) {
+            btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            btn.classList.add('text-gray-500');
+        }
+    });
 
+    // Hide all content panels
+    contentIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
+    // Activate the selected tab button
+    const activeBtn = document.getElementById(`${tab}-tab`);
+    if (activeBtn) {
+        activeBtn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+        activeBtn.classList.remove('text-gray-500');
+    }
+
+    // Show the selected content panel
+    const activeContent = document.getElementById(`${tab}-tab-content`);
+    if (activeContent) activeContent.classList.remove('hidden');
+
+    // Tab-specific side effects
+    if (tab === 'investments') {
         // Show subscriptions section when investments tab is clicked
         const subscriptionsSection = document.getElementById('subscriptions-section');
         if (subscriptionsSection) {
             subscriptionsSection.classList.remove('hidden');
         }
-
         // Load subscriptions when switching to investments tab
         EarningsInvestmentsManager.loadStudentSubscriptions();
+    } else if (tab === 'shares') {
+        EarningsInvestmentsManager.loadSharesData();
     }
+}
+
+/**
+ * Toggle shares sub-section highlight (owned / value / dividends)
+ */
+function toggleSharesSection(section) {
+    // No sub-panels to toggle yet — placeholder for future expansion
+    console.log('Shares section selected:', section);
 }
 
 /**
@@ -2154,3 +2271,4 @@ window.closeSubscriptionDetailsModal = closeSubscriptionDetailsModal;
 window.exportMetricsReport = exportMetricsReport;
 window.toggleSubscriptionsSection = toggleSubscriptionsSection;
 window.togglePurchaseHistorySection = togglePurchaseHistorySection;
+window.toggleSharesSection = toggleSharesSection;
