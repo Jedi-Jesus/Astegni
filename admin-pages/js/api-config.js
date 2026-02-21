@@ -12,9 +12,13 @@
     const isAdminServer = frontendPort === '8082';
 
     const BACKEND_PORT = isAdminServer ? '8001' : '8000';
-    const API_BASE_URL = isLocalhost
-        ? `http://localhost:${BACKEND_PORT}`
-        : 'http://localhost:8000';
+    const isProduction = ['astegni.com', 'www.astegni.com', 'admin.astegni.com'].includes(window.location.hostname);
+
+    const API_BASE_URL = isProduction
+        ? 'https://api.astegni.com'
+        : isLocalhost
+            ? `http://localhost:${BACKEND_PORT}`
+            : 'https://api.astegni.com';
 
     // Export globally for all scripts to use
     window.ADMIN_API_CONFIG = {
