@@ -78,7 +78,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS middleware - Allow production domains and localhost for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://astegni.com", "https://www.astegni.com", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082"],
+    allow_origins=["https://astegni.com", "https://www.astegni.com", "https://admin.astegni.com", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082"],
     allow_credentials=True,  # Allow cookies and auth headers
     allow_methods=["*"],
     allow_headers=["*"],
