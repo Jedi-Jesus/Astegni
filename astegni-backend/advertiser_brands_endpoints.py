@@ -209,12 +209,15 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
             with conn.cursor() as cur:
                 # Get advertiser profile by profile_id directly
                 cur.execute("""
-                    SELECT id, brand_ids FROM advertiser_profiles WHERE id = %s
+                    SELECT id, brand_ids, is_verified FROM advertiser_profiles WHERE id = %s
                 """, (advertiser_profile_id,))
                 advertiser = cur.fetchone()
 
                 if not advertiser:
                     raise HTTPException(status_code=404, detail="Advertiser profile not found")
+
+                if not advertiser.get('is_verified'):
+                    raise HTTPException(status_code=403, detail="Your advertiser account must be verified before creating brands")
 
                 advertiser_id = advertiser['id']
                 current_brand_ids = advertiser.get('brand_ids') or []
