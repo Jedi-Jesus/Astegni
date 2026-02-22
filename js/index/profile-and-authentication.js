@@ -1453,7 +1453,18 @@ function openRegisterModalWithReferral(referralCode, referrerName) {
     if (document.getElementById('register-modal')) {
         open();
     } else {
-        document.addEventListener('modalsLoaded', open, { once: true });
+        // modalsLoaded may have already fired before this listener is attached;
+        // poll as a fallback so the modal still opens in that case.
+        const interval = setInterval(() => {
+            if (document.getElementById('register-modal')) {
+                clearInterval(interval);
+                open();
+            }
+        }, 50);
+        document.addEventListener('modalsLoaded', () => {
+            clearInterval(interval);
+            open();
+        }, { once: true });
     }
 }
 

@@ -87,7 +87,7 @@ if (registerForm) {
         initializeModals();
 
         // Handle referral links (?ref=CODE) — auto-opens register modal with invite banner
-        handleReferralFromURL();
+        await handleReferralFromURL();
 
         // Handle URL parameters for parent invitation registration
         handleParentInvitationFromURL();
