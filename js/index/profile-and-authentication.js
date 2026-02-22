@@ -1448,6 +1448,15 @@ async function handleParentInvitationFromURL() {
  * - Auto-opens the register modal
  */
 async function handleReferralFromURL() {
+    // If the user is already logged in, referral links are meaningless —
+    // don't track the click, don't open the register modal, clean up any
+    // stale referral data that might be sitting in localStorage.
+    if (APP_STATE.isLoggedIn || localStorage.getItem('token') || localStorage.getItem('access_token')) {
+        localStorage.removeItem('pending_referral_code');
+        localStorage.removeItem('pending_referral_name');
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const referralCode = urlParams.get('ref');
 
