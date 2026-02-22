@@ -806,10 +806,10 @@ async def get_session_history(user_type: str, user_id: int, current_user = Depen
 
 
     # Get current user's profile ID for the specified role type
-    role_ids = current_user.role_ids or {}
+    role_ids = current_user.get('role_ids', {})
     profile_id = role_ids.get(user_type)
 
-    if not profile_id or profile_id != user_id:
+    if not profile_id or int(profile_id) != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
 
     conn = get_db_connection()
