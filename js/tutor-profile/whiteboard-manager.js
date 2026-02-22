@@ -1797,9 +1797,12 @@ class WhiteboardManager {
                 // session.participant_profile_type = actual role of participant ('tutor' or 'student')
                 const session = data.session;
                 const hostProfileType = session.host_profile_type;
-                const participantProfileType = session.participant_profile_type;
-                const hostProfileId = session.tutor_id; // Legacy naming: tutor_id is actually host
-                const participantProfileId = session.student_id; // Legacy naming: student_id is actually participant
+                // Backend returns participant_profile_types (array) — take first entry
+                const participantProfileType = session.participant_profile_type
+                    || (Array.isArray(session.participant_profile_types) ? session.participant_profile_types[0] : null);
+                const hostProfileId = session.host_profile_id || session.tutor_id;
+                const participantProfileId = (Array.isArray(session.participant_profile_ids) ? session.participant_profile_ids[0] : null)
+                    || session.student_id;
 
                 console.log(`📋 Session loaded - host: ${hostProfileType}_${hostProfileId}, participant: ${participantProfileType}_${participantProfileId}`);
                 console.log(`📋 Current user role: ${this.userRole}, myProfileId: ${this.myProfileId}`);
