@@ -1797,6 +1797,9 @@
                     <!-- Single participant view (1-on-1 call) -->
                     <video id="chatRemoteVideo" autoplay playsinline class="main-video"></video>
                     <video id="chatLocalVideo" autoplay muted playsinline class="pip-video"></video>
+                    <!-- Static audio element for voice-only calls. Must be in the DOM at load time
+                         so mobile browsers (iOS Safari, Chrome Android) don't block autoplay. -->
+                    <audio id="chatRemoteAudio" autoplay playsinline style="display:none;"></audio>
 
                     <!-- Multi-participant grid (group call) -->
                     <div class="call-participants-grid" id="chatParticipantsGrid" style="display: none;">

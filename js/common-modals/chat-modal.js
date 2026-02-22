@@ -14218,23 +14218,32 @@ const ChatModalManager = {
             console.log('📹 Received remote track:', event.track.kind);
             this.state.remoteStream = event.streams[0];
 
-            if (event.track.kind === 'video') {
+            if (this.state.isVideoCall) {
+                // Video call: route all audio+video through the <video> element.
+                // This avoids mobile autoplay blocks on dynamically created <audio> elements
+                // and ensures audio routes correctly (earpiece vs speaker) on iOS/Android.
                 const remoteVideo = document.getElementById('chatRemoteVideo');
-                if (remoteVideo) {
+                if (remoteVideo && remoteVideo.srcObject !== this.state.remoteStream) {
                     remoteVideo.srcObject = this.state.remoteStream;
+                    remoteVideo.play().catch(e => console.warn('Remote video play failed:', e));
                 }
             } else if (event.track.kind === 'audio') {
-                // Ensure audio plays even on voice-only calls (video element may be hidden)
+                // Voice-only call: use a dedicated <audio> element.
+                // Must already exist in the DOM (not dynamically created) to satisfy
+                // mobile autoplay policy — see #chatRemoteAudio in chat-modal.html.
                 let remoteAudio = document.getElementById('chatRemoteAudio');
                 if (!remoteAudio) {
+                    // Fallback: create dynamically, but this may be blocked on mobile
                     remoteAudio = document.createElement('audio');
                     remoteAudio.id = 'chatRemoteAudio';
                     remoteAudio.autoplay = true;
                     remoteAudio.playsInline = true;
                     document.body.appendChild(remoteAudio);
                 }
-                remoteAudio.srcObject = event.streams[0];
-                remoteAudio.play().catch(e => console.warn('Remote audio play failed:', e));
+                if (remoteAudio.srcObject !== event.streams[0]) {
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.play().catch(e => console.warn('Remote audio play failed:', e));
+                }
             }
 
             // Update status
@@ -15622,11 +15631,12 @@ const ChatModalManager = {
         this.state.currentCallLogId = null;  // Clear call log ID
         this.state.pendingCallLogPromise = null;
 
-        // Remove dynamically-created remote audio element
+        // Clear the static remote audio element (do NOT remove it — it must stay in the DOM
+        // so mobile browsers don't block autoplay on the next call)
         const remoteAudio = document.getElementById('chatRemoteAudio');
         if (remoteAudio) {
             remoteAudio.srcObject = null;
-            remoteAudio.remove();
+            remoteAudio.pause();
         }
 
         // Stop ringtone (ensures incoming call sounds stop)
