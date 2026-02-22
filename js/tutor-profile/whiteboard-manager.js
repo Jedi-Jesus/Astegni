@@ -2629,6 +2629,10 @@ class WhiteboardManager {
     async saveStroke(stroke) {
         if (!this.currentPage) return;
 
+        // Don't attempt to persist if there's no real page ID yet (e.g. 'temp' before session created)
+        const pageIdInt = parseInt(this.currentPage.id, 10);
+        if (!this.currentPage.id || isNaN(pageIdInt)) return;
+
         // Persist stroke locally so loadPage() can redraw it on navigation
         if (!this.currentPage.strokes) {
             this.currentPage.strokes = [];
@@ -8361,10 +8365,12 @@ class WhiteboardManager {
             }
         };
 
-        // Set remote description (the offer)
-        if (this.pendingOffer) {
-            await pc.setRemoteDescription(new RTCSessionDescription(this.pendingOffer));
+        // Set remote description (the offer) — must have offer before creating answer
+        if (!this.pendingOffer) {
+            console.warn('📹 No pending offer available yet — cannot create answer');
+            throw new Error('No WebRTC offer received from caller. Please try again.');
         }
+        await pc.setRemoteDescription(new RTCSessionDescription(this.pendingOffer));
 
         // Create and send answer
         const answer = await pc.createAnswer();

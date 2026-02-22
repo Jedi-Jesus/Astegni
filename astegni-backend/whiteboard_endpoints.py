@@ -653,8 +653,13 @@ async def get_session(session_id: int, current_user = Depends(get_current_user))
         # Check if user is host or participant
         has_access = False
 
-        # Check if user is the host
-        if host_profile_id == current_profile_id and host_profile_type == current_role:
+        # Check if user is the host (cast both to int to handle JWT string IDs vs DB int IDs)
+        try:
+            current_profile_id_for_host = int(current_profile_id)
+        except (ValueError, TypeError):
+            current_profile_id_for_host = None
+
+        if current_profile_id_for_host and host_profile_id == current_profile_id_for_host and host_profile_type == current_role:
             has_access = True
             print(f"✅ Access granted: User is host ({host_profile_type} profile_id {host_profile_id})")
 
