@@ -1441,6 +1441,23 @@ async function handleParentInvitationFromURL() {
 }
 
 /**
+ * Open the register modal with the referral banner, waiting for the modal
+ * to be in the DOM first (handles both inline and dynamically loaded modals).
+ */
+function openRegisterModalWithReferral(referralCode, referrerName) {
+    const open = () => {
+        showReferralBanner(referralCode, referrerName);
+        openModal('register-modal');
+    };
+
+    if (document.getElementById('register-modal')) {
+        open();
+    } else {
+        document.addEventListener('modalsLoaded', open, { once: true });
+    }
+}
+
+/**
  * Handle referral code from URL (?ref=CODE).
  * - Saves the code to localStorage so it survives navigation
  * - Fetches the referrer's name from the backend
@@ -1479,10 +1496,7 @@ async function handleReferralFromURL() {
             } catch (err) { /* silent */ }
         }
 
-        setTimeout(() => {
-            showReferralBanner(stored, referrerName || 'Someone');
-            openModal('register-modal');
-        }, 500);
+        openRegisterModalWithReferral(stored, referrerName || 'Someone');
         return;
     }
 
@@ -1513,11 +1527,7 @@ async function handleReferralFromURL() {
     // Clean the URL so ?ref= doesn't persist visually
     window.history.replaceState({}, document.title, window.location.pathname);
 
-    // Wait for modals to be loaded, then open register modal with banner
-    setTimeout(() => {
-        showReferralBanner(referralCode, referrerName);
-        openModal('register-modal');
-    }, 500);
+    openRegisterModalWithReferral(referralCode, referrerName);
 }
 
 /**
