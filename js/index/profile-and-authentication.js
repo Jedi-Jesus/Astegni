@@ -539,8 +539,10 @@ async function handleRegister(e) {
     }
 
     // Store data temporarily (no role - user will add roles later)
-    // Read referral code from URL ?ref= param if present
-    const referralCode = new URLSearchParams(window.location.search).get('ref') || null;
+    // Read referral code: URL param takes priority, localStorage as fallback
+    const referralCode = new URLSearchParams(window.location.search).get('ref')
+        || localStorage.getItem('pending_referral_code')
+        || null;
     tempRegistrationData = {
         email: email,
         phone: '',
@@ -748,6 +750,11 @@ window.verifyRegistrationOTP = async function() {
             closeModal('otp-verification-modal');
             updateUIForLoggedInUser();
             updateProfileLink(data.user.active_role);
+
+            // Clear stored referral data now that registration is complete
+            localStorage.removeItem('pending_referral_code');
+            localStorage.removeItem('pending_referral_name');
+            clearReferralBanner();
 
             showToast('Registration successful! Welcome to Astegni!', 'success');
 
@@ -1432,6 +1439,94 @@ async function handleParentInvitationFromURL() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
+
+/**
+ * Handle referral code from URL (?ref=CODE).
+ * - Saves the code to localStorage so it survives navigation
+ * - Fetches the referrer's name from the backend
+ * - Shows a personalized banner inside the register modal
+ * - Auto-opens the register modal
+ */
+async function handleReferralFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralCode = urlParams.get('ref');
+
+    if (!referralCode) {
+        // Check localStorage in case user navigated away and came back
+        const stored = localStorage.getItem('pending_referral_code');
+        if (stored) {
+            showReferralBanner(stored, localStorage.getItem('pending_referral_name') || 'Someone');
+        }
+        return;
+    }
+
+    console.log('[Referral] Processing referral code:', referralCode);
+
+    // Persist immediately so navigation doesn't lose it
+    localStorage.setItem('pending_referral_code', referralCode);
+
+    // Fetch referrer info
+    let referrerName = 'Someone';
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/referrals/referrer-info/${referralCode}`);
+        if (response.ok) {
+            const data = await response.json();
+            referrerName = data.name || 'Someone';
+            localStorage.setItem('pending_referral_name', referrerName);
+        }
+    } catch (err) {
+        console.warn('[Referral] Could not fetch referrer info:', err);
+    }
+
+    // Track the click in the background (fire-and-forget)
+    // track-click takes referral_code as a query param, not a body
+    fetch(`${API_BASE_URL}/api/referrals/track-click?referral_code=${encodeURIComponent(referralCode)}`, {
+        method: 'POST'
+    }).catch(() => {});
+
+    // Clean the URL so ?ref= doesn't persist visually
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    // Wait for modals to be loaded, then open register modal with banner
+    setTimeout(() => {
+        showReferralBanner(referralCode, referrerName);
+        openModal('register-modal');
+    }, 500);
+}
+
+/**
+ * Show the referral invite banner inside the register modal and update subtitle.
+ */
+function showReferralBanner(referralCode, referrerName) {
+    const banner = document.getElementById('referral-invite-banner');
+    const nameEl = document.getElementById('referral-inviter-name');
+    const subtitle = document.getElementById('register-modal-subtitle');
+
+    if (banner && nameEl) {
+        nameEl.textContent = referrerName;
+        banner.style.display = 'block';
+    }
+
+    if (subtitle) {
+        subtitle.textContent = 'You were personally invited — create your free account now!';
+    }
+}
+
+/**
+ * Clear the referral banner and restore default subtitle.
+ * Called when the register modal is closed without registering.
+ */
+function clearReferralBanner() {
+    const banner = document.getElementById('referral-invite-banner');
+    if (banner) banner.style.display = 'none';
+
+    const subtitle = document.getElementById('register-modal-subtitle');
+    if (subtitle) subtitle.textContent = 'Create your account and start learning today';
+}
+
+window.handleReferralFromURL = handleReferralFromURL;
+window.showReferralBanner = showReferralBanner;
+window.clearReferralBanner = clearReferralBanner;
 
 /**
  * Open a special registration modal for invited parents

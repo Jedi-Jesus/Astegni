@@ -93,6 +93,33 @@ async def get_my_referral_code(
     )
 
 
+@router.get("/referrer-info/{referral_code}")
+async def get_referrer_info(referral_code: str, db: Session = Depends(get_db)):
+    """
+    Public endpoint: get basic referrer info by referral code.
+    Used on the landing page to show 'You were invited by X' message.
+    No authentication required.
+    """
+    code_obj = db.query(UserReferralCode).filter(
+        UserReferralCode.referral_code == referral_code
+    ).first()
+
+    if not code_obj:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+
+    user = db.query(User).filter(User.id == code_obj.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Referrer not found")
+
+    full_name = f"{user.first_name or ''} {user.father_name or ''}".strip() or "Someone"
+
+    return {
+        "name": full_name,
+        "profile_type": code_obj.profile_type,
+        "profile_picture": user.profile_picture
+    }
+
+
 @router.post("/track-click")
 async def track_referral_click(
     referral_code: str,

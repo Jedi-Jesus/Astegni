@@ -5133,6 +5133,7 @@ def verify_registration_otp(
     grandfather_name = verification_data.get("grandfather_name", "").strip()
     password = verification_data.get("password", "").strip()
     role = verification_data.get("role", "student").strip()
+    referral_code = verification_data.get("referral_code", "").strip() or None
 
     if not otp_code:
         raise HTTPException(status_code=400, detail="OTP code is required")
@@ -5209,6 +5210,50 @@ def verify_registration_otp(
         })
 
     db.commit()
+
+    # Handle referral code if provided
+    if referral_code:
+        try:
+            from models import UserReferralCode, ReferralRegistration, ReferralClick
+
+            referral_code_obj = db.query(UserReferralCode).filter(
+                UserReferralCode.referral_code == referral_code
+            ).first()
+
+            if referral_code_obj:
+                existing_referral = db.query(ReferralRegistration).filter(
+                    ReferralRegistration.referred_user_id == new_user.id
+                ).first()
+
+                if not existing_referral:
+                    referral_registration = ReferralRegistration(
+                        referrer_user_id=referral_code_obj.user_id,
+                        referrer_profile_type=referral_code_obj.profile_type,
+                        referral_code=referral_code,
+                        referred_user_id=new_user.id,
+                        referred_user_email=new_user.email or "",
+                        referred_user_name=f"{new_user.first_name or ''} {new_user.father_name or ''}".strip(),
+                    )
+                    db.add(referral_registration)
+
+                    referral_code_obj.total_referrals += 1
+                    referral_code_obj.active_referrals += 1
+                    referral_code_obj.updated_at = datetime.utcnow()
+
+                    # Mark the most recent click from this code as converted
+                    recent_click = db.query(ReferralClick).filter(
+                        ReferralClick.referral_code == referral_code,
+                        ReferralClick.converted == False
+                    ).order_by(ReferralClick.clicked_at.desc()).first()
+
+                    if recent_click:
+                        recent_click.converted = True
+                        recent_click.converted_user_id = new_user.id
+
+                    db.commit()
+                    print(f"[REFERRAL] User {new_user.id} registered via referral code {referral_code}")
+        except Exception as e:
+            print(f"[REFERRAL ERROR] Failed to track referral: {e}")
 
     # Get role-specific IDs
     role_ids = get_role_ids_from_user(new_user, db)

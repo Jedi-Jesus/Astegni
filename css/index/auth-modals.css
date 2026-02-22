@@ -166,6 +166,35 @@
     margin: 0;
 }
 
+/* Referral invite banner inside register modal */
+.referral-invite-banner {
+    background: linear-gradient(135deg, var(--primary-color, #f59e0b) 0%, #fbbf24 100%);
+    border-radius: 0.625rem 0.625rem 0 0;
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+}
+
+.referral-invite-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.referral-invite-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.referral-invite-text {
+    font-size: 0.875rem;
+    color: #fff;
+}
+
+.referral-invite-text strong {
+    font-weight: 700;
+}
+
 /* Icon container at top of modals */
 .modal-icon,
 .forgot-icon {
