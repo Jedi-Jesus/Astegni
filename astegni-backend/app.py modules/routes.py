@@ -5128,9 +5128,9 @@ def verify_registration_otp(
     otp_code = verification_data.get("otp_code", "").strip()
     email = verification_data.get("email", "").strip()
     phone = verification_data.get("phone", "").strip()
-    first_name = verification_data.get("first_name", "").strip()
-    father_name = verification_data.get("father_name", "").strip()
-    grandfather_name = verification_data.get("grandfather_name", "").strip()
+    first_name = verification_data.get("first_name", "").strip() or None
+    father_name = verification_data.get("father_name", "").strip() or None
+    grandfather_name = verification_data.get("grandfather_name", "").strip() or None
     password = verification_data.get("password", "").strip()
     role = verification_data.get("role") or None  # None means no role yet — user picks later
     if role:
@@ -5139,9 +5139,6 @@ def verify_registration_otp(
 
     if not otp_code:
         raise HTTPException(status_code=400, detail="OTP code is required")
-
-    if not first_name or not father_name or not grandfather_name:
-        raise HTTPException(status_code=400, detail="All name fields are required")
 
     if not password:
         raise HTTPException(status_code=400, detail="Password is required")
