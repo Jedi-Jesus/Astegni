@@ -7609,9 +7609,8 @@ async def upload_campaign_media(
         clean_campaign = re.sub(r'[^\w\s-]', '', campaign_name).strip().replace(' ', '_')
         clean_placement = re.sub(r'[^\w\s-]', '', ad_placement).strip().replace(' ', '_')
 
-        # NORMALIZE PLACEMENT: Always use underscores (not dashes) for consistency
-        # This ensures database queries work correctly
-        normalized_placement = ad_placement.replace('-', '_')
+        # Store placement as-is (with dashes) to match frontend filter values
+        normalized_placement = ad_placement
 
         # Build organized folder path: images/profile_{id}/{brand}/{campaign}/{placement}/ or videos/profile_{id}/{brand}/{campaign}/{placement}/
         media_type = 'image' if is_image else 'video'
