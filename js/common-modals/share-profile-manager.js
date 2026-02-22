@@ -90,6 +90,14 @@ async function shareProfile(event) {
             return;
         }
 
+        // Guard: user must be verified to share profile
+        if (!user.verified) {
+            if (typeof openAccessRestrictedModal === 'function') {
+                openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Share Profile' });
+            }
+            return;
+        }
+
         const VALID_REFERRAL_ROLES = ['tutor', 'student', 'parent', 'advertiser'];
         let activeRole = localStorage.getItem('active_role') || localStorage.getItem('userRole') || user?.active_role;
 

@@ -12,6 +12,14 @@
         // Temporary stub - will be replaced by chat-modal.js when it loads
         if (!window.openChatModal) {
             window.openChatModal = function(targetUser = null) {
+                // Guard: user must be verified to open chat
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
+                if (!currentUser || !currentUser.verified) {
+                    if (typeof openAccessRestrictedModal === 'function') {
+                        openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Message' });
+                    }
+                    return;
+                }
                 if (typeof ChatModalManager !== 'undefined') {
                     ChatModalManager.open(targetUser);
                 } else {
