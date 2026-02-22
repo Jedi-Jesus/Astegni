@@ -387,9 +387,9 @@ async def get_ads_by_placement(
     Returns:
         List of active campaign media for the placement
     """
-    # NORMALIZE PLACEMENT: Replace dashes with underscores for consistency
-    # This handles both 'leaderboard-banner' and 'leaderboard_banner' formats
-    normalized_placement = placement_type.replace('-', '_')
+    # NORMALIZE PLACEMENT: Replace underscores with dashes to match DB storage format
+    # This handles both 'leaderboard_banner' (HTML data-placement) and 'leaderboard-banner' formats
+    normalized_placement = placement_type.replace('_', '-')
 
     conn = None
     try:
