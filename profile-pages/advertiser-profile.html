@@ -4253,6 +4253,21 @@
 
     <!-- Load Settings Modals HTML -->
     <script>
+    // Load access-restricted-modal (for verification guards)
+    fetch('../modals/common-modals/access-restricted-modal.html')
+    .then(response => response.text())
+    .then(html => {
+        let container = document.getElementById('modal-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'modal-container';
+            document.body.appendChild(container);
+        }
+        container.insertAdjacentHTML('beforeend', html);
+        console.log('[OK] Access Restricted Modal loaded');
+    })
+    .catch(error => console.error('Failed to load access-restricted-modal:', error));
+
     // Load verify-personal-info-modal
     fetch('../modals/common-modals/verify-personal-info-modal.html')
     .then(response => response.text())

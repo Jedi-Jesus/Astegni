@@ -1109,6 +1109,18 @@ const BrandsManager = {
 
     // Open create brand modal
     openCreateBrandModal() {
+        // Guard: advertiser must be verified before creating brands
+        const isVerified = AppState && AppState.user && AppState.user.verified;
+        if (!isVerified) {
+            if (typeof openAccessRestrictedModal === 'function') {
+                openAccessRestrictedModal({
+                    reason: 'kyc_not_verified',
+                    featureName: 'Create Brand'
+                });
+            }
+            return;
+        }
+
         const overlay = document.getElementById('create-brand-modal-overlay');
         if (overlay) {
             overlay.classList.add('active');
