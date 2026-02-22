@@ -71,11 +71,15 @@ async def get_my_referral_code(
         db.commit()
         db.refresh(referral_code_obj)
 
-    # Determine base URL from request
-    base_url = str(request.base_url).rstrip('/')
-    # Remove /api if present
-    if '/api' in base_url:
-        base_url = base_url.split('/api')[0]
+    # Determine frontend base URL from the API request host.
+    # The API runs on api.astegni.com (or localhost:8000) — we need the *frontend* URL.
+    host = request.headers.get('host', '') or str(request.base_url)
+    if 'localhost' in host or '127.0.0.1' in host:
+        base_url = 'http://localhost:8081'
+    else:
+        # Strip any 'api.' subdomain prefix to get the frontend domain
+        frontend_host = host.replace('api.', '', 1).split(':')[0]
+        base_url = f'https://{frontend_host}'
 
     share_url = f"{base_url}?ref={referral_code_obj.referral_code}"
 
