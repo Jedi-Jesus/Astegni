@@ -1880,6 +1880,15 @@ async function acceptConnectionRequest(connectionId) {
     return;
   }
 
+  // Guard: user must be verified
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
+  if (!currentUser || !currentUser.verified) {
+    if (typeof openAccessRestrictedModal === 'function') {
+      openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Accept Request' });
+    }
+    return;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/connections/${connectionId}/accept`, {
       method: 'PUT',

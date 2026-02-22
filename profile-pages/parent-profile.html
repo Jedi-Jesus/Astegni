@@ -3672,7 +3672,7 @@
                                     </div>
 
                                     <!-- Tutoring Session Packages Card -->
-                                    <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all" onclick="showTutoringPackages()">
+                                    <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all" onclick="(function(){ const u = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null'); if (!u || !u.verified) { if (typeof openAccessRestrictedModal === 'function') openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Request Package' }); return; } showTutoringPackages(); })()">
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="text-purple-600 text-2xl">🎓👨‍🎓</span>
                                             <span class="text-xs text-purple-600 font-semibold">TUTORING</span>
@@ -5618,6 +5618,14 @@
 
         // Create safe wrappers for all modal functions that load the modal if needed
         window.openAddChildModal = function() {
+            // Guard: user must be verified
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
+            if (!currentUser || !currentUser.verified) {
+                if (typeof openAccessRestrictedModal === 'function') {
+                    openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Add Child' });
+                }
+                return;
+            }
             // If the actual function exists, call it
             if (typeof window._openAddChildModalImpl === 'function') {
                 window._openAddChildModalImpl();

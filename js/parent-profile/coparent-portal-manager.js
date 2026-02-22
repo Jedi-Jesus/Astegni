@@ -538,6 +538,14 @@ window.closeInviteParentModal = function() {
 
 // Wrapper function for co-parent specific naming
 window.openInviteCoparentModal = function() {
+    // Guard: user must be verified
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
+    if (!currentUser || !currentUser.verified) {
+        if (typeof openAccessRestrictedModal === 'function') {
+            openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Invite Co-Parent' });
+        }
+        return;
+    }
     window.openInviteParentModal();
 };
 
