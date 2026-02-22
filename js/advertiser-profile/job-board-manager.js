@@ -3,8 +3,8 @@
 // Handles job posting, editing, and application management
 // ============================================
 
-// API Configuration
-const API_BASE_URL = 'http://localhost:8000';
+// API Configuration - use var to avoid const re-declaration conflicts
+var API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 // Helper function to get auth token
 function getAuthToken() {

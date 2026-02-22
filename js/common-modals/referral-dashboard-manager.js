@@ -3,7 +3,8 @@
  * Handles referral analytics and referred users list
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+// Use var to avoid const re-declaration conflicts with other scripts on the page
+var API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 /**
  * Open referral dashboard
