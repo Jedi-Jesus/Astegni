@@ -955,9 +955,9 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    first_name: str
-    father_name: str
-    grandfather_name: str  # REQUIRED
+    first_name: Optional[str] = None
+    father_name: Optional[str] = None
+    grandfather_name: Optional[str] = None
     last_name: Optional[str] = None  # For international naming convention
     name: Optional[str] = None  # Display name (Ethiopian: first+father+grandfather, International: first+last)
     username: Optional[str]
