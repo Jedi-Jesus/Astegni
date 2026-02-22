@@ -4705,9 +4705,8 @@ def add_user_role(
     if not otp_record:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
-    # Mark OTP as used ONLY after all validations pass
-    otp_record.is_used = True
-    db.commit()
+    # NOTE: OTP will be marked as used in the final commit below, after profile creation succeeds.
+    # Do NOT commit here — if profile creation fails, the OTP must remain usable for retry.
 
     # Check if role is deactivated and reactivate it
     role_reactivated = False
@@ -4735,6 +4734,8 @@ def add_user_role(
             # DO NOT automatically set as active role - let user choose
             # current_user.active_role = new_role  # REMOVED: User should choose via "Switch to Account" button
 
+            # Mark OTP as used before committing
+            otp_record.is_used = True
             db.commit()
             db.refresh(current_user)
 
@@ -4870,6 +4871,9 @@ def add_user_role(
 
     # DO NOT automatically set newly added role as active role - let user choose
     # current_user.active_role = new_role  # REMOVED: User should choose via "Switch to Account" button
+
+    # Mark OTP as used only now, after all profile creation succeeded
+    otp_record.is_used = True
 
     # Commit and ensure changes are flushed to database
     db.commit()
