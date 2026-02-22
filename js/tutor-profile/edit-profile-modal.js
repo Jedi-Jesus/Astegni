@@ -838,6 +838,7 @@
         // Make functions globally available
         window.openEditProfileModal = openEditProfileModal;
         window.closeEditProfileModal = closeEditProfileModal;
+        window.updateProfileUI = updateProfileUI;
         window.addLanguage = addLanguage;
         window.removeLanguage = removeLanguage;
         window.addLocation = addLocation;
