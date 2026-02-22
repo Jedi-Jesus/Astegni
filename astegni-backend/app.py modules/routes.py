@@ -5132,7 +5132,9 @@ def verify_registration_otp(
     father_name = verification_data.get("father_name", "").strip()
     grandfather_name = verification_data.get("grandfather_name", "").strip()
     password = verification_data.get("password", "").strip()
-    role = verification_data.get("role", "student").strip()
+    role = verification_data.get("role") or None  # None means no role yet — user picks later
+    if role:
+        role = role.strip() or None
     referral_code = verification_data.get("referral_code", "").strip() or None
 
     if not otp_code:
@@ -5172,7 +5174,7 @@ def verify_registration_otp(
     otp_record.is_used = True
     db.commit()
 
-    # Create new user
+    # Create new user — no role by default, user picks via add-role flow
     new_user = User(
         first_name=first_name,
         father_name=father_name,
@@ -5180,8 +5182,8 @@ def verify_registration_otp(
         email=email if email else None,
         phone=phone if phone else None,
         password_hash=hash_password(password),
-        roles=[role],
-        active_role=role,
+        roles=[role] if role else [],
+        active_role=role,  # None if no role provided
         email_verified=True if email else False  # Auto-verify if OTP was sent to email
     )
 
@@ -5189,7 +5191,7 @@ def verify_registration_otp(
     db.commit()
     db.refresh(new_user)
 
-    # Create profile based on role
+    # Create profile based on role (only if a role was explicitly provided)
     if role == "tutor":
         tutor_profile = TutorProfile(user_id=new_user.id)
         db.add(tutor_profile)

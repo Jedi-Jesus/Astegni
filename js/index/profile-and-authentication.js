@@ -686,7 +686,7 @@ window.verifyRegistrationOTP = async function() {
                 father_name: tempRegistrationData.father_name,
                 grandfather_name: tempRegistrationData.grandfather_name,
                 password: tempRegistrationData.password,
-                role: tempRegistrationData.role,
+                role: tempRegistrationData.role || null,
                 referral_code: tempRegistrationData.referral_code || undefined
             })
         });
