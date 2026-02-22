@@ -13927,6 +13927,22 @@ const ChatModalManager = {
                             this.handleRemoteModeSwitched(data.new_mode);
                             break;
 
+                        case 'webrtc_offer':
+                            // Mid-call renegotiation offer (e.g. other side switched voice→video)
+                            console.log('🔄 Received renegotiation offer');
+                            this.handleRenegotiationOffer(data);
+                            break;
+
+                        case 'webrtc_answer':
+                            // Answer to a renegotiation offer we sent
+                            console.log('🔄 Received renegotiation answer');
+                            if (this.state.peerConnection && data.answer) {
+                                this.state.peerConnection.setRemoteDescription(
+                                    new RTCSessionDescription(data.answer)
+                                ).catch(e => console.error('Renegotiation answer failed:', e));
+                            }
+                            break;
+
                         default:
                             console.log('⚠️ Unhandled message type:', data.type);
                     }
@@ -14176,6 +14192,7 @@ const ChatModalManager = {
             const localVideo = document.getElementById('chatLocalVideo');
             if (localVideo) {
                 localVideo.srcObject = this.state.localStream;
+                localVideo.play().catch(e => console.warn('Local video play failed:', e));
             }
 
             // Set up peer connection
@@ -14216,47 +14233,32 @@ const ChatModalManager = {
         // Handle remote stream
         this.state.peerConnection.ontrack = (event) => {
             console.log('📹 Received remote track:', event.track.kind);
+            // Always use event.streams[0] — it's the same MediaStream object for both
+            // audio and video tracks in a standard 1-on-1 call.
             this.state.remoteStream = event.streams[0];
 
             if (this.state.isVideoCall) {
-                // Video call: route all audio+video through the <video> element.
-                // This avoids mobile autoplay blocks on dynamically created <audio> elements
-                // and ensures audio routes correctly (earpiece vs speaker) on iOS/Android.
+                // Video call: route the entire remote stream (audio+video) through the
+                // <video> element. Re-assign on every track event so the video element
+                // picks up whichever track arrives last (audio can arrive before video).
                 const remoteVideo = document.getElementById('chatRemoteVideo');
-                if (remoteVideo && remoteVideo.srcObject !== this.state.remoteStream) {
+                if (remoteVideo) {
                     remoteVideo.srcObject = this.state.remoteStream;
                     remoteVideo.play().catch(e => console.warn('Remote video play failed:', e));
                 }
-            } else if (event.track.kind === 'audio') {
-                // Voice-only call: use a dedicated <audio> element.
-                // Must already exist in the DOM (not dynamically created) to satisfy
-                // mobile autoplay policy — see #chatRemoteAudio in chat-modal.html.
-                let remoteAudio = document.getElementById('chatRemoteAudio');
-                if (!remoteAudio) {
-                    // Fallback: create dynamically, but this may be blocked on mobile
-                    remoteAudio = document.createElement('audio');
-                    remoteAudio.id = 'chatRemoteAudio';
-                    remoteAudio.autoplay = true;
-                    remoteAudio.playsInline = true;
-                    document.body.appendChild(remoteAudio);
-                }
-                if (remoteAudio.srcObject !== event.streams[0]) {
-                    remoteAudio.srcObject = event.streams[0];
+            } else {
+                // Voice-only call: use the static <audio> element (must be in the DOM
+                // at load time — dynamically created elements are blocked on mobile).
+                const remoteAudio = document.getElementById('chatRemoteAudio');
+                if (remoteAudio) {
+                    remoteAudio.srcObject = this.state.remoteStream;
                     remoteAudio.play().catch(e => console.warn('Remote audio play failed:', e));
                 }
             }
 
             // Update status
-            const statusEl = document.getElementById('chatCallStatus');
-            if (statusEl) {
-                statusEl.textContent = 'Connected';
-            }
-
-            // Start call timer
-            this.startCallTimer();
-
-            // Update call log to answered status
-            this.updateCallLog('answered');
+            // Status, timer, and call log are handled in onconnectionstatechange 'connected'
+            // to ensure they fire reliably on both caller and receiver sides.
         };
 
         // Handle ICE candidates
@@ -14269,10 +14271,20 @@ const ChatModalManager = {
 
         // Handle connection state changes
         this.state.peerConnection.onconnectionstatechange = () => {
-            console.log('📡 Connection state:', this.state.peerConnection.connectionState);
-            switch (this.state.peerConnection.connectionState) {
+            const state = this.state.peerConnection.connectionState;
+            console.log('📡 Connection state:', state);
+            switch (state) {
                 case 'connected':
                     console.log('✅ Call connected');
+                    // Reliably update UI on BOTH caller and receiver sides.
+                    // ontrack fires before remote description is set on the caller,
+                    // so we use onconnectionstatechange as the authoritative "connected" signal.
+                    const statusEl = document.getElementById('chatCallStatus');
+                    if (statusEl) statusEl.textContent = 'Connected';
+                    this.startCallTimer();
+                    if (this.state.isIncomingCall) {
+                        this.updateCallLog('answered');
+                    }
                     break;
                 case 'disconnected':
                     this.showToast('Call disconnected', 'warning');
@@ -14281,6 +14293,36 @@ const ChatModalManager = {
                     this.showToast('Call failed', 'error');
                     this.endChatCall();
                     break;
+            }
+        };
+
+        // Renegotiation — fires when a track is added/removed mid-call (e.g. switchCallMode).
+        // Without this, the remote peer never gets the updated SDP and the new track is silent/invisible.
+        // Only act when the connection is already established (signalingState === 'stable'),
+        // not during the initial offer/answer exchange.
+        this.state.peerConnection.onnegotiationneeded = async () => {
+            if (this.state.peerConnection.signalingState !== 'stable') return;
+            if (!this.state.isCallActive) return;
+            console.log('🔄 Negotiation needed — sending renegotiation offer');
+            try {
+                const offer = await this.state.peerConnection.createOffer();
+                await this.state.peerConnection.setLocalDescription(offer);
+                const otherUserId = this.state.isIncomingCall
+                    ? this.state.pendingCallInvitation?.from_user_id
+                    : this.state.selectedConversation?.other_user_id;
+                const conversationId = this.state.selectedConversation?.id ||
+                                       this.state.pendingCallInvitation?.conversation_id;
+                if (this.websocket && this.websocket.readyState === WebSocket.OPEN && otherUserId) {
+                    this.websocket.send(JSON.stringify({
+                        type: 'webrtc_offer',
+                        conversation_id: conversationId,
+                        from_user_id: this.state.currentUser?.user_id,
+                        to_user_id: otherUserId,
+                        offer: offer
+                    }));
+                }
+            } catch (e) {
+                console.error('Renegotiation failed:', e);
             }
         };
     },
@@ -14660,6 +14702,7 @@ const ChatModalManager = {
                 const localVideo = document.getElementById('chatLocalVideo');
                 if (localVideo) {
                     localVideo.srcObject = this.state.localStream;
+                    localVideo.play().catch(e => console.warn('Local video play failed:', e));
                 }
             }
 
@@ -14884,6 +14927,37 @@ const ChatModalManager = {
             console.log('📹 Remote user enabled video');
         } else {
             console.log('🎤 Remote user switched to voice only');
+        }
+    },
+
+    // Handle a mid-call renegotiation offer from the remote peer
+    async handleRenegotiationOffer(data) {
+        if (!this.state.peerConnection || !data.offer) return;
+        try {
+            await this.state.peerConnection.setRemoteDescription(
+                new RTCSessionDescription(data.offer)
+            );
+            const answer = await this.state.peerConnection.createAnswer();
+            await this.state.peerConnection.setLocalDescription(answer);
+
+            const otherUserId = this.state.isIncomingCall
+                ? this.state.pendingCallInvitation?.from_user_id
+                : this.state.selectedConversation?.other_user_id;
+            const conversationId = this.state.selectedConversation?.id ||
+                                   this.state.pendingCallInvitation?.conversation_id;
+
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN && otherUserId) {
+                this.websocket.send(JSON.stringify({
+                    type: 'webrtc_answer',
+                    conversation_id: conversationId,
+                    from_user_id: this.state.currentUser?.user_id,
+                    to_user_id: otherUserId,
+                    answer: answer
+                }));
+            }
+            console.log('✅ Renegotiation offer handled, answer sent');
+        } catch (e) {
+            console.error('handleRenegotiationOffer failed:', e);
         }
     },
 
