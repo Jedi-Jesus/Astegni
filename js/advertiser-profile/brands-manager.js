@@ -4,6 +4,8 @@
 // ============================================
 
 // Note: API_BASE_URL is read from window.API_BASE_URL at runtime (set by config.js)
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+const BRANDS_API_URL = window.API_BASE_URL || 'http://localhost:8000';
 console.log('🏷️ Brands Manager loaded');
 
 const BrandsManager = {
