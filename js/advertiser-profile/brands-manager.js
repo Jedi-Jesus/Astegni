@@ -5655,7 +5655,7 @@ const BrandsManager = {
 
         // Refresh the media gallery to show newly uploaded files
         if (this.currentCampaign) {
-            this.loadCampaignMedia(this.currentCampaign.id);
+            this.loadCampaignMediaFromBackend(this.currentCampaign.id);
         }
     },
 
