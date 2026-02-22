@@ -1207,6 +1207,20 @@
     <script src="../js/view-parent/view-parent-widgets.js"></script>
     <script src="../js/view-parent/view-parent-loader.js"></script>
 
+    <!-- Referral + auth guard -->
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (!refCode) return;
+            const isLoggedIn = !!(localStorage.getItem('token') || localStorage.getItem('access_token'));
+            if (isLoggedIn) return;
+            localStorage.setItem('pending_referral_code', refCode);
+            localStorage.setItem('intendedDestination', window.location.href);
+            window.location.replace('../index.html');
+        })();
+    </script>
+
     <script>
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {

@@ -3617,6 +3617,28 @@
     <!-- View Tutor Blogs Manager - Loads and displays blog posts -->
     <script src="../js/view-tutor/view-tutor-blogs.js"></script>
 
+    <!-- Referral + auth guard: if visitor arrived via ?ref= and is not logged in,
+         save the referral code and redirect to index.html to register/login first.
+         After auth, intendedDestination brings them back here. -->
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (!refCode) return; // No referral code — nothing to do
+
+            const isLoggedIn = !!(localStorage.getItem('token') || localStorage.getItem('access_token'));
+            if (isLoggedIn) return; // Already logged in — let the page load normally
+
+            // Not logged in + has referral code:
+            // 1. Persist the referral code so index.html picks it up
+            localStorage.setItem('pending_referral_code', refCode);
+            // 2. Save current URL (with ?id= intact) so we return here after auth
+            localStorage.setItem('intendedDestination', window.location.href);
+            // 3. Redirect to homepage to register/login
+            window.location.replace('../index.html');
+        })();
+    </script>
+
     <!-- Initialize ViewTutorDBLoader -->
     <script>
         // Initialize and load tutor data

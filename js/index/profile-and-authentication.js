@@ -1461,11 +1461,28 @@ async function handleReferralFromURL() {
     const referralCode = urlParams.get('ref');
 
     if (!referralCode) {
-        // Check localStorage in case user navigated away and came back
+        // No ?ref= in URL — check localStorage (covers: navigated away, or redirected
+        // here from a view-profile page that stripped the param before redirecting)
         const stored = localStorage.getItem('pending_referral_code');
-        if (stored) {
-            showReferralBanner(stored, localStorage.getItem('pending_referral_name') || 'Someone');
+        if (!stored) return;
+
+        // Fetch referrer name if we don't already have it
+        let referrerName = localStorage.getItem('pending_referral_name') || null;
+        if (!referrerName) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/referrals/referrer-info/${stored}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    referrerName = data.name || 'Someone';
+                    localStorage.setItem('pending_referral_name', referrerName);
+                }
+            } catch (err) { /* silent */ }
         }
+
+        setTimeout(() => {
+            showReferralBanner(stored, referrerName || 'Someone');
+            openModal('register-modal');
+        }, 500);
         return;
     }
 
