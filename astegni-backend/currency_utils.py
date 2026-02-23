@@ -677,6 +677,51 @@ def get_country_code_from_location(location: str) -> str | None:
         code = COUNTRY_NAME_TO_CODE.get(part)
         if code:
             return code
+    # Fallback: match well-known cities/regions against their country
+    CITY_TO_COUNTRY = {
+        # Ethiopia
+        'addis ababa': 'ET', 'addis': 'ET', 'dire dawa': 'ET', 'mekelle': 'ET',
+        'gondar': 'ET', 'hawassa': 'ET', 'bahir dar': 'ET', 'adama': 'ET',
+        'jimma': 'ET', 'dessie': 'ET', 'jijiga': 'ET', 'shashamane': 'ET',
+        'arba minch': 'ET', 'hosaena': 'ET', 'wolkite': 'ET', 'debre berhan': 'ET',
+        'megenagna': 'ET', 'bole': 'ET', 'yeka': 'ET', 'kirkos': 'ET',
+        'arada': 'ET', 'lideta': 'ET', 'kolfe': 'ET', 'nifas silk': 'ET',
+        # Kenya
+        'nairobi': 'KE', 'mombasa': 'KE', 'kisumu': 'KE', 'nakuru': 'KE',
+        # Nigeria
+        'lagos': 'NG', 'abuja': 'NG', 'kano': 'NG', 'ibadan': 'NG', 'port harcourt': 'NG',
+        # Ghana
+        'accra': 'GH', 'kumasi': 'GH',
+        # South Africa
+        'johannesburg': 'ZA', 'cape town': 'ZA', 'durban': 'ZA', 'pretoria': 'ZA',
+        # Egypt
+        'cairo': 'EG', 'alexandria': 'EG',
+        # Uganda
+        'kampala': 'UG',
+        # Tanzania
+        'dar es salaam': 'TZ', 'dodoma': 'TZ',
+        # Rwanda
+        'kigali': 'RW',
+        # US
+        'new york': 'US', 'los angeles': 'US', 'chicago': 'US', 'houston': 'US',
+        # UK
+        'london': 'GB', 'manchester': 'GB', 'birmingham': 'GB',
+        # Canada
+        'toronto': 'CA', 'vancouver': 'CA', 'montreal': 'CA',
+        # India
+        'mumbai': 'IN', 'delhi': 'IN', 'bangalore': 'IN', 'hyderabad': 'IN',
+        # UAE
+        'dubai': 'AE', 'abu dhabi': 'AE',
+    }
+    location_lower = location.strip().lower()
+    for part in parts:
+        code = CITY_TO_COUNTRY.get(part)
+        if code:
+            return code
+    # Also try substring match for compound location strings with no comma
+    for city, code in CITY_TO_COUNTRY.items():
+        if city in location_lower:
+            return code
     return None
 
 
