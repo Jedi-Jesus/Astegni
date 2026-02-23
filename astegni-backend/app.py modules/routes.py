@@ -847,7 +847,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             created_at=user.created_at,
             is_active=user.is_active,
             email_verified=user.email_verified,
-            role_ids=role_ids  # Include role-specific profile IDs
+            role_ids=role_ids,  # Include role-specific profile IDs
+            location=user.location,
+            country_code=user.country_code,
+            currency=user.currency
         )
     )
 
@@ -931,7 +934,10 @@ def refresh_token_endpoint(
                 created_at=user.created_at,
                 is_active=user.is_active,
                 email_verified=user.email_verified,
-                role_ids=role_ids  # FIXED: Include role-specific profile IDs
+                role_ids=role_ids,  # FIXED: Include role-specific profile IDs
+                location=user.location,
+                country_code=user.country_code,
+                currency=user.currency
             )
         )
 
