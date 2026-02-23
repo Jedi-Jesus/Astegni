@@ -326,7 +326,10 @@ const ChildInvitationManagerImpl = {
                         </div>
                     `;
                 } else {
-                    resultsContainer.innerHTML = users.map(user => this.createUserCard(user)).join('');
+                    const verifiedUsers = users.filter(u => u.is_verified);
+                    resultsContainer.innerHTML = verifiedUsers.length
+                        ? verifiedUsers.map(user => this.createUserCard(user)).join('')
+                        : '<div class="text-center py-6 text-gray-400"><p class="text-sm">No verified users found</p></div>';
                 }
             } catch (error) {
                 console.error('Search error:', error);

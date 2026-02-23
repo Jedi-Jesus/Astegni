@@ -491,6 +491,8 @@ class ParentPortalManager {
      * Render search results
      */
     renderSearchResults(users) {
+        // Only show verified users
+        users = (users || []).filter(u => u.is_verified);
         console.log('ParentPortalManager: renderSearchResults called with', users?.length, 'users');
         const container = document.getElementById('parent-search-results');
         if (!container) {

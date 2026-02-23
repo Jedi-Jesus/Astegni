@@ -164,6 +164,7 @@ class UserSearchResult(BaseModel):
     profile_picture: Optional[str]
     roles: List[str]
     has_parent_role: bool
+    is_verified: bool
 
 
 class InviteExistingUserRequest(BaseModel):
@@ -224,10 +225,11 @@ async def search_users(
             # Search by first name, email, or phone (starts with)
             # Note: profile_picture is now in users table (centralized from profile tables)
             cur.execute("""
-                SELECT id, first_name, father_name, grandfather_name, email, phone, roles, profile_picture
+                SELECT id, first_name, father_name, grandfather_name, email, phone, roles, profile_picture, is_verified
                 FROM users
                 WHERE id != %s
                 AND is_active = TRUE
+                AND is_verified = TRUE
                 AND (
                     LOWER(first_name) LIKE %s
                     OR LOWER(email) LIKE %s
@@ -251,7 +253,8 @@ async def search_users(
                     phone=user['phone'],
                     profile_picture=user['profile_picture'],
                     roles=user_roles,
-                    has_parent_role="parent" in user_roles
+                    has_parent_role="parent" in user_roles,
+                    is_verified=user['is_verified'] or False
                 ))
 
     return results

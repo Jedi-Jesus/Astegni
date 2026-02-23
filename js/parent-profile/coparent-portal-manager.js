@@ -138,6 +138,8 @@ class CoparentPortalManager {
      * Render search results
      */
     renderSearchResults(users) {
+        // Only show verified users
+        users = (users || []).filter(u => u.is_verified);
         console.log('CoparentPortalManager: renderSearchResults called with', users?.length, 'users');
         const container = document.getElementById('parent-search-results');
         if (!container) {
