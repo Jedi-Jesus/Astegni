@@ -141,12 +141,19 @@ class KYCVerificationManager {
         const instructionEl = document.getElementById('kyc-document-instruction');
         if (instructionEl) {
             const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
-            const countryCode = user.country_code || null;
+            let countryCode = user.country_code || null;
             kycDebug(`User countryCode from localStorage: ${countryCode || '(none)'}`, 'info');
 
+            // Fallback: if country_code is missing but location is set, user has provided location
+            // The backend will auto-heal country_code on next /api/me call
+            if (!countryCode && user.location) {
+                kycDebug(`No country_code but location='${user.location}' exists — proceeding with generic instruction`, 'warn');
+                countryCode = '__location_set__';
+            }
+
             if (!countryCode) {
-                kycDebug('No country_code set — blocking step 1, prompting profile edit', 'warn');
-                // No country set — block the step and prompt user to set location
+                kycDebug('No country_code or location set — blocking step 1, prompting profile edit', 'warn');
+                // No location set at all — block the step
                 instructionEl.innerHTML = 'Please <a href="#" onclick="closeKYCModal(); if(typeof openEditProfileModal === \'function\') openEditProfileModal(); return false;" style="color: var(--primary-color);">go to Edit Profile</a> and set your location first before verifying your identity.';
                 // Hide camera and capture controls until location is set
                 const cameraContainer = modal.querySelector('.camera-container');
@@ -186,10 +193,12 @@ class KYCVerificationManager {
                 'AU': 'Australian', 'NZ': 'New Zealand', 'AE': 'Emirati', 'SA': 'Saudi',
                 'IL': 'Israeli', 'IR': 'Iranian', 'IQ': 'Iraqi', 'JO': 'Jordanian'
             };
-            const countryName = countryNames[countryCode] || countryCode;
+            const countryName = countryCode === '__location_set__' ? null : (countryNames[countryCode] || countryCode);
 
-            kycDebug(`Document instruction set for country: ${countryCode} → "${countryName}"`, 'ok');
-            instructionEl.textContent = `Hold your ${countryName} ID clearly in front of the camera`;
+            kycDebug(`Document instruction set for country: ${countryCode} → "${countryName || 'generic'}"`, 'ok');
+            instructionEl.textContent = countryName
+                ? `Hold your ${countryName} ID clearly in front of the camera`
+                : 'Hold your government-issued ID clearly in front of the camera';
         }
 
         // Start verification session

@@ -1002,6 +1002,21 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
         display_name = " ".join(part for part in name_parts if part)
 
+    # Auto-heal country_code: if missing but location is set, deduce and persist it now
+    resolved_country_code = current_user.country_code
+    if not resolved_country_code and current_user.location:
+        try:
+            from currency_utils import get_country_code_from_location, get_currency_from_country
+            deduced = get_country_code_from_location(current_user.location)
+            if deduced:
+                current_user.country_code = deduced
+                current_user.currency = get_currency_from_country(deduced)
+                db.commit()
+                resolved_country_code = deduced
+                print(f"[/api/me] Auto-healed country_code={deduced} from location='{current_user.location}'")
+        except Exception as e:
+            print(f"[/api/me] country_code auto-heal failed: {e}")
+
     return UserResponse(
         id=current_user.id,
         first_name=current_user.first_name,
@@ -1026,7 +1041,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         role_ids=role_ids,  # FIXED: Include role-specific profile IDs
         account_balance=float(current_user.account_balance) if hasattr(current_user, 'account_balance') and current_user.account_balance is not None else 0.0,
         location=current_user.location,  # Add location field for location filter
-        country_code=current_user.country_code,  # Add country code for regional targeting
+        country_code=resolved_country_code,  # Add country code for regional targeting
         currency=current_user.currency,  # Add currency for price display
         social_links=current_user.social_links  # Add social media links
     )
