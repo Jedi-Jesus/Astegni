@@ -1047,6 +1047,47 @@ class KYCVerificationManager {
     }
 
     /**
+     * Load KYC status into the verify-personal-info-modal identity tab.
+     * Delegates to the global window.loadKYCStatus if available (defined in
+     * settings-panel-personal-verification.js), otherwise calls /api/kyc/check directly.
+     */
+    async loadKYCStatus() {
+        if (typeof window.loadKYCStatus === 'function') {
+            return window.loadKYCStatus();
+        }
+        // Minimal fallback: hit the API and show the right panel
+        const data = await this.checkKYCRequired();
+        const loadingStatus = document.getElementById('kycLoadingStatus');
+        const verifiedStatus = document.getElementById('kycVerifiedStatus');
+        const notVerifiedStatus = document.getElementById('kycNotVerifiedStatus');
+        const inProgressStatus = document.getElementById('kycInProgressStatus');
+        const failedStatus = document.getElementById('kycFailedStatus');
+        const startBtn = document.getElementById('startVerificationBtn');
+        const continueBtn = document.getElementById('continueVerificationBtn');
+        const retryBtn = document.getElementById('retryVerificationBtn');
+
+        [loadingStatus, verifiedStatus, notVerifiedStatus, inProgressStatus, failedStatus].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+        [startBtn, continueBtn, retryBtn].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+
+        if (data.is_verified || data.kyc_verified) {
+            if (verifiedStatus) verifiedStatus.style.display = 'block';
+        } else if (data.status === 'pending' || data.status === 'in_progress') {
+            if (inProgressStatus) inProgressStatus.style.display = 'block';
+            if (continueBtn) continueBtn.style.display = 'inline-flex';
+        } else if (data.status === 'failed') {
+            if (failedStatus) failedStatus.style.display = 'block';
+            if (data.can_retry && retryBtn) retryBtn.style.display = 'inline-flex';
+        } else {
+            if (notVerifiedStatus) notVerifiedStatus.style.display = 'block';
+            if (startBtn) startBtn.style.display = 'inline-flex';
+        }
+    }
+
+    /**
      * Check if user needs KYC verification
      */
     async checkKYCRequired() {
@@ -1111,6 +1152,7 @@ function retryKYC() {
 // Export for module usage
 window.KYCVerificationManager = KYCVerificationManager;
 window.kycManager = kycManager;
+window.kycVerificationManager = kycManager; // alias expected by verify-personal-info-modal
 window.openKYCModal = openKYCModal;
 window.closeKYCModal = closeKYCModal;
 
