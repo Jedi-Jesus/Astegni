@@ -140,12 +140,34 @@ class KYCVerificationManager {
         // Set document instruction based on user's location
         const instructionEl = document.getElementById('kyc-document-instruction');
         if (instructionEl) {
-            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+            let user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
             let countryCode = user.country_code || null;
             kycDebug(`User countryCode from localStorage: ${countryCode || '(none)'}`, 'info');
 
+            // If localStorage is stale (missing country_code), fetch fresh from /api/me
+            if (!countryCode) {
+                try {
+                    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                    if (token) {
+                        const meResp = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (meResp.ok) {
+                            const meData = await meResp.json();
+                            if (meData.country_code || meData.location) {
+                                user = { ...user, ...meData };
+                                localStorage.setItem('currentUser', JSON.stringify(user));
+                                countryCode = meData.country_code || null;
+                                kycDebug(`Fetched fresh country_code from /api/me: ${countryCode || '(none)'}`, 'ok');
+                            }
+                        }
+                    }
+                } catch (e) {
+                    kycDebug(`/api/me fetch failed: ${e.message}`, 'warn');
+                }
+            }
+
             // Fallback: if country_code is missing but location is set, user has provided location
-            // The backend will auto-heal country_code on next /api/me call
             if (!countryCode && user.location) {
                 kycDebug(`No country_code but location='${user.location}' exists — proceeding with generic instruction`, 'warn');
                 countryCode = '__location_set__';

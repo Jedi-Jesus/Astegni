@@ -441,7 +441,10 @@ async login(email, password) {
             student_profile_id: data.user.role_ids?.student,
             tutor_profile_id: data.user.role_ids?.tutor,
             parent_profile_id: data.user.role_ids?.parent,
-            advertiser_profile_id: data.user.role_ids?.advertiser
+            advertiser_profile_id: data.user.role_ids?.advertiser,
+            location: data.user.location || null,
+            country_code: data.user.country_code || null,
+            currency: data.user.currency || null
         };
 
         // Save to localStorage
@@ -528,7 +531,10 @@ async login(email, password) {
                 profile_picture: data.user.profile_picture,
                 created_at: data.user.created_at,
                 is_active: data.user.is_active,
-                email_verified: data.user.email_verified
+                email_verified: data.user.email_verified,
+                location: data.user.location || null,
+                country_code: data.user.country_code || null,
+                currency: data.user.currency || null
             };
 
             // Save to localStorage
@@ -588,7 +594,10 @@ async login(email, password) {
                     phone: data.user.phone,
                     role: data.user.role,
                     created_at: data.user.created_at,
-                    is_active: data.user.is_active
+                    is_active: data.user.is_active,
+                    location: data.user.location || null,
+                    country_code: data.user.country_code || null,
+                    currency: data.user.currency || null
                 };
 
                 this.user = formattedUser;
