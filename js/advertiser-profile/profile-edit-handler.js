@@ -148,6 +148,11 @@ const AdvertiserProfileEditHandler = {
                 // Reload profile data to show latest changes FROM DATABASE
                 await AdvertiserProfileDataLoader.loadCompleteProfile();
 
+                // Refresh localStorage.currentUser so country_code is up-to-date for KYC
+                if (typeof authManager !== 'undefined' && typeof authManager.fetchUserData === 'function') {
+                    try { await authManager.fetchUserData(); } catch (e) { console.warn('[AdvertiserProfileEditHandler] fetchUserData failed:', e); }
+                }
+
                 console.log('✅ Profile header updated with latest data from database');
 
                 // Show success message

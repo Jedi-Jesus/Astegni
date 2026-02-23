@@ -6052,6 +6052,10 @@
                     window.parentProfileData.languages = languages;
                     window.parentProfileData.social_links = social_links;
                 }
+                // Refresh localStorage.currentUser so country_code is up-to-date for KYC
+                if (typeof authManager !== 'undefined' && typeof authManager.fetchUserData === 'function') {
+                    try { await authManager.fetchUserData(); } catch (e) { console.warn('[ParentProfile] fetchUserData failed:', e); }
+                }
                 // Close modal
                 closeEditProfileModal();
                 // Show success message

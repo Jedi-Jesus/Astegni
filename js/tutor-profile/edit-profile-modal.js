@@ -717,6 +717,11 @@
                 Object.assign(user, updateData);
                 localStorage.setItem('user', JSON.stringify(user));
 
+                // Refresh localStorage.currentUser so country_code is up-to-date for KYC
+                if (typeof authManager !== 'undefined' && typeof authManager.fetchUserData === 'function') {
+                    try { await authManager.fetchUserData(); } catch (e) { console.warn('[TutorEditProfileModal] fetchUserData failed:', e); }
+                }
+
                 // Close modal
                 closeEditProfileModal();
 

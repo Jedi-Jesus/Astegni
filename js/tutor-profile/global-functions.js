@@ -2652,6 +2652,11 @@ async function saveProfileToDatabase(profileData) {
             updateProfileHeaderImmediate(updatedProfile);
         }
 
+        // Refresh localStorage.currentUser so country_code is up-to-date for KYC
+        if (typeof authManager !== 'undefined' && typeof authManager.fetchUserData === 'function') {
+            try { await authManager.fetchUserData(); } catch (e) { console.warn('[saveProfileToDatabase] fetchUserData failed:', e); }
+        }
+
         // Close the modal
         closeEditProfileModal();
 

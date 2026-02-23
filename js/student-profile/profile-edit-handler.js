@@ -25,6 +25,11 @@ const StudentProfileEditHandler = {
                 // Reload profile data to show latest changes
                 await StudentProfileDataLoader.loadCompleteProfile();
 
+                // Refresh localStorage.currentUser so country_code is up-to-date for KYC
+                if (typeof authManager !== 'undefined' && typeof authManager.fetchUserData === 'function') {
+                    try { await authManager.fetchUserData(); } catch (e) { console.warn('[ProfileEditHandler] fetchUserData failed:', e); }
+                }
+
                 // Show success message
                 if (typeof StudentProfileUI !== 'undefined') {
                     StudentProfileUI.showNotification('Profile updated successfully!', 'success');
