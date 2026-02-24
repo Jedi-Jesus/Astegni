@@ -74,6 +74,9 @@ const ParentProfileAPI = {
                 parentProfile.phone = userData.phone;
                 parentProfile.gender = userData.gender;
                 parentProfile.name = `${userData.first_name || ''} ${userData.father_name || ''} ${userData.grandfather_name || ''}`.trim();
+                parentProfile.location = userData.location || parentProfile.location || null;
+                parentProfile.country_code = userData.country_code || parentProfile.country_code || null;
+                parentProfile.currency = userData.currency || parentProfile.currency || null;
             }
 
             return parentProfile;

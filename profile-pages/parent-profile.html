@@ -5899,8 +5899,9 @@
     <script>
         // Edit Profile Modal Functions
         function openEditProfileModal() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const profile = user.profile || {};
+            // Use already-fetched API data; fall back to currentUser in localStorage
+            const profile = window.parentProfileData ||
+                JSON.parse(localStorage.getItem('currentUser') || '{}');
             populateEditModal(profile);
         }
 
