@@ -762,13 +762,36 @@ window.switchPackagePanel = function(panelName) {
             modalSubtitle.style.display = 'block';
         }
 
-        // Initialize the default view (Line Graph) - container is visible by default
+        // COMING SOON: Show placeholder instead of initializing the real market graph
         setTimeout(() => {
-            // Ensure graph container is visible and table/price containers are hidden
+            // Hide all real view containers
             const graphContainer = document.getElementById('marketGraphContainer');
             const tableContainer = document.getElementById('marketTableContainer');
             const priceContainer = document.getElementById('marketPriceContainer');
 
+            if (graphContainer) graphContainer.classList.add('hidden');
+            if (tableContainer) tableContainer.classList.add('hidden');
+            if (priceContainer) priceContainer.classList.add('hidden');
+
+            // Show coming soon placeholder
+            let comingSoonContainer = document.getElementById('marketComingSoonContainer');
+            if (!comingSoonContainer) {
+                comingSoonContainer = document.createElement('div');
+                comingSoonContainer.id = 'marketComingSoonContainer';
+                comingSoonContainer.className = 'market-view-container';
+                comingSoonContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: var(--text-secondary);';
+                comingSoonContainer.innerHTML = `
+                    <i class="fas fa-clock" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;"></i>
+                    <p style="font-size: 1.2rem; font-weight: 600; margin: 0 0 0.5rem;">Coming Soon</p>
+                    <p style="font-size: 0.9rem; margin: 0; opacity: 0.7;">Market trend views will be available soon.</p>
+                `;
+                const parent = graphContainer?.parentNode;
+                if (parent) parent.appendChild(comingSoonContainer);
+            }
+            comingSoonContainer.style.display = 'flex';
+
+            /* --- REAL GRAPH INIT (hidden until ready) ---
+            // Ensure graph container is visible and table/price containers are hidden
             if (graphContainer) graphContainer.classList.remove('hidden');
             if (tableContainer) tableContainer.classList.add('hidden');
             if (priceContainer) priceContainer.classList.add('hidden');
@@ -777,6 +800,7 @@ window.switchPackagePanel = function(panelName) {
             if (!marketChartInstance && typeof updateMarketGraph === 'function') {
                 updateMarketGraph();
             }
+            --- END REAL GRAPH INIT --- */
         }, 100);
 
         console.log('✅ Market trend view displayed with sidebar panel');
@@ -1310,8 +1334,24 @@ function renderPackageEditor() {
     if (makeEstimateCheckbox) {
         makeEstimateCheckbox.addEventListener('change', async function(e) {
             if (e.target.checked) {
+                // COMING SOON: Show info popup, real fetch is hidden below
+                console.log('💰 Make an Estimate checked - coming soon');
+                // Inline toast since showToast is only available on index.js
+                (function() {
+                    const existing = document.getElementById('pkg-coming-soon-toast');
+                    if (existing) existing.remove();
+                    const toast = document.createElement('div');
+                    toast.id = 'pkg-coming-soon-toast';
+                    toast.style.cssText = 'position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);background:var(--primary-color,#4f46e5);color:#fff;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.95rem;font-weight:500;z-index:999999;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;gap:0.6rem;';
+                    toast.innerHTML = '<i class="fas fa-clock"></i> Coming Soon &mdash; fee estimation will be available soon.';
+                    document.body.appendChild(toast);
+                    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+                })();
+                e.target.checked = false; // uncheck since nothing happens yet
+                /* --- REAL FETCH (hidden until ready) ---
                 console.log('💰 Make an Estimate checked - fetching suggested market price...');
                 await fetchAndApplyMarketPrice();
+                --- END REAL FETCH --- */
             } else {
                 console.log('ℹ️ Make an Estimate unchecked');
             }
@@ -2077,6 +2117,16 @@ window.updateCalculator = function() {
     const resultsDiv = document.getElementById('calculatorResults');
     if (!resultsDiv) return;
 
+    // COMING SOON: Real calculation is hidden below, restore when ready
+    resultsDiv.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem;">Coming Soon</p>
+            <p style="font-size: 0.85rem; margin: 0; opacity: 0.7;">Fee estimation will be available soon.</p>
+        </div>
+    `;
+
+    /* --- REAL CALCULATION (hidden until ready) ---
     resultsDiv.innerHTML = `
         <div class="calc-result-row">
             <span class="calc-result-label">Hours per Week</span>
@@ -2099,6 +2149,7 @@ window.updateCalculator = function() {
             <span class="calc-result-value">${fees.yearly.toFixed(2)} ${CurrencyManager.getSymbol()}</span>
         </div>
     `;
+    --- END REAL CALCULATION --- */
 };
 
 /**

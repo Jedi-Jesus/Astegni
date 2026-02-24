@@ -148,7 +148,7 @@ window.switchMarketTrendView = function(view) {
  * Toggle between different market views (line-graph, bar-graph, table) - kept for backwards compatibility
  */
 window.toggleMarketView = function(view) {
-    console.log('🔄 Switching market view to:', view);
+    console.log('🔄 Switching market view to:', view, '(Coming Soon)');
 
     // Hide all containers
     const graphContainer = document.getElementById('marketGraphContainer');
@@ -159,6 +159,24 @@ window.toggleMarketView = function(view) {
     if (tableContainer) tableContainer.classList.add('hidden');
     if (priceContainer) priceContainer.classList.add('hidden');
 
+    // COMING SOON: Show placeholder instead of real views
+    let comingSoonContainer = document.getElementById('marketComingSoonContainer');
+    if (!comingSoonContainer) {
+        comingSoonContainer = document.createElement('div');
+        comingSoonContainer.id = 'marketComingSoonContainer';
+        comingSoonContainer.className = 'market-view-container';
+        comingSoonContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: var(--text-secondary);';
+        comingSoonContainer.innerHTML = `
+            <i class="fas fa-clock" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;"></i>
+            <p style="font-size: 1.2rem; font-weight: 600; margin: 0 0 0.5rem;">Coming Soon</p>
+            <p style="font-size: 0.9rem; margin: 0; opacity: 0.7;">Market trend views will be available soon.</p>
+        `;
+        const parent = graphContainer?.parentNode;
+        if (parent) parent.appendChild(comingSoonContainer);
+    }
+    comingSoonContainer.classList.remove('hidden');
+
+    /* --- REAL VIEW SWITCHING (hidden until ready) ---
     // Show selected view
     if (view === 'line-graph' || view === 'bar-graph') {
         if (graphContainer) {
@@ -180,8 +198,9 @@ window.toggleMarketView = function(view) {
             setTimeout(() => suggestMarketPrice(), 100);
         }
     }
+    --- END REAL VIEW SWITCHING --- */
 
-    console.log('✅ Market view switched to:', view);
+    console.log('✅ Market view: Coming Soon shown for:', view);
 };
 
 /**
@@ -759,8 +778,25 @@ window.populateMarketTable = async function() {
 
 /**
  * Calculate and display suggested price for tutor (NEW: Real API version)
+ * COMING SOON: Real implementation is hidden below, restore when ready
  */
 window.suggestMarketPrice = async function() {
+    // COMING SOON: Show placeholder instead of real price suggestion
+    const priceResult = document.getElementById('marketPriceResult');
+    const priceContainer = document.getElementById('marketPriceContainer');
+    if (priceContainer) priceContainer.classList.remove('hidden');
+    if (priceResult) {
+        priceResult.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <i class="fas fa-clock" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;"></i>
+                <p style="font-size: 1.2rem; font-weight: 600; margin: 0 0 0.5rem;">Coming Soon</p>
+                <p style="font-size: 0.9rem; margin: 0; opacity: 0.7;">AI-powered price suggestions will be available soon.</p>
+            </div>
+        `;
+    }
+    return;
+
+    /* --- REAL PRICE SUGGESTION (hidden until ready) ---
     console.log('💰 Calculating suggested price using real market data...');
 
     const priceResult = document.getElementById('marketPriceResult');
@@ -1072,6 +1108,7 @@ window.suggestMarketPrice = async function() {
             </div>
         `;
     }
+    --- END REAL PRICE SUGGESTION --- */
 };
 
 /**
