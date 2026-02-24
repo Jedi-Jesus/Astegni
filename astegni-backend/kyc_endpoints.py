@@ -321,11 +321,12 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
 
         # face_recognition distance <= 0.6 means "same person" by the library's own standard.
         # Converted to similarity: 1 - 0.6 = 0.40.
-        # We use 0.45 (distance 0.55) — stricter than the default but realistic for
-        # webcam-captured ID photos which suffer from glare, blur, and angle differences.
+        # We use 0.40 (the library default) because webcam selfies vs. ID document photos
+        # naturally score lower due to lighting, angle, resolution, and JPEG compression
+        # differences. Scores in the 0.40-0.45 range are still legitimate matches.
         print(f"[KYC] Face comparison: distance={distance:.4f}, similarity={similarity:.4f}")
         return {
-            "match": bool(similarity >= 0.45),
+            "match": bool(similarity >= 0.40),
             "score": float(similarity),
             "method": "face_recognition"
         }
