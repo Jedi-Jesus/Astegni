@@ -444,7 +444,10 @@ async login(email, password) {
             advertiser_profile_id: data.user.role_ids?.advertiser,
             location: data.user.location || null,
             country_code: data.user.country_code || null,
-            currency: data.user.currency || null
+            currency: data.user.currency || null,
+            is_verified: data.user.is_verified || false,
+            kyc_verified: data.user.kyc_verified || false,
+            verified: data.user.is_verified || data.user.kyc_verified || false
         };
 
         // Save to localStorage

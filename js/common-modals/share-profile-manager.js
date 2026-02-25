@@ -91,7 +91,7 @@ async function shareProfile(event) {
         }
 
         // Guard: user must be verified to share profile
-        if (!user.verified) {
+        if (!user.verified && !user.kyc_verified && !user.is_verified) {
             if (typeof openAccessRestrictedModal === 'function') {
                 openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Share Profile' });
             }

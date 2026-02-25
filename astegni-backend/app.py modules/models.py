@@ -967,7 +967,8 @@ class UserResponse(BaseModel):
     gender: Optional[str] = None  # Required for full access
     digital_id_no: Optional[str] = None  # Ethiopian Digital ID, required for full access
     profile_complete: bool = False  # True if DOB, gender, and digital_id_no are set
-    kyc_verified: bool = False  # True if identity verified via liveliness check
+    is_verified: bool = False  # CANONICAL: True if identity has been verified
+    kyc_verified: bool = False  # DEPRECATED: Use is_verified. Kept for backward compatibility
     roles: List[str]
     active_role: Optional[str] = None
     profile_picture: Optional[str]

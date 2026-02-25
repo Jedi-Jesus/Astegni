@@ -91,7 +91,7 @@ def check_and_auto_verify_tutor(user: User, db: Session) -> bool:
         user.grandfather_name and user.grandfather_name.strip() != '' and
         user.date_of_birth is not None and
         user.gender and user.gender.strip() != '' and
-        user.kyc_verified == True
+        (user.is_verified == True or user.kyc_verified == True)
     )
 
     if not profile_complete:
@@ -841,6 +841,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             date_of_birth=user.date_of_birth,
             gender=user.gender,
             profile_complete=user.profile_complete,
+            is_verified=user.is_verified if hasattr(user, 'is_verified') else False,
+            kyc_verified=user.kyc_verified if hasattr(user, 'kyc_verified') else False,
             roles=user.roles,
             active_role=user.active_role,
             profile_picture=profile_picture,
@@ -928,6 +930,8 @@ def refresh_token_endpoint(
                 phone=user.phone,
                 date_of_birth=user.date_of_birth,
                 gender=user.gender,
+                is_verified=user.is_verified if hasattr(user, 'is_verified') else False,
+                kyc_verified=user.kyc_verified if hasattr(user, 'kyc_verified') else False,
                 roles=user.roles,
                 active_role=user.active_role,
                 profile_picture=profile_picture,
@@ -1037,6 +1041,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         gender=current_user.gender,
         digital_id_no=current_user.digital_id_no,
         profile_complete=profile_complete,
+        is_verified=current_user.is_verified if hasattr(current_user, 'is_verified') else False,
         kyc_verified=current_user.kyc_verified if hasattr(current_user, 'kyc_verified') else False,
         roles=current_user.roles,
         active_role=current_user.active_role,
