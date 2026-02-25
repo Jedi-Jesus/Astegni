@@ -5990,9 +5990,8 @@
             const bio = document.getElementById('editBio').value.trim();
             const quote = document.getElementById('editQuote').value.trim();
 
-            // Get languages and convert to array
-            const languagesInput = document.getElementById('editLanguages').value.trim();
-            const languages = languagesInput ? languagesInput.split(',').map(lang => lang.trim()).filter(lang => lang) : [];
+            // Get languages from dynamic container (collectLanguages reads .language-select elements)
+            const languages = typeof collectLanguages === 'function' ? collectLanguages() : [];
 
             // Get social links from dynamic container
             const social_links = getSocialLinks();
