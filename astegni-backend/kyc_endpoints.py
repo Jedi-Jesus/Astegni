@@ -228,6 +228,9 @@ def detect_face_in_image(image_data: bytes) -> dict:
         if img is None:
             return {"face_detected": False, "error": "Could not decode image"}
 
+        # Downscale oversized images (e.g. high-res phone photos) for cascade detection
+        img, _ = _normalize_frame_for_detection(img)
+
         # Convert to grayscale for face detection
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -334,6 +337,24 @@ def compare_faces(image1_data: bytes, image2_data: bytes) -> dict:
         return {"match": False, "score": 0, "error": str(e)}
 
 
+def _normalize_frame_for_detection(img):
+    """
+    Downscale an image so that the longest dimension is at most 640px.
+    This prevents Haar cascades from missing very large close-up faces
+    (e.g. mobile selfies where the face fills the entire frame).
+    Returns (resized_img, scale_factor).  scale_factor < 1 means it was shrunk.
+    """
+    h, w = img.shape[:2]
+    max_dim = 640
+    if max(h, w) <= max_dim:
+        return img, 1.0
+    scale = max_dim / max(h, w)
+    new_w = max(1, int(w * scale))
+    new_h = max(1, int(h * scale))
+    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    return resized, scale
+
+
 def detect_blink_in_frame(frame_bytes: bytes) -> dict:
     """
     Detect blink in a single frame using OpenCV Haar cascades.
@@ -350,6 +371,9 @@ def detect_blink_in_frame(frame_bytes: bytes) -> dict:
         if img is None:
             return {"detected": False, "error": "Could not decode frame"}
 
+        # Downscale oversized frames (close-up mobile faces) so cascades can detect them
+        img, _ = _normalize_frame_for_detection(img)
+
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.equalizeHist(gray)  # Improve contrast
 
@@ -357,6 +381,9 @@ def detect_blink_in_frame(frame_bytes: bytes) -> dict:
         eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
+        if len(faces) == 0:
+            # Retry with relaxed params for very close-up faces
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(80, 80))
         if len(faces) == 0:
             return {"detected": False, "error": "No face detected in frame"}
 
@@ -398,6 +425,9 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
         if img is None:
             return {"detected": False, "error": "Could not decode frame"}
 
+        # Downscale oversized frames (close-up mobile faces) so cascades can detect them
+        img, _ = _normalize_frame_for_detection(img)
+
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.equalizeHist(gray)
 
@@ -405,6 +435,9 @@ def detect_smile_in_frame(frame_bytes: bytes) -> dict:
         smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
 
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
+        if len(faces) == 0:
+            # Retry with relaxed params for very close-up faces
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(80, 80))
         if len(faces) == 0:
             return {"detected": False, "error": "No face detected in frame"}
 
@@ -451,6 +484,9 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             if img is None:
                 continue
+
+            # Downscale oversized frames (close-up mobile faces) so cascades can detect them
+            img, _ = _normalize_frame_for_detection(img)
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             gray_frames.append(gray)

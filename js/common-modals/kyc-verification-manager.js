@@ -457,6 +457,15 @@ class KYCVerificationManager {
             await video.play();
 
             kycDebug('Selfie camera initialized and playing', 'ok');
+
+            // Show distance hint on touch devices (mobile/tablet)
+            const isTouchDevice = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+            const hintEl = document.getElementById('kyc-distance-hint');
+            if (isTouchDevice && hintEl) {
+                hintEl.style.display = 'block';
+                // Auto-hide after 6 seconds
+                setTimeout(() => { hintEl.style.display = 'none'; }, 6000);
+            }
         } catch (error) {
             kycDebug(`initSelfieCamera failed: ${error.name} — ${error.message}`, 'err');
             console.error('[KYC] Camera error:', error);
@@ -612,15 +621,30 @@ class KYCVerificationManager {
 
     /**
      * Capture a single frame from the selfie video into a canvas (mirrored).
+     * Preserves the video's native aspect ratio so close-up mobile faces
+     * are not cropped or distorted. The longer dimension is capped at maxDim.
      * Returns a base64 JPEG string.
      */
     captureFrame(video, canvas, width = 320, height = 240, quality = 0.6) {
-        canvas.width = width;
-        canvas.height = height;
+        // Use the video's real dimensions when available, preserving aspect ratio.
+        // This fixes mobile where the face fills the entire frame: forcing a fixed
+        // 320x240 onto a 720x1280 portrait stream crops out most of the face.
+        const vw = video.videoWidth || width;
+        const vh = video.videoHeight || height;
+
+        const maxDim = 480; // keep payload small while fitting large mobile faces
+        const scale = Math.min(maxDim / vw, maxDim / vh, 1); // never upscale
+        const capW = Math.round(vw * scale);
+        const capH = Math.round(vh * scale);
+
+        canvas.width = capW;
+        canvas.height = capH;
         const ctx = canvas.getContext('2d');
         ctx.save();
+        // Mirror horizontally (selfie camera)
+        ctx.translate(capW, 0);
         ctx.scale(-1, 1);
-        ctx.drawImage(video, -width, 0, width, height);
+        ctx.drawImage(video, 0, 0, capW, capH);
         ctx.restore();
         return canvas.toDataURL('image/jpeg', quality);
     }
