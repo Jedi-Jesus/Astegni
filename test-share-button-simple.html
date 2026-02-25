@@ -74,7 +74,7 @@
             try {
                 // Try to load common modal loader first
                 const script1 = document.createElement('script');
-                script1.src = 'modals/common-modals/common-modal-loader.js?v=' + Date.now();
+                script1.src = 'modals/common-modals/common-modal-loader.js?v202602252204' + Date.now();
                 script1.onload = () => {
                     log('✓ CommonModalLoader loaded', '#0f0');
                     document.getElementById('loaderStatus').textContent = '✓ Loaded CommonModalLoader';
@@ -88,7 +88,7 @@
                     log('✗ Failed to load CommonModalLoader', '#f00');
                     // Try tutor-profile loader
                     const script2 = document.createElement('script');
-                    script2.src = 'modals/tutor-profile/modal-loader.js?v=' + Date.now();
+                    script2.src = 'modals/tutor-profile/modal-loader.js?v202602252204' + Date.now();
                     script2.onload = () => {
                         log('✓ ModalLoader loaded', '#0f0');
                         document.getElementById('loaderStatus').textContent = '✓ Loaded ModalLoader';
@@ -116,7 +116,7 @@
             document.getElementById('managerStatus').textContent = 'Loading...';
 
             const script = document.createElement('script');
-            script.src = 'js/common-modals/share-profile-manager.js?v=' + Date.now();
+            script.src = 'js/common-modals/share-profile-manager.js?v202602252204' + Date.now();
             script.onload = () => {
                 log('✓ Share manager loaded', '#0f0');
                 log(`shareProfile function: ${typeof shareProfile !== 'undefined' ? '✓ Exists' : '✗ Missing'}`, typeof shareProfile !== 'undefined' ? '#0f0' : '#f00');

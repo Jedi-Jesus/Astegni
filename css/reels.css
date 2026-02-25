@@ -2,19 +2,19 @@
    REELS.CSS - MODULAR IMPORT SYSTEM
    ============================================ */
 /* Import REELS-specific components */
-@import url('reels/accessebility-performance.css');
-@import url('reels/animation.css');
-@import url('reels/auth-req.css');
-@import url('reels/card.css');
-@import url('reels/filter.css');
-@import url('reels/grid-ad-section.css');
-@import url('reels/loading.css');
-@import url('reels/modal.css');
-@import url('reels/notification.css');
-@import url('reels/playlist-Modal.css');
-@import url('reels/responsive.css');
-@import url('reels/notification.css');
-@import url('reels/theme.css');
+@import url('reels/accessebility-performance.css?v202602252204');
+@import url('reels/animation.css?v202602252204');
+@import url('reels/auth-req.css?v202602252204');
+@import url('reels/card.css?v202602252204');
+@import url('reels/filter.css?v202602252204');
+@import url('reels/grid-ad-section.css?v202602252204');
+@import url('reels/loading.css?v202602252204');
+@import url('reels/modal.css?v202602252204');
+@import url('reels/notification.css?v202602252204');
+@import url('reels/playlist-Modal.css?v202602252204');
+@import url('reels/responsive.css?v202602252204');
+@import url('reels/notification.css?v202602252204');
+@import url('reels/theme.css?v202602252204');
 
 
 /* ============================================
