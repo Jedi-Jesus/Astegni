@@ -547,8 +547,8 @@ def detect_head_turn_in_frames(frame_bytes_list: list) -> dict:
                 max_motion = max(motions)
                 avg_motion = sum(motions) / len(motions)
                 # A deliberate head turn produces noticeable per-frame change
-                # Threshold tuned for 320x240 @ 60% JPEG quality
-                motion_detected = bool(max_motion > 4.0 and avg_motion > 1.5)
+                # Thresholds lowered slightly to account for mobile close-up frames
+                motion_detected = bool(max_motion > 3.0 and avg_motion > 1.0)
                 confidence = min(max_motion / 12.0, 1.0)
                 print(f"[KYC] Head turn (motion-fallback): max={max_motion:.2f}, avg={avg_motion:.2f}, detected={motion_detected}")
                 return {
@@ -669,10 +669,15 @@ def detect_liveliness(frames: List[bytes]) -> dict:
                 if img is None:
                     continue
 
+                # Downscale close-up mobile frames so cascades can detect large faces
+                img, _ = _normalize_frame_for_detection(img)
+
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-                # Detect face
-                faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+                # Detect face — relaxed params for mobile close-ups
+                faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(40, 40))
+                if len(faces) == 0:
+                    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(60, 60))
 
                 if len(faces) == 0:
                     continue

@@ -668,20 +668,22 @@ class KYCVerificationManager {
         }
         kycDebug(`Video ready: ${video.videoWidth}x${video.videoHeight} | readyState=${video.readyState}`, 'info');
 
+        const isMobile = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
         const instructions = {
             blink: 'Blink your eyes slowly now...',
             smile: 'Smile naturally now...',
-            turn: 'Slowly turn your head left… then right… (5 seconds)'
+            turn: (isMobile ? 'Slowly turn your head left… then right… (6 seconds)' : 'Slowly turn your head left… then right… (5 seconds)')
         };
 
         instructionEl.textContent = instructions[type] || 'Follow the instruction';
 
         // Collect frames across the challenge window
-        // Turn gets more time (5s) and faster capture (250ms) so we catch the full left→right arc.
-        // Blink/smile use 3s at 400ms — enough frames to catch a momentary action.
+        // On mobile, users need more time to react and we want more frames to catch brief actions.
         const frames = [];
-        const totalDuration = type === 'turn' ? 5000 : 3000; // ms
-        const interval = type === 'turn' ? 250 : 400; // ~19 frames for turn, ~7 for others
+        // Turn: 5s desktop / 6s mobile at 200ms = 25-30 frames
+        // Blink/smile: 4s desktop / 5s mobile at 300ms = ~13-17 frames
+        const totalDuration = type === 'turn' ? (isMobile ? 6000 : 5000) : (isMobile ? 5000 : 4000);
+        const interval = type === 'turn' ? 200 : 300;
 
         const captureInterval = setInterval(() => {
             frames.push(this.captureFrame(video, canvas));
@@ -798,16 +800,23 @@ class KYCVerificationManager {
         const canvas = document.getElementById('kyc-canvas-selfie');
         kycDebug(`Capturing final selfie — video: ${video?.videoWidth}x${video?.videoHeight}`, 'info');
 
-        // Use reasonable resolution for face comparison (640x480)
-        canvas.width = 640;
-        canvas.height = 480;
+        // Preserve native video aspect ratio, cap at 640px longest side (same fix as captureFrame)
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+        const maxDim = 640;
+        const scale = Math.min(maxDim / vw, maxDim / vh, 1);
+        const capW = Math.round(vw * scale);
+        const capH = Math.round(vh * scale);
+        canvas.width = capW;
+        canvas.height = capH;
         const ctx = canvas.getContext('2d');
         ctx.save();
+        ctx.translate(capW, 0);
         ctx.scale(-1, 1);
-        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, capW, capH);
         ctx.restore();
 
-        this.selfieImage = canvas.toDataURL('image/jpeg', 0.75);  // Reduced from 0.9 to 0.75
+        this.selfieImage = canvas.toDataURL('image/jpeg', 0.9);
         kycDebug(`Selfie captured — ${Math.round(this.selfieImage.length / 1024)} KB`, 'info');
 
         // Show result step with processing
