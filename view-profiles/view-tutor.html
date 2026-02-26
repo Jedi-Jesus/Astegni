@@ -3865,16 +3865,6 @@
                 return;
             }
 
-            // Guard: user must be verified
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
-            const isVerified = currentUser && (currentUser.verified || currentUser.is_verified || currentUser.kyc_verified);
-            if (!currentUser || !isVerified) {
-                if (typeof openAccessRestrictedModal === 'function') {
-                    openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Message Tutor' });
-                }
-                return;
-            }
-
             // Get tutor data from the global variable set by view-tutor-db-loader.js
             const tutorData = window.currentTutorData;
             if (!tutorData) {
