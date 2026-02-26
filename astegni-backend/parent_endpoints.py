@@ -311,7 +311,7 @@ async def get_coparents(
                     if other_parent_profile and other_parent_profile.user_id != current_user.id:
                         coparent_user_ids.add(other_parent_profile.user_id)
 
-    # Fetch co-parent details (ONLY accepted/linked co-parents)
+    # Fetch co-parent details (accepted/linked co-parents)
     coparents = []
     for coparent_user_id in coparent_user_ids:
         parent_user = db.query(User).filter(User.id == coparent_user_id).first()
@@ -335,10 +335,68 @@ async def get_coparents(
                 "phone": parent_user.phone,
                 "gender": parent_user.gender,
                 "relationship_type": coparent_profile.relationship_type if coparent_profile else None,
-                "profile_picture": parent_user.profile_picture,  # Read from users table
+                "profile_picture": parent_user.profile_picture,
                 "created_at": parent_user.created_at,
                 "status": "accepted"
             })
+
+    # Also include pending coparent invitations sent by this user
+    pending_rows = db.execute(text("""
+        SELECT pi.id as invitation_id,
+               pi.invited_to_user_id,
+               pi.relationship_type,
+               pi.created_at,
+               pi.pending_first_name,
+               pi.pending_father_name,
+               pi.pending_email,
+               pi.pending_phone,
+               u.first_name,
+               u.father_name,
+               u.grandfather_name,
+               u.last_name,
+               u.email,
+               u.phone,
+               u.gender,
+               u.profile_picture,
+               pp.id as parent_id
+        FROM parent_invitations pi
+        LEFT JOIN users u ON pi.invited_to_user_id = u.id
+        LEFT JOIN parent_profiles pp ON pi.invited_to_user_id = pp.user_id
+        WHERE pi.inviter_user_id = :uid
+          AND pi.requested_as = 'coparent'
+          AND pi.status = 'pending'
+        ORDER BY pi.created_at DESC
+    """), {"uid": current_user.id}).fetchall()
+
+    # Track already-included user_ids to avoid duplicates
+    accepted_user_ids = {c["user_id"] for c in coparents}
+
+    for row in pending_rows:
+        row = dict(row._mapping)
+        if row["invited_to_user_id"] and row["invited_to_user_id"] in accepted_user_ids:
+            continue  # Already accepted, skip
+        if row["last_name"]:
+            name = f"{row['first_name'] or ''} {row['last_name'] or ''}".strip()
+        else:
+            name_parts = [row["first_name"], row["father_name"], row["grandfather_name"]]
+            name = " ".join(p for p in name_parts if p)
+        if not name:
+            name_parts = [row["pending_first_name"], row["pending_father_name"]]
+            name = " ".join(p for p in name_parts if p) or "Pending User"
+
+        coparents.append({
+            "user_id": row["invited_to_user_id"],
+            "parent_id": row["parent_id"],
+            "invitation_id": row["invitation_id"],
+            "name": name,
+            "email": row["email"] or row["pending_email"],
+            "phone": row["phone"] or row["pending_phone"],
+            "gender": row["gender"],
+            "relationship_type": row["relationship_type"],
+            "profile_picture": row["profile_picture"],
+            "created_at": row["created_at"],
+            "status": "pending"
+        })
 
     return {"coparents": coparents, "total": len(coparents)}
 
