@@ -2085,7 +2085,37 @@ class ViewTutorDBLoader {
 window.openPackageDetailsModal = async function(packageId, packageName) {
     // Guard: user must be KYC verified before requesting a package
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
-    if (!currentUser || (!currentUser.is_verified && !currentUser.kyc_verified && !currentUser.verified)) {
+
+    // Check localStorage fields first (fast path for up-to-date sessions)
+    let isVerified = currentUser && (currentUser.is_verified || currentUser.kyc_verified || currentUser.verified);
+
+    // If not verified per localStorage, fetch fresh status from backend
+    // (handles stale sessions stored before verification fields were added)
+    if (!isVerified && currentUser) {
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (token) {
+                const res = await fetch(`${API_BASE_URL}/api/kyc/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const kycData = await res.json();
+                    isVerified = kycData.is_verified === true || kycData.kyc_verified === true;
+                    // Update localStorage so subsequent checks are fast
+                    if (isVerified) {
+                        currentUser.is_verified = true;
+                        currentUser.kyc_verified = true;
+                        currentUser.verified = true;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('[PackageGuard] Could not fetch KYC status from backend:', e);
+        }
+    }
+
+    if (!currentUser || !isVerified) {
         if (typeof openAccessRestrictedModal === 'function') {
             openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Request Package' });
         }
