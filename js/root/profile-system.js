@@ -807,7 +807,7 @@ function updateProfilePictures() {
     // Add Role Modal Management
     let otpResendTimer = null;
     let otpResendSeconds = 60;
-    let addRoleData = { role: null, password: null }; // Store data between steps
+    let addRoleData = { role: null }; // Store data between steps
 
     // Role icons mapping (defined early for use in mobile role switcher)
     const roleIcons = {
@@ -1029,7 +1029,7 @@ function updateProfilePictures() {
         if (deactivatedMsg) deactivatedMsg.style.display = 'none';
 
         // Clear stored data
-        addRoleData = { role: null, password: null, isReactivation: false };
+        addRoleData = { role: null, isReactivation: false };
 
         // Populate user info in modal header
         populateAddRoleUserInfo();
@@ -1207,7 +1207,7 @@ function updateProfilePictures() {
         if (otpMessage) otpMessage.style.display = 'none';
 
         // Clear stored data
-        addRoleData = { role: null, password: null };
+        addRoleData = { role: null };
 
         // Refresh deletion countdown banner in case a role was restored
         if (window.DeletionCountdownBanner) {
@@ -1345,20 +1345,12 @@ function updateProfilePictures() {
         }
 
         if (isStep1Visible) {
-            // STEP 1: Verify password and send OTP
+            // STEP 1: Select role and send OTP
             const role = document.getElementById('add-role-type')?.value;
-            const password = document.getElementById('add-role-password')?.value;
 
             if (!role) {
                 if (window.showToast) {
                     window.showToast('Please select a role', 'warning');
-                }
-                return;
-            }
-
-            if (!password) {
-                if (window.showToast) {
-                    window.showToast('Please enter your password', 'warning');
                 }
                 return;
             }
@@ -1369,28 +1361,8 @@ function updateProfilePictures() {
             if (btnLoader) btnLoader.style.display = 'inline-flex';
 
             try {
-                // Verify password first
-                const verifyResponse = await fetch(`${API_BASE_URL}/api/verify-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ password: password })
-                });
-
-                const verifyData = await verifyResponse.json();
-
-                if (!verifyResponse.ok) {
-                    if (window.showToast) {
-                        window.showToast(verifyData.detail || 'Invalid password', 'error');
-                    }
-                    return;
-                }
-
-                // Password verified, store data and send OTP
+                // Store role and send OTP directly (no password needed)
                 addRoleData.role = role;
-                addRoleData.password = password;
 
                 // Send OTP
                 await sendAddRoleOTP();
@@ -1447,8 +1419,7 @@ function updateProfilePictures() {
                     },
                     body: JSON.stringify({
                         otp: otp,
-                        new_role: addRoleData.role,
-                        password: addRoleData.password
+                        new_role: addRoleData.role
                     })
                 });
 

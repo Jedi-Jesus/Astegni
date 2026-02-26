@@ -4676,21 +4676,17 @@ def add_user_role(
     - If user previously deleted this role and it's pending deletion, restore it
     - If user never had this role or it was fully deleted, create new profile
     """
-    import bcrypt
 
     otp_code = role_data.get("otp")
     new_role = role_data.get("new_role")
-    password = role_data.get("password")
 
     # Validate input
     if not otp_code:
         raise HTTPException(status_code=400, detail="OTP is required")
     if not new_role:
         raise HTTPException(status_code=400, detail="Role is required")
-    if not password:
-        raise HTTPException(status_code=400, detail="Password is required")
 
-    # Check if user already has this role (active) BEFORE verifying OTP/password
+    # Check if user already has this role (active) BEFORE verifying OTP
     # This prevents burning the OTP if the role already exists AND is active
     if new_role in current_user.roles:
         # Check if role is deactivated
@@ -4714,10 +4710,6 @@ def add_user_role(
         if not is_deactivated:
             raise HTTPException(status_code=400, detail=f"You already have the {new_role} role")
         # If deactivated, continue to reactivate it
-
-    # Verify password
-    if not bcrypt.checkpw(password.encode('utf-8'), current_user.password_hash.encode('utf-8')):
-        raise HTTPException(status_code=400, detail="Invalid password")
 
     # Verify OTP
     otp_record = db.query(OTP).filter(
