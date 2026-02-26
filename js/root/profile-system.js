@@ -226,7 +226,10 @@ const ProfileSystem = (function() {
                         role: data.user.active_role,
                         roles: data.user.roles,
                         active_role: data.user.active_role,
-                        profile_picture: data.user.profile_picture
+                        profile_picture: data.user.profile_picture,
+                        is_verified: data.user.is_verified || false,
+                        kyc_verified: data.user.kyc_verified || false,
+                        verified: data.user.is_verified || data.user.kyc_verified || false
                     };
                     localStorage.setItem('currentUser', JSON.stringify(formattedUser));
                 }
@@ -279,7 +282,10 @@ const ProfileSystem = (function() {
             profile_picture: userData.profile_picture,
             created_at: userData.created_at,
             is_active: userData.is_active,
-            email_verified: userData.email_verified
+            email_verified: userData.email_verified,
+            is_verified: userData.is_verified || false,
+            kyc_verified: userData.kyc_verified || false,
+            verified: userData.is_verified || userData.kyc_verified || false
         };
         userRole = userData.active_role;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
