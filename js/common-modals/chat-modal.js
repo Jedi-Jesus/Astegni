@@ -1313,6 +1313,23 @@ const ChatModalManager = {
             console.log('[Chat] Applied visual settings on modal open');
         }
 
+        // If a target user is provided, pre-populate the header immediately so the
+        // user sees the correct person instead of "Select a conversation" while
+        // conversations are loading from the API.
+        if (targetUser) {
+            const emptyState = document.getElementById('chatEmptyState');
+            const chatContent = document.getElementById('chatContent');
+            if (emptyState) emptyState.style.display = 'none';
+            if (chatContent) chatContent.style.display = 'flex';
+            this.updateChatHeader({
+                name: targetUser.full_name || targetUser.name || 'Loading...',
+                avatar: targetUser.profile_picture || targetUser.avatar || '',
+                other_profile_id: targetUser.profile_id || targetUser.id,
+                other_profile_type: targetUser.profile_type || targetUser.role || '',
+                role: targetUser.profile_type || targetUser.role || ''
+            });
+        }
+
         // Load conversations from API (contacts come from connections table)
         this.loadConversations().then(() => {
             console.log('Chat: Loaded', this.state.conversations.length, 'conversations/connections');
@@ -5011,6 +5028,10 @@ const ChatModalManager = {
     addNewContactElement(conv) {
         const listEl = document.getElementById('chatContactsList');
         if (!listEl) return;
+
+        // If the list only shows the "No conversations yet" empty state, clear it first
+        const emptyEl = listEl.querySelector('.chat-empty');
+        if (emptyEl) emptyEl.remove();
 
         // Find where to insert (after request sections, before other conversations)
         const conversationsHeader = listEl.querySelector('.requests-section + div:not(.contact-item):not(.requests-section)');
