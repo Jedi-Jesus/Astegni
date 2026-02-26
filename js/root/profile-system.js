@@ -320,7 +320,9 @@ const ProfileSystem = (function() {
             }
 
             if (response.ok) {
-                const userData = await response.json();
+                const rawData = await response.json();
+                // /api/me returns { valid, user: {...} } — extract inner user object
+                const userData = rawData.user || rawData;
                 currentUser = {
                     id: userData.id,
                     name: `${userData.first_name} ${userData.father_name}`,
@@ -333,7 +335,11 @@ const ProfileSystem = (function() {
                     profile_picture: userData.profile_picture,
                     created_at: userData.created_at,
                     is_active: userData.is_active,
-                    email_verified: userData.email_verified
+                    email_verified: userData.email_verified,
+                    is_verified: userData.is_verified || false,
+                    kyc_verified: userData.kyc_verified || false,
+                    verified: userData.is_verified || userData.kyc_verified || false,
+                    role_ids: userData.role_ids || {}
                 };
                 userRole = userData.active_role;  // FIXED: Use active_role instead of role
 
