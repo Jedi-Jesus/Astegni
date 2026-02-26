@@ -267,10 +267,12 @@ window.closeComingSoonModal = closeComingSoonModal;
 
 // Toast notification function
 function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
+    let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
-        console.error('Toast container not found');
-        return;
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
     }
     
     const toast = document.createElement('div');
