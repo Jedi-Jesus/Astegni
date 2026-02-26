@@ -17,7 +17,7 @@ const ProfileCompletionGuard = {
      * @returns {object} { complete: boolean, missingFields: string[] }
      */
     checkProfileComplete() {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
         const missingFields = [];
 
         if (!user.first_name || user.first_name.trim() === '') {
@@ -47,8 +47,8 @@ const ProfileCompletionGuard = {
      * @returns {boolean}
      */
     isKYCVerified() {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        return user.kyc_verified === true;
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+        return user.is_verified === true || user.kyc_verified === true || user.verified === true;
     },
 
     /**

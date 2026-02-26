@@ -2085,7 +2085,7 @@ class ViewTutorDBLoader {
 window.openPackageDetailsModal = async function(packageId, packageName) {
     // Guard: user must be KYC verified before requesting a package
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
-    if (!currentUser || !currentUser.verified) {
+    if (!currentUser || (!currentUser.is_verified && !currentUser.kyc_verified && !currentUser.verified)) {
         if (typeof openAccessRestrictedModal === 'function') {
             openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Request Package' });
         }
