@@ -541,8 +541,13 @@ window.closeInviteParentModal = function() {
 // Wrapper function for co-parent specific naming
 window.openInviteCoparentModal = function() {
     // Guard: user must be verified
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
-    if (!currentUser || (!currentUser.is_verified && !currentUser.kyc_verified && !currentUser.verified)) {
+    // Merge both storage keys — currentUser may lack verified fields if profile-system rebuilt it
+    const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    const u  = JSON.parse(localStorage.getItem('user') || 'null');
+    const currentUser = cu || u;
+    const isVerified = (cu?.is_verified || cu?.kyc_verified || cu?.verified) ||
+                       (u?.is_verified  || u?.kyc_verified  || u?.verified);
+    if (!currentUser || !isVerified) {
         if (typeof openAccessRestrictedModal === 'function') {
             openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Invite Co-Parent' });
         }
