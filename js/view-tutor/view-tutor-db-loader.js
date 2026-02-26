@@ -2089,18 +2089,18 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
     // Check localStorage fields first (fast path for up-to-date sessions)
     let isVerified = currentUser && (currentUser.is_verified || currentUser.kyc_verified || currentUser.verified);
 
-    // If not verified per localStorage, fetch fresh status from backend
-    // (handles stale sessions stored before verification fields were added)
+    // If not verified per localStorage, fetch fresh status from /api/me
+    // (handles stale sessions stored before verification fields were added, works for all roles)
     if (!isVerified && currentUser) {
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (token) {
-                const res = await fetch(`${API_BASE_URL}/api/kyc/status`, {
+                const res = await fetch(`${API_BASE_URL}/api/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
-                    const kycData = await res.json();
-                    isVerified = kycData.is_verified === true || kycData.kyc_verified === true;
+                    const meData = await res.json();
+                    isVerified = meData.is_verified === true || meData.kyc_verified === true;
                     // Update localStorage so subsequent checks are fast
                     if (isVerified) {
                         currentUser.is_verified = true;
@@ -2111,7 +2111,7 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
                 }
             }
         } catch (e) {
-            console.warn('[PackageGuard] Could not fetch KYC status from backend:', e);
+            console.warn('[PackageGuard] Could not fetch user status from backend:', e);
         }
     }
 
