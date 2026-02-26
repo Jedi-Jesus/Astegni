@@ -1882,7 +1882,7 @@ async function acceptConnectionRequest(connectionId) {
 
   // Guard: user must be verified
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null');
-  if (!currentUser || !currentUser.verified) {
+  if (!currentUser || (!currentUser.is_verified && !currentUser.kyc_verified && !currentUser.verified)) {
     if (typeof openAccessRestrictedModal === 'function') {
       openAccessRestrictedModal({ reason: 'kyc_not_verified', featureName: 'Accept Request' });
     }
