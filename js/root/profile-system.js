@@ -227,7 +227,7 @@ const ProfileSystem = (function() {
                         date_of_birth: data.user.date_of_birth,
                         gender: data.user.gender,
                         role: data.user.active_role,
-                        roles: data.user.roles,
+                        roles: data.user.roles || [],
                         active_role: data.user.active_role,
                         profile_picture: data.user.profile_picture,
                         is_verified: data.user.is_verified || false,
@@ -283,7 +283,7 @@ const ProfileSystem = (function() {
             date_of_birth: userData.date_of_birth,
             gender: userData.gender,
             role: userData.active_role,
-            roles: userData.roles,
+            roles: userData.roles || [],
             active_role: userData.active_role,
             profile_picture: userData.profile_picture,
             created_at: userData.created_at,
@@ -346,6 +346,7 @@ const ProfileSystem = (function() {
                     date_of_birth: userData.date_of_birth,
                     gender: userData.gender,
                     role: userData.active_role,  // FIXED: Use active_role from API
+                    roles: userData.roles || [],
                     active_role: userData.active_role,  // Include both for compatibility
                     profile_picture: userData.profile_picture,
                     created_at: userData.created_at,
@@ -1265,16 +1266,19 @@ function updateProfilePictures() {
                 if (window.showToast) {
                     window.showToast(`OTP sent to your ${data.destination}`, 'success');
                 }
+                return true;
             } else {
                 if (window.showToast) {
                     window.showToast(data.detail || 'Failed to send OTP', 'error');
                 }
+                return false;
             }
         } catch (error) {
             console.error('Error sending OTP:', error);
             if (window.showToast) {
                 window.showToast('Error sending OTP. Please try again.', 'error');
             }
+            return false;
         }
     }
 
@@ -1379,8 +1383,9 @@ function updateProfilePictures() {
                 // Store role and send OTP directly (no password needed)
                 addRoleData.role = role;
 
-                // Send OTP
-                await sendAddRoleOTP();
+                // Send OTP — only advance to step 2 if it succeeded
+                const otpSent = await sendAddRoleOTP();
+                if (!otpSent) return;
 
                 // Show step 2
                 if (step1) step1.style.display = 'none';
