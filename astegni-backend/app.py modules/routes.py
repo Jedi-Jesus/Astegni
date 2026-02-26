@@ -4852,7 +4852,8 @@ def add_user_role(
     if new_role == "tutor" and not current_user.tutor_profile:
         tutor_profile = TutorProfile(user_id=current_user.id)
         db.add(tutor_profile)
-        db.flush()  # Flush to get the profile ID
+        db.commit()  # Commit to satisfy tutor_analysis FK constraint
+        db.refresh(tutor_profile)
         new_tutor_created = True
 
         # Create tutor_analysis record with default 2.0 rating
