@@ -233,12 +233,19 @@ class AuthenticationManager {
             const userData = await response.json();
             console.log('[AuthManager.fetchUserData] Fresh user data received:', userData);
 
+            // /api/me returns { valid, user: {...} } — extract the inner user object
+            const freshUser = userData.user || userData;
+
             // Update user object with fresh data (including role_ids)
             this.user = {
                 ...this.user,
-                ...userData,
+                ...freshUser,
+                // Re-derive verified flags consistently with login flow
+                is_verified: freshUser.is_verified || false,
+                kyc_verified: freshUser.kyc_verified || false,
+                verified: freshUser.is_verified || freshUser.kyc_verified || false,
                 // Ensure critical fields are preserved/updated
-                role_ids: userData.role_ids || this.getRoleIds()
+                role_ids: freshUser.role_ids || this.getRoleIds()
             };
 
             // Update localStorage
