@@ -1737,7 +1737,7 @@ class TutorAnalysis(Base):
     __tablename__ = 'tutor_analysis'
 
     id = Column(Integer, primary_key=True, index=True)
-    tutor_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=True, index=True)
+    tutor_id = Column(Integer, ForeignKey('tutor_profiles.id', ondelete='CASCADE'), nullable=False, unique=True, index=True)
 
     # Profile visit metrics
     total_profile_visits = Column(Integer, default=0)
