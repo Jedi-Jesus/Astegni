@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug: currentTutorRequestType TDZ</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        h2 { color: #4fc3f7; }
+        .pass { color: #81c995; }
+        .fail { color: #f28b82; }
+        .warn { color: #ffd54f; }
+        .info { color: #a8c7fa; }
+        pre { background: #2d2d2d; padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; }
+        button { margin: 4px; padding: 8px 16px; background: #3c4043; color: #fff; border: 1px solid #5f6368; border-radius: 4px; cursor: pointer; font-family: monospace; }
+        button:hover { background: #5f6368; }
+        #output { margin-top: 20px; }
+        .section { margin-bottom: 12px; border-left: 3px solid #4fc3f7; padding-left: 10px; }
+    </style>
+</head>
+<body>
+<h2>🔬 TDZ Debug: currentTutorRequestType</h2>
+<p class="info">Open DevTools console alongside this page for full output.</p>
+
+<button onclick="runAll()">▶ Run All Tests</button>
+<button onclick="testScriptLoad()">1. Check script loaded</button>
+<button onclick="testVariableState()">2. Check variable state</button>
+<button onclick="testCallFilter()">3. Call filterTutorRequestType</button>
+<button onclick="testEarlyError()">4. Find early runtime error</button>
+<button onclick="clearOutput()">Clear</button>
+
+<div id="output"></div>
+
+<script>
+const out = document.getElementById('output');
+
+function log(msg, cls = '') {
+    const line = document.createElement('div');
+    line.className = cls;
+    line.textContent = msg;
+    out.appendChild(line);
+    console.log(msg);
+}
+
+function logPre(msg) {
+    const pre = document.createElement('pre');
+    pre.textContent = msg;
+    out.appendChild(pre);
+}
+
+function clearOutput() {
+    out.innerHTML = '';
+}
+
+// ─── 1. Check if global-functions.js is loaded ───────────────────────────────
+function testScriptLoad() {
+    log('── Test 1: Script load status ──', 'info');
+
+    const scripts = Array.from(document.querySelectorAll('script[src]'))
+        .map(s => s.src);
+
+    // This page doesn't load tutor scripts — check window state instead
+    log('window.filterTutorRequestType: ' + typeof window.filterTutorRequestType,
+        typeof window.filterTutorRequestType === 'function' ? 'pass' : 'fail');
+
+    log('window.loadTutorRequests: ' + typeof window.loadTutorRequests,
+        typeof window.loadTutorRequests === 'function' ? 'pass' : 'fail');
+
+    log('window.filterTutorRequestStatus: ' + typeof window.filterTutorRequestStatus,
+        typeof window.filterTutorRequestStatus === 'function' ? 'pass' : 'fail');
+}
+
+// ─── 2. Check variable state ─────────────────────────────────────────────────
+function testVariableState() {
+    log('── Test 2: Variable state ──', 'info');
+
+    try {
+        const val = window.currentTutorRequestType;
+        log('window.currentTutorRequestType = ' + JSON.stringify(val),
+            val !== undefined ? 'pass' : 'warn');
+    } catch(e) {
+        log('window.currentTutorRequestType access threw: ' + e.message, 'fail');
+    }
+
+    try {
+        const val = window.currentTutorRequestStatus;
+        log('window.currentTutorRequestStatus = ' + JSON.stringify(val),
+            val !== undefined ? 'pass' : 'warn');
+    } catch(e) {
+        log('window.currentTutorRequestStatus access threw: ' + e.message, 'fail');
+    }
+
+    try {
+        const val = window.currentTutorRequestDirection;
+        log('window.currentTutorRequestDirection = ' + JSON.stringify(val),
+            val !== undefined ? 'pass' : 'warn');
+    } catch(e) {
+        log('window.currentTutorRequestDirection access threw: ' + e.message, 'fail');
+    }
+
+    // Check if the variable is accessible via eval (catches TDZ in global scope)
+    try {
+        const val = eval('currentTutorRequestType');
+        log('eval(currentTutorRequestType) = ' + JSON.stringify(val), 'pass');
+    } catch(e) {
+        log('eval(currentTutorRequestType) threw: ' + e.message, 'fail');
+        log('→ Confirmed TDZ! Variable declared with let/const but never initialized.', 'fail');
+    }
+}
+
+// ─── 3. Direct call ──────────────────────────────────────────────────────────
+function testCallFilter() {
+    log('── Test 3: Call filterTutorRequestType("courses") ──', 'info');
+
+    if (typeof window.filterTutorRequestType !== 'function') {
+        log('filterTutorRequestType is not a function — global-functions.js not loaded here', 'warn');
+        log('→ Open tutor-profile.html and run these tests from the DevTools console', 'info');
+        return;
+    }
+
+    try {
+        window.filterTutorRequestType('courses');
+        log('filterTutorRequestType("courses") succeeded', 'pass');
+    } catch(e) {
+        log('filterTutorRequestType("courses") threw: ' + e.message, 'fail');
+        logPre(e.stack);
+    }
+}
+
+// ─── 4. Find early runtime error via monkey-patching ─────────────────────────
+function testEarlyError() {
+    log('── Test 4: Instructions to find the early error ──', 'info');
+    log('Paste this into the DevTools console on tutor-profile.html:', 'warn');
+    logPre(
+`// ── Paste in DevTools on tutor-profile.html ──
+
+// 1. Check if script fully executed (should be 'courses' if ok)
+try {
+    console.log('[1] currentTutorRequestType =', currentTutorRequestType);
+} catch(e) {
+    console.error('[1] TDZ confirmed:', e.message);
+}
+
+// 2. Check window export (assigned AFTER the let, so if this works but above fails,
+//    the let is being redeclared somewhere after line 8070)
+console.log('[2] window.filterTutorRequestType =', typeof window.filterTutorRequestType);
+
+// 3. Find ALL script error events (catches errors that happened during load)
+window.__earlyErrors = window.__earlyErrors || [];
+console.log('[3] Captured early errors:', window.__earlyErrors);
+
+// 4. Check all loaded scripts for syntax/runtime issues
+const allScripts = Array.from(document.querySelectorAll('script[src]'));
+console.log('[4] Loaded scripts:', allScripts.map(s => {
+    const url = s.src.split('/').pop();
+    return url;
+}));
+
+// 5. Check for DUPLICATE script loads of global-functions.js
+const gf = allScripts.filter(s => s.src.includes('global-functions'));
+console.log('[5] global-functions.js loaded', gf.length, 'time(s):', gf.map(s => s.src));
+
+// 6. Try calling the function and capture the exact error
+try {
+    filterTutorRequestType('courses');
+    console.log('[6] Call succeeded ✓');
+} catch(e) {
+    console.error('[6] Call failed:', e.message);
+    console.error('[6] Stack:', e.stack);
+}`
+    );
+
+    log('', '');
+    log('Also paste this to capture errors BEFORE they happen (reload page after):', 'warn');
+    logPre(
+`// ── Add to DevTools BEFORE page loads (use "Snippets" or run before reload) ──
+window.__earlyErrors = [];
+window.addEventListener('error', e => {
+    window.__earlyErrors.push({
+        message: e.message,
+        filename: e.filename,
+        line: e.lineno,
+        col: e.colno,
+        error: e.error?.stack
+    });
+}, true);`
+    );
+}
+
+function runAll() {
+    clearOutput();
+    log('═══════════════════════════════════════', 'info');
+    log('  TDZ Debug Runner', 'info');
+    log('═══════════════════════════════════════', 'info');
+    testScriptLoad();
+    testVariableState();
+    testCallFilter();
+    testEarlyError();
+    log('═══════════════════════════════════════', 'info');
+    log('Done. Copy the snippets above and run them in the DevTools console on tutor-profile.html', 'warn');
+}
+</script>
+
+<!--
+    HOW TO USE THIS PAGE:
+
+    Option A — Run here:
+    1. Open this file in the browser: http://localhost:8081/debug-request-type-tdz.html
+    2. Click "Run All Tests"
+
+    Option B — Use the snippets (more useful):
+    1. Open tutor-profile.html in the browser
+    2. Open DevTools (F12) > Console tab
+    3. Copy-paste the snippets from Test 4 and run them
+
+    The key snippet to run on tutor-profile.html:
+
+        try { console.log(currentTutorRequestType); }
+        catch(e) { console.error('TDZ!', e.message); }
+
+    If that throws, the let was never initialized — meaning global-functions.js
+    threw a runtime error before line 8070.
+
+    To find WHICH error, use the error listener snippet from Test 4
+    (add it as a Snippet in DevTools Sources tab, run it, then reload the page).
+-->
+</body>
+</html>

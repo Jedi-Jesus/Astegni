@@ -1,0 +1,11 @@
+=== STDOUT ===
+Busting cache with version: v202602231942
+✓ Updated existing versioned HTML refs
+✓ Added version to unversioned CSS refs in HTML
+✓ Added version to unversioned JS refs in HTML
+✓ Updated existing versioned @import refs in CSS
+✓ Added version to unversioned @import refs in CSS
+
+Done! All assets cache-busted with: v202602231942
+
+=== EXIT CODE: 0 ===
