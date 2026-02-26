@@ -29,7 +29,7 @@ document.querySelectorAll('script[src*="schedule-manager"]').forEach(script => {
 
 // Step 4: Force reload with new script
 const script = document.createElement('script');
-script.src = '../js/student-profile/schedule-manager.js?v202602252204' + Date.now();
+script.src = '../js/student-profile/schedule-manager.js?v202602260045' + Date.now();
 script.onload = function() {
     console.log('Script loaded. Testing...');
     console.log('filterSchedulesByRole type:', typeof window.filterSchedulesByRole);

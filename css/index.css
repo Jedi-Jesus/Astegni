@@ -3,18 +3,18 @@
    ============================================ */
 
 /* Import index-specific components */
-@import url('index/hero-section.css?v202602252204');
-@import url('index/features-section.css?v202602252204');
-@import url('index/professional-reviews.css?v202602252204');
-@import url('index/index-ad.css?v202602252204');
-@import url('index/news-section.css?v202602252204');
-@import url('index/video-carousel.css?v202602252204');
-@import url('index/course-flip.css?v202602252204');
-@import url('index/testimonials.css?v202602252204');
-@import url('index/partners.css?v202602252204');
-@import url('index/share-modal.css?v202602252204');
-@import url('index/utilities.css?v202602252204');
-@import url('index/responsive.css?v202602252204');
+@import url('index/hero-section.css?v202602260045');
+@import url('index/features-section.css?v202602260045');
+@import url('index/professional-reviews.css?v202602260045');
+@import url('index/index-ad.css?v202602260045');
+@import url('index/news-section.css?v202602260045');
+@import url('index/video-carousel.css?v202602260045');
+@import url('index/course-flip.css?v202602260045');
+@import url('index/testimonials.css?v202602260045');
+@import url('index/partners.css?v202602260045');
+@import url('index/share-modal.css?v202602260045');
+@import url('index/utilities.css?v202602260045');
+@import url('index/responsive.css?v202602260045');
 
 /* Scroll progress bar - index specific */
 .scroll-progress {

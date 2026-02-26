@@ -4,23 +4,23 @@
    ============================================ */
 
 /* Core foundational styles */
-@import url('root/theme.css?v202602252204');
-@import url('root/color-palettes.css?v202602252204');
+@import url('root/theme.css?v202602260045');
+@import url('root/color-palettes.css?v202602260045');
 
 /* Component-specific modules */
-@import url('root/buttons-forms.css?v202602252204');
-@import url('root/cards-panels.css?v202602252204');
-@import url('root/modals.css?v202602252204');
-/* @import url('root/auth-modal-premium.css?v202602252204'); -- Removed: Using index/auth-modal-enhanced.css instead */
+@import url('root/buttons-forms.css?v202602260045');
+@import url('root/cards-panels.css?v202602260045');
+@import url('root/modals.css?v202602260045');
+/* @import url('root/auth-modal-premium.css?v202602260045'); -- Removed: Using index/auth-modal-enhanced.css instead */
 
 /* Root components */
-@import url('root/loading-screen.css?v202602252204');
-@import url('root/navigation.css?v202602252204');
-@import url('root/logo-badge.css?v202602252204');
-@import url('root/search-box.css?v202602252204');
-@import url('root/sidebar.css?v202602252204');
-@import url('root/profile-dropdown.css?v202602252204');
-@import url('root/promo-placeholder.css?v202602252204');
-@import url('root/badge-notification.css?v202602252204');
-@import url('root/progress-container.css?v202602252204');
-@import url('root/footer.css?v202602252204');
+@import url('root/loading-screen.css?v202602260045');
+@import url('root/navigation.css?v202602260045');
+@import url('root/logo-badge.css?v202602260045');
+@import url('root/search-box.css?v202602260045');
+@import url('root/sidebar.css?v202602260045');
+@import url('root/profile-dropdown.css?v202602260045');
+@import url('root/promo-placeholder.css?v202602260045');
+@import url('root/badge-notification.css?v202602260045');
+@import url('root/progress-container.css?v202602260045');
+@import url('root/footer.css?v202602260045');

@@ -269,7 +269,7 @@
 const oldScript = document.querySelector('script[src*="global-functions"]');
 if (oldScript) oldScript.remove();
 const newScript = document.createElement('script');
-newScript.src = '../js/student-profile/global-functions.js?v202602252204' + Date.now();
+newScript.src = '../js/student-profile/global-functions.js?v202602260045' + Date.now();
 newScript.onload = () => console.log('✅ Script reloaded!', typeof window.openViewScheduleModal);
 document.body.appendChild(newScript);</pre>
             </div>
@@ -427,7 +427,7 @@ console.log('openCreateScheduleModal:', typeof window.openCreateScheduleModal);<
             }
 
             const newScript = document.createElement('script');
-            newScript.src = '../js/student-profile/global-functions.js?v202602252204' + Date.now();
+            newScript.src = '../js/student-profile/global-functions.js?v202602260045' + Date.now();
             newScript.onload = () => {
                 output.innerHTML += `✅ Script loaded!\n`;
                 output.innerHTML += `openViewScheduleModal: ${typeof window.openViewScheduleModal}\n`;
@@ -451,7 +451,7 @@ console.log('openCreateScheduleModal:', typeof window.openCreateScheduleModal);<
             }
 
             const newScript = document.createElement('script');
-            newScript.src = '../js/student-profile/schedule-manager.js?v202602252204' + Date.now();
+            newScript.src = '../js/student-profile/schedule-manager.js?v202602260045' + Date.now();
             newScript.onload = () => {
                 output.innerHTML += `✅ Script loaded!\n`;
                 output.innerHTML += `handleViewScheduleClick: ${typeof window.handleViewScheduleClick}\n`;
@@ -486,13 +486,13 @@ console.log('openCreateScheduleModal:', typeof window.openCreateScheduleModal);<
             // Reload in order
             setTimeout(() => {
                 const s1 = document.createElement('script');
-                s1.src = '../js/student-profile/global-functions.js?v202602252204' + Date.now();
+                s1.src = '../js/student-profile/global-functions.js?v202602260045' + Date.now();
                 s1.onload = () => output.innerHTML += '✅ global-functions.js loaded\n';
                 document.body.appendChild(s1);
 
                 setTimeout(() => {
                     const s2 = document.createElement('script');
-                    s2.src = '../js/student-profile/schedule-manager.js?v202602252204' + Date.now();
+                    s2.src = '../js/student-profile/schedule-manager.js?v202602260045' + Date.now();
                     s2.onload = () => {
                         output.innerHTML += '✅ schedule-manager.js loaded\n\n';
                         output.innerHTML += 'Final check:\n';
