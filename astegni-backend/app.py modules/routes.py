@@ -4688,7 +4688,7 @@ def add_user_role(
 
     # Check if user already has this role (active) BEFORE verifying OTP
     # This prevents burning the OTP if the role already exists AND is active
-    if new_role in current_user.roles:
+    if new_role in (current_user.roles or []):
         # Check if role is deactivated
         role_model = None
         is_deactivated = False
@@ -4728,7 +4728,7 @@ def add_user_role(
 
     # Check if role is deactivated and reactivate it
     role_reactivated = False
-    if new_role in current_user.roles:
+    if new_role in (current_user.roles or []):
         role_model = None
         if new_role == 'student':
             role_model = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
