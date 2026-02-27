@@ -143,7 +143,7 @@
                 communityManager.loadRequestTab('received', 'all');
                 break;
             case 'events':
-                communityManager.loadSectionGrid('events');
+                communityManager.loadSectionGrid('events', 'upcoming');
                 break;
                 case 'all':
                 communityManager.loadSectionGrid('all', 'all');

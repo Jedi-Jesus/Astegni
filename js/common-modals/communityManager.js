@@ -421,7 +421,7 @@ class CommunityManager {
       }
 
       if (section === 'events') {
-        await this.loadEventsGrid(grid);
+        await this.loadEventsGrid(grid, category);
       } else if (section === 'clubs') {
         await this.loadClubsGrid(grid);
       } else {
@@ -878,7 +878,7 @@ class CommunityManager {
     }
   }
 
-  async loadEventsGrid(grid) {
+  async loadEventsGrid(grid, filterType = 'upcoming') {
     const token = getAuthToken();
     const currentUserId = this.getCurrentUserId();
     const activeRole = this.getActiveRole();
@@ -894,10 +894,43 @@ class CommunityManager {
     }
 
     const data = await response.json();
-    const events = data.events || [];  // Backend already filters, no need to filter again
+    const allEvents = data.events || [];
+    const now = new Date();
+
+    // Update filter counts on buttons
+    const eventsSection = document.getElementById('events-section');
+    if (eventsSection) {
+      const pastCount = allEvents.filter(e => new Date(e.start_datetime) < now).length;
+      const upcomingCount = allEvents.filter(e => new Date(e.start_datetime) >= now).length;
+      const joinedCount = allEvents.filter(e => e.joined_status === true).length;
+      const filterBtns = eventsSection.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        const f = btn.dataset.filter;
+        const countSpan = btn.querySelector('.filter-count');
+        if (countSpan) {
+          if (f === 'past') countSpan.textContent = pastCount;
+          else if (f === 'upcoming') countSpan.textContent = upcomingCount;
+          else if (f === 'joined') countSpan.textContent = joinedCount;
+        }
+        // Update active state
+        btn.classList.toggle('active', f === filterType);
+      });
+    }
+
+    // Apply filter
+    let events = allEvents;
+    if (filterType === 'past') {
+      events = allEvents.filter(e => new Date(e.start_datetime) < now);
+    } else if (filterType === 'upcoming') {
+      events = allEvents.filter(e => new Date(e.start_datetime) >= now);
+    } else if (filterType === 'joined') {
+      events = allEvents.filter(e => e.joined_status === true);
+    }
 
     if (events.length === 0) {
-      grid.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted);"><div style="font-size: 3rem; margin-bottom: 1rem;">📅</div><p>No events available</p></div>';
+      const labels = { past: 'past', upcoming: 'upcoming', joined: 'joined' };
+      const label = labels[filterType] || '';
+      grid.innerHTML = `<div style="text-align: center; padding: 3rem; color: var(--text-muted);"><div style="font-size: 3rem; margin-bottom: 1rem;">📅</div><p>No ${label} events found</p></div>`;
       return;
     }
 
