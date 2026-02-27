@@ -149,20 +149,21 @@ const CommonModalLoader = (function() {
         // Determine filename
         let filename = MODAL_ID_MAP[modalIdentifier] || modalIdentifier;
 
-        // Full URL
-        const url = basePath + filename;
+        // Full URL with cache-busting
+        const baseUrl = basePath + filename;
+        const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + `v=${Date.now()}`;
 
-        // Check cache first
-        if (CONFIG.cache && cache[url]) {
+        // Check cache first (use baseUrl as key so cache works within session)
+        if (CONFIG.cache && cache[baseUrl]) {
             console.log(`[CommonModalLoader] Loading from cache: ${filename}`);
-            appendToContainer(cache[url]);
+            appendToContainer(cache[baseUrl]);
             return;
         }
 
         // Fetch modal HTML
         try {
             console.log(`[CommonModalLoader] Fetching: ${filename}`);
-            const response = await fetch(url);
+            const response = await fetch(url, { cache: 'no-store' });
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -172,7 +173,7 @@ const CommonModalLoader = (function() {
 
             // Cache the modal
             if (CONFIG.cache) {
-                cache[url] = html;
+                cache[baseUrl] = html;
             }
 
             // Append to container
