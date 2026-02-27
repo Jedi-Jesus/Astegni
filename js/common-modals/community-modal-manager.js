@@ -97,13 +97,11 @@
         });
 
         // Remove section-specific classes from modal
-        modal.classList.remove('events-active', 'clubs-active');
+        modal.classList.remove('events-active');
 
-        // Add section-specific class for Events/Clubs
+        // Add section-specific class for Events
         if (section === 'events') {
             modal.classList.add('events-active');
-        } else if (section === 'clubs') {
-            modal.classList.add('clubs-active');
         }
 
         // Activate the selected menu item
@@ -147,10 +145,7 @@
             case 'events':
                 communityManager.loadSectionGrid('events');
                 break;
-            case 'clubs':
-                communityManager.loadSectionGrid('clubs');
-                break;
-            case 'all':
+                case 'all':
                 communityManager.loadSectionGrid('all', 'all');
                 break;
             default:
@@ -359,18 +354,6 @@
         }
     }
 
-    /**
-     * Filter clubs by type
-     * @param {string} filterType - Filter type ('all', 'joined', 'discover')
-     */
-    function filterClubsBy(filterType) {
-        console.log(`🔍 Filtering clubs by: ${filterType}`);
-        // Clubs filtering logic (to be implemented)
-        if (communityManager) {
-            communityManager.loadSectionGrid('clubs', filterType);
-        }
-    }
-
     // ============================================
     // SEARCH FUNCTIONS (Specific names for compatibility)
     // ============================================
@@ -402,18 +385,6 @@
         // Events search logic (to be implemented)
         if (communityManager) {
             communityManager.searchEvents && communityManager.searchEvents(query);
-        }
-    }
-
-    /**
-     * Search clubs
-     * @param {string} query - Search query
-     */
-    function searchClubs(query) {
-        console.log(`🔎 Searching clubs: "${query}"`);
-        // Clubs search logic (to be implemented)
-        if (communityManager) {
-            communityManager.searchClubs && communityManager.searchClubs(query);
         }
     }
 
@@ -506,13 +477,11 @@
     window.filterReceivedRequestsBy = filterReceivedRequestsBy;
     window.filterSentRequestsBy = filterSentRequestsBy;
     window.filterEventsBy = filterEventsBy;
-    window.filterClubsBy = filterClubsBy;
 
     // Search Functions (specific names for HTML onclick handlers)
     window.searchReceivedRequests = searchReceivedRequests;
     window.searchSentRequests = searchSentRequests;
     window.searchEvents = searchEvents;
-    window.searchClubs = searchClubs;
 
     // Generic Modal Functions
     window.openModal = openModal;

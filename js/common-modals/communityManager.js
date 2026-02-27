@@ -128,20 +128,10 @@ class CommunityManager {
       });
 
       const eventsData = eventsResponse.ok ? await eventsResponse.json() : { count: 0 };
-      const eventsCount = eventsData.count || 0;
+      const eventsCount = eventsData.count ?? (Array.isArray(eventsData.events) ? eventsData.events.length : 0);
 
-      // Fetch clubs count with role parameter
-      const clubsResponse = await fetch(`${this.API_BASE_URL}/api/clubs?role=${activeRole}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const clubsData = clubsResponse.ok ? await clubsResponse.json() : { count: 0 };
-      const clubsCount = clubsData.count || 0;
-
-      // Update badge counts in the DOM
-      this.updateBadgeCounts(eventsCount, clubsCount);
+      // Update badge counts in the DOM (no clubs)
+      this.updateBadgeCounts(eventsCount);
 
       // Update profile header stats
       this.updateProfileHeaderStats();
@@ -177,13 +167,13 @@ class CommunityManager {
     }
   }
 
-  updateBadgeCounts(eventsCount, clubsCount) {
+  updateBadgeCounts(eventsCount) {
     // Calculate total count
     const totalConnections = this.stats ? this.stats.connected_count : 0;
     const incomingRequests = this.stats ? this.stats.incoming_requests : 0;
     const outgoingRequests = this.stats ? this.stats.outgoing_requests : 0;
     const totalRequests = incomingRequests + outgoingRequests;
-    const totalCount = totalConnections + totalRequests + eventsCount + clubsCount;
+    const totalCount = totalConnections + totalRequests + eventsCount;
 
     console.log('📊 Updating badge counts:', {
       totalConnections,
@@ -191,7 +181,6 @@ class CommunityManager {
       outgoingRequests,
       totalRequests,
       eventsCount,
-      clubsCount,
       totalCount
     });
 
@@ -267,18 +256,8 @@ class CommunityManager {
       console.warn('⚠ events-count badge element not found in sidebar');
     }
 
-    // Update sidebar "Clubs" count badge
-    const sidebarClubsCount = document.getElementById('clubs-count');
-    if (sidebarClubsCount) {
-      sidebarClubsCount.textContent = clubsCount;
-      console.log(`✓ Updated sidebar clubs-count to: ${clubsCount}`);
-    } else {
-      console.warn('⚠ clubs-count badge element not found in sidebar');
-    }
-
     // Store for filter counts
     this.eventsCount = eventsCount;
-    this.clubsCount = clubsCount;
   }
 
   attachEvents() {

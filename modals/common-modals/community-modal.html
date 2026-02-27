@@ -30,11 +30,6 @@
                             <span>Events</span>
                             <span class="count-badge" id="events-count">0</span>
                         </div>
-                        <div class="menu-item" data-section="clubs" onclick="switchCommunityMainSection('clubs')">
-                            <span class="menu-icon">🎯</span>
-                            <span>Clubs</span>
-                            <span class="count-badge" id="clubs-count">0</span>
-                        </div>
                     </div>
                 </div>
 
@@ -210,38 +205,6 @@
                             <div class="loading-container">
                                 <div class="loading-spinner"></div>
                                 <p class="loading-text">Loading events...</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CLUBS SECTION -->
-                    <div id="clubs-section" class="community-section hidden">
-
-                        <!-- Section Header with Search -->
-                        <div class="section-header">
-                            <div class="search-box">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="search-input" placeholder="Search clubs..." id="clubs-search"
-                                    oninput="searchClubs(this.value)">
-                            </div>
-                        </div>
-
-                        <!-- Section Filters (Tabs) -->
-                        <div class="section-filters">
-                            <button class="filter-btn active" data-filter="discover"
-                                onclick="filterClubsBy('discover')">
-                                🔍 Discover <span class="filter-count">0</span>
-                            </button>
-                            <button class="filter-btn" data-filter="joined" onclick="filterClubsBy('joined')">
-                                ✅ Joined <span class="filter-count">0</span>
-                            </button>
-                        </div>
-
-                        <!-- Clubs Grid -->
-                        <div class="clubs-grid" id="clubsGrid" style="padding: 2rem;">
-                            <div class="loading-container">
-                                <div class="loading-spinner"></div>
-                                <p class="loading-text">Loading clubs...</p>
                             </div>
                         </div>
                     </div>
