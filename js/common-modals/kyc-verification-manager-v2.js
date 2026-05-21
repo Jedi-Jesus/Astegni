@@ -530,7 +530,7 @@ class KYCVerificationManager {
     /**
      * Retake document photo
      */
-    retakeDocument() {
+    async retakeDocument() {
         kycDebug('retakeDocument() — discarding captured image, restarting video', 'warn');
         const video = document.getElementById('kyc-video-document');
         const preview = document.getElementById('kyc-preview-document');
@@ -543,6 +543,11 @@ class KYCVerificationManager {
         document.getElementById('btn-continue-document').style.display = 'none';
 
         this.documentImage = null;
+
+        if (!this.documentStream || this.documentStream.getTracks().every(t => t.readyState === 'ended')) {
+            kycDebug('Document stream missing or ended — reinitializing camera', 'info');
+            await this.initDocumentCamera();
+        }
         kycDebug('documentImage cleared — camera live again', 'info');
     }
 
@@ -641,6 +646,66 @@ class KYCVerificationManager {
         } finally {
             this.isProcessing = false;
         }
+    }
+
+    /**
+     * Go back from liveliness step to document step.
+     * Stops the selfie stream, resets liveliness challenge state, restarts the
+     * document camera, and restores the captured-document preview so the user
+     * can either Retake or Continue again.
+     */
+    async goBackToDocument() {
+        kycDebug('━━━ STEP 2→1: goBackToDocument() ━━━', 'info');
+        if (this.isProcessing) {
+            kycDebug('Already processing — cannot go back right now', 'warn');
+            return;
+        }
+
+        if (this.selfieStream) {
+            this.selfieStream.getTracks().forEach(track => track.stop());
+            this.selfieStream = null;
+        }
+
+        this.challengesCompleted = { blink: false, smile: false, turn: false };
+        this.livelinessFrames = [];
+
+        ['blink', 'smile', 'turn'].forEach(type => {
+            const btn = document.getElementById(`btn-challenge-${type}`);
+            if (btn) btn.classList.remove('completed');
+            const check = document.getElementById(`check-${type}`);
+            if (check) check.classList.remove('passed');
+            const status = document.getElementById(`status-${type}`);
+            if (status) status.innerHTML = '&#9675;';
+        });
+        const completeBtn = document.getElementById('btn-complete-liveliness');
+        if (completeBtn) completeBtn.style.display = 'none';
+        const instruction = document.getElementById('challenge-instruction');
+        if (instruction) instruction.textContent = 'Position your face in the oval';
+
+        this.showStep('document');
+        this.updateProgress(1);
+
+        if (this.documentImage) {
+            const video = document.getElementById('kyc-video-document');
+            const preview = document.getElementById('kyc-preview-document');
+            if (video) video.style.display = 'none';
+            if (preview) {
+                preview.src = this.documentImage;
+                preview.style.display = 'block';
+            }
+            document.getElementById('btn-capture-document').style.display = 'none';
+            document.getElementById('btn-retake-document').style.display = 'inline-flex';
+            const continueBtn = document.getElementById('btn-continue-document');
+            if (continueBtn) {
+                continueBtn.style.display = 'inline-flex';
+                continueBtn.disabled = false;
+                continueBtn.textContent = 'Continue';
+            }
+        } else {
+            await this.initDocumentCamera();
+        }
+
+        kycDebug('━━━ STEP 1 active — back at document step ━━━', 'ok');
     }
 
     /**
@@ -1168,6 +1233,10 @@ function retakeDocument() {
 
 function proceedToLiveliness() {
     kycManager.proceedToLiveliness();
+}
+
+function goBackToDocument() {
+    kycManager.goBackToDocument();
 }
 
 function startChallenge(type) {

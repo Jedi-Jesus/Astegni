@@ -77,7 +77,15 @@
 
             <!-- Step 2: Liveliness Challenges -->
             <div id="kyc-step-liveliness" class="kyc-step-content" style="display: none;">
-                <div class="step-header" style="text-align: center; margin-bottom: 20px;">
+                <div class="step-header" style="position: relative; text-align: center; margin-bottom: 20px;">
+                    <button id="btn-back-to-document" class="btn-secondary" onclick="goBackToDocument()"
+                        style="position: absolute; left: 0; top: 0; padding: 8px 14px; background: transparent; color: var(--text-secondary, #6b7280); border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back
+                    </button>
                     <h3 style="margin: 0 0 8px; color: var(--text-primary);">Liveliness Check</h3>
                     <p style="color: var(--text-secondary); font-size: 14px;">Follow the instructions to verify you are a real person</p>
                 </div>
@@ -279,6 +287,17 @@
     #btn-complete-liveliness:active {
         background: var(--primary-active, #92400E) !important;
         transform: translateY(0);
+    }
+
+    #btn-back-to-document:hover {
+        background: var(--bg-secondary, #f3f4f6) !important;
+        color: var(--text-primary, #111827) !important;
+        border-color: var(--text-secondary, #9ca3af) !important;
+    }
+
+    #btn-back-to-document:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     /* Disabled state for any primary button during async work */
