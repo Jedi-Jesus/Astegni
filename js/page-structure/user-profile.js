@@ -952,10 +952,33 @@ function displayUserProfile(profile) {
         profileLocationEl.textContent = profile.location || 'Location not set';
     }
 
-    // Verified badge — only show if user is actually verified
+    // Verification badge — mirror tutor-profile states
     const verificationBadgeEl = document.getElementById('verification-badge');
     if (verificationBadgeEl) {
-        verificationBadgeEl.style.display = profile.is_verified ? '' : 'none';
+        const isVerified = !!profile.is_verified;
+        const status = profile.verification_status;
+        const isSuspended = !!profile.is_suspended;
+
+        let text, cls;
+        if (isSuspended) {
+            text = '⊘ Account Suspended';
+            cls = 'suspended';
+        } else if (isVerified) {
+            text = '✔ Verified User';
+            cls = 'verified';
+        } else if (status === 'pending') {
+            text = '⏳ Verification Pending';
+            cls = 'pending';
+        } else if (status === 'rejected') {
+            text = '✖ Verification Rejected';
+            cls = 'rejected';
+        } else {
+            text = '○ Not Verified';
+            cls = 'not-verified';
+        }
+        verificationBadgeEl.textContent = text;
+        verificationBadgeEl.className = `profile-badge ${cls}`;
+        verificationBadgeEl.style.display = 'inline-flex';
     }
 
     // Display profile picture (from users table)

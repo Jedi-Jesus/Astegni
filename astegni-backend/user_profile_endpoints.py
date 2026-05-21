@@ -52,6 +52,8 @@ class UserProfileResponse(BaseModel):
     is_active: bool
     is_online: bool
     is_verified: Optional[bool] = False
+    verification_status: Optional[str] = None
+    is_suspended: Optional[bool] = False
 
     class Config:
         from_attributes = True
@@ -119,6 +121,8 @@ async def get_user_profile(
         "is_active": user_profile.is_active,
         "is_online": user_profile.is_online,
         "is_verified": bool(getattr(user, "is_verified", False)),
+        "verification_status": getattr(user, "verification_status", None),
+        "is_suspended": bool(getattr(user, "is_suspended", False)),
     }
 
 @router.put("/api/user/profile")

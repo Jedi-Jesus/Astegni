@@ -366,6 +366,50 @@
             box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
         }
 
+        .profile-badge.pending {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+
+        .profile-badge.pending:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+        }
+
+        .profile-badge.rejected {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .profile-badge.rejected:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        .profile-badge.suspended {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+
+        .profile-badge.suspended:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4);
+        }
+
+        .profile-badge.not-verified {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.3);
+        }
+
+        .profile-badge.not-verified:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(148, 163, 184, 0.4);
+        }
+
         .profile-badge.member {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
@@ -1223,8 +1267,7 @@
                                                 <h1 class="profile-name" id="profile-name">User Name</h1>
                                                 <p id="profile-username" style="color: var(--text-muted); font-size: 1rem; margin-top: 0.25rem;">@username</p>
                                                 <div class="badges-row">
-                                                    <span class="profile-badge verified" id="verification-badge" style="display: none;">✔
-                                                        Verified User</span>
+                                                    <span class="profile-badge not-verified" id="verification-badge">○ Not Verified</span>
                                                     <span class="profile-badge member">👤 Active Member</span>
                                                 </div>
                                             </div>
