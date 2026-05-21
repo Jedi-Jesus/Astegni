@@ -555,10 +555,25 @@ class KYCVerificationManager {
      * Proceed to liveliness step
      */
     async proceedToLiveliness() {
+        const continueBtn = document.getElementById('btn-continue-document');
+        if (continueBtn && continueBtn.disabled) {
+            kycDebug('Continue button already disabled — ignoring click', 'warn');
+            return;
+        }
+        const continueOriginalText = continueBtn ? continueBtn.textContent : null;
+        if (continueBtn) {
+            continueBtn.disabled = true;
+            continueBtn.textContent = 'Uploading...';
+        }
+
         kycDebug('━━━ STEP 1→2: proceedToLiveliness() ━━━', 'info');
         if (!this.documentImage) {
             kycDebug('proceedToLiveliness: no documentImage — user must capture first', 'warn');
             alert('Please capture your document first');
+            if (continueBtn) {
+                continueBtn.disabled = false;
+                if (continueOriginalText) continueBtn.textContent = continueOriginalText;
+            }
             return;
         }
         kycDebug(`documentImage present — ${Math.round(this.documentImage.length / 1024)} KB`, 'info');
@@ -568,13 +583,6 @@ class KYCVerificationManager {
             return;
         }
         this.isProcessing = true;
-
-        const continueBtn = document.getElementById('btn-continue-document');
-        const continueOriginalText = continueBtn ? continueBtn.textContent : null;
-        if (continueBtn) {
-            continueBtn.disabled = true;
-            continueBtn.textContent = 'Uploading...';
-        }
 
         try {
             // Upload document to backend

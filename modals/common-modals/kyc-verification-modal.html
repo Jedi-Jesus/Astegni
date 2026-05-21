@@ -300,13 +300,25 @@
         cursor: not-allowed;
     }
 
-    /* Disabled state for any primary button during async work */
+    /* Disabled state for any primary button during async work.
+       Hard-block hover/active visuals AND pointer events so a disabled
+       button looks and behaves disabled even with the :hover/:active
+       rules above (which use !important). */
     #btn-continue-document:disabled,
     #btn-complete-liveliness:disabled,
-    #btn-capture-document:disabled {
+    #btn-capture-document:disabled,
+    #btn-continue-document:disabled:hover,
+    #btn-complete-liveliness:disabled:hover,
+    #btn-capture-document:disabled:hover,
+    #btn-continue-document:disabled:active,
+    #btn-complete-liveliness:disabled:active,
+    #btn-capture-document:disabled:active {
         background: var(--primary-color, #F59E0B) !important;
         opacity: 0.6;
         cursor: not-allowed;
+        pointer-events: none;
+        transform: none !important;
+        box-shadow: none !important;
         transform: none;
         box-shadow: none;
     }
