@@ -51,6 +51,7 @@ class UserProfileResponse(BaseModel):
     cover_image: Optional[str]
     is_active: bool
     is_online: bool
+    is_verified: Optional[bool] = False
 
     class Config:
         from_attributes = True
@@ -116,7 +117,8 @@ async def get_user_profile(
         "profile_picture": user.profile_picture,  # Read from users table
         "cover_image": user_profile.cover_image,
         "is_active": user_profile.is_active,
-        "is_online": user_profile.is_online
+        "is_online": user_profile.is_online,
+        "is_verified": bool(getattr(user, "is_verified", False)),
     }
 
 @router.put("/api/user/profile")

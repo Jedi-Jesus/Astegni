@@ -952,6 +952,12 @@ function displayUserProfile(profile) {
         profileLocationEl.textContent = profile.location || 'Location not set';
     }
 
+    // Verified badge — only show if user is actually verified
+    const verificationBadgeEl = document.getElementById('verification-badge');
+    if (verificationBadgeEl) {
+        verificationBadgeEl.style.display = profile.is_verified ? '' : 'none';
+    }
+
     // Display profile picture (from users table)
     if (profilePicEl && profile.profile_picture) {
         profilePicEl.src = profile.profile_picture;
