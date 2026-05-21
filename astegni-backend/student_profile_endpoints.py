@@ -64,6 +64,9 @@ class StudentProfileResponse(BaseModel):
     about: Optional[str]
     profile_picture: Optional[str]
     cover_image: Optional[str]
+    is_verified: Optional[bool] = False
+    verification_status: Optional[str] = None
+    is_suspended: Optional[bool] = False
     created_at: datetime
     updated_at: datetime
 
@@ -126,6 +129,9 @@ async def get_student_profile(user_id: int):
                         sp.about,
                         COALESCE(u.profile_picture, '') as profile_picture,
                         sp.cover_image,
+                        COALESCE(u.is_verified, FALSE) as is_verified,
+                        u.verification_status,
+                        COALESCE(u.is_suspended, FALSE) as is_suspended,
                         sp.created_at, sp.updated_at
                     FROM student_profiles sp
                     JOIN users u ON sp.user_id = u.id

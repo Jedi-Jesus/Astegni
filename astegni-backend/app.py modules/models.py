@@ -1384,6 +1384,8 @@ class ParentProfileResponse(BaseModel):
     rating: Optional[float] = 0.0
     rating_count: Optional[int] = 0
     is_verified: Optional[bool] = False
+    verification_status: Optional[str] = None
+    is_suspended: Optional[bool] = False
     profile_picture: Optional[str] = None  # From users table
     cover_image: Optional[str] = None
     hero_title: List[str] = []  # Array of hero title lines

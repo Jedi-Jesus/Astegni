@@ -708,6 +708,35 @@ function updateProfileHeaderUI(data) {
         locationEl.textContent = data.location;
     }
 
+    // Update verification badge — mirror tutor-profile states
+    const verificationBadge = document.getElementById('verification-badge');
+    if (verificationBadge) {
+        const isVerified = !!data.is_verified;
+        const status = data.verification_status;
+        const isSuspended = !!data.is_suspended;
+
+        let text, cls;
+        if (isSuspended) {
+            text = '⊘ Account Suspended';
+            cls = 'suspended';
+        } else if (isVerified) {
+            text = '✔ Verified Student';
+            cls = 'verified';
+        } else if (status === 'pending') {
+            text = '⏳ Verification Pending';
+            cls = 'pending';
+        } else if (status === 'rejected') {
+            text = '✖ Verification Rejected';
+            cls = 'rejected';
+        } else {
+            text = '○ Not Verified';
+            cls = 'not-verified';
+        }
+        verificationBadge.textContent = text;
+        verificationBadge.className = `profile-badge ${cls}`;
+        verificationBadge.style.display = 'inline-flex';
+    }
+
     // Update bio/about (About Me section in dashboard panel)
     const bioEl = document.getElementById('student-bio');
     if (bioEl) {
@@ -839,6 +868,9 @@ document.addEventListener('DOMContentLoaded', () => {
             closeEditProfileModal();
         }
     });
+
+    // Populate verification badge (and other header fields) from API on first load
+    reloadProfileHeader();
 });
 
 // Handle "Change Location" button click for student profile

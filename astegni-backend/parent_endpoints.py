@@ -110,6 +110,8 @@ async def get_parent_profile(
         "social_links": current_user.social_links or {},
         "languages": current_user.languages or [],
         "is_verified": current_user.is_verified or False,
+        "verification_status": current_user.verification_status,
+        "is_suspended": bool(getattr(current_user, "is_suspended", False)),
         "profile_picture": current_user.profile_picture,  # Fixed: Now fetching from users table
         "cover_image": parent_profile.cover_image,
         # Hero fields

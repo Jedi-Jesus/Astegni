@@ -531,15 +531,33 @@ async function loadUserProfile() {
                 }
             }
 
-            // Update verification badge
+            // Update verification badge — mirror tutor-profile states
             const verificationBadge = document.getElementById('verification-badge');
             if (verificationBadge) {
-                if (profile.is_verified) {
-                    verificationBadge.style.display = 'inline-flex';
-                    verificationBadge.innerHTML = '✔ Verified Parent';
+                const isVerified = !!profile.is_verified;
+                const status = profile.verification_status;
+                const isSuspended = !!profile.is_suspended;
+
+                let text, cls;
+                if (isSuspended) {
+                    text = '⊘ Account Suspended';
+                    cls = 'suspended';
+                } else if (isVerified) {
+                    text = '✔ Verified Parent';
+                    cls = 'verified';
+                } else if (status === 'pending') {
+                    text = '⏳ Verification Pending';
+                    cls = 'pending';
+                } else if (status === 'rejected') {
+                    text = '✖ Verification Rejected';
+                    cls = 'rejected';
                 } else {
-                    verificationBadge.style.display = 'none';
+                    text = '○ Not Verified';
+                    cls = 'not-verified';
                 }
+                verificationBadge.textContent = text;
+                verificationBadge.className = `profile-badge ${cls}`;
+                verificationBadge.style.display = 'inline-flex';
             }
 
             // Update profile avatar
