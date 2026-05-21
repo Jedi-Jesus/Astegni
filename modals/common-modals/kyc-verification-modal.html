@@ -123,7 +123,7 @@
                             Head Turn
                         </button>
                     </div>
-                    <button id="btn-complete-liveliness" class="finance-btn-primary" onclick="completeLiveliness()" style="display: none; padding: 12px 32px;">
+                    <button id="btn-complete-liveliness" class="finance-btn-primary" onclick="completeLiveliness()" style="display: none; padding: 12px 32px; background: var(--primary-color, #F59E0B); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                         Complete Verification
                     </button>
                 </div>
@@ -267,15 +267,28 @@
 
     /* Button hover effects matching theme */
     #btn-capture-document:hover,
-    #btn-continue-document:hover {
+    #btn-continue-document:hover,
+    #btn-complete-liveliness:hover {
         background: var(--primary-hover, #D97706) !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
     }
 
     #btn-capture-document:active,
-    #btn-continue-document:active {
+    #btn-continue-document:active,
+    #btn-complete-liveliness:active {
         background: var(--primary-active, #92400E) !important;
         transform: translateY(0);
+    }
+
+    /* Disabled state for any primary button during async work */
+    #btn-continue-document:disabled,
+    #btn-complete-liveliness:disabled,
+    #btn-capture-document:disabled {
+        background: var(--primary-color, #F59E0B) !important;
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
     }
 </style>

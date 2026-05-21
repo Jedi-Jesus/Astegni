@@ -564,6 +564,13 @@ class KYCVerificationManager {
         }
         this.isProcessing = true;
 
+        const continueBtn = document.getElementById('btn-continue-document');
+        const continueOriginalText = continueBtn ? continueBtn.textContent : null;
+        if (continueBtn) {
+            continueBtn.disabled = true;
+            continueBtn.textContent = 'Uploading...';
+        }
+
         try {
             // Upload document to backend
             let token = localStorage.getItem('token') || localStorage.getItem('access_token');
@@ -627,6 +634,10 @@ class KYCVerificationManager {
         } catch (error) {
             kycDebug(`Document upload failed: ${error.message}`, 'err');
             alert(error.message);
+            if (continueBtn) {
+                continueBtn.disabled = false;
+                if (continueOriginalText) continueBtn.textContent = continueOriginalText;
+            }
         } finally {
             this.isProcessing = false;
         }
