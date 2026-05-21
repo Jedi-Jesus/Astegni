@@ -253,6 +253,9 @@ async def get_full_user_profile(
         "hobbies": current_user.hobbies or [],  # From users table
         "social_links": current_user.social_links or {},  # From users table
         "bio": current_user.bio,
+        "is_verified": current_user.is_verified or False,
+        "verification_status": current_user.verification_status,
+        "is_suspended": current_user.is_suspended or False,
         "active_role": current_user.current_role if hasattr(current_user, 'current_role') else 'user',
         "roles": current_user.roles if hasattr(current_user, 'roles') else ['user'],
         "user_created_at": current_user.created_at,  # When user account was created
