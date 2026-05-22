@@ -63,17 +63,14 @@
 
         console.log('[AccessGuard] is_verified:', isVerified, 'roles:', roles);
 
-        // Both checks must pass
-        if (!isVerified && roles.length === 0) {
-            showAccessDeniedModal({ reason: 'unverified_and_no_role' });
+        // No role implies unverified by platform rule, so check roles first.
+        // A user must add a role before they can be verified.
+        if (roles.length === 0) {
+            showAccessDeniedModal({ reason: 'no_role' });
             return false;
         }
         if (!isVerified) {
             showAccessDeniedModal({ reason: 'unverified' });
-            return false;
-        }
-        if (roles.length === 0) {
-            showAccessDeniedModal({ reason: 'no_role' });
             return false;
         }
 
@@ -149,11 +146,7 @@
                 Verify Account
             </button>`;
 
-        if (reason === 'unverified_and_no_role') {
-            if (messageEl) messageEl.textContent = 'The tutor marketplace requires a verified account with at least one role.';
-            if (suggestionEl) suggestionEl.innerHTML = 'Please verify your account and add a role to continue.';
-            if (actionsEl) actionsEl.innerHTML = goBackBtn + addRoleBtn + verifyBtn;
-        } else if (reason === 'unverified') {
+        if (reason === 'unverified') {
             if (messageEl) messageEl.textContent = 'The tutor marketplace is only accessible to verified users.';
             if (suggestionEl) suggestionEl.innerHTML = 'Please verify your account to continue.';
             if (actionsEl) actionsEl.innerHTML = goBackBtn + verifyBtn;
@@ -169,7 +162,6 @@
 
     function showFallbackAccessDenied(reason) {
         const messages = {
-            unverified_and_no_role: 'You must verify your account and have at least one role to access the tutor marketplace.',
             unverified: 'You must verify your account to access the tutor marketplace.',
             no_role: 'You must have at least one role to access the tutor marketplace.'
         };
