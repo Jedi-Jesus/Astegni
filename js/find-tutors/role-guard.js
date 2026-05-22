@@ -124,6 +124,11 @@
 
         if (titleEl) titleEl.textContent = 'Access Restricted';
         if (currentRoleText) currentRoleText.textContent = '';
+        // Hide the stale "You are currently logged in as a X" line from the modal
+        // partial — it's not meaningful for our two reasons (unverified / no_role).
+        // Keep the surrounding details box so the suggestion still renders.
+        const reasonLine = document.getElementById('roleAccessDeniedReason');
+        if (reasonLine) reasonLine.style.display = 'none';
 
         const goBackBtn = `
             <button onclick="goBackToPreviousPage()"
@@ -147,12 +152,16 @@
             </button>`;
 
         if (reason === 'unverified') {
-            if (messageEl) messageEl.textContent = 'The tutor marketplace is only accessible to verified users.';
-            if (suggestionEl) suggestionEl.innerHTML = 'Please verify your account to continue.';
+            if (messageEl) messageEl.textContent =
+                'Your account hasn\'t been verified yet. Only verified users can browse and book tutors on Astegni. Verifying takes a couple of minutes and includes a quick identity check.';
+            if (suggestionEl) suggestionEl.innerHTML =
+                'Click <strong>Verify Account</strong> to open the verification form right here, no need to leave this page.';
             if (actionsEl) actionsEl.innerHTML = goBackBtn + verifyBtn;
         } else if (reason === 'no_role') {
-            if (messageEl) messageEl.textContent = 'The tutor marketplace requires at least one role on your account.';
-            if (suggestionEl) suggestionEl.innerHTML = 'Please add a role to continue.';
+            if (messageEl) messageEl.textContent =
+                'Your account doesn\'t have a role yet. Astegni needs to know whether you\'re joining as a student, parent, tutor, advertiser, or user before you can browse the tutor marketplace. Verification becomes available once a role is added.';
+            if (suggestionEl) suggestionEl.innerHTML =
+                'Click <strong>Add Role</strong> to choose a role and continue.';
             if (actionsEl) actionsEl.innerHTML = goBackBtn + addRoleBtn;
         }
 
@@ -239,18 +248,38 @@
         return _verifyModalLoadPromise;
     }
 
+    // Map active_role → profile page URL. Used as a fallback when the in-page
+    // verify modal can't be opened (e.g. script load fails).
+    function profilePageForActiveRole() {
+        const userStr = localStorage.getItem('currentUser');
+        let activeRole = null;
+        try {
+            const user = userStr ? JSON.parse(userStr) : null;
+            activeRole = (user && (user.active_role || user.role)) ||
+                         localStorage.getItem('userRole');
+        } catch (e) { /* fall through */ }
+
+        const known = ['student', 'tutor', 'parent', 'advertiser', 'user'];
+        const role = (activeRole || '').toLowerCase();
+        if (known.includes(role)) {
+            return `../profile-pages/${role}-profile.html`;
+        }
+        return null;
+    }
+
     window.goToVerification = async function () {
         closeRoleAccessDeniedModal();
         try {
             await ensureVerifyPersonalInfoModalLoaded();
             if (typeof window.openVerifyPersonalInfoModal === 'function') {
                 window.openVerifyPersonalInfoModal();
-            } else {
-                throw new Error('openVerifyPersonalInfoModal not available');
+                return;
             }
+            throw new Error('openVerifyPersonalInfoModal not available');
         } catch (e) {
-            console.error('[AccessGuard] Could not open verify modal, falling back to home:', e);
-            window.location.href = REDIRECT_URL;
+            console.error('[AccessGuard] Could not open verify modal in-page; routing to profile:', e);
+            const profileUrl = profilePageForActiveRole();
+            window.location.href = profileUrl || REDIRECT_URL;
         }
     };
 
