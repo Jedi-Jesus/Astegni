@@ -248,19 +248,24 @@
         return _verifyModalLoadPromise;
     }
 
-    // Map active_role → profile page URL. Used as a fallback when the in-page
-    // verify modal can't be opened (e.g. script load fails).
+    // Map active_role (or first role in roles[]) → profile page URL.
+    // Used as a fallback when the in-page verify modal can't be opened.
     function profilePageForActiveRole() {
         const userStr = localStorage.getItem('currentUser');
-        let activeRole = null;
+        const known = ['student', 'tutor', 'parent', 'advertiser', 'user'];
+
+        let candidate = null;
         try {
             const user = userStr ? JSON.parse(userStr) : null;
-            activeRole = (user && (user.active_role || user.role)) ||
-                         localStorage.getItem('userRole');
+            candidate = (user && (user.active_role || user.role)) ||
+                        localStorage.getItem('userRole');
+            // If active_role isn't usable, fall back to first known role in user.roles[]
+            if (!candidate && user && Array.isArray(user.roles)) {
+                candidate = user.roles.find(r => known.includes((r || '').toLowerCase()));
+            }
         } catch (e) { /* fall through */ }
 
-        const known = ['student', 'tutor', 'parent', 'advertiser', 'user'];
-        const role = (activeRole || '').toLowerCase();
+        const role = (candidate || '').toLowerCase();
         if (known.includes(role)) {
             return `../profile-pages/${role}-profile.html`;
         }
