@@ -294,9 +294,11 @@ curl https://api.astegni.com/health
 
 **Manual Steps Required:**
 - Database migrations (SSH + run migration scripts)
-- Database backups (`pg_dump astegni_user_db > backup.sql`)
 - Environment variable updates (edit `/var/www/astegni/astegni-backend/.env`)
 - SSL certificate renewal
+
+**Automated:**
+- Daily DB backups at 03:00 UTC via `/usr/local/bin/astegni-backup.py` (cron at `/etc/cron.d/astegni-backup`). Both databases are dumped, gzipped, kept locally for 7 days under `/var/backups/astegni/`, and uploaded to Backblaze B2 bucket `astegni-backups` under `daily/` (every day), `weekly/` (Sundays), and `monthly/` (1st of month). B2 lifecycle rules retain 7 daily / 4 weekly / 6 monthly. Log: `/var/log/astegni-backup.log` (logrotated weekly, 8 weeks kept). Bucket credentials live in `.env` as `BACKUP_B2_KEY_ID`, `BACKUP_B2_APPLICATION_KEY`, `BACKUP_B2_BUCKET` (separate key from `BACKBLAZE_*` media key).
 
 **Production Stack:**
 Nginx (80/443) → FastAPI (8000) → PostgreSQL (5432)
@@ -314,14 +316,46 @@ ssh root@128.140.122.215
 cd /var/www/astegni/astegni-backend
 source venv/bin/activate
 
-# BACKUP FIRST!
-pg_dump astegni_user_db > /var/backups/user_db_$(date +%Y%m%d_%H%M%S).sql
-pg_dump astegni_admin_db > /var/backups/admin_db_$(date +%Y%m%d_%H%M%S).sql
+# 1. Take a fresh backup BEFORE risky migrations (does not skip — daily cron
+#    may be hours stale). Uses peer auth as the postgres OS user.
+/usr/local/bin/astegni-backup.py
+# Result: dumps both DBs to /var/backups/astegni/ AND uploads to B2 daily/
 
-# Run migration
+# 2. Run the migration
 python migrate_your_migration.py
 systemctl restart astegni-backend
 journalctl -u astegni-backend -f
+```
+
+### Restoring from Backup
+Restore from the most recent B2 dump (or `/var/backups/astegni/` for the
+last 7 days). Always restore into a temp DB first, sanity-check row counts,
+then swap.
+```bash
+ssh root@128.140.122.215
+cd /var/www/astegni/astegni-backend && source venv/bin/activate
+
+# A) Pick a backup. From local:
+ls -lh /var/backups/astegni/
+
+# B) Or download a specific one from B2:
+python - <<'PY'
+import os
+from dotenv import load_dotenv
+from b2sdk.v2 import InMemoryAccountInfo, B2Api
+load_dotenv()
+api = B2Api(InMemoryAccountInfo())
+api.authorize_account("production", os.getenv("BACKUP_B2_KEY_ID"), os.getenv("BACKUP_B2_APPLICATION_KEY"))
+b = api.get_bucket_by_name(os.getenv("BACKUP_B2_BUCKET"))
+for fi, _ in b.ls(recursive=True): print(fi.file_name)
+PY
+
+# C) Restore into a temp DB and verify before swapping:
+sudo -u postgres createdb astegni_user_db_restore
+gunzip -c /var/backups/astegni/astegni_user_db_YYYYMMDD-HHMMSSZ.sql.gz \
+  | sudo -u postgres psql --set ON_ERROR_STOP=on astegni_user_db_restore
+sudo -u postgres psql -d astegni_user_db_restore -c "SELECT COUNT(*) FROM users;"
+# (compare row counts vs astegni_user_db; if good, rename to swap)
 ```
 
 ### Rollback
