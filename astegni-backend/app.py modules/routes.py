@@ -1284,7 +1284,7 @@ def get_tutors(
     # NOTE: is_verified is in users table, NOT tutor_profiles table
     # Also require at least one active package — package-less tutors are not listable
     tutors_with_packages_subquery = text("""
-        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true
+        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true AND visibility = 'public'
     """)
     tutor_ids_with_packages = db.execute(tutors_with_packages_subquery).scalars().all()
 
@@ -1306,6 +1306,7 @@ def get_tutors(
             FROM tutor_packages tp
             JOIN courses c ON c.id = ANY(tp.course_ids)
             WHERE c.status = 'verified'
+            AND tp.visibility = 'public'
             AND (
                 c.tags::text ILIKE :search_pattern
                 OR c.course_name ILIKE :search_pattern
@@ -1424,6 +1425,7 @@ def get_tutors(
                     SELECT tutor_id, session_format
                     FROM tutor_packages
                     WHERE is_active = true
+                      AND visibility = 'public'
                       AND tutor_id = ANY(:tutor_ids)
                       AND session_format IS NOT NULL
                       AND session_format != ''
@@ -1720,6 +1722,7 @@ def get_tutors(
         LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
         WHERE tp.tutor_id = ANY(:tutor_ids)
         AND tp.is_active = true
+        AND tp.visibility = 'public'
         GROUP BY tp.tutor_id
     """)
 
@@ -1994,7 +1997,7 @@ def get_tutors_tiered(
     # Base query - only verified, active tutors with at least one active package
     # Package-less tutors are not listable
     tutors_with_packages_subquery = text("""
-        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true
+        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true AND visibility = 'public'
     """)
     tutor_ids_with_packages = db.execute(tutors_with_packages_subquery).scalars().all()
 
@@ -2016,6 +2019,7 @@ def get_tutors_tiered(
             FROM tutor_packages tp
             JOIN courses c ON c.id = ANY(tp.course_ids)
             WHERE c.status = 'verified'
+            AND tp.visibility = 'public'
             AND (
                 c.tags::text ILIKE :search_pattern
                 OR c.course_name ILIKE :search_pattern
@@ -2123,7 +2127,7 @@ def get_tutors_tiered(
                     SELECT DISTINCT c.course_name, c.tags, c.course_category
                     FROM tutor_packages tp
                     JOIN courses c ON c.id = ANY(tp.course_ids)
-                    WHERE tp.tutor_id = :tutor_id AND c.status = 'verified'
+                    WHERE tp.tutor_id = :tutor_id AND c.status = 'verified' AND tp.visibility = 'public'
                 """)
                 tutor_courses = db.execute(tutor_courses_query, {"tutor_id": tutor.id}).fetchall()
 
@@ -2245,7 +2249,7 @@ def get_tutors_tiered(
             format_query = text("""
                 SELECT DISTINCT session_format
                 FROM tutor_packages
-                WHERE tutor_id = :tutor_id AND is_active = true AND session_format IS NOT NULL
+                WHERE tutor_id = :tutor_id AND is_active = true AND visibility = 'public' AND session_format IS NOT NULL
             """)
             tutor_formats = set(row[0] for row in db.execute(format_query, {"tutor_id": tutor.id}).fetchall())
 
@@ -2275,7 +2279,7 @@ def get_tutors_tiered(
             format_query = text("""
                 SELECT DISTINCT session_format
                 FROM tutor_packages
-                WHERE tutor_id = :tutor_id AND is_active = true AND session_format IS NOT NULL
+                WHERE tutor_id = :tutor_id AND is_active = true AND visibility = 'public' AND session_format IS NOT NULL
             """)
             tutor_formats = set(row[0] for row in db.execute(format_query, {"tutor_id": tutor.id}).fetchall())
 
@@ -2311,6 +2315,7 @@ def get_tutors_tiered(
         LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
         LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
         WHERE tp.tutor_id = ANY(:tutor_ids)
+        AND tp.visibility = 'public'
         GROUP BY tp.tutor_id
     """)
     pkg_batch_results = db.execute(pkg_batch_query, {"tutor_ids": all_tutor_ids}).fetchall()
@@ -2444,6 +2449,7 @@ def get_tutors_tiered(
             FROM tutor_packages tp
             LEFT JOIN tutor_reviews tr ON tr.tutor_id = tp.tutor_id
             WHERE tp.tutor_id = ANY(:tutor_ids)
+            AND tp.visibility = 'public'
             GROUP BY tp.tutor_id
         """)
         sort_data = db.execute(sort_data_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
@@ -2492,6 +2498,7 @@ def get_tutors_tiered(
         LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
         LEFT JOIN LATERAL unnest(tp.grade_level) as grade_elem ON true
         WHERE tp.tutor_id = ANY(:tutor_ids)
+        AND tp.visibility = 'public'
         GROUP BY tp.tutor_id
     """)
     package_results = db.execute(package_data_query, {"tutor_ids": tutor_ids}).fetchall()

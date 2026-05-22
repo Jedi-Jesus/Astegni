@@ -199,6 +199,7 @@ class PackageResponse(BaseModel):
     discount_6_month: float
     yearly_discount: float
     is_active: bool
+    visibility: str = 'public'
     created_at: datetime
     updated_at: datetime
 
@@ -285,7 +286,7 @@ async def get_tutor_packages(
                    session_time, session_duration,
                    hourly_rate, days_per_week, hours_per_day, payment_frequency,
                    discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                   is_active, created_at, updated_at
+                   is_active, visibility, created_at, updated_at
             FROM tutor_packages
             WHERE tutor_id = %s
             ORDER BY created_at DESC
@@ -327,8 +328,9 @@ async def get_tutor_packages(
                 'discount_6_month': float(row[21]) if row[21] is not None else 0.0,
                 'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
                 'is_active': row[23] if row[23] is not None else True,
-                'created_at': row[24] or datetime.now(),
-                'updated_at': row[25] or datetime.now()
+                'visibility': row[24] if row[24] else 'public',
+                'created_at': row[25] or datetime.now(),
+                'updated_at': row[26] or datetime.now()
             })
 
         return packages
@@ -801,16 +803,23 @@ async def delete_course_request(request_id: int, current_user = Depends(get_curr
         conn.close()
 
 
-# DELETE - Delete package
-@router.delete("/packages/{package_id}", status_code=status.HTTP_204_NO_CONTENT)
+# DELETE - Delete package (soft-deletes to 'private' when enrollments exist)
+@router.delete("/packages/{package_id}")
 async def delete_package(
     package_id: int,
     current_user = Depends(get_current_user),
     verification_token: Optional[str] = Header(default=None, alias="X-2FA-Token")
 ):
-    """Delete a package (2FA protected if enabled)"""
+    """Delete a package, or mark it private if enrollments exist.
 
-    # Check 2FA protection
+    - No enrollments: hard delete (DELETE FROM tutor_packages).
+    - Has enrollments: set visibility='private' so existing enrolled
+      students continue on it but it disappears from public listings
+      and market analytics.
+
+    2FA protected if enabled.
+    """
+
     if HAS_2FA_PROTECTION:
         require_2fa(current_user['id'], verification_token)
 
@@ -818,7 +827,6 @@ async def delete_package(
     cur = conn.cursor()
 
     try:
-        # Get tutor_profiles.id for this user
         cur.execute("""
             SELECT id FROM tutor_profiles WHERE user_id = %s
         """, (current_user['id'],))
@@ -832,7 +840,6 @@ async def delete_package(
 
         tutor_profile_id = tutor_profile[0]
 
-        # Verify ownership
         cur.execute("""
             SELECT tutor_id FROM tutor_packages WHERE id = %s
         """, (package_id,))
@@ -841,15 +848,36 @@ async def delete_package(
         if not result:
             raise HTTPException(status_code=404, detail="Package not found")
 
-        if result[0] != tutor_profile_id:  # Compare with tutor_profiles.id
+        if result[0] != tutor_profile_id:
             raise HTTPException(status_code=403, detail="Not authorized to delete this package")
 
-        # Delete the package
         cur.execute("""
-            DELETE FROM tutor_packages WHERE id = %s
+            SELECT COUNT(*) FROM enrolled_students WHERE package_id = %s
         """, (package_id,))
+        enrolled_count = cur.fetchone()[0]
 
+        if enrolled_count > 0:
+            cur.execute("""
+                UPDATE tutor_packages
+                SET visibility = 'private', updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (package_id,))
+            conn.commit()
+            return {
+                "soft_deleted": True,
+                "package_id": package_id,
+                "enrolled_count": enrolled_count,
+                "visibility": "private",
+                "message": (
+                    f"Package marked private; {enrolled_count} enrolled "
+                    "student(s) continue on it but it is hidden from public "
+                    "listings and market analytics."
+                ),
+            }
+
+        cur.execute("DELETE FROM tutor_packages WHERE id = %s", (package_id,))
         conn.commit()
+        return {"soft_deleted": False, "package_id": package_id, "deleted": True}
 
     except HTTPException:
         raise

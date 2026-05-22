@@ -55,7 +55,7 @@ class TutorScoringCalculator:
                 SELECT DISTINCT c.course_name, c.tags, c.course_category
                 FROM tutor_packages tp
                 JOIN courses c ON c.id = ANY(tp.course_ids)
-                WHERE tp.tutor_id = :tutor_id AND c.status = 'verified'
+                WHERE tp.tutor_id = :tutor_id AND c.status = 'verified' AND tp.visibility = 'public'
             """)
             tutor_courses = self.db.execute(interest_query, {"tutor_id": tutor_id}).fetchall()
 

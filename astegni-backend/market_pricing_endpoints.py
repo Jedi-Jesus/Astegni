@@ -299,7 +299,7 @@ async def suggest_market_price(
                     u.first_name,
                     u.location,
                     COALESCE(
-                        (SELECT grade_level FROM tutor_packages WHERE tutor_id = tp.id AND is_active = TRUE ORDER BY created_at DESC LIMIT 1),
+                        (SELECT grade_level FROM tutor_packages WHERE tutor_id = tp.id AND is_active = TRUE AND visibility = 'public' ORDER BY created_at DESC LIMIT 1),
                         ARRAY[]::text[]
                     ) as grade_levels
                 FROM tutor_profiles tp
@@ -414,6 +414,7 @@ async def suggest_market_price(
                 LEFT JOIN tutor_analysis ta ON tp.id = ta.tutor_id
                 LEFT JOIN users u ON tp.user_id = u.id
                 WHERE pkg.is_active = TRUE
+                  AND pkg.visibility = 'public'
                   AND es.agreed_price > 0
                   AND tp.id != %s
                   AND es.enrolled_at >= %s
@@ -450,6 +451,7 @@ async def suggest_market_price(
                     LEFT JOIN tutor_analysis ta ON tp.id = ta.tutor_id
                     LEFT JOIN users u ON tp.user_id = u.id
                     WHERE pkg.is_active = TRUE
+                      AND pkg.visibility = 'public'
                       AND es.agreed_price > 0
                       AND tp.id != %s
                       AND es.enrolled_at >= %s
@@ -941,7 +943,7 @@ async def get_market_tutors(
                     tp.created_at,
                     u.location,
                     COALESCE(
-                        (SELECT grade_level FROM tutor_packages WHERE tutor_id = tp.id AND is_active = TRUE ORDER BY created_at DESC LIMIT 1),
+                        (SELECT grade_level FROM tutor_packages WHERE tutor_id = tp.id AND is_active = TRUE AND visibility = 'public' ORDER BY created_at DESC LIMIT 1),
                         ARRAY[]::text[]
                     ) as grade_levels
                 FROM tutor_profiles tp
@@ -1037,6 +1039,7 @@ async def get_market_tutors(
                 LEFT JOIN tutor_analysis ta ON tp.id = ta.tutor_id
                 LEFT JOIN users u ON tp.user_id = u.id
                 WHERE pkg.is_active = TRUE
+                  AND pkg.visibility = 'public'
                   AND es.agreed_price > 0
                   AND es.enrolled_at >= %s
                   AND tp.id != %s

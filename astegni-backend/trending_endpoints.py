@@ -194,6 +194,7 @@ async def get_trending_tutors(
             LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
             WHERE tp.tutor_id = ANY(:tutor_ids)
             AND tp.is_active = true
+            AND tp.visibility = 'public'
             GROUP BY tp.tutor_id
         """)
 

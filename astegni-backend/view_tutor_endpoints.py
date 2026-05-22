@@ -537,7 +537,7 @@ async def get_tutor_packages(tutor_id: int):
                        discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                        is_active, created_at
                 FROM tutor_packages
-                WHERE tutor_id = %s AND is_active = TRUE
+                WHERE tutor_id = %s AND is_active = TRUE AND visibility = 'public'
                 ORDER BY hourly_rate ASC NULLS LAST
             """, (tutor_id,))
 
@@ -891,7 +891,7 @@ async def get_similar_tutors(
             cur.execute("""
                 SELECT DISTINCT unnest(course_ids) as course_id
                 FROM tutor_packages
-                WHERE tutor_id = %s AND is_active = TRUE
+                WHERE tutor_id = %s AND is_active = TRUE AND visibility = 'public'
             """, (current_tutor_profile_id,))
             current_courses = [row[0] for row in cur.fetchall()]
 
@@ -923,6 +923,7 @@ async def get_similar_tutors(
                                 SELECT 1 FROM tutor_packages pkg
                                 WHERE pkg.tutor_id = tp.id
                                 AND pkg.is_active = TRUE
+                                AND pkg.visibility = 'public'
                                 AND pkg.course_ids && %s::integer[]
                             ) THEN 50 ELSE 0 END
                             +
@@ -992,7 +993,7 @@ async def get_similar_tutors(
                     SELECT DISTINCT c.course_name
                     FROM tutor_packages pkg
                     JOIN courses c ON c.id = ANY(pkg.course_ids)
-                    WHERE pkg.tutor_id = %s AND pkg.is_active = TRUE
+                    WHERE pkg.tutor_id = %s AND pkg.is_active = TRUE AND pkg.visibility = 'public'
                     LIMIT 3
                 """, (row[0],))
                 subjects = [r[0] for r in cur.fetchall()]

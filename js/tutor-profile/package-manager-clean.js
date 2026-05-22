@@ -301,10 +301,11 @@ class PackageManagerClean {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             alert('You are not logged in. Please refresh the page and log in again.');
-            return false;
+            return { ok: false };
         }
 
         const url = `${API_BASE_URL}/api/tutor/packages/${id}`;
+        let payload = null;
 
         try {
             const response = window.ProtectedAPI
@@ -322,14 +323,26 @@ class PackageManagerClean {
                 } else {
                     alert(`Failed to delete package (${response.status}). Please try again.`);
                 }
-                return false;
+                return { ok: false };
             }
 
-            console.log('✅ Package deleted from database');
+            if (response.status !== 204) {
+                try { payload = await response.json(); } catch (_) { payload = null; }
+            }
+            console.log('✅ Package delete response:', payload || '(204 no content)');
         } catch (e) {
             console.error('❌ Could not delete from database:', e);
             alert('Network error. Please check your connection and try again.');
-            return false;
+            return { ok: false };
+        }
+
+        if (payload && payload.soft_deleted) {
+            const index = this.packages.findIndex(p => p.id === id);
+            if (index !== -1) {
+                this.packages[index].visibility = 'private';
+            }
+            this.savePackages();
+            return { ok: true, softDeleted: true, enrolledCount: payload.enrolled_count || 0 };
         }
 
         this.packages = this.packages.filter(p => p.id !== id);
@@ -338,7 +351,7 @@ class PackageManagerClean {
             this.currentPackageId = null;
             this.currentPackage = null;
         }
-        return true;
+        return { ok: true, softDeleted: false };
     }
 
     convertBackendToFrontend(backendPackage) {
@@ -366,6 +379,7 @@ class PackageManagerClean {
                 sixMonths: backendPackage.discount_6_month || 0,
                 yearly: backendPackage.yearly_discount || 0
             },
+            visibility: backendPackage.visibility || 'public',
             createdAt: backendPackage.created_at
         };
     }
@@ -513,10 +527,11 @@ function renderPackagesList() {
     console.log('✅ Rendering package items...');
     packagesList.innerHTML = packages.map(pkg => {
         console.log(`- Package: ${pkg.name} (ID: ${pkg.id})`);
+        const isPrivate = pkg.visibility === 'private';
         return `
         <div class="package-item ${pkg.id === window.packageManagerClean.currentPackageId ? 'active' : ''}"
              onclick="selectPackage(${pkg.id})"
-             style="display: flex; gap: 1rem; padding: 1rem; margin-bottom: 0.75rem; background: var(--card-bg); border: 2px solid ${pkg.id === window.packageManagerClean.currentPackageId ? 'var(--primary-color)' : 'transparent'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+             style="display: flex; gap: 1rem; padding: 1rem; margin-bottom: 0.75rem; background: var(--card-bg); border: 2px solid ${pkg.id === window.packageManagerClean.currentPackageId ? 'var(--primary-color)' : 'transparent'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); ${isPrivate ? 'opacity: 0.7;' : ''}">
 
             <!-- Pricing Box (Left Side) -->
             <div style="width: 85px; flex-shrink: 0; background: var(--primary-color); border-radius: 10px; padding: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
@@ -531,7 +546,10 @@ function renderPackagesList() {
             <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.375rem;">
-                        <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pkg.name}</span>
+                        <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${pkg.name}
+                            ${isPrivate ? `<span title="Hidden from public listings. Existing enrolled students continue on it." style="margin-left: 0.4rem; background: var(--hover-bg); color: var(--text-secondary); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.4px; padding: 0.1rem 0.45rem; border-radius: 10px; border: 1px solid var(--border-color); vertical-align: middle;"><i class="fas fa-lock"></i> PRIVATE</span>` : ''}
+                        </span>
                         <button onclick="event.stopPropagation(); deletePackageConfirm(${pkg.id})"
                                 style="width: 28px; height: 28px; border-radius: 6px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5rem;"
                                 title="Delete">
@@ -902,19 +920,31 @@ window.selectPackage = function(packageId) {
 };
 
 window.deletePackageConfirm = async function(packageId) {
-    if (confirm('Are you sure you want to delete this package?')) {
-        const ok = await window.packageManagerClean.deletePackage(packageId);
-        if (!ok) return;
-        renderPackagesList();
-        renderPackagesGrid();  // Update the package cards on the main page
+    const pkg = window.packageManagerClean.getPackage(packageId);
+    const name = pkg ? pkg.name : 'this package';
+    const msg = `Delete "${name}"?\n\n` +
+        `If students are already enrolled, the package will be marked Private ` +
+        `instead — those students keep their sessions but the package is hidden ` +
+        `from public listings and market analytics.\n\n` +
+        `Otherwise it will be permanently deleted.`;
+    if (!confirm(msg)) return;
 
-        if (window.packageManagerClean.packages.length === 0) {
-            showEmptyState();
-            const saveBtn = document.getElementById('savePackageBtn');
-            if (saveBtn) saveBtn.style.display = 'none';
-        } else {
-            selectPackage(window.packageManagerClean.packages[0].id);
-        }
+    const result = await window.packageManagerClean.deletePackage(packageId);
+    if (!result.ok) return;
+
+    if (result.softDeleted) {
+        alert(`Package marked Private. ${result.enrolledCount} enrolled student(s) continue on it.`);
+    }
+
+    renderPackagesList();
+    renderPackagesGrid();
+
+    if (window.packageManagerClean.packages.length === 0) {
+        showEmptyState();
+        const saveBtn = document.getElementById('savePackageBtn');
+        if (saveBtn) saveBtn.style.display = 'none';
+    } else if (!result.softDeleted) {
+        selectPackage(window.packageManagerClean.packages[0].id);
     }
 };
 
@@ -2360,15 +2390,26 @@ function renderPackagesGrid() {
         const courseLevels = [...new Set(allCourses.map(c => c.course_level).filter(Boolean))];
         const levelsDisplay = courseLevels.length > 0 ? courseLevels.join(', ') : 'All Levels';
 
+        const isPrivate = pkg.visibility === 'private';
+        const privateBadge = isPrivate
+            ? `<span title="Hidden from public listings and market analytics. Existing enrolled students continue on it."
+                     style="background: rgba(0,0,0,0.55); color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; padding: 0.25rem 0.6rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <i class="fas fa-lock"></i> PRIVATE
+              </span>`
+            : '';
+
         return `
-        <div class="card" style="padding: 0; overflow: hidden; border-radius: 12px; transition: all 0.3s; border: 2px solid var(--border-color);">
+        <div class="card" style="padding: 0; overflow: hidden; border-radius: 12px; transition: all 0.3s; border: 2px solid var(--border-color); ${isPrivate ? 'opacity: 0.75;' : ''}">
             <!-- Package Header -->
             <div style="background: var(--primary-color); padding: 1.5rem; color: white;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; gap: 0.5rem;">
                     <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: white;">${pkg.name}</h3>
-                    <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 20px;">
-                        ${levelsDisplay}
-                    </span>
+                    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end;">
+                        ${privateBadge}
+                        <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 20px;">
+                            ${levelsDisplay}
+                        </span>
+                    </div>
                 </div>
                 <p style="font-size: 0.875rem; opacity: 0.95; margin: 0; color: white;">
                     <i class="fas fa-calendar-alt"></i> ${pkg.paymentFrequency === '2-weeks' ? 'Bi-weekly' : 'Monthly'} Package
@@ -2483,16 +2524,24 @@ window.deletePackageFromGrid = async function(packageId) {
     const pkg = window.packageManagerClean.getPackage(packageId);
     const packageName = pkg ? pkg.name : 'this package';
 
-    if (confirm(`Are you sure you want to delete "${packageName}"? This action cannot be undone.`)) {
-        try {
-            const ok = await window.packageManagerClean.deletePackage(packageId);
-            if (!ok) return;
-            renderPackagesGrid();  // Refresh the packages grid
-            console.log('✅ Package deleted from grid:', packageId);
-        } catch (error) {
-            console.error('❌ Error deleting package:', error);
-            alert('Failed to delete package. Please try again.');
+    const msg = `Delete "${packageName}"?\n\n` +
+        `If students are already enrolled, the package will be marked Private ` +
+        `instead — those students keep their sessions but the package is hidden ` +
+        `from public listings and market analytics.\n\n` +
+        `Otherwise it will be permanently deleted.`;
+    if (!confirm(msg)) return;
+
+    try {
+        const result = await window.packageManagerClean.deletePackage(packageId);
+        if (!result.ok) return;
+        if (result.softDeleted) {
+            alert(`Package marked Private. ${result.enrolledCount} enrolled student(s) continue on it.`);
         }
+        renderPackagesGrid();
+        console.log('✅ Package delete handled:', packageId, result);
+    } catch (error) {
+        console.error('❌ Error deleting package:', error);
+        alert('Failed to delete package. Please try again.');
     }
 };
 
