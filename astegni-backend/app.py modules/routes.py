@@ -1273,10 +1273,17 @@ def get_tutors(
     """
     # Only show verified tutors (is_verified=True means profile complete + KYC verified)
     # NOTE: is_verified is in users table, NOT tutor_profiles table
+    # Also require at least one active package — package-less tutors are not listable
+    tutors_with_packages_subquery = text("""
+        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true
+    """)
+    tutor_ids_with_packages = db.execute(tutors_with_packages_subquery).scalars().all()
+
     query = db.query(TutorProfile).join(User).filter(
         TutorProfile.is_active == True,
         User.is_verified == True,  # Fixed: is_verified is in users table
-        User.is_active == True
+        User.is_active == True,
+        TutorProfile.id.in_(tutor_ids_with_packages) if tutor_ids_with_packages else False
     )
 
     # Apply filters
@@ -1976,11 +1983,18 @@ def get_tutors_tiered(
             student_hobbies = current_user.hobbies or []
             print(f"[Tiered Tutors] Student hobbies: {student_hobbies}")
 
-    # Base query - only verified, active tutors
+    # Base query - only verified, active tutors with at least one active package
+    # Package-less tutors are not listable
+    tutors_with_packages_subquery = text("""
+        SELECT DISTINCT tutor_id FROM tutor_packages WHERE is_active = true
+    """)
+    tutor_ids_with_packages = db.execute(tutors_with_packages_subquery).scalars().all()
+
     query = db.query(TutorProfile).join(User).filter(
         TutorProfile.is_active == True,
         User.is_verified == True,
-        User.is_active == True
+        User.is_active == True,
+        TutorProfile.id.in_(tutor_ids_with_packages) if tutor_ids_with_packages else False
     )
 
     # Apply search filter
