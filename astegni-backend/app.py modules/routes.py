@@ -1255,6 +1255,7 @@ def get_tutors(
     sort_by: Optional[str] = Query("smart"),  # Default to smart ranking
     search_history_ids: Optional[str] = Query(None),  # Comma-separated tutor IDs from search history
     user_location: Optional[str] = Query(None),  # Filter tutors by location matching user's location
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -1270,7 +1271,15 @@ def get_tutors(
     7. Regular tutors → Standard sorting (by rating/price/etc)
 
     With 80% chance of shuffling on initial page load for variety
+
+    Access: caller must be authenticated, verified, and have at least one role.
     """
+    # Access policy: caller must be verified and have at least one role.
+    # get_current_user raises 401 if no/invalid token.
+    if not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="Account is not verified")
+    if not current_user.roles or len(current_user.roles) == 0:
+        raise HTTPException(status_code=403, detail="Account has no role assigned")
     # Only show verified tutors (is_verified=True means profile complete + KYC verified)
     # NOTE: is_verified is in users table, NOT tutor_profiles table
     # Also require at least one active package — package-less tutors are not listable
@@ -1402,62 +1411,53 @@ def get_tutors(
     all_tutors = query.all()
 
     # Apply exclusive session format filtering (v2.2)
-    # Filter tutors who have ONLY the specified format (excluding hybrid tutors)
-    if sessionFormat and sessionFormatExclusive == "true":
-        print(f"[Exclusive Filter] Filtering for tutors with ONLY {sessionFormat} packages")
-        filtered_tutors = []
+    # Filter tutors who have ONLY the specified format (excluding hybrid tutors),
+    # or for sessionFormat=Hybrid, tutors who have BOTH formats.
+    # Uses a single batched SQL query to avoid N+1.
+    if (sessionFormat and sessionFormatExclusive == "true") or sessionFormat == 'Hybrid':
+        tutor_ids = [t.id for t in all_tutors]
+        # Map of tutor_id -> set of distinct session_format values for active packages
+        formats_by_tutor = {}
+        if tutor_ids:
+            rows = db.execute(
+                text("""
+                    SELECT tutor_id, session_format
+                    FROM tutor_packages
+                    WHERE is_active = true
+                      AND tutor_id = ANY(:tutor_ids)
+                      AND session_format IS NOT NULL
+                      AND session_format != ''
+                """),
+                {"tutor_ids": tutor_ids}
+            ).fetchall()
+            for tutor_id, fmt in rows:
+                formats_by_tutor.setdefault(tutor_id, set()).add(fmt)
 
-        for tutor in all_tutors:
-            # Get all package formats for this tutor
-            packages = db.query(TutorPackage).filter(
-                TutorPackage.tutor_id == tutor.id,
-                TutorPackage.is_active == True
-            ).all()
-
-            if not packages:
-                continue
-
-            # Get unique session formats this tutor offers
-            tutor_formats = set(pkg.session_format for pkg in packages if pkg.session_format)
-
-            # For Online-only: should have 'Online' but NOT 'In-person'
-            # For In-person-only: should have 'In-person' but NOT 'Online'
+        if sessionFormat == 'Hybrid':
+            print(f"[Hybrid Filter] Filtering for tutors with BOTH Online and In-person packages")
+            all_tutors = [
+                t for t in all_tutors
+                if 'Online' in formats_by_tutor.get(t.id, set())
+                and 'In-person' in formats_by_tutor.get(t.id, set())
+            ]
+            total = len(all_tutors)
+            print(f"[Hybrid Filter] Filtered to {total} hybrid tutors")
+        else:
+            print(f"[Exclusive Filter] Filtering for tutors with ONLY {sessionFormat} packages")
             if sessionFormat == 'Online':
-                if 'Online' in tutor_formats and 'In-person' not in tutor_formats:
-                    filtered_tutors.append(tutor)
+                all_tutors = [
+                    t for t in all_tutors
+                    if 'Online' in formats_by_tutor.get(t.id, set())
+                    and 'In-person' not in formats_by_tutor.get(t.id, set())
+                ]
             elif sessionFormat == 'In-person':
-                if 'In-person' in tutor_formats and 'Online' not in tutor_formats:
-                    filtered_tutors.append(tutor)
-
-        all_tutors = filtered_tutors
-        total = len(all_tutors)
-        print(f"[Exclusive Filter] Filtered to {total} tutors with ONLY {sessionFormat} packages")
-
-    # For Hybrid filter: get tutors who have BOTH formats
-    elif sessionFormat == 'Hybrid':
-        print(f"[Hybrid Filter] Filtering for tutors with BOTH Online and In-person packages")
-        hybrid_tutors = []
-
-        for tutor in all_tutors:
-            # Get all package formats for this tutor
-            packages = db.query(TutorPackage).filter(
-                TutorPackage.tutor_id == tutor.id,
-                TutorPackage.is_active == True
-            ).all()
-
-            if not packages:
-                continue
-
-            # Get unique session formats this tutor offers
-            tutor_formats = set(pkg.session_format for pkg in packages if pkg.session_format)
-
-            # Must have BOTH Online and In-person
-            if 'Online' in tutor_formats and 'In-person' in tutor_formats:
-                hybrid_tutors.append(tutor)
-
-        all_tutors = hybrid_tutors
-        total = len(all_tutors)
-        print(f"[Hybrid Filter] Filtered to {total} hybrid tutors")
+                all_tutors = [
+                    t for t in all_tutors
+                    if 'In-person' in formats_by_tutor.get(t.id, set())
+                    and 'Online' not in formats_by_tutor.get(t.id, set())
+                ]
+            total = len(all_tutors)
+            print(f"[Exclusive Filter] Filtered to {total} tutors with ONLY {sessionFormat} packages")
 
     # Parse search history IDs
     search_history_tutor_ids = []
@@ -1921,11 +1921,13 @@ def get_tutors_tiered(
     max_rating: Optional[float] = Query(None),
     sort_by: Optional[str] = Query(None),
     user_location: Optional[str] = Query(None),  # Filter tutors by location matching user's location
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Get tutors with tier-based ranking prioritizing student's learning interests and hobbies
+
+    Access: caller must be authenticated, verified, and have at least one role.
 
     Tier Priority:
     1. Tutors matching student's learning interests (interested_in from student_profiles)
@@ -1962,11 +1964,17 @@ def get_tutors_tiered(
     print(f"  sort_by: {sort_by}")
     print(f"  page: {page}, limit: {limit}")
 
+    # Access policy: caller must be verified and have at least one role.
+    if not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="Account is not verified")
+    if not current_user.roles or len(current_user.roles) == 0:
+        raise HTTPException(status_code=403, detail="Account has no role assigned")
+
     # Get student profile data if user is logged in and has student role
     student_interests = []
     student_hobbies = []
 
-    if current_user and "student" in current_user.roles:
+    if "student" in (current_user.roles or []):
         # Get student profile to fetch interested_in
         student_profile = db.query(StudentProfile).filter(
             StudentProfile.user_id == current_user.id
