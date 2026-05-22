@@ -6,7 +6,7 @@ Handles user referral codes, tracking, and analytics
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
+from typing import List, Optional
 import secrets
 import string
 from datetime import datetime
@@ -221,29 +221,32 @@ async def register_referral(
 
 @router.get("/my-referrals", response_model=List[ReferredUserResponse])
 async def get_my_referrals(
-    profile_type: str,
+    profile_type: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get list of users referred by current user
+    Get list of users referred by current user.
+    If profile_type is omitted, returns referrals across all roles.
     """
-    # Validate profile type
-    valid_types = ['tutor', 'student', 'parent', 'advertiser']
-    if profile_type not in valid_types:
-        raise HTTPException(status_code=400, detail=f"Invalid profile type. Must be one of: {valid_types}")
+    query = db.query(ReferralRegistration).filter(
+        ReferralRegistration.referrer_user_id == current_user.id
+    )
 
-    # Get referrals
-    referrals = db.query(ReferralRegistration).filter(
-        ReferralRegistration.referrer_user_id == current_user.id,
-        ReferralRegistration.referrer_profile_type == profile_type
-    ).order_by(ReferralRegistration.registration_date.desc()).all()
+    if profile_type is not None:
+        valid_types = ['tutor', 'student', 'parent', 'advertiser']
+        if profile_type not in valid_types:
+            raise HTTPException(status_code=400, detail=f"Invalid profile type. Must be one of: {valid_types}")
+        query = query.filter(ReferralRegistration.referrer_profile_type == profile_type)
+
+    referrals = query.order_by(ReferralRegistration.registration_date.desc()).all()
 
     return [ReferredUserResponse(
         id=r.id,
         referred_user_id=r.referred_user_id,
         referred_user_email=r.referred_user_email,
         referred_user_name=r.referred_user_name,
+        referrer_profile_type=r.referrer_profile_type,
         registration_date=r.registration_date,
         is_active=r.is_active,
         last_activity=r.last_activity
@@ -302,6 +305,7 @@ async def get_referral_stats(
         referred_user_id=r.referred_user_id,
         referred_user_email=r.referred_user_email,
         referred_user_name=r.referred_user_name,
+        referrer_profile_type=r.referrer_profile_type,
         registration_date=r.registration_date,
         is_active=r.is_active,
         last_activity=r.last_activity

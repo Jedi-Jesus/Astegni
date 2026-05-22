@@ -1475,7 +1475,7 @@ const EarningsInvestmentsManager = {
     },
 
     /**
-     * Load total referred users list
+     * Load total referred users list (across all roles)
      */
     async loadReferralsData() {
         const referralsEmpty = document.getElementById('referrals-empty');
@@ -1484,20 +1484,24 @@ const EarningsInvestmentsManager = {
 
         if (!referralsList) return;
 
+        const escapeHtml = (str) => String(str ?? '').replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+
         try {
             referralsLoading?.classList.remove('hidden');
             referralsEmpty?.classList.add('hidden');
             referralsList.classList.add('hidden');
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/referrals`, {
+            const response = await fetch(`${this.API_BASE_URL}/api/referrals/my-referrals`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) throw new Error('Failed to fetch referred users');
 
             const data = await response.json();
-            const referrals = data.referrals || data || [];
+            const referrals = Array.isArray(data) ? data : (data.referrals || []);
 
             referralsLoading?.classList.add('hidden');
 
@@ -1506,21 +1510,42 @@ const EarningsInvestmentsManager = {
                 return;
             }
 
-            referralsList.innerHTML = referrals.map(user => {
-                const joinedDate = new Date(user.referred_at || user.created_at);
-                const statusColor = user.status === 'active' ? 'green' : user.status === 'pending' ? 'yellow' : 'gray';
+            const dateFmt = { month: 'short', day: 'numeric', year: 'numeric' };
+            const roleBadge = {
+                tutor: 'bg-blue-100 text-blue-800',
+                student: 'bg-emerald-100 text-emerald-800',
+                parent: 'bg-amber-100 text-amber-800',
+                advertiser: 'bg-pink-100 text-pink-800'
+            };
+
+            referralsList.innerHTML = referrals.map(r => {
+                const name = r.referred_user_name || r.referred_user_email || 'Unknown User';
+                const email = r.referred_user_email || '';
+                const role = (r.referrer_profile_type || '').toLowerCase();
+                const roleClass = roleBadge[role] || 'bg-gray-100 text-gray-800';
+                const joined = r.registration_date ? new Date(r.registration_date).toLocaleDateString('en-US', dateFmt) : '';
+                const lastSeen = r.last_activity ? new Date(r.last_activity).toLocaleDateString('en-US', dateFmt) : null;
+                const isActive = r.is_active !== false;
+                const statusClass = isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600';
+                const statusText = isActive ? 'Active' : 'Inactive';
+                const initial = (name.charAt(0) || 'U').toUpperCase();
+
                 return `
                     <div class="flex items-center gap-4 p-4 card hover:shadow-md transition-all duration-200">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                            ${(user.full_name || user.name || 'U').charAt(0).toUpperCase()}
+                            ${escapeHtml(initial)}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="font-semibold text-gray-800 truncate">${user.full_name || user.name || 'Unknown User'}</p>
-                            <p class="text-sm text-gray-500 truncate">${user.email || ''}</p>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="font-semibold text-gray-800 truncate">${escapeHtml(name)}</p>
+                                ${role ? `<span class="inline-block ${roleClass} text-xs px-2 py-0.5 rounded-full font-semibold capitalize">via ${escapeHtml(role)}</span>` : ''}
+                            </div>
+                            <p class="text-sm text-gray-500 truncate">${escapeHtml(email)}</p>
+                            ${lastSeen ? `<p class="text-xs text-gray-400 mt-0.5">Last active ${escapeHtml(lastSeen)}</p>` : ''}
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <span class="inline-block bg-${statusColor}-100 text-${statusColor}-800 text-xs px-2 py-0.5 rounded-full font-semibold">${user.status || 'Active'}</span>
-                            <p class="text-xs text-gray-400 mt-1">${joinedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                            <span class="inline-block ${statusClass} text-xs px-2 py-0.5 rounded-full font-semibold">${statusText}</span>
+                            <p class="text-xs text-gray-400 mt-1">Joined ${escapeHtml(joined)}</p>
                         </div>
                     </div>
                 `;

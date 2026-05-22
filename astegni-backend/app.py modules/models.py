@@ -3105,6 +3105,7 @@ class ReferredUserResponse(BaseModel):
     referred_user_id: int
     referred_user_email: str
     referred_user_name: Optional[str]
+    referrer_profile_type: Optional[str] = None
     registration_date: datetime
     is_active: bool
     last_activity: Optional[datetime]
