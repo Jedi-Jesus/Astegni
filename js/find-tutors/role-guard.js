@@ -152,7 +152,7 @@
         if (reason === 'unverified_and_no_role') {
             if (messageEl) messageEl.textContent = 'The tutor marketplace requires a verified account with at least one role.';
             if (suggestionEl) suggestionEl.innerHTML = 'Please verify your account and add a role to continue.';
-            if (actionsEl) actionsEl.innerHTML = goBackBtn + verifyBtn;
+            if (actionsEl) actionsEl.innerHTML = goBackBtn + addRoleBtn + verifyBtn;
         } else if (reason === 'unverified') {
             if (messageEl) messageEl.textContent = 'The tutor marketplace is only accessible to verified users.';
             if (suggestionEl) suggestionEl.innerHTML = 'Please verify your account to continue.';
@@ -198,10 +198,68 @@
         }
     };
 
-    window.goToVerification = function () {
-        // Send user to their profile page to start verification.
-        // Profile-page routing varies by role; index.html will dispatch correctly for a logged-in user.
-        window.location.href = REDIRECT_URL;
+    // Lazy-load the verify-personal-info modal partial + its JS, then open it.
+    // Idempotent — safe to call multiple times.
+    let _verifyModalLoadPromise = null;
+    function ensureVerifyPersonalInfoModalLoaded() {
+        if (typeof window.openVerifyPersonalInfoModal === 'function') {
+            return Promise.resolve();
+        }
+        if (_verifyModalLoadPromise) {
+            return _verifyModalLoadPromise;
+        }
+
+        _verifyModalLoadPromise = (async () => {
+            // 1. Inject the modal HTML partial if not already in the DOM
+            if (!document.getElementById('verify-personal-info-modal')) {
+                try {
+                    const resp = await fetch('../modals/common-modals/verify-personal-info-modal.html');
+                    if (resp.ok) {
+                        const html = await resp.text();
+                        let container = document.getElementById('modal-container');
+                        if (!container) {
+                            container = document.createElement('div');
+                            container.id = 'modal-container';
+                            document.body.appendChild(container);
+                        }
+                        container.insertAdjacentHTML('beforeend', html);
+                    } else {
+                        throw new Error('Failed to fetch verify-personal-info-modal partial');
+                    }
+                } catch (e) {
+                    console.error('[AccessGuard] Failed to load verify modal HTML:', e);
+                    throw e;
+                }
+            }
+
+            // 2. Load the verification JS if openVerifyPersonalInfoModal isn't already defined
+            if (typeof window.openVerifyPersonalInfoModal !== 'function') {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = '../js/tutor-profile/settings-panel-personal-verification.js?v202605211228';
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error('Failed to load settings-panel-personal-verification.js'));
+                    document.body.appendChild(s);
+                });
+            }
+        })();
+
+        return _verifyModalLoadPromise;
+    }
+
+    window.goToVerification = async function () {
+        closeRoleAccessDeniedModal();
+        try {
+            await ensureVerifyPersonalInfoModalLoaded();
+            if (typeof window.openVerifyPersonalInfoModal === 'function') {
+                window.openVerifyPersonalInfoModal();
+            } else {
+                throw new Error('openVerifyPersonalInfoModal not available');
+            }
+        } catch (e) {
+            console.error('[AccessGuard] Could not open verify modal, falling back to home:', e);
+            window.location.href = REDIRECT_URL;
+        }
     };
 
     window.openAddRoleModalFromGuard = async function () {
