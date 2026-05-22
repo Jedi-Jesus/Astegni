@@ -298,31 +298,47 @@ class PackageManagerClean {
     }
 
     async deletePackage(id) {
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                const response = await fetch(`${API_BASE_URL}/api/tutor/packages/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    console.log('✅ Package deleted from database');
-                }
-            }
-        } catch (e) {
-            console.warn('⚠️ Could not delete from database:', e);
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            alert('You are not logged in. Please refresh the page and log in again.');
+            return false;
         }
 
-        // Remove from local state
+        const url = `${API_BASE_URL}/api/tutor/packages/${id}`;
+
+        try {
+            const response = window.ProtectedAPI
+                ? await window.ProtectedAPI.call(url, { method: 'DELETE' }, 'delete_package')
+                : await fetch(url, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error('❌ Delete failed:', response.status, errText);
+                if (response.status === 401 || response.status === 403) {
+                    alert('Authentication or verification error. Please refresh and try again.');
+                } else {
+                    alert(`Failed to delete package (${response.status}). Please try again.`);
+                }
+                return false;
+            }
+
+            console.log('✅ Package deleted from database');
+        } catch (e) {
+            console.error('❌ Could not delete from database:', e);
+            alert('Network error. Please check your connection and try again.');
+            return false;
+        }
+
         this.packages = this.packages.filter(p => p.id !== id);
         this.savePackages();
         if (this.currentPackageId === id) {
             this.currentPackageId = null;
             this.currentPackage = null;
         }
+        return true;
     }
 
     convertBackendToFrontend(backendPackage) {
@@ -887,7 +903,8 @@ window.selectPackage = function(packageId) {
 
 window.deletePackageConfirm = async function(packageId) {
     if (confirm('Are you sure you want to delete this package?')) {
-        await window.packageManagerClean.deletePackage(packageId);
+        const ok = await window.packageManagerClean.deletePackage(packageId);
+        if (!ok) return;
         renderPackagesList();
         renderPackagesGrid();  // Update the package cards on the main page
 
@@ -2468,7 +2485,8 @@ window.deletePackageFromGrid = async function(packageId) {
 
     if (confirm(`Are you sure you want to delete "${packageName}"? This action cannot be undone.`)) {
         try {
-            await window.packageManagerClean.deletePackage(packageId);
+            const ok = await window.packageManagerClean.deletePackage(packageId);
+            if (!ok) return;
             renderPackagesGrid();  // Refresh the packages grid
             console.log('✅ Package deleted from grid:', packageId);
         } catch (error) {
