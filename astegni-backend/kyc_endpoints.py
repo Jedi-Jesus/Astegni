@@ -103,6 +103,34 @@ except ImportError:
 
 router = APIRouter(prefix="/api/kyc", tags=["KYC Verification"])
 
+# Attempts are reset automatically after this many hours since last_attempt_at.
+# Why: lets a user retry without contacting support after a cool-down.
+KYC_MAX_ATTEMPTS = 5
+KYC_RESET_HOURS = 3
+
+
+def _reset_attempts_if_window_expired(verification, db: Session) -> bool:
+    """Zero out attempt_count on the existing verification row if the user has
+    been locked out for at least KYC_RESET_HOURS since their last attempt.
+    Returns True if a reset was applied (caller may want to refresh state).
+    """
+    if not verification or not verification.last_attempt_at:
+        return False
+    if (verification.attempt_count or 0) < KYC_MAX_ATTEMPTS:
+        return False
+    hours_since = (datetime.utcnow() - verification.last_attempt_at).total_seconds() / 3600
+    if hours_since < KYC_RESET_HOURS:
+        return False
+    verification.attempt_count = 0
+    verification.max_attempts = KYC_MAX_ATTEMPTS
+    verification.status = 'pending'
+    verification.rejection_reason = None
+    verification.document_verified = False
+    verification.face_match_passed = False
+    verification.liveliness_passed = False
+    db.commit()
+    return True
+
 
 # ============================================
 # PYDANTIC SCHEMAS
@@ -878,7 +906,8 @@ async def start_kyc_verification(
         status='pending',
         document_type=request.document_type,
         challenge_type='blink_smile_turn',
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+        max_attempts=KYC_MAX_ATTEMPTS
     )
     db.add(verification)
     db.commit()
@@ -922,8 +951,15 @@ async def upload_document(
     if verification.status == 'passed':
         raise HTTPException(status_code=400, detail="Verification already completed")
 
-    if verification.attempt_count >= verification.max_attempts:
-        raise HTTPException(status_code=400, detail="Maximum attempts exceeded")
+    _reset_attempts_if_window_expired(verification, db)
+
+    if (verification.attempt_count or 0) >= KYC_MAX_ATTEMPTS:
+        hours_since = (datetime.utcnow() - verification.last_attempt_at).total_seconds() / 3600 if verification.last_attempt_at else 0
+        hours_remaining = max(0, KYC_RESET_HOURS - hours_since)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Maximum attempts exceeded. Try again in {int(hours_remaining)}h {int((hours_remaining % 1) * 60)}m."
+        )
 
     try:
         # Decode base64 image
@@ -1018,11 +1054,18 @@ async def upload_selfie(
     if verification.status == 'passed':
         raise HTTPException(status_code=400, detail="Verification already completed")
 
+    _reset_attempts_if_window_expired(verification, db)
+
     if not verification.document_verified:
         raise HTTPException(status_code=400, detail="Please upload document first")
 
-    if verification.attempt_count >= verification.max_attempts:
-        raise HTTPException(status_code=400, detail="Maximum attempts exceeded")
+    if (verification.attempt_count or 0) >= KYC_MAX_ATTEMPTS:
+        hours_since = (datetime.utcnow() - verification.last_attempt_at).total_seconds() / 3600 if verification.last_attempt_at else 0
+        hours_remaining = max(0, KYC_RESET_HOURS - hours_since)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Maximum attempts exceeded. Try again in {int(hours_remaining)}h {int((hours_remaining % 1) * 60)}m."
+        )
 
     try:
         print(f"[KYC DEBUG] /upload-selfie called")
@@ -1242,7 +1285,7 @@ async def upload_selfie(
             "smile_detected": bool(verification.smile_detected),
             "head_turn_detected": bool(verification.head_turn_detected),
             "rejection_reason": verification.rejection_reason,
-            "attempts_remaining": verification.max_attempts - verification.attempt_count
+            "attempts_remaining": KYC_MAX_ATTEMPTS - (verification.attempt_count or 0)
         }
 
     except HTTPException:
@@ -1413,7 +1456,7 @@ async def get_kyc_status(
         smile_detected=bool(verification.smile_detected or False),
         head_turn_detected=bool(verification.head_turn_detected or False),
         attempt_count=verification.attempt_count or 0,
-        max_attempts=verification.max_attempts or 3,
+        max_attempts=KYC_MAX_ATTEMPTS,
         rejection_reason=verification.rejection_reason,
         created_at=verification.created_at,
         verified_at=verification.verified_at
@@ -1440,10 +1483,14 @@ async def reset_kyc_verification(
             detail="No failed verification found"
         )
 
-    if verification.attempt_count >= verification.max_attempts:
+    _reset_attempts_if_window_expired(verification, db)
+
+    if (verification.attempt_count or 0) >= KYC_MAX_ATTEMPTS:
+        hours_since = (datetime.utcnow() - verification.last_attempt_at).total_seconds() / 3600 if verification.last_attempt_at else 0
+        hours_remaining = max(0, KYC_RESET_HOURS - hours_since)
         raise HTTPException(
             status_code=400,
-            detail="Maximum attempts exceeded. Please contact support."
+            detail=f"Maximum attempts exceeded. Try again in {int(hours_remaining)}h {int((hours_remaining % 1) * 60)}m."
         )
 
     # Reset verification
@@ -1459,7 +1506,7 @@ async def reset_kyc_verification(
     return {
         "success": True,
         "message": "Verification reset. You can try again.",
-        "attempts_remaining": verification.max_attempts - verification.attempt_count
+        "attempts_remaining": KYC_MAX_ATTEMPTS - (verification.attempt_count or 0)
     }
 
 
@@ -1531,33 +1578,23 @@ async def check_kyc_required(
                 "message": "Please complete your verification"
             }
         elif verification.status == 'failed':
-            # Check if 5 hours have passed since last attempt - reset if so
-            can_retry = verification.attempt_count < verification.max_attempts
-            attempts_remaining = verification.max_attempts - verification.attempt_count
+            if _reset_attempts_if_window_expired(verification, db):
+                return {
+                    "kyc_required": True,
+                    "kyc_verified": False,
+                    "status": None,  # Treated as fresh start
+                    "message": "Your verification attempts have been reset. You can try again.",
+                    "reset": True
+                }
+
+            can_retry = (verification.attempt_count or 0) < KYC_MAX_ATTEMPTS
+            attempts_remaining = KYC_MAX_ATTEMPTS - (verification.attempt_count or 0)
             time_until_reset = None
 
             if not can_retry and verification.last_attempt_at:
-                from datetime import timedelta
                 hours_since_last_attempt = (datetime.utcnow() - verification.last_attempt_at).total_seconds() / 3600
-
-                if hours_since_last_attempt >= 5:
-                    # Reset attempts after 5 hours
-                    verification.attempt_count = 0
-                    verification.status = 'pending'
-                    verification.rejection_reason = None
-                    db.commit()
-
-                    return {
-                        "kyc_required": True,
-                        "kyc_verified": False,
-                        "status": None,  # Treated as fresh start
-                        "message": "Your verification attempts have been reset. You can try again.",
-                        "reset": True
-                    }
-                else:
-                    # Calculate time remaining until reset
-                    hours_remaining = 5 - hours_since_last_attempt
-                    time_until_reset = f"{int(hours_remaining)}h {int((hours_remaining % 1) * 60)}m"
+                hours_remaining = max(0, KYC_RESET_HOURS - hours_since_last_attempt)
+                time_until_reset = f"{int(hours_remaining)}h {int((hours_remaining % 1) * 60)}m"
 
             return {
                 "kyc_required": True,

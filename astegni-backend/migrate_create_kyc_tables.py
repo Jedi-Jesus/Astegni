@@ -111,7 +111,7 @@ def run_migration():
 
                     -- Retry tracking
                     attempt_count INTEGER DEFAULT 0,
-                    max_attempts INTEGER DEFAULT 3,
+                    max_attempts INTEGER DEFAULT 5,
                     last_attempt_at TIMESTAMP,
 
                     -- Unique constraint: One active verification per user

@@ -1037,7 +1037,8 @@ class KYCVerificationManager {
 
         if (attemptsRemaining <= 0) {
             document.getElementById('btn-retry-kyc').style.display = 'none';
-            document.getElementById('retry-info').innerHTML = '<p style="color: #ef4444;">Maximum attempts exceeded. Please contact support.</p>';
+            const wait = data.time_until_reset ? `Try again in ${data.time_until_reset}.` : 'Try again in 3 hours.';
+            document.getElementById('retry-info').innerHTML = `<p style="color: #ef4444;">Maximum attempts exceeded. ${wait}</p>`;
         }
     }
 

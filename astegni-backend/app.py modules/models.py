@@ -862,7 +862,7 @@ class KYCVerification(Base):
 
     # Retry tracking
     attempt_count = Column(Integer, default=0)
-    max_attempts = Column(Integer, default=3)
+    max_attempts = Column(Integer, default=5)
     last_attempt_at = Column(DateTime)
 
     # Relationships
