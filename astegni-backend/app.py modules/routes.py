@@ -8264,48 +8264,10 @@ async def update_campaign(
 
     return {"message": "Campaign updated successfully", "campaign": AdCampaignResponse.from_orm(campaign)}
 
-@router.delete("/api/advertiser/campaigns/{campaign_id}")
-async def delete_campaign(
-    campaign_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Delete a campaign"""
-    from models import AdvertiserProfile, AdCampaign
-
-    # Get advertiser profile
-    advertiser_profile = db.query(AdvertiserProfile).filter(
-        AdvertiserProfile.user_id == current_user.id
-    ).first()
-
-    if not advertiser_profile:
-        raise HTTPException(status_code=404, detail="Advertiser profile not found")
-
-    # Get campaign
-    campaign = db.query(AdCampaign).filter(
-        AdCampaign.id == campaign_id,
-        AdCampaign.advertiser_id == advertiser_profile.id
-    ).first()
-
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-
-    # Don't allow deleting active campaigns
-    if campaign.status == "active":
-        raise HTTPException(status_code=400, detail="Cannot delete active campaign. Pause it first.")
-
-    # Refund budget if campaign hasn't started
-    if campaign.status == "draft" or campaign.status == "scheduled":
-        unspent = campaign.budget - campaign.spent
-        advertiser_profile.available_budget += unspent
-
-    # Delete campaign
-    db.delete(campaign)
-    advertiser_profile.total_campaigns -= 1
-
-    db.commit()
-
-    return {"message": "Campaign deleted successfully"}
+# NOTE: DELETE /api/advertiser/campaigns/{id} is handled by the brands router
+# (advertiser_brands_endpoints.py) which is mounted first and wins the route
+# collision. The handler that used to live here referenced a non-existent
+# AdCampaign SQLAlchemy model and was therefore dead code.
 
 @router.put("/api/advertiser/campaigns/{campaign_id}/metrics")
 async def update_campaign_metrics(
