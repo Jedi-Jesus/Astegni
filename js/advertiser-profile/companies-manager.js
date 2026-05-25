@@ -208,19 +208,12 @@ const CompaniesManager = {
             }
         }
 
-        // Update brands-panel header to show "Brands for <company>".
-        // Scope the selectors to #brands-panel — the Companies panel has
-        // an element with the same class, so an unscoped querySelector
-        // would update the wrong (invisible) one.
-        const headerTitle = document.querySelector('#brands-panel .brands-panel-title');
-        if (headerTitle) {
-            headerTitle.innerHTML = `
-                <button type="button" onclick="CompaniesManager.backToCompanies()" class="brands-back-btn" title="Back to companies">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <i class="fas fa-building"></i>
-                ${this._escape(company.company_name)}'s Brands
-            `;
+        // Update brands-panel header text. The back button + building icon
+        // are in the HTML permanently (so they survive hard reloads); we
+        // only swap the title text span.
+        const titleText = document.querySelector('#brands-panel .brands-panel-title-text');
+        if (titleText) {
+            titleText.textContent = `${company.company_name}'s Brands`;
         }
         const headerSubtitle = document.querySelector('#brands-panel .brands-panel-subtitle');
         if (headerSubtitle) {
@@ -242,11 +235,11 @@ const CompaniesManager = {
             BrandsManager.currentCompanyName = null;
             BrandsManager.currentCompanyVerified = null;
         }
-        // Restore default brands-panel header (scoped to #brands-panel —
-        // see openCompany() for why this matters).
-        const headerTitle = document.querySelector('#brands-panel .brands-panel-title');
-        if (headerTitle) {
-            headerTitle.innerHTML = `<i class="fas fa-building"></i> My Brands`;
+        // Restore default brands-panel header text (back button + icon
+        // are in the static HTML — only the text span needs resetting).
+        const titleText = document.querySelector('#brands-panel .brands-panel-title-text');
+        if (titleText) {
+            titleText.textContent = 'My Brands';
         }
         const headerSubtitle = document.querySelector('#brands-panel .brands-panel-subtitle');
         if (headerSubtitle) {
