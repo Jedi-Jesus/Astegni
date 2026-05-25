@@ -49,15 +49,23 @@ load_dotenv()
 
 from backblaze_service import get_backblaze_service  # noqa: E402
 
-# Current layout (since the May 2026 reorg):
-#   {images|videos|documents|audio}/advertisement/{brand}/{campaign}/{placement}/profile_{id}/{filename}
-# Legacy layout (pre-reorg, kept here so post-migration cleanup still catches
-# any leftover old-layout files):
-#   {images|videos}/profile_{id}/{brand}/{campaign}/{placement}/{filename}
+# Current layout (since the May 2026 company restructure):
+#   {images|videos|documents|audio}/advertisements/{company}/[{brand}/[{campaign}/[{placement}/]]]{file}
+# Previous interim layout (singular "advertisement"):
+#   {images|videos|documents|audio}/advertisement/{brand}/{campaign}/{placement}/profile_{id}/{file}
+# Original legacy layout (pre-reorg):
+#   {images|videos}/profile_{id}/{brand}/{campaign}/{placement}/{file}
+# All three are accepted so post-migration cleanup catches leftover files
+# at any layout.
 SAFE_PATH_RE = re.compile(
     r"^("
+    # Current advertisements/{company}/... layout (1 to 4 nested name segments before filename)
+    r"(images|videos|documents|audio)/advertisements/[^/]+(/[^/]+){0,4}/[^/]+"
+    r"|"
+    # Interim singular layout
     r"(images|videos|documents|audio)/advertisement/[^/]+/[^/]+/[^/]+/profile_\d+/.+"
     r"|"
+    # Original profile_N/... layout
     r"(images|videos)/profile_\d+/.+"
     r")$"
 )
