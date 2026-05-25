@@ -1406,9 +1406,15 @@ async def admin_get_companies(
                     query += " AND cp.company_name ILIKE %s"
                     params.append(f"%{search}%")
 
-                count_query = query.replace(
-                    "SELECT cp.*, u.email AS advertiser_email, CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name, u.profile_picture AS advertiser_avatar",
-                    "SELECT COUNT(*)",
+                # Build count query by stripping the SELECT clause via regex
+                # (whitespace-tolerant; the SELECT spans multiple lines in source).
+                import re as _re
+                count_query = _re.sub(
+                    r'SELECT\s+cp\.\*.*?(?=FROM\s)',
+                    'SELECT COUNT(*) ',
+                    query,
+                    count=1,
+                    flags=_re.DOTALL,
                 )
                 cur.execute(count_query, params)
                 total = cur.fetchone()['count']
