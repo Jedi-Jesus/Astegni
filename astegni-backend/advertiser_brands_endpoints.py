@@ -397,6 +397,16 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
             with conn.cursor() as cur:
                 _assert_brand_owned_by_advertiser(cur, advertiser_profile_id, brand_id)
 
+                # Capture old name so we know whether to re-migrate B2 after rename.
+                cur.execute(
+                    "SELECT bp.name, bp.company_id, cp.company_name FROM brand_profile bp "
+                    "JOIN company_profile cp ON cp.id = bp.company_id WHERE bp.id = %s",
+                    (brand_id,),
+                )
+                _ctx = cur.fetchone()
+                _old_brand_name = _ctx["name"] if _ctx else None
+                _ctx_company_id = _ctx["company_id"] if _ctx else None
+
                 # Build update query
                 updates = []
                 values = []
@@ -457,6 +467,28 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
                     RETURNING *
                 """, values)
                 updated_brand = cur.fetchone()
+
+                # Re-migrate B2 files if brand name changed.
+                if brand.name is not None and _old_brand_name and brand.name != _old_brand_name:
+                    from advertiser_b2_paths import slugify, remigrate_rename
+                    from backblaze_service import get_backblaze_service
+                    _old_slug = slugify(_old_brand_name)
+                    _new_slug = slugify(brand.name)
+                    if _old_slug != _new_slug:
+                        _b2 = get_backblaze_service()
+                        if getattr(_b2, "configured", False):
+                            summary = remigrate_rename(
+                                cursor=cur,
+                                b2_service=_b2,
+                                segment="brand",
+                                old_slug=_old_slug,
+                                new_slug=_new_slug,
+                                brand_id=brand_id,
+                            )
+                            print(f"[update_brand] B2 re-migration: {summary}")
+                        else:
+                            print("[update_brand] B2 not configured; skipping re-migration")
+
                 conn.commit()
 
                 return {"message": "Brand updated successfully", "brand": dict(updated_brand)}
@@ -972,6 +1004,11 @@ async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_us
                 if not cur.fetchone():
                     raise HTTPException(status_code=403, detail="You don't own this campaign")
 
+                # Capture old campaign name (for B2 re-migration on rename)
+                cur.execute("SELECT name FROM campaign_profile WHERE id = %s", (campaign_id,))
+                _cur_name_row = cur.fetchone()
+                _old_campaign_name = _cur_name_row["name"] if _cur_name_row else None
+
                 # Build update query
                 updates = []
                 values = []
@@ -1042,6 +1079,28 @@ async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_us
                     RETURNING *
                 """, values)
                 updated_campaign = cur.fetchone()
+
+                # Re-migrate B2 files if campaign name changed.
+                if campaign.name is not None and _old_campaign_name and campaign.name != _old_campaign_name:
+                    from advertiser_b2_paths import slugify, remigrate_rename
+                    from backblaze_service import get_backblaze_service
+                    _old_slug = slugify(_old_campaign_name)
+                    _new_slug = slugify(campaign.name)
+                    if _old_slug != _new_slug:
+                        _b2 = get_backblaze_service()
+                        if getattr(_b2, "configured", False):
+                            summary = remigrate_rename(
+                                cursor=cur,
+                                b2_service=_b2,
+                                segment="campaign",
+                                old_slug=_old_slug,
+                                new_slug=_new_slug,
+                                campaign_id=campaign_id,
+                            )
+                            print(f"[update_campaign] B2 re-migration: {summary}")
+                        else:
+                            print("[update_campaign] B2 not configured; skipping re-migration")
+
                 conn.commit()
 
                 return {"message": "Campaign updated successfully", "campaign": dict(updated_campaign)}

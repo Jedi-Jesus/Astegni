@@ -202,7 +202,13 @@ async def get_company(company_id: int, current_user=Depends(get_current_user)):
 
 @router.put("/companies/{company_id}")
 async def update_company(company_id: int, payload: CompanyUpdate, current_user=Depends(get_current_user)):
-    """Update editable identity fields. Wallet / verification fields are not editable here."""
+    """Update editable identity fields. Wallet / verification fields are not editable here.
+
+    If company_name changes, B2 files under the company's subtree are re-migrated
+    to the new path (advertisements/{new_name}/...). Best-effort: if the B2 step
+    fails for any file, the DB update is committed first so the rename succeeds;
+    failed B2 moves leave the file at its old path (still reachable via DB).
+    """
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
 
     updates = payload.dict(exclude_unset=True)
@@ -223,13 +229,39 @@ async def update_company(company_id: int, payload: CompanyUpdate, current_user=D
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Verify ownership before update
-                _load_owned_company(cur, advertiser_profile_id, company_id)
+                # Verify ownership and capture pre-update name (for B2 re-migration detection)
+                old = _load_owned_company(cur, advertiser_profile_id, company_id)
+                old_company_name = old.get("company_name") if hasattr(old, "get") else old["company_name"]
+
                 cur.execute(
                     f"UPDATE company_profile SET {', '.join(set_clauses)} WHERE id = %s RETURNING *",
                     values,
                 )
                 row = cur.fetchone()
+
+                # Re-migrate B2 files if company_name changed.
+                # Done inside the same transaction so DB + B2 move are visible together.
+                new_company_name = updates.get("company_name", old_company_name)
+                if new_company_name and new_company_name != old_company_name:
+                    from advertiser_b2_paths import slugify, remigrate_rename
+                    from backblaze_service import get_backblaze_service
+                    old_slug = slugify(old_company_name)
+                    new_slug = slugify(new_company_name)
+                    if old_slug != new_slug:
+                        b2 = get_backblaze_service()
+                        if getattr(b2, "configured", False):
+                            summary = remigrate_rename(
+                                cursor=cur,
+                                b2_service=b2,
+                                segment="company",
+                                old_slug=old_slug,
+                                new_slug=new_slug,
+                                company_id=company_id,
+                            )
+                            print(f"[update_company] B2 re-migration: {summary}")
+                        else:
+                            print("[update_company] B2 not configured; skipping re-migration")
+
                 conn.commit()
                 return {"message": "Company updated", "company": _serialize(row)}
     except HTTPException:
