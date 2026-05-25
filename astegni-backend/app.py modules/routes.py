@@ -7831,9 +7831,11 @@ async def delete_campaign_media(
             conn.close()
             raise HTTPException(status_code=403, detail="You don't have permission to delete this media")
 
-        # Get file info for Backblaze deletion (folder_path is at index 10)
-        folder_path = media[10] if len(media) > 10 else None
-        file_name = media[6] if len(media) > 6 else None  # file_name is at index 6
+        # Get the B2 object key. NOTE: despite the column name, file_name stores
+        # the FULL B2 key (e.g. "images/profile_6/Brand/Campaign/.../foo.jpg").
+        # folder_path is redundant data; concatenating them produces a doubled
+        # path that no real B2 object matches.
+        b2_key = media[6] if len(media) > 6 else None  # file_name is at index 6
 
         # Delete from database first
         cursor.execute("DELETE FROM campaign_media WHERE id = %s", (media_id,))
@@ -7843,13 +7845,13 @@ async def delete_campaign_media(
         conn.close()
 
         # Try to delete from Backblaze (don't fail if this errors)
-        if folder_path and file_name:
+        if b2_key:
             try:
-                from backblaze_service import BackblazeService
-                backblaze_service = BackblazeService()
-                file_path = f"{folder_path}{file_name}"
-                backblaze_service.delete_file(file_path)
-                print(f"✅ Deleted file from Backblaze: {file_path}")
+                from backblaze_service import get_backblaze_service
+                if get_backblaze_service().delete_file(b2_key):
+                    print(f"✅ Deleted file from Backblaze: {b2_key}")
+                else:
+                    print(f"⚠️ B2 delete returned False for: {b2_key}")
             except Exception as e:
                 print(f"⚠️ Could not delete file from Backblaze: {str(e)}")
                 # Continue anyway - database deletion succeeded

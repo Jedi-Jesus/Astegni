@@ -1049,11 +1049,14 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
                         detail=f"Cannot delete a {current_status} campaign. Cancel it first."
                     )
 
-                # Collect media files BEFORE deleting the campaign row, because
+                # Collect media file keys BEFORE deleting the campaign row, because
                 # the campaign_media -> campaign_profile FK is ON DELETE CASCADE
                 # and we lose the file paths once the campaign row is gone.
+                # NOTE: despite the column name, `file_name` stores the FULL B2
+                # object key (e.g. "images/profile_6/Brand/Campaign/.../foo.jpg"),
+                # not just the basename. `folder_path` is redundant. Use file_name.
                 cur.execute("""
-                    SELECT folder_path, file_name
+                    SELECT file_name
                     FROM campaign_media
                     WHERE campaign_id = %s
                 """, (campaign_id,))
@@ -1081,18 +1084,16 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
                         b2 = get_backblaze_service()
                         deleted_count = 0
                         for m in media_files:
-                            folder_path = m.get('folder_path')
-                            file_name = m.get('file_name')
-                            if not folder_path or not file_name:
+                            b2_key = m.get('file_name')
+                            if not b2_key:
                                 continue
-                            file_path = f"{folder_path}{file_name}"
                             try:
-                                if b2.delete_file(file_path):
+                                if b2.delete_file(b2_key):
                                     deleted_count += 1
                                 else:
-                                    print(f"[delete_campaign] B2 delete returned False for {file_path}")
+                                    print(f"[delete_campaign] B2 delete returned False for {b2_key}")
                             except Exception as e:
-                                print(f"[delete_campaign] B2 delete failed for {file_path}: {e}")
+                                print(f"[delete_campaign] B2 delete failed for {b2_key}: {e}")
                         print(f"[delete_campaign] B2 cleanup: {deleted_count}/{len(media_files)} files deleted for campaign {campaign_id}")
                     except Exception as e:
                         print(f"[delete_campaign] Could not initialize B2 service for cleanup: {e}")

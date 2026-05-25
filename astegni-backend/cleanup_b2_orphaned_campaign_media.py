@@ -54,15 +54,21 @@ SAFE_PATH_RE = re.compile(r"^(images|videos)/profile_\d+/.+")
 
 
 def fetch_known_paths(advertiser_id: int | None) -> Set[str]:
-    """Return the set of full B2 paths (folder_path + file_name) known to the DB."""
+    """Return the set of full B2 keys known to the DB.
+
+    NOTE: despite the column name, campaign_media.file_name stores the FULL
+    B2 object key (e.g. "images/profile_6/Brand/.../foo.jpg"), not just the
+    basename. folder_path is redundant data — concatenating them produces
+    a doubled path that doesn't match any real B2 object.
+    """
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         sys.exit("ERROR: DATABASE_URL not set in environment")
 
     sql = """
-        SELECT folder_path, file_name
+        SELECT file_name
         FROM campaign_media
-        WHERE folder_path IS NOT NULL AND file_name IS NOT NULL
+        WHERE file_name IS NOT NULL
     """
     params: tuple = ()
     if advertiser_id is not None:
@@ -73,39 +79,51 @@ def fetch_known_paths(advertiser_id: int | None) -> Set[str]:
     with psycopg.connect(db_url) as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)
-            for folder_path, file_name in cur.fetchall():
-                known.add(f"{folder_path}{file_name}")
+            for (file_name,) in cur.fetchall():
+                known.add(file_name)
     return known
 
 
 def list_b2_paths(advertiser_id: int | None) -> list[Tuple[str, str]]:
     """
     Return [(file_path, file_id), ...] for every object under the campaign-media
-    prefixes. If advertiser_id is given, narrow the scan to that one profile.
+    layout (images/profile_N/... or videos/profile_N/...). If advertiser_id is
+    given, narrow to that one profile.
+
+    b2sdk's `folder_to_list` is a literal folder path (with trailing /), not a
+    string prefix. "images/profile_" is not a folder, so we list the parent
+    folder (images/ or videos/) recursively and filter on the path pattern.
     """
     b2 = get_backblaze_service()
     if not getattr(b2, "configured", False):
         sys.exit("ERROR: Backblaze B2 not configured (check BACKBLAZE_* env vars)")
 
     if advertiser_id is not None:
-        prefixes = [
+        # Exact folders — narrow scan, no client-side filtering needed.
+        folders_to_list = [
             f"images/profile_{advertiser_id}/",
             f"videos/profile_{advertiser_id}/",
         ]
+        filter_required = False
     else:
-        prefixes = list(CAMPAIGN_MEDIA_PREFIXES)
+        # Whole-bucket scope: list images/ and videos/ recursively and filter.
+        folders_to_list = ["images/", "videos/"]
+        filter_required = True
 
     out: list[Tuple[str, str]] = []
-    for prefix in prefixes:
+    for folder in folders_to_list:
         try:
             for file_info, _ in b2.bucket.ls(
-                folder_to_list=prefix,
+                folder_to_list=folder,
                 recursive=True,
                 fetch_count=10000,
             ):
-                out.append((file_info.file_name, file_info.id_))
+                name = file_info.file_name
+                if filter_required and not SAFE_PATH_RE.match(name):
+                    continue
+                out.append((name, file_info.id_))
         except Exception as e:
-            print(f"[WARN] ls failed for prefix {prefix!r}: {e}")
+            print(f"[WARN] ls failed for folder {folder!r}: {e}")
     return out
 
 
