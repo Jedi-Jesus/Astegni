@@ -1112,18 +1112,29 @@ async def delete_affiliate_tier(program_id: int, tier_level: int, business_type:
                 if not result:
                     raise HTTPException(status_code=404, detail="Tier not found")
 
-                # Re-order remaining tiers for this program
+                # Re-order remaining tiers for this (program, business_type).
+                # The unique key is (program_id, tier_level, business_type), so we
+                # must partition by business_type or we'll collide with rows in
+                # other business_types that already occupy the target tier_level.
+                # Two-pass with a negative offset avoids transient duplicates
+                # while updating (e.g. row at level 3 → 2 while level 2 still
+                # exists for the same business_type).
                 cur.execute("""
                     WITH ranked AS (
-                        SELECT id, ROW_NUMBER() OVER (ORDER BY tier_level) as new_level
+                        SELECT id, ROW_NUMBER() OVER (ORDER BY tier_level) AS new_level
                         FROM affiliate_tiers
-                        WHERE program_id = %s
+                        WHERE program_id = %s AND business_type = %s
                     )
                     UPDATE affiliate_tiers t
-                    SET tier_level = r.new_level
+                    SET tier_level = -r.new_level
                     FROM ranked r
                     WHERE t.id = r.id
-                """, (program_id,))
+                """, (program_id, business_type))
+                cur.execute("""
+                    UPDATE affiliate_tiers
+                    SET tier_level = -tier_level
+                    WHERE program_id = %s AND business_type = %s AND tier_level < 0
+                """, (program_id, business_type))
                 conn.commit()
 
                 return {"success": True, "message": f"Tier {tier_level} deleted and remaining tiers re-ordered"}
