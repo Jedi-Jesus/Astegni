@@ -207,9 +207,13 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Get advertiser profile by profile_id directly
+                # Get advertiser profile by profile_id; verification lives on users table
+                # (moved during the verification-consolidation migration).
                 cur.execute("""
-                    SELECT id, brand_ids, is_verified FROM advertiser_profiles WHERE id = %s
+                    SELECT ap.id, ap.brand_ids, u.is_verified
+                    FROM advertiser_profiles ap
+                    JOIN users u ON u.id = ap.user_id
+                    WHERE ap.id = %s
                 """, (advertiser_profile_id,))
                 advertiser = cur.fetchone()
 
