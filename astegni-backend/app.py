@@ -290,6 +290,10 @@ app.include_router(campaign_packages_router)
 from cpi_settings_endpoints import router as cpi_settings_router
 app.include_router(cpi_settings_router)
 
+# Include view-packages routes (replaces continuous CPI for advertisers)
+from view_packages_endpoints import router as view_packages_router
+app.include_router(view_packages_router)
+
 # Include advertiser balance and CPM billing routes
 from advertiser_balance_endpoints import router as advertiser_balance_router
 app.include_router(advertiser_balance_router)

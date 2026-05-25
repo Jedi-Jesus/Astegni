@@ -1,27 +1,32 @@
 """
 CPI Settings Endpoints
-Handles Cost Per Impression pricing configuration
+Handles ad-pricing configuration consumed by the view-packages system.
 
-CPI Structure:
-- Base rate: Cost per impression for untargeted campaigns (All audience + International location + No placement)
-- Audience premiums: Additional cost for targeting specific audiences (tutor, student, parent, advertiser, user)
-- Location premiums: Additional cost for targeting specific locations (national)
-- Region exclusion premiums: Country-specific region premiums stored as JSONB (supports any country)
-- Placement premiums: Additional cost for specific ad placements (leaderboard-banner, logo, in-session-skyscrapper-banner)
+IMPORTANT — semantic change (2026-05)
+-------------------------------------
+Astegni no longer sells impressions on a continuous CPI rate. Advertisers
+buy fixed view packages (see view_packages_endpoints.py). The premium
+columns on cpi_settings are now interpreted as **multiplier deltas**
+applied to a package's base_price, not as additive ETB-per-impression.
 
-JSONB Region Structure:
-{
-    "ET": {"addis-ababa": 1.0, "oromia": 1.0, ...},  # Ethiopia
-    "KE": {"nairobi": 1.5, "mombasa": 1.0, ...},     # Kenya
-    "NG": {"lagos": 2.0, "abuja": 1.5, ...}          # Nigeria
-}
+    final_price = base_price
+                  * (1 + audience_delta)
+                  * (1 + location_delta)
+                  * (1 + placement_delta)
 
-Example:
-- Base rate: 0.05 ETB
-- Tutor premium: +0.02 ETB
-- National premium: +0.01 ETB
-- Widget exclusion premium: +0.02 ETB
-- Total for Tutor + National + Exclude Widget: 0.05 + 0.02 + 0.01 + 0.02 = 0.10 ETB per impression
+For example, `tutor_premium = 0.4` means "+40% on the package price when
+the audience is tutors". The `base_rate` column is retained for legacy
+reporting but is not used by the new pricing flow.
+
+The `region_exclusion_premiums` JSONB is similarly reinterpreted as
+multiplier deltas keyed by country/region. Region calculation is not
+yet wired into the package pricer.
+
+Deprecated
+----------
+- POST /api/cpi/calculate now returns multiplier-based numbers and is
+  kept only for legacy callers. New code should use
+  POST /api/view-packages/price.
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -547,16 +552,17 @@ async def calculate_cpi_cost(
     placement: Optional[str] = None   # placeholder, widget, popup, insession
 ):
     """
-    Calculate estimated CPI cost for a campaign.
+    DEPRECATED legacy CPI calculator.
 
-    Args:
-        impressions: Number of impressions
-        audience: Target audience (tutor, student, parent, or all/None)
-        location: Target location (national, regional, or international/None)
-        placement: Ad placement (placeholder, widget, popup, insession, or None)
+    Premium columns now mean multiplier deltas, not additive ETB. We keep
+    this endpoint for older callers and compute price as:
 
-    Returns:
-        Breakdown of costs and total estimated cost
+        per_impression = base_rate
+                         * (1 + audience_delta)
+                         * (1 + location_delta)
+                         * (1 + placement_delta)
+
+    New code should call POST /api/view-packages/price instead.
     """
     conn = None
     try:
@@ -646,8 +652,14 @@ async def calculate_cpi_cost(
                 placement_premium = in_session_skyscrapper_banner_premium
                 placement_label = "In-Session Skyscrapper Banner"
 
-        # Calculate total CPI
-        total_cpi = base_rate + audience_premium + location_premium + placement_premium
+        # Multiplier semantics: premiums are now decimal deltas, so compose
+        # them onto the base_rate rather than adding ETB.
+        total_cpi = (
+            base_rate
+            * (1 + audience_premium)
+            * (1 + location_premium)
+            * (1 + placement_premium)
+        )
         total_cost = total_cpi * impressions
 
         return {
