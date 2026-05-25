@@ -27,6 +27,9 @@ class TeamMemberInvite(BaseModel):
     full_name: Optional[str] = None
     dob: Optional[date] = None  # Date of birth for security verification
     can_set_price: bool = False  # Permission to set campaign prices
+    # Company restructure (Phase 1.9): team membership is per-company.
+    # Optional for backwards compatibility — falls back to advertiser's only company.
+    company_id: Optional[int] = None
 
 class TeamMemberUpdate(BaseModel):
     can_set_price: Optional[bool] = None
@@ -174,6 +177,38 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(ge
 
         with get_db() as conn:
             with conn.cursor() as cur:
+                # --- Resolve which company this invitation is for -----------
+                # Per-company team membership (Phase 1.9 of the restructure).
+                if invite.company_id is not None:
+                    cur.execute(
+                        "SELECT id FROM company_profile WHERE id = %s AND advertiser_id = %s",
+                        (invite.company_id, advertiser_profile_id),
+                    )
+                    if not cur.fetchone():
+                        raise HTTPException(status_code=403, detail="You don't own this company")
+                    company_id = invite.company_id
+                else:
+                    # Legacy fallback: advertiser must own exactly 1 company.
+                    cur.execute(
+                        "SELECT id FROM company_profile WHERE advertiser_id = %s ORDER BY id",
+                        (advertiser_profile_id,),
+                    )
+                    company_rows = cur.fetchall()
+                    if len(company_rows) == 0:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="You must create a company before inviting team members.",
+                        )
+                    if len(company_rows) > 1:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=(
+                                "You own multiple companies. Specify company_id in the "
+                                "invitation to choose which one the team member belongs to."
+                            ),
+                        )
+                    company_id = company_rows[0]['id']
+
                 # Get inviter's name and brand name for the email
                 cur.execute("""
                     SELECT CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name) as inviter_name,
@@ -187,11 +222,11 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(ge
                 inviter_name = inviter_info['inviter_name'] if inviter_info else "A team member"
                 brand_name = inviter_info['brand_name'] if inviter_info else "an advertiser"
 
-                # Check if already invited
+                # Check if already invited (scoped to the same company)
                 cur.execute("""
                     SELECT id, status FROM advertiser_team_members
-                    WHERE advertiser_profile_id = %s AND email = %s
-                """, (advertiser_profile_id, invite.email))
+                    WHERE company_id = %s AND email = %s
+                """, (company_id, invite.email))
 
                 existing = cur.fetchone()
 
@@ -229,12 +264,13 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(ge
 
                     cur.execute("""
                         INSERT INTO advertiser_team_members (
-                            advertiser_profile_id, user_id, email, full_name, dob, role,
+                            advertiser_profile_id, company_id, user_id, email, full_name, dob, role,
                             status, invitation_token, invited_by, permissions
-                        ) VALUES (%s, %s, %s, %s, %s, 'brand_manager', 'pending', %s, %s, %s)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, 'brand_manager', 'pending', %s, %s, %s)
                         RETURNING id
                     """, (
                         advertiser_profile_id,
+                        company_id,
                         user['id'] if user else None,
                         invite.email,
                         invite.full_name or (user['full_name'] if user else None),
