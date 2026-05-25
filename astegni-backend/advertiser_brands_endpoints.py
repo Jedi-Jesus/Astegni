@@ -1033,6 +1033,22 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
                 if not brand:
                     raise HTTPException(status_code=403, detail="You don't own this campaign")
 
+                # Only allow deleting campaigns that are draft or cancelled.
+                # Active/paused/completed campaigns must be cancelled first so the
+                # cancellation flow runs (refunds, audit, status_reason, etc.).
+                cur.execute("""
+                    SELECT campaign_status FROM campaign_profile WHERE id = %s
+                """, (campaign_id,))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+                current_status = row.get('campaign_status')
+                if current_status not in ('draft', 'cancelled'):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Cannot delete a {current_status} campaign. Cancel it first."
+                    )
+
                 # Remove campaign ID from brand's campaign_ids
                 new_campaign_ids = [cid for cid in brand['campaign_ids'] if cid != campaign_id]
                 cur.execute("""
