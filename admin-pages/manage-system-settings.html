@@ -3087,7 +3087,7 @@
     <script src="./js/admin-pages/sms-ethiopian-providers-safe.js"></script>
 
     <!-- Pricing & Features Manager (Campaign Packages, Subscription Pricing, Affiliate Settings) -->
-    <script src="./js/admin-pages/pricing-features-manager.js?v202605211228"></script>
+    <script src="./js/admin-pages/pricing-features-manager.js?v202605250600"></script>
 
     <!-- Fix theme background -->
     <script>
@@ -5179,6 +5179,42 @@ The Team" required></textarea>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- View Tiers Section -->
+                    <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-lg flex items-center gap-2">
+                                <i class="fas fa-eye text-purple-600"></i>
+                                View Tiers (Advertiser Purchase Bundles)
+                            </h4>
+                            <button type="button" onclick="addViewTierRow()"
+                                class="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-plus mr-1"></i>Add Tier
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3">
+                            Advertisers buy a tier (fixed view bundle). Tier price covers the views;
+                            targeting premiums above are added per impression on top.
+                        </p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-purple-100 text-left">
+                                        <th class="px-3 py-2 border-b">Name</th>
+                                        <th class="px-3 py-2 border-b">Views</th>
+                                        <th class="px-3 py-2 border-b">Base Price</th>
+                                        <th class="px-3 py-2 border-b">Active</th>
+                                        <th class="px-3 py-2 border-b"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view-tiers-tbody">
+                                    <tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">
+                                        Loading view tiers...
+                                    </td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 

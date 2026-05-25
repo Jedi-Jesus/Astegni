@@ -1,32 +1,30 @@
 """
 CPI Settings Endpoints
-Handles ad-pricing configuration consumed by the view-packages system.
+Handles Cost Per Impression pricing configuration.
 
-IMPORTANT — semantic change (2026-05)
--------------------------------------
-Astegni no longer sells impressions on a continuous CPI rate. Advertisers
-buy fixed view packages (see view_packages_endpoints.py). The premium
-columns on cpi_settings are now interpreted as **multiplier deltas**
-applied to a package's base_price, not as additive ETB-per-impression.
+CPI Structure:
+- Base rate: Cost per impression for untargeted campaigns
+- Audience premiums: Additional ETB per impression when targeting specific
+  audiences (tutor, student, parent, advertiser, user)
+- Location premiums: Additional ETB per impression for national targeting
+- Region exclusion premiums: Country-specific region premiums (JSONB)
+- Placement premiums: Additional ETB per impression for specific ad
+  placements (leaderboard-banner, logo, in-session-skyscrapper-banner)
 
-    final_price = base_price
-                  * (1 + audience_delta)
-                  * (1 + location_delta)
-                  * (1 + placement_delta)
+All premiums are additive on top of base_rate and applied per impression.
 
-For example, `tutor_premium = 0.4` means "+40% on the package price when
-the audience is tutors". The `base_rate` column is retained for legacy
-reporting but is not used by the new pricing flow.
-
-The `region_exclusion_premiums` JSONB is similarly reinterpreted as
-multiplier deltas keyed by country/region. Region calculation is not
-yet wired into the package pricer.
-
-Deprecated
+View Tiers
 ----------
-- POST /api/cpi/calculate now returns multiplier-based numbers and is
-  kept only for legacy callers. New code should use
-  POST /api/view-packages/price.
+Admins also configure discrete view tiers (see view_packages_endpoints.py)
+that advertisers can buy. A tier defines a fixed view_count + base price.
+The advertiser's final cost = tier_price + (sum of applicable premiums)
+times the tier's view_count.
+
+Example:
+- Base rate: 0.05 ETB
+- Tutor premium: +0.02 ETB
+- National premium: +0.01 ETB
+- Total per impression for Tutor + National: 0.08 ETB
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -552,17 +550,19 @@ async def calculate_cpi_cost(
     placement: Optional[str] = None   # placeholder, widget, popup, insession
 ):
     """
-    DEPRECATED legacy CPI calculator.
+    Calculate estimated CPI cost for a campaign.
 
-    Premium columns now mean multiplier deltas, not additive ETB. We keep
-    this endpoint for older callers and compute price as:
+    Premiums are additive ETB per impression. Total per-impression price =
+    base_rate + audience_premium + location_premium + placement_premium.
 
-        per_impression = base_rate
-                         * (1 + audience_delta)
-                         * (1 + location_delta)
-                         * (1 + placement_delta)
+    Args:
+        impressions: Number of impressions
+        audience: Target audience (tutor, student, parent, or all/None)
+        location: Target location (national, regional, or international/None)
+        placement: Ad placement (leaderboard-banner, logo, in-session-skyscrapper-banner)
 
-    New code should call POST /api/view-packages/price instead.
+    Returns:
+        Breakdown of costs and total estimated cost
     """
     conn = None
     try:
@@ -652,14 +652,8 @@ async def calculate_cpi_cost(
                 placement_premium = in_session_skyscrapper_banner_premium
                 placement_label = "In-Session Skyscrapper Banner"
 
-        # Multiplier semantics: premiums are now decimal deltas, so compose
-        # them onto the base_rate rather than adding ETB.
-        total_cpi = (
-            base_rate
-            * (1 + audience_premium)
-            * (1 + location_premium)
-            * (1 + placement_premium)
-        )
+        # Calculate total CPI
+        total_cpi = base_rate + audience_premium + location_premium + placement_premium
         total_cost = total_cpi * impressions
 
         return {

@@ -1,32 +1,29 @@
 """
-View Packages Endpoints
+View Tier Endpoints
 
-Advertiser pricing now sells fixed view (impression) packages instead of
-continuous CPI. Each package has a base price for an untargeted /
-international / no-placement campaign. Targeting (audience, location,
-placement) multiplies that base price using the existing premium columns
-on cpi_settings, which we now interpret as *multiplier deltas* (e.g.
-tutor_premium = 0.4 means +40%).
+Admins configure discrete view tiers (e.g. 10k / 50k / 100k views) as
+buyable bundles. Each tier has a base price covering the views themselves.
+On top of that, the existing CPI premiums from cpi_settings (audience,
+location, placement) are applied additively per impression — same model
+the rest of the platform already uses.
 
 Final price formula:
 
-    price = base_price
-            * (1 + audience_delta)
-            * (1 + location_delta)
-            * (1 + placement_delta)
+    final = tier.base_price
+            + (audience_premium + location_premium + placement_premium)
+              * tier.view_count
 
-Where each delta is 0 for the "no targeting" choice. Deltas compose
-multiplicatively so a targeted campaign on a premium placement is more
-expensive than the sum of either alone.
+Where each premium is an ETB-per-impression value from cpi_settings, or
+0 if no targeting is selected.
 
 Endpoints
 ---------
 Public (advertiser-facing):
-    GET  /api/view-packages                 List active packages
-    POST /api/view-packages/price           Quote a price for package + targeting
+    GET  /api/view-packages                 List active tiers
+    POST /api/view-packages/price           Quote a price for tier + targeting
 
 Admin:
-    GET    /api/admin/view-packages           List all packages (incl. inactive)
+    GET    /api/admin/view-packages           List all tiers (incl. inactive)
     POST   /api/admin/view-packages           Create
     PUT    /api/admin/view-packages/{id}      Update
     DELETE /api/admin/view-packages/{id}      Delete
@@ -93,9 +90,9 @@ class ReorderRequest(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _load_multipliers(cur) -> dict:
-    """Read the active cpi_settings row and return its premium values as
-    multiplier deltas. A missing row yields zeros (no targeting uplift)."""
+def _load_premiums(cur) -> dict:
+    """Read the active cpi_settings row and return each premium value in
+    ETB-per-impression. A missing row yields zeros (no targeting uplift)."""
     cur.execute(
         """
         SELECT tutor_premium, student_premium, parent_premium,
@@ -215,13 +212,15 @@ async def quote_view_package_price(req: PriceQuoteRequest):
             if not pkg:
                 raise HTTPException(status_code=404, detail="Package not found")
 
-            mults = _load_multipliers(cur)
-            a_delta = mults["audience"].get(audience, 0.0)
-            l_delta = mults["location"].get(location, 0.0)
-            p_delta = mults["placement"].get(placement, 0.0)
+            premiums = _load_premiums(cur)
+            a_premium = premiums["audience"].get(audience, 0.0)
+            l_premium = premiums["location"].get(location, 0.0)
+            p_premium = premiums["placement"].get(placement, 0.0)
 
             base = float(pkg["base_price"])
-            final = base * (1 + a_delta) * (1 + l_delta) * (1 + p_delta)
+            view_count = int(pkg["view_count"])
+            targeting_cost = (a_premium + l_premium + p_premium) * view_count
+            final = base + targeting_cost
 
             return {
                 "success": True,
@@ -231,12 +230,13 @@ async def quote_view_package_price(req: PriceQuoteRequest):
                     "location": location,
                     "placement": placement,
                 },
-                "multipliers": {
-                    "audience": a_delta,
-                    "location": l_delta,
-                    "placement": p_delta,
+                "premiums_per_impression": {
+                    "audience": a_premium,
+                    "location": l_premium,
+                    "placement": p_premium,
                 },
                 "base_price": base,
+                "targeting_cost": round(targeting_cost, 2),
                 "final_price": round(final, 2),
                 "currency": pkg["currency"],
             }
