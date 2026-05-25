@@ -354,9 +354,8 @@ async function loadCpiSettings() {
 
 // Load CPI settings into form fields
 function loadCpiSettingsToForm() {
-    // Base rate (applies to "All" audience and "International" location)
-    const baseRateEl = document.getElementById('cpi-base-rate');
-    if (baseRateEl) baseRateEl.value = cpiSettings.baseRate || '';
+    // Base rate is no longer set via a single input — it comes from the
+    // smallest View Tier's price-per-view. Left as a no-op for clarity.
 
     // Set country (hidden field and display) - no GPS detection when loading existing data
     const countryCode = cpiSettings.country || 'all';
@@ -542,9 +541,8 @@ function saveCurrentCountryPremiums() {
 
 // Calculate CPI Preview based on selected scenario
 function calculateCpiPreview() {
-    // Get values from form
-    // Base rate applies to "All" audience and "International" location (no targeting)
-    const baseRate = parseFloat(document.getElementById('cpi-base-rate')?.value) || 0;
+    // Per-impression baseline is the smallest View Tier's price-per-view.
+    const baseRate = smallestTierBaseCpi();
     const tutorPremium = parseFloat(document.getElementById('cpi-tutor-premium')?.value) || 0;
     const studentPremium = parseFloat(document.getElementById('cpi-student-premium')?.value) || 0;
     const parentPremium = parseFloat(document.getElementById('cpi-parent-premium')?.value) || 0;
@@ -711,9 +709,10 @@ function calculateCpiPreview() {
 async function saveCpiSettings(event) {
     event.preventDefault();
 
-    // Get values from form
-    // Base rate covers "All" audience and "International" location (no targeting)
-    const baseRate = parseFloat(document.getElementById('cpi-base-rate')?.value) || 0;
+    // Get values from form. Base rate is derived from the smallest View
+    // Tier so legacy callers reading cpi_settings.base_rate still see a
+    // sensible per-impression baseline.
+    const baseRate = smallestTierBaseCpi();
     const country = document.getElementById('cpi-country')?.value || 'all';
     const tutorPremium = parseFloat(document.getElementById('cpi-tutor-premium')?.value) || 0;
     const studentPremium = parseFloat(document.getElementById('cpi-student-premium')?.value) || 0;
@@ -730,9 +729,20 @@ async function saveCpiSettings(event) {
     const popupPremium = parseFloat(document.getElementById('cpi-popup-premium')?.value) || 0;
     const insessionPremium = parseFloat(document.getElementById('cpi-insession-premium')?.value) || 0;
 
-    if (baseRate <= 0) {
-        alert('Please enter a valid base CPI rate');
+    const tiers = cpiSettings.viewTierPremiums || [];
+    if (tiers.length === 0) {
+        alert('Add at least one View Tier before saving.');
         return;
+    }
+    for (const t of tiers) {
+        if (!(t.view_count > 0)) {
+            alert('Every View Tier needs a positive view count.');
+            return;
+        }
+        if (!(t.base_cpi >= 0)) {
+            alert('Every View Tier needs a non-negative price per view.');
+            return;
+        }
     }
 
     // Update local settings object with JSONB region premiums format.
@@ -2238,11 +2248,12 @@ function removeGateway(gatewayId) {
 }
 
 // ============================================
-// VIEW TIER PREMIUMS (a targeting dimension under base CPI)
+// VIEW TIER (per-tier price-per-view; replaces the old flat base CPI)
 // ============================================
-// Each tier is {view_count, premium, label}. The list lives on
+// Each tier is {view_count, base_cpi, label}. The list lives on
 // cpiSettings.viewTierPremiums and is saved alongside the rest of CPI
-// settings — no separate API.
+// settings — no separate API. Audience / location / placement premiums
+// add on top per impression.
 
 function renderViewTierRows() {
     const tbody = document.getElementById('view-tiers-tbody');
@@ -2260,17 +2271,17 @@ function renderViewTierRows() {
             <td class="px-2 py-1.5">
                 <input type="text" value="${escapeHtml(t.label || '')}"
                     oninput="updateViewTierField(${idx}, 'label', this.value)"
-                    class="w-full px-2 py-1 border rounded" placeholder="50K">
+                    class="w-full px-2 py-1 border rounded" placeholder="100K">
             </td>
             <td class="px-2 py-1.5">
                 <input type="number" min="1" step="1" value="${t.view_count ?? ''}"
                     oninput="updateViewTierField(${idx}, 'view_count', this.value)"
-                    class="w-28 px-2 py-1 border rounded" placeholder="50000">
+                    class="w-28 px-2 py-1 border rounded" placeholder="100000">
             </td>
             <td class="px-2 py-1.5">
-                <input type="number" step="0.001" value="${t.premium ?? 0}"
-                    oninput="updateViewTierField(${idx}, 'premium', this.value)"
-                    class="w-24 px-2 py-1 border rounded" placeholder="-0.005">
+                <input type="number" min="0" step="0.001" value="${t.base_cpi ?? 0}"
+                    oninput="updateViewTierField(${idx}, 'base_cpi', this.value)"
+                    class="w-24 px-2 py-1 border rounded" placeholder="3.00">
                 <span class="text-xs text-gray-500 ml-1">ETB</span>
             </td>
             <td class="px-2 py-1.5 text-right">
@@ -2294,16 +2305,18 @@ function updateViewTierField(idx, field, value) {
     const t = cpiSettings.viewTierPremiums[idx];
     if (!t) return;
     if (field === 'view_count') t.view_count = parseInt(value, 10) || 0;
-    else if (field === 'premium') t.premium = parseFloat(value) || 0;
+    else if (field === 'base_cpi') t.base_cpi = parseFloat(value) || 0;
     else t[field] = value;
+    // Recompute the preview because tier 0's base_cpi feeds it.
+    if (typeof calculateCpiPreview === 'function') calculateCpiPreview();
 }
 
 function addViewTierRow() {
     if (!cpiSettings.viewTierPremiums) cpiSettings.viewTierPremiums = [];
     cpiSettings.viewTierPremiums.push({
         label: '',
-        view_count: 10000,
-        premium: 0,
+        view_count: 100000,
+        base_cpi: 0,
     });
     renderViewTierRows();
 }
@@ -2315,6 +2328,17 @@ function removeViewTierRow(idx) {
     if (!confirm(`Remove tier "${t.label || t.view_count + ' views'}"?`)) return;
     tiers.splice(idx, 1);
     renderViewTierRows();
+    if (typeof calculateCpiPreview === 'function') calculateCpiPreview();
+}
+
+// Smallest tier's base_cpi acts as the per-impression baseline for the
+// preview and for legacy callers that still read cpi_settings.base_rate.
+function smallestTierBaseCpi() {
+    const tiers = (cpiSettings.viewTierPremiums || [])
+        .filter(t => Number(t.view_count) > 0);
+    if (tiers.length === 0) return 0;
+    tiers.sort((a, b) => a.view_count - b.view_count);
+    return Number(tiers[0].base_cpi) || 0;
 }
 
 // ============================================

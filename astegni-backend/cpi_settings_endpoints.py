@@ -463,21 +463,22 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
         # Get region exclusion premiums (JSONB format: {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}})
         region_premiums = settings.regionExclusionPremiums or {}
 
-        # Normalize view tier premiums: keep only well-formed rows. Each
-        # entry should be {view_count, premium, label?}. We tolerate stray
-        # client fields and silently drop incomplete rows.
+        # Normalize view tiers: keep only well-formed rows. Each entry is
+        # {view_count, base_cpi, label?} — base_cpi is the per-view price
+        # advertisers pay when they commit to this tier's view count.
         view_tiers = []
         for t in (settings.viewTierPremiums or []):
             try:
                 vc = int(t.get("view_count"))
-                pr = float(t.get("premium", 0))
+                # Accept legacy "premium" key as base_cpi for backward compat.
+                price = float(t.get("base_cpi", t.get("premium", 0)))
             except (TypeError, ValueError):
                 continue
             if vc <= 0:
                 continue
             view_tiers.append({
                 "view_count": vc,
-                "premium": pr,
+                "base_cpi": price,
                 "label": str(t.get("label", "")),
             })
         # Sort ascending by view_count so consumers can rely on order.
