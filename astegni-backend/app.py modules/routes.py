@@ -7509,6 +7509,13 @@ async def get_advertiser_profile(
     response_dict['social_links'] = current_user.social_links or {}  # Read from users table
     response_dict['languages'] = current_user.languages or []  # Read from users table
 
+    # Verification status (CANONICAL fields live on users table, not advertiser_profiles)
+    # The frontend's brand-creation guard reads is_verified from this response.
+    response_dict['is_verified'] = bool(getattr(current_user, 'is_verified', False))
+    response_dict['verification_status'] = getattr(current_user, 'verification_status', None)
+    response_dict['verification_method'] = getattr(current_user, 'verification_method', None)
+    response_dict['kyc_verified'] = bool(getattr(current_user, 'kyc_verified', False))
+
     # Use joined_in instead of created_at (AdvertiserProfile model has joined_in, not created_at)
     if hasattr(advertiser_profile, 'joined_in') and advertiser_profile.joined_in:
         response_dict['created_at'] = advertiser_profile.joined_in.isoformat()
