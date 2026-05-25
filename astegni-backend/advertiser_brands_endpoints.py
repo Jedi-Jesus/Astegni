@@ -1049,6 +1049,16 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
                         detail=f"Cannot delete a {current_status} campaign. Cancel it first."
                     )
 
+                # Collect media files BEFORE deleting the campaign row, because
+                # the campaign_media -> campaign_profile FK is ON DELETE CASCADE
+                # and we lose the file paths once the campaign row is gone.
+                cur.execute("""
+                    SELECT folder_path, file_name
+                    FROM campaign_media
+                    WHERE campaign_id = %s
+                """, (campaign_id,))
+                media_files = cur.fetchall()
+
                 # Remove campaign ID from brand's campaign_ids
                 new_campaign_ids = [cid for cid in brand['campaign_ids'] if cid != campaign_id]
                 cur.execute("""
@@ -1057,10 +1067,35 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
                     WHERE id = %s
                 """, (new_campaign_ids, brand['id']))
 
-                # Delete the campaign
+                # Delete the campaign (campaign_media rows cascade-delete via FK)
                 cur.execute("DELETE FROM campaign_profile WHERE id = %s", (campaign_id,))
 
                 conn.commit()
+
+                # Best-effort B2 cleanup after DB commit succeeds.
+                # Mirrors the pattern in /api/campaign/media/{id}: log failures
+                # but do not fail the user-visible request — orphaned B2 objects
+                # can be reclaimed later by the cleanup script.
+                if media_files:
+                    try:
+                        b2 = get_backblaze_service()
+                        deleted_count = 0
+                        for m in media_files:
+                            folder_path = m.get('folder_path')
+                            file_name = m.get('file_name')
+                            if not folder_path or not file_name:
+                                continue
+                            file_path = f"{folder_path}{file_name}"
+                            try:
+                                if b2.delete_file(file_path):
+                                    deleted_count += 1
+                                else:
+                                    print(f"[delete_campaign] B2 delete returned False for {file_path}")
+                            except Exception as e:
+                                print(f"[delete_campaign] B2 delete failed for {file_path}: {e}")
+                        print(f"[delete_campaign] B2 cleanup: {deleted_count}/{len(media_files)} files deleted for campaign {campaign_id}")
+                    except Exception as e:
+                        print(f"[delete_campaign] Could not initialize B2 service for cleanup: {e}")
 
                 return {"message": "Campaign deleted successfully"}
 
