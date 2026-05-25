@@ -502,6 +502,65 @@ class AdvertiserProfile(Base):
 
     # Relationships
     user = relationship("User", backref="advertiser_profile")
+    companies = relationship("CompanyProfile", back_populates="advertiser", cascade="all, delete-orphan")
+
+
+class CompanyProfile(Base):
+    """A company owned by an advertiser. One advertiser can own multiple companies;
+    each company has its own brands, campaigns, billing wallet, and KYC verification.
+
+    Introduced May 2026; see migrate_introduce_company_profile.py and
+    DESIGN_company_profile_restructure.md.
+    """
+    __tablename__ = "company_profile"
+
+    id = Column(Integer, primary_key=True, index=True)
+    advertiser_id = Column(Integer, ForeignKey("advertiser_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Company identity
+    company_name = Column(String(255), nullable=False)
+    industry = Column(String(100), nullable=True)
+    company_size = Column(String(50), nullable=True)
+    business_reg_no = Column(String(100), nullable=True)
+    tin_number = Column(String(50), nullable=True)
+    website = Column(String(500), nullable=True)
+    address = Column(Text, nullable=True)
+    city = Column(String(100), nullable=True)
+    company_description = Column(Text, nullable=True)
+    company_email = Column(JSON, default=[])
+    company_phone = Column(JSON, default=[])
+
+    # KYC / verification documents
+    company_logo = Column(String(500), nullable=True)
+    business_license_url = Column(String(500), nullable=True)
+    tin_certificate_url = Column(String(500), nullable=True)
+    additional_docs_urls = Column(JSON, default=[])
+
+    # Verification status (per-company; replaces users.is_verified for advertiser ad operations)
+    is_verified = Column(Boolean, default=False)
+    verification_status = Column(String(20), nullable=True)  # 'pending' | 'verified' | 'rejected'
+    verification_method = Column(String(20), nullable=True)  # 'kyc' | 'manual' | 'admin'
+    verified_at = Column(DateTime, nullable=True)
+    rejected_at = Column(DateTime, nullable=True)
+    verification_submitted_at = Column(DateTime, nullable=True)
+    verification_reviewed_at = Column(DateTime, nullable=True)
+    verification_notes = Column(Text, nullable=True)
+
+    # Billing / wallet (per-company)
+    balance = Column(Numeric(12, 2), default=0.00)
+    currency = Column(String(3), default='ETB')
+    total_deposits = Column(Numeric(12, 2), default=0.00)
+    total_spent = Column(Numeric(12, 2), default=0.00)
+    last_transaction_at = Column(DateTime, nullable=True)
+    default_cancellation_fee_percent = Column(Numeric(5, 2), default=5.00)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    advertiser = relationship("AdvertiserProfile", back_populates="companies")
+
 
 class VideoReel(Base):
     __tablename__ = "video_reels"
@@ -1516,6 +1575,85 @@ class AdvertiserProfileResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================
+# Company schemas (one advertiser may own multiple companies)
+# ============================================
+
+class CompanyProfileCreate(BaseModel):
+    company_name: str
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    business_reg_no: Optional[str] = None
+    tin_number: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    company_description: Optional[str] = None
+    company_email: Optional[List[str]] = []
+    company_phone: Optional[List[str]] = []
+
+
+class CompanyProfileUpdate(BaseModel):
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    business_reg_no: Optional[str] = None
+    tin_number: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    company_description: Optional[str] = None
+    company_email: Optional[List[str]] = None
+    company_phone: Optional[List[str]] = None
+    # Verification doc URLs are written by upload endpoints, not by this update path
+    # Verification status/balance/wallet are written by their own endpoints
+
+
+class CompanyProfileResponse(BaseModel):
+    id: int
+    advertiser_id: int
+    # Identity
+    company_name: str
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    business_reg_no: Optional[str] = None
+    tin_number: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    company_description: Optional[str] = None
+    company_email: Optional[List[str]] = []
+    company_phone: Optional[List[str]] = []
+    # KYC documents
+    company_logo: Optional[str] = None
+    business_license_url: Optional[str] = None
+    tin_certificate_url: Optional[str] = None
+    additional_docs_urls: Optional[List[str]] = []
+    # Verification
+    is_verified: bool = False
+    verification_status: Optional[str] = None
+    verification_method: Optional[str] = None
+    verified_at: Optional[datetime] = None
+    rejected_at: Optional[datetime] = None
+    verification_submitted_at: Optional[datetime] = None
+    verification_reviewed_at: Optional[datetime] = None
+    verification_notes: Optional[str] = None
+    # Billing
+    balance: float = 0.00
+    currency: str = 'ETB'
+    total_deposits: float = 0.00
+    total_spent: float = 0.00
+    last_transaction_at: Optional[datetime] = None
+    default_cancellation_fee_percent: float = 5.00
+    # Timestamps
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
 
 class AdCampaignCreate(BaseModel):
     name: str
