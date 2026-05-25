@@ -1357,3 +1357,337 @@ async def get_campaign_media(campaign_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================
+# COMPANY ENDPOINTS (added May 2026 after company_profile restructure)
+# ============================================================
+# A user with the advertiser role can own multiple companies. Each company
+# has its own KYC (business license + TIN + logo), verification status,
+# wallet, and brands. Admin actions mirror brand actions: verify, reject,
+# suspend, restore, reinstate.
+
+@router.get("/companies")
+async def admin_get_companies(
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, le=100),
+):
+    """List companies with optional status filter + search."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT cp.*,
+                           u.email AS advertiser_email,
+                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name,
+                           u.profile_picture AS advertiser_avatar
+                    FROM company_profile cp
+                    JOIN advertiser_profiles ap ON ap.id = cp.advertiser_id
+                    JOIN users u ON u.id = ap.user_id
+                    WHERE 1=1
+                """
+                params: list = []
+
+                if status:
+                    if status == 'verified':
+                        query += " AND cp.is_verified = TRUE"
+                    elif status in ('pending', 'requested'):
+                        query += " AND cp.verification_status = 'pending'"
+                    elif status == 'rejected':
+                        query += " AND cp.verification_status = 'rejected'"
+                    elif status == 'suspended':
+                        query += " AND cp.verification_status = 'suspended'"
+                    elif status == 'unverified':
+                        query += " AND cp.is_verified = FALSE AND (cp.verification_status IS NULL OR cp.verification_status NOT IN ('pending','rejected','suspended'))"
+
+                if search:
+                    query += " AND cp.company_name ILIKE %s"
+                    params.append(f"%{search}%")
+
+                count_query = query.replace(
+                    "SELECT cp.*, u.email AS advertiser_email, CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name, u.profile_picture AS advertiser_avatar",
+                    "SELECT COUNT(*)",
+                )
+                cur.execute(count_query, params)
+                total = cur.fetchone()['count']
+
+                offset = (page - 1) * limit
+                query += " ORDER BY cp.created_at DESC LIMIT %s OFFSET %s"
+                params.extend([limit, offset])
+
+                cur.execute(query, params)
+                rows = cur.fetchall()
+
+                result = []
+                for c in rows:
+                    result.append({
+                        'id': c['id'],
+                        'advertiser_id': c['advertiser_id'],
+                        'company_name': c['company_name'],
+                        'company_logo': c.get('company_logo'),
+                        'industry': c.get('industry'),
+                        'company_size': c.get('company_size'),
+                        'business_reg_no': c.get('business_reg_no'),
+                        'tin_number': c.get('tin_number'),
+                        'website': c.get('website'),
+                        'company_description': c.get('company_description'),
+                        'is_verified': c.get('is_verified'),
+                        'verification_status': c.get('verification_status') or ('verified' if c.get('is_verified') else 'unverified'),
+                        'verification_method': c.get('verification_method'),
+                        'verification_submitted_at': str(c['verification_submitted_at']) if c.get('verification_submitted_at') else None,
+                        'verification_reviewed_at': str(c['verification_reviewed_at']) if c.get('verification_reviewed_at') else None,
+                        'verification_notes': c.get('verification_notes'),
+                        'business_license_url': c.get('business_license_url'),
+                        'tin_certificate_url': c.get('tin_certificate_url'),
+                        'additional_docs_urls': c.get('additional_docs_urls') or [],
+                        'balance': float(c['balance']) if c.get('balance') is not None else 0.0,
+                        'currency': c.get('currency') or 'ETB',
+                        'created_at': str(c['created_at']) if c.get('created_at') else None,
+                        'advertiser_email': c.get('advertiser_email'),
+                        'advertiser_name': c.get('advertiser_name'),
+                        'advertiser_avatar': c.get('advertiser_avatar'),
+                    })
+
+                return {
+                    "companies": result,
+                    "total": total,
+                    "page": page,
+                    "limit": limit,
+                    "pages": (total + limit - 1) // limit if total > 0 else 0,
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/companies/counts")
+async def admin_get_company_counts():
+    """Count companies by verification status (for admin dashboard tiles)."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT
+                        COUNT(*) AS total,
+                        COUNT(*) FILTER (WHERE is_verified = TRUE) AS verified,
+                        COUNT(*) FILTER (WHERE verification_status = 'pending') AS pending,
+                        COUNT(*) FILTER (WHERE verification_status = 'rejected') AS rejected,
+                        COUNT(*) FILTER (WHERE verification_status = 'suspended') AS suspended,
+                        COUNT(*) FILTER (
+                            WHERE is_verified = FALSE
+                              AND (verification_status IS NULL
+                                   OR verification_status NOT IN ('pending','rejected','suspended'))
+                        ) AS unverified
+                    FROM company_profile
+                """)
+                return dict(cur.fetchone())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/companies/{company_id}")
+async def admin_get_company(company_id: int):
+    """Get full details for one company, including its brand + campaign counts."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT cp.*,
+                           u.email AS advertiser_email,
+                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name,
+                           u.profile_picture AS advertiser_avatar,
+                           (SELECT COUNT(*) FROM brand_profile bp WHERE bp.company_id = cp.id) AS brand_count,
+                           (SELECT COUNT(*) FROM campaign_profile camp WHERE camp.company_id = cp.id) AS campaign_count
+                    FROM company_profile cp
+                    JOIN advertiser_profiles ap ON ap.id = cp.advertiser_id
+                    JOIN users u ON u.id = ap.user_id
+                    WHERE cp.id = %s
+                """, (company_id,))
+                c = cur.fetchone()
+                if not c:
+                    raise HTTPException(status_code=404, detail="Company not found")
+
+                return {
+                    'id': c['id'],
+                    'advertiser_id': c['advertiser_id'],
+                    'company_name': c['company_name'],
+                    'company_logo': c.get('company_logo'),
+                    'industry': c.get('industry'),
+                    'company_size': c.get('company_size'),
+                    'business_reg_no': c.get('business_reg_no'),
+                    'tin_number': c.get('tin_number'),
+                    'website': c.get('website'),
+                    'address': c.get('address'),
+                    'city': c.get('city'),
+                    'company_description': c.get('company_description'),
+                    'company_email': c.get('company_email') or [],
+                    'company_phone': c.get('company_phone') or [],
+                    'is_verified': c.get('is_verified'),
+                    'verification_status': c.get('verification_status') or ('verified' if c.get('is_verified') else 'unverified'),
+                    'verification_method': c.get('verification_method'),
+                    'verification_submitted_at': str(c['verification_submitted_at']) if c.get('verification_submitted_at') else None,
+                    'verification_reviewed_at': str(c['verification_reviewed_at']) if c.get('verification_reviewed_at') else None,
+                    'verification_notes': c.get('verification_notes'),
+                    'verified_at': str(c['verified_at']) if c.get('verified_at') else None,
+                    'rejected_at': str(c['rejected_at']) if c.get('rejected_at') else None,
+                    'business_license_url': c.get('business_license_url'),
+                    'tin_certificate_url': c.get('tin_certificate_url'),
+                    'additional_docs_urls': c.get('additional_docs_urls') or [],
+                    'balance': float(c['balance']) if c.get('balance') is not None else 0.0,
+                    'currency': c.get('currency') or 'ETB',
+                    'total_deposits': float(c['total_deposits']) if c.get('total_deposits') is not None else 0.0,
+                    'total_spent': float(c['total_spent']) if c.get('total_spent') is not None else 0.0,
+                    'created_at': str(c['created_at']) if c.get('created_at') else None,
+                    'updated_at': str(c['updated_at']) if c.get('updated_at') else None,
+                    'advertiser_email': c.get('advertiser_email'),
+                    'advertiser_name': c.get('advertiser_name'),
+                    'advertiser_avatar': c.get('advertiser_avatar'),
+                    'brand_count': c.get('brand_count') or 0,
+                    'campaign_count': c.get('campaign_count') or 0,
+                }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/verify")
+async def admin_verify_company(company_id: int, admin_id: Optional[int] = None):
+    """Approve a company's KYC submission."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE company_profile
+                    SET is_verified = TRUE,
+                        verification_status = 'verified',
+                        verification_method = COALESCE(verification_method, 'admin'),
+                        verified_at = NOW(),
+                        verification_reviewed_at = NOW(),
+                        rejected_at = NULL,
+                        verification_notes = NULL,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (company_id,))
+                row = cur.fetchone()
+                conn.commit()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Company not found")
+                return {"message": "Company verified", "company": {"id": row['id'], "is_verified": row['is_verified'], "verification_status": row['verification_status']}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/reject")
+async def admin_reject_company(company_id: int, data: dict):
+    """Reject a company's KYC submission with a reason."""
+    try:
+        reason = data.get('reason', 'No reason provided')
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE company_profile
+                    SET is_verified = FALSE,
+                        verification_status = 'rejected',
+                        rejected_at = NOW(),
+                        verification_reviewed_at = NOW(),
+                        verification_notes = %s,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (reason, company_id))
+                row = cur.fetchone()
+                conn.commit()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Company not found")
+                return {"message": "Company rejected", "company": {"id": row['id'], "verification_status": row['verification_status'], "verification_notes": row['verification_notes']}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/suspend")
+async def admin_suspend_company(company_id: int, data: dict):
+    """Suspend a previously-verified company (e.g. policy violation)."""
+    try:
+        reason = data.get('reason', 'No reason provided')
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE company_profile
+                    SET is_verified = FALSE,
+                        verification_status = 'suspended',
+                        verification_reviewed_at = NOW(),
+                        verification_notes = %s,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (reason, company_id))
+                row = cur.fetchone()
+                conn.commit()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Company not found")
+                return {"message": "Company suspended", "company": {"id": row['id'], "verification_status": row['verification_status'], "verification_notes": row['verification_notes']}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/restore")
+async def admin_restore_company(company_id: int):
+    """Restore a suspended/rejected company to pending so it can be re-reviewed."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE company_profile
+                    SET verification_status = 'pending',
+                        verification_notes = NULL,
+                        rejected_at = NULL,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (company_id,))
+                row = cur.fetchone()
+                conn.commit()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Company not found")
+                return {"message": "Company restored to pending", "company": {"id": row['id'], "verification_status": row['verification_status']}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/reinstate")
+async def admin_reinstate_company(company_id: int):
+    """Reinstate a suspended company back to verified (e.g. after appeal)."""
+    try:
+        with get_user_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE company_profile
+                    SET is_verified = TRUE,
+                        verification_status = 'verified',
+                        verification_notes = NULL,
+                        verified_at = COALESCE(verified_at, NOW()),
+                        verification_reviewed_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                """, (company_id,))
+                row = cur.fetchone()
+                conn.commit()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Company not found")
+                return {"message": "Company reinstated to verified", "company": {"id": row['id'], "verification_status": row['verification_status'], "is_verified": row['is_verified']}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
