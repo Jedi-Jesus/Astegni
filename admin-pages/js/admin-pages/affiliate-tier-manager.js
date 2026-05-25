@@ -416,6 +416,11 @@ async function deleteAffiliateTier(tierLevel, businessType) {
         }
 
         const programId = affiliateProgram.id || tier.program_id;
+        if (!programId) {
+            alert('No affiliate program is loaded — the tiers shown are local defaults, so there is nothing to delete on the server. Save a tier first to create the program.');
+            return;
+        }
+
         const apiUrl = getApiBaseUrl();
         const response = await fetch(`${apiUrl}/api/admin-db/affiliate-tiers/${programId}/${tierLevel}/${businessType}`, {
             method: 'DELETE',
@@ -426,7 +431,8 @@ async function deleteAffiliateTier(tierLevel, businessType) {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to delete tier');
+            const body = await response.text();
+            throw new Error(`Delete failed (${response.status}): ${body}`);
         }
 
         // Reload tiers
@@ -435,7 +441,7 @@ async function deleteAffiliateTier(tierLevel, businessType) {
 
     } catch (error) {
         console.error('Error deleting affiliate tier:', error);
-        alert('Failed to delete affiliate tier. Please try again.');
+        alert(`Failed to delete affiliate tier: ${error.message}`);
     }
 }
 
