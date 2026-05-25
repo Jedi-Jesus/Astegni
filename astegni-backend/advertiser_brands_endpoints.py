@@ -37,6 +37,26 @@ def get_db():
     return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
 
+def _assert_brand_owned_by_advertiser(cur, advertiser_profile_id: int, brand_id: int) -> None:
+    """Raise 403 if the brand is not owned (via its company) by this advertiser.
+
+    Replaces the legacy `brand_id IN advertiser_profiles.brand_ids[]` ownership
+    check. Brands now belong to a company (brand_profile.company_id), and a
+    company belongs to an advertiser (company_profile.advertiser_id).
+    """
+    cur.execute(
+        """
+        SELECT 1
+        FROM brand_profile bp
+        JOIN company_profile cp ON cp.id = bp.company_id
+        WHERE bp.id = %s AND cp.advertiser_id = %s
+        """,
+        (brand_id, advertiser_profile_id),
+    )
+    if not cur.fetchone():
+        raise HTTPException(status_code=403, detail="You don't own this brand")
+
+
 # ============================================================
 # PYDANTIC MODELS
 # ============================================================
@@ -56,6 +76,11 @@ class BrandCreate(BaseModel):
     website: Optional[str] = None
     brand_color: Optional[str] = None
     status: Optional[str] = None
+    # Company restructure (Phase 1.6): brand must belong to a company.
+    # Optional for backwards compatibility — when absent, server falls back
+    # to the advertiser's only company. Frontend should always pass it
+    # once Phase 2 ships.
+    company_id: Optional[int] = None
 
 class BrandUpdate(BaseModel):
     name: Optional[str] = None
@@ -119,33 +144,36 @@ class CampaignUpdate(BaseModel):
 # ============================================================
 
 @router.get("/brands")
-async def get_my_brands(current_user = Depends(get_current_user)):
-    """Get all brands owned by the current advertiser"""
-    try:
-        # Get advertiser profile ID from role_ids (more efficient than querying by user_id)
-        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+async def get_my_brands(company_id: Optional[int] = None, current_user = Depends(get_current_user)):
+    """List brands owned by the current advertiser, optionally scoped to one company.
 
+    Reads via the new schema (brand_profile.company_id -> company_profile.advertiser_id).
+    If company_id is provided, only brands under that specific company are returned
+    (and the company must belong to the current advertiser).
+    """
+    try:
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
         if not advertiser_profile_id:
             return {"brands": [], "total": 0, "message": "No advertiser profile found"}
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Get advertiser profile by profile_id directly
-                cur.execute("""
-                    SELECT id, brand_ids FROM advertiser_profiles WHERE id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
+                if company_id is not None:
+                    # Verify the company belongs to this advertiser before listing.
+                    cur.execute(
+                        "SELECT id FROM company_profile WHERE id = %s AND advertiser_id = %s",
+                        (company_id, advertiser_profile_id),
+                    )
+                    if not cur.fetchone():
+                        raise HTTPException(status_code=403, detail="You do not own this company")
+                    where_clause = "bp.company_id = %s"
+                    params = (company_id,)
+                else:
+                    # All brands across all of this advertiser's companies.
+                    where_clause = "bp.company_id IN (SELECT id FROM company_profile WHERE advertiser_id = %s)"
+                    params = (advertiser_profile_id,)
 
-                if not advertiser:
-                    return {"brands": [], "total": 0}
-
-                brand_ids = advertiser.get('brand_ids') or []
-
-                if not brand_ids:
-                    return {"brands": [], "total": 0}
-
-                # Get all brands for this advertiser
-                cur.execute("""
+                cur.execute(f"""
                     SELECT bp.*,
                            COALESCE(array_length(bp.campaign_ids, 1), 0) as campaigns_count,
                            (SELECT COALESCE(COUNT(*), 0) FROM campaign_impressions ci
@@ -155,9 +183,9 @@ async def get_my_brands(current_user = Depends(get_current_user)):
                             WHERE bp.campaign_ids IS NOT NULL AND array_length(bp.campaign_ids, 1) > 0
                             AND cp.id = ANY(bp.campaign_ids)) as total_budget
                     FROM brand_profile bp
-                    WHERE bp.id = ANY(%s)
+                    WHERE {where_clause}
                     ORDER BY bp.created_at DESC
-                """, (brand_ids,))
+                """, params)
                 brands = cur.fetchall()
 
                 result = []
@@ -182,6 +210,7 @@ async def get_my_brands(current_user = Depends(get_current_user)):
                         'status': b['status'] or 'active',
                         'is_verified': b['is_verified'],
                         'is_active': b['is_active'],
+                        'company_id': b.get('company_id'),
                         'campaigns_count': b['campaigns_count'] or 0,
                         'impressions': b['total_impressions'] or 0,
                         'revenue': b['total_impressions'] or 0,  # Using impressions as proxy for revenue
@@ -191,53 +220,83 @@ async def get_my_brands(current_user = Depends(get_current_user)):
 
                 return {"brands": result, "total": len(result)}
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/brands")
 async def create_brand(brand: BrandCreate, current_user = Depends(get_current_user)):
-    """Create a new brand for the current advertiser"""
-    try:
-        # Get advertiser profile ID from role_ids
-        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    """Create a new brand under one of the advertiser's companies.
 
+    company_id in the request body is preferred. If omitted (legacy frontend),
+    we fall back to the advertiser's only company; if they own multiple,
+    400 with instructions to specify.
+    """
+    try:
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
         if not advertiser_profile_id:
             raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Get advertiser profile by profile_id; verification lives on users table
-                # (moved during the verification-consolidation migration).
-                cur.execute("""
-                    SELECT ap.id, ap.brand_ids, u.is_verified
-                    FROM advertiser_profiles ap
-                    JOIN users u ON u.id = ap.user_id
-                    WHERE ap.id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
+                # --- Resolve which company this brand belongs to --------------
+                if brand.company_id is not None:
+                    cur.execute(
+                        "SELECT id, advertiser_id, is_verified FROM company_profile WHERE id = %s",
+                        (brand.company_id,),
+                    )
+                    company = cur.fetchone()
+                    if not company:
+                        raise HTTPException(status_code=404, detail="Company not found")
+                    if company["advertiser_id"] != advertiser_profile_id:
+                        raise HTTPException(status_code=403, detail="You do not own this company")
+                else:
+                    # Fallback for legacy frontend: only OK when the advertiser owns exactly 1 company.
+                    cur.execute(
+                        "SELECT id, advertiser_id, is_verified FROM company_profile WHERE advertiser_id = %s ORDER BY id",
+                        (advertiser_profile_id,),
+                    )
+                    rows = cur.fetchall()
+                    if len(rows) == 0:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="You must create a company before creating brands.",
+                        )
+                    if len(rows) > 1:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=(
+                                "You own multiple companies. Specify company_id in the "
+                                "request body to choose which one owns this brand."
+                            ),
+                        )
+                    company = rows[0]
 
-                if not advertiser:
-                    raise HTTPException(status_code=404, detail="Advertiser profile not found")
+                # --- Per-company verification guard (replaces user-level is_verified) ---
+                if not company.get("is_verified"):
+                    raise HTTPException(
+                        status_code=403,
+                        detail="This company must be verified before creating brands. Submit the company for verification first.",
+                    )
 
-                if not advertiser.get('is_verified'):
-                    raise HTTPException(status_code=403, detail="Your advertiser account must be verified before creating brands")
+                company_id = company["id"]
 
-                advertiser_id = advertiser['id']
-                current_brand_ids = advertiser.get('brand_ids') or []
-
-                # Create the brand
+                # --- Create the brand, owned by this company ---
                 cur.execute("""
                     INSERT INTO brand_profile (
                         name, bio, quote, thumbnail, hero_title, hero_subtitle,
                         social_links, phone, email, location,
                         industry, website, brand_color,
                         status, is_verified, is_active, campaign_ids,
+                        company_id,
                         created_at, updated_at
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s,
                         %s, FALSE, TRUE, '{}',
+                        %s,
                         NOW(), NOW()
                     )
                     RETURNING *
@@ -255,17 +314,19 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                     brand.industry,
                     brand.website,
                     brand.brand_color or '#8B5CF6',
-                    brand.status or 'active'
+                    brand.status or 'active',
+                    company_id,
                 ))
                 new_brand = cur.fetchone()
 
-                # Add brand ID to advertiser's brand_ids array
-                new_brand_ids = current_brand_ids + [new_brand['id']]
+                # Legacy: also append to advertiser_profiles.brand_ids[] so any
+                # remaining code paths reading the array still see it.
+                # (Will be dropped after all callers move to brand.company_id.)
                 cur.execute("""
                     UPDATE advertiser_profiles
-                    SET brand_ids = %s
+                    SET brand_ids = array_append(COALESCE(brand_ids, ARRAY[]::integer[]), %s)
                     WHERE id = %s
-                """, (new_brand_ids, advertiser_id))
+                """, (new_brand['id'], advertiser_profile_id))
 
                 conn.commit()
 
@@ -283,6 +344,7 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                         'status': new_brand['status'],
                         'is_verified': new_brand['is_verified'],
                         'is_active': new_brand['is_active'],
+                        'company_id': new_brand['company_id'],
                         'created_at': str(new_brand['created_at'])
                     }
                 }
@@ -305,21 +367,10 @@ async def get_brand(brand_id: int, current_user = Depends(get_current_user)):
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Verify ownership using profile_id
-                cur.execute("""
-                    SELECT brand_ids FROM advertiser_profiles WHERE id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
+                _assert_brand_owned_by_advertiser(cur, advertiser_profile_id, brand_id)
 
-                if not advertiser or brand_id not in (advertiser.get('brand_ids') or []):
-                    raise HTTPException(status_code=403, detail="You don't own this brand")
-
-                # Get brand details
-                cur.execute("""
-                    SELECT * FROM brand_profile WHERE id = %s
-                """, (brand_id,))
+                cur.execute("SELECT * FROM brand_profile WHERE id = %s", (brand_id,))
                 brand = cur.fetchone()
-
                 if not brand:
                     raise HTTPException(status_code=404, detail="Brand not found")
 
@@ -343,14 +394,7 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Verify ownership using profile_id
-                cur.execute("""
-                    SELECT brand_ids FROM advertiser_profiles WHERE id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
-
-                if not advertiser or brand_id not in (advertiser.get('brand_ids') or []):
-                    raise HTTPException(status_code=403, detail="You don't own this brand")
+                _assert_brand_owned_by_advertiser(cur, advertiser_profile_id, brand_id)
 
                 # Build update query
                 updates = []
@@ -434,14 +478,7 @@ async def delete_brand(brand_id: int, current_user = Depends(get_current_user)):
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Verify ownership using profile_id
-                cur.execute("""
-                    SELECT id, brand_ids FROM advertiser_profiles WHERE id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
-
-                if not advertiser or brand_id not in (advertiser.get('brand_ids') or []):
-                    raise HTTPException(status_code=403, detail="You don't own this brand")
+                _assert_brand_owned_by_advertiser(cur, advertiser_profile_id, brand_id)
 
                 # Soft delete
                 cur.execute("""
@@ -450,13 +487,13 @@ async def delete_brand(brand_id: int, current_user = Depends(get_current_user)):
                     WHERE id = %s
                 """, (brand_id,))
 
-                # Remove from advertiser's brand_ids
-                new_brand_ids = [bid for bid in advertiser['brand_ids'] if bid != brand_id]
+                # Also remove from legacy advertiser_profiles.brand_ids[] so any
+                # remaining code paths reading the array don't see a dangling ID.
                 cur.execute("""
                     UPDATE advertiser_profiles
-                    SET brand_ids = %s
+                    SET brand_ids = array_remove(COALESCE(brand_ids, ARRAY[]::integer[]), %s)
                     WHERE id = %s
-                """, (new_brand_ids, advertiser['id']))
+                """, (brand_id, advertiser_profile_id))
 
                 conn.commit()
 
@@ -484,14 +521,7 @@ async def upload_brand_logo(
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Verify ownership using profile_id
-                cur.execute("""
-                    SELECT brand_ids FROM advertiser_profiles WHERE id = %s
-                """, (advertiser_profile_id,))
-                advertiser = cur.fetchone()
-
-                if not advertiser or brand_id not in (advertiser.get('brand_ids') or []):
-                    raise HTTPException(status_code=403, detail="You don't own this brand")
+                _assert_brand_owned_by_advertiser(cur, advertiser_profile_id, brand_id)
 
                 # Read file contents
                 contents = await file.read()
