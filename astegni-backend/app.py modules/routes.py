@@ -7658,25 +7658,50 @@ async def upload_campaign_media(
         # Get Backblaze service
         b2_service = get_backblaze_service()
 
-        # Clean folder names (remove special characters, replace spaces with underscores)
-        import re
-        clean_brand = re.sub(r'[^\w\s-]', '', brand_name).strip().replace(' ', '_')
-        clean_campaign = re.sub(r'[^\w\s-]', '', campaign_name).strip().replace(' ', '_')
-        clean_placement = re.sub(r'[^\w\s-]', '', ad_placement).strip().replace(' ', '_')
+        # Resolve which company owns this upload. If brand_id was provided
+        # (the new flow), look up the company via brand_profile.company_id.
+        # Otherwise fall back to the advertiser's only company (single-company users).
+        import psycopg
+        from advertiser_b2_paths import (
+            resolve_company_for_upload,
+            placement_folder as build_placement_folder,
+            CompanyResolutionError,
+        )
+        resolved_company_id = None
+        if brand_id:
+            try:
+                with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+                    with _conn.cursor() as _cur:
+                        _cur.execute(
+                            "SELECT company_id FROM brand_profile WHERE id = %s",
+                            (brand_id,),
+                        )
+                        _row = _cur.fetchone()
+                        if _row and _row[0]:
+                            resolved_company_id = _row[0]
+            except Exception:
+                pass  # Fall through to advertiser's single-company resolver
+
+        try:
+            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+                with _conn.cursor() as _cur:
+                    company_id, company_name = resolve_company_for_upload(
+                        _cur, advertiser_profile.id, resolved_company_id,
+                    )
+        except CompanyResolutionError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         # Store placement as-is (with dashes) to match frontend filter values
         normalized_placement = ad_placement
 
-        # Build organized folder path:
-        #   {images|videos}/advertisement/{brand}/{campaign}/{placement}/profile_{id}/
-        # Top-level type folders (images/, videos/, documents/, audio/) are shared
-        # with non-advertisement content; the "advertisement/" segment scopes this
-        # subtree so all ad files are easy to locate as a group. Brand/campaign/
-        # placement come next for human navigability; profile_{id} sits just above
-        # the filename so a single file's owner is still recoverable from its key.
+        # New layout (May 2026 reorg, see DESIGN_company_profile_restructure.md):
+        #   {images|videos}/advertisements/{company}/{brand}/{campaign}/{placement}/{file}
+        # All advertisement files live under the shared "advertisements/" subtree
+        # of the appropriate media-type folder. Names are sanitized for path safety.
         media_type = 'image' if is_image else 'video'
-        type_folder = 'images' if is_image else 'videos'
-        custom_folder = f"{type_folder}/advertisement/{clean_brand}/{clean_campaign}/{clean_placement}/profile_{advertiser_profile.id}/"
+        custom_folder = build_placement_folder(
+            media_type, company_name, brand_name, campaign_name, ad_placement,
+        )
 
         # Upload to Backblaze with custom folder path
         result = b2_service.upload_file_to_folder(
@@ -7937,18 +7962,36 @@ async def upload_company_document(
         # Get Backblaze service
         b2_service = get_backblaze_service()
 
-        # Upload file using the document type mapping
-        result = b2_service.upload_file(
+        # Resolve company so we can build the new advertisements/{company}/ path.
+        # Single-company users (today's production state) are auto-resolved.
+        import psycopg
+        from advertiser_b2_paths import resolve_company_for_upload, company_folder, CompanyResolutionError
+        try:
+            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+                with _conn.cursor() as _cur:
+                    resolved_company_id, resolved_company_name = resolve_company_for_upload(
+                        _cur, advertiser_profile.id,
+                    )
+        except CompanyResolutionError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        # documents/advertisements/{company}/ for license/TIN/additional,
+        # images/advertisements/{company}/ for the company logo.
+        media_type_for_path = 'image' if document_type == 'company_logo' else 'document'
+        folder_path = company_folder(media_type_for_path, resolved_company_name)
+
+        # Upload file to that explicit folder.
+        result = b2_service.upload_file_to_folder(
             file_data=contents,
             file_name=file.filename,
-            file_type=document_type,
-            user_id=f"advertiser_{advertiser_profile.id}"
+            folder_path=folder_path,
+            content_type=file.content_type,
         )
 
         if not result:
             raise HTTPException(status_code=500, detail="File upload failed")
 
-        # Update the corresponding field in advertiser_profile
+        # Update the corresponding field in advertiser_profile (legacy mirror)
         if document_type == 'business_license':
             advertiser_profile.business_license_url = result['url']
         elif document_type == 'tin_certificate':
@@ -7956,10 +7999,43 @@ async def upload_company_document(
         elif document_type == 'company_logo':
             advertiser_profile.company_logo = result['url']
         elif document_type == 'additional_doc':
-            # Add to additional_docs_urls JSON array
+            # Append to JSON array on advertiser_profile (legacy mirror)
             if not advertiser_profile.additional_docs_urls:
                 advertiser_profile.additional_docs_urls = []
             advertiser_profile.additional_docs_urls = advertiser_profile.additional_docs_urls + [result['url']]
+
+        # Also write to the new company_profile row so per-company UI sees it.
+        try:
+            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn2:
+                with _conn2.cursor() as _cur2:
+                    if document_type == 'business_license':
+                        _cur2.execute(
+                            "UPDATE company_profile SET business_license_url = %s, updated_at = NOW() WHERE id = %s",
+                            (result['url'], resolved_company_id),
+                        )
+                    elif document_type == 'tin_certificate':
+                        _cur2.execute(
+                            "UPDATE company_profile SET tin_certificate_url = %s, updated_at = NOW() WHERE id = %s",
+                            (result['url'], resolved_company_id),
+                        )
+                    elif document_type == 'company_logo':
+                        _cur2.execute(
+                            "UPDATE company_profile SET company_logo = %s, updated_at = NOW() WHERE id = %s",
+                            (result['url'], resolved_company_id),
+                        )
+                    elif document_type == 'additional_doc':
+                        _cur2.execute(
+                            """
+                            UPDATE company_profile
+                            SET additional_docs_urls = COALESCE(additional_docs_urls, '[]'::jsonb) || to_jsonb(%s::text),
+                                updated_at = NOW()
+                            WHERE id = %s
+                            """,
+                            (result['url'], resolved_company_id),
+                        )
+                    _conn2.commit()
+        except Exception as e:
+            print(f"[upload_company_document] Warning: failed to mirror to company_profile: {e}")
 
         db.commit()
 

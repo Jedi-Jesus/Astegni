@@ -527,13 +527,30 @@ async def upload_brand_logo(
                 # Read file contents
                 contents = await file.read()
 
-                # Get Backblaze service and upload
+                # Resolve company + brand names so we can build the new path:
+                #   images/advertisements/{company}/{brand}/<filename>
+                from advertiser_b2_paths import brand_folder
+                cur.execute(
+                    """
+                    SELECT cp.company_name, bp.name AS brand_name
+                    FROM brand_profile bp
+                    JOIN company_profile cp ON cp.id = bp.company_id
+                    WHERE bp.id = %s
+                    """,
+                    (brand_id,),
+                )
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Brand or its company not found")
+                folder_path = brand_folder('image', row['company_name'], row['brand_name'])
+
+                # Get Backblaze service and upload to the explicit folder
                 b2_service = get_backblaze_service()
-                result = b2_service.upload_file(
+                result = b2_service.upload_file_to_folder(
                     file_data=contents,
                     file_name=file.filename,
-                    file_type='brand_logo',
-                    user_id=f"brand_{brand_id}"
+                    folder_path=folder_path,
+                    content_type=file.content_type,
                 )
 
                 if not result:
