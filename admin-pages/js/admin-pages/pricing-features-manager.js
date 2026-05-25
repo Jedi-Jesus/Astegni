@@ -289,8 +289,8 @@ async function openCpiSettingsModal() {
         modal.classList.remove('hidden');
         // Calculate initial preview
         calculateCpiPreview();
-        // Load view tiers section (independent of CPI settings)
-        loadViewTiers().catch(err => console.warn('View tiers load failed:', err));
+        // Render the view tier list (already loaded as part of cpiSettings)
+        renderViewTierRows();
 
         // Auto-detect country from GPS ONLY if no existing country is set
         // (i.e., when creating new settings for the first time)
@@ -735,7 +735,9 @@ async function saveCpiSettings(event) {
         return;
     }
 
-    // Update local settings object with JSONB region premiums format
+    // Update local settings object with JSONB region premiums format.
+    // viewTierPremiums is edited in place by the View Tiers section UI, so
+    // we just carry it through to the payload.
     cpiSettings = {
         baseRate,
         country,
@@ -756,7 +758,8 @@ async function saveCpiSettings(event) {
             widget: widgetPremium,
             popup: popupPremium,
             insession: insessionPremium
-        }
+        },
+        viewTierPremiums: cpiSettings.viewTierPremiums || []
     };
 
     try {
@@ -782,19 +785,13 @@ async function saveCpiSettings(event) {
         const result = await response.json();
         console.log('CPI settings saved:', result);
 
-        // Persist any view-tier edits made while the modal was open.
-        // Failures inside saveViewTiers() already alert the user.
-        const tiersOk = await saveViewTiers();
-
         // Update the grid display
         renderCpiRatesGrid();
 
         // Close modal
         closeCpiSettingsModal();
 
-        alert(tiersOk
-            ? 'CPI settings saved successfully!'
-            : 'CPI settings saved, but some view-tier changes failed. See alerts above.');
+        alert('CPI settings saved successfully!');
 
     } catch (error) {
         console.error('Error saving CPI settings:', error);
@@ -2241,83 +2238,49 @@ function removeGateway(gatewayId) {
 }
 
 // ============================================
-// VIEW TIERS (advertiser-purchasable view bundles)
+// VIEW TIER PREMIUMS (a targeting dimension under base CPI)
 // ============================================
-
-let viewTiers = [];          // [{id?, name, view_count, base_price, currency, is_active, _new?, _deleted?}]
-let viewTiersLoaded = false; // whether we've fetched from the server
-
-async function loadViewTiers() {
-    const tbody = document.getElementById('view-tiers-tbody');
-    if (!tbody) return;
-    try {
-        const token = getAuthToken();
-        const apiUrl = getApiBaseUrl();
-        const resp = await fetch(`${apiUrl}/api/admin/view-packages`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!resp.ok) throw new Error(`Load failed (${resp.status})`);
-        const data = await resp.json();
-        viewTiers = (data.packages || []).map(p => ({
-            id: p.id,
-            name: p.name,
-            view_count: p.view_count,
-            base_price: p.base_price,
-            currency: p.currency || 'ETB',
-            is_active: p.is_active !== false,
-        }));
-        viewTiersLoaded = true;
-        renderViewTierRows();
-    } catch (e) {
-        console.error('Error loading view tiers:', e);
-        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-red-600">
-            Failed to load view tiers: ${e.message}</td></tr>`;
-    }
-}
+// Each tier is {view_count, premium, label}. The list lives on
+// cpiSettings.viewTierPremiums and is saved alongside the rest of CPI
+// settings — no separate API.
 
 function renderViewTierRows() {
     const tbody = document.getElementById('view-tiers-tbody');
     if (!tbody) return;
 
-    const rows = viewTiers.filter(t => !t._deleted);
-    if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">
+    const tiers = cpiSettings.viewTierPremiums || [];
+    if (tiers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="px-2 py-3 text-center text-gray-500">
             No view tiers yet. Click "Add Tier" to create one.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = rows.map((t, i) => {
-        const idx = viewTiers.indexOf(t);
-        return `
+    tbody.innerHTML = tiers.map((t, idx) => `
         <tr class="border-b">
-            <td class="px-3 py-2">
-                <input type="text" value="${escapeHtml(t.name || '')}"
-                    oninput="updateViewTierField(${idx}, 'name', this.value)"
-                    class="w-full px-2 py-1 border rounded" placeholder="Starter">
+            <td class="px-2 py-1.5">
+                <input type="text" value="${escapeHtml(t.label || '')}"
+                    oninput="updateViewTierField(${idx}, 'label', this.value)"
+                    class="w-full px-2 py-1 border rounded" placeholder="50K">
             </td>
-            <td class="px-3 py-2">
+            <td class="px-2 py-1.5">
                 <input type="number" min="1" step="1" value="${t.view_count ?? ''}"
                     oninput="updateViewTierField(${idx}, 'view_count', this.value)"
-                    class="w-32 px-2 py-1 border rounded" placeholder="10000">
+                    class="w-28 px-2 py-1 border rounded" placeholder="50000">
             </td>
-            <td class="px-3 py-2">
-                <input type="number" min="0" step="0.01" value="${t.base_price ?? ''}"
-                    oninput="updateViewTierField(${idx}, 'base_price', this.value)"
-                    class="w-32 px-2 py-1 border rounded" placeholder="500.00">
-                <span class="text-xs text-gray-500 ml-1">${escapeHtml(t.currency || 'ETB')}</span>
+            <td class="px-2 py-1.5">
+                <input type="number" step="0.001" value="${t.premium ?? 0}"
+                    oninput="updateViewTierField(${idx}, 'premium', this.value)"
+                    class="w-24 px-2 py-1 border rounded" placeholder="-0.005">
+                <span class="text-xs text-gray-500 ml-1">ETB</span>
             </td>
-            <td class="px-3 py-2 text-center">
-                <input type="checkbox" ${t.is_active ? 'checked' : ''}
-                    onchange="updateViewTierField(${idx}, 'is_active', this.checked)">
-            </td>
-            <td class="px-3 py-2 text-right">
+            <td class="px-2 py-1.5 text-right">
                 <button type="button" onclick="removeViewTierRow(${idx})"
                     class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
                     <i class="fas fa-times"></i>
                 </button>
             </td>
-        </tr>`;
-    }).join('');
+        </tr>
+    `).join('');
 }
 
 function escapeHtml(s) {
@@ -2327,108 +2290,31 @@ function escapeHtml(s) {
 }
 
 function updateViewTierField(idx, field, value) {
-    const t = viewTiers[idx];
+    if (!cpiSettings.viewTierPremiums) cpiSettings.viewTierPremiums = [];
+    const t = cpiSettings.viewTierPremiums[idx];
     if (!t) return;
     if (field === 'view_count') t.view_count = parseInt(value, 10) || 0;
-    else if (field === 'base_price') t.base_price = parseFloat(value) || 0;
+    else if (field === 'premium') t.premium = parseFloat(value) || 0;
     else t[field] = value;
-    t._dirty = true;
 }
 
 function addViewTierRow() {
-    viewTiers.push({
-        name: '',
+    if (!cpiSettings.viewTierPremiums) cpiSettings.viewTierPremiums = [];
+    cpiSettings.viewTierPremiums.push({
+        label: '',
         view_count: 10000,
-        base_price: 0,
-        currency: cpiSettings.currency || 'ETB',
-        is_active: true,
-        _new: true,
-        _dirty: true,
+        premium: 0,
     });
     renderViewTierRows();
 }
 
 function removeViewTierRow(idx) {
-    const t = viewTiers[idx];
+    const tiers = cpiSettings.viewTierPremiums || [];
+    const t = tiers[idx];
     if (!t) return;
-    if (t._new) {
-        // Never persisted — just drop it locally
-        viewTiers.splice(idx, 1);
-    } else {
-        if (!confirm(`Delete tier "${t.name || 'unnamed'}"? This cannot be undone.`)) return;
-        t._deleted = true;
-    }
+    if (!confirm(`Remove tier "${t.label || t.view_count + ' views'}"?`)) return;
+    tiers.splice(idx, 1);
     renderViewTierRows();
-}
-
-// Persist all pending tier changes. Returns true on success.
-async function saveViewTiers() {
-    if (!viewTiersLoaded) return true; // never opened the UI, nothing to do
-    const token = getAuthToken();
-    const apiUrl = getApiBaseUrl();
-    const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
-
-    // Validate first
-    for (const t of viewTiers) {
-        if (t._deleted) continue;
-        if (!t.name || !t.name.trim()) {
-            alert('Every view tier needs a name.');
-            return false;
-        }
-        if (!(t.view_count > 0)) {
-            alert(`Tier "${t.name}" needs a view count greater than 0.`);
-            return false;
-        }
-        if (!(t.base_price >= 0)) {
-            alert(`Tier "${t.name}" needs a non-negative base price.`);
-            return false;
-        }
-    }
-
-    try {
-        for (const t of viewTiers) {
-            if (t._deleted && t.id) {
-                const r = await fetch(`${apiUrl}/api/admin/view-packages/${t.id}`, {
-                    method: 'DELETE', headers,
-                });
-                if (!r.ok) throw new Error(`Delete tier ${t.id} failed (${r.status}): ${await r.text()}`);
-            } else if (t._new) {
-                const payload = {
-                    name: t.name.trim(),
-                    view_count: t.view_count,
-                    base_price: t.base_price,
-                    currency: t.currency || 'ETB',
-                    is_active: t.is_active !== false,
-                };
-                const r = await fetch(`${apiUrl}/api/admin/view-packages`, {
-                    method: 'POST', headers, body: JSON.stringify(payload),
-                });
-                if (!r.ok) throw new Error(`Create tier failed (${r.status}): ${await r.text()}`);
-            } else if (t._dirty && t.id) {
-                const payload = {
-                    name: t.name.trim(),
-                    view_count: t.view_count,
-                    base_price: t.base_price,
-                    currency: t.currency || 'ETB',
-                    is_active: t.is_active !== false,
-                };
-                const r = await fetch(`${apiUrl}/api/admin/view-packages/${t.id}`, {
-                    method: 'PUT', headers, body: JSON.stringify(payload),
-                });
-                if (!r.ok) throw new Error(`Update tier ${t.id} failed (${r.status}): ${await r.text()}`);
-            }
-        }
-        // Refresh from server so ids/flags resync
-        await loadViewTiers();
-        return true;
-    } catch (e) {
-        console.error('Error saving view tiers:', e);
-        alert(`Failed to save view tiers: ${e.message}`);
-        return false;
-    }
 }
 
 // ============================================
@@ -2446,8 +2332,7 @@ window.onCpiLocationTypeChange = onCpiLocationTypeChange;
 window.onCpiCountryChange = onCpiCountryChange;
 window.renderRegionsForCountry = renderRegionsForCountry;
 
-// View Tiers
-window.loadViewTiers = loadViewTiers;
+// View Tier Premiums
 window.addViewTierRow = addViewTierRow;
 window.removeViewTierRow = removeViewTierRow;
 window.updateViewTierField = updateViewTierField;

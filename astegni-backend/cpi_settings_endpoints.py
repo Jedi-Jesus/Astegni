@@ -57,6 +57,7 @@ class CpiSettingsUpdate(BaseModel):
     locationPremiums: dict  # {national: float}
     regionExclusionPremiums: dict = {}  # {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}}
     placementPremiums: dict = {}  # {'leaderboard-banner': float, 'logo': float, 'in-session-skyscrapper-banner': float}
+    viewTierPremiums: list = []  # [{view_count: int, premium: float, label: str}, ...]
 
 
 def get_db():
@@ -146,7 +147,8 @@ async def get_full_cpi_rates():
                 in_session_skyscrapper_banner_premium,
                 currency,
                 region_exclusion_premiums,
-                country_regions
+                country_regions,
+                view_tier_premiums
             FROM cpi_settings
             WHERE is_active = TRUE
             ORDER BY id DESC
@@ -217,6 +219,7 @@ async def get_full_cpi_rates():
                     "logo": 0.02,
                     "in-session-skyscrapper-banner": 0.05
                 },
+                "viewTierPremiums": [],
                 "currency": "ETB",
                 "message": "Using default rates"
             }
@@ -224,6 +227,7 @@ async def get_full_cpi_rates():
         # Parse JSONB columns
         region_premiums = row[11] if row[11] else default_region_premiums
         country_regions = row[12] if row[12] else default_country_regions
+        view_tier_premiums = row[13] if row[13] else []
 
         return {
             "success": True,
@@ -245,6 +249,7 @@ async def get_full_cpi_rates():
                 "logo": float(row[8]) if row[8] else 0,
                 "in-session-skyscrapper-banner": float(row[9]) if row[9] else 0
             },
+            "viewTierPremiums": view_tier_premiums,
             "currency": row[10]
         }
 
@@ -290,7 +295,8 @@ async def get_cpi_settings():
                 created_at,
                 updated_at,
                 region_exclusion_premiums,
-                country_regions
+                country_regions,
+                view_tier_premiums
             FROM cpi_settings
             WHERE is_active = TRUE
             ORDER BY id DESC
@@ -398,6 +404,7 @@ async def get_cpi_settings():
         # Parse JSONB columns
         region_premiums = row[15] if row[15] else default_region_premiums
         country_regions = row[16] if row[16] else default_country_regions
+        view_tier_premiums = row[17] if row[17] else []
 
         return {
             "success": True,
@@ -420,6 +427,7 @@ async def get_cpi_settings():
                     "logo": float(row[9]) if row[9] else 0,
                     "in-session-skyscrapper-banner": float(row[10]) if row[10] else 0
                 },
+                "viewTierPremiums": view_tier_premiums,
                 "currency": row[11],
                 "isActive": row[12],
                 "createdAt": row[13].isoformat() if row[13] else None,
@@ -455,6 +463,26 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
         # Get region exclusion premiums (JSONB format: {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}})
         region_premiums = settings.regionExclusionPremiums or {}
 
+        # Normalize view tier premiums: keep only well-formed rows. Each
+        # entry should be {view_count, premium, label?}. We tolerate stray
+        # client fields and silently drop incomplete rows.
+        view_tiers = []
+        for t in (settings.viewTierPremiums or []):
+            try:
+                vc = int(t.get("view_count"))
+                pr = float(t.get("premium", 0))
+            except (TypeError, ValueError):
+                continue
+            if vc <= 0:
+                continue
+            view_tiers.append({
+                "view_count": vc,
+                "premium": pr,
+                "label": str(t.get("label", "")),
+            })
+        # Sort ascending by view_count so consumers can rely on order.
+        view_tiers.sort(key=lambda x: x["view_count"])
+
         if existing:
             # Update existing settings
             cursor.execute("""
@@ -472,6 +500,7 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     logo_premium = %s,
                     in_session_skyscrapper_banner_premium = %s,
                     region_exclusion_premiums = %s,
+                    view_tier_premiums = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
             """, (
@@ -487,6 +516,7 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.placementPremiums.get('logo', 0),
                 settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
                 json.dumps(region_premiums),
+                json.dumps(view_tiers),
                 existing[0]
             ))
         else:
@@ -504,8 +534,9 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     leaderboard_banner_premium,
                     logo_premium,
                     in_session_skyscrapper_banner_premium,
-                    region_exclusion_premiums
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    region_exclusion_premiums,
+                    view_tier_premiums
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 settings.baseRate,
                 getattr(settings, 'country', 'all'),
@@ -518,7 +549,8 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.placementPremiums.get('leaderboard-banner', 0),
                 settings.placementPremiums.get('logo', 0),
                 settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
-                json.dumps(region_premiums)
+                json.dumps(region_premiums),
+                json.dumps(view_tiers)
             ))
 
         conn.commit()
