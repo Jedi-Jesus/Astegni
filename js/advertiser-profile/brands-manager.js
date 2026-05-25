@@ -3488,9 +3488,10 @@ const BrandsManager = {
             return;
         }
 
-        const campaign = this.campaigns.find(c => c.id === this.editingCampaignId);
+        const campaignId = this.editingCampaignId;
+        const campaign = this.campaigns.find(c => c.id === campaignId);
         if (!campaign) {
-            console.error('[BrandsManager] Campaign not found:', this.editingCampaignId);
+            console.error('[BrandsManager] Campaign not found:', campaignId);
             return;
         }
 
@@ -3503,24 +3504,44 @@ const BrandsManager = {
         if (!confirmed) return;
 
         try {
-            // TODO: Implement actual API call to delete campaign
-            console.log('[BrandsManager] Deleting campaign:', this.editingCampaignId);
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaignId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            // Remove from campaigns array
-            this.campaigns = this.campaigns.filter(c => c.id !== this.editingCampaignId);
+            if (!response.ok) {
+                // Surface backend reason (e.g. "Cannot delete active campaign. Pause it first.")
+                let detail = `Delete failed (HTTP ${response.status})`;
+                try {
+                    const data = await response.json();
+                    if (data && data.detail) detail = data.detail;
+                } catch (_) { /* non-JSON body */ }
+                throw new Error(detail);
+            }
 
-            // Close form and go back to list
+            // Close form and refresh list from DB (drops the deleted campaign + any other server-side changes)
             this.hideCreateCampaignForm();
+            this.editingCampaignId = null;
+            if (this.currentBrand && this.currentBrand.id) {
+                await this.loadBrandCampaigns(this.currentBrand.id);
+            } else {
+                this.campaigns = this.campaigns.filter(c => c.id !== campaignId);
+                this.renderCampaignList();
+            }
 
-            // Re-render campaigns
-            this.renderCampaigns();
-
-            // Show success message
-            alert(`Campaign "${campaign.name}" has been deleted successfully.`);
-
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`Campaign "${campaign.name}" deleted`, 'success');
+            } else {
+                alert(`Campaign "${campaign.name}" has been deleted successfully.`);
+            }
         } catch (error) {
             console.error('[BrandsManager] Error deleting campaign:', error);
-            alert('Failed to delete campaign. Please try again.');
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`❌ ${error.message || 'Failed to delete campaign'}`, 'error');
+            } else {
+                alert(error.message || 'Failed to delete campaign. Please try again.');
+            }
         }
     },
 
