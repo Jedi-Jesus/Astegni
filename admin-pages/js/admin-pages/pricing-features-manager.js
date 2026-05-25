@@ -820,22 +820,43 @@ function renderCpiRatesGrid() {
     const currency = cpiSettings.currency || 'ETB';  // Read currency from settings
     const formatPrice = (price) => price.toFixed(3);
 
+    // Build the View Tier card: lists every tier with views + price-per-view.
+    const tiers = (cpiSettings.viewTierPremiums || [])
+        .slice()
+        .sort((a, b) => (a.view_count || 0) - (b.view_count || 0));
+    const tierRowsHtml = tiers.length === 0
+        ? `<p class="text-xs text-gray-500 italic">No tiers configured yet. Open CPI Settings to add some.</p>`
+        : tiers.map(t => {
+            const label = t.label && String(t.label).trim()
+                ? escapeHtml(t.label)
+                : `${Number(t.view_count || 0).toLocaleString()} views`;
+            return `
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-eye text-indigo-500"></i>
+                        ${label}
+                        <span class="text-xs text-gray-400">(${Number(t.view_count || 0).toLocaleString()})</span>
+                    </span>
+                    <span class="font-semibold text-indigo-600">${formatPrice(Number(t.base_cpi) || 0)} ${currency}</span>
+                </div>
+            `;
+        }).join('');
+
     grid.innerHTML = `
-        <!-- Base CPI Card -->
+        <!-- View Tier Card -->
         <div class="border-2 border-orange-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
             <div class="flex items-center gap-2 mb-3">
                 <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-coins text-orange-600"></i>
+                    <i class="fas fa-eye text-orange-600"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-800">Base CPI</h4>
-                    <p class="text-xs text-gray-500">All + International</p>
+                    <h4 class="font-bold text-gray-800">View Tier (Base CPI)</h4>
+                    <p class="text-xs text-gray-500">Price per view per tier</p>
                 </div>
             </div>
-            <div class="text-2xl font-bold text-orange-600 mb-2">
-                ${formatPrice(cpiSettings.baseRate || 0)} <span class="text-sm font-normal text-gray-500">${currency}</span>
+            <div class="space-y-2 text-sm">
+                ${tierRowsHtml}
             </div>
-            <p class="text-xs text-gray-500">Per impression (no targeting)</p>
         </div>
 
         <!-- Audience Exclusion Card -->
