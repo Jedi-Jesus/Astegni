@@ -49,8 +49,18 @@ load_dotenv()
 
 from backblaze_service import get_backblaze_service  # noqa: E402
 
-CAMPAIGN_MEDIA_PREFIXES = ("images/profile_", "videos/profile_")
-SAFE_PATH_RE = re.compile(r"^(images|videos)/profile_\d+/.+")
+# Current layout (since the May 2026 reorg):
+#   {images|videos|documents|audio}/advertisement/{brand}/{campaign}/{placement}/profile_{id}/{filename}
+# Legacy layout (pre-reorg, kept here so post-migration cleanup still catches
+# any leftover old-layout files):
+#   {images|videos}/profile_{id}/{brand}/{campaign}/{placement}/{filename}
+SAFE_PATH_RE = re.compile(
+    r"^("
+    r"(images|videos|documents|audio)/advertisement/[^/]+/[^/]+/[^/]+/profile_\d+/.+"
+    r"|"
+    r"(images|videos)/profile_\d+/.+"
+    r")$"
+)
 
 
 def fetch_known_paths(advertiser_id: int | None) -> Set[str]:
@@ -86,29 +96,21 @@ def fetch_known_paths(advertiser_id: int | None) -> Set[str]:
 
 def list_b2_paths(advertiser_id: int | None) -> list[Tuple[str, str]]:
     """
-    Return [(file_path, file_id), ...] for every object under the campaign-media
-    layout (images/profile_N/... or videos/profile_N/...). If advertiser_id is
-    given, narrow to that one profile.
+    Return [(file_path, file_id), ...] for every object that matches the
+    campaign-media layout (current OR legacy). Always lists the top-level
+    media folders recursively and filters client-side — there's no single
+    parent folder that contains every campaign-media file under the current
+    layout, so prefix-based listing isn't an option.
 
-    b2sdk's `folder_to_list` is a literal folder path (with trailing /), not a
-    string prefix. "images/profile_" is not a folder, so we list the parent
-    folder (images/ or videos/) recursively and filter on the path pattern.
+    b2sdk's `folder_to_list` requires a literal folder path with trailing /;
+    string prefixes like "images/profile_" return nothing.
     """
     b2 = get_backblaze_service()
     if not getattr(b2, "configured", False):
         sys.exit("ERROR: Backblaze B2 not configured (check BACKBLAZE_* env vars)")
 
-    if advertiser_id is not None:
-        # Exact folders — narrow scan, no client-side filtering needed.
-        folders_to_list = [
-            f"images/profile_{advertiser_id}/",
-            f"videos/profile_{advertiser_id}/",
-        ]
-        filter_required = False
-    else:
-        # Whole-bucket scope: list images/ and videos/ recursively and filter.
-        folders_to_list = ["images/", "videos/"]
-        filter_required = True
+    folders_to_list = ["images/", "videos/", "documents/", "audio/"]
+    profile_marker = f"profile_{advertiser_id}/" if advertiser_id is not None else None
 
     out: list[Tuple[str, str]] = []
     for folder in folders_to_list:
@@ -119,10 +121,13 @@ def list_b2_paths(advertiser_id: int | None) -> list[Tuple[str, str]]:
                 fetch_count=10000,
             ):
                 name = file_info.file_name
-                if filter_required and not SAFE_PATH_RE.match(name):
+                if not SAFE_PATH_RE.match(name):
+                    continue
+                if profile_marker and profile_marker not in name:
                     continue
                 out.append((name, file_info.id_))
         except Exception as e:
+            # Missing top-level folder is fine — not all four exist on every bucket.
             print(f"[WARN] ls failed for folder {folder!r}: {e}")
     return out
 

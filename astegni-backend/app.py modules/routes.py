@@ -7667,9 +7667,16 @@ async def upload_campaign_media(
         # Store placement as-is (with dashes) to match frontend filter values
         normalized_placement = ad_placement
 
-        # Build organized folder path: images/profile_{id}/{brand}/{campaign}/{placement}/ or videos/profile_{id}/{brand}/{campaign}/{placement}/
+        # Build organized folder path:
+        #   {images|videos}/advertisement/{brand}/{campaign}/{placement}/profile_{id}/
+        # Top-level type folders (images/, videos/, documents/, audio/) are shared
+        # with non-advertisement content; the "advertisement/" segment scopes this
+        # subtree so all ad files are easy to locate as a group. Brand/campaign/
+        # placement come next for human navigability; profile_{id} sits just above
+        # the filename so a single file's owner is still recoverable from its key.
         media_type = 'image' if is_image else 'video'
-        custom_folder = f"{'images' if is_image else 'videos'}/profile_{advertiser_profile.id}/{clean_brand}/{clean_campaign}/{clean_placement}/"
+        type_folder = 'images' if is_image else 'videos'
+        custom_folder = f"{type_folder}/advertisement/{clean_brand}/{clean_campaign}/{clean_placement}/profile_{advertiser_profile.id}/"
 
         # Upload to Backblaze with custom folder path
         result = b2_service.upload_file_to_folder(
