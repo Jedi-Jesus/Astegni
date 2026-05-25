@@ -202,12 +202,14 @@ app.include_router(child_invitation_router)
 from parent_endpoints import router as parent_router
 app.include_router(parent_router)
 
-# Include advertiser brands routes (MUST be BEFORE routes.py to avoid wildcard /api/advertiser/{id} conflict)
+# Include advertiser companies + brands routes (MUST be BEFORE routes.py to avoid wildcard /api/advertiser/{id} conflict)
+from advertiser_companies_endpoints import router as advertiser_companies_router
 from advertiser_brands_endpoints import router as advertiser_brands_router
 from campaign_cancellation_endpoints import router as campaign_cancellation_router
 from campaign_cancellation_endpoints_enhanced import router as campaign_cancellation_enhanced_router
 from campaign_deposit_endpoints import router as campaign_deposit_router
 from campaign_stop_endpoints import router as campaign_stop_router
+app.include_router(advertiser_companies_router)
 app.include_router(advertiser_brands_router)
 app.include_router(campaign_cancellation_router)
 app.include_router(campaign_cancellation_enhanced_router)
