@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Brands</title>
+    <script>tailwind.config={corePlugins:{preflight:false}}</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>html{font-size:18px!important}</style>
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="./css/admin-pages/manage-companies.css?v202605260100">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="nav-left flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span><span></span><span></span>
+                </span>
+                <a href="index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage Brands</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display:none;"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Advertiser Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="manage-companies.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏢</span>
+                    <span>Companies</span>
+                </a>
+                <a href="manage-brands.html" class="sidebar-link active">
+                    <span class="sidebar-icon">🎨</span>
+                    <span>Brands</span>
+                    <span class="sidebar-count" id="brands-sidebar-count">0</span>
+                </a>
+                <a href="manage-campaign.html" class="sidebar-link">
+                    <span class="sidebar-icon">📢</span>
+                    <span>Campaigns</span>
+                </a>
+
+                <hr class="my-4 border-gray-300">
+
+                <a href="index.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Admin Home</span>
+                </a>
+                <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500">
+                    <span class="sidebar-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Page Header -->
+            <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold mb-1">Brands</h1>
+                    <p class="text-gray-600">Verify, suspend, or reinstate brands across all companies.</p>
+                </div>
+                <button onclick="BrandsAdmin.refresh()" class="btn-secondary">
+                    <i class="fas fa-sync-alt mr-2"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Stats Tiles -->
+            <div class="stats-grid mb-6">
+                <div class="stat-tile"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+                <div class="stat-tile verified"><div class="stat-label">Verified</div><div class="stat-value" id="stat-verified">0</div></div>
+                <div class="stat-tile pending"><div class="stat-label">Pending</div><div class="stat-value" id="stat-pending">0</div></div>
+                <div class="stat-tile rejected"><div class="stat-label">Rejected</div><div class="stat-value" id="stat-rejected">0</div></div>
+                <div class="stat-tile suspended"><div class="stat-label">Suspended</div><div class="stat-value" id="stat-suspended">0</div></div>
+            </div>
+
+            <!-- Filters + search -->
+            <div class="filter-bar mb-6">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-status="all" onclick="BrandsAdmin.setFilter('all')">All</button>
+                    <button class="filter-btn" data-status="pending" onclick="BrandsAdmin.setFilter('pending')">Pending</button>
+                    <button class="filter-btn" data-status="verified" onclick="BrandsAdmin.setFilter('verified')">Verified</button>
+                    <button class="filter-btn" data-status="rejected" onclick="BrandsAdmin.setFilter('rejected')">Rejected</button>
+                    <button class="filter-btn" data-status="suspended" onclick="BrandsAdmin.setFilter('suspended')">Suspended</button>
+                </div>
+                <div class="filter-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search by brand or advertiser..." oninput="BrandsAdmin.onSearchInput(event)">
+                </div>
+            </div>
+
+            <!-- Brand list -->
+            <div id="brands-list" class="companies-list">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading brands...</div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="pagination mt-6"></div>
+        </div>
+    </section>
+
+    <!-- Brand Detail Modal -->
+    <div id="brand-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="BrandsAdmin.closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Brand Details</h2>
+                <button class="modal-close" onclick="BrandsAdmin.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+            <div class="modal-footer" id="modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- Reason Modal (for reject/suspend) -->
+    <div id="reason-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="BrandsAdmin.closeReasonModal()"></div>
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="reason-title">Provide a reason</h2>
+                <button class="modal-close" onclick="BrandsAdmin.closeReasonModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="block mb-2 text-sm font-medium">Reason</label>
+                <textarea id="reason-input" rows="4" class="reason-textarea" placeholder="Explain why..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="BrandsAdmin.closeReasonModal()">Cancel</button>
+                <button class="btn-danger" id="reason-confirm-btn" onclick="BrandsAdmin.confirmReason()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config + scripts -->
+    <script src="../js/config.js"></script>
+    <script>
+        function tickClock() {
+            const now = new Date();
+            const t = document.getElementById('current-time');
+            const d = document.getElementById('current-date');
+            if (t) t.textContent = now.toLocaleTimeString();
+            if (d) d.textContent = now.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+        }
+        setInterval(tickClock, 1000); tickClock();
+
+        document.getElementById('hamburger')?.addEventListener('click', () => {
+            document.getElementById('sidebar')?.classList.toggle('open');
+        });
+        document.getElementById('sidebar-close')?.addEventListener('click', () => {
+            document.getElementById('sidebar')?.classList.remove('open');
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const cur = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', cur);
+            localStorage.setItem('theme', cur);
+            document.getElementById('moon-icon').style.display = cur === 'dark' ? 'none' : 'inline';
+            document.getElementById('sun-icon').style.display = cur === 'dark' ? 'inline' : 'none';
+        }
+        (function applyTheme(){
+            const saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+            if (saved === 'dark') {
+                const m = document.getElementById('moon-icon'); const s = document.getElementById('sun-icon');
+                if (m) m.style.display = 'none'; if (s) s.style.display = 'inline';
+            }
+        })();
+
+        function logout() { localStorage.clear(); window.location.href = '../index.html'; }
+        window.logout = logout;
+    </script>
+    <script src="./js/admin-pages/manage-brands.js?v202605260100"></script>
+</body>
+</html>
