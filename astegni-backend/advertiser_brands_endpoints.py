@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 import os
 from utils import get_current_user
 from backblaze_service import get_backblaze_service
+from advertiser_balance_endpoints import mirror_balance_to_company
 
 load_dotenv()
 
@@ -835,6 +836,10 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
                     SET campaign_ids = %s, updated_at = NOW()
                     WHERE id = %s
                 """, (new_campaign_ids, brand_id))
+
+                # Mirror total_spent (and last_transaction_at) onto company_profile
+                # so per-company billing views see the campaign-budget transfer.
+                mirror_balance_to_company(cur, advertiser_profile_id)
 
                 conn.commit()
 

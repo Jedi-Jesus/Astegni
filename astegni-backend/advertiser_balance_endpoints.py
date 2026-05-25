@@ -59,6 +59,57 @@ def get_db():
     return psycopg.connect(DATABASE_URL)
 
 
+def _mirror_balance_to_company(cursor, advertiser_id: int) -> None:
+    """Mirror the advertiser's balance/totals onto their company_profile row.
+
+    Background: Phase 1 of the advertiser->company restructure (May 2026) moved
+    the canonical wallet from advertiser_profiles to company_profile. Existing
+    /api/advertiser/.../balance endpoints still write to the legacy fields;
+    this function keeps the new company_profile row in sync so per-company
+    UI / new endpoints see correct numbers.
+
+    Behavior:
+      - If advertiser owns exactly 1 company: mirror balance/totals/last_tx to it.
+      - If advertiser owns 0 companies: silently skip (legacy endpoint still works
+        against advertiser_profiles; nothing to mirror to).
+      - If advertiser owns 2+ companies: legacy endpoint is ambiguous (which
+        company should get the balance?). Raise 400 with upgrade instructions.
+
+    Once frontend migrates to per-company endpoints, this mirror becomes
+    unreachable and can be deleted along with the legacy fields.
+    """
+    cursor.execute(
+        "SELECT id FROM company_profile WHERE advertiser_id = %s ORDER BY id",
+        (advertiser_id,),
+    )
+    rows = cursor.fetchall()
+    if len(rows) == 0:
+        return
+    if len(rows) > 1:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This advertiser owns multiple companies; legacy /api/advertiser/balance "
+                "endpoints are ambiguous. Use POST /api/advertiser/companies/{id}/deposit "
+                "(or the equivalent per-company endpoint) instead."
+            ),
+        )
+    company_id = rows[0][0]
+    cursor.execute(
+        """
+        UPDATE company_profile
+        SET balance = ap.balance,
+            total_deposits = ap.total_deposits,
+            total_spent = ap.total_spent,
+            last_transaction_at = ap.last_transaction_at,
+            updated_at = NOW()
+        FROM advertiser_profiles ap
+        WHERE company_profile.id = %s AND ap.id = %s
+        """,
+        (company_id, advertiser_id),
+    )
+
+
 # ============================================
 # BALANCE MANAGEMENT ENDPOINTS
 # ============================================
@@ -193,6 +244,11 @@ async def deposit_balance(advertiser_id: int, request: DepositRequest):
         ))
 
         transaction = cursor.fetchone()
+
+        # Mirror to company_profile so per-company views stay accurate.
+        # (Raises 400 if advertiser owns 2+ companies — see helper.)
+        _mirror_balance_to_company(cursor, advertiser_id)
+
         conn.commit()
 
         return {
@@ -412,6 +468,17 @@ def deduct_from_balance(
 
         transaction_id = cursor.fetchone()[0]
 
+        # Mirror to company_profile so per-company billing views stay accurate.
+        # Note: raises 400 if advertiser owns 2+ companies — the legacy CPM
+        # path assumes one wallet. After the per-company billing migration
+        # this whole function should take company_id directly.
+        try:
+            _mirror_balance_to_company(cursor, advertiser_id)
+        except HTTPException as e:
+            # Don't break impression billing for an internal mirror error;
+            # log and let the legacy advertiser_profiles.balance update stand.
+            print(f"[deduct_from_balance] mirror to company skipped: {e.detail}")
+
         if should_close_conn:
             conn.commit()
 
@@ -504,5 +571,10 @@ def check_and_pause_campaign(campaign_id: int, advertiser_id: int, conn=None):
             conn.close()
 
 
-# Export internal functions for use by impression tracking
-__all__ = ['router', 'deduct_from_balance', 'check_and_pause_campaign']
+# Export internal functions for use by impression tracking and other billing modules
+__all__ = ['router', 'deduct_from_balance', 'check_and_pause_campaign', 'mirror_balance_to_company']
+
+
+def mirror_balance_to_company(cursor, advertiser_id: int) -> None:
+    """Public alias for the mirror helper. See _mirror_balance_to_company docstring."""
+    _mirror_balance_to_company(cursor, advertiser_id)

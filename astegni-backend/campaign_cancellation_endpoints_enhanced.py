@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 import os
 from utils import get_current_user
 from datetime import datetime, timedelta
+from advertiser_balance_endpoints import mirror_balance_to_company
 
 load_dotenv()
 
@@ -506,6 +507,9 @@ async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellati
                         advertiser_balance,
                         f"Campaign '{campaign['name']}' - {final_fee_percent:.1f}% cancellation fee"
                     ))
+
+                # Mirror to company_profile.balance so per-company views stay accurate.
+                mirror_balance_to_company(cur, advertiser_profile_id)
 
                 conn.commit()
 

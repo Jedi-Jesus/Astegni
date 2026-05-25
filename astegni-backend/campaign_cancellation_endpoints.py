@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 import os
 from utils import get_current_user
 from datetime import datetime
+from advertiser_balance_endpoints import mirror_balance_to_company
 
 load_dotenv()
 
@@ -166,6 +167,15 @@ async def cancel_campaign(campaign_id: int, request: CampaignCancellationRequest
                         advertiser_balance,  # Fee doesn't change balance (deducted from refund)
                         f"Campaign '{campaign['name']}' - 5% cancellation fee"
                     ))
+
+                # Mirror refund/fee changes onto company_profile.balance so
+                # per-company views stay accurate after the legacy update.
+                try:
+                    mirror_balance_to_company(cur, advertiser_profile_id)
+                except HTTPException as e:
+                    # If advertiser owns multiple companies, the legacy refund
+                    # path is ambiguous. Surface the error so caller upgrades.
+                    raise
 
                 conn.commit()
 
