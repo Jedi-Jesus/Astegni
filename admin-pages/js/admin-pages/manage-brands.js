@@ -1,12 +1,9 @@
 // ============================================
 // MANAGE BRANDS (admin page)
-// Uses the existing /api/admin-advertisers/brands/* endpoints
-// (defined in admin_advertisers_endpoints.py lines 65-371).
-//
-// NOTE: those endpoints still join via ap.brand_ids[] (pre-restructure),
-// so the response carries advertiser_name but not company_name yet.
-// When the brand endpoints get migrated to company_id JOIN, this page
-// will start showing company names automatically (same field name).
+// Uses the /api/admin-advertisers/brands/* endpoints.
+// Post-restructure: response carries company_name + advertiser_email
+// from the brand_profile -> company_profile -> advertiser_profiles ->
+// users JOIN chain.
 // ============================================
 
 const BRANDS_API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
@@ -99,8 +96,11 @@ const BrandsAdmin = {
         const status = b.verification_status || 'pending';
         const badge = this.renderBadge(status);
 
-        const ownerLine = b.advertiser_name
-            ? `<div class="company-owner"><i class="fas fa-user"></i> ${this._escape(b.advertiser_name)}</div>`
+        const companyLine = b.company_name
+            ? `<div class="company-owner"><i class="fas fa-building"></i> ${this._escape(b.company_name)}</div>`
+            : '';
+        const ownerLine = b.advertiser_name || b.advertiser_email
+            ? `<div class="company-owner"><i class="fas fa-user"></i> ${this._escape(b.advertiser_name || b.advertiser_email)}</div>`
             : '';
 
         const pkgLine = b.package_name
@@ -114,6 +114,7 @@ const BrandsAdmin = {
                 <div class="company-logo">${logo}</div>
                 <div class="company-main">
                     <h3>${this._escape(b.brand_name)}</h3>
+                    ${companyLine}
                     ${ownerLine}
                     ${pkgLine}
                     ${badge}
@@ -273,9 +274,12 @@ const BrandsAdmin = {
             </div>
 
             <div class="detail-section">
-                <h3>Advertiser</h3>
+                <h3>Company &amp; Advertiser</h3>
                 <dl class="detail-grid">
+                    <dt>Company</dt><dd>${this._escape(b.company_name) || '—'}${b.company_id ? ` <a href="manage-companies.html?company=${b.company_id}" class="text-sm text-indigo-600 ml-2">(view)</a>` : ''}</dd>
+                    <dt>Company KYC</dt><dd>${b.company_is_verified ? '<span class="company-badge verified"><i class="fas fa-check-circle"></i> Verified</span>' : '<span class="company-badge unverified"><i class="fas fa-circle"></i> Not verified</span>'}</dd>
                     <dt>Owner</dt><dd>${this._escape(b.advertiser_name) || '—'}</dd>
+                    <dt>Owner Email</dt><dd>${this._escape(b.advertiser_email) || '—'}</dd>
                     <dt>Advertiser ID</dt><dd>${b.advertiser_id ? `#${b.advertiser_id}` : '—'}</dd>
                 </dl>
             </div>

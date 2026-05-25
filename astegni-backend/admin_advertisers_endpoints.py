@@ -87,12 +87,22 @@ async def get_brands(
 
         with get_user_db() as conn:
             with conn.cursor() as cur:
-                # Build query - join with advertiser_profiles only (packages come from admin db)
-                # advertiser_profiles.brand_ids[] contains brand IDs
+                # Post-restructure JOIN chain:
+                #   brand_profile.company_id -> company_profile.id
+                #   company_profile.advertiser_id -> advertiser_profiles.id
+                #   advertiser_profiles.user_id -> users.id
+                # The legacy ap.brand_ids[] join is now empty for new brands.
                 query = """
-                    SELECT bp.*, ap.company_name as advertiser_name, ap.logo as advertiser_logo
+                    SELECT bp.*,
+                           cp.company_name AS company_name,
+                           cp.company_logo AS company_logo,
+                           cp.id AS company_id_out,
+                           u.email AS advertiser_email,
+                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name
                     FROM brand_profile bp
-                    LEFT JOIN advertiser_profiles ap ON bp.id = ANY(ap.brand_ids)
+                    LEFT JOIN company_profile cp ON bp.company_id = cp.id
+                    LEFT JOIN advertiser_profiles ap ON cp.advertiser_id = ap.id
+                    LEFT JOIN users u ON ap.user_id = u.id
                     WHERE 1=1
                 """
                 params = []
@@ -108,11 +118,16 @@ async def get_brands(
                         query += " AND bp.status = 'suspended'"
 
                 if search:
-                    query += " AND (bp.name ILIKE %s OR ap.company_name ILIKE %s)"
+                    query += " AND (bp.name ILIKE %s OR cp.company_name ILIKE %s)"
                     params.extend([f"%{search}%", f"%{search}%"])
 
-                # Count total
-                count_query = query.replace("SELECT bp.*, ap.company_name as advertiser_name, ap.logo as advertiser_logo", "SELECT COUNT(*)")
+                # Count total via regex (SELECT clause spans multiple lines)
+                import re as _re
+                count_query = _re.sub(
+                    r'SELECT\s+bp\.\*.*?(?=FROM\s)',
+                    'SELECT COUNT(*) ',
+                    query, count=1, flags=_re.DOTALL,
+                )
                 cur.execute(count_query, params)
                 total = cur.fetchone()['count']
 
@@ -127,7 +142,6 @@ async def get_brands(
                 # Transform to match frontend expectations
                 result = []
                 for b in brands:
-                    # Look up package from admin db packages_map
                     package_id = b.get('package_id')
                     package_info = packages_map.get(package_id, {}) if package_id else {}
 
@@ -136,7 +150,7 @@ async def get_brands(
                         'brand_name': b['name'],
                         'brand_logo': b['thumbnail'],
                         'description': b['bio'],
-                        'industry': None,  # Not in current schema
+                        'industry': b.get('industry'),
                         'location': b['location'],
                         'email': b['email'],
                         'verification_status': b['status'] or 'pending',
@@ -144,8 +158,11 @@ async def get_brands(
                         'is_active': b['is_active'],
                         'created_at': str(b['created_at']) if b['created_at'] else None,
                         'status_at': str(b['status_at']) if b.get('status_at') else None,
-                        'advertiser_name': b['advertiser_name'],
-                        'advertiser_logo': b['advertiser_logo'],
+                        'company_id': b.get('company_id_out'),
+                        'company_name': b.get('company_name'),
+                        'company_logo': b.get('company_logo'),
+                        'advertiser_name': b.get('advertiser_name'),
+                        'advertiser_email': b.get('advertiser_email'),
                         'package_id': package_id,
                         'package_name': package_info.get('name'),
                         'package_price': float(package_info['price']) if package_info.get('price') else None
@@ -186,14 +203,26 @@ async def get_brand_counts():
 @router.get("/brands/{brand_id}")
 async def get_brand(brand_id: int):
     """Get specific brand by ID.
-    Joins with advertiser_profiles via brand_ids array: bp.id = ANY(ap.brand_ids)"""
+    Post-restructure JOIN chain:
+      brand_profile.company_id -> company_profile.id
+      company_profile.advertiser_id -> advertiser_profiles.id
+      advertiser_profiles.user_id -> users.id"""
     try:
         with get_user_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT bp.*, ap.company_name as advertiser_name, ap.logo as advertiser_logo, ap.id as advertiser_id
+                    SELECT bp.*,
+                           cp.id AS company_id_out,
+                           cp.company_name AS company_name,
+                           cp.company_logo AS company_logo,
+                           cp.is_verified AS company_is_verified,
+                           ap.id AS advertiser_id,
+                           u.email AS advertiser_email,
+                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name
                     FROM brand_profile bp
-                    LEFT JOIN advertiser_profiles ap ON bp.id = ANY(ap.brand_ids)
+                    LEFT JOIN company_profile cp ON bp.company_id = cp.id
+                    LEFT JOIN advertiser_profiles ap ON cp.advertiser_id = ap.id
+                    LEFT JOIN users u ON ap.user_id = u.id
                     WHERE bp.id = %s
                 """, (brand_id,))
                 brand = cur.fetchone()
@@ -206,6 +235,8 @@ async def get_brand(brand_id: int):
                     'brand_logo': brand['thumbnail'],
                     'description': brand['bio'],
                     'quote': brand['quote'],
+                    'industry': brand.get('industry'),
+                    'website': brand.get('website'),
                     'location': brand['location'],
                     'email': brand['email'],
                     'phone': brand['phone'],
@@ -219,9 +250,13 @@ async def get_brand(brand_id: int):
                     'status_reason': brand['status_reason'],
                     'status_at': str(brand['status_at']) if brand['status_at'] else None,
                     'created_at': str(brand['created_at']) if brand['created_at'] else None,
-                    'advertiser_id': brand['advertiser_id'],
-                    'advertiser_name': brand['advertiser_name'],
-                    'advertiser_logo': brand['advertiser_logo']
+                    'company_id': brand.get('company_id_out'),
+                    'company_name': brand.get('company_name'),
+                    'company_logo': brand.get('company_logo'),
+                    'company_is_verified': brand.get('company_is_verified'),
+                    'advertiser_id': brand.get('advertiser_id'),
+                    'advertiser_name': brand.get('advertiser_name'),
+                    'advertiser_email': brand.get('advertiser_email'),
                 }
     except HTTPException:
         raise
@@ -725,15 +760,15 @@ async def reinstate_campaign(campaign_id: int):
 @router.get("/recent/brands")
 async def get_recent_brands(limit: int = Query(default=5, le=20)):
     """Get most recent brand submissions.
-    Joins with advertiser_profiles via brand_ids array: bp.id = ANY(ap.brand_ids)"""
+    Post-restructure JOIN via brand_profile.company_id -> company_profile."""
     try:
         with get_user_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT bp.id, bp.name, bp.thumbnail, bp.status, bp.created_at,
-                           ap.company_name as advertiser_name
+                           cp.company_name AS company_name
                     FROM brand_profile bp
-                    LEFT JOIN advertiser_profiles ap ON bp.id = ANY(ap.brand_ids)
+                    LEFT JOIN company_profile cp ON bp.company_id = cp.id
                     ORDER BY bp.created_at DESC
                     LIMIT %s
                 """, (limit,))
@@ -747,7 +782,8 @@ async def get_recent_brands(limit: int = Query(default=5, le=20)):
                         'brand_logo': b['thumbnail'],
                         'verification_status': b['status'] or 'pending',
                         'created_at': str(b['created_at']) if b['created_at'] else None,
-                        'advertiser_name': b['advertiser_name']
+                        'company_name': b.get('company_name'),
+                        'advertiser_name': b.get('company_name'),  # alias for legacy callers
                     })
                 return result
     except Exception as e:
