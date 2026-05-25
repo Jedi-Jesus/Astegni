@@ -55,6 +55,7 @@ import os
 import sys
 
 import psycopg
+from psycopg.types.json import Jsonb
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -298,8 +299,12 @@ def apply_migration(dry_run: bool) -> None:
                             advertiser_id,
                             company_name, ap["industry"], ap["company_size"], ap["business_reg_no"], ap["tin_number"],
                             ap["website"], ap["address"], ap["city"], ap["company_description"],
-                            ap["company_email"], ap["company_phone"],
-                            ap["company_logo"], ap["business_license_url"], ap["tin_certificate_url"], ap["additional_docs_urls"],
+                            # Wrap JSONB fields explicitly so empty arrays don't get
+                            # auto-coerced to empty objects ({}). Default to [] when None.
+                            Jsonb(ap["company_email"] if ap["company_email"] is not None else []),
+                            Jsonb(ap["company_phone"] if ap["company_phone"] is not None else []),
+                            ap["company_logo"], ap["business_license_url"], ap["tin_certificate_url"],
+                            Jsonb(ap["additional_docs_urls"] if ap["additional_docs_urls"] is not None else []),
                             # Carry the user-level verification onto the auto-created first company.
                             ap["user_is_verified"], ap["user_verification_status"], ap["user_verification_method"],
                             ap["user_verified_at"], ap["user_rejected_at"],
