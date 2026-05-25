@@ -1,0 +1,117 @@
+<!-- ============================================
+     CREATE COMPANY MODAL
+     Modal for creating a new company under the current advertiser
+     ============================================ -->
+
+<div class="create-brand-modal-overlay" id="create-company-modal-overlay">
+    <div class="create-brand-modal-container">
+        <!-- Header -->
+        <div class="create-brand-modal-header">
+            <div class="create-brand-header-info">
+                <div class="create-brand-header-icon">
+                    <i class="fas fa-building-flag"></i>
+                </div>
+                <div>
+                    <h2 class="create-brand-modal-title">Create New Company</h2>
+                    <p class="create-brand-modal-subtitle">A company groups your brands and has its own KYC, billing, and team.</p>
+                </div>
+            </div>
+            <button class="create-brand-close-btn" onclick="CompaniesManager.closeCreateCompanyModal()" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="create-brand-modal-body">
+            <form id="create-company-form" onsubmit="CompaniesManager.submitCreateCompany(event)">
+                <!-- Company Name -->
+                <div class="create-brand-form-group">
+                    <label for="company-name-input">
+                        <i class="fas fa-tag"></i>
+                        Company Name *
+                    </label>
+                    <input type="text" id="company-name-input" placeholder="e.g. The Coca-Cola Company" required>
+                    <p class="create-brand-logo-hint">The legal entity that owns one or more brands. Used in B2 paths and on KYC.</p>
+                </div>
+
+                <!-- Industry -->
+                <div class="create-brand-form-group">
+                    <label for="company-industry-input">
+                        <i class="fas fa-industry"></i>
+                        Industry
+                    </label>
+                    <select id="company-industry-input">
+                        <option value="">Select industry... (optional)</option>
+                        <option value="Education">Education</option>
+                        <option value="Education Technology">Education Technology</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Food &amp; Beverage">Food &amp; Beverage</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Automotive">Automotive</option>
+                        <option value="Travel &amp; Tourism">Travel &amp; Tourism</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Non-Profit">Non-Profit</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Website -->
+                <div class="create-brand-form-group">
+                    <label for="company-website-input">
+                        <i class="fas fa-globe"></i>
+                        Website
+                    </label>
+                    <input type="url" id="company-website-input" placeholder="https://your-company.com">
+                </div>
+
+                <!-- Description -->
+                <div class="create-brand-form-group">
+                    <label for="company-description-input">
+                        <i class="fas fa-align-left"></i>
+                        Description
+                    </label>
+                    <textarea id="company-description-input" placeholder="What does this company do? (optional)" rows="3"></textarea>
+                </div>
+
+                <!-- Address -->
+                <div class="create-brand-form-group">
+                    <label for="company-address-input">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Address
+                    </label>
+                    <input type="text" id="company-address-input" placeholder="Street address (optional)">
+                </div>
+
+                <!-- City -->
+                <div class="create-brand-form-group">
+                    <label for="company-city-input">
+                        <i class="fas fa-city"></i>
+                        City
+                    </label>
+                    <input type="text" id="company-city-input" placeholder="e.g. Addis Ababa">
+                </div>
+
+                <p class="create-brand-logo-hint" style="margin-top: 1rem;">
+                    <i class="fas fa-info-circle"></i>
+                    Logo + KYC documents (business license, TIN) are uploaded after creation from the company detail view.
+                </p>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="create-brand-modal-footer">
+            <button type="button" class="create-brand-cancel-btn" onclick="CompaniesManager.closeCreateCompanyModal()">
+                Cancel
+            </button>
+            <button type="submit" form="create-company-form" class="create-brand-submit-btn" id="create-company-submit-btn">
+                <i class="fas fa-plus"></i>
+                Create Company
+            </button>
+        </div>
+    </div>
+</div>

@@ -137,7 +137,13 @@ const BrandsManager = {
             console.log('🏷️ window.API_BASE_URL:', window.API_BASE_URL);
             console.log('🏷️ hostname:', window.location.hostname);
 
-            const response = await fetch(`${apiUrl}/api/advertiser/brands`, {
+            // When user clicked into a company from CompaniesManager,
+            // scope the brand list to that company only.
+            const scopedUrl = this.currentCompanyId
+                ? `${apiUrl}/api/advertiser/brands?company_id=${this.currentCompanyId}`
+                : `${apiUrl}/api/advertiser/brands`;
+
+            const response = await fetch(scopedUrl, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1314,6 +1320,14 @@ const BrandsManager = {
                 brand_color: document.getElementById('brand-color-input').value,
                 social_links: {}
             };
+
+            // If user opened this from inside a company (CompaniesManager.openCompany),
+            // attach the company_id so the backend creates the brand under that company.
+            // Without this, the backend falls back to the advertiser's only company
+            // (works for single-company users; errors for multi-company users).
+            if (this.currentCompanyId) {
+                brandData.company_id = this.currentCompanyId;
+            }
 
             // Collect social links from dynamic fields
             const container = document.getElementById('brand-social-media-container');
