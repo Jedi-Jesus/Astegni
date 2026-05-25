@@ -3454,8 +3454,13 @@ const BrandsManager = {
             return;
         }
 
-        // Check if campaign is under verification
-        if (campaign.submit_for_verification) {
+        // Check if campaign is currently under verification (submitted but not yet decided).
+        // Verified/approved campaigns are editable; only pending-review campaigns are locked.
+        const pendingReview = campaign.submit_for_verification
+            && !campaign.is_verified
+            && campaign.verification_status !== 'verified'
+            && campaign.verification_status !== 'approved';
+        if (pendingReview) {
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast('❌ Cannot edit campaign while under verification', 'error');
             } else {
@@ -3824,7 +3829,12 @@ const BrandsManager = {
         const campaign = this.currentCampaign;
         if (!campaign) return;
 
-        const isUnderVerification = campaign.submit_for_verification;
+        // "Under verification" means submitted and still pending review.
+        // Once verified/approved, the campaign is editable again.
+        const isUnderVerification = campaign.submit_for_verification
+            && !campaign.is_verified
+            && campaign.verification_status !== 'verified'
+            && campaign.verification_status !== 'approved';
 
         // Get all upload buttons in the Images and Videos tabs
         const uploadButtons = document.querySelectorAll('.media-upload-btn');
@@ -4717,8 +4727,15 @@ const BrandsManager = {
 
     // Open media upload modal
     openMediaUploadModal(type = 'image') {
-        // Check if campaign is under verification
-        if (this.currentCampaign && this.currentCampaign.submit_for_verification) {
+        // Check if campaign is currently under verification (submitted but not yet decided).
+        // Verified/approved campaigns can have media uploaded; only pending-review is locked.
+        const c = this.currentCampaign;
+        const pendingReview = c
+            && c.submit_for_verification
+            && !c.is_verified
+            && c.verification_status !== 'verified'
+            && c.verification_status !== 'approved';
+        if (pendingReview) {
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast('❌ Cannot upload media while campaign is under verification', 'error');
             } else {

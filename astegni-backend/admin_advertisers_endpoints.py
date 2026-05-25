@@ -587,6 +587,7 @@ async def verify_campaign(campaign_id: int, admin_id: Optional[int] = None):
                     UPDATE campaign_profile
                     SET verification_status = 'verified',
                         is_verified = TRUE,
+                        submit_for_verification = FALSE,
                         status_by = %s,
                         status_at = NOW(),
                         updated_at = NOW()
@@ -698,6 +699,7 @@ async def reinstate_campaign(campaign_id: int):
                     UPDATE campaign_profile
                     SET verification_status = 'verified',
                         is_verified = TRUE,
+                        submit_for_verification = FALSE,
                         status_reason = NULL,
                         status_at = NOW(),
                         updated_at = NOW()
