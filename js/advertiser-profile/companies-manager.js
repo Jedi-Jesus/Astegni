@@ -208,8 +208,11 @@ const CompaniesManager = {
             }
         }
 
-        // Update brands-panel header to show "Brands for <company>"
-        const headerTitle = document.querySelector('.brands-panel-title');
+        // Update brands-panel header to show "Brands for <company>".
+        // Scope the selectors to #brands-panel — the Companies panel has
+        // an element with the same class, so an unscoped querySelector
+        // would update the wrong (invisible) one.
+        const headerTitle = document.querySelector('#brands-panel .brands-panel-title');
         if (headerTitle) {
             headerTitle.innerHTML = `
                 <button type="button" onclick="CompaniesManager.backToCompanies()" class="brands-back-btn" title="Back to companies">
@@ -219,7 +222,7 @@ const CompaniesManager = {
                 ${this._escape(company.company_name)}'s Brands
             `;
         }
-        const headerSubtitle = document.querySelector('.brands-panel-subtitle');
+        const headerSubtitle = document.querySelector('#brands-panel .brands-panel-subtitle');
         if (headerSubtitle) {
             headerSubtitle.textContent = company.is_verified
                 ? 'Manage this company\'s brands and their campaigns.'
@@ -239,12 +242,13 @@ const CompaniesManager = {
             BrandsManager.currentCompanyName = null;
             BrandsManager.currentCompanyVerified = null;
         }
-        // Restore default brands-panel header
-        const headerTitle = document.querySelector('.brands-panel-title');
+        // Restore default brands-panel header (scoped to #brands-panel —
+        // see openCompany() for why this matters).
+        const headerTitle = document.querySelector('#brands-panel .brands-panel-title');
         if (headerTitle) {
             headerTitle.innerHTML = `<i class="fas fa-building"></i> My Brands`;
         }
-        const headerSubtitle = document.querySelector('.brands-panel-subtitle');
+        const headerSubtitle = document.querySelector('#brands-panel .brands-panel-subtitle');
         if (headerSubtitle) {
             headerSubtitle.textContent = 'Manage your brands and their campaigns';
         }
