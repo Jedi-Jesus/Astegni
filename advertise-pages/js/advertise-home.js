@@ -22,8 +22,8 @@
     const SURFACE = (window.ASTEGNI_CONFIG && window.ASTEGNI_CONFIG.surface) || 'advertise';
 
     const MODAL_FILES = {
-        login: 'modals/login-modal.html',
-        signup: 'modals/signup-modal.html'
+        login: '/advertise-pages/modals/login-modal.html',
+        signup: '/advertise-pages/modals/signup-modal.html'
     };
 
     let modalsLoaded = false;
