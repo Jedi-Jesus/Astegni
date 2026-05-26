@@ -122,17 +122,27 @@
 
     function storeSession(tokenResponse) {
         if (!tokenResponse || !tokenResponse.access_token) return;
+        // Match the keys js/root/auth.js (AuthManager.restoreSession) looks for:
+        // 'token' (also 'access_token' for compatibility), 'currentUser', 'userRole'.
+        // Without these, the shared auth manager treats the user as logged-out and
+        // some legacy redirect kicks them back to astegni.com/index.html.
         localStorage.setItem('token', tokenResponse.access_token);
+        localStorage.setItem('access_token', tokenResponse.access_token);
         if (tokenResponse.refresh_token) {
             localStorage.setItem('refresh_token', tokenResponse.refresh_token);
         }
         if (tokenResponse.user) {
-            localStorage.setItem('user', JSON.stringify(tokenResponse.user));
+            localStorage.setItem('currentUser', JSON.stringify(tokenResponse.user));
+            // Force the advertise surface's view of the role, regardless of any
+            // stale active_role on the user object.
+            localStorage.setItem('userRole', 'advertiser');
         }
     }
 
     function redirectToProfile() {
-        window.location.href = 'advertiser-profile.html';
+        // Use absolute path so the nginx rewrite serves the right file
+        // (root docroot, /advertiser-profile.html → /advertise-pages/advertiser-profile.html).
+        window.location.href = '/advertiser-profile.html';
     }
 
     // ---------- Signup ----------
