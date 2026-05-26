@@ -9,7 +9,12 @@
     const hostname = window.location.hostname;
 
     // Production domains
-    const productionDomains = ['astegni.com', 'www.astegni.com'];
+    const productionDomains = [
+        'astegni.com',
+        'www.astegni.com',
+        'admin.astegni.com',
+        'advertise.astegni.com'
+    ];
     const isProduction = productionDomains.includes(hostname);
 
     // Set API base URL based on environment
