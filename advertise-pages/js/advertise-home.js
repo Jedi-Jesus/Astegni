@@ -315,4 +315,25 @@
             // Ignore corrupt localStorage; user can still log in manually.
         }
     });
+
+    // Auto-pop signup modal when arriving from a "Book now" link on astegni.com
+    // (advertise-with-us-cta.js sends users here with ?signup=1).
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const which = params.get('signup') === '1' ? 'signup'
+                        : params.get('login') === '1' ? 'login'
+                        : null;
+            if (!which) return;
+
+            // Defer slightly so any auto-redirect logic above gets to run first.
+            setTimeout(() => {
+                if (typeof window.openAuthModal === 'function') {
+                    window.openAuthModal(which);
+                }
+            }, 100);
+        } catch (e) {
+            // Ignore — the page is still usable; the user can click the CTA manually.
+        }
+    });
 })();

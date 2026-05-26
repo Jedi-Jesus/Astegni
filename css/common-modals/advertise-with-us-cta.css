@@ -1,0 +1,410 @@
+/* ============================================
+   Advertise With Us CTA Strip + Pricing Modal
+   Injected by js/common-modals/advertise-with-us-cta.js
+   below the first .leaderboard-banner on every page
+   that has one (index, branch/*, profile-pages/*, view-profiles/*).
+   ============================================ */
+
+/* ---------- CTA Strip ---------- */
+
+.advertise-with-us-cta {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto 2.5rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(79, 70, 229, 0.06));
+    border: 1px solid rgba(245, 158, 11, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.advertise-with-us-cta:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.advertise-with-us-cta__copy {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.advertise-with-us-cta__icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+}
+
+.advertise-with-us-cta__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.advertise-with-us-cta__headline {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.advertise-with-us-cta__sub {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.advertise-with-us-cta__action {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.advertise-with-us-cta__action:hover {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.32);
+}
+
+.advertise-with-us-cta__action:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 600px) {
+    .advertise-with-us-cta {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .advertise-with-us-cta__copy {
+        justify-content: center;
+    }
+    .advertise-with-us-cta__action {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* ---------- Pricing Modal ---------- */
+
+.aw-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: awFade 0.18s ease-out;
+}
+.aw-modal.aw-hidden { display: none; }
+
+.aw-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(3px);
+    cursor: pointer;
+}
+
+.aw-modal__content {
+    position: relative;
+    z-index: 1;
+    background: var(--card-bg, #ffffff);
+    color: var(--text-primary, #111827);
+    border-radius: 18px;
+    max-width: 1080px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.aw-modal__close {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+    transition: background 0.15s ease;
+}
+.aw-modal__close:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.aw-modal__header {
+    position: relative;
+    padding: 2.2rem 2rem 1.6rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #db2777 100%);
+    color: #fff;
+    overflow: hidden;
+}
+.aw-modal__header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.18), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.10), transparent 55%);
+    pointer-events: none;
+}
+.aw-modal__eyebrow {
+    position: relative;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.95;
+    margin: 0 0 0.5rem;
+}
+.aw-modal__title {
+    position: relative;
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+    line-height: 1.15;
+}
+.aw-modal__title em {
+    font-style: normal;
+    background: linear-gradient(180deg, #fef3c7, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.aw-modal__lede {
+    position: relative;
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    opacity: 0.95;
+    max-width: 640px;
+}
+
+.aw-modal__body {
+    overflow-y: auto;
+    padding: 1.75rem 2rem 2rem;
+    flex: 1;
+}
+
+.aw-modal__loading,
+.aw-modal__error {
+    text-align: center;
+    color: var(--text-secondary, #6b7280);
+    padding: 2rem 1rem;
+}
+.aw-modal__error {
+    color: #b91c1c;
+}
+
+.aw-modal__base-rate {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary, #6b7280);
+}
+.aw-modal__base-rate strong {
+    color: var(--text-primary, #111827);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.aw-tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.aw-tier-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem 1.25rem;
+    text-align: center;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.aw-tier-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.aw-tier-card--popular {
+    border-color: rgba(245, 158, 11, 0.55);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15);
+}
+.aw-tier-card--popular::after {
+    content: 'Most popular';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.aw-tier-card__label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary, #6b7280);
+    margin: 0 0 0.4rem;
+}
+
+.aw-tier-card__views {
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #111827);
+    margin: 0 0 0.2rem;
+    line-height: 1.05;
+}
+.aw-tier-card__views-suffix {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+    margin: 0 0 1rem;
+}
+
+.aw-tier-card__price {
+    font-size: 1rem;
+    color: var(--text-secondary, #6b7280);
+    margin: 0 0 0.2rem;
+}
+.aw-tier-card__price strong {
+    color: var(--text-primary, #111827);
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.aw-tier-card__per {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #6b7280);
+    margin: 0 0 1.1rem;
+}
+
+.aw-tier-card__total {
+    font-size: 0.88rem;
+    color: var(--text-secondary, #6b7280);
+    margin: 0 0 1.2rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    width: 100%;
+}
+.aw-tier-card__total strong {
+    color: var(--text-primary, #111827);
+    font-weight: 700;
+}
+
+.aw-tier-card__cta {
+    margin-top: auto;
+    width: 100%;
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+.aw-tier-card__cta:hover {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+.aw-tier-card__cta:active {
+    transform: translateY(1px);
+}
+
+.aw-modal__fineprint {
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.82rem;
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+}
+
+@keyframes awFade {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Dark mode */
+[data-theme="dark"] .advertise-with-us-cta {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(79, 70, 229, 0.12));
+    border-color: rgba(245, 158, 11, 0.3);
+}
+[data-theme="dark"] .aw-modal__content {
+    background: #1e293b;
+    color: #f1f5f9;
+}
+[data-theme="dark"] .aw-tier-card {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .aw-tier-card:hover {
+    border-color: rgba(245, 158, 11, 0.5);
+}
+[data-theme="dark"] .aw-tier-card__views,
+[data-theme="dark"] .aw-tier-card__price strong,
+[data-theme="dark"] .aw-tier-card__total strong {
+    color: #f1f5f9;
+}
+[data-theme="dark"] .aw-tier-card__total {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .aw-modal__base-rate strong {
+    color: #f1f5f9;
+}

@@ -468,11 +468,18 @@ class GoogleOAuthManager {
                 student: '/profile-pages/student-profile.html',
                 tutor: '/profile-pages/tutor-profile.html',
                 parent: '/profile-pages/parent-profile.html',
-                advertiser: '/profile-pages/advertiser-profile.html',
                 user: '/profile-pages/user-profile.html'
             };
 
-            const destination = profilePages[role] || '/index.html';
+            // Advertiser dashboards live on advertise.astegni.com, not /profile-pages/.
+            let destination = profilePages[role];
+            if (!destination && role === 'advertiser') {
+                const host = window.location.hostname;
+                destination = (host === 'astegni.com' || host === 'www.astegni.com' || host === 'advertise.astegni.com')
+                    ? 'https://advertise.astegni.com/advertiser-profile.html'
+                    : '/advertise-pages/advertiser-profile.html';
+            }
+            destination = destination || '/index.html';
             window.location.href = destination;
         }, 1500);
     }

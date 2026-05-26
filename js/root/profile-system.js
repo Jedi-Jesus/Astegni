@@ -163,6 +163,17 @@ const ProfileSystem = (function() {
             return '/index.html';
         }
 
+        // Advertiser profiles live on advertise.astegni.com, not in /profile-pages/.
+        // Send the user directly to the subdomain instead of through the redirect stub.
+        if (role === 'advertiser') {
+            const host = window.location.hostname;
+            if (host === 'astegni.com' || host === 'www.astegni.com' || host === 'advertise.astegni.com') {
+                return 'https://advertise.astegni.com/advertiser-profile.html';
+            }
+            // Local dev: dev-server serves the repo root on a single port.
+            return '/advertise-pages/advertiser-profile.html';
+        }
+
         const currentPath = window.location.pathname;
         const isInProfilePages = currentPath.includes('/profile-pages/');
         const isInViewProfiles = currentPath.includes('/view-profiles/');
