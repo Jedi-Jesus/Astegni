@@ -214,7 +214,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
           - role='advertiser' is rejected; advertiser signup is only offered on the subdomain
     """
     # Normalize surface — anything other than 'advertise' is treated as 'platform'.
-    surface = (user_data.surface or "platform").lower()
+    surface = (getattr(user_data, 'surface', None) or "platform").lower()
     if surface not in ("platform", "advertise"):
         surface = "platform"
 
@@ -324,7 +324,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 elif user_data.role == "advertiser":
                     advertiser_profile = AdvertiserProfile(
                         user_id=existing_user.id,
-                        company_name=(user_data.company_name or None),
+                        company_name=(getattr(user_data, 'company_name', None) or None),
                     )
                     db.add(advertiser_profile)
                     db.commit()
@@ -404,7 +404,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         first_name=user_data.first_name,
         father_name=user_data.father_name,
         grandfather_name=user_data.grandfather_name,
-        last_name=user_data.last_name,
+        last_name=getattr(user_data, 'last_name', None),
         email=user_data.email,
         phone=user_data.phone,
         password_hash=hash_password(user_data.password),
@@ -459,7 +459,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         elif user_data.role == "advertiser":
             advertiser_profile = AdvertiserProfile(
                 user_id=new_user.id,
-                company_name=(user_data.company_name or None),
+                company_name=(getattr(user_data, 'company_name', None) or None),
             )
             db.add(advertiser_profile)
         elif user_data.role == "admin":

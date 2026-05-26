@@ -92,10 +92,12 @@ python test_chat_encryption.py
 
 ### Backend Structure
 - `app.py` - Main entry point
-- `app.py modules/models.py` - User DB models
-- `app.py modules/admin_models.py` - Admin DB models
-- `app.py modules/routes.py` - Core endpoints
+- `routes.py` - Core endpoints (sibling to `app.py`, loaded via `from routes import router`)
+- `app.py modules/models.py` - User DB models (loaded via the `sys.path.append('app.py modules')` line in `app.py`)
+- `app.py modules/admin_models.py` - Admin DB models (same import mechanism)
 - 30+ endpoint modules: `chat_endpoints.py`, `whiteboard_endpoints.py`, `blog_endpoints.py`, etc.
+
+**Important**: `astegni-backend/routes.py` is the actually-loaded routes file. There is historically a copy at `astegni-backend/app.py modules/routes.py` — that path is **dead** (shadowed by the sibling because the script directory beats `sys.path.append`). Edit the sibling.
 
 ### Frontend Structure
 - **No Build Process** - Pure HTML/CSS/JS
@@ -250,7 +252,7 @@ settings = admin_db.query(SystemSettings).all()
 ## Critical Files
 
 ### Backend
-- `app.py`, `app.py modules/routes.py`, `app.py modules/models.py`, `app.py modules/admin_models.py`
+- `app.py`, `routes.py` (sibling to `app.py`, NOT inside `app.py modules/`), `app.py modules/models.py`, `app.py modules/admin_models.py`
 - `utils.py`, `encryption_service.py`, `backblaze_service.py`, `websocket_manager.py`
 - `chat_endpoints.py`, `whiteboard_endpoints.py`
 
