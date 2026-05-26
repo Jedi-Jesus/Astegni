@@ -205,7 +205,35 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
     NEW BEHAVIOR: If no role is provided, user is created without any roles.
     Users can add roles later through the role management system.
+
+    SURFACE ENFORCEMENT (Phase 2 of advertise-subdomain split):
+      * surface='advertise' (request originated at advertise.astegni.com):
+          - role is forced to 'advertiser' (any other value is rejected)
+          - existing accounts get the advertiser role added on top of their existing roles
+      * surface='platform' (request originated at astegni.com — the default):
+          - role='advertiser' is rejected; advertiser signup is only offered on the subdomain
     """
+    # Normalize surface — anything other than 'advertise' is treated as 'platform'.
+    surface = (user_data.surface or "platform").lower()
+    if surface not in ("platform", "advertise"):
+        surface = "platform"
+
+    if surface == "advertise":
+        if user_data.role and user_data.role != "advertiser":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="advertise.astegni.com only supports advertiser signup."
+            )
+        # If no role was provided at all on the advertise surface, force it.
+        user_data.role = "advertiser"
+    else:
+        # Platform surface: advertiser signup must happen at advertise.astegni.com
+        if user_data.role == "advertiser":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Advertiser signup has moved to advertise.astegni.com. Please sign up there instead."
+            )
+
     # Check if user exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
 
@@ -294,7 +322,10 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                     db.add(parent_profile)
                     db.commit()
                 elif user_data.role == "advertiser":
-                    advertiser_profile = AdvertiserProfile(user_id=existing_user.id)
+                    advertiser_profile = AdvertiserProfile(
+                        user_id=existing_user.id,
+                        company_name=(user_data.company_name or None),
+                    )
                     db.add(advertiser_profile)
                     db.commit()
                 elif user_data.role == "admin":
@@ -373,6 +404,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         first_name=user_data.first_name,
         father_name=user_data.father_name,
         grandfather_name=user_data.grandfather_name,
+        last_name=user_data.last_name,
         email=user_data.email,
         phone=user_data.phone,
         password_hash=hash_password(user_data.password),
@@ -424,6 +456,12 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 rating_count=0
             )
             db.add(parent_profile)
+        elif user_data.role == "advertiser":
+            advertiser_profile = AdvertiserProfile(
+                user_id=new_user.id,
+                company_name=(user_data.company_name or None),
+            )
+            db.add(advertiser_profile)
         elif user_data.role == "admin":
             # Create admin_profile record using raw SQL
             db.execute(text("""
@@ -542,7 +580,13 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     )
 
 @router.post("/api/login", response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db), restore_account: bool = False, otp_code: str = None):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+    restore_account: bool = False,
+    otp_code: str = None,
+    surface: str = Form("platform"),
+):
     """
     User login endpoint
 
@@ -552,8 +596,19 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     NEW: Also handles pending parent invitations (temp password login).
     If email not found in users table, check parent_invitations for new user invitations.
+
+    SURFACE ENFORCEMENT (Phase 2 of advertise-subdomain split):
+      * surface='advertise' — request originated at advertise.astegni.com.
+        After credentials verify, the user MUST have 'advertiser' in their roles
+        list; otherwise we return 403 with a clear "sign up at advertise.astegni.com"
+        message and DO NOT issue a token.
+      * surface='platform' (default) — no extra checks; behaves as before.
     """
     from sqlalchemy import text
+
+    surface = (surface or "platform").lower()
+    if surface not in ("platform", "advertise"):
+        surface = "platform"
 
     # Query users table only, NOT admin_profile
     user = db.query(User).filter(User.email == form_data.username).first()
@@ -651,6 +706,17 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
         )
+
+    # Surface boundary: advertise.astegni.com only welcomes advertisers.
+    # We check AFTER password verification on purpose — exposing "this email exists
+    # but isn't an advertiser" pre-auth would be an account-enumeration leak.
+    if surface == "advertise":
+        user_roles = user.roles or []
+        if "advertiser" not in user_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This account doesn't have advertiser access. Sign up at advertise.astegni.com to add it."
+            )
 
     # Check if account is scheduled for deletion
     if user.account_status == 'pending_deletion':
@@ -786,6 +852,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     # CRITICAL FIX: Get first ACTIVE role instead of using user.active_role directly
     # This ensures deactivated roles are not used for login
     active_role = get_first_active_role(user, db)
+
+    # On the advertise surface, force the JWT and stored active_role to 'advertiser'
+    # so the dashboard loads in the right role context — even if the user normally
+    # lives on the platform side as a student/tutor/parent.
+    if surface == "advertise" and "advertiser" in (user.roles or []):
+        active_role = "advertiser"
 
     # Update user's active_role in database to match first active role
     if active_role != user.active_role:

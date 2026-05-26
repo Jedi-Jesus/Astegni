@@ -974,6 +974,7 @@ class UserRegister(BaseModel):
     first_name: Optional[str] = None
     father_name: Optional[str] = None
     grandfather_name: Optional[str] = None  # OPTIONAL for Ethiopian naming convention
+    last_name: Optional[str] = None  # International naming convention
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     password: str
@@ -982,6 +983,8 @@ class UserRegister(BaseModel):
     role: Optional[str] = None  # NO DEFAULT - users register without roles, add roles later
     department: Optional[str] = None  # For admin role: manage-campaigns, manage-schools, etc.
     referral_code: Optional[str] = None  # Referral code from shared link
+    surface: Optional[str] = "platform"  # Origin surface: 'platform' (astegni.com) or 'advertise' (advertise.astegni.com)
+    company_name: Optional[str] = None  # Advertiser-only: pre-fill advertiser_profiles.company_name on first signup
 
     @validator('phone', always=True)
     def check_email_or_phone(cls, v, values):
