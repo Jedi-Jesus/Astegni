@@ -378,9 +378,11 @@ async function performLogout(logoutAll = false) {
             showNotification('You have been logged out successfully', 'success');
         }
 
-        // Redirect to home page after a short delay
+        // Redirect to the current surface's home (astegni.com/, advertise.astegni.com/,
+        // admin.astegni.com/) — each surface's root serves its own marketing/login page,
+        // so using '/' keeps the user on the same domain they were already on.
         setTimeout(() => {
-            window.location.href = '/index.html';
+            window.location.href = '/';
         }, 500);
 
     } catch (error) {

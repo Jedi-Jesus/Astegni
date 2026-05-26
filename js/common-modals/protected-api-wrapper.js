@@ -150,7 +150,7 @@ const ProtectedAPI = {
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Session Timed Out</h2>
                 <p class="text-gray-600 mb-6">You've been inactive for 10 minutes. Please verify your identity to continue.</p>
                 <div class="flex gap-3 justify-center">
-                    <button onclick="window.location.href='../index.html'" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    <button onclick="window.location.href='/'" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                         Go Home
                     </button>
                     <button onclick="ProtectedAPI.retryInactivityVerification()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">

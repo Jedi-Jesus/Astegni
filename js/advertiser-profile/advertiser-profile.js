@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof AuthManager === 'undefined' || typeof window.AuthManager === 'undefined') {
             console.error('❌ AuthManager not loaded! Redirecting to login...');
             alert('Authentication manager not loaded. Please refresh the page.');
-            window.location.href = '../index.html';
+            window.location.href = '/';
             return;
         }
 
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!window.AuthManager.isAuthenticated()) {
             console.warn('⚠️ User not authenticated. Redirecting to login...');
             alert('Please log in to access your advertiser profile.');
-            window.location.href = '../index.html';
+            window.location.href = '/';
             return;
         }
 
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (normalizedRole !== 'advertiser') {
                 console.warn(`⚠️ [AdvertiserProfile] User role is '${normalizedRole}', not 'advertiser'. Redirecting...`);
                 alert(`This page is for advertisers only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your advertiser role or log in with an advertiser account.`);
-                window.location.href = '../index.html';
+                window.location.href = '/';
                 return;
             }
         }
@@ -2255,7 +2255,7 @@ function confirmSignOut() {
         closeModal('signout-modal');
         notifications.show('You have been signed out successfully', 'success');
         setTimeout(() => {
-            window.location.href = '../index.html';
+            window.location.href = '/';
         }, 1000);
     }, 1500);
 }
