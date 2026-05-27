@@ -730,8 +730,13 @@ function updateProfilePictures() {
                 localStorage.setItem('userRole', activeRole);
             }
 
-            // Filter out admin roles - admins should only access through admin-index.html
-            const userFacingRoles = userRoles.filter(role => role !== 'admin');
+            // Hide certain roles from the astegni.com role-switcher:
+            //   - 'admin'      -> admins only access via admin.astegni.com
+            //   - 'advertiser' -> advertisers only access via advertise.astegni.com
+            //                     (directly typing the URL or via a "Book now" CTA)
+            const userFacingRoles = userRoles.filter(
+                role => role !== 'admin' && role !== 'advertiser'
+            );
 
             if (userFacingRoles.length === 0) {
                 // No roles at all - show message
