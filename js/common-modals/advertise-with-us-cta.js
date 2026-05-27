@@ -26,14 +26,14 @@
     /**
      * Pick the right destination on advertise.astegni.com based on the user's
      * current state on astegni.com:
-     *   - logged in WITH advertiser role -> login modal pre-filled with email
-     *     (their session here doesn't carry across the subdomain, but they
-     *     only have to type their password once)
+     *   - logged in WITH advertiser role -> plain login modal (?login=1).
+     *     We deliberately do NOT pass their email. Sessions don't carry
+     *     across subdomains and we don't want identity to leak through the
+     *     URL — the user types email + password fresh.
      *   - logged in WITHOUT advertiser role -> "choose email" modal asks
      *     whether to add the advertiser role to their existing account
-     *     (same email) or sign up with a different email. The subdomain
-     *     reads ?addrole=1&email=... to show that prompt.
-     *   - logged out -> plain signup (original behavior)
+     *     (same email) or sign up with a different email. ?addrole=1&email=…
+     *   - logged out -> plain signup (?signup=1)
      */
     function buildAdvertiseUrl() {
         try {
@@ -41,16 +41,15 @@
             const token = localStorage.getItem('token');
             if (token && userJson) {
                 const user = JSON.parse(userJson);
-                const email = user && user.email;
                 const roles = (user && user.roles) || [];
-                const hasAdvertiser = roles.includes('advertiser');
+                if (roles.includes('advertiser')) {
+                    // No email pre-fill — clean login.
+                    return ADVERTISE_BASE + '?login=1';
+                }
+                const email = user && user.email;
                 if (email) {
                     const q = new URLSearchParams();
-                    if (hasAdvertiser) {
-                        q.set('login', '1');
-                    } else {
-                        q.set('addrole', '1');
-                    }
+                    q.set('addrole', '1');
                     q.set('email', email);
                     return ADVERTISE_BASE + '?' + q.toString();
                 }
