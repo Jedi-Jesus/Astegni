@@ -23,7 +23,8 @@
 
     const MODAL_FILES = {
         login: '/advertise-pages/modals/login-modal.html',
-        signup: '/advertise-pages/modals/signup-modal.html'
+        signup: '/advertise-pages/modals/signup-modal.html',
+        'choose-email': '/advertise-pages/modals/choose-email-modal.html'
     };
 
     let modalsLoaded = false;
@@ -73,8 +74,28 @@
         // Esc key
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                ['adv-login-modal', 'adv-signup-modal'].forEach(closeAuthModal);
+                ['adv-login-modal', 'adv-signup-modal', 'adv-choose-email-modal'].forEach(closeAuthModal);
             }
+        });
+
+        // Choose-email modal: card click -> open signup with (or without) pre-filled email
+        document.querySelectorAll('#adv-choose-email-modal [data-choice]').forEach(card => {
+            card.addEventListener('click', () => {
+                const choice = card.getAttribute('data-choice');
+                const email = card.closest('#adv-choose-email-modal')
+                    ?.dataset.email || '';
+                closeAuthModal('adv-choose-email-modal');
+                window.openAuthModal('signup').then(() => {
+                    if (choice === 'same' && email) {
+                        const input = document.getElementById('adv-signup-email');
+                        if (input) {
+                            input.value = email;
+                            const first = document.getElementById('adv-signup-first-name');
+                            if (first) first.focus();
+                        }
+                    }
+                });
+            });
         });
     }
 
@@ -277,7 +298,7 @@
             return;
         }
         // Hide any other auth modal
-        ['login', 'signup'].forEach(k => {
+        ['login', 'signup', 'choose-email'].forEach(k => {
             if (k !== which) closeAuthModal('adv-' + k + '-modal');
         });
         showModal('adv-' + which + '-modal');
@@ -316,29 +337,44 @@
         }
     });
 
-    // Auto-pop signup/login modal when arriving from a "Book now" link on astegni.com
-    // (advertise-with-us-cta.js sends users here with ?signup=1 or ?login=1, and
-    // optionally ?email=user@example.com so the form is pre-filled).
+    // Auto-pop a modal when arriving from a "Book now" link on astegni.com.
+    // advertise-with-us-cta.js sends users here with one of:
+    //   ?signup=1                   - logged out on astegni.com
+    //   ?login=1&email=...          - logged in WITH advertiser role
+    //   ?addrole=1&email=...        - logged in WITHOUT advertiser role
+    //                                  -> show the "same email or different?" prompt
     document.addEventListener('DOMContentLoaded', () => {
         try {
             const params = new URLSearchParams(window.location.search);
-            const which = params.get('signup') === '1' ? 'signup'
-                        : params.get('login') === '1' ? 'login'
-                        : null;
-            if (!which) return;
-
             const prefillEmail = params.get('email') || '';
+
+            let which = null;
+            if (params.get('addrole') === '1') which = 'choose-email';
+            else if (params.get('signup') === '1') which = 'signup';
+            else if (params.get('login') === '1') which = 'login';
+            if (!which) return;
 
             // Defer slightly so the modals get fetched and inserted into the DOM first.
             setTimeout(async () => {
                 if (typeof window.openAuthModal !== 'function') return;
                 await window.openAuthModal(which);
+
+                if (which === 'choose-email') {
+                    // Stash the email on the modal so the card click can read it later,
+                    // and show it in the header copy.
+                    const modalEl = document.getElementById('adv-choose-email-modal');
+                    if (modalEl && prefillEmail) {
+                        modalEl.dataset.email = prefillEmail;
+                        const display = document.getElementById('adv-choose-email-display');
+                        if (display) display.textContent = prefillEmail;
+                    }
+                    return;
+                }
+
                 if (prefillEmail) {
                     const input = document.getElementById('adv-' + which + '-email');
                     if (input) {
                         input.value = prefillEmail;
-                        // If the email is pre-filled, focus the password field
-                        // (the form's normal first-input-focus would steal focus).
                         const pwd = document.getElementById('adv-' + which + '-password');
                         if (pwd) pwd.focus();
                     }

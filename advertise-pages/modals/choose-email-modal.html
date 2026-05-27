@@ -1,0 +1,47 @@
+<div id="adv-choose-email-modal" class="adv-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adv-choose-email-title">
+    <div class="adv-modal-backdrop" data-close="choose-email"></div>
+    <div class="adv-modal-content">
+        <button class="adv-modal-close" data-close="choose-email" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="adv-modal-header">
+            <h2 id="adv-choose-email-title">Add advertising to your account?</h2>
+            <p>
+                We noticed you&rsquo;re already signed in on Astegni as
+                <strong id="adv-choose-email-display">your account</strong>.
+                Use the same email here, or create a separate advertiser account?
+            </p>
+        </div>
+
+        <div class="adv-choose-email-options">
+            <button type="button" class="adv-choice-card" data-choice="same">
+                <span class="adv-choice-card__icon">
+                    <i class="fas fa-link"></i>
+                </span>
+                <span class="adv-choice-card__title">Use the same email</span>
+                <span class="adv-choice-card__desc">
+                    Adds the advertiser role to your existing account. One login, one password,
+                    switch between your student/tutor/parent profile and advertiser dashboard anytime.
+                </span>
+                <span class="adv-choice-card__cta">
+                    Continue with same email <i class="fas fa-arrow-right"></i>
+                </span>
+            </button>
+
+            <button type="button" class="adv-choice-card" data-choice="different">
+                <span class="adv-choice-card__icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="adv-choice-card__title">Use a different email</span>
+                <span class="adv-choice-card__desc">
+                    Keep your advertiser identity completely separate. Use this if the
+                    account is for a different person, a different brand, or your company.
+                </span>
+                <span class="adv-choice-card__cta">
+                    Sign up with a different email <i class="fas fa-arrow-right"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

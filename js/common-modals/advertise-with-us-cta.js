@@ -29,9 +29,10 @@
      *   - logged in WITH advertiser role -> login modal pre-filled with email
      *     (their session here doesn't carry across the subdomain, but they
      *     only have to type their password once)
-     *   - logged in WITHOUT advertiser role -> signup modal pre-filled with
-     *     email (Phase 2 backend turns "existing email + matching password +
-     *     surface=advertise" into "add advertiser role to existing account")
+     *   - logged in WITHOUT advertiser role -> "choose email" modal asks
+     *     whether to add the advertiser role to their existing account
+     *     (same email) or sign up with a different email. The subdomain
+     *     reads ?addrole=1&email=... to show that prompt.
      *   - logged out -> plain signup (original behavior)
      */
     function buildAdvertiseUrl() {
@@ -45,7 +46,11 @@
                 const hasAdvertiser = roles.includes('advertiser');
                 if (email) {
                     const q = new URLSearchParams();
-                    q.set(hasAdvertiser ? 'login' : 'signup', '1');
+                    if (hasAdvertiser) {
+                        q.set('login', '1');
+                    } else {
+                        q.set('addrole', '1');
+                    }
                     q.set('email', email);
                     return ADVERTISE_BASE + '?' + q.toString();
                 }
