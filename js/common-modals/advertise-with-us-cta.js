@@ -33,7 +33,9 @@
      *   - logged in WITHOUT advertiser role -> "choose email" modal asks
      *     whether to add the advertiser role to their existing account
      *     (same email) or sign up with a different email. ?addrole=1&email=…
-     *   - logged out -> plain signup (?signup=1)
+     *   - logged out -> drop them on the marketing home with no auto-pop.
+     *     They can read the pitch and pick "Get started" or "Log in" on their
+     *     own. Auto-popping signup felt too aggressive for a cold visitor.
      */
     function buildAdvertiseUrl() {
         try {
@@ -55,9 +57,9 @@
                 }
             }
         } catch (e) {
-            // localStorage parse failed; fall through to plain signup.
+            // localStorage parse failed; fall through to marketing home.
         }
-        return ADVERTISE_BASE + '?signup=1';
+        return ADVERTISE_BASE;
     }
 
     let modalRoot = null;
