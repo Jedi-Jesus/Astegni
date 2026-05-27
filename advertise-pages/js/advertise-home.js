@@ -316,8 +316,9 @@
         }
     });
 
-    // Auto-pop signup modal when arriving from a "Book now" link on astegni.com
-    // (advertise-with-us-cta.js sends users here with ?signup=1).
+    // Auto-pop signup/login modal when arriving from a "Book now" link on astegni.com
+    // (advertise-with-us-cta.js sends users here with ?signup=1 or ?login=1, and
+    // optionally ?email=user@example.com so the form is pre-filled).
     document.addEventListener('DOMContentLoaded', () => {
         try {
             const params = new URLSearchParams(window.location.search);
@@ -326,10 +327,21 @@
                         : null;
             if (!which) return;
 
-            // Defer slightly so any auto-redirect logic above gets to run first.
-            setTimeout(() => {
-                if (typeof window.openAuthModal === 'function') {
-                    window.openAuthModal(which);
+            const prefillEmail = params.get('email') || '';
+
+            // Defer slightly so the modals get fetched and inserted into the DOM first.
+            setTimeout(async () => {
+                if (typeof window.openAuthModal !== 'function') return;
+                await window.openAuthModal(which);
+                if (prefillEmail) {
+                    const input = document.getElementById('adv-' + which + '-email');
+                    if (input) {
+                        input.value = prefillEmail;
+                        // If the email is pre-filled, focus the password field
+                        // (the form's normal first-input-focus would steal focus).
+                        const pwd = document.getElementById('adv-' + which + '-password');
+                        if (pwd) pwd.focus();
+                    }
                 }
             }, 100);
         } catch (e) {

@@ -20,8 +20,41 @@
     if (window.__AdvertiseWithUsCTAInitialized) return;
     window.__AdvertiseWithUsCTAInitialized = true;
 
-    const ADVERTISE_HOST = 'https://advertise.astegni.com/?signup=1';
+    const ADVERTISE_BASE = 'https://advertise.astegni.com/';
     const API = window.API_BASE_URL || 'http://localhost:8000';
+
+    /**
+     * Pick the right destination on advertise.astegni.com based on the user's
+     * current state on astegni.com:
+     *   - logged in WITH advertiser role -> login modal pre-filled with email
+     *     (their session here doesn't carry across the subdomain, but they
+     *     only have to type their password once)
+     *   - logged in WITHOUT advertiser role -> signup modal pre-filled with
+     *     email (Phase 2 backend turns "existing email + matching password +
+     *     surface=advertise" into "add advertiser role to existing account")
+     *   - logged out -> plain signup (original behavior)
+     */
+    function buildAdvertiseUrl() {
+        try {
+            const userJson = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            if (token && userJson) {
+                const user = JSON.parse(userJson);
+                const email = user && user.email;
+                const roles = (user && user.roles) || [];
+                const hasAdvertiser = roles.includes('advertiser');
+                if (email) {
+                    const q = new URLSearchParams();
+                    q.set(hasAdvertiser ? 'login' : 'signup', '1');
+                    q.set('email', email);
+                    return ADVERTISE_BASE + '?' + q.toString();
+                }
+            }
+        } catch (e) {
+            // localStorage parse failed; fall through to plain signup.
+        }
+        return ADVERTISE_BASE + '?signup=1';
+    }
 
     let modalRoot = null;
     let cachedRates = null;
@@ -143,7 +176,7 @@
                 ${message || 'Could not load pricing right now. Please try again later.'}
             </p>
             <p class="aw-modal__fineprint">
-                You can still <a href="${ADVERTISE_HOST}">sign up at advertise.astegni.com</a> and our team will share rates.
+                You can still <a href="${buildAdvertiseUrl()}">sign up at advertise.astegni.com</a> and our team will share rates.
             </p>
         `;
     }
@@ -170,7 +203,7 @@
                 </p>
                 <p class="aw-modal__fineprint">
                     View-tier packages aren't configured yet. Sign up at
-                    <a href="${ADVERTISE_HOST}">advertise.astegni.com</a> for a custom quote based on
+                    <a href="${buildAdvertiseUrl()}">advertise.astegni.com</a> for a custom quote based on
                     your campaign size, audience, and placement.
                 </p>
             `;
@@ -225,7 +258,7 @@
 
         body.querySelectorAll('[data-aw-book]').forEach(btn => {
             btn.addEventListener('click', () => {
-                window.location.href = ADVERTISE_HOST;
+                window.location.href = buildAdvertiseUrl();
             });
         });
     }
