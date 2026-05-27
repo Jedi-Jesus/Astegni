@@ -24,7 +24,8 @@
     const MODAL_FILES = {
         login: '/advertise-pages/modals/login-modal.html',
         signup: '/advertise-pages/modals/signup-modal.html',
-        'choose-email': '/advertise-pages/modals/choose-email-modal.html'
+        'choose-email': '/advertise-pages/modals/choose-email-modal.html',
+        'confirm-password': '/advertise-pages/modals/confirm-account-modal.html'
     };
 
     let modalsLoaded = false;
@@ -74,29 +75,44 @@
         // Esc key
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                ['adv-login-modal', 'adv-signup-modal', 'adv-choose-email-modal'].forEach(closeAuthModal);
+                [
+                    'adv-login-modal',
+                    'adv-signup-modal',
+                    'adv-choose-email-modal',
+                    'adv-confirm-password-modal'
+                ].forEach(closeAuthModal);
             }
         });
 
-        // Choose-email modal: card click -> open signup with (or without) pre-filled email
+        // Choose-email modal:
+        //   "same"      -> confirm-password modal (just ask for their existing password)
+        //   "different" -> fresh signup form, email blank
         document.querySelectorAll('#adv-choose-email-modal [data-choice]').forEach(card => {
             card.addEventListener('click', () => {
                 const choice = card.getAttribute('data-choice');
-                const email = card.closest('#adv-choose-email-modal')
-                    ?.dataset.email || '';
+                const email = card.closest('#adv-choose-email-modal')?.dataset.email || '';
                 closeAuthModal('adv-choose-email-modal');
-                window.openAuthModal('signup').then(() => {
-                    if (choice === 'same' && email) {
-                        const input = document.getElementById('adv-signup-email');
-                        if (input) {
-                            input.value = email;
-                            const first = document.getElementById('adv-signup-first-name');
-                            if (first) first.focus();
-                        }
-                    }
-                });
+
+                if (choice === 'same') {
+                    window.openAuthModal('confirm-password').then(() => {
+                        if (!email) return;
+                        const emailInput = document.getElementById('adv-confirm-password-email');
+                        if (emailInput) emailInput.value = email;
+                        const display = document.getElementById('adv-confirm-password-email-display');
+                        if (display) display.textContent = email;
+                        const pwd = document.getElementById('adv-confirm-password-password');
+                        if (pwd) pwd.focus();
+                    });
+                } else {
+                    // Different email -> fresh signup
+                    window.openAuthModal('signup');
+                }
             });
         });
+
+        // Confirm-password form submit
+        const confirmForm = document.getElementById('adv-confirm-password-form');
+        if (confirmForm) confirmForm.addEventListener('submit', handleConfirmPasswordSubmit);
     }
 
     function wireFormHandlers() {
@@ -230,6 +246,64 @@
         }
     }
 
+    // ---------- Confirm password (same-email "add advertiser role") ----------
+
+    async function handleConfirmPasswordSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        setError('adv-confirm-password-error', '');
+
+        const email = form.email.value.trim().toLowerCase();
+        const password = form.password.value;
+
+        if (!email) {
+            setError('adv-confirm-password-error', 'Email is missing — please try again from the previous step.');
+            return;
+        }
+        if (!password) {
+            setError('adv-confirm-password-error', 'Please enter your password.');
+            return;
+        }
+
+        // /api/register on the advertise surface with an existing email +
+        // matching password adds the advertiser role to the existing account
+        // and returns a fresh JWT (routes.py:213-254).
+        const payload = {
+            email,
+            password,
+            role: 'advertiser',
+            surface: SURFACE
+        };
+
+        setBusy(form, true);
+        try {
+            const res = await fetch(API + '/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                let msg = data.detail || data.message || 'Could not add advertiser role.';
+                if (res.status === 400 && /different password/i.test(msg)) {
+                    msg = 'That password doesn\'t match this account. Try again, or use a different email.';
+                }
+                setError('adv-confirm-password-error', msg);
+                return;
+            }
+
+            const data = await res.json();
+            storeSession(data);
+            redirectToProfile();
+        } catch (err) {
+            console.error('[advertise] confirm-password error:', err);
+            setError('adv-confirm-password-error', 'Could not reach the server. Please try again.');
+        } finally {
+            setBusy(form, false);
+        }
+    }
+
     // ---------- Login ----------
 
     async function handleLoginSubmit(e) {
@@ -298,14 +372,15 @@
             return;
         }
         // Hide any other auth modal
-        ['login', 'signup', 'choose-email'].forEach(k => {
+        ['login', 'signup', 'choose-email', 'confirm-password'].forEach(k => {
             if (k !== which) closeAuthModal('adv-' + k + '-modal');
         });
         showModal('adv-' + which + '-modal');
     };
 
     window.advSwitchAuthModal = function (which) {
-        ['login', 'signup'].forEach(k => closeAuthModal('adv-' + k + '-modal'));
+        ['login', 'signup', 'choose-email', 'confirm-password']
+            .forEach(k => closeAuthModal('adv-' + k + '-modal'));
         showModal('adv-' + which + '-modal');
     };
 

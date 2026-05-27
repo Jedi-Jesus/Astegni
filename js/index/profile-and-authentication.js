@@ -394,14 +394,34 @@ async function handleLogin(e) {
                 setTimeout(() => {
                     window.location.href = intendedDestination;
                 }, 500);
-            } else {
-                // Redirect to role-specific profile page after login
-                const profileUrl = PROFILE_URLS[result.user.role];
-                if (profileUrl) {
-                    setTimeout(() => {
-                        window.location.href = profileUrl;
-                    }, 1000);
-                }
+                return;
+            }
+
+            // Advertiser-only users belong on advertise.astegni.com. Skip the
+            // redirect-stub hop and send them straight to the subdomain.
+            const roles = result.user.roles || [];
+            const isAdvertiserOnly = roles.length === 1 && roles[0] === 'advertiser';
+            if (isAdvertiserOnly) {
+                const host = window.location.hostname;
+                const target = (host === 'astegni.com' || host === 'www.astegni.com')
+                    ? 'https://advertise.astegni.com/advertiser-profile.html'
+                    : '/advertise-pages/advertiser-profile.html';
+                setTimeout(() => { window.location.href = target; }, 800);
+                return;
+            }
+
+            // Dual-role users (advertiser + something else) stay on astegni.com.
+            // They can use the role-switcher to jump to the advertiser dashboard.
+            // For all other single roles, use the existing PROFILE_URLS map —
+            // but skip the redirect entirely if the active role is 'advertiser'
+            // so we don't bounce them through the stub.
+            if (result.user.role === 'advertiser') return;
+
+            const profileUrl = PROFILE_URLS[result.user.role];
+            if (profileUrl) {
+                setTimeout(() => {
+                    window.location.href = profileUrl;
+                }, 1000);
             }
         }
     } else if (result.error) {

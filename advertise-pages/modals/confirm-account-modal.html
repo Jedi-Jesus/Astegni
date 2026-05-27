@@ -1,0 +1,48 @@
+<div id="adv-confirm-password-modal" class="adv-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adv-confirm-password-title">
+    <div class="adv-modal-backdrop" data-close="confirm-password"></div>
+    <div class="adv-modal-content">
+        <button class="adv-modal-close" data-close="confirm-password" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="adv-modal-header">
+            <h2 id="adv-confirm-password-title">Confirm your password</h2>
+            <p>
+                Adding advertising to
+                <strong id="adv-confirm-password-email-display">your account</strong>.
+                Enter your existing Astegni password to continue.
+            </p>
+        </div>
+
+        <form id="adv-confirm-password-form" class="adv-form" novalidate>
+            <input type="email" id="adv-confirm-password-email" name="email"
+                   autocomplete="username" required hidden>
+
+            <div class="adv-form-group">
+                <label for="adv-confirm-password-password">Password</label>
+                <div class="adv-password-input">
+                    <input type="password" id="adv-confirm-password-password" name="password"
+                           autocomplete="current-password" required
+                           placeholder="Your current password">
+                    <button type="button" class="adv-password-toggle"
+                            onclick="advTogglePassword('adv-confirm-password-password')"
+                            aria-label="Show password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="adv-form-error" id="adv-confirm-password-error" role="alert"></div>
+
+            <button type="submit" class="adv-btn adv-btn-primary adv-btn-full">
+                <span class="adv-btn-label">Add advertising to my account</span>
+                <span class="adv-btn-spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+
+            <p class="adv-form-footer">
+                Wrong account?
+                <a href="#" onclick="advSwitchAuthModal('choose-email'); return false;">Use a different email</a>
+            </p>
+        </form>
+    </div>
+</div>
