@@ -48,7 +48,7 @@
 
         loadingPromise = Promise.all(
             Object.values(MODAL_FILES).map(url =>
-                fetch(url + '?v202605280100').then(r => {
+                fetch(url + '?v202605280200').then(r => {
                     if (!r.ok) throw new Error('Failed to fetch ' + url);
                     return r.text();
                 })
