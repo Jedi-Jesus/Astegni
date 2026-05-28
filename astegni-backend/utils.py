@@ -169,6 +169,10 @@ def get_role_ids_from_user(user: User, db: Session) -> dict:
 
     role_ids = {}
 
+    # Users registered without a role have roles=None — no role IDs to resolve.
+    if not user.roles:
+        return role_ids
+
     # Get student profile ID if exists
     if 'student' in user.roles:
         student_profile = db.query(StudentProfile).filter(
