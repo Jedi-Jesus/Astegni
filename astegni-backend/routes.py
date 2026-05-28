@@ -5319,6 +5319,12 @@ def verify_registration_otp(
     elif role == "student":
         student_profile = StudentProfile(user_id=new_user.id)
         db.add(student_profile)
+    elif role == "advertiser":
+        advertiser_profile = AdvertiserProfile(user_id=new_user.id)
+        db.add(advertiser_profile)
+    elif role == "parent":
+        parent_profile = ParentProfile(user_id=new_user.id, rating=2.0, rating_count=0)
+        db.add(parent_profile)
     elif role == "admin":
         # Create admin_profile record using raw SQL
         db.execute(text("""

@@ -595,6 +595,53 @@ img { max-width: 100%; display: block; }
     display: none !important;
 }
 
+/* ---------- Social sign-in + divider ---------- */
+
+.adv-social {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+.adv-social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--adv-border, #e5e7eb);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--adv-text, #111827);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.adv-social-btn:hover {
+    border-color: var(--adv-primary, #f59e0b);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.14);
+}
+.adv-social-btn svg { width: 20px; height: 20px; }
+
+.adv-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--adv-text-muted, #6b7280);
+    font-size: 0.82rem;
+    margin: 0.25rem 0 1rem;
+}
+.adv-divider::before,
+.adv-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--adv-border, #e5e7eb);
+}
+.adv-divider span { padding: 0 0.75rem; }
+
 /* ---------- Choose-email modal cards ---------- */
 
 .adv-choose-email-options {

@@ -25,8 +25,13 @@
         login: '/advertise-pages/modals/login-modal.html',
         signup: '/advertise-pages/modals/signup-modal.html',
         'choose-email': '/advertise-pages/modals/choose-email-modal.html',
-        'confirm-password': '/advertise-pages/modals/confirm-account-modal.html'
+        'confirm-password': '/advertise-pages/modals/confirm-account-modal.html',
+        'confirm-contact': '/advertise-pages/modals/contact-confirmation-modal.html',
+        otp: '/advertise-pages/modals/otp-modal.html'
     };
+
+    // Signup data held between the signup form and the OTP verification step.
+    let pendingSignup = null;
 
     let modalsLoaded = false;
     let loadingPromise = null;
@@ -43,7 +48,7 @@
 
         loadingPromise = Promise.all(
             Object.values(MODAL_FILES).map(url =>
-                fetch(url + '?v202605260000').then(r => {
+                fetch(url + '?v202605280100').then(r => {
                     if (!r.ok) throw new Error('Failed to fetch ' + url);
                     return r.text();
                 })
@@ -79,7 +84,9 @@
                     'adv-login-modal',
                     'adv-signup-modal',
                     'adv-choose-email-modal',
-                    'adv-confirm-password-modal'
+                    'adv-confirm-password-modal',
+                    'adv-confirm-contact-modal',
+                    'adv-otp-modal'
                 ].forEach(closeAuthModal);
             }
         });
@@ -152,6 +159,15 @@
         if (spin) spin.classList.toggle('hidden', !busy);
     }
 
+    function setBtnBusy(btn, busy) {
+        if (!btn) return;
+        btn.disabled = busy;
+        const label = btn.querySelector('.adv-btn-label');
+        const spin = btn.querySelector('.adv-btn-spinner');
+        if (label) label.classList.toggle('hidden', busy);
+        if (spin) spin.classList.toggle('hidden', !busy);
+    }
+
     function setError(formErrorId, message) {
         const el = document.getElementById(formErrorId);
         if (el) el.textContent = message || '';
@@ -182,34 +198,32 @@
         window.location.href = '/advertiser-profile.html';
     }
 
-    // ---------- Signup ----------
+    // ---------- Signup (Google OR email + OTP) ----------
+    //
+    // Flow (mirrors astegni.com): signup form -> confirm-contact screen ->
+    // "Send OTP" (POST /api/send-registration-otp) -> OTP input ->
+    // "Verify & create" (POST /api/verify-registration-otp, role='advertiser').
+    // The account is created server-side only after the OTP is verified.
 
-    async function handleSignupSubmit(e) {
+    function handleSignupSubmit(e) {
         e.preventDefault();
         const form = e.target;
         setError('adv-signup-error', '');
 
-        const payload = {
-            first_name: form.first_name.value.trim(),
-            last_name: form.last_name.value.trim(),
-            email: form.email.value.trim().toLowerCase(),
-            password: form.password.value,
-            role: 'advertiser',
-            surface: SURFACE
-        };
+        const email = form.email.value.trim().toLowerCase();
+        const password = form.password.value;
+        const confirm = form.password_confirm.value;
 
-        const companyName = form.company_name.value.trim();
-        if (companyName) {
-            // Pre-fills advertiser_profiles.company_name on the backend (Phase 2).
-            payload.company_name = companyName;
-        }
-
-        if (!payload.first_name || !payload.email || !payload.password) {
+        if (!email || !password) {
             setError('adv-signup-error', 'Please fill in all required fields.');
             return;
         }
-        if (payload.password.length < 8) {
+        if (password.length < 8) {
             setError('adv-signup-error', 'Password must be at least 8 characters.');
+            return;
+        }
+        if (password !== confirm) {
+            setError('adv-signup-error', 'Passwords do not match.');
             return;
         }
         if (!form.querySelector('#adv-signup-terms').checked) {
@@ -217,34 +231,114 @@
             return;
         }
 
-        setBusy(form, true);
+        pendingSignup = { email, password };
+
+        // Show the confirm-contact screen (do not send OTP yet).
+        closeAuthModal('adv-signup-modal');
+        showModal('adv-confirm-contact-modal');
+        const display = document.getElementById('adv-confirm-email-display');
+        if (display) display.value = email;
+    }
+
+    // Step 2: send (or resend) the registration OTP for the pending email.
+    window.advSendOtp = async function () {
+        if (!pendingSignup) {
+            setError('adv-confirm-contact-error', 'Your session expired. Please sign up again.');
+            return;
+        }
+        setError('adv-confirm-contact-error', '');
+        setError('adv-otp-error', '');
+
+        // The "Send OTP" button (confirm-contact) and "Resend" link (otp modal)
+        // both call this; only the confirm-contact button has a busy spinner.
+        const sendBtn = document.querySelector('#adv-confirm-contact-modal .adv-btn-primary');
+        setBtnBusy(sendBtn, true);
         try {
-            const res = await fetch(API + '/api/register', {
+            const res = await fetch(API + '/api/send-registration-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ email: pendingSignup.email, phone: '' })
             });
+            const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                let msg = data.detail || data.message || 'Signup failed. Please try again.';
-                if (res.status === 400 && /different password/i.test(msg)) {
-                    msg = 'This email is already registered with a different password. Log in instead.';
-                }
-                setError('adv-signup-error', msg);
+                // e.g. "An account with this email already exists"
+                const target = document.getElementById('adv-otp-modal') &&
+                    !document.getElementById('adv-otp-modal').classList.contains('hidden')
+                    ? 'adv-otp-error' : 'adv-confirm-contact-error';
+                setError(target, data.detail || 'Could not send the code. Please try again.');
                 return;
             }
 
-            const data = await res.json();
+            // Development mode returns the OTP so we can log it.
+            if (data.otp) console.log('[advertise] Dev OTP:', data.otp);
+
+            closeAuthModal('adv-confirm-contact-modal');
+            showModal('adv-otp-modal');
+            const otpInput = document.getElementById('adv-otp-input');
+            if (otpInput) otpInput.value = '';
+        } catch (err) {
+            console.error('[advertise] send-otp error:', err);
+            setError('adv-confirm-contact-error', 'Could not reach the server. Please try again.');
+        } finally {
+            setBtnBusy(sendBtn, false);
+        }
+    };
+
+    // Step 3: verify the OTP and create the advertiser account server-side.
+    window.advVerifyOtp = async function () {
+        if (!pendingSignup) {
+            setError('adv-otp-error', 'Your session expired. Please sign up again.');
+            return;
+        }
+        setError('adv-otp-error', '');
+
+        const otp = (document.getElementById('adv-otp-input')?.value || '').trim();
+        if (!/^\d{6}$/.test(otp)) {
+            setError('adv-otp-error', 'Please enter the 6-digit code.');
+            return;
+        }
+
+        const verifyBtn = document.querySelector('#adv-otp-modal .adv-btn-primary');
+        setBtnBusy(verifyBtn, true);
+        try {
+            const res = await fetch(API + '/api/verify-registration-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    otp_code: otp,
+                    email: pendingSignup.email,
+                    phone: '',
+                    password: pendingSignup.password,
+                    role: 'advertiser'
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError('adv-otp-error', data.detail || 'Invalid or expired code. Please try again.');
+                return;
+            }
+
+            pendingSignup = null;
             storeSession(data);
             redirectToProfile();
         } catch (err) {
-            console.error('[advertise] signup error:', err);
-            setError('adv-signup-error', 'Could not reach the server. Please try again.');
+            console.error('[advertise] verify-otp error:', err);
+            setError('adv-otp-error', 'Could not reach the server. Please try again.');
         } finally {
-            setBusy(form, false);
+            setBtnBusy(verifyBtn, false);
         }
-    }
+    };
+
+    // Go back to the signup form (from confirm-contact or OTP), email prefilled.
+    window.advEditSignupInfo = function () {
+        closeAuthModal('adv-confirm-contact-modal');
+        closeAuthModal('adv-otp-modal');
+        showModal('adv-signup-modal');
+        const emailInput = document.getElementById('adv-signup-email');
+        if (emailInput && pendingSignup) emailInput.value = pendingSignup.email;
+    };
 
     // ---------- Confirm password (same-email "add advertiser role") ----------
 

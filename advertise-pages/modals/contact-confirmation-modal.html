@@ -1,0 +1,34 @@
+<div id="adv-confirm-contact-modal" class="adv-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adv-confirm-contact-title">
+    <div class="adv-modal-backdrop" data-close="confirm-contact"></div>
+    <div class="adv-modal-content">
+        <button class="adv-modal-close" data-close="confirm-contact" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="adv-modal-header">
+            <h2 id="adv-confirm-contact-title">Confirm your email</h2>
+            <p>We'll send a 6-digit code to verify it's you.</p>
+        </div>
+
+        <div class="adv-form">
+            <div class="adv-form-group">
+                <label>Email</label>
+                <input type="email" id="adv-confirm-email-display" disabled>
+            </div>
+
+            <div class="adv-form-error" id="adv-confirm-contact-error" role="alert"></div>
+
+            <div style="display: flex; gap: 0.6rem;">
+                <button type="button" class="adv-btn adv-btn-ghost adv-btn-full"
+                        onclick="advEditSignupInfo()">
+                    Edit info
+                </button>
+                <button type="button" class="adv-btn adv-btn-primary adv-btn-full"
+                        onclick="advSendOtp()">
+                    <span class="adv-btn-label">Send OTP</span>
+                    <span class="adv-btn-spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

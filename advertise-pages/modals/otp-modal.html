@@ -1,0 +1,41 @@
+<div id="adv-otp-modal" class="adv-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adv-otp-title">
+    <div class="adv-modal-backdrop" data-close="otp"></div>
+    <div class="adv-modal-content">
+        <button class="adv-modal-close" data-close="otp" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="adv-modal-header">
+            <h2 id="adv-otp-title">Verify your email</h2>
+            <p>Enter the 6-digit code we sent to your email to finish creating your account.</p>
+        </div>
+
+        <div class="adv-form">
+            <div class="adv-form-group">
+                <label for="adv-otp-input">Enter OTP code</label>
+                <input type="text" id="adv-otp-input"
+                       maxlength="6" pattern="[0-9]*" inputmode="numeric"
+                       autocomplete="one-time-code" required
+                       placeholder="000000"
+                       style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: 600;">
+                <p class="adv-form-hint">The code expires in 5 minutes.</p>
+            </div>
+
+            <div class="adv-form-error" id="adv-otp-error" role="alert"></div>
+
+            <button type="button" class="adv-btn adv-btn-primary adv-btn-full"
+                    onclick="advVerifyOtp()">
+                <span class="adv-btn-label">Verify &amp; create account</span>
+                <span class="adv-btn-spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+
+            <p class="adv-form-footer">
+                Didn't receive the code?
+                <a href="#" onclick="advSendOtp(); return false;">Resend OTP</a>
+            </p>
+            <p class="adv-form-footer">
+                <a href="#" onclick="advEditSignupInfo(); return false;">Edit registration info</a>
+            </p>
+        </div>
+    </div>
+</div>
