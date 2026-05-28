@@ -113,6 +113,10 @@ def get_first_active_role(user: User, db: Session) -> Optional[str]:
     """
     from models import StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile, UserProfile
 
+    # Users registered without a role have roles=None — nothing to resolve.
+    if not user.roles:
+        return None
+
     # Define role priority order
     role_priority = ['student', 'tutor', 'parent', 'advertiser', 'user']
 
