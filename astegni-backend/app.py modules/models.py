@@ -1031,7 +1031,7 @@ class UserResponse(BaseModel):
     profile_complete: bool = False  # True if DOB, gender, and digital_id_no are set
     is_verified: bool = False  # CANONICAL: True if identity has been verified
     kyc_verified: bool = False  # DEPRECATED: Use is_verified. Kept for backward compatibility
-    roles: List[str]
+    roles: Optional[List[str]] = None  # None for users registered without a role
     active_role: Optional[str] = None
     profile_picture: Optional[str]
     created_at: datetime
