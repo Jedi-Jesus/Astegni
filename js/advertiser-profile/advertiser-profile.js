@@ -116,12 +116,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage_switchTarget: localStorage.getItem('role_switch_target')
             });
 
-            // More defensive role check - handle undefined, null, and string "undefined"
-            const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+            // Surface entitlement: the advertiser dashboard is gated by "has the
+            // advertiser role", NOT by "advertiser is currently the active role".
+            // A multi-role user (e.g. a tutor who also advertises) lands here with
+            // active_role='tutor' — that's fine; the role switcher lets them flip
+            // their active role for advertiser-scoped API calls.
+            const userRoles = Array.isArray(user?.roles) ? user.roles : [];
+            const hasAdvertiserRole = userRoles.includes('advertiser');
 
-            if (normalizedRole !== 'advertiser') {
-                console.warn(`⚠️ [AdvertiserProfile] User role is '${normalizedRole}', not 'advertiser'. Redirecting...`);
-                alert(`This page is for advertisers only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your advertiser role or log in with an advertiser account.`);
+            if (!hasAdvertiserRole) {
+                const shown = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : 'unknown';
+                console.warn(`⚠️ [AdvertiserProfile] User has roles ${JSON.stringify(userRoles)}, no 'advertiser'. Redirecting...`);
+                alert(`This page is for advertisers only. You are logged in as: ${shown}\n\nPlease log in with an advertiser account.`);
                 window.location.href = '/';
                 return;
             }
