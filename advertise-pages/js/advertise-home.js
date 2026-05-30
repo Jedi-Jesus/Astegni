@@ -48,7 +48,7 @@
 
         loadingPromise = Promise.all(
             Object.values(MODAL_FILES).map(url =>
-                fetch(url + '?v202605280200').then(r => {
+                fetch(url + '?v202605290100').then(r => {
                     if (!r.ok) throw new Error('Failed to fetch ' + url);
                     return r.text();
                 })
@@ -197,6 +197,78 @@
         // (root docroot, /advertiser-profile.html → /advertise-pages/advertiser-profile.html).
         window.location.href = '/advertiser-profile.html';
     }
+
+    // ---------- Post-login dispatch (Google + email/password share this) ----------
+    //
+    // Branch on the user's roles:
+    //   - has 'advertiser'         -> stay here, advertiser profile
+    //   - has another role         -> hand off token to astegni.com via URL hash;
+    //                                 land on that role's profile page
+    //   - no roles at all          -> do NOT establish a session; show an error
+    //                                 (user must finish account setup on astegni.com)
+    function dispatchAfterLogin(tokenResponse) {
+        const user = tokenResponse && tokenResponse.user;
+        const roles = (user && user.roles) || [];
+
+        if (roles.includes('advertiser')) {
+            storeSession(tokenResponse);
+            redirectToProfile();
+            return;
+        }
+
+        if (roles.length === 0) {
+            setError('adv-login-error',
+                'This account doesn\'t have any role yet. Finish setting up your account on astegni.com first.');
+            // No session stored. Sign-out any partial state Google may have left behind.
+            try { localStorage.removeItem('token'); localStorage.removeItem('currentUser'); localStorage.removeItem('userRole'); } catch (e) { }
+            return;
+        }
+
+        // Has other roles but no advertiser → hand off to astegni.com.
+        // Subdomains don't share localStorage, so pass tokens via URL hash; the
+        // astegni.com AuthManager consumes #advertise_login=1 on page load.
+        const role = user.active_role || roles[0];
+        const profilePages = {
+            student: '/profile-pages/student-profile.html',
+            tutor: '/profile-pages/tutor-profile.html',
+            parent: '/profile-pages/parent-profile.html',
+            user: '/profile-pages/user-profile.html'
+        };
+        const path = profilePages[role] || '/index.html';
+        const params = new URLSearchParams();
+        params.set('advertise_login', '1');
+        params.set('token', tokenResponse.access_token);
+        if (tokenResponse.refresh_token) params.set('refresh', tokenResponse.refresh_token);
+        params.set('user', encodeURIComponent(JSON.stringify(user)));
+        window.location.href = 'https://astegni.com' + path + '#' + params.toString();
+    }
+
+    // Google sign-in goes through the shared googleOAuthManager (js/root/google-oauth.js).
+    // Override its post-login navigation on this surface so the same branching applies.
+    (function patchGoogleNavigateAfterLogin() {
+        function apply() {
+            if (!window.googleOAuthManager) return false;
+            window.googleOAuthManager.navigateAfterLogin = function (user) {
+                // Reconstruct a token-response-like object from what storeSession
+                // already wrote (the shared manager stored tokens before calling
+                // this navigate hook).
+                const fake = {
+                    access_token: localStorage.getItem('token') || localStorage.getItem('access_token'),
+                    refresh_token: localStorage.getItem('refresh_token') || null,
+                    user: user
+                };
+                dispatchAfterLogin(fake);
+            };
+            return true;
+        }
+        if (!apply()) {
+            // Manager initializes ~1s after DOMContentLoaded; retry briefly.
+            let tries = 0;
+            const iv = setInterval(() => {
+                if (apply() || ++tries > 30) clearInterval(iv);
+            }, 200);
+        }
+    })();
 
     // ---------- Signup (Google OR email + OTP) ----------
     //
@@ -413,12 +485,15 @@
             return;
         }
 
-        // /api/login uses OAuth2PasswordRequestForm — form-encoded, "username" field
+        // /api/login uses OAuth2PasswordRequestForm — form-encoded, "username" field.
+        // We intentionally do NOT send surface='advertise' here: the backend gates
+        // that surface to advertiser-only (403 otherwise), but we now want to *log
+        // in* non-advertisers on advertise.astegni.com so we can redirect them to
+        // astegni.com with a valid token. The role branching lives in
+        // dispatchAfterLogin() below.
         const body = new URLSearchParams();
         body.set('username', email);
         body.set('password', password);
-        // surface hint for Phase-2 backend enforcement
-        body.set('surface', SURFACE);
 
         setBusy(form, true);
         try {
@@ -435,19 +510,7 @@
             }
 
             const data = await res.json();
-
-            // Defense-in-depth: backend enforces surface='advertise' → must have advertiser role
-            // (returns 403 if not). This extra check guards against any edge case where the
-            // backend returns 200 but with a non-advertiser user.
-            const roles = (data.user && data.user.roles) || [];
-            if (!roles.includes('advertiser')) {
-                setError('adv-login-error',
-                    'This account doesn\'t have advertiser access yet. Click "Sign up" to create an advertiser account with this email.');
-                return;
-            }
-
-            storeSession(data);
-            redirectToProfile();
+            dispatchAfterLogin(data);
         } catch (err) {
             console.error('[advertise] login error:', err);
             setError('adv-login-error', 'Could not reach the server. Please try again.');

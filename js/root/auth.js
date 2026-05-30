@@ -11,8 +11,35 @@ class AuthenticationManager {
 
         console.log('[AuthManager] Using API_BASE_URL:', this.API_BASE_URL);
 
+        // Cross-subdomain handoff: advertise.astegni.com redirects non-advertiser
+        // users here with their tokens in the URL hash. Consume them into
+        // localStorage before restoreSession() runs so the user lands logged in.
+        this.consumeHandoffHash();
+
         // Try to restore session on initialization
         this.restoreSession();
+    }
+
+    consumeHandoffHash() {
+        try {
+            const hash = window.location.hash || '';
+            if (!hash.startsWith('#advertise_login=1')) return;
+            const params = new URLSearchParams(hash.slice(1));
+            const token = params.get('token');
+            const refresh = params.get('refresh');
+            const userJson = params.get('user');
+            if (!token || !userJson) return;
+            const user = JSON.parse(decodeURIComponent(userJson));
+            localStorage.setItem('token', token);
+            localStorage.setItem('access_token', token);
+            if (refresh) localStorage.setItem('refresh_token', refresh);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            if (user.active_role) localStorage.setItem('userRole', user.active_role);
+            // Strip the hash so the tokens don't linger in the URL bar or history.
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        } catch (e) {
+            console.warn('[AuthManager] consumeHandoffHash failed:', e);
+        }
     }
 
     // ============================================
