@@ -20,6 +20,20 @@ window.viewTutorProfile = function(tutorId) {
     window.location.assign(url);
 }
 
+window.viewTutorPackages = function(tutorId) {
+    console.log('📦 viewTutorPackages called with tutorId:', tutorId);
+
+    // Track search history when viewing a tutor
+    const searchTerm = document.getElementById('searchBar')?.value?.trim();
+    if (searchTerm) {
+        PreferencesManager.addTutorViewToHistory(searchTerm, tutorId);
+    }
+
+    // Navigate to tutor profile page, opening the Packages panel directly
+    const url = `../view-profiles/view-tutor.html?id=${tutorId}&panel=packages`;
+    window.location.assign(url);
+}
+
 window.connectWithTutor = async function(tutorProfileId, tutorName) {
     // Check if user is authenticated
     const token = localStorage.getItem('access_token') || localStorage.getItem('token');

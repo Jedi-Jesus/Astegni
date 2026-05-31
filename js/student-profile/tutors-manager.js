@@ -485,6 +485,11 @@ function viewTutorProfile(tutorId) {
     window.location.href = `../view-profiles/view-tutor.html?id=${tutorId}`;
 }
 
+// Open the tutor's profile directly on the Packages panel
+function viewTutorPackages(tutorId) {
+    window.location.href = `../view-profiles/view-tutor.html?id=${tutorId}&panel=packages`;
+}
+
 function toggleFavorite(tutorId) {
     const key = 'favoriteTutors';
     let favorites = JSON.parse(localStorage.getItem(key) || '[]');

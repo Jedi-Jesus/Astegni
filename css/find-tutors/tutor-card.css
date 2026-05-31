@@ -979,6 +979,16 @@
     background: var(--hover-bg);
 }
 
+/* View Package Button - full-width row above the Message/Connect actions */
+.tutor-actions-secondary {
+    display: flex;
+}
+
+.tutor-actions-secondary .view-package-btn {
+    flex: 1;
+    margin-top: auto;
+}
+
 /* Message Button Styling */
 .message-btn {
     flex: 1;

@@ -2490,7 +2490,7 @@
         // Panel switching functionality
         async function switchPanel(panelName) {
             // 2FA-protected panels - require verification if user has 2FA enabled
-            const protectedPanels = ['packages'];
+            const protectedPanels = [];
 
             if (protectedPanels.includes(panelName)) {
                 // Check if ProtectedAPI is available and require verification
@@ -2958,6 +2958,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Update mobile profile section on page load
             updateMobileProfileSection();
+
+            // Deep-link support: ?panel=packages (or any panel name) opens that
+            // panel directly. Used by the "View package" button on tutor cards.
+            const requestedPanel = new URLSearchParams(window.location.search).get('panel');
+            if (requestedPanel && document.getElementById(requestedPanel + '-panel')) {
+                // Defer to window load so it overrides the default 'overview'
+                // active panel after the page has finished initializing.
+                window.addEventListener('load', () => {
+                    setTimeout(() => switchPanel(requestedPanel), 0);
+                });
+            }
         });
 
         // Also update on window load to ensure everything is ready
