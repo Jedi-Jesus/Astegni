@@ -535,7 +535,8 @@ async def get_tutor_packages(tutor_id: int):
                        hourly_rate, days_per_week, hours_per_day,
                        payment_frequency,
                        discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                       is_active, created_at
+                       is_active, created_at,
+                       allow_sharing, max_shared_students
                 FROM tutor_packages
                 WHERE tutor_id = %s AND is_active = TRUE AND visibility = 'public'
                 ORDER BY hourly_rate ASC NULLS LAST
@@ -588,7 +589,10 @@ async def get_tutor_packages(tutor_id: int):
                     "discount_3_month": float(row[16]) if row[16] else 0,
                     "discount_6_month": float(row[17]) if row[17] else 0,
                     "yearly_discount": float(row[18]) if row[18] else 0,
-                    "is_active": row[19]
+                    "is_active": row[19],
+                    # Cost-sharing opt-in + max students (for request modal)
+                    "allow_sharing": row[21] if row[21] is not None else False,
+                    "max_shared_students": row[22] if row[22] is not None else 1
                 })
 
             return {"packages": packages}

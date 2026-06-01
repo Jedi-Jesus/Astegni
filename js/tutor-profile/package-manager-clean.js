@@ -132,7 +132,9 @@ class PackageManagerClean {
                     discount_1_month: 0,
                     discount_3_month: parseFloat(packageData.discounts?.threeMonths) || 0,
                     discount_6_month: parseFloat(packageData.discounts?.sixMonths) || 0,
-                    yearly_discount: parseFloat(packageData.discounts?.yearly) || 0
+                    yearly_discount: parseFloat(packageData.discounts?.yearly) || 0,
+                    allow_sharing: !!packageData.allowSharing,
+                    max_shared_students: parseInt(packageData.maxSharedStudents) || 1
                 };
 
                 console.log('📡 Sending to backend:', backendData);
@@ -243,7 +245,9 @@ class PackageManagerClean {
                     payment_frequency: data.paymentFrequency,
                     discount_3_month: parseFloat(data.discounts?.threeMonths) || 0,
                     discount_6_month: parseFloat(data.discounts?.sixMonths) || 0,
-                    yearly_discount: parseFloat(data.discounts?.yearly) || 0
+                    yearly_discount: parseFloat(data.discounts?.yearly) || 0,
+                    allow_sharing: !!data.allowSharing,
+                    max_shared_students: parseInt(data.maxSharedStudents) || 1
                 };
 
                 console.log('📡 Sending update to backend:', backendData);
@@ -379,6 +383,8 @@ class PackageManagerClean {
                 sixMonths: backendPackage.discount_6_month || 0,
                 yearly: backendPackage.yearly_discount || 0
             },
+            allowSharing: backendPackage.allow_sharing || false,
+            maxSharedStudents: backendPackage.max_shared_students || 1,
             visibility: backendPackage.visibility || 'public',
             createdAt: backendPackage.created_at
         };
@@ -586,7 +592,9 @@ window.createNewPackage = async function() {
         courseIds: [],
         paymentFrequency: 'monthly',
         hourlyRate: 0,
-        discounts: { threeMonths: 0, sixMonths: 0, yearly: 0 }
+        discounts: { threeMonths: 0, sixMonths: 0, yearly: 0 },
+        allowSharing: false,
+        maxSharedStudents: 1
     });
 
     if (newPackage) {
@@ -677,6 +685,23 @@ window.closePackageSidebarPanel = function() {
  * CALCULATOR TOGGLE FUNCTION
  * ═══════════════════════════════════════════════════════════
  */
+
+/**
+ * Show/hide the "max students sharing" selector when the tutor toggles
+ * the cost-sharing opt-in for a package.
+ */
+window.toggleSharingFields = function() {
+    const allow = document.getElementById('allowSharing')?.checked;
+    const field = document.getElementById('maxSharedStudentsField');
+    if (field) {
+        field.style.display = allow ? 'flex' : 'none';
+    }
+    // Default to 2 when first enabling (selector has no "1" option)
+    const maxSelect = document.getElementById('maxSharedStudents');
+    if (allow && maxSelect && !maxSelect.value) {
+        maxSelect.value = '2';
+    }
+};
 
 window.toggleCalculatorWidget = function() {
     const calculator = document.getElementById('feeCalculatorWidget');
@@ -1291,17 +1316,36 @@ function renderPackageEditor() {
                         <div class="form-field">
                             <label>
                                 <i class="fas fa-money-bill-wave"></i> Hourly Rate (${CurrencyManager.getSymbol()})
-                                <span class="info-tooltip shared-tutoring-tip">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span class="info-tooltip-text">
-                                        Do you know the proven technique of the small tutor/high dosage method?
-                                        You can let up to 4 students share your hourly price, giving them quality
-                                        education while sharing the cost.
-                                        <a href="https://www.povertyactionlab.org/policy-insight/tutoring-improve-student-learning" target="_blank" rel="noopener noreferrer">See the proof →</a>
-                                    </span>
-                                </span>
                             </label>
                             <input type="number" id="hourlyRate" value="${pkg.hourlyRate}" min="0" placeholder="200" oninput="updateCalculator()">
+                        </div>
+                    </div>
+
+                    <!-- Cost-sharing (small tutor / high dosage) -->
+                    <div class="sharing-field" style="margin-top: 16px; padding: 14px 16px; background: rgba(var(--button-bg-rgb, 59, 130, 246), 0.06); border-radius: 10px;">
+                        <label class="sharing-toggle-row" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="allowSharing" ${pkg.allowSharing ? 'checked' : ''} onchange="toggleSharingFields()">
+                            <span style="font-weight: 600;">
+                                <i class="fas fa-user-friends"></i> Allow students to share this package
+                            </span>
+                            <span class="info-tooltip shared-tutoring-tip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="info-tooltip-text">
+                                    Do you know the proven technique of the small tutor/high dosage method?
+                                    You can let up to 4 students share your hourly price, giving them quality
+                                    education while sharing the cost.
+                                    <a href="https://www.povertyactionlab.org/policy-insight/tutoring-improve-student-learning" target="_blank" rel="noopener noreferrer">See the proof →</a>
+                                </span>
+                            </span>
+                        </label>
+                        <div id="maxSharedStudentsField" style="margin-top: 12px; display: ${pkg.allowSharing ? 'flex' : 'none'}; align-items: center; gap: 10px;">
+                            <label for="maxSharedStudents" style="font-size: 0.85rem; margin: 0;">Max students sharing:</label>
+                            <select id="maxSharedStudents" style="width: auto; padding: 6px 10px;">
+                                <option value="2" ${(pkg.maxSharedStudents || 1) == 2 ? 'selected' : ''}>2</option>
+                                <option value="3" ${(pkg.maxSharedStudents || 1) == 3 ? 'selected' : ''}>3</option>
+                                <option value="4" ${(pkg.maxSharedStudents || 1) == 4 ? 'selected' : ''}>4</option>
+                            </select>
+                            <span style="font-size: 0.78rem; color: var(--text-secondary);">students split the price</span>
                         </div>
                     </div>
                 </div>
@@ -2287,6 +2331,13 @@ window.saveCurrentPackage = async function() {
         allCourseIds
     });
 
+    // Cost-sharing opt-in + max students (1-4)
+    const allowSharingInput = document.getElementById('allowSharing');
+    const maxSharedStudentsInput = document.getElementById('maxSharedStudents');
+    const allowSharing = !!allowSharingInput?.checked;
+    let maxSharedStudents = parseInt(maxSharedStudentsInput?.value) || 1;
+    maxSharedStudents = Math.min(4, Math.max(1, maxSharedStudents));
+
     const updateData = {
         name: nameInput?.value || pkg.name,
         courseIds: allCourseIds,
@@ -2298,6 +2349,8 @@ window.saveCurrentPackage = async function() {
             sixMonths: parseFloat(discount6Input?.value || 0),
             yearly: parseFloat(discountYearInput?.value || 0)
         },
+        allowSharing: allowSharing,
+        maxSharedStudents: allowSharing ? maxSharedStudents : 1,
         ...scheduleData
     };
 

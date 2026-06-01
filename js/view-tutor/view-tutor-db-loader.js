@@ -2219,12 +2219,26 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
             counterOfferInput.value = '';
         }
 
-        // Reset students-sharing field to 1 and refresh the split preview
+        // Reset students-sharing field and refresh the split preview.
+        // Only shown when the tutor opted this package into cost-sharing.
         window.currentPackageListedPrice = price;
         window.currentTutorCurrencySymbol = tutorCurrencySymbol;
+        const allowSharing = packageData.allow_sharing === true;
+        const maxShared = Math.min(4, Math.max(1, parseInt(packageData.max_shared_students) || 1));
+        window.currentMaxSharedStudents = allowSharing ? maxShared : 1;
+
+        const sharingSection = document.getElementById('studentsSharingSection');
+        if (sharingSection) {
+            sharingSection.style.display = allowSharing ? 'block' : 'none';
+        }
         const numStudentsInput = document.getElementById('numStudents');
         if (numStudentsInput) {
             numStudentsInput.value = 1;
+            numStudentsInput.max = window.currentMaxSharedStudents;
+        }
+        const sharingMaxHint = document.getElementById('numStudentsMaxHint');
+        if (sharingMaxHint) {
+            sharingMaxHint.textContent = `(1–${window.currentMaxSharedStudents} students)`;
         }
         if (typeof handleNumStudentsChange === 'function') {
             handleNumStudentsChange();
@@ -2977,8 +2991,9 @@ function formatDateDisplay(dateStr) {
 window.adjustNumStudents = function(delta) {
     const input = document.getElementById('numStudents');
     if (!input) return;
+    const max = window.currentMaxSharedStudents || 4;
     let value = (parseInt(input.value, 10) || 1) + delta;
-    value = Math.min(4, Math.max(1, value));
+    value = Math.min(max, Math.max(1, value));
     input.value = value;
     handleNumStudentsChange();
 };
@@ -2992,10 +3007,11 @@ window.handleNumStudentsChange = function() {
     const input = document.getElementById('numStudents');
     if (!input) return;
 
-    // Clamp to 1-4 (guard against typed values outside the range)
+    // Clamp to 1..max (max set per package; tutor's max_shared_students)
+    const max = window.currentMaxSharedStudents || 4;
     let numStudents = parseInt(input.value, 10);
     if (isNaN(numStudents)) numStudents = 1;
-    numStudents = Math.min(4, Math.max(1, numStudents));
+    numStudents = Math.min(max, Math.max(1, numStudents));
     if (String(numStudents) !== input.value) {
         input.value = numStudents;
     }
@@ -3091,10 +3107,12 @@ window.submitPackageRequest = async function() {
     const counterOfferInput = document.getElementById('counterOfferPrice');
     const counterOfferPrice = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
 
-    // Number of students sharing the tutor (1-4, cost-sharing method)
+    // Number of students sharing the tutor (1..package max, cost-sharing).
+    // Capped at the tutor's max_shared_students; non-sharing packages = 1.
     const numStudentsInput = document.getElementById('numStudents');
+    const maxShared = window.currentMaxSharedStudents || 1;
     let numStudents = parseInt(numStudentsInput?.value, 10) || 1;
-    numStudents = Math.min(4, Math.max(1, numStudents));
+    numStudents = Math.min(maxShared, Math.max(1, numStudents));
 
     // Prepare request data with structured schedule fields
     const requestData = {

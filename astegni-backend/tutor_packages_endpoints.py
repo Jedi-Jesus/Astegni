@@ -120,6 +120,9 @@ class PackageCreate(BaseModel):
     discount_3_month: float = Field(default=0, ge=0, le=100)
     discount_6_month: float = Field(default=0, ge=0, le=100)
     yearly_discount: float = Field(default=0, ge=0, le=100)
+    # Cost-sharing ("small tutor / high dosage"): tutor opt-in + max students
+    allow_sharing: bool = Field(default=False)
+    max_shared_students: int = Field(default=1, ge=1, le=4)
 
 class PackageUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -143,6 +146,9 @@ class PackageUpdate(BaseModel):
     discount_3_month: Optional[float] = Field(None, ge=0, le=100)
     discount_6_month: Optional[float] = Field(None, ge=0, le=100)
     yearly_discount: Optional[float] = Field(None, ge=0, le=100)
+    # Cost-sharing opt-in + max students
+    allow_sharing: Optional[bool] = None
+    max_shared_students: Optional[int] = Field(None, ge=1, le=4)
     is_active: Optional[bool] = None
 
 class CourseInfo(BaseModel):
@@ -198,6 +204,8 @@ class PackageResponse(BaseModel):
     discount_3_month: float
     discount_6_month: float
     yearly_discount: float
+    allow_sharing: bool = False
+    max_shared_students: int = 1
     is_active: bool
     visibility: str = 'public'
     created_at: datetime
@@ -286,7 +294,8 @@ async def get_tutor_packages(
                    session_time, session_duration,
                    hourly_rate, days_per_week, hours_per_day, payment_frequency,
                    discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                   is_active, visibility, created_at, updated_at
+                   is_active, visibility, created_at, updated_at,
+                   allow_sharing, max_shared_students
             FROM tutor_packages
             WHERE tutor_id = %s
             ORDER BY created_at DESC
@@ -330,7 +339,9 @@ async def get_tutor_packages(
                 'is_active': row[23] if row[23] is not None else True,
                 'visibility': row[24] if row[24] else 'public',
                 'created_at': row[25] or datetime.now(),
-                'updated_at': row[26] or datetime.now()
+                'updated_at': row[26] or datetime.now(),
+                'allow_sharing': row[27] if row[27] is not None else False,
+                'max_shared_students': row[28] if row[28] is not None else 1
             })
 
         return packages
@@ -383,15 +394,16 @@ async def create_package(
                 session_time, session_duration,
                 hourly_rate, days_per_week, hours_per_day, payment_frequency,
                 discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                is_active, created_at, updated_at
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                is_active, allow_sharing, max_shared_students, created_at, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id, tutor_id, name, grade_level, course_ids, description,
                       session_format, schedule_type, schedule_days,
                       start_time, end_time, start_date, end_date,
                       session_time, session_duration,
                       hourly_rate, days_per_week, hours_per_day, payment_frequency,
                       discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                      is_active, created_at, updated_at
+                      is_active, created_at, updated_at,
+                      allow_sharing, max_shared_students
         """, (
             tutor_profile_id,  # Use tutor_profiles.id, not users.id
             package.name,
@@ -415,7 +427,9 @@ async def create_package(
             package.discount_3_month,
             package.discount_6_month,
             package.yearly_discount,
-            True  # is_active = True by default
+            True,  # is_active = True by default
+            package.allow_sharing,
+            package.max_shared_students
         ))
 
         row = cur.fetchone()
@@ -455,7 +469,9 @@ async def create_package(
             'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
             'is_active': row[23] if row[23] is not None else True,
             'created_at': row[24] or datetime.now(),
-            'updated_at': row[25] or datetime.now()
+            'updated_at': row[25] or datetime.now(),
+            'allow_sharing': row[26] if row[26] is not None else False,
+            'max_shared_students': row[27] if row[27] is not None else 1
         }
 
     except Exception as e:
@@ -545,7 +561,8 @@ async def update_package(
                       session_time, session_duration,
                       hourly_rate, days_per_week, hours_per_day, payment_frequency,
                       discount_1_month, discount_3_month, discount_6_month, yearly_discount,
-                      is_active, created_at, updated_at
+                      is_active, created_at, updated_at,
+                      allow_sharing, max_shared_students
         """
 
         print(f"📝 SQL Query: {query}")
@@ -589,7 +606,9 @@ async def update_package(
             'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
             'is_active': row[23] if row[23] is not None else True,
             'created_at': row[24] or datetime.now(),
-            'updated_at': row[25] or datetime.now()
+            'updated_at': row[25] or datetime.now(),
+            'allow_sharing': row[26] if row[26] is not None else False,
+            'max_shared_students': row[27] if row[27] is not None else 1
         }
 
     except HTTPException:

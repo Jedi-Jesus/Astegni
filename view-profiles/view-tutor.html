@@ -3504,9 +3504,9 @@
                     </div>
                 </div>
 
-                <!-- Students Sharing Section -->
-                <div class="modal-section"
-                    style="background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                <!-- Students Sharing Section (only shown when tutor allows sharing) -->
+                <div id="studentsSharingSection" class="modal-section"
+                    style="background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; border-radius: 16px; margin-bottom: 20px; display: none;">
                     <h3
                         style="font-size: 1rem; font-weight: 600; margin: 0 0 8px 0; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-user-friends" style="color: var(--primary-color);"></i> Students Sharing the Tutor
@@ -3526,7 +3526,7 @@
                             <button type="button" onclick="adjustNumStudents(1)" aria-label="More students"
                                 style="width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 1.25rem; font-weight: 700; cursor: pointer;">+</button>
                         </div>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">(1–4 students)</span>
+                        <span id="numStudentsMaxHint" style="font-size: 0.8rem; color: var(--text-secondary);">(1–4 students)</span>
                     </div>
 
                     <!-- Per-student split preview -->
@@ -3653,7 +3653,7 @@
     </style>
 
     <!-- Database Loader - Loads all tutor data from API -->
-    <script src="../js/view-tutor/view-tutor-db-loader.js?v202605311615"></script>
+    <script src="../js/view-tutor/view-tutor-db-loader.js?v202606011030"></script>
 
     <!-- Stories Loader - Loads tutor's stories dynamically -->
     <script src="../js/view-tutor/view-tutor-stories-loader.js?v202605211228"></script>
