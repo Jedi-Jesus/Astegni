@@ -2219,6 +2219,17 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
             counterOfferInput.value = '';
         }
 
+        // Reset students-sharing field to 1 and refresh the split preview
+        window.currentPackageListedPrice = price;
+        window.currentTutorCurrencySymbol = tutorCurrencySymbol;
+        const numStudentsInput = document.getElementById('numStudents');
+        if (numStudentsInput) {
+            numStudentsInput.value = 1;
+        }
+        if (typeof handleNumStudentsChange === 'function') {
+            handleNumStudentsChange();
+        }
+
         // Pre-fill user info
         prefillPackageModalUserInfo();
 
@@ -2961,6 +2972,51 @@ function formatDateDisplay(dateStr) {
 }
 
 /**
+ * Step the "students sharing" counter by delta (+1 / -1), clamped to 1-4.
+ */
+window.adjustNumStudents = function(delta) {
+    const input = document.getElementById('numStudents');
+    if (!input) return;
+    let value = (parseInt(input.value, 10) || 1) + delta;
+    value = Math.min(4, Math.max(1, value));
+    input.value = value;
+    handleNumStudentsChange();
+};
+
+/**
+ * Clamp the students-sharing input to 1-4 and refresh the per-student
+ * cost-split preview. The split is based on the counter-offer if one is
+ * entered, otherwise the tutor's listed price.
+ */
+window.handleNumStudentsChange = function() {
+    const input = document.getElementById('numStudents');
+    if (!input) return;
+
+    // Clamp to 1-4 (guard against typed values outside the range)
+    let numStudents = parseInt(input.value, 10);
+    if (isNaN(numStudents)) numStudents = 1;
+    numStudents = Math.min(4, Math.max(1, numStudents));
+    if (String(numStudents) !== input.value) {
+        input.value = numStudents;
+    }
+
+    // Base price = counter-offer if provided, else the listed package price
+    const counterOfferInput = document.getElementById('counterOfferPrice');
+    const counterOffer = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
+    const basePrice = (counterOffer && counterOffer > 0)
+        ? counterOffer
+        : (window.currentPackageListedPrice || 0);
+
+    const perStudent = numStudents > 0 ? basePrice / numStudents : basePrice;
+    const symbol = window.currentTutorCurrencySymbol || 'ETB';
+
+    const display = document.getElementById('perStudentPriceDisplay');
+    if (display) {
+        display.textContent = `${symbol}${Math.round(perStudent)}`;
+    }
+};
+
+/**
  * Submit package request with customizations
  */
 window.submitPackageRequest = async function() {
@@ -3035,6 +3091,11 @@ window.submitPackageRequest = async function() {
     const counterOfferInput = document.getElementById('counterOfferPrice');
     const counterOfferPrice = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
 
+    // Number of students sharing the tutor (1-4, cost-sharing method)
+    const numStudentsInput = document.getElementById('numStudents');
+    let numStudents = parseInt(numStudentsInput?.value, 10) || 1;
+    numStudents = Math.min(4, Math.max(1, numStudents));
+
     // Prepare request data with structured schedule fields
     const requestData = {
         tutor_id: parseInt(window.currentTutorId),
@@ -3051,7 +3112,9 @@ window.submitPackageRequest = async function() {
         start_time: startTime || null,
         end_time: endTime || null,
         // Counter-offer price
-        counter_offer_price: counterOfferPrice
+        counter_offer_price: counterOfferPrice,
+        // Number of students sharing the tutor (cost-sharing, 1-4)
+        num_students: numStudents
     };
 
     // Show loading state

@@ -4,7 +4,7 @@ Handles tutor session booking requests from students and parents
 """
 from fastapi import APIRouter, HTTPException, Depends, Header
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Literal
 from datetime import datetime, time
 import json
@@ -121,6 +121,16 @@ class SessionRequestCreate(BaseModel):
     end_time: Optional[str] = None  # e.g. '17:00'
     # Counter-offer price (student/parent proposes their own price)
     counter_offer_price: Optional[float] = None
+    # Number of students sharing the tutor for this package (cost-sharing,
+    # "small tutor / high dosage" method). 1 = solo, up to 4 sharing.
+    num_students: int = 1
+
+    @field_validator('num_students')
+    @classmethod
+    def validate_num_students(cls, v):
+        if v < 1 or v > 4:
+            raise ValueError('num_students must be between 1 and 4')
+        return v
 
 
 class SessionRequestResponse(BaseModel):
@@ -151,6 +161,8 @@ class SessionRequestResponse(BaseModel):
     end_time: Optional[str] = None
     # Counter-offer price
     counter_offer_price: Optional[float] = None
+    # Number of students sharing the tutor (1-4)
+    num_students: Optional[int] = 1
     # Timestamps
     created_at: datetime
     updated_at: datetime
@@ -315,10 +327,10 @@ async def create_session_request(
                 tutor_id, requester_id, requester_type, package_id,
                 message, preferred_schedule, status, requested_to_id,
                 schedule_type, year_range, months, days, specific_dates,
-                start_time, end_time, counter_offer_price
+                start_time, end_time, counter_offer_price, num_students
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, 'pending', %s,
-                %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id, created_at
         """, (
             request.tutor_id, user_id, requester_type,  # user_id is now users.id
@@ -326,7 +338,7 @@ async def create_session_request(
             requested_to_id,  # Student profile ID
             package_schedule_type, year_range_json, months_json, days_json,
             specific_dates_json, package_start_time, package_end_time,
-            request.counter_offer_price
+            request.counter_offer_price, request.num_students
         ))
 
         session_result = cur.fetchone()
@@ -395,7 +407,8 @@ async def create_session_request(
             "specific_dates": request.specific_dates,
             "start_time": package_start_time,
             "end_time": package_end_time,
-            "counter_offer_price": request.counter_offer_price
+            "counter_offer_price": request.counter_offer_price,
+            "num_students": request.num_students
         }
 
         # The content will be the optional message from the user (or empty)
@@ -555,7 +568,9 @@ async def get_tutor_session_requests(
                  JOIN users u ON sp.user_id = u.id
                  WHERE sp.id = sr.requested_to_id) as requested_to_name,
                 -- Counter-offer price
-                sr.counter_offer_price
+                sr.counter_offer_price,
+                -- Number of students sharing the tutor (1-4)
+                sr.num_students
             FROM requested_sessions sr
             WHERE sr.tutor_id = %s
         """
@@ -606,7 +621,9 @@ async def get_tutor_session_requests(
                 "requested_to_id": row[27],
                 "requested_to_name": row[28],
                 # Counter-offer price
-                "counter_offer_price": float(row[29]) if row[29] else None
+                "counter_offer_price": float(row[29]) if row[29] else None,
+                # Number of students sharing the tutor (1-4)
+                "num_students": row[30] if row[30] else 1
             })
 
         return requests
@@ -818,7 +835,9 @@ async def get_session_request_detail(
                  JOIN users u ON sp.user_id = u.id
                  WHERE sp.id = sr.requested_to_id) as requested_to_name,
                 -- Counter-offer price
-                sr.counter_offer_price
+                sr.counter_offer_price,
+                -- Number of students sharing the tutor (1-4)
+                sr.num_students
             FROM requested_sessions sr
             WHERE sr.id = %s AND sr.tutor_id = %s
         """, (request_id, tutor_id))
@@ -862,7 +881,9 @@ async def get_session_request_detail(
             "requested_to_id": row[28],
             "requested_to_name": row[29],
             # Counter-offer price
-            "counter_offer_price": float(row[30]) if row[30] else None
+            "counter_offer_price": float(row[30]) if row[30] else None,
+            # Number of students sharing the tutor (1-4)
+            "num_students": row[31] if row[31] else 1
         }
 
     except HTTPException:

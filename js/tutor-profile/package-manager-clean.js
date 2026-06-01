@@ -1178,6 +1178,10 @@ function renderPackageEditor() {
                             <input type="radio" name="sessionFormat" id="formatInPerson" value="In-person" ${pkg.session_format?.toLowerCase() === 'in-person' ? 'checked' : ''}>
                             <span><i class="fas fa-users"></i> In-Person</span>
                         </label>
+                        <label class="checkbox-label checkbox-label-disabled" title="Coming soon">
+                            <input type="radio" name="sessionFormat" id="formatSelfPaced" value="Self-paced" disabled>
+                            <span><i class="fas fa-user-clock"></i> Self-paced <span class="coming-soon-badge">Coming Soon</span></span>
+                        </label>
                     </div>
                 </div>
 
@@ -1285,7 +1289,18 @@ function renderPackageEditor() {
                             </select>
                         </div>
                         <div class="form-field">
-                            <label><i class="fas fa-money-bill-wave"></i> Hourly Rate (${CurrencyManager.getSymbol()})</label>
+                            <label>
+                                <i class="fas fa-money-bill-wave"></i> Hourly Rate (${CurrencyManager.getSymbol()})
+                                <span class="info-tooltip shared-tutoring-tip">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span class="info-tooltip-text">
+                                        Do you know the proven technique of the small tutor/high dosage method?
+                                        You can let up to 4 students share your hourly price, giving them quality
+                                        education while sharing the cost.
+                                        <a href="https://www.povertyactionlab.org/policy-insight/tutoring-improve-student-learning" target="_blank" rel="noopener noreferrer">See the proof →</a>
+                                    </span>
+                                </span>
+                            </label>
                             <input type="number" id="hourlyRate" value="${pkg.hourlyRate}" min="0" placeholder="200" oninput="updateCalculator()">
                         </div>
                     </div>
