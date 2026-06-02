@@ -477,7 +477,7 @@
             // Load KYC manager script if not already loaded
             if (typeof kycManager === 'undefined') {
                 const script = document.createElement('script');
-                script.src = '../js/common-modals/kyc-verification-manager-v2.js?v202605211228';
+                script.src = '../js/common-modals/kyc-verification-manager-v2.js?v202606021200';
                 script.onload = () => {
                     console.log('[KYC] Manager loaded, opening modal');
                     if (typeof openKYCModal === 'function') {
@@ -838,8 +838,14 @@
                 const ethiopianNaming = document.getElementById('ethiopianNaming');
                 const internationalNaming = document.getElementById('internationalNaming');
 
-                // Set naming system based on existing data
-                if (hasInternationalNames && !hasEthiopianNames) {
+                // Prefer the stored naming_system; fall back to inferring from names
+                const storedNaming = (user.naming_system || '').toLowerCase();
+                const useInternational = storedNaming
+                    ? storedNaming === 'international'
+                    : (hasInternationalNames && !hasEthiopianNames);
+
+                // Set naming system based on stored preference / existing data
+                if (useInternational) {
                     // User has international naming
                     if (internationalNaming) internationalNaming.checked = true;
                     toggleNamingSystem();
@@ -1079,6 +1085,8 @@
 
                 // Prepare update data for users table
                 const updateData = {};
+                // Always persist the chosen naming system (required for verification)
+                updateData.naming_system = isEthiopian ? 'ethiopian' : 'international';
                 if (nameChanged) {
                     updateData.first_name = firstName;
                     updateData.father_name = fatherName;

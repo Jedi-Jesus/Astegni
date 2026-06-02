@@ -1105,6 +1105,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user), db: Se
         father_name=current_user.father_name,
         grandfather_name=current_user.grandfather_name,
         last_name=current_user.last_name,
+        naming_system=getattr(current_user, 'naming_system', 'ethiopian'),
         name=display_name or "User",
         username=username,
         email=current_user.email,
@@ -1265,7 +1266,7 @@ def update_user_profile(
     """
     from datetime import datetime as dt
 
-    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'last_name', 'gender', 'date_of_birth', 'digital_id_no']
+    allowed_fields = ['first_name', 'father_name', 'grandfather_name', 'last_name', 'gender', 'date_of_birth', 'digital_id_no', 'naming_system']
 
     for field, value in profile_data.items():
         if field in allowed_fields and value is not None:
@@ -1278,7 +1279,18 @@ def update_user_profile(
             # Handle digital_id_no - strip whitespace
             if field == 'digital_id_no' and isinstance(value, str):
                 value = value.strip()
+            # Normalize naming_system to a known value
+            if field == 'naming_system':
+                value = 'international' if str(value).lower() == 'international' else 'ethiopian'
             setattr(current_user, field, value)
+
+    # Keep names consistent with the chosen naming system: clear the unused set so
+    # stale values can't satisfy the wrong convention's completeness check.
+    if (getattr(current_user, 'naming_system', None) or 'ethiopian') == 'international':
+        current_user.father_name = None
+        current_user.grandfather_name = None
+    else:
+        current_user.last_name = None
 
     db.commit()
     db.refresh(current_user)
@@ -1296,6 +1308,7 @@ def update_user_profile(
             "father_name": current_user.father_name,
             "grandfather_name": current_user.grandfather_name,
             "last_name": current_user.last_name,
+            "naming_system": getattr(current_user, 'naming_system', 'ethiopian'),
             "gender": current_user.gender,
             "date_of_birth": current_user.date_of_birth.isoformat() if current_user.date_of_birth else None,
             "digital_id_no": current_user.digital_id_no,

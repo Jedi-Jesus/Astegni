@@ -29,32 +29,66 @@ from models import (
 )
 from utils import get_current_user
 
+def _nonempty(v) -> bool:
+    return bool(v) and str(v).strip() != ''
+
+
+def identity_profile_complete(user: User):
+    """
+    Check whether a user's identity profile is complete enough to be verified.
+
+    Required (in addition to passing KYC biometrics):
+      - Names, per the user's naming_system:
+          * international -> first_name + last_name
+          * ethiopian (default) -> first_name + father_name + grandfather_name
+      - date_of_birth
+      - email
+      - gender
+
+    Returns (complete: bool, missing: list[str]) where `missing` holds
+    human-readable labels for any fields that still need to be filled.
+    """
+    missing = []
+    naming = (getattr(user, 'naming_system', None) or 'ethiopian').lower()
+
+    if not _nonempty(user.first_name):
+        missing.append("first name")
+
+    if naming == 'international':
+        if not _nonempty(user.last_name):
+            missing.append("last name")
+    else:  # ethiopian (default)
+        if not _nonempty(user.father_name):
+            missing.append("father name")
+        if not _nonempty(user.grandfather_name):
+            missing.append("grandfather name")
+
+    if user.date_of_birth is None:
+        missing.append("date of birth")
+    if not _nonempty(user.email):
+        missing.append("email address")
+    if not _nonempty(user.gender):
+        missing.append("gender")
+
+    return (len(missing) == 0, missing)
+
+
 def check_and_auto_verify_profiles(user: User, db: Session) -> dict:
     """
     Auto-verify ALL user profiles (tutor, student, parent, advertiser) if requirements are met.
 
-    Requirements for verification:
-    - first_name (not empty)
-    - father_name (not empty)
-    - grandfather_name (not empty)
-    - date_of_birth (not null)
-    - gender (not empty)
-    - is_verified = True (NEW: using canonical verification field)
+    Requirements: a complete identity profile (see identity_profile_complete:
+    names per naming_system + DOB + email + gender) AND is_verified already
+    flipped True by the KYC biometric step.
 
     Returns dict with verification results for each profile type.
     """
-    # Check all profile requirements (NEW: using is_verified instead of kyc_verified)
-    profile_complete = (
-        user.first_name and user.first_name.strip() != '' and
-        user.father_name and user.father_name.strip() != '' and
-        user.grandfather_name and user.grandfather_name.strip() != '' and
-        user.date_of_birth is not None and
-        user.gender and user.gender.strip() != '' and
-        user.is_verified == True  # NEW: Check is_verified (canonical)
-    )
+    identity_ok, missing = identity_profile_complete(user)
+    profile_complete = identity_ok and user.is_verified == True
 
     results = {
         "requirements_met": profile_complete,
+        "missing_fields": missing,
         "verified_profiles": []
     }
 
@@ -873,6 +907,20 @@ async def start_kyc_verification(
     Start a new KYC verification session.
     Returns verification ID and challenge instructions.
     """
+    # Precondition: the identity profile must be complete BEFORE KYC.
+    # (names per naming_system + DOB + email + gender)
+    identity_ok, missing = identity_profile_complete(current_user)
+    if not identity_ok:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "PROFILE_INCOMPLETE",
+                "message": "Complete your profile before verifying your identity: "
+                           + ", ".join(missing) + ".",
+                "missing_fields": missing
+            }
+        )
+
     # Check if user already has a pending or passed verification
     existing = db.query(KYCVerification).filter(
         KYCVerification.user_id == current_user.id,
@@ -1184,12 +1232,23 @@ async def upload_selfie(
 
         # Determine overall status
         if verification.face_match_passed and verification.liveliness_passed:
-            verification.status = 'passed'
-            verification.verified_at = datetime.utcnow()
-
-            # Update user's verification status (NEW: using is_verified as canonical)
+            # Biometrics passed. Only flip is_verified if the identity profile is
+            # also complete (names per naming_system + DOB + email + gender).
             user = db.query(User).filter(User.id == current_user.id).first()
-            if user:
+            identity_ok, missing = identity_profile_complete(user) if user else (False, ['profile'])
+
+            if not identity_ok:
+                # Hold verification: biometrics are fine but profile is incomplete.
+                verification.status = 'pending_profile'
+                verification.rejection_reason = (
+                    "Identity check passed, but complete your profile to finish "
+                    "verification: " + ", ".join(missing) + "."
+                )
+                db.commit()
+            else:
+                verification.status = 'passed'
+                verification.verified_at = datetime.utcnow()
+
                 # NEW: Set is_verified as the canonical verification field
                 user.is_verified = True
                 user.verified_at = datetime.utcnow()
@@ -1542,7 +1601,10 @@ async def check_kyc_required(
         }
 
     if verification:
-        if verification.status == 'passed':
+        # Only honor a 'passed' biometric record if the identity profile is also
+        # complete. Guards legacy 'passed' rows and the held 'pending_profile' state.
+        identity_ok, _missing = identity_profile_complete(user)
+        if verification.status == 'passed' and identity_ok:
             # Update user if not already updated (NEW: using is_verified)
             user.is_verified = True
             user.verified_at = verification.verified_at

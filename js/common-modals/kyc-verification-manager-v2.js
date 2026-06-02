@@ -359,7 +359,23 @@ class KYCVerificationManager {
                     this.closeModal();
                     return;
                 }
-                throw new Error(data.detail || 'Failed to start verification');
+                // Structured "profile incomplete" block from /api/kyc/start
+                if (response.status === 400 && data.detail && typeof data.detail === 'object'
+                        && data.detail.code === 'PROFILE_INCOMPLETE') {
+                    alert(data.detail.message
+                        || 'Please complete your profile before verifying your identity.');
+                    this.closeModal();
+                    // Send the user to the Personal Info tab to finish their profile
+                    if (typeof window.openVerifyPersonalInfoModal === 'function') {
+                        window.openVerifyPersonalInfoModal();
+                        if (typeof window.switchVerifyTab === 'function') window.switchVerifyTab('personal');
+                    }
+                    return;
+                }
+                const msg = (data.detail && typeof data.detail === 'object')
+                    ? (data.detail.message || 'Failed to start verification')
+                    : (data.detail || 'Failed to start verification');
+                throw new Error(msg);
             }
 
             this.verificationId = data.verification_id;

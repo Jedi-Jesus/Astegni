@@ -34,6 +34,9 @@ class User(Base):
     father_name = Column(String, nullable=True)  # Ethiopian naming convention - OPTIONAL
     grandfather_name = Column(String, nullable=True)  # Ethiopian naming convention - OPTIONAL
     last_name = Column(String, nullable=True)  # International naming convention - OPTIONAL
+    # Which naming convention the user uses: 'ethiopian' (first+father+grandfather)
+    # or 'international' (first+last). Drives which names are required for verification.
+    naming_system = Column(String, nullable=False, default='ethiopian', server_default='ethiopian')
     # username removed - now stored in role-specific profile tables (tutor_profiles, student_profiles, etc.)
     email = Column(String, unique=True, index=True, nullable=True)
     phone = Column(String, unique=True, index=True, nullable=True)
@@ -1021,6 +1024,7 @@ class UserResponse(BaseModel):
     father_name: Optional[str] = None
     grandfather_name: Optional[str] = None
     last_name: Optional[str] = None  # For international naming convention
+    naming_system: Optional[str] = 'ethiopian'  # 'ethiopian' or 'international'
     name: Optional[str] = None  # Display name (Ethiopian: first+father+grandfather, International: first+last)
     username: Optional[str]
     email: str

@@ -237,7 +237,7 @@
             if (typeof window.openVerifyPersonalInfoModal !== 'function') {
                 await new Promise((resolve, reject) => {
                     const s = document.createElement('script');
-                    s.src = '../js/tutor-profile/settings-panel-personal-verification.js?v202605211228';
+                    s.src = '../js/tutor-profile/settings-panel-personal-verification.js?v202606021200';
                     s.onload = resolve;
                     s.onerror = () => reject(new Error('Failed to load settings-panel-personal-verification.js'));
                     document.body.appendChild(s);
