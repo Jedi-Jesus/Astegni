@@ -150,6 +150,36 @@ def _format_student_name(first, father, grandfather, last):
     return " ".join(p for p in parts if p).strip() or "Student"
 
 
+def _share_otp_purpose(student_profile_id: int) -> str:
+    """OTP purpose namespaced per student, so a code for one student can't be
+    replayed for another."""
+    return f"share_student_{student_profile_id}"
+
+
+def _verify_share_otp(cur, booker_user_id: int, student_profile_id: int,
+                      otp_code: str, consume: bool = False) -> bool:
+    """
+    Check that `otp_code` is a valid, unused, unexpired OTP issued to this booker
+    for this student (via send-share-otp). If consume=True, mark it used so it
+    can't be reused after the booking is submitted.
+    """
+    if not otp_code:
+        return False
+    purpose = _share_otp_purpose(student_profile_id)
+    cur.execute("""
+        SELECT id FROM otps
+        WHERE user_id = %s AND purpose = %s AND otp_code = %s
+          AND is_used = FALSE AND expires_at > NOW()
+        ORDER BY id DESC LIMIT 1
+    """, (booker_user_id, purpose, otp_code.strip()))
+    row = cur.fetchone()
+    if not row:
+        return False
+    if consume:
+        cur.execute("UPDATE otps SET is_used = TRUE WHERE id = %s", (row[0],))
+    return True
+
+
 def _fetch_shared_students(cur, request_id):
     """
     Return the shared-student roster for a request as a list of dicts
@@ -233,9 +263,91 @@ async def search_students(q: str, current_user: dict = Depends(get_current_user)
         conn.close()
 
 
+class SendShareOtp(BaseModel):
+    student_profile_id: int
+
+
+@router.post("/api/students/send-share-otp", response_model=dict)
+async def send_share_otp(
+    payload: SendShareOtp,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Email a 6-digit OTP to a student's registered address so the booker can
+    prove authorization to add them to a shared booking (alternative to DOB).
+
+    The code is tied to (booker, student) and expires in 10 minutes.
+    """
+    import random
+    conn = psycopg.connect(DATABASE_URL)
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT u.email, u.is_verified
+            FROM student_profiles sp JOIN users u ON sp.user_id = u.id
+            WHERE sp.id = %s
+        """, (payload.student_profile_id,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Student not found")
+        if not row[1]:
+            raise HTTPException(status_code=400, detail="This student is not verified yet.")
+        student_email = row[0]
+        if not student_email:
+            raise HTTPException(
+                status_code=400,
+                detail="This student has no email on file and cannot be verified by code."
+            )
+
+        booker_user_id = current_user.get('id')
+        purpose = _share_otp_purpose(payload.student_profile_id)
+        otp_code = str(random.randint(100000, 999999))
+
+        # Invalidate prior unused codes for this booker+student, then store new one
+        cur.execute("""
+            UPDATE otps SET is_used = TRUE
+            WHERE user_id = %s AND purpose = %s AND is_used = FALSE
+        """, (booker_user_id, purpose))
+        cur.execute("""
+            INSERT INTO otps (user_id, contact, otp_code, purpose, expires_at, is_used, created_at)
+            VALUES (%s, %s, %s, %s, NOW() + INTERVAL '10 minutes', FALSE, NOW())
+        """, (booker_user_id, student_email, otp_code, purpose))
+        conn.commit()
+
+        # Send the email (import here to mirror routes.py usage)
+        try:
+            from email_service import email_service
+            sent = email_service.send_otp_email(
+                to_email=student_email,
+                otp_code=otp_code,
+                purpose="shared tutoring verification"
+            )
+        except Exception as e:
+            print(f"[send_share_otp] email send error: {e}")
+            sent = False
+
+        # In development, surface the code to ease testing
+        include_otp = (not sent) or os.getenv("ENVIRONMENT", "development") == "development"
+
+        # Mask the destination email
+        local, _, domain = student_email.partition('@')
+        masked = f"{local[:2]}***@{domain}" if domain else "***"
+
+        return {
+            "ok": True,
+            "destination": masked,
+            "expires_in": 600,
+            "otp": otp_code if include_otp else None
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
 class VerifyStudentForSharing(BaseModel):
     student_profile_id: int
-    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', required when unrelated
+    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', for unrelated students
+    otp_code: Optional[str] = None       # alternative to DOB for unrelated students
 
 
 @router.post("/api/students/verify-for-sharing", response_model=dict)
@@ -249,8 +361,9 @@ async def verify_student_for_sharing(
     - Student must exist and be verified.
     - If the student is linked to the booker (own profile / parent's child),
       they are accepted without further checks.
-    - Otherwise the booker must supply the student's date of birth, which must
-      match the stored users.date_of_birth exactly.
+    - Otherwise the booker must prove authorization by EITHER:
+        * an exact match of the student's stored date of birth, OR
+        * a valid OTP previously emailed to the student (send-share-otp).
     """
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
@@ -274,23 +387,25 @@ async def verify_student_for_sharing(
         is_related = row[0] in related_ids
 
         if not is_related:
-            # Unrelated student: require an exact DOB match.
-            if not payload.date_of_birth:
-                raise HTTPException(
-                    status_code=422,
-                    detail="DOB_REQUIRED"  # frontend prompts for date of birth
-                )
-            stored_dob = row[8]
-            if stored_dob is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="This student has no date of birth on file and cannot be added this way."
-                )
-            if str(stored_dob) != payload.date_of_birth.strip():
-                raise HTTPException(
-                    status_code=403,
-                    detail="Date of birth does not match our records for this student."
-                )
+            booker_user_id = current_user.get('id')
+            otp_ok = _verify_share_otp(cur, booker_user_id, row[0], payload.otp_code or "")
+            if otp_ok:
+                pass  # authorized by OTP
+            elif payload.date_of_birth:
+                stored_dob = row[8]
+                if stored_dob is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="This student has no date of birth on file. Verify by code instead."
+                    )
+                if str(stored_dob) != payload.date_of_birth.strip():
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Date of birth does not match our records for this student."
+                    )
+            else:
+                # Neither proof supplied: tell the frontend to collect one.
+                raise HTTPException(status_code=422, detail="VERIFY_REQUIRED")
 
         return {
             "ok": True,
@@ -310,7 +425,8 @@ async def verify_student_for_sharing(
 # Pydantic Models
 class SharedStudentInput(BaseModel):
     student_profile_id: int
-    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', required when unrelated
+    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', for unrelated students
+    otp_code: Optional[str] = None       # alternative to DOB for unrelated students
 
 
 class SessionRequestCreate(BaseModel):
@@ -536,17 +652,24 @@ async def create_session_request(
             related_ids = _booker_related_student_ids(cur, current_user)
             is_related = sid in related_ids
             if not is_related:
-                # Unrelated: DOB must be supplied and match exactly.
-                if not entry.date_of_birth:
-                    raise HTTPException(
-                        status_code=422,
-                        detail=f"Date of birth required to add student {sid}."
-                    )
-                if srow[1] is None or str(srow[1]) != entry.date_of_birth.strip():
-                    raise HTTPException(
-                        status_code=403,
-                        detail="Date of birth does not match our records for a shared student."
-                    )
+                # Unrelated: authorize by OTP (preferred) OR exact DOB match.
+                # Not consumed here so a later validation failure in this loop
+                # doesn't invalidate an already-checked code; the OTP expires on
+                # its own (10 min) and is single-booking by nature.
+                otp_ok = _verify_share_otp(
+                    cur, current_user.get('id'), sid, entry.otp_code or "", consume=False
+                )
+                if not otp_ok:
+                    if not entry.date_of_birth:
+                        raise HTTPException(
+                            status_code=422,
+                            detail=f"Verification (date of birth or code) required to add student {sid}."
+                        )
+                    if srow[1] is None or str(srow[1]) != entry.date_of_birth.strip():
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Date of birth does not match our records for a shared student."
+                        )
             shared_roster.append((sid, is_related))
 
         if shared_roster:

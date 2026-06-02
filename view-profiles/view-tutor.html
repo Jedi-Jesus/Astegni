@@ -3553,22 +3553,50 @@
                     </div>
                 </div>
 
-                <!-- DOB Verification Modal (for adding unrelated students) -->
+                <!-- Verify Student Modal (for adding unrelated students): DOB or Email OTP -->
                 <div id="dobVerifyModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center;">
-                    <div style="background: var(--card-bg); width: 90%; max-width: 380px; border-radius: 16px; padding: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+                    <div style="background: var(--card-bg); width: 90%; max-width: 400px; border-radius: 16px; padding: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
                         <h4 style="margin: 0 0 6px 0; font-size: 1.05rem; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> Verify student
                         </h4>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 14px 0; line-height: 1.5;">
                             <span id="dobVerifyName">This student</span> isn't linked to your account. To add them,
-                            confirm their date of birth.
+                            confirm their date of birth or verify by a code emailed to the student.
                         </p>
-                        <input type="date" id="dobVerifyInput"
-                            style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); margin-bottom: 8px;">
+
+                        <!-- Method toggle -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                            <button type="button" id="verifyMethodDobBtn" onclick="setVerifyMethod('dob')"
+                                style="flex: 1; padding: 10px; border: 2px solid var(--primary-color); background: var(--primary-color); color: white; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                                <i class="fas fa-calendar"></i> Date of birth
+                            </button>
+                            <button type="button" id="verifyMethodOtpBtn" onclick="setVerifyMethod('otp')"
+                                style="flex: 1; padding: 10px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                                <i class="fas fa-envelope"></i> Email code
+                            </button>
+                        </div>
+
+                        <!-- DOB panel -->
+                        <div id="verifyDobPanel">
+                            <input type="date" id="dobVerifyInput"
+                                style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); margin-bottom: 8px;">
+                        </div>
+
+                        <!-- OTP panel -->
+                        <div id="verifyOtpPanel" style="display: none;">
+                            <button type="button" id="sendOtpBtn" onclick="sendShareOtp()"
+                                style="width: 100%; padding: 11px; background: var(--bg-color); color: var(--primary-color); border: 2px solid var(--primary-color); border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">
+                                <i class="fas fa-paper-plane"></i> Send code to student's email
+                            </button>
+                            <p id="otpSentMsg" style="display: none; font-size: 0.8rem; color: #16a34a; margin: 0 0 8px 0;"></p>
+                            <input type="text" id="otpVerifyInput" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit code"
+                                style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); margin-bottom: 8px; letter-spacing: 3px; text-align: center; font-size: 1.05rem;">
+                        </div>
+
                         <p id="dobVerifyError" style="display: none; color: #ef4444; font-size: 0.8rem; margin: 0 0 10px 0;"></p>
                         <div style="display: flex; gap: 10px; margin-top: 8px;">
-                            <button type="button" onclick="confirmDobVerify()" id="dobVerifyConfirmBtn"
-                                style="flex: 1; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Verify & Add</button>
+                            <button type="button" onclick="confirmVerifyStudent()" id="dobVerifyConfirmBtn"
+                                style="flex: 1; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Verify &amp; Add</button>
                             <button type="button" onclick="closeDobVerify()"
                                 style="padding: 12px 18px; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--border-color); border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
                         </div>
@@ -3687,7 +3715,7 @@
     </style>
 
     <!-- Database Loader - Loads all tutor data from API -->
-    <script src="../js/view-tutor/view-tutor-db-loader.js?v202606021100"></script>
+    <script src="../js/view-tutor/view-tutor-db-loader.js?v202606021500"></script>
 
     <!-- Stories Loader - Loads tutor's stories dynamically -->
     <script src="../js/view-tutor/view-tutor-stories-loader.js?v202605211228"></script>

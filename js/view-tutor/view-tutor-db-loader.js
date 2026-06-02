@@ -3170,20 +3170,51 @@ window.addSharedStudent = function(student) {
     }
 };
 
-// --- DOB verification flow (unrelated students) ---
+// --- Verify-student flow (unrelated students): DOB or email OTP ---
 let _dobVerifyTarget = null;
+let _verifyMethod = 'dob';  // 'dob' | 'otp'
 
 function openDobVerify(student) {
     _dobVerifyTarget = student;
     const modal = document.getElementById('dobVerifyModal');
     const nameEl = document.getElementById('dobVerifyName');
-    const input = document.getElementById('dobVerifyInput');
+    const dobInput = document.getElementById('dobVerifyInput');
+    const otpInput = document.getElementById('otpVerifyInput');
     const err = document.getElementById('dobVerifyError');
+    const sentMsg = document.getElementById('otpSentMsg');
     if (nameEl) nameEl.textContent = student.name;
-    if (input) input.value = '';
+    if (dobInput) dobInput.value = '';
+    if (otpInput) otpInput.value = '';
     if (err) { err.style.display = 'none'; err.textContent = ''; }
+    if (sentMsg) { sentMsg.style.display = 'none'; sentMsg.textContent = ''; }
+    setVerifyMethod('dob');
     if (modal) modal.style.display = 'flex';
 }
+
+window.setVerifyMethod = function(method) {
+    _verifyMethod = method;
+    const dobPanel = document.getElementById('verifyDobPanel');
+    const otpPanel = document.getElementById('verifyOtpPanel');
+    const dobBtn = document.getElementById('verifyMethodDobBtn');
+    const otpBtn = document.getElementById('verifyMethodOtpBtn');
+    const err = document.getElementById('dobVerifyError');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+
+    const active = 'flex: 1; padding: 10px; border: 2px solid var(--primary-color); background: var(--primary-color); color: white; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer;';
+    const idle = 'flex: 1; padding: 10px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer;';
+
+    if (method === 'otp') {
+        if (dobPanel) dobPanel.style.display = 'none';
+        if (otpPanel) otpPanel.style.display = 'block';
+        if (dobBtn) dobBtn.setAttribute('style', idle);
+        if (otpBtn) otpBtn.setAttribute('style', active);
+    } else {
+        if (dobPanel) dobPanel.style.display = 'block';
+        if (otpPanel) otpPanel.style.display = 'none';
+        if (dobBtn) dobBtn.setAttribute('style', active);
+        if (otpBtn) otpBtn.setAttribute('style', idle);
+    }
+};
 
 window.closeDobVerify = function() {
     _dobVerifyTarget = null;
@@ -3191,43 +3222,90 @@ window.closeDobVerify = function() {
     if (modal) modal.style.display = 'none';
 };
 
-window.confirmDobVerify = async function() {
+// Email a 6-digit code to the student's address
+window.sendShareOtp = async function() {
     if (!_dobVerifyTarget) return;
-    const input = document.getElementById('dobVerifyInput');
+    const btn = document.getElementById('sendOtpBtn');
+    const err = document.getElementById('dobVerifyError');
+    const sentMsg = document.getElementById('otpSentMsg');
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+
+    const original = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const res = await fetch(`${API_BASE_URL}/api/students/send-share-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ student_profile_id: _dobVerifyTarget.id })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            if (sentMsg) {
+                sentMsg.textContent = `Code sent to ${data.destination || "the student's email"}. It expires in 10 minutes.`;
+                sentMsg.style.display = 'block';
+            }
+            document.getElementById('otpVerifyInput')?.focus();
+        } else {
+            const msg = (data && typeof data.detail === 'string') ? data.detail : 'Could not send code.';
+            if (err) { err.textContent = msg; err.style.display = 'block'; }
+        }
+    } catch (e) {
+        console.error('send-share-otp error:', e);
+        if (err) { err.textContent = 'Network error. Please try again.'; err.style.display = 'block'; }
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = original; }
+    }
+};
+
+window.confirmVerifyStudent = async function() {
+    if (!_dobVerifyTarget) return;
     const err = document.getElementById('dobVerifyError');
     const btn = document.getElementById('dobVerifyConfirmBtn');
-    const dob = input?.value;
 
-    if (!dob) {
-        if (err) { err.textContent = 'Please enter the date of birth.'; err.style.display = 'block'; }
-        return;
+    const dob = document.getElementById('dobVerifyInput')?.value;
+    const otp = (document.getElementById('otpVerifyInput')?.value || '').trim();
+
+    const payload = { student_profile_id: _dobVerifyTarget.id };
+    if (_verifyMethod === 'otp') {
+        if (!otp) { if (err) { err.textContent = 'Enter the code sent to the student.'; err.style.display = 'block'; } return; }
+        payload.otp_code = otp;
+    } else {
+        if (!dob) { if (err) { err.textContent = 'Please enter the date of birth.'; err.style.display = 'block'; } return; }
+        payload.date_of_birth = dob;
     }
 
     const originalLabel = btn ? btn.innerHTML : '';
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying…'; }
-
     try {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         const res = await fetch(`${API_BASE_URL}/api/students/verify-for-sharing`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ student_profile_id: _dobVerifyTarget.id, date_of_birth: dob })
+            body: JSON.stringify(payload)
         });
 
         if (res.ok) {
             const data = await res.json();
             const verified = data.student || _dobVerifyTarget;
-            window.sharedStudents.push({ ...verified, is_related: false, date_of_birth: dob });
+            // Carry the proof so submit can re-verify (DOB matched, or OTP to consume)
+            window.sharedStudents.push({
+                ...verified,
+                is_related: false,
+                date_of_birth: _verifyMethod === 'dob' ? dob : null,
+                otp_code: _verifyMethod === 'otp' ? otp : null
+            });
             renderSharedStudents();
             closeDobVerify();
         } else {
             let detail = 'Verification failed.';
-            try { detail = (await res.json()).detail || detail; } catch (e) {}
+            try { const d = await res.json(); detail = (typeof d.detail === 'string' ? d.detail : detail); } catch (e) {}
             if (res.status === 403) detail = 'Date of birth does not match our records for this student.';
+            if (res.status === 422 && _verifyMethod === 'otp') detail = 'Invalid or expired code.';
             if (err) { err.textContent = detail; err.style.display = 'block'; }
         }
     } catch (e) {
-        console.error('DOB verify error:', e);
+        console.error('verify-for-sharing error:', e);
         if (err) { err.textContent = 'Network error. Please try again.'; err.style.display = 'block'; }
     } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = originalLabel; }
@@ -3316,7 +3394,8 @@ window.submitPackageRequest = async function() {
     const sharedList = allowSharing ? (window.sharedStudents || []) : [];
     const sharedStudentsPayload = sharedList.map(s => ({
         student_profile_id: s.id,
-        date_of_birth: s.is_related ? null : (s.date_of_birth || null)
+        date_of_birth: s.is_related ? null : (s.date_of_birth || null),
+        otp_code: s.is_related ? null : (s.otp_code || null)
     }));
     const numStudents = 1 + sharedStudentsPayload.length;
 
