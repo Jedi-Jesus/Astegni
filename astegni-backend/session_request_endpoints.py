@@ -103,7 +103,216 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         conn.close()
 
 
+# ============================================
+# SHARED-STUDENT SEARCH & VERIFICATION
+# (cost-sharing: book one tutor for several students)
+# ============================================
+
+def _booker_related_student_ids(cur, current_user) -> set:
+    """
+    Return the set of student_profiles.id that are linked to the current user
+    (the booker), so they can be added to a shared booking without a DOB check.
+
+    - If the user is a student: their own student_profiles.id.
+    - If the user is a parent: every student in parent_profiles.children_ids.
+    """
+    related = set()
+    role_ids = current_user.get('role_ids', {}) or {}
+
+    student_pid = role_ids.get('student')
+    if student_pid:
+        try:
+            related.add(int(student_pid))
+        except (TypeError, ValueError):
+            pass
+
+    parent_pid = role_ids.get('parent')
+    if parent_pid:
+        try:
+            parent_pid = int(parent_pid)
+            cur.execute(
+                "SELECT children_ids FROM parent_profiles WHERE id = %s",
+                (parent_pid,)
+            )
+            row = cur.fetchone()
+            if row and row[0]:
+                for cid in row[0]:
+                    related.add(int(cid))
+        except (TypeError, ValueError):
+            pass
+
+    return related
+
+
+def _format_student_name(first, father, grandfather, last):
+    """Build a display name from Ethiopian or international name parts."""
+    parts = [first, father or last, grandfather]
+    return " ".join(p for p in parts if p).strip() or "Student"
+
+
+def _fetch_shared_students(cur, request_id):
+    """
+    Return the shared-student roster for a request as a list of dicts
+    (id, name, grade_level, profile_picture, is_related, is_primary).
+    Empty when the request isn't a shared booking.
+    """
+    cur.execute("""
+        SELECT rss.student_profile_id, u.first_name, u.father_name,
+               u.grandfather_name, u.last_name, u.profile_picture,
+               sp.grade_level, rss.is_related, rss.is_primary
+        FROM requested_session_students rss
+        JOIN student_profiles sp ON sp.id = rss.student_profile_id
+        JOIN users u ON sp.user_id = u.id
+        WHERE rss.requested_session_id = %s
+        ORDER BY rss.is_primary DESC, rss.id ASC
+    """, (request_id,))
+    roster = []
+    for r in cur.fetchall():
+        roster.append({
+            "id": r[0],
+            "name": _format_student_name(r[1], r[2], r[3], r[4]),
+            "profile_picture": r[5],
+            "grade_level": r[6],
+            "is_related": r[7],
+            "is_primary": r[8]
+        })
+    return roster
+
+
+@router.get("/api/students/search", response_model=dict)
+async def search_students(q: str, current_user: dict = Depends(get_current_user)):
+    """
+    Live search for VERIFIED student profiles by name, for adding to a
+    shared (cost-sharing) package booking.
+
+    Returns each match with an `is_related` flag (linked to the booker, so no
+    DOB needed) so the frontend knows whether to prompt for date of birth.
+    """
+    q = (q or "").strip()
+    if len(q) < 2:
+        return {"students": []}
+
+    conn = psycopg.connect(DATABASE_URL)
+    cur = conn.cursor()
+    try:
+        related_ids = _booker_related_student_ids(cur, current_user)
+        like = f"%{q}%"
+
+        # Only verified students (users.is_verified). Match against the
+        # concatenated name so multi-part queries ("sara t") work.
+        cur.execute("""
+            SELECT sp.id, u.first_name, u.father_name, u.grandfather_name,
+                   u.last_name, u.profile_picture, sp.grade_level
+            FROM student_profiles sp
+            JOIN users u ON sp.user_id = u.id
+            WHERE u.is_verified = TRUE
+              AND (
+                   COALESCE(u.first_name,'') || ' ' ||
+                   COALESCE(u.father_name,'') || ' ' ||
+                   COALESCE(u.grandfather_name,'') || ' ' ||
+                   COALESCE(u.last_name,'')
+              ) ILIKE %s
+            ORDER BY u.first_name
+            LIMIT 15
+        """, (like,))
+
+        students = []
+        for row in cur.fetchall():
+            sid = row[0]
+            students.append({
+                "id": sid,
+                "name": _format_student_name(row[1], row[2], row[3], row[4]),
+                "profile_picture": row[5],
+                "grade_level": row[6],
+                "is_related": sid in related_ids
+            })
+
+        return {"students": students}
+    finally:
+        cur.close()
+        conn.close()
+
+
+class VerifyStudentForSharing(BaseModel):
+    student_profile_id: int
+    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', required when unrelated
+
+
+@router.post("/api/students/verify-for-sharing", response_model=dict)
+async def verify_student_for_sharing(
+    payload: VerifyStudentForSharing,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Validate that a student may be added to a shared booking by the booker.
+
+    - Student must exist and be verified.
+    - If the student is linked to the booker (own profile / parent's child),
+      they are accepted without further checks.
+    - Otherwise the booker must supply the student's date of birth, which must
+      match the stored users.date_of_birth exactly.
+    """
+    conn = psycopg.connect(DATABASE_URL)
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT sp.id, u.first_name, u.father_name, u.grandfather_name,
+                   u.last_name, u.profile_picture, sp.grade_level,
+                   u.is_verified, u.date_of_birth
+            FROM student_profiles sp
+            JOIN users u ON sp.user_id = u.id
+            WHERE sp.id = %s
+        """, (payload.student_profile_id,))
+        row = cur.fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Student not found")
+        if not row[7]:
+            raise HTTPException(status_code=400, detail="This student is not verified yet.")
+
+        related_ids = _booker_related_student_ids(cur, current_user)
+        is_related = row[0] in related_ids
+
+        if not is_related:
+            # Unrelated student: require an exact DOB match.
+            if not payload.date_of_birth:
+                raise HTTPException(
+                    status_code=422,
+                    detail="DOB_REQUIRED"  # frontend prompts for date of birth
+                )
+            stored_dob = row[8]
+            if stored_dob is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="This student has no date of birth on file and cannot be added this way."
+                )
+            if str(stored_dob) != payload.date_of_birth.strip():
+                raise HTTPException(
+                    status_code=403,
+                    detail="Date of birth does not match our records for this student."
+                )
+
+        return {
+            "ok": True,
+            "student": {
+                "id": row[0],
+                "name": _format_student_name(row[1], row[2], row[3], row[4]),
+                "profile_picture": row[5],
+                "grade_level": row[6],
+                "is_related": is_related
+            }
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
 # Pydantic Models
+class SharedStudentInput(BaseModel):
+    student_profile_id: int
+    date_of_birth: Optional[str] = None  # 'YYYY-MM-DD', required when unrelated
+
+
 class SessionRequestCreate(BaseModel):
     tutor_id: int
     package_id: Optional[int] = None
@@ -124,6 +333,13 @@ class SessionRequestCreate(BaseModel):
     # Number of students sharing the tutor for this package (cost-sharing,
     # "small tutor / high dosage" method). 1 = solo, up to 4 sharing.
     num_students: int = 1
+
+    # Additional students sharing the session (cost-sharing). Excludes the
+    # booker's primary student (that's requested_to_id). Each entry carries the
+    # student id plus, for students NOT linked to the booker, their date of
+    # birth — re-verified server-side at submit. num_students is derived as
+    # 1 (primary) + len(shared_students).
+    shared_students: Optional[List['SharedStudentInput']] = None
 
     @field_validator('num_students')
     @classmethod
@@ -249,15 +465,20 @@ async def create_session_request(
         package_start_time = request.start_time
         package_end_time = request.end_time
 
+        pkg_allow_sharing = False
+        pkg_max_shared = 1
         if request.package_id:
-            # Fetch package schedule details
+            # Fetch package schedule details (+ sharing config)
             cur.execute("""
-                SELECT schedule_type, schedule_days, start_time, end_time
+                SELECT schedule_type, schedule_days, start_time, end_time,
+                       allow_sharing, max_shared_students
                 FROM tutor_packages WHERE id = %s
             """, (request.package_id,))
             pkg_row = cur.fetchone()
 
             if pkg_row:
+                pkg_allow_sharing = bool(pkg_row[4])
+                pkg_max_shared = int(pkg_row[5]) if pkg_row[5] else 1
                 # Use package defaults if user didn't provide schedule preferences
                 if not package_schedule_type and pkg_row[0]:
                     package_schedule_type = pkg_row[0]
@@ -284,6 +505,60 @@ async def create_session_request(
         months_json = json.dumps(request.months) if request.months else None
         days_json = json.dumps(package_days) if package_days else None
         specific_dates_json = json.dumps(request.specific_dates) if request.specific_dates else None
+
+        # =============================================
+        # VALIDATE SHARED STUDENTS (cost-sharing)
+        # Re-verify everything server-side; never trust the client's claim that
+        # a student was already verified. shared_roster = [(id, is_related), ...]
+        # =============================================
+        shared_roster = []
+        seen_shared = set()
+        for entry in (request.shared_students or []):
+            sid = entry.student_profile_id
+            if sid == requested_to_id or sid in seen_shared:
+                continue  # de-dupe; primary handled separately
+            seen_shared.add(sid)
+
+            if not pkg_allow_sharing:
+                raise HTTPException(status_code=400, detail="This package does not allow sharing.")
+
+            cur.execute("""
+                SELECT u.is_verified, u.date_of_birth
+                FROM student_profiles sp JOIN users u ON sp.user_id = u.id
+                WHERE sp.id = %s
+            """, (sid,))
+            srow = cur.fetchone()
+            if not srow:
+                raise HTTPException(status_code=404, detail=f"Student {sid} not found.")
+            if not srow[0]:
+                raise HTTPException(status_code=400, detail="All shared students must be verified.")
+
+            related_ids = _booker_related_student_ids(cur, current_user)
+            is_related = sid in related_ids
+            if not is_related:
+                # Unrelated: DOB must be supplied and match exactly.
+                if not entry.date_of_birth:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"Date of birth required to add student {sid}."
+                    )
+                if srow[1] is None or str(srow[1]) != entry.date_of_birth.strip():
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Date of birth does not match our records for a shared student."
+                    )
+            shared_roster.append((sid, is_related))
+
+        if shared_roster:
+            total_students = 1 + len(shared_roster)
+            if total_students > pkg_max_shared:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"This package allows at most {pkg_max_shared} students sharing."
+                )
+
+        # num_students is derived from the actual roster, not the client value
+        num_students = 1 + len(shared_roster)
 
         # =============================================
         # CHECK FOR DUPLICATE REQUESTS
@@ -338,12 +613,31 @@ async def create_session_request(
             requested_to_id,  # Student profile ID
             package_schedule_type, year_range_json, months_json, days_json,
             specific_dates_json, package_start_time, package_end_time,
-            request.counter_offer_price, request.num_students
+            request.counter_offer_price, num_students
         ))
 
         session_result = cur.fetchone()
         session_request_id = session_result[0]
         created_at = session_result[1]
+
+        # =============================================
+        # PERSIST SHARED-STUDENT ROSTER (cost-sharing)
+        # Record the primary student + every shared student so the tutor sees
+        # the full roster. Only when sharing actually applies (>1 student).
+        # =============================================
+        if shared_roster:
+            roster = []
+            if requested_to_id:
+                roster.append((requested_to_id, True, True))  # primary, related
+            for sid, is_related in shared_roster:
+                roster.append((sid, is_related, False))
+            for sid, is_related, is_primary in roster:
+                cur.execute("""
+                    INSERT INTO requested_session_students
+                        (requested_session_id, student_profile_id, is_related, is_primary)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (requested_session_id, student_profile_id) DO NOTHING
+                """, (session_request_id, sid, is_related, is_primary))
 
         # =============================================
         # CREATE OR GET CHAT CONVERSATION (USER-BASED)
@@ -408,7 +702,8 @@ async def create_session_request(
             "start_time": package_start_time,
             "end_time": package_end_time,
             "counter_offer_price": request.counter_offer_price,
-            "num_students": request.num_students
+            "num_students": num_students,
+            "shared_student_ids": [sid for sid, _ in shared_roster]
         }
 
         # The content will be the optional message from the user (or empty)
@@ -625,6 +920,13 @@ async def get_tutor_session_requests(
                 # Number of students sharing the tutor (1-4)
                 "num_students": row[30] if row[30] else 1
             })
+
+        # Attach the shared-student roster for any shared bookings
+        for req in requests:
+            if req.get("num_students", 1) > 1:
+                req["shared_students"] = _fetch_shared_students(cur, req["id"])
+            else:
+                req["shared_students"] = []
 
         return requests
 
@@ -883,7 +1185,9 @@ async def get_session_request_detail(
             # Counter-offer price
             "counter_offer_price": float(row[30]) if row[30] else None,
             # Number of students sharing the tutor (1-4)
-            "num_students": row[31] if row[31] else 1
+            "num_students": row[31] if row[31] else 1,
+            # Shared-student roster (empty unless a shared booking)
+            "shared_students": _fetch_shared_students(cur, row[0]) if (row[31] and row[31] > 1) else []
         }
 
     except HTTPException:

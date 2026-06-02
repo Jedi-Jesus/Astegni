@@ -2219,33 +2219,36 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
             counterOfferInput.value = '';
         }
 
-        // Reset students-sharing field and refresh the split preview.
-        // Only shown when the tutor opted this package into cost-sharing.
+        // Reset students-sharing UI. Only shown when the tutor opted this
+        // package into cost-sharing.
         window.currentPackageListedPrice = price;
         window.currentTutorCurrencySymbol = tutorCurrencySymbol;
         const allowSharing = packageData.allow_sharing === true;
         const maxShared = Math.min(4, Math.max(1, parseInt(packageData.max_shared_students) || 1));
         window.currentMaxSharedStudents = allowSharing ? maxShared : 1;
+        window.sharedStudents = [];  // added students (excludes the booker)
 
         const sharingSection = document.getElementById('studentsSharingSection');
         if (sharingSection) {
             sharingSection.style.display = allowSharing ? 'block' : 'none';
         }
-        const numStudentsInput = document.getElementById('numStudents');
-        if (numStudentsInput) {
-            numStudentsInput.value = 1;
-            numStudentsInput.max = window.currentMaxSharedStudents;
-        }
         const sharingMaxHint = document.getElementById('numStudentsMaxHint');
         if (sharingMaxHint) {
-            sharingMaxHint.textContent = `(1–${window.currentMaxSharedStudents} students)`;
+            sharingMaxHint.textContent = `up to ${window.currentMaxSharedStudents} students`;
         }
-        if (typeof handleNumStudentsChange === 'function') {
-            handleNumStudentsChange();
-        }
+        // Clear search field/results
+        const sharedSearch = document.getElementById('sharedStudentSearch');
+        if (sharedSearch) sharedSearch.value = '';
+        const sharedResults = document.getElementById('sharedStudentResults');
+        if (sharedResults) { sharedResults.style.display = 'none'; sharedResults.innerHTML = ''; }
 
-        // Pre-fill user info
-        prefillPackageModalUserInfo();
+        // Pre-fill user info (this also resolves the booker's own student label)
+        await prefillPackageModalUserInfo();
+
+        // Render the sharing list (booker + any added) and split preview
+        if (typeof renderSharedStudents === 'function') {
+            renderSharedStudents();
+        }
 
         // Show modal
         modal.style.display = 'flex';
@@ -2707,6 +2710,9 @@ window.selectChild = function(childId) {
     if (searchInput) searchInput.parentElement.style.display = 'none';
     if (searchResults) searchResults.style.display = 'none';
 
+    // Refresh sharing list so the primary row + split reflect the chosen child
+    if (typeof renderSharedStudents === 'function') renderSharedStudents();
+
     console.log(`✓ Selected child: ${child.name} (ID: ${child.id})`);
 };
 
@@ -2736,6 +2742,9 @@ window.clearSelectedChild = function() {
         searchInput.value = '';
         searchInput.focus();
     }
+
+    // Refresh sharing list (primary row falls back to "You")
+    if (typeof renderSharedStudents === 'function') renderSharedStudents();
 
     console.log('✓ Cleared selected child');
 };
@@ -2985,50 +2994,243 @@ function formatDateDisplay(dateStr) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-/**
- * Step the "students sharing" counter by delta (+1 / -1), clamped to 1-4.
- */
-window.adjustNumStudents = function(delta) {
-    const input = document.getElementById('numStudents');
-    if (!input) return;
-    const max = window.currentMaxSharedStudents || 4;
-    let value = (parseInt(input.value, 10) || 1) + delta;
-    value = Math.min(max, Math.max(1, value));
-    input.value = value;
-    handleNumStudentsChange();
-};
+// ============================================
+// SHARED-STUDENT SEARCH & SELECTION (cost-sharing)
+// ============================================
+
+window.sharedStudents = window.sharedStudents || [];  // [{id, name, grade_level, profile_picture, is_related, date_of_birth?}]
 
 /**
- * Clamp the students-sharing input to 1-4 and refresh the per-student
- * cost-split preview. The split is based on the counter-offer if one is
- * entered, otherwise the tutor's listed price.
+ * Total students = the booker's primary student (1) + added shared students.
  */
-window.handleNumStudentsChange = function() {
-    const input = document.getElementById('numStudents');
-    if (!input) return;
+function sharedTotalCount() {
+    return 1 + (window.sharedStudents ? window.sharedStudents.length : 0);
+}
 
-    // Clamp to 1..max (max set per package; tutor's max_shared_students)
-    const max = window.currentMaxSharedStudents || 4;
-    let numStudents = parseInt(input.value, 10);
-    if (isNaN(numStudents)) numStudents = 1;
-    numStudents = Math.min(max, Math.max(1, numStudents));
-    if (String(numStudents) !== input.value) {
-        input.value = numStudents;
+/**
+ * Render the "you + added students" list, keep the hidden numStudents in sync,
+ * and refresh the per-student cost-split preview.
+ */
+window.renderSharedStudents = function() {
+    const listEl = document.getElementById('sharedStudentsList');
+    const symbol = window.currentTutorCurrencySymbol || 'ETB';
+
+    // The booker's own/primary student label (set by prefill)
+    const primaryName = (document.getElementById('detailsStudentName')?.value || '').trim()
+        || window.bookerPrimaryName || 'You';
+
+    if (listEl) {
+        let html = `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(var(--primary-rgb), 0.06); border-radius: 10px;">
+                <i class="fas fa-user-circle" style="color: var(--primary-color); font-size: 1.4rem;"></i>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: var(--text-color); font-size: 0.9rem;">${escapeHtmlSafe(primaryName)}</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary);">Primary student</div>
+                </div>
+            </div>`;
+        (window.sharedStudents || []).forEach((s, idx) => {
+            const badge = s.is_related
+                ? '<span style="font-size: 0.65rem; background: #dcfce7; color: #166534; padding: 1px 7px; border-radius: 9999px;">Linked</span>'
+                : '<span style="font-size: 0.65rem; background: #dbeafe; color: #1e40af; padding: 1px 7px; border-radius: 9999px;">DOB verified</span>';
+            html += `
+                <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px;">
+                    <i class="fas fa-user-graduate" style="color: var(--primary-color); font-size: 1.3rem;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-color); font-size: 0.9rem;">${escapeHtmlSafe(s.name)} ${badge}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-secondary);">${escapeHtmlSafe(s.grade_level || 'Student')}</div>
+                    </div>
+                    <button type="button" onclick="removeSharedStudent(${idx})" aria-label="Remove"
+                        style="background: #ef4444; color: white; border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`;
+        });
+        listEl.innerHTML = html;
     }
 
-    // Base price = counter-offer if provided, else the listed package price
+    // Keep the hidden derived count in sync
+    const numInput = document.getElementById('numStudents');
+    if (numInput) numInput.value = sharedTotalCount();
+
+    // Split preview
     const counterOfferInput = document.getElementById('counterOfferPrice');
     const counterOffer = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
     const basePrice = (counterOffer && counterOffer > 0)
         ? counterOffer
         : (window.currentPackageListedPrice || 0);
+    const total = sharedTotalCount();
+    const perStudent = total > 0 ? basePrice / total : basePrice;
 
-    const perStudent = numStudents > 0 ? basePrice / numStudents : basePrice;
-    const symbol = window.currentTutorCurrencySymbol || 'ETB';
-
+    const splitLabel = document.getElementById('splitCountLabel');
+    if (splitLabel) splitLabel.textContent = `Each of ${total} student${total > 1 ? 's' : ''} pays:`;
     const display = document.getElementById('perStudentPriceDisplay');
-    if (display) {
-        display.textContent = `${symbol}${Math.round(perStudent)}`;
+    if (display) display.textContent = `${symbol}${Math.round(perStudent)}`;
+};
+
+// Backwards-compat alias (counter-offer input calls this to refresh the split)
+window.handleNumStudentsChange = function() { window.renderSharedStudents(); };
+
+function escapeHtmlSafe(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+window.removeSharedStudent = function(index) {
+    if (window.sharedStudents && index >= 0 && index < window.sharedStudents.length) {
+        window.sharedStudents.splice(index, 1);
+        renderSharedStudents();
+    }
+};
+
+let _sharedSearchTimer = null;
+window.onSharedStudentSearchInput = function() {
+    clearTimeout(_sharedSearchTimer);
+    _sharedSearchTimer = setTimeout(runSharedStudentSearch, 280);
+};
+
+async function runSharedStudentSearch() {
+    const input = document.getElementById('sharedStudentSearch');
+    const resultsEl = document.getElementById('sharedStudentResults');
+    const spinner = document.getElementById('sharedStudentSpinner');
+    if (!input || !resultsEl) return;
+
+    const q = input.value.trim();
+    if (q.length < 2) {
+        resultsEl.style.display = 'none';
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    // Enforce the package max (primary + added)
+    if (sharedTotalCount() >= (window.currentMaxSharedStudents || 1)) {
+        resultsEl.innerHTML = `<div style="padding: 12px; font-size: 0.82rem; color: var(--text-secondary);">Maximum of ${window.currentMaxSharedStudents} students reached.</div>`;
+        resultsEl.style.display = 'block';
+        return;
+    }
+
+    try {
+        if (spinner) spinner.style.display = 'block';
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const res = await fetch(`${API_BASE_URL}/api/students/search?q=${encodeURIComponent(q)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('search failed');
+        const data = await res.json();
+
+        const addedIds = new Set((window.sharedStudents || []).map(s => s.id));
+        const primaryId = parseInt(document.getElementById('selectedChildId')?.value) || null;
+        const matches = (data.students || []).filter(s => s.id !== primaryId && !addedIds.has(s.id));
+
+        if (matches.length === 0) {
+            resultsEl.innerHTML = `<div style="padding: 12px; font-size: 0.82rem; color: var(--text-secondary);">No verified students found.</div>`;
+        } else {
+            resultsEl.innerHTML = matches.map(s => `
+                <div class="shared-student-result" onclick='addSharedStudent(${JSON.stringify(s).replace(/'/g, "&#39;")})'
+                    style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">
+                    <i class="fas fa-user-graduate" style="color: var(--primary-color);"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-color);">${escapeHtmlSafe(s.name)}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-secondary);">${escapeHtmlSafe(s.grade_level || 'Student')} ${s.is_related ? '· Linked to you' : '· Needs DOB'}</div>
+                    </div>
+                    <i class="fas fa-plus" style="color: var(--primary-color);"></i>
+                </div>`).join('');
+        }
+        resultsEl.style.display = 'block';
+    } catch (e) {
+        console.error('Student search error:', e);
+        resultsEl.innerHTML = `<div style="padding: 12px; font-size: 0.82rem; color: #ef4444;">Search failed. Try again.</div>`;
+        resultsEl.style.display = 'block';
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+
+/**
+ * Add a student from the search results. Linked students are added directly;
+ * unrelated students open the DOB verification modal.
+ */
+window.addSharedStudent = function(student) {
+    if (sharedTotalCount() >= (window.currentMaxSharedStudents || 1)) {
+        alert(`This package allows at most ${window.currentMaxSharedStudents} students.`);
+        return;
+    }
+    // Clear the search UI
+    const resultsEl = document.getElementById('sharedStudentResults');
+    const searchEl = document.getElementById('sharedStudentSearch');
+    if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+    if (searchEl) searchEl.value = '';
+
+    if (student.is_related) {
+        window.sharedStudents.push({ ...student });
+        renderSharedStudents();
+    } else {
+        // Unrelated → require DOB verification
+        openDobVerify(student);
+    }
+};
+
+// --- DOB verification flow (unrelated students) ---
+let _dobVerifyTarget = null;
+
+function openDobVerify(student) {
+    _dobVerifyTarget = student;
+    const modal = document.getElementById('dobVerifyModal');
+    const nameEl = document.getElementById('dobVerifyName');
+    const input = document.getElementById('dobVerifyInput');
+    const err = document.getElementById('dobVerifyError');
+    if (nameEl) nameEl.textContent = student.name;
+    if (input) input.value = '';
+    if (err) { err.style.display = 'none'; err.textContent = ''; }
+    if (modal) modal.style.display = 'flex';
+}
+
+window.closeDobVerify = function() {
+    _dobVerifyTarget = null;
+    const modal = document.getElementById('dobVerifyModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.confirmDobVerify = async function() {
+    if (!_dobVerifyTarget) return;
+    const input = document.getElementById('dobVerifyInput');
+    const err = document.getElementById('dobVerifyError');
+    const btn = document.getElementById('dobVerifyConfirmBtn');
+    const dob = input?.value;
+
+    if (!dob) {
+        if (err) { err.textContent = 'Please enter the date of birth.'; err.style.display = 'block'; }
+        return;
+    }
+
+    const originalLabel = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying…'; }
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const res = await fetch(`${API_BASE_URL}/api/students/verify-for-sharing`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ student_profile_id: _dobVerifyTarget.id, date_of_birth: dob })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const verified = data.student || _dobVerifyTarget;
+            window.sharedStudents.push({ ...verified, is_related: false, date_of_birth: dob });
+            renderSharedStudents();
+            closeDobVerify();
+        } else {
+            let detail = 'Verification failed.';
+            try { detail = (await res.json()).detail || detail; } catch (e) {}
+            if (res.status === 403) detail = 'Date of birth does not match our records for this student.';
+            if (err) { err.textContent = detail; err.style.display = 'block'; }
+        }
+    } catch (e) {
+        console.error('DOB verify error:', e);
+        if (err) { err.textContent = 'Network error. Please try again.'; err.style.display = 'block'; }
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalLabel; }
     }
 };
 
@@ -3107,12 +3309,16 @@ window.submitPackageRequest = async function() {
     const counterOfferInput = document.getElementById('counterOfferPrice');
     const counterOfferPrice = counterOfferInput?.value ? parseFloat(counterOfferInput.value) : null;
 
-    // Number of students sharing the tutor (1..package max, cost-sharing).
-    // Capped at the tutor's max_shared_students; non-sharing packages = 1.
-    const numStudentsInput = document.getElementById('numStudents');
-    const maxShared = window.currentMaxSharedStudents || 1;
-    let numStudents = parseInt(numStudentsInput?.value, 10) || 1;
-    numStudents = Math.min(maxShared, Math.max(1, numStudents));
+    // Shared students (cost-sharing). The booker's primary student is the
+    // requested_to_id; these are the ADDITIONAL students. num_students is
+    // derived (backend re-derives it too). Only when the package allows sharing.
+    const allowSharing = window.currentPackageData.allow_sharing === true;
+    const sharedList = allowSharing ? (window.sharedStudents || []) : [];
+    const sharedStudentsPayload = sharedList.map(s => ({
+        student_profile_id: s.id,
+        date_of_birth: s.is_related ? null : (s.date_of_birth || null)
+    }));
+    const numStudents = 1 + sharedStudentsPayload.length;
 
     // Prepare request data with structured schedule fields
     const requestData = {
@@ -3131,8 +3337,9 @@ window.submitPackageRequest = async function() {
         end_time: endTime || null,
         // Counter-offer price
         counter_offer_price: counterOfferPrice,
-        // Number of students sharing the tutor (cost-sharing, 1-4)
-        num_students: numStudents
+        // Cost-sharing: derived count + additional students roster
+        num_students: numStudents,
+        shared_students: sharedStudentsPayload.length > 0 ? sharedStudentsPayload : null
     };
 
     // Show loading state
