@@ -149,8 +149,10 @@
    CENTER COLUMN: Content Area
    ============================================ */
 
-/* Container for Quote + Subjects + Details + Bio */
-.tutor-cards-list .tutor-card > :not(.tutor-header):not(.tutor-actions):not(.price-section) {
+/* Container for Quote + Subjects + Details + Bio.
+   Exclude the right-column action blocks (price, View Package, message actions)
+   so they don't get dumped into the middle content column. */
+.tutor-cards-list .tutor-card > :not(.tutor-header):not(.tutor-actions):not(.tutor-actions-secondary):not(.price-section) {
     grid-column: 2 !important;
     grid-row: 1 !important;
 }
@@ -298,16 +300,34 @@
    RIGHT COLUMN: Price + Actions (In SAME ROW - Flexbox Stack)
    ============================================ */
 
-/* Create a flex container wrapper for right column */
-.tutor-cards-list .price-section,
-.tutor-cards-list .tutor-actions {
+/* Right column stack: Price (top) -> View Package -> Message actions (bottom).
+   Each block gets its own row so they stack instead of overlapping. */
+.tutor-cards-list .price-section {
     grid-column: 3 !important;
     grid-row: 1 !important;
 }
 
+.tutor-cards-list .tutor-actions-secondary {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+    min-width: 200px !important;
+    padding: 0 !important;
+    margin: 0 0 0.75rem 0 !important;
+    align-self: start !important;
+}
+
+.tutor-cards-list .tutor-actions-secondary .view-package-btn {
+    width: 100% !important;
+}
+
+.tutor-cards-list .tutor-actions {
+    grid-column: 3 !important;
+    grid-row: 3 !important;
+}
+
 /* Price section at top - increased height */
 .tutor-cards-list .price-section {
-    margin: 0 0 0.5rem 0 !important;
+    margin: 0 0 0.75rem 0 !important;
     min-width: 200px !important;
     align-self: start !important;
     padding: 1.25rem !important;
@@ -326,7 +346,7 @@
     margin-top: 0.25rem !important;
 }
 
-/* Actions below price, both in same grid cell */
+/* Message + secondary action buttons, stacked at the bottom of the right column */
 .tutor-cards-list .tutor-actions {
     display: flex !important;
     flex-direction: column !important;
@@ -335,7 +355,6 @@
     margin: 0 !important;
     min-width: 200px !important;
     align-self: start !important;
-    margin-top: auto !important;
 }
 
 .tutor-cards-list .tutor-actions > button {
@@ -365,13 +384,21 @@
         height: 80px !important;
     }
 
-    .tutor-cards-list .price-section,
-    .tutor-cards-list .tutor-actions {
+    /* Stack the right-col blocks in distinct rows: Price -> View Package -> Message */
+    .tutor-cards-list .price-section {
         grid-column: 2 !important;
         grid-row: 2 !important;
     }
 
+    .tutor-cards-list .tutor-actions-secondary {
+        grid-column: 2 !important;
+        grid-row: 3 !important;
+        margin: 0.5rem 0 0 0 !important;
+    }
+
     .tutor-cards-list .tutor-actions {
+        grid-column: 2 !important;
+        grid-row: 4 !important;
         flex-direction: row !important;
         margin-top: 0.5rem !important;
     }
@@ -516,6 +543,15 @@
         grid-row: unset !important;
         min-width: 100% !important;
         margin: 1rem 0 !important;
+        align-self: unset !important;
+    }
+
+    /* View Package button - Match Grid View (full width, in normal flow) */
+    .tutor-cards-list .tutor-actions-secondary {
+        grid-column: unset !important;
+        grid-row: unset !important;
+        min-width: 100% !important;
+        margin: 0 0 0.75rem 0 !important;
         align-self: unset !important;
     }
 
