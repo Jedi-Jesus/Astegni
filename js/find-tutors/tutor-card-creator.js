@@ -327,6 +327,9 @@ const TutorCardCreator = {
                     </div>
                 </div>
 
+                <!-- Right column: Price + View Package + Message actions (wrapper keeps
+                     them grouped; uses display:contents in grid view, flex column in list view) -->
+                <div class="tutor-right-col">
                 <!-- Price Section -->
                 <div class="price-section">
                     <div class="tutor-price">
@@ -403,6 +406,7 @@ const TutorCardCreator = {
                     </button>
                     `}
                 </div>
+                </div><!-- /tutor-right-col -->
             </article>
         `;
     },

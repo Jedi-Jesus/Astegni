@@ -980,6 +980,12 @@
 }
 
 /* View Package Button - full-width row above the Message/Connect actions */
+/* Right-column wrapper: transparent in grid view so price / View Package /
+   Message flow as normal flex children of the card (list view restyles it). */
+.tutor-right-col {
+    display: contents;
+}
+
 .tutor-actions-secondary {
     display: flex;
 }
