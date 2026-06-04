@@ -18,6 +18,7 @@
     const PAGE_DEPARTMENT_MAP = {
         'manage-courses.html': ['manage-courses', 'manage-system-settings'],
         'manage-credentials.html': ['manage-credentials', 'manage-system-settings'],
+        'manage-exams.html': ['manage-exams', 'manage-system-settings'],
         'manage-system-settings.html': 'manage-system-settings',
         'manage-schools.html': ['manage-schools', 'manage-system-settings'],
         'manage-campaign.html': ['manage-campaign', 'manage-system-settings'],
