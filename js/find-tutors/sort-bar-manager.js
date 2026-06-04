@@ -151,13 +151,14 @@ class SortBarManager {
     applySort(sortValue) {
         this.currentSort = sortValue;
 
-        // Update state
-        if (window.FindTutorsState) {
-            FindTutorsState.updateFilter('sortBy', sortValue);
+        // Update state. FindTutorsState/Controller are top-level `const`s, which do
+        // NOT become window properties in browsers - reference them via typeof, not window.
+        if (typeof FindTutorsState !== 'undefined') {
+            FindTutorsState.updateFilter('sortBy', sortValue);  // also resets to page 1
         }
 
         // Trigger reload
-        if (window.FindTutorsController) {
+        if (typeof FindTutorsController !== 'undefined' && FindTutorsController.loadTutors) {
             FindTutorsController.loadTutors();
         }
     }
@@ -241,7 +242,7 @@ class SortBarManager {
             console.log('[Sort Bar] Removing filter:', key);
 
             // Clear filter
-            if (window.FindTutorsState) {
+            if (typeof FindTutorsState !== 'undefined') {
                 FindTutorsState.updateFilter(key, '');
             }
 
@@ -252,7 +253,7 @@ class SortBarManager {
             }
 
             // Reload
-            if (window.FindTutorsController) {
+            if (typeof FindTutorsController !== 'undefined' && FindTutorsController.loadTutors) {
                 FindTutorsController.loadTutors();
             }
         });
