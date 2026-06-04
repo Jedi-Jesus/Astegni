@@ -70,6 +70,7 @@
         .rating-tooltip {
             position: absolute !important;
             top: 110% !important;
+            bottom: auto !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             background: var(--card-bg) !important;
@@ -90,10 +91,12 @@
         .profile-header-section .rating-wrapper:hover .rating-tooltip,
         .rating-wrapper:hover .rating-tooltip,
         #rating-hover-trigger:hover #rating-tooltip,
+        .rating-tooltip-container:hover .rating-tooltip,
         .rating-tooltip.visible {
             opacity: 1 !important;
             visibility: visible !important;
             top: calc(100% + 10px) !important;
+            bottom: auto !important;
             pointer-events: auto !important;
             display: block !important;
         }
