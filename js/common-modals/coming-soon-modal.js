@@ -235,7 +235,7 @@ function handleComingSoonNotification(e) {
 // Line 161 in coming-soon-modal.js should be:
 window.handleNavLinkClick = function (e, link) {
     // Define coming soon features
-    const comingSoonFeatures = ['news', 'store', 'find-jobs', 'market', 'gamestore'];
+    const comingSoonFeatures = ['news', 'store', 'find-jobs', 'market', 'gamestore', 'exams'];
 
     // Check if it's a coming soon feature
     if (comingSoonFeatures.includes(link)) {

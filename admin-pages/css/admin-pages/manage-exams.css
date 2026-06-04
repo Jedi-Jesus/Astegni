@@ -1,0 +1,240 @@
+/* ============================================
+   Manage Exams (admin page)
+   Exam-specific styling. Reuses the shared list/modal/button
+   primitives from manage-companies.css; this file only adds what
+   exams need on top (upload dropzone, meta chips, report cards,
+   form layout, tabs).
+   ============================================ */
+
+/* Page header action cluster */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Exam stat tile accents (extends .stat-tile colors) */
+.stat-tile.published .stat-value { color: #16a34a; }
+.stat-tile.draft     .stat-value { color: #6b7280; }
+.stat-tile.archived  .stat-value { color: #9a3412; }
+.stat-tile.attempts  .stat-value { color: #4f46e5; }
+
+/* Exam row meta chips (subject / grade / questions / duration) */
+.exam-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+.exam-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.exam-chip i { font-size: 0.7rem; }
+.exam-chip.subject  { background: #eef2ff; color: #4338ca; }
+.exam-chip.grade    { background: #ecfdf5; color: #047857; }
+.exam-chip.questions{ background: #fef3c7; color: #92400e; }
+.exam-chip.duration { background: #f1f5f9; color: #334155; }
+.exam-chip.type     { background: #fae8ff; color: #86198f; }
+
+[data-theme="dark"] .exam-chip { filter: brightness(0.85); }
+
+/* Status badges reuse .company-badge classes; add a "published" variant */
+.company-badge.published { background: #dcfce7; color: #166534; }
+.company-badge.draft     { background: #f3f4f6; color: #4b5563; }
+.company-badge.archived  { background: #ffedd5; color: #9a3412; }
+
+/* ============================================
+   Upload dropzone
+   ============================================ */
+.dropzone {
+    border: 2px dashed var(--border-color, #cbd5e1);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--card-bg, #f9fafb);
+}
+.dropzone:hover,
+.dropzone.dragover {
+    border-color: #4f46e5;
+    background: #eef2ff;
+}
+.dropzone i {
+    font-size: 2.25rem;
+    color: #4f46e5;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.dropzone .dz-primary { font-weight: 600; color: var(--text-primary, #111827); }
+.dropzone .dz-secondary { font-size: 0.8rem; color: var(--text-secondary, #6b7280); margin-top: 0.25rem; }
+.dropzone input[type="file"] { display: none; }
+
+.dz-filelist {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.dz-file {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    background: var(--card-bg, #fff);
+    font-size: 0.85rem;
+}
+.dz-file i.file-icon { color: #4f46e5; }
+.dz-file .dz-file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz-file .dz-file-size { color: #6b7280; font-size: 0.75rem; }
+.dz-file .dz-remove { background: none; border: none; color: #dc2626; cursor: pointer; }
+
+[data-theme="dark"] .dropzone { background: #111827; }
+[data-theme="dark"] .dropzone.dragover { background: #1e293b; }
+
+/* ============================================
+   Form layout (upload / edit modals)
+   ============================================ */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.25rem;
+}
+.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.form-field.full { grid-column: 1 / -1; }
+.form-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 8px;
+    background: var(--card-bg, #fff);
+    color: var(--text-primary, #111827);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+.form-field textarea { resize: vertical; min-height: 70px; }
+.form-field .field-hint { font-size: 0.72rem; color: #9ca3af; }
+
+[data-theme="dark"] .form-field input,
+[data-theme="dark"] .form-field select,
+[data-theme="dark"] .form-field textarea {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f3f4f6;
+}
+
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================
+   Reports modal
+   ============================================ */
+.report-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.report-card {
+    background: var(--card-bg, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+}
+.report-card .rc-label { font-size: 0.8rem; color: var(--text-secondary, #6b7280); }
+.report-card .rc-value { font-size: 1.6rem; font-weight: 700; color: var(--text-primary, #111827); }
+.report-card .rc-sub { font-size: 0.72rem; color: #9ca3af; margin-top: 0.2rem; }
+
+[data-theme="dark"] .report-card { background: #111827; border-color: #374151; }
+
+/* Simple horizontal bar for report distributions */
+.report-bar-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 48px;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+}
+.report-bar-track {
+    background: #e5e7eb;
+    border-radius: 999px;
+    height: 0.6rem;
+    overflow: hidden;
+}
+.report-bar-fill {
+    height: 100%;
+    background: #4f46e5;
+    border-radius: 999px;
+}
+[data-theme="dark"] .report-bar-track { background: #374151; }
+
+/* Data table (used in reports: per-exam breakdown) */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.report-table th,
+.report-table td {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+.report-table th { color: var(--text-secondary, #6b7280); font-weight: 600; }
+.report-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+[data-theme="dark"] .report-table th,
+[data-theme="dark"] .report-table td { border-color: #374151; }
+
+/* Tabs inside a modal */
+.modal-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    margin-bottom: 1.25rem;
+}
+.modal-tab {
+    background: none;
+    border: none;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+.modal-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+.modal-tab-panel { display: none; }
+.modal-tab-panel.active { display: block; }
+
+/* "demo data" banner so it's clear there is no backend yet */
+.demo-banner {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+[data-theme="dark"] .demo-banner { background: #1e293b; border-color: #1e40af; color: #bfdbfe; }

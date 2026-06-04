@@ -151,6 +151,7 @@
                                 <option value="manage-contents">Manage Contents</option>
                                 <option value="manage-courses">Manage Courses</option>
                                 <option value="manage-credentials">Manage Credentials</option>
+                                <option value="manage-exams">Manage Exams</option>
                                 <option value="manage-customers">Manage Customers</option>
                                 <option value="manage-schools">Manage Schools</option>
                                 <option value="manage-system-settings">System Settings (Full Access)</option>
@@ -592,6 +593,16 @@
                                     <i class="fas fa-certificate"></i>
                                 </span>
                                 <span class="action-label">Manage Credentials</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-exams.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </span>
+                                <span class="action-label">Manage Exams</span>
                                 <span class="auth-lock" title="Login Required">
                                     <i class="fas fa-lock"></i>
                                 </span>

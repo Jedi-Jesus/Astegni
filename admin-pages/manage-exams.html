@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Exams</title>
+    <script>tailwind.config={corePlugins:{preflight:false}}</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>html{font-size:18px!important}</style>
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="./css/admin-pages/manage-companies.css?v202605260100">
+    <link rel="stylesheet" href="./css/admin-pages/manage-exams.css?v202606031200">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="nav-left flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span><span></span><span></span>
+                </span>
+                <a href="index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage Exams</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display:none;"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Education Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="manage-courses.html" class="sidebar-link">
+                    <span class="sidebar-icon">📚</span>
+                    <span>Courses</span>
+                </a>
+                <a href="manage-credentials.html" class="sidebar-link">
+                    <span class="sidebar-icon">📜</span>
+                    <span>Credentials</span>
+                </a>
+                <a href="manage-exams.html" class="sidebar-link active">
+                    <span class="sidebar-icon">✍️</span>
+                    <span>Exams</span>
+                    <span class="sidebar-count" id="exams-sidebar-count">0</span>
+                </a>
+                <a href="manage-schools.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏫</span>
+                    <span>Schools</span>
+                </a>
+
+                <hr class="my-4 border-gray-300">
+
+                <a href="#" onclick="ExamsAdmin.openReports(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Exam Reports</span>
+                </a>
+
+                <hr class="my-4 border-gray-300">
+
+                <a href="index.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Admin Home</span>
+                </a>
+                <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500">
+                    <span class="sidebar-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+
+            <!-- Page Header -->
+            <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold mb-1">Exams</h1>
+                    <p class="text-gray-600">Search, upload, view, edit, delete, and report on exams across the platform.</p>
+                </div>
+                <div class="header-actions">
+                    <button onclick="ExamsAdmin.openReports()" class="btn-secondary">
+                        <i class="fas fa-chart-bar mr-2"></i> Reports
+                    </button>
+                    <button onclick="ExamsAdmin.refresh()" class="btn-secondary">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    </button>
+                    <button onclick="ExamsAdmin.openUpload()" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i> Upload Exam
+                    </button>
+                </div>
+            </div>
+
+            <!-- Demo banner (no backend yet) -->
+            <div class="demo-banner">
+                <i class="fas fa-info-circle"></i>
+                <span>Frontend preview &mdash; showing sample data. Uploads, edits, and deletes affect this session only until the backend is connected.</span>
+            </div>
+
+            <!-- Stats Tiles -->
+            <div class="stats-grid mb-6">
+                <div class="stat-tile"><div class="stat-label">Total Exams</div><div class="stat-value" id="stat-total">0</div></div>
+                <div class="stat-tile published"><div class="stat-label">Published</div><div class="stat-value" id="stat-published">0</div></div>
+                <div class="stat-tile draft"><div class="stat-label">Drafts</div><div class="stat-value" id="stat-draft">0</div></div>
+                <div class="stat-tile archived"><div class="stat-label">Archived</div><div class="stat-value" id="stat-archived">0</div></div>
+                <div class="stat-tile attempts"><div class="stat-label">Total Attempts</div><div class="stat-value" id="stat-attempts">0</div></div>
+            </div>
+
+            <!-- Filters + search -->
+            <div class="filter-bar mb-6">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-status="all" onclick="ExamsAdmin.setFilter('all')">All</button>
+                    <button class="filter-btn" data-status="published" onclick="ExamsAdmin.setFilter('published')">Published</button>
+                    <button class="filter-btn" data-status="draft" onclick="ExamsAdmin.setFilter('draft')">Drafts</button>
+                    <button class="filter-btn" data-status="archived" onclick="ExamsAdmin.setFilter('archived')">Archived</button>
+                </div>
+                <div class="filter-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search by title, subject, grade, or author..." oninput="ExamsAdmin.onSearchInput(event)">
+                </div>
+            </div>
+
+            <!-- Exam list -->
+            <div id="exams-list" class="companies-list">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading exams...</div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="pagination mt-6"></div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         Detail / View Modal
+         ============================================ -->
+    <div id="exam-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ExamsAdmin.closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Exam Details</h2>
+                <button class="modal-close" onclick="ExamsAdmin.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+            <div class="modal-footer" id="modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         Upload / Edit Form Modal (shared form)
+         ============================================ -->
+    <div id="form-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ExamsAdmin.closeForm()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="form-title">Upload Exam</h2>
+                <button class="modal-close" onclick="ExamsAdmin.closeForm()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="exam-form" onsubmit="return false;">
+                    <input type="hidden" id="form-exam-id">
+
+                    <!-- Dropzone (upload only) -->
+                    <div id="form-dropzone-wrap" class="form-field full mb-4">
+                        <label>Exam File(s)</label>
+                        <div class="dropzone" id="dropzone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="dz-primary">Drag &amp; drop exam files here, or click to browse</div>
+                            <div class="dz-secondary">PDF, DOCX, or image files &middot; up to 25&nbsp;MB each</div>
+                            <input type="file" id="file-input" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                        </div>
+                        <div class="dz-filelist" id="dz-filelist"></div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-field full">
+                            <label for="f-title">Title <span style="color:#dc2626">*</span></label>
+                            <input type="text" id="f-title" placeholder="e.g. Grade 12 Physics Final Exam" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="f-subject">Subject</label>
+                            <input type="text" id="f-subject" placeholder="e.g. Physics">
+                        </div>
+                        <div class="form-field">
+                            <label for="f-grade">Grade / Level</label>
+                            <input type="text" id="f-grade" placeholder="e.g. Grade 12">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="f-type">Exam Type</label>
+                            <select id="f-type">
+                                <option value="Final">Final</option>
+                                <option value="Midterm">Midterm</option>
+                                <option value="Quiz">Quiz</option>
+                                <option value="Mock">Mock / Practice</option>
+                                <option value="Entrance">Entrance</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="f-status">Status</label>
+                            <select id="f-status">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="f-questions">Questions</label>
+                            <input type="number" id="f-questions" min="0" placeholder="e.g. 40">
+                        </div>
+                        <div class="form-field">
+                            <label for="f-duration">Duration (minutes)</label>
+                            <input type="number" id="f-duration" min="0" placeholder="e.g. 120">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="f-total-marks">Total Marks</label>
+                            <input type="number" id="f-total-marks" min="0" placeholder="e.g. 100">
+                        </div>
+                        <div class="form-field">
+                            <label for="f-pass-mark">Pass Mark</label>
+                            <input type="number" id="f-pass-mark" min="0" placeholder="e.g. 50">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="f-author">Author / Source</label>
+                            <input type="text" id="f-author" placeholder="e.g. MoE Ethiopia">
+                        </div>
+                        <div class="form-field">
+                            <label for="f-year">Year</label>
+                            <input type="number" id="f-year" min="1990" max="2100" placeholder="e.g. 2024">
+                        </div>
+
+                        <div class="form-field full">
+                            <label for="f-description">Description</label>
+                            <textarea id="f-description" placeholder="Short description, coverage, instructions..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="ExamsAdmin.closeForm()">Cancel</button>
+                <button class="btn-primary" id="form-submit-btn" onclick="ExamsAdmin.submitForm()">
+                    <i class="fas fa-save"></i> Save Exam
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         Delete Confirmation Modal
+         ============================================ -->
+    <div id="delete-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ExamsAdmin.closeDelete()"></div>
+        <div class="modal-content" style="max-width:480px;">
+            <div class="modal-header">
+                <h2>Delete Exam</h2>
+                <button class="modal-close" onclick="ExamsAdmin.closeDelete()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete <strong id="delete-exam-name">this exam</strong>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="ExamsAdmin.closeDelete()">Cancel</button>
+                <button class="btn-danger" id="delete-confirm-btn" onclick="ExamsAdmin.confirmDelete()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         Reports Modal
+         ============================================ -->
+    <div id="reports-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ExamsAdmin.closeReports()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Exam Reports</h2>
+                <button class="modal-close" onclick="ExamsAdmin.closeReports()">&times;</button>
+            </div>
+            <div class="modal-body" id="reports-body">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Building report...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="ExamsAdmin.closeReports()">Close</button>
+                <button class="btn-primary" onclick="ExamsAdmin.exportReportCsv()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config + scripts -->
+    <script src="../js/config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/admin-pages/admin-access-control.js"></script>
+    <script>
+        function tickClock() {
+            const now = new Date();
+            const t = document.getElementById('current-time');
+            const d = document.getElementById('current-date');
+            if (t) t.textContent = now.toLocaleTimeString();
+            if (d) d.textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+        setInterval(tickClock, 1000); tickClock();
+
+        document.getElementById('hamburger')?.addEventListener('click', () => {
+            document.getElementById('sidebar')?.classList.toggle('open');
+        });
+        document.getElementById('sidebar-close')?.addEventListener('click', () => {
+            document.getElementById('sidebar')?.classList.remove('open');
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const cur = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', cur);
+            localStorage.setItem('theme', cur);
+            document.getElementById('moon-icon').style.display = cur === 'dark' ? 'none' : 'inline';
+            document.getElementById('sun-icon').style.display = cur === 'dark' ? 'inline' : 'none';
+        }
+        (function applyTheme() {
+            const saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+            if (saved === 'dark') {
+                const m = document.getElementById('moon-icon'); const s = document.getElementById('sun-icon');
+                if (m) m.style.display = 'none'; if (s) s.style.display = 'inline';
+            }
+        })();
+
+        function logout() { localStorage.clear(); window.location.href = '../index.html'; }
+        window.logout = logout;
+    </script>
+    <script src="./js/admin-pages/manage-exams.js?v202606031200"></script>
+</body>
+
+</html>
