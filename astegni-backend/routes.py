@@ -1762,6 +1762,44 @@ def get_tutors(
     else:
         # Traditional sorting for explicit sort requests
         tutors = all_tutors
+
+        # Experience (students taught per active year) and verified-credential counts
+        # are computed on demand for the experience/credentials sorts.
+        experience_map = {}
+        credentials_map = {}
+        if sort_by in ("experience", "experience_desc", "experience_asc",
+                       "credentials", "credentials_desc", "credentials_asc"):
+            sort_tutor_ids = [t.id for t in tutors]
+            sort_user_ids = [t.user_id for t in tutors]
+            if sort_by.startswith("experience"):
+                experience_map = {
+                    row.tutor_id: float(row.experience_score or 0.0)
+                    for row in db.execute(text("""
+                        SELECT
+                            tutor_id,
+                            COUNT(DISTINCT student_id)::float
+                                / GREATEST(
+                                    EXTRACT(EPOCH FROM (NOW() - MIN(enrolled_at))) / 31557600.0,
+                                    0.5
+                                ) AS experience_score
+                        FROM enrolled_students
+                        WHERE tutor_id = ANY(:tutor_ids)
+                        GROUP BY tutor_id
+                    """), {"tutor_ids": sort_tutor_ids}).fetchall()
+                }
+            else:
+                credentials_map = {
+                    row.uploader_id: int(row.credential_count or 0)
+                    for row in db.execute(text("""
+                        SELECT uploader_id, COUNT(*) AS credential_count
+                        FROM credentials
+                        WHERE uploader_id = ANY(:user_ids)
+                          AND uploader_role = 'tutor'
+                          AND is_verified = true
+                        GROUP BY uploader_id
+                    """), {"user_ids": sort_user_ids}).fetchall()
+                }
+
         if sort_by == "rating" or sort_by == "rating_desc":
             # Rating column doesn't exist - sort by created_at instead
             tutors.sort(key=lambda t: t.created_at or datetime.min, reverse=True)
@@ -1774,12 +1812,18 @@ def get_tutors(
         elif sort_by == "price_desc":
             # Price and experience columns don't exist - sort by created_at
             tutors.sort(key=lambda t: t.created_at or datetime.min, reverse=True)
-        elif sort_by == "experience":
-            # Experience column doesn't exist - sort by created_at
-            tutors.sort(key=lambda t: t.created_at or datetime.min, reverse=True)
+        elif sort_by == "experience" or sort_by == "experience_desc":
+            # Most experience first: highest students-taught-per-year
+            tutors.sort(key=lambda t: experience_map.get(t.id, 0.0), reverse=True)
         elif sort_by == "experience_asc":
-            # Experience column doesn't exist - sort by created_at
-            tutors.sort(key=lambda t: t.created_at or datetime.min)
+            # Least experience first
+            tutors.sort(key=lambda t: experience_map.get(t.id, 0.0))
+        elif sort_by in ("credentials", "credentials_desc"):
+            # Most credentials first (verified only)
+            tutors.sort(key=lambda t: credentials_map.get(t.user_id, 0), reverse=True)
+        elif sort_by == "credentials_asc":
+            # Least credentials first
+            tutors.sort(key=lambda t: credentials_map.get(t.user_id, 0))
         elif sort_by == "newest":
             tutors.sort(key=lambda t: t.created_at or datetime.min, reverse=True)
         elif sort_by == "oldest":
@@ -2540,6 +2584,43 @@ def get_tutors_tiered(
         sort_data = db.execute(sort_data_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
         sort_map = {row.tutor_id: row for row in sort_data}
 
+        # Experience = students taught per active year (throughput, not tenure).
+        # A tutor who teaches 100 students in 1 year is more experienced than one
+        # who teaches 10 over many years. active_years is floored at 0.5 so a brand-new
+        # tutor isn't divided by ~0. Tutors with no enrollments score 0.
+        experience_query = text("""
+            SELECT
+                tutor_id,
+                COUNT(DISTINCT student_id)::float
+                    / GREATEST(
+                        EXTRACT(EPOCH FROM (NOW() - MIN(enrolled_at))) / 31557600.0,
+                        0.5
+                    ) AS experience_score
+            FROM enrolled_students
+            WHERE tutor_id = ANY(:tutor_ids)
+            GROUP BY tutor_id
+        """)
+        experience_map = {
+            row.tutor_id: float(row.experience_score or 0.0)
+            for row in db.execute(experience_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
+        }
+
+        # Credentials = count of admin-verified credentials per tutor.
+        # credentials.uploader_id stores the USER id (not tutor_profiles.id).
+        user_ids_for_sort = [t.user_id for t in filtered_tutors]
+        credentials_query = text("""
+            SELECT uploader_id, COUNT(*) AS credential_count
+            FROM credentials
+            WHERE uploader_id = ANY(:user_ids)
+              AND uploader_role = 'tutor'
+              AND is_verified = true
+            GROUP BY uploader_id
+        """)
+        credentials_map = {
+            row.uploader_id: int(row.credential_count or 0)
+            for row in db.execute(credentials_query, {"user_ids": user_ids_for_sort}).fetchall()
+        }
+
         # Apply sorting
         if sort_by in ['rating', 'rating_desc']:
             filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).avg_rating) if sort_map.get(t.id) and sort_map.get(t.id).avg_rating else 0.0, reverse=True)
@@ -2550,9 +2631,17 @@ def get_tutors_tiered(
         elif sort_by == 'price_desc':
             filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).min_price) if sort_map.get(t.id) and sort_map.get(t.id).min_price else 0, reverse=True)
         elif sort_by == 'experience' or sort_by == 'experience_desc':
-            filtered_tutors.sort(key=lambda t: int(t.experience_years) if t.experience_years else 0, reverse=True)
+            # Most experience first: highest students-taught-per-year
+            filtered_tutors.sort(key=lambda t: experience_map.get(t.id, 0.0), reverse=True)
         elif sort_by == 'experience_asc':
-            filtered_tutors.sort(key=lambda t: int(t.experience_years) if t.experience_years else 0)
+            # Least experience first
+            filtered_tutors.sort(key=lambda t: experience_map.get(t.id, 0.0))
+        elif sort_by in ['credentials', 'credentials_desc']:
+            # Most credentials first (verified only)
+            filtered_tutors.sort(key=lambda t: credentials_map.get(t.user_id, 0), reverse=True)
+        elif sort_by == 'credentials_asc':
+            # Least credentials first
+            filtered_tutors.sort(key=lambda t: credentials_map.get(t.user_id, 0))
         elif sort_by in ['name', 'name_asc']:
             filtered_tutors.sort(key=lambda t: f"{t.user.first_name or ''} {t.user.father_name or ''}".strip().lower())
         elif sort_by == 'name_desc':

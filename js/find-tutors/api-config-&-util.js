@@ -985,6 +985,21 @@ const FindTutorsAPI = {
                         return expA - expB;
                     });
                     break;
+                case 'credentials':
+                case 'credentials_desc':
+                    filteredTutors.sort((a, b) => {
+                        const credA = parseInt(a.credentials_count || a.credentials || 0);
+                        const credB = parseInt(b.credentials_count || b.credentials || 0);
+                        return credB - credA;
+                    });
+                    break;
+                case 'credentials_asc':
+                    filteredTutors.sort((a, b) => {
+                        const credA = parseInt(a.credentials_count || a.credentials || 0);
+                        const credB = parseInt(b.credentials_count || b.credentials || 0);
+                        return credA - credB;
+                    });
+                    break;
                 case 'name':
                 case 'name_asc':
                     filteredTutors.sort((a, b) => {
