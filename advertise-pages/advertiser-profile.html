@@ -4234,7 +4234,7 @@
     allowLocationCheckbox.checked = false;
     allowLocationCheckbox.disabled = true; // Make unselectable
     if (changeLocationBtn) {
-    changeLocationBtn.classList.remove('hidden');
+    changeLocationBtn.style.display = 'block';
     }
     console.log('[Advertiser Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
     }
@@ -4265,7 +4265,7 @@
     }
 
     if (changeLocationBtn) {
-    changeLocationBtn.classList.add('hidden'); // Hide the button
+    changeLocationBtn.style.display = 'none'; // Hide the button
     }
     }
 

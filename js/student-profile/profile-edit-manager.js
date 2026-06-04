@@ -372,13 +372,13 @@ function populateEditForm(data) {
         allowLocationCheckbox.disabled = true; // Make unselectable
         // Show "Change Location" button
         if (changeLocationBtn) {
-            changeLocationBtn.classList.remove('hidden');
+            changeLocationBtn.style.display = 'block';
         }
         console.log('[Student Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
     } else if (allowLocationCheckbox) {
         allowLocationCheckbox.disabled = false;
         if (changeLocationBtn) {
-            changeLocationBtn.classList.add('hidden');
+            changeLocationBtn.style.display = 'none';
         }
     }
 

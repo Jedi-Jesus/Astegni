@@ -1312,9 +1312,14 @@ function openEditProfileModal() {
             allowLocationCheckbox.checked = false;
             allowLocationCheckbox.disabled = true; // Make unselectable
             if (changeLocationBtn) {
-                changeLocationBtn.classList.remove('hidden');
+                changeLocationBtn.style.display = 'block';
             }
             console.log('[User Edit] GPS checkbox disabled (location exists, click Change Location to modify)');
+        } else if (allowLocationCheckbox) {
+            allowLocationCheckbox.disabled = false;
+            if (changeLocationBtn) {
+                changeLocationBtn.style.display = 'none';
+            }
         }
 
         console.log('[openEditProfileModal] Form populated successfully');
@@ -1874,7 +1879,7 @@ function handleChangeLocationUser() {
     }
 
     if (changeLocationBtn) {
-        changeLocationBtn.classList.add('hidden'); // Hide the button
+        changeLocationBtn.style.display = 'none'; // Hide the button
     }
 }
 
