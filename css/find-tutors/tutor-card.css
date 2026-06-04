@@ -1354,6 +1354,7 @@
     padding: 1rem;
     border-radius: 0.75rem;
     margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 .price-section::before {
