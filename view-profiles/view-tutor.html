@@ -360,7 +360,8 @@
 
         .rating-tooltip {
             position: absolute;
-            bottom: 120%;
+            top: 110%;
+            bottom: auto;
             left: 50%;
             transform: translateX(-50%);
             background: var(--card-bg, #ffffff) !important;
@@ -377,22 +378,26 @@
             backdrop-filter: none !important;
         }
 
-        .rating-tooltip-container:hover .rating-tooltip {
+        .rating-tooltip-container:hover .rating-tooltip,
+        .rating-wrapper:hover .rating-tooltip,
+        #rating-hover-trigger:hover #rating-tooltip {
             opacity: 1;
             visibility: visible;
-            bottom: calc(100% + 10px);
+            top: calc(100% + 10px);
+            bottom: auto;
             pointer-events: auto;
         }
 
         .rating-tooltip::before {
             content: '';
             position: absolute;
-            top: 100%;
+            bottom: 100%;
+            top: auto;
             left: 50%;
             transform: translateX(-50%);
             border: 8px solid transparent;
-            border-top-color: var(--card-bg, #ffffff) !important;
-            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+            border-bottom-color: var(--card-bg, #ffffff) !important;
+            filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.1));
         }
 
         [data-theme="dark"] .rating-tooltip {
@@ -400,7 +405,7 @@
         }
 
         [data-theme="dark"] .rating-tooltip::before {
-            border-top-color: var(--card-bg, #1a1a1a) !important;
+            border-bottom-color: var(--card-bg, #1a1a1a) !important;
         }
 
         /* Dark mode support - now handled by var(--card-bg) */
