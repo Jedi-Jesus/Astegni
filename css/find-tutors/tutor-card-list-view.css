@@ -151,23 +151,25 @@
 
 /* Container for Quote + Subjects + Details + Bio.
    Exclude the right-column action blocks (price, View Package, message actions)
-   so they don't get dumped into the middle content column. */
+   so they don't get dumped into the middle content column.
+   Span all rows (1 / -1) so the tall content doesn't force the right column's
+   row 1 to stretch - that stretch was pushing View Package far below the price. */
 .tutor-cards-list .tutor-card > :not(.tutor-header):not(.tutor-actions):not(.tutor-actions-secondary):not(.price-section) {
     grid-column: 2 !important;
-    grid-row: 1 !important;
+    grid-row: 1 / -1 !important;
 }
 
 /* Ensure quote and content are in the same area and stack properly */
 .tutor-cards-list .tutor-quote {
     grid-column: 2 !important;
-    grid-row: 1 !important;
+    grid-row: 1 / -1 !important;
     margin: 0 0 1rem 0 !important;
     align-self: start !important;
 }
 
 .tutor-cards-list .tutor-content {
     grid-column: 2 !important;
-    grid-row: 1 !important;
+    grid-row: 1 / -1 !important;
     padding: 0 !important;
     display: flex !important;
     flex-direction: column !important;
