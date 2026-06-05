@@ -155,6 +155,12 @@ def get_platform_stats(db: Session = Depends(get_db)):
             "SELECT COUNT(*) FROM schools WHERE status = 'verified'"
         )).scalar() or 0
 
+        # Count distinct countries the platform serves (from users.country_code)
+        unique_countries = db.execute(text("""
+            SELECT COUNT(DISTINCT country_code) FROM users
+            WHERE country_code IS NOT NULL AND country_code != ''
+        """)).scalar() or 0
+
         # Get tutor subscription tier breakdown
         # NOTE: is_verified is in users table, NOT tutor_profiles table
         tier_breakdown = db.execute(text("""
@@ -182,6 +188,7 @@ def get_platform_stats(db: Session = Depends(get_db)):
             "courses_count": courses_count,
             "average_rating": round(avg_rating, 1),
             "schools_count": schools_count,
+            "unique_countries": unique_countries,
             "subscription_tiers": subscription_tiers
         }
     except Exception as e:
@@ -191,6 +198,7 @@ def get_platform_stats(db: Session = Depends(get_db)):
             "courses_count": 0,
             "average_rating": 0.0,
             "schools_count": 0,
+            "unique_countries": 0,
             "error": str(e)
         }
 
