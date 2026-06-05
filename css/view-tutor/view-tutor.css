@@ -872,16 +872,17 @@
                 order: 1;
             }
 
-            /* Right sidebar widgets in 3-column grid for large tablets */
+            /* Right sidebar widgets in 2-column grid for large tablets
+               (matches the < 768px layout) */
             .right-sidebar-content {
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 1.5rem;
                 width: 100% !important;
                 max-width: 100% !important;
             }
 
-            /* Widget sizing for 3-column tablet layout - fill space perfectly */
+            /* Widget sizing for 2-column tablet layout - fill space perfectly */
             .sidebar-widget {
                 width: 100% !important;
                 max-width: none !important;
