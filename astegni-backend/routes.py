@@ -161,27 +161,32 @@ def get_platform_stats(db: Session = Depends(get_db)):
             WHERE country_code IS NOT NULL AND country_code != ''
         """)).scalar() or 0
 
-        # Get tutor subscription tier breakdown
-        # NOTE: is_verified is in users table, NOT tutor_profiles table
-        tier_breakdown = db.execute(text("""
-            SELECT
-                subscription_plan_id,
-                COUNT(*) as count
-            FROM tutor_profiles tp
-            JOIN users u ON tp.user_id = u.id
-            WHERE tp.is_active = true
-            AND u.is_verified = true
-            AND u.is_active = true
-            GROUP BY subscription_plan_id
-            ORDER BY subscription_plan_id
-        """)).fetchall()
-
-        # Map subscription plan IDs to tier names
+        # Get tutor subscription tier breakdown.
+        # This is supplementary (the hero stats don't need it), so isolate it in
+        # its own try/except - a failure here must NOT zero out the headline counts.
+        # subscription_plan_id lives on users (a stale copy may also exist on
+        # tutor_profiles, so it MUST be qualified or the column reference is ambiguous).
         tier_names = {9: "premium", 8: "standard_plus", 7: "standard", 6: "basic_plus", 5: "basic", 16: "free"}
         subscription_tiers = {name: 0 for name in tier_names.values()}
-        for plan_id, count in tier_breakdown:
-            tier_name = tier_names.get(plan_id, "free")
-            subscription_tiers[tier_name] = count
+        try:
+            tier_breakdown = db.execute(text("""
+                SELECT
+                    u.subscription_plan_id,
+                    COUNT(*) as count
+                FROM tutor_profiles tp
+                JOIN users u ON tp.user_id = u.id
+                WHERE tp.is_active = true
+                AND u.is_verified = true
+                AND u.is_active = true
+                GROUP BY u.subscription_plan_id
+                ORDER BY u.subscription_plan_id
+            """)).fetchall()
+            for plan_id, count in tier_breakdown:
+                tier_name = tier_names.get(plan_id, "free")
+                subscription_tiers[tier_name] = count
+        except Exception as tier_err:
+            print(f"[platform-stats] tier breakdown failed (non-fatal): {tier_err}")
+            db.rollback()
 
         return {
             "tutors_count": tutor_count,
