@@ -731,7 +731,6 @@
             min-width: 0;
             position: relative;
             z-index: 1;
-            order: 1;
         }
 
         .right-sidebar-container {
@@ -745,9 +744,13 @@
         }
 
         /* Related Tutors lives inside the main flex now. On desktop it wraps to
-           its own full-width row below the content + sidebar (order keeps it last). */
+           its own full-width row below the content + sidebar (order keeps it last).
+           NOTE: order is only set on the view-tutor sidebar (.right-sidebar-container)
+           and this section — NOT on the generic .flex-1, so other pages that reuse
+           this CSS with a differently-classed sidebar (e.g. tutor-profile's
+           .right-widgets) keep their natural source order. */
         .flex.gap-6 > .related-tutors-section {
-            order: 3;
+            order: 1;
             flex-basis: 100%;
             width: 100%;
             margin-top: 2rem;
@@ -833,20 +836,19 @@
             }
 
             /* Stacked order: main content -> Related Tutors -> right sidebar.
-               Related Tutors must sit ABOVE the sidebar on screens < 1024px. */
-            .flex.gap-6 > .flex-1 {
-                order: 1 !important;
-            }
-
+               Related Tutors must sit ABOVE the sidebar on screens < 1024px.
+               Only order the Related section and the view-tutor sidebar — leave
+               .flex-1 at its default order (0) so other pages reusing this CSS
+               (e.g. tutor-profile's .right-widgets) keep their source order. */
             .flex.gap-6 > .related-tutors-section {
-                order: 2 !important;
+                order: 1 !important;
                 flex-basis: 100% !important;
                 width: 100% !important;
                 margin-top: 2rem !important;
             }
 
             .flex.gap-6 > .right-sidebar-container {
-                order: 3 !important;
+                order: 2 !important;
             }
         }
 
