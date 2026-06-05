@@ -723,6 +723,7 @@
             align-items: flex-start !important;
             position: relative !important;
             flex-direction: row !important;
+            flex-wrap: wrap !important;
         }
 
         .flex-1 {
@@ -730,6 +731,7 @@
             min-width: 0;
             position: relative;
             z-index: 1;
+            order: 1;
         }
 
         .right-sidebar-container {
@@ -739,6 +741,16 @@
             top: 5rem;
             height: fit-content;
             z-index: 0;
+            order: 2;
+        }
+
+        /* Related Tutors lives inside the main flex now. On desktop it wraps to
+           its own full-width row below the content + sidebar (order keeps it last). */
+        .flex.gap-6 > .related-tutors-section {
+            order: 3;
+            flex-basis: 100%;
+            width: 100%;
+            margin-top: 2rem;
         }
 
         .right-sidebar-content {
@@ -818,6 +830,23 @@
             .container.mx-auto.px-4 {
                 padding-left: 0 !important;
                 padding-right: 0 !important;
+            }
+
+            /* Stacked order: main content -> Related Tutors -> right sidebar.
+               Related Tutors must sit ABOVE the sidebar on screens < 1024px. */
+            .flex.gap-6 > .flex-1 {
+                order: 1 !important;
+            }
+
+            .flex.gap-6 > .related-tutors-section {
+                order: 2 !important;
+                flex-basis: 100% !important;
+                width: 100% !important;
+                margin-top: 2rem !important;
+            }
+
+            .flex.gap-6 > .right-sidebar-container {
+                order: 3 !important;
             }
         }
 
