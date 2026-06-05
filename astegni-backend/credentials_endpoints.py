@@ -276,8 +276,15 @@ async def upload_tutor_document(
         )
         print(f"   File upload result: {file_upload_result}")
 
+        # Fail loudly if storage is unavailable instead of saving a dead/mock URL.
+        if not isinstance(file_upload_result, dict) or not file_upload_result.get('url'):
+            raise HTTPException(
+                status_code=502,
+                detail="File storage is currently unavailable. Please try again later."
+            )
+
         # Extract URL from the result dictionary
-        file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
+        file_url = file_upload_result.get('url')
         print(f"   Extracted file URL: {file_url}")
 
         # Parse dates
@@ -550,7 +557,12 @@ async def update_tutor_document(
                 user_id=user_id  # Use user_id instead of tutor_id
             )
 
-            file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
+            if not isinstance(file_upload_result, dict) or not file_upload_result.get('url'):
+                raise HTTPException(
+                    status_code=502,
+                    detail="File storage is currently unavailable. Please try again later."
+                )
+            file_url = file_upload_result.get('url')
             update_fields.append("document_url = %s")
             update_values.append(file_url)
             update_fields.append("file_name = %s")
@@ -1521,7 +1533,13 @@ async def upload_unified_document(
             user_id=current_user.id  # Use user_id instead of profile_id
         )
 
-        file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
+        # Fail loudly if storage is unavailable instead of saving a dead/mock URL.
+        if not isinstance(file_upload_result, dict) or not file_upload_result.get('url'):
+            raise HTTPException(
+                status_code=502,
+                detail="File storage is currently unavailable. Please try again later."
+            )
+        file_url = file_upload_result.get('url')
         print(f"   File URL: {file_url}")
 
         # Parse dates
@@ -1752,7 +1770,12 @@ async def update_unified_document(
                 user_id=current_user.id  # Use user_id instead of profile_id
             )
 
-            file_url = file_upload_result.get('url') if isinstance(file_upload_result, dict) else file_upload_result
+            if not isinstance(file_upload_result, dict) or not file_upload_result.get('url'):
+                raise HTTPException(
+                    status_code=502,
+                    detail="File storage is currently unavailable. Please try again later."
+                )
+            file_url = file_upload_result.get('url')
             update_fields.append("document_url = %s")
             update_values.append(file_url)
             update_fields.append("file_name = %s")

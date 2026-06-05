@@ -87,6 +87,12 @@ class BackblazeService:
         self.bucket = None
         self.b2_api = None
 
+        # When B2 is unavailable/unconfigured, uploads MUST fail (return None) so
+        # callers don't persist a fake mock URL as if it were a real file. Only
+        # local dev should fall back to a mock URL, and only by opting in via
+        # B2_ALLOW_MOCK=true. NEVER set this in production.
+        self.allow_mock = os.getenv('B2_ALLOW_MOCK', 'false').lower() == 'true'
+
         if B2_AVAILABLE:
             self._initialize_b2()
         else:
@@ -184,7 +190,15 @@ class BackblazeService:
         file_path = self._get_folder_path(file_type, file_name, user_id)
 
         if not self.configured or not B2_AVAILABLE:
-            logger.warning(f"B2 not configured - would upload to: {file_path}")
+            if not self.allow_mock:
+                # Fail loudly: returning None makes callers reject the upload
+                # instead of saving a dead mock.backblazeb2.com URL to the DB.
+                logger.error(
+                    f"B2 not configured and B2_ALLOW_MOCK is off - refusing to fake "
+                    f"upload of: {file_path}"
+                )
+                return None
+            logger.warning(f"B2 not configured (mock allowed) - would upload to: {file_path}")
             return {
                 'fileId': 'mock_file_id',
                 'fileName': file_path,
@@ -258,7 +272,13 @@ class BackblazeService:
         file_path = f"{folder_path}{unique_name}"
 
         if not self.configured or not B2_AVAILABLE:
-            logger.warning(f"B2 not configured - would upload to: {file_path}")
+            if not self.allow_mock:
+                logger.error(
+                    f"B2 not configured and B2_ALLOW_MOCK is off - refusing to fake "
+                    f"upload of: {file_path}"
+                )
+                return None
+            logger.warning(f"B2 not configured (mock allowed) - would upload to: {file_path}")
             return {
                 'fileId': 'mock_file_id',
                 'fileName': file_path,
