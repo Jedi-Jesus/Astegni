@@ -968,6 +968,13 @@ async def get_similar_tutors(
                     AND tp.is_active = TRUE
                     AND u.is_verified = TRUE
                     AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
+                    -- Only list tutors who have at least one active, public package
+                    AND EXISTS (
+                        SELECT 1 FROM tutor_packages pkg
+                        WHERE pkg.tutor_id = tp.id
+                        AND pkg.is_active = TRUE
+                        AND pkg.visibility = 'public'
+                    )
                 )
                 SELECT
                     id, user_id, username, profile_picture, location, languages,
@@ -1020,75 +1027,9 @@ async def get_similar_tutors(
                     "total_students": row[14] or 0
                 })
 
-            # If we don't have enough similar tutors, fill with random active tutors
-            if len(similar_tutors) < limit:
-                remaining = limit - len(similar_tutors)
-                existing_ids = [t["id"] for t in similar_tutors]
-                existing_ids.append(current_tutor_profile_id)
-
-                # NOTE: profile_picture now read from users table
-                cur.execute("""
-                    SELECT
-                        tp.id, tp.user_id, tp.username, u.profile_picture,
-                        u.location, u.languages, u.is_verified, tp.expertise_badge,
-                        u.first_name, u.father_name, u.grandfather_name,
-                        COALESCE(
-                            (SELECT AVG(rating) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
-                            0
-                        ) as avg_rating,
-                        COALESCE(
-                            (SELECT COUNT(*) FROM tutor_reviews tr WHERE tr.tutor_id = tp.id),
-                            0
-                        ) as review_count,
-                        COALESCE(
-                            (SELECT SUM(array_length(students_id, 1))
-                             FROM enrolled_courses ec
-                             WHERE ec.tutor_id = tp.id AND ec.status = 'active'),
-                            0
-                        ) as total_students
-                    FROM tutor_profiles tp
-                    JOIN users u ON tp.user_id = u.id
-                    WHERE tp.id != ALL(%s)
-                    AND tp.is_active = TRUE
-                    AND u.is_verified = TRUE
-                    AND (u.is_suspended IS NULL OR u.is_suspended = FALSE)
-                    ORDER BY avg_rating DESC, review_count DESC
-                    LIMIT %s
-                """, (existing_ids, remaining))
-
-                for row in cur.fetchall():
-                    first_name = row[8] or ""
-                    father_name = row[9] or ""
-                    grandfather_name = row[10] or ""
-                    full_name = " ".join(filter(None, [first_name, father_name, grandfather_name]))
-
-                    # Get tutor's main subjects
-                    cur.execute("""
-                        SELECT DISTINCT c.course_name
-                        FROM tutor_packages pkg
-                        JOIN courses c ON c.id = ANY(pkg.course_ids)
-                        WHERE pkg.tutor_id = %s AND pkg.is_active = TRUE
-                        LIMIT 3
-                    """, (row[0],))
-                    subjects = [r[0] for r in cur.fetchall()]
-
-                    similar_tutors.append({
-                        "id": row[0],
-                        "user_id": row[1],
-                        "username": row[2],
-                        "full_name": full_name or row[2] or "Tutor",
-                        "profile_picture": row[3],
-                        "location": row[4],
-                        "languages": row[5] or [],
-                        "is_verified": row[6],
-                        "expertise_badge": row[7],
-                        "subjects": subjects,
-                        "subjects_display": ", ".join(subjects) if subjects else "Various Subjects",
-                        "similarity_score": 0,
-                        "rating": round(float(row[11]), 1) if row[11] else 0.0,
-                        "review_count": row[12] or 0,
-                        "total_students": row[13] or 0
-                    })
+            # Only genuine matches (similarity_score > 0) are returned. The list
+            # is intentionally NOT padded with random tutors when there are fewer
+            # than `limit` matches.
 
             return {
                 "similar_tutors": similar_tutors,
