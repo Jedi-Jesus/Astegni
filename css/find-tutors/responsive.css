@@ -216,7 +216,8 @@
     }
 
     .tutor-search-input {
-        padding: 0.625rem 2.5rem 0.625rem 1rem;
+        /* Left padding must clear the search icon (was 1rem, causing overlap) */
+        padding: 0.625rem 1rem 0.625rem 2.5rem;
         font-size: 0.9rem;
     }
 
