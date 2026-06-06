@@ -121,15 +121,20 @@ def get_platform_stats(db: Session = Depends(get_db)):
     This endpoint is public and does not require authentication.
     """
     try:
-        # Get tutor count - only verified tutors
-        # is_verified=True means: profile complete + KYC verified (auto-set by system)
-        # NOTE: is_verified is in users table, NOT tutor_profiles table
+        # Get tutor count - only verified tutors who are actually LISTABLE.
+        # Must mirror the /api/tutors(/tiered) listing exactly: verified + active AND
+        # have at least one public, active package. Otherwise the hero stat would
+        # advertise tutors that visitors can't find or book.
         tutor_count = db.execute(text("""
             SELECT COUNT(*) FROM tutor_profiles tp
             JOIN users u ON tp.user_id = u.id
             WHERE tp.is_active = true
             AND u.is_verified = true
             AND u.is_active = true
+            AND tp.id IN (
+                SELECT DISTINCT tutor_id FROM tutor_packages
+                WHERE is_active = true AND visibility = 'public'
+            )
         """)).scalar() or 0
 
         # Get total courses count from courses table (only verified/active courses)
