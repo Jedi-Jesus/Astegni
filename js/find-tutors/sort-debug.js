@@ -97,20 +97,39 @@ const SortDebug = {
         // Verdict
         let verdict = 'INFO';
         if (cfg.direction && cfg.key && tutors.length >= 2) {
-            let ok = true, undecidable = false, firstViolation = null;
+            // Classify the field's presence across the page:
+            //  - 'missing'  : the field is absent from the payload (undefined) for some tutor
+            //  - present    : field is in the payload (may be null/0)
+            const rawField = (cfg.key === '_name' || cfg.key === 'oldest') ? null : cfg.key;
+            const anyUndefined = rawField ? tutors.some(t => t[rawField] === undefined) : false;
+
+            // Collect comparable values
+            const vals = tutors.map(t => this.sortValue(t, cfg.key));
+            const allNull = vals.every(v => v == null);
+            const distinct = new Set(vals.map(v => (v == null ? 'null' : String(v))));
+            const allEqual = distinct.size === 1;
+
+            let ok = true, firstViolation = null;
             for (let i = 0; i < tutors.length - 1; i++) {
-                const a = this.sortValue(tutors[i], cfg.key);
-                const b = this.sortValue(tutors[i + 1], cfg.key);
-                const r = this.inOrder(a, b, cfg.direction);
-                if (r === null) { undecidable = true; continue; }
+                const r = this.inOrder(vals[i], vals[i + 1], cfg.direction);
+                if (r === null) continue; // null vs something — skip, handled by allNull/allEqual notes
                 if (!r && !firstViolation) {
                     ok = false;
-                    firstViolation = `#${i + 1} (${a}) then #${i + 2} (${b})`;
+                    firstViolation = `#${i + 1} (${vals[i]}) then #${i + 2} (${vals[i + 1]})`;
                 }
             }
-            if (!ok) verdict = `❌ WRONG — ${firstViolation} out of ${cfg.direction} order`;
-            else if (undecidable) verdict = '🟡 UNVERIFIABLE — sort field missing from payload';
-            else verdict = `✅ OK — respects ${cfg.direction} order`;
+
+            if (!ok) {
+                verdict = `❌ WRONG — ${firstViolation} out of ${cfg.direction} order`;
+            } else if (anyUndefined) {
+                verdict = '🟡 UNVERIFIABLE — field not in payload for some tutors';
+            } else if (allNull) {
+                verdict = '🟰 TIE (no data) — every value is null/empty, so order is the pre-sort (tier) order, NOT this sort';
+            } else if (allEqual) {
+                verdict = `🟰 TIE — all values equal (${vals[0]}); order kept from pre-sort. Will reorder once values differ`;
+            } else {
+                verdict = `✅ OK — respects ${cfg.direction} order`;
+            }
         } else if (tutors.length < 2) {
             verdict = '🟡 only ' + tutors.length + ' tutor — nothing to compare';
         }
