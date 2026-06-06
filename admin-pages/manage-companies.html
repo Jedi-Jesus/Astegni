@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./css/root.css">
     <link rel="stylesheet" href="./css/admin-profile/admin.css">
     <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="./css/admin-pages/manage-companies.css?v202605260100">
+    <link rel="stylesheet" href="./css/admin-pages/manage-companies.css?v202606060000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -110,7 +110,7 @@
                 <div class="stat-tile pending"><div class="stat-label">Pending</div><div class="stat-value" id="stat-pending">0</div></div>
                 <div class="stat-tile rejected"><div class="stat-label">Rejected</div><div class="stat-value" id="stat-rejected">0</div></div>
                 <div class="stat-tile suspended"><div class="stat-label">Suspended</div><div class="stat-value" id="stat-suspended">0</div></div>
-                <div class="stat-tile unverified"><div class="stat-label">Unverified</div><div class="stat-value" id="stat-unverified">0</div></div>
+                <div class="stat-tile escalated"><div class="stat-label">Escalated</div><div class="stat-value" id="stat-escalated">0</div></div>
             </div>
 
             <!-- Filters + search -->
@@ -121,7 +121,6 @@
                     <button class="filter-btn" data-status="verified" onclick="CompaniesAdmin.setFilter('verified')">Verified</button>
                     <button class="filter-btn" data-status="rejected" onclick="CompaniesAdmin.setFilter('rejected')">Rejected</button>
                     <button class="filter-btn" data-status="suspended" onclick="CompaniesAdmin.setFilter('suspended')">Suspended</button>
-                    <button class="filter-btn" data-status="unverified" onclick="CompaniesAdmin.setFilter('unverified')">Unverified</button>
                 </div>
                 <div class="filter-search">
                     <i class="fas fa-search"></i>
@@ -220,6 +219,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-companies.js?v202605260300"></script>
+    <script src="./js/admin-pages/manage-companies.js?v202606060000"></script>
 </body>
 </html>

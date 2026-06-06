@@ -547,7 +547,9 @@ class CompanyProfile(Base):
     rejected_at = Column(DateTime, nullable=True)
     verification_submitted_at = Column(DateTime, nullable=True)
     verification_reviewed_at = Column(DateTime, nullable=True)
-    verification_notes = Column(Text, nullable=True)
+    verification_notes = Column(Text, nullable=True)  # current reason for rejected/suspended status
+    verification_escalated = Column(Boolean, default=False)  # advertiser pressed "Notify admins" while pending
+    verification_escalated_at = Column(DateTime, nullable=True)
 
     # Billing / wallet (per-company)
     balance = Column(Numeric(12, 2), default=0.00)

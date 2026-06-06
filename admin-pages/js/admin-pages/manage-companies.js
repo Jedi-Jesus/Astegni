@@ -7,7 +7,7 @@ const COMPANIES_API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL :
 
 const CompaniesAdmin = {
     companies: [],
-    counts: { total: 0, verified: 0, pending: 0, rejected: 0, suspended: 0, unverified: 0 },
+    counts: { total: 0, verified: 0, pending: 0, rejected: 0, suspended: 0, escalated: 0 },
     filterStatus: 'all',
     searchTerm: '',
     page: 1,
@@ -39,7 +39,7 @@ const CompaniesAdmin = {
             'stat-pending': this.counts.pending,
             'stat-rejected': this.counts.rejected,
             'stat-suspended': this.counts.suspended,
-            'stat-unverified': this.counts.unverified,
+            'stat-escalated': this.counts.escalated,
         };
         for (const [id, val] of Object.entries(map)) {
             const el = document.getElementById(id);
@@ -94,6 +94,9 @@ const CompaniesAdmin = {
 
         const status = c.verification_status || (c.is_verified ? 'verified' : 'unverified');
         const badge = this.renderBadge(status);
+        const escalatedBadge = (status === 'pending' && c.verification_escalated)
+            ? '<span class="company-badge escalated"><i class="fas fa-bell"></i> Escalated by advertiser</span>'
+            : '';
 
         const ownerLine = c.advertiser_email
             ? `<div class="company-owner"><i class="fas fa-user"></i> ${this._escape(c.advertiser_name || '')} &middot; ${this._escape(c.advertiser_email)}</div>`
@@ -111,6 +114,7 @@ const CompaniesAdmin = {
                     <h3>${this._escape(c.company_name)}</h3>
                     ${ownerLine}
                     ${badge}
+                    ${escalatedBadge}
                 </div>
                 <div class="company-balance">
                     <div class="amt">${balance} ${currency}</div>
@@ -234,10 +238,15 @@ const CompaniesAdmin = {
         const extraDocs = Array.isArray(c.additional_docs_urls) ? c.additional_docs_urls : [];
 
         const notesBanner = c.verification_notes
-            ? `<div class="notes-banner"><i class="fas fa-info-circle"></i><strong>Admin notes:</strong> ${this._escape(c.verification_notes)}</div>`
+            ? `<div class="notes-banner"><i class="fas fa-info-circle"></i><strong>Reason on file:</strong> ${this._escape(c.verification_notes)}</div>`
+            : '';
+
+        const escalatedBanner = (status === 'pending' && c.verification_escalated)
+            ? `<div class="notes-banner" style="background:rgba(245,158,11,0.12);border-left:3px solid #f59e0b;"><i class="fas fa-bell"></i> <strong>Escalated by advertiser</strong> — verification has exceeded 2 business days${c.verification_escalated_at ? ` (notified ${this._formatDate(c.verification_escalated_at)})` : ''}.</div>`
             : '';
 
         return `
+            ${escalatedBanner}
             ${notesBanner}
 
             <div class="detail-section">
@@ -289,7 +298,6 @@ const CompaniesAdmin = {
             <div class="detail-section">
                 <h3>KYC Documents</h3>
                 ${this.renderDocTile('Business License', c.business_license_url, 'file-contract')}
-                ${this.renderDocTile('TIN Certificate', c.tin_certificate_url, 'receipt')}
                 ${this.renderDocTile('Company Logo', c.company_logo, 'image')}
                 ${extraDocs.map((url, idx) => this.renderDocTile(`Additional Doc #${idx + 1}`, url, 'file')).join('')}
                 ${(emails.length || phones.length) ? `

@@ -73,7 +73,7 @@
     <link rel="stylesheet" href="../css/common-modals/universal-upload-modal.css?v202605252300">
     <!-- Brands & Campaigns Styles -->
     <link rel="stylesheet" href="../css/advertiser-profile/brands-campaigns.css?v202605252300">
-    <link rel="stylesheet" href="../css/advertiser-profile/companies-panel.css?v202605252300">
+    <link rel="stylesheet" href="../css/advertiser-profile/companies-panel.css?v202606060000">
     <!-- Team Management Styles -->
     <link rel="stylesheet" href="../css/advertiser-profile/team-management.css?v202605252300">
     <!-- Advertiser Profile Responsive Styles -->
@@ -2547,22 +2547,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Verify Company Info Card -->
-                                    <div class="card p-6 cursor-pointer hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-emerald-500"
-                                        onclick="openVerifyCompanyInfoModal()">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div
-                                                class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-                                                <span class="text-3xl">🏢</span>
-                                            </div>
-                                            <h3 class="text-lg font-bold mb-2 text-gray-800">Verify Company Info</h3>
-                                            <p class="text-sm text-gray-600">Business details and verification</p>
-                                            <span id="company-verification-status"
-                                                class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                Not Verified
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -3829,7 +3813,6 @@
     <script src="../js/common-modals/chat-call-modal.js?v202605252300"></script>
     <script src="../js/common-modals/truevoice-manager.js?v202605252300"></script>
     <script src="../js/common-modals/view-request-modal.js?v202605252300"></script>
-    <script src="../js/common-modals/verify-company-info-modal.js?v202605252300"></script>
     <script src="../js/common-modals/access-restricted-modal.js?v202605252300"></script>
 
     <!-- Stats Counter for Hero Section -->
@@ -3860,7 +3843,7 @@
     <script src="../js/advertiser-profile/campaign-manager.js?v202605252300"></script>
 
     <!-- 5. Companies Management (advertiser -> company -> brand -> campaign hierarchy) -->
-    <script src="../js/advertiser-profile/companies-manager.js?v202605252300"></script>
+    <script src="../js/advertiser-profile/companies-manager.js?v202606060000"></script>
 
     <!-- 5. Brands Management -->
     <script src="../js/advertiser-profile/brands-manager.js?v202605252300"></script>
@@ -3869,7 +3852,7 @@
     <script src="../js/advertiser-profile/team-manager.js?v202605252300"></script>
 
     <!-- 7. Global Functions (for HTML onclick handlers) -->
-    <script src="../js/advertiser-profile/global-functions.js?v202605252300"></script>
+    <script src="../js/advertiser-profile/global-functions.js?v202606060000"></script>
 
     <!-- Community Manager (Database Integration - Class Definition) -->
     <script src="../js/common-modals/communityManager.js?v202605252300"></script>
@@ -4413,25 +4396,6 @@
     console.log('[OK] Notes Modal loaded');
     })
     .catch(error => console.error('Failed to load notes-modal:', error));
-
-    // Load verify-company-info-modal
-    fetch('../modals/common-modals/verify-company-info-modal.html')
-    .then(response => response.text())
-    .then(html => {
-    let container = document.getElementById('modal-container');
-    if (!container) {
-    container = document.createElement('div');
-    container.id = 'modal-container';
-    document.body.appendChild(container);
-    }
-    container.insertAdjacentHTML('beforeend', html);
-    // Initialize form submit handler
-    if (typeof initCompanyVerificationModal === 'function') {
-    initCompanyVerificationModal();
-    }
-    console.log('[OK] Verify Company Info Modal loaded');
-    })
-    .catch(error => console.error('Failed to load verify-company-info-modal:', error));
     </script>
 
     <!-- Notes Manager -->

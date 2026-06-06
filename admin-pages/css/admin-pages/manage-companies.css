@@ -30,6 +30,7 @@
 .stat-tile.rejected .stat-value { color: #dc2626; }
 .stat-tile.suspended .stat-value { color: #ea580c; }
 .stat-tile.unverified .stat-value { color: #6b7280; }
+.stat-tile.escalated .stat-value { color: #d97706; }
 
 /* Filter bar */
 .filter-bar {
@@ -148,6 +149,7 @@
 .company-badge.rejected { background: #fee2e2; color: #991b1b; }
 .company-badge.suspended{ background: #ffedd5; color: #9a3412; }
 .company-badge.unverified{background: #f3f4f6; color: #4b5563; }
+.company-badge.escalated{ background: #fef3c7; color: #b45309; }
 
 .company-balance {
     text-align: right;

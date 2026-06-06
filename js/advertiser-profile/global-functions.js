@@ -293,85 +293,6 @@ function openAdAnalyticsModal() {
     // }
 }
 
-// Open Verify Company Info Modal
-async function openVerifyCompanyInfoModal() {
-    console.log('[AdvertiserProfile] Opening verify company info modal...');
-
-    let modal = document.getElementById('verify-company-info-modal');
-
-    // If modal doesn't exist, try to load it
-    if (!modal) {
-        try {
-            const response = await fetch('../modals/common-modals/verify-company-info-modal.html');
-            if (response.ok) {
-                const html = await response.text();
-                let container = document.getElementById('modal-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'modal-container';
-                    document.body.appendChild(container);
-                }
-                container.insertAdjacentHTML('beforeend', html);
-                modal = document.getElementById('verify-company-info-modal');
-                console.log('[AdvertiserProfile] Verify company info modal loaded from file');
-            } else {
-                console.error('[AdvertiserProfile] Failed to load verify company info modal');
-                alert('Could not load company verification. Please refresh the page.');
-                return;
-            }
-        } catch (error) {
-            console.error('[AdvertiserProfile] Error loading verify company info modal:', error);
-            alert('Could not load company verification. Please refresh the page.');
-            return;
-        }
-    }
-
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        console.log('[AdvertiserProfile] Verify company info modal opened');
-
-        // CRITICAL: Initialize modal event listeners (attaches OTP button handlers)
-        if (typeof initCompanyVerificationModal === 'function') {
-            initCompanyVerificationModal();
-            console.log('[AdvertiserProfile] initCompanyVerificationModal() called');
-        } else {
-            console.error('[AdvertiserProfile] initCompanyVerificationModal not found! OTP buttons will not work.');
-        }
-
-        // Wait for DOM to settle before loading data
-        // This ensures all nested elements are available
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Debug: Check if document preview elements exist
-        console.log('[AdvertiserProfile] Checking document preview elements...');
-        console.log('[AdvertiserProfile] businessLicensePreview:', !!document.getElementById('businessLicensePreview'));
-        console.log('[AdvertiserProfile] tinCertificatePreview:', !!document.getElementById('tinCertificatePreview'));
-        console.log('[AdvertiserProfile] companyLogoPreview:', !!document.getElementById('companyLogoPreview'));
-
-        // Load company data (await to ensure it completes)
-        if (typeof loadCompanyInfoData === 'function') {
-            await loadCompanyInfoData();
-            console.log('[AdvertiserProfile] loadCompanyInfoData completed');
-        }
-        if (typeof updateVerificationStatus === 'function') {
-            updateVerificationStatus();
-        }
-    }
-}
-
-// Close Verify Company Info Modal
-function closeVerifyCompanyInfoModal() {
-    const modal = document.getElementById('verify-company-info-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-        console.log('[AdvertiserProfile] Verify company info modal closed');
-    }
-}
-
 // Handle Navigation Link Click
 function handleNavLinkClick(event, section) {
     event.preventDefault();
@@ -419,8 +340,6 @@ window.resetUpload = resetUpload;
 window.openCommunityModal = openCommunityModal;
 window.closeCommunityModal = closeCommunityModal;
 window.openAdAnalyticsModal = openAdAnalyticsModal;
-window.openVerifyCompanyInfoModal = openVerifyCompanyInfoModal;
-window.closeVerifyCompanyInfoModal = closeVerifyCompanyInfoModal;
 window.handleNavLinkClick = handleNavLinkClick;
 window.filterBrandsByStatus = filterBrandsByStatus;
 window.searchBrandsInput = searchBrandsInput;

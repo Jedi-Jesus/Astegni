@@ -24,14 +24,14 @@ returns 403.
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
 from utils import get_current_user
@@ -58,14 +58,16 @@ class CompanyCreate(BaseModel):
     company_name: str
     industry: Optional[str] = None
     company_size: Optional[str] = None
-    business_reg_no: Optional[str] = None
-    tin_number: Optional[str] = None
+    business_reg_no: Optional[str] = None       # BIN: business registration number (text)
+    tin_number: Optional[str] = None            # TIN: tax identification number (text)
     website: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
     company_description: Optional[str] = None
     company_email: Optional[List[str]] = None
     company_phone: Optional[List[str]] = None
+    company_logo: Optional[str] = None          # B2 URL (uploaded separately, optional)
+    business_license_url: Optional[str] = None  # B2 URL (uploaded separately)
 
 
 class CompanyUpdate(BaseModel):
@@ -80,6 +82,8 @@ class CompanyUpdate(BaseModel):
     company_description: Optional[str] = None
     company_email: Optional[List[str]] = None
     company_phone: Optional[List[str]] = None
+    company_logo: Optional[str] = None
+    business_license_url: Optional[str] = None
 
 
 # ============================================================
@@ -114,10 +118,51 @@ def _serialize(row: dict) -> dict:
             out[k] = float(out[k])
     for k in ("created_at", "updated_at", "verified_at", "rejected_at",
               "verification_submitted_at", "verification_reviewed_at",
-              "last_transaction_at"):
+              "verification_escalated_at", "last_transaction_at"):
         if isinstance(out.get(k), datetime):
             out[k] = out[k].isoformat()
     return out
+
+
+def _verification_state(tin_number, business_license_url) -> Optional[str]:
+    """Decide the verification_status a company should have based on submitted data.
+
+    Rule (until government auto-verification exists):
+      - TIN number AND an uploaded business license  -> 'pending' (admin must review)
+      - otherwise                                     -> None / 'unverified'
+        (advertiser hasn't supplied enough to be reviewed; not shown to admins)
+
+    Logo is optional and does not affect verification.
+    """
+    has_tin = bool((tin_number or "").strip())
+    has_license = bool((business_license_url or "").strip())
+    if has_tin and has_license:
+        return "pending"
+    return None
+
+
+def _business_days_since(dt: Optional[datetime], now: datetime) -> int:
+    """Whole business days (Mon-Fri, weekends excluded) elapsed between dt and now.
+
+    Counts only fully-elapsed 24h spans, then subtracts any Saturdays/Sundays
+    that fall within the elapsed window. No public-holiday calendar.
+    """
+    if not dt:
+        return 0
+    # Normalize naive/aware mismatch by comparing on naive UTC.
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    if now.tzinfo is not None:
+        now = now.replace(tzinfo=None)
+    if now <= dt:
+        return 0
+    days = 0
+    cursor = dt
+    while cursor + timedelta(days=1) <= now:
+        cursor += timedelta(days=1)
+        if cursor.weekday() < 5:  # Mon=0 .. Fri=4 count; Sat/Sun skipped
+            days += 1
+    return days
 
 
 # ============================================================
@@ -133,6 +178,11 @@ async def create_company(payload: CompanyCreate, current_user=Depends(get_curren
     if not name:
         raise HTTPException(status_code=400, detail="company_name is required")
 
+    # A company with TIN + business license is auto-submitted for admin review
+    # (verification_status='pending'); otherwise it stays unverified.
+    new_status = _verification_state(payload.tin_number, payload.business_license_url)
+    submitted_at = datetime.utcnow() if new_status == "pending" else None
+
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -142,11 +192,15 @@ async def create_company(payload: CompanyCreate, current_user=Depends(get_curren
                         advertiser_id,
                         company_name, industry, company_size, business_reg_no, tin_number,
                         website, address, city, company_description,
-                        company_email, company_phone
+                        company_email, company_phone,
+                        company_logo, business_license_url,
+                        verification_status, verification_submitted_at
                     ) VALUES (
                         %s,
                         %s, %s, %s, %s, %s,
                         %s, %s, %s, %s,
+                        %s, %s,
+                        %s, %s,
                         %s, %s
                     )
                     RETURNING *
@@ -157,6 +211,8 @@ async def create_company(payload: CompanyCreate, current_user=Depends(get_curren
                         payload.business_reg_no, payload.tin_number,
                         payload.website, payload.address, payload.city, payload.company_description,
                         Jsonb(payload.company_email or []), Jsonb(payload.company_phone or []),
+                        payload.company_logo, payload.business_license_url,
+                        new_status, submitted_at,
                     ),
                 )
                 row = cur.fetchone()
@@ -221,10 +277,12 @@ async def update_company(company_id: int, payload: CompanyUpdate, current_user=D
     if "company_phone" in updates and updates["company_phone"] is not None:
         updates["company_phone"] = Jsonb(updates["company_phone"])
 
-    set_clauses = [f"{col} = %s" for col in updates.keys()]
-    set_clauses.append("updated_at = NOW()")
-    values = list(updates.values())
-    values.append(company_id)
+    # Identity fields whose change invalidates a prior verification.
+    IDENTITY_FIELDS = {
+        "company_name", "industry", "company_size", "business_reg_no", "tin_number",
+        "website", "address", "city", "company_description",
+        "company_email", "company_phone", "company_logo", "business_license_url",
+    }
 
     try:
         with get_db() as conn:
@@ -232,6 +290,51 @@ async def update_company(company_id: int, payload: CompanyUpdate, current_user=D
                 # Verify ownership and capture pre-update name (for B2 re-migration detection)
                 old = _load_owned_company(cur, advertiser_profile_id, company_id)
                 old_company_name = old.get("company_name") if hasattr(old, "get") else old["company_name"]
+
+                # ---- Recompute verification status from the post-update values ----
+                eff_tin = updates.get("tin_number", old.get("tin_number"))
+                eff_license = updates.get("business_license_url", old.get("business_license_url"))
+                qualifies = _verification_state(eff_tin, eff_license)  # 'pending' or None
+                old_status = old.get("verification_status")
+                was_verified = bool(old.get("is_verified"))
+
+                # Did any identity-relevant field actually change value?
+                identity_changed = any(
+                    k in updates and updates[k] != old.get(k)
+                    for k in IDENTITY_FIELDS
+                )
+
+                if qualifies == "pending":
+                    if was_verified and identity_changed:
+                        # Verified company's info changed -> needs re-verification.
+                        updates["is_verified"] = False
+                        updates["verification_status"] = "pending"
+                        updates["verification_submitted_at"] = datetime.utcnow()
+                        updates["verified_at"] = None
+                        updates["verification_notes"] = None
+                        updates["verification_escalated"] = False
+                        updates["verification_escalated_at"] = None
+                    elif old_status in (None, "rejected") or (old_status == "suspended" and not was_verified):
+                        # Newly has enough data, or fixing a rejection -> (re)submit for review.
+                        updates["verification_status"] = "pending"
+                        updates["verification_submitted_at"] = datetime.utcnow()
+                        updates["rejected_at"] = None
+                        updates["verification_notes"] = None
+                        updates["verification_escalated"] = False
+                        updates["verification_escalated_at"] = None
+                else:
+                    # No longer qualifies (e.g. license/TIN removed). Only demote if not
+                    # currently verified/suspended (don't silently strip an admin decision).
+                    if not was_verified and old_status in ("pending", "rejected"):
+                        updates["verification_status"] = None
+                        updates["verification_submitted_at"] = None
+                        updates["verification_escalated"] = False
+                        updates["verification_escalated_at"] = None
+
+                set_clauses = [f"{col} = %s" for col in updates.keys()]
+                set_clauses.append("updated_at = NOW()")
+                values = list(updates.values())
+                values.append(company_id)
 
                 cur.execute(
                     f"UPDATE company_profile SET {', '.join(set_clauses)} WHERE id = %s RETURNING *",
@@ -339,18 +442,21 @@ async def list_brands_for_company(company_id: int, current_user=Depends(get_curr
 # Verification flow (per-company KYC)
 # ============================================================
 
+# Verification can take up to this many business days before the advertiser
+# may escalate ("Notify admins") from the verification-in-progress modal.
+VERIFICATION_SLA_BUSINESS_DAYS = 2
+
+
 @router.post("/companies/{company_id}/submit-verification")
 async def submit_company_verification(company_id: int, current_user=Depends(get_current_user)):
     """Submit a company for KYC review.
 
-    Required documents (all stored on company_profile):
-      - company_logo
-      - business_license_url
-      - tin_certificate_url
-      - company_name + at least one of (industry, business_reg_no)
+    Requirements (logo is optional):
+      - TIN number
+      - business_license_url (uploaded)
 
-    Sets verification_status='pending' and verification_submitted_at=now().
-    Admin reviews via admin_advertisers_endpoints.py.
+    Note: create/update auto-submit when these are present, so this endpoint is
+    mainly a manual fallback. Sets verification_status='pending'.
     """
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -358,16 +464,11 @@ async def submit_company_verification(company_id: int, current_user=Depends(get_
             with conn.cursor() as cur:
                 row = _load_owned_company(cur, advertiser_profile_id, company_id)
 
-                # Required-doc checklist
                 missing = []
-                if not row.get("company_name"):
-                    missing.append("company_name")
-                if not row.get("company_logo"):
-                    missing.append("company_logo")
+                if not (row.get("tin_number") or "").strip():
+                    missing.append("tin_number")
                 if not row.get("business_license_url"):
                     missing.append("business_license_url")
-                if not row.get("tin_certificate_url"):
-                    missing.append("tin_certificate_url")
                 if missing:
                     raise HTTPException(
                         status_code=400,
@@ -386,6 +487,8 @@ async def submit_company_verification(company_id: int, current_user=Depends(get_
                         verification_submitted_at = NOW(),
                         rejected_at = NULL,
                         verification_notes = NULL,
+                        verification_escalated = FALSE,
+                        verification_escalated_at = NULL,
                         updated_at = NOW()
                     WHERE id = %s
                     RETURNING *
@@ -406,35 +509,156 @@ async def submit_company_verification(company_id: int, current_user=Depends(get_
 
 @router.get("/companies/{company_id}/verification-status")
 async def get_company_verification_status(company_id: int, current_user=Depends(get_current_user)):
-    """Return verification state + required-doc checklist for the company."""
+    """Return verification state + reason + escalation eligibility for the company."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
                 row = _load_owned_company(cur, advertiser_profile_id, company_id)
                 docs = {
-                    "company_logo":         {"uploaded": bool(row.get("company_logo")),         "url": row.get("company_logo")},
-                    "business_license":     {"uploaded": bool(row.get("business_license_url")), "url": row.get("business_license_url")},
-                    "tin_certificate":      {"uploaded": bool(row.get("tin_certificate_url")),  "url": row.get("tin_certificate_url")},
+                    "company_logo":     {"uploaded": bool(row.get("company_logo")),         "url": row.get("company_logo")},
+                    "business_license": {"uploaded": bool(row.get("business_license_url")), "url": row.get("business_license_url")},
                 }
-                all_uploaded = all(d["uploaded"] for d in docs.values())
+                status = row.get("verification_status")
+                submitted_at = row.get("verification_submitted_at")
+                biz_days = _business_days_since(submitted_at, datetime.utcnow()) if status == "pending" else 0
+                can_escalate = (
+                    status == "pending"
+                    and not row.get("verification_escalated")
+                    and biz_days >= VERIFICATION_SLA_BUSINESS_DAYS
+                )
+                has_tin = bool((row.get("tin_number") or "").strip())
+                has_license = bool(row.get("business_license_url"))
                 return {
                     "company_id": row["id"],
                     "company_name": row["company_name"],
                     "is_verified": bool(row.get("is_verified")),
-                    "verification_status": row.get("verification_status"),
+                    "verification_status": status,
                     "verification_method": row.get("verification_method"),
                     "verified_at": row["verified_at"].isoformat() if isinstance(row.get("verified_at"), datetime) else None,
                     "rejected_at": row["rejected_at"].isoformat() if isinstance(row.get("rejected_at"), datetime) else None,
-                    "verification_submitted_at": row["verification_submitted_at"].isoformat() if isinstance(row.get("verification_submitted_at"), datetime) else None,
+                    "verification_submitted_at": submitted_at.isoformat() if isinstance(submitted_at, datetime) else None,
                     "verification_reviewed_at": row["verification_reviewed_at"].isoformat() if isinstance(row.get("verification_reviewed_at"), datetime) else None,
+                    # Current reason for a rejected/suspended company (admin-written).
                     "verification_notes": row.get("verification_notes"),
+                    "verification_escalated": bool(row.get("verification_escalated")),
+                    "business_days_pending": biz_days,
+                    "sla_business_days": VERIFICATION_SLA_BUSINESS_DAYS,
+                    "can_escalate": can_escalate,
                     "documents": docs,
-                    "all_documents_uploaded": all_uploaded,
-                    "can_submit_for_verification": all_uploaded
+                    "has_tin": has_tin,
+                    "has_business_license": has_license,
+                    "can_submit_for_verification": has_tin and has_license
                                                    and not row.get("is_verified")
-                                                   and row.get("verification_status") != "pending",
+                                                   and status != "pending",
                 }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/notify-admins")
+async def notify_admins_verification(company_id: int, current_user=Depends(get_current_user)):
+    """Advertiser escalates a long-pending verification (>2 business days).
+
+    Flags the company as escalated so it surfaces in manage-companies. Idempotent:
+    a second call while already escalated is a no-op success.
+    """
+    advertiser_profile_id = _current_advertiser_profile_id(current_user)
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                row = _load_owned_company(cur, advertiser_profile_id, company_id)
+                if row.get("verification_status") != "pending":
+                    raise HTTPException(status_code=400, detail="Company is not awaiting verification")
+                if row.get("verification_escalated"):
+                    return {"message": "Admins already notified", "company": _serialize(row)}
+
+                biz_days = _business_days_since(row.get("verification_submitted_at"), datetime.utcnow())
+                if biz_days < VERIFICATION_SLA_BUSINESS_DAYS:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"You can notify admins after {VERIFICATION_SLA_BUSINESS_DAYS} business days. "
+                               f"Only {biz_days} business day(s) have passed.",
+                    )
+
+                cur.execute(
+                    """
+                    UPDATE company_profile
+                    SET verification_escalated = TRUE,
+                        verification_escalated_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = %s
+                    RETURNING *
+                    """,
+                    (company_id,),
+                )
+                updated = cur.fetchone()
+                conn.commit()
+                return {"message": "Admins notified. Your verification has been escalated.",
+                        "company": _serialize(updated)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/companies/{company_id}/upload-document")
+async def upload_company_document(
+    company_id: int,
+    doc_type: str = Form(...),                # 'logo' | 'business_license'
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user),
+):
+    """Upload a company logo or business license to B2 and store its URL.
+
+    Files land under {type}/advertisements/{company_slug}/ per advertiser_b2_paths.
+    Returns the stored URL. The verification status is NOT changed here; the
+    subsequent company create/update (which carries tin_number) decides that.
+    """
+    advertiser_profile_id = _current_advertiser_profile_id(current_user)
+    if doc_type not in ("logo", "business_license"):
+        raise HTTPException(status_code=400, detail="doc_type must be 'logo' or 'business_license'")
+
+    column = "company_logo" if doc_type == "logo" else "business_license_url"
+
+    try:
+        from advertiser_b2_paths import company_folder
+        from backblaze_service import get_backblaze_service
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                company = _load_owned_company(cur, advertiser_profile_id, company_id)
+
+                contents = await file.read()
+                if not contents:
+                    raise HTTPException(status_code=400, detail="Empty file")
+
+                media_type = "documents" if doc_type == "business_license" else "images"
+                prefix = "business_license_" if doc_type == "business_license" else "company_logo_"
+                safe_name = f"{prefix}{(file.filename or 'file').replace('/', '_')}"
+                folder = company_folder(media_type, company["company_name"])
+
+                b2 = get_backblaze_service()
+                result = b2.upload_file_to_folder(
+                    file_data=contents,
+                    file_name=safe_name,
+                    folder_path=folder,
+                    content_type=file.content_type,
+                )
+                if not result or not result.get("url"):
+                    raise HTTPException(status_code=502, detail="File upload failed (storage not available)")
+
+                url = result["url"]
+                cur.execute(
+                    f"UPDATE company_profile SET {column} = %s, updated_at = NOW() WHERE id = %s RETURNING *",
+                    (url, company_id),
+                )
+                updated = cur.fetchone()
+                conn.commit()
+                return {"message": "File uploaded", "doc_type": doc_type, "url": url,
+                        "company": _serialize(updated)}
     except HTTPException:
         raise
     except Exception as e:

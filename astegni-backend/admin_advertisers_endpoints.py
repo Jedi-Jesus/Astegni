@@ -1426,6 +1426,11 @@ async def admin_get_companies(
                 """
                 params: list = []
 
+                # Admins only deal with companies that have entered the review
+                # lifecycle. "Unverified" companies (no TIN/license submitted yet)
+                # are advertiser-driven and never shown here.
+                query += " AND (cp.is_verified = TRUE OR cp.verification_status IN ('pending','rejected','suspended'))"
+
                 if status:
                     if status == 'verified':
                         query += " AND cp.is_verified = TRUE"
@@ -1435,8 +1440,6 @@ async def admin_get_companies(
                         query += " AND cp.verification_status = 'rejected'"
                     elif status == 'suspended':
                         query += " AND cp.verification_status = 'suspended'"
-                    elif status == 'unverified':
-                        query += " AND cp.is_verified = FALSE AND (cp.verification_status IS NULL OR cp.verification_status NOT IN ('pending','rejected','suspended'))"
 
                 if search:
                     query += " AND cp.company_name ILIKE %s"
@@ -1481,6 +1484,8 @@ async def admin_get_companies(
                         'verification_submitted_at': str(c['verification_submitted_at']) if c.get('verification_submitted_at') else None,
                         'verification_reviewed_at': str(c['verification_reviewed_at']) if c.get('verification_reviewed_at') else None,
                         'verification_notes': c.get('verification_notes'),
+                        'verification_escalated': bool(c.get('verification_escalated')),
+                        'verification_escalated_at': str(c['verification_escalated_at']) if c.get('verification_escalated_at') else None,
                         'business_license_url': c.get('business_license_url'),
                         'tin_certificate_url': c.get('tin_certificate_url'),
                         'additional_docs_urls': c.get('additional_docs_urls') or [],
@@ -1509,18 +1514,19 @@ async def admin_get_company_counts():
     try:
         with get_user_db() as conn:
             with conn.cursor() as cur:
+                # "total" excludes unverified companies (advertiser-driven, never
+                # shown to admins). escalated = advertiser pressed "Notify admins".
                 cur.execute("""
                     SELECT
-                        COUNT(*) AS total,
+                        COUNT(*) FILTER (
+                            WHERE is_verified = TRUE
+                               OR verification_status IN ('pending','rejected','suspended')
+                        ) AS total,
                         COUNT(*) FILTER (WHERE is_verified = TRUE) AS verified,
                         COUNT(*) FILTER (WHERE verification_status = 'pending') AS pending,
                         COUNT(*) FILTER (WHERE verification_status = 'rejected') AS rejected,
                         COUNT(*) FILTER (WHERE verification_status = 'suspended') AS suspended,
-                        COUNT(*) FILTER (
-                            WHERE is_verified = FALSE
-                              AND (verification_status IS NULL
-                                   OR verification_status NOT IN ('pending','rejected','suspended'))
-                        ) AS unverified
+                        COUNT(*) FILTER (WHERE verification_status = 'pending' AND verification_escalated = TRUE) AS escalated
                     FROM company_profile
                 """)
                 return dict(cur.fetchone())
@@ -1571,6 +1577,8 @@ async def admin_get_company(company_id: int):
                     'verification_submitted_at': str(c['verification_submitted_at']) if c.get('verification_submitted_at') else None,
                     'verification_reviewed_at': str(c['verification_reviewed_at']) if c.get('verification_reviewed_at') else None,
                     'verification_notes': c.get('verification_notes'),
+                    'verification_escalated': bool(c.get('verification_escalated')),
+                    'verification_escalated_at': str(c['verification_escalated_at']) if c.get('verification_escalated_at') else None,
                     'verified_at': str(c['verified_at']) if c.get('verified_at') else None,
                     'rejected_at': str(c['rejected_at']) if c.get('rejected_at') else None,
                     'business_license_url': c.get('business_license_url'),
