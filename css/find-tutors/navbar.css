@@ -15,7 +15,9 @@
 
 .tutor-search-input {
     width: 100%;
-    padding: 0.75rem 3rem 0.75rem 1rem;
+    /* Left padding clears the absolutely-positioned search icon (left-3 + w-5);
+       right padding is just a comfortable inset (no button on the right). */
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
     border: 2px solid var(--border-color);
     border-radius: 2rem;
     background: var(--search-bg);
