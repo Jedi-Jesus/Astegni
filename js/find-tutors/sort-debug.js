@@ -1,17 +1,18 @@
 // ============================================
-// SORT DEBUG CONSOLE
-// Prints the resulting tutor order + the sort-relevant values for the
-// active sort, plus an automatic "ORDER OK / WRONG" verdict, so the sort
-// behaviour can be eyeballed/pasted for verification.
+// SORT DEBUG PANEL
+// A floating on-page panel for find-tutors that records the result of EVERY
+// sort (each click/change appends an entry), shows the order + sort-key values
+// + an automatic ORDER OK/WRONG verdict, and has a Copy button so the whole
+// log can be pasted for verification — no DevTools console needed.
 //
-// Activated automatically on every load (logs to console). It is read-only:
-// it never changes the order, it only reports what was rendered.
+// Read-only: it never reorders tutors, it only reports what was rendered.
 // ============================================
 
 const SortDebug = {
-    // For each sort value: the field(s) to display and how the list SHOULD be ordered.
-    // direction: 'desc' = higher first, 'asc' = lower first, null = not strictly orderable
-    //            client-side (e.g. smart ranking is scored server-side).
+    log: [],          // accumulated text entries (one per sort run)
+    panelEl: null,
+    bodyEl: null,
+
     sortConfig: {
         smart:            { label: 'Smart Ranking',     fields: ['rating', 'rating_count', 'subscription_tier'], direction: null,   note: 'Server-scored (rating-primary + trending + activity), band-shuffled. No single client field to verify against.' },
         rating:           { label: 'Highest Rating',    fields: ['rating', 'rating_count'], key: 'rating',        direction: 'desc' },
@@ -23,9 +24,9 @@ const SortDebug = {
         experience:       { label: 'Most Experience',   fields: ['experience'],             key: 'experience',    direction: 'desc' },
         experience_desc:  { label: 'Most Experience',   fields: ['experience'],             key: 'experience',    direction: 'desc' },
         experience_asc:   { label: 'Least Experience',  fields: ['experience'],             key: 'experience',    direction: 'asc'  },
-        credentials:      { label: 'Most Credentials',  fields: ['credentials_count'],      key: 'credentials_count', direction: 'desc', note: 'credentials_count may be absent from the payload (sorted server-side) - verify via backend log if blank.' },
-        credentials_desc: { label: 'Most Credentials',  fields: ['credentials_count'],      key: 'credentials_count', direction: 'desc', note: 'credentials_count may be absent from the payload (sorted server-side) - verify via backend log if blank.' },
-        credentials_asc:  { label: 'Least Credentials', fields: ['credentials_count'],      key: 'credentials_count', direction: 'asc',  note: 'credentials_count may be absent from the payload (sorted server-side) - verify via backend log if blank.' },
+        credentials:      { label: 'Most Credentials',  fields: ['credentials_count'],      key: 'credentials_count', direction: 'desc', note: 'credentials_count may be absent from the payload — verify via backend if blank.' },
+        credentials_desc: { label: 'Most Credentials',  fields: ['credentials_count'],      key: 'credentials_count', direction: 'desc', note: 'credentials_count may be absent from the payload — verify via backend if blank.' },
+        credentials_asc:  { label: 'Least Credentials', fields: ['credentials_count'],      key: 'credentials_count', direction: 'asc',  note: 'credentials_count may be absent from the payload — verify via backend if blank.' },
         newest:           { label: 'Newest First',      fields: ['created_at', 'id'],       key: 'created_at',    direction: 'desc' },
         oldest:           { label: 'Oldest First',      fields: ['created_at', 'id'],       key: 'oldest',        direction: 'asc'  },
         name:             { label: 'Name (A-Z)',        fields: ['_name'],                  key: '_name',         direction: 'asc'  },
@@ -37,7 +38,6 @@ const SortDebug = {
         return `${t.first_name || ''} ${t.father_name || ''}`.trim() || `(unnamed #${t.id})`;
     },
 
-    // Normalise a tutor's value for the sort key into something comparable
     sortValue(t, key) {
         switch (key) {
             case 'rating':            return parseFloat(t.rating || 0);
@@ -51,9 +51,8 @@ const SortDebug = {
         }
     },
 
-    // Is `a` correctly ordered before `b` for the given direction?
     inOrder(a, b, direction) {
-        if (a == null || b == null) return null; // can't judge
+        if (a == null || b == null) return null;
         if (typeof a === 'string') {
             const cmp = a.localeCompare(b);
             return direction === 'asc' ? cmp <= 0 : cmp >= 0;
@@ -61,75 +60,168 @@ const SortDebug = {
         return direction === 'asc' ? a <= b : a >= b;
     },
 
-    /**
-     * Print the debug report.
-     * @param {string} sortBy  - current sort value
-     * @param {Array}  tutors  - tutors in the order they were rendered
-     * @param {object} meta    - { page, total }
-     */
-    report(sortBy, tutors, meta = {}) {
+    // Build the verdict + readable text block for one sort run
+    buildEntry(sortBy, tutors, meta) {
         const cfg = this.sortConfig[sortBy] || this.sortConfig.smart;
-        const tag = `🔎 SORT DEBUG [${sortBy}] → "${cfg.label}"`;
+        const time = new Date().toLocaleTimeString();
+        const lines = [];
+        lines.push(`[${time}] SORT "${sortBy}" → ${cfg.label}  (${tutors.length} shown${meta.total != null ? '/' + meta.total : ''}, page ${meta.page || 1})`);
 
-        console.groupCollapsed(`${tag}  (${tutors.length} shown${meta.total != null ? ' / ' + meta.total + ' total' : ''}, page ${meta.page || 1})`);
-
-        if (cfg.note) console.log('ℹ️ ', cfg.note);
-        if (cfg.direction) {
-            console.log(`Expected order: ${cfg.direction === 'desc' ? 'HIGHER first ⬇' : 'LOWER first ⬆'} by "${cfg.key}"`);
+        if (cfg.direction && cfg.key) {
+            lines.push(`  expected: ${cfg.direction === 'desc' ? 'HIGHER first' : 'LOWER first'} by ${cfg.key}`);
         } else {
-            console.log('Expected order: server-scored — no single client field to check (informational only).');
+            lines.push(`  expected: server-scored (informational only)`);
         }
 
-        // Build a printable table
-        const rows = tutors.map((t, i) => {
-            const row = { '#': i + 1, name: this.fullName(t), id: t.id };
-            cfg.fields.forEach(f => {
-                if (f === '_name') return; // name shown already
-                row[f] = (t[f] === undefined ? '—(missing)' : t[f]);
-            });
-            return row;
+        // Order list with sort-key value
+        tutors.forEach((t, i) => {
+            const parts = cfg.fields.map(f => {
+                if (f === '_name') return null;
+                const v = (t[f] === undefined ? 'missing' : t[f]);
+                return `${f}=${v}`;
+            }).filter(Boolean);
+            lines.push(`  ${i + 1}. ${this.fullName(t)} [id ${t.id}]${parts.length ? ' — ' + parts.join(', ') : ''}`);
         });
-        console.table(rows);
 
-        // Verdict: walk consecutive pairs and check ordering for the sort key
-        if (cfg.direction && cfg.key) {
+        // Verdict
+        let verdict = 'INFO';
+        if (cfg.direction && cfg.key && tutors.length >= 2) {
             let ok = true, undecidable = false, firstViolation = null;
             for (let i = 0; i < tutors.length - 1; i++) {
                 const a = this.sortValue(tutors[i], cfg.key);
                 const b = this.sortValue(tutors[i + 1], cfg.key);
-                const verdict = this.inOrder(a, b, cfg.direction);
-                if (verdict === null) { undecidable = true; continue; }
-                if (!verdict) {
+                const r = this.inOrder(a, b, cfg.direction);
+                if (r === null) { undecidable = true; continue; }
+                if (!r && !firstViolation) {
                     ok = false;
-                    if (!firstViolation) {
-                        firstViolation = `#${i + 1} ${this.fullName(tutors[i])} (${a}) then #${i + 2} ${this.fullName(tutors[i + 1])} (${b}) — out of ${cfg.direction} order`;
-                    }
+                    firstViolation = `#${i + 1} (${a}) then #${i + 2} (${b})`;
                 }
             }
-            if (undecidable && firstViolation === null && !ok) {
-                // mixed
-            }
-            if (tutors.length < 2) {
-                console.log('🟡 Only %d tutor — nothing to compare.', tutors.length);
-            } else if (undecidable && ok) {
-                console.log('🟡 ORDER UNVERIFIABLE — sort field not present in payload for some/all tutors.');
-            } else if (ok) {
-                console.log('%c✅ ORDER OK — sequence respects the expected ' + cfg.direction + ' order.', 'color:#16a34a;font-weight:bold');
-            } else {
-                console.log('%c❌ ORDER WRONG — ' + firstViolation, 'color:#dc2626;font-weight:bold');
-            }
+            if (!ok) verdict = `❌ WRONG — ${firstViolation} out of ${cfg.direction} order`;
+            else if (undecidable) verdict = '🟡 UNVERIFIABLE — sort field missing from payload';
+            else verdict = `✅ OK — respects ${cfg.direction} order`;
+        } else if (tutors.length < 2) {
+            verdict = '🟡 only ' + tutors.length + ' tutor — nothing to compare';
         }
+        lines.push(`  VERDICT: ${verdict}`);
+        if (cfg.note) lines.push(`  note: ${cfg.note}`);
+        lines.push('');
 
-        // One-line paste-friendly summary
-        const summary = tutors.map((t, i) => {
-            const v = cfg.key ? this.sortValue(t, cfg.key) : null;
-            return `${i + 1}.${this.fullName(t)}${v != null ? '(' + (typeof v === 'number' && cfg.key !== 'created_at' && cfg.key !== 'oldest' ? v : (cfg.key === 'created_at' || cfg.key === 'oldest' ? (t.created_at || t.id) : v)) + ')' : ''}`;
-        }).join('  ');
-        console.log('📋 Paste-me:', `[${sortBy}] ` + summary);
+        return { text: lines.join('\n'), verdict };
+    },
 
-        console.groupEnd();
+    ensurePanel() {
+        if (this.panelEl) return;
+        const panel = document.createElement('div');
+        panel.id = 'sort-debug-panel';
+        panel.style.cssText = [
+            'position:fixed', 'bottom:16px', 'right:16px', 'width:380px', 'max-height:60vh',
+            'background:#0f172a', 'color:#e2e8f0', 'font:12px/1.45 ui-monospace,Menlo,Consolas,monospace',
+            'border:1px solid #334155', 'border-radius:10px', 'box-shadow:0 8px 30px rgba(0,0,0,.45)',
+            'z-index:99999', 'display:flex', 'flex-direction:column', 'overflow:hidden'
+        ].join(';');
+
+        const header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;background:#1e293b;cursor:move;flex:0 0 auto';
+        header.innerHTML = `
+            <span style="font-weight:700;color:#38bdf8">🔎 Sort Debug</span>
+            <span id="sd-count" style="color:#94a3b8;font-size:11px">0 entries</span>
+            <span style="flex:1"></span>
+            <button id="sd-copy" title="Copy full log" style="background:#16a34a;color:#fff;border:0;border-radius:6px;padding:4px 10px;font-weight:600;cursor:pointer">Copy</button>
+            <button id="sd-clear" title="Clear log" style="background:#475569;color:#fff;border:0;border-radius:6px;padding:4px 8px;cursor:pointer">Clear</button>
+            <button id="sd-min" title="Minimize" style="background:transparent;color:#94a3b8;border:0;font-size:16px;cursor:pointer;line-height:1">–</button>
+        `;
+
+        const body = document.createElement('pre');
+        body.id = 'sd-body';
+        body.style.cssText = 'margin:0;padding:10px;overflow:auto;white-space:pre-wrap;word-break:break-word;flex:1 1 auto';
+        body.textContent = '(no sorts yet — click a sort button or change the dropdown)';
+
+        panel.appendChild(header);
+        panel.appendChild(body);
+        document.body.appendChild(panel);
+        this.panelEl = panel;
+        this.bodyEl = body;
+
+        // Copy
+        header.querySelector('#sd-copy').addEventListener('click', () => this.copy());
+        // Clear
+        header.querySelector('#sd-clear').addEventListener('click', () => {
+            this.log = [];
+            this.render();
+        });
+        // Minimize / restore
+        let minimized = false;
+        header.querySelector('#sd-min').addEventListener('click', (e) => {
+            minimized = !minimized;
+            body.style.display = minimized ? 'none' : 'block';
+            e.target.textContent = minimized ? '+' : '–';
+        });
+
+        // Drag
+        let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+        header.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            dragging = true;
+            const r = panel.getBoundingClientRect();
+            sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+            panel.style.right = 'auto'; panel.style.bottom = 'auto';
+            panel.style.left = ox + 'px'; panel.style.top = oy + 'px';
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            panel.style.left = (ox + e.clientX - sx) + 'px';
+            panel.style.top = (oy + e.clientY - sy) + 'px';
+        });
+        document.addEventListener('mouseup', () => { dragging = false; });
+    },
+
+    render() {
+        if (!this.bodyEl) return;
+        const countEl = document.getElementById('sd-count');
+        if (countEl) countEl.textContent = `${this.log.length} ${this.log.length === 1 ? 'entry' : 'entries'}`;
+        this.bodyEl.textContent = this.log.length
+            ? this.log.map(e => e.text).join('\n')
+            : '(no sorts yet — click a sort button or change the dropdown)';
+        // Auto-scroll to newest
+        this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+    },
+
+    copy() {
+        const text = this.log.map(e => e.text).join('\n') || '(empty)';
+        const btn = document.getElementById('sd-copy');
+        const done = () => { if (btn) { const o = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = o, 1200); } };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(() => this.fallbackCopy(text, done));
+        } else {
+            this.fallbackCopy(text, done);
+        }
+    },
+
+    fallbackCopy(text, done) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { /* noop */ }
+        document.body.removeChild(ta);
+    },
+
+    /**
+     * Record one sort run (called by the controller after each load).
+     */
+    report(sortBy, tutors, meta = {}) {
+        try {
+            this.ensurePanel();
+            const entry = this.buildEntry(sortBy, tutors || [], meta);
+            this.log.push(entry);
+            this.render();
+            // Also mirror to console for convenience
+            console.log('🔎 [SortDebug]', entry.text);
+        } catch (e) {
+            console.warn('[SortDebug] failed:', e);
+        }
     }
 };
 
-// Expose globally for the controller to call
 window.SortDebug = SortDebug;
