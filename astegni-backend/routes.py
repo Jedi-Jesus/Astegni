@@ -2338,17 +2338,33 @@ def get_tutors_tiered(
 
         return score
 
-    # Sort each tier by smart ranking
-    tier1_tutors.sort(key=calculate_tier_score, reverse=True)
-    tier2_tutors.sort(key=calculate_tier_score, reverse=True)
-    tier3_tutors.sort(key=calculate_tier_score, reverse=True)
+    # Shuffle for variety on page 1, but ONLY within score bands so a clear
+    # leader stays on top (matches the main /api/tutors endpoint). A full
+    # random.shuffle would discard the score order entirely - that's the bug
+    # that let a lower-scored tutor appear above a higher-scored one.
+    do_shuffle = (page == 1 and random.random() < 0.8)
 
-    # Shuffle within tiers for variety (80% chance)
-    if page == 1 and random.random() < 0.8:
-        random.shuffle(tier1_tutors)
-        random.shuffle(tier2_tutors)
-        random.shuffle(tier3_tutors)
-        print("[Tiered Tutors] Shuffled within tiers")
+    def sort_tier(tutors):
+        """Sort a tier by score desc, then optionally shuffle within score bands."""
+        scored = sorted(
+            ((t, calculate_tier_score(t)) for t in tutors),
+            key=lambda x: x[1], reverse=True
+        )
+        if do_shuffle and len(scored) > 1:
+            # Bands: top 20% / next 30% / bottom 50% - shuffle inside each only
+            n = len(scored)
+            b1 = max(1, int(n * 0.2))
+            b2 = max(b1 + 1, int(n * 0.5))
+            band1, band2, band3 = scored[:b1], scored[b1:b2], scored[b2:]
+            random.shuffle(band1); random.shuffle(band2); random.shuffle(band3)
+            scored = band1 + band2 + band3
+        return [t for t, _ in scored]
+
+    tier1_tutors = sort_tier(tier1_tutors)
+    tier2_tutors = sort_tier(tier2_tutors)
+    tier3_tutors = sort_tier(tier3_tutors)
+    if do_shuffle:
+        print("[Tiered Tutors] Shuffled within score bands")
 
     # Combine tiers: Tier 1 → Tier 2 → Tier 3
     all_ranked_tutors = tier1_tutors + tier2_tutors + tier3_tutors
