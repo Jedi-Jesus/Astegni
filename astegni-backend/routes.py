@@ -2004,6 +2004,7 @@ def get_tutors(
             "is_basic": getattr(tutor, 'is_basic', False),
             "cover_image": tutor.cover_image,
             "intro_video_url": getattr(tutor, 'intro_video_url', None),
+            "created_at": tutor.created_at.isoformat() if tutor.created_at else None,  # for newest/oldest sort debugging
             # Subscription plan info
             "subscription_plan_id": tutor.user.subscription_plan_id,
             "subscription_tier": {
@@ -2779,6 +2780,7 @@ def get_tutors_tiered(
             "is_active": tutor.is_active,
             "cover_image": tutor.cover_image,
             "subscription_plan_id": tutor.user.subscription_plan_id,
+            "created_at": tutor.created_at.isoformat() if tutor.created_at else None,  # for newest/oldest sort debugging
             "tier": tier_label  # NEW: Tier information for debugging
         }
         tutor_list.append(tutor_data)

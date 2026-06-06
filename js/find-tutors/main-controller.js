@@ -226,6 +226,16 @@ const FindTutorsController = {
             }
 
             console.log(`Showing ${FindTutorsState.tutors.length} tutors after client-side filtering`);
+
+            // SORT DEBUG: print the resulting order + sort-key values + an order verdict
+            if (typeof SortDebug !== 'undefined') {
+                SortDebug.report(
+                    FindTutorsState.filters.sortBy || 'smart',
+                    FindTutorsState.tutors,
+                    { page: FindTutorsState.currentPage, total: FindTutorsState.totalTutors }
+                );
+            }
+
             FindTutorsUI.renderTutors(FindTutorsState.tutors);
             FindTutorsUI.renderPagination();
 
