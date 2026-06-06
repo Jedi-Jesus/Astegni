@@ -32,6 +32,10 @@ const SortDebug = {
         name:             { label: 'Name (A-Z)',        fields: ['_name'],                  key: '_name',         direction: 'asc'  },
         name_asc:         { label: 'Name (A-Z)',        fields: ['_name'],                  key: '_name',         direction: 'asc'  },
         name_desc:        { label: 'Name (Z-A)',        fields: ['_name'],                  key: '_name',         direction: 'desc' },
+        popularity:       { label: 'Most Popular',      fields: ['trending_score', 'search_count'], key: 'trending_score', direction: 'desc' },
+        popular:          { label: 'Most Popular',      fields: ['trending_score', 'search_count'], key: 'trending_score', direction: 'desc' },
+        students:         { label: 'Most Students',     fields: ['students_count'],         key: 'students_count', direction: 'desc' },
+        response_time:    { label: 'Fastest Response',  fields: ['response_time_hours'],    key: 'response_time_hours', direction: 'asc', note: 'null response_time_hours = no data (sorts last).' },
     },
 
     fullName(t) {
@@ -40,14 +44,17 @@ const SortDebug = {
 
     sortValue(t, key) {
         switch (key) {
-            case 'rating':            return parseFloat(t.rating || 0);
-            case 'price':             return parseFloat(t.price || 0);
-            case 'experience':        return parseInt(t.experience || 0);
-            case 'credentials_count': return t.credentials_count == null ? null : parseInt(t.credentials_count);
+            case 'rating':              return parseFloat(t.rating || 0);
+            case 'price':               return parseFloat(t.price || 0);
+            case 'experience':          return t.experience == null ? null : parseFloat(t.experience);
+            case 'credentials_count':   return t.credentials_count == null ? null : parseInt(t.credentials_count);
+            case 'students_count':      return t.students_count == null ? null : parseInt(t.students_count);
+            case 'trending_score':      return parseFloat(t.trending_score || 0);
+            case 'response_time_hours': return t.response_time_hours == null ? null : parseFloat(t.response_time_hours);
             case 'created_at':
-            case 'oldest':            return t.created_at ? new Date(t.created_at).getTime() : (t.id || 0);
-            case '_name':             return this.fullName(t).toLowerCase();
-            default:                  return t[key];
+            case 'oldest':              return t.created_at ? new Date(t.created_at).getTime() : (t.id || 0);
+            case '_name':               return this.fullName(t).toLowerCase();
+            default:                    return t[key];
         }
     },
 
@@ -62,12 +69,16 @@ const SortDebug = {
 
     // Build the verdict + readable text block for one sort run
     buildEntry(sortBy, tutors, meta) {
-        const cfg = this.sortConfig[sortBy] || this.sortConfig.smart;
+        const known = Object.prototype.hasOwnProperty.call(this.sortConfig, sortBy);
+        const cfg = known ? this.sortConfig[sortBy]
+                          : { label: '⚠️ UNKNOWN SORT (not in debug config)', fields: ['rating', 'price'], direction: null };
         const time = new Date().toLocaleTimeString();
         const lines = [];
         lines.push(`[${time}] SORT "${sortBy}" → ${cfg.label}  (${tutors.length} shown${meta.total != null ? '/' + meta.total : ''}, page ${meta.page || 1})`);
 
-        if (cfg.direction && cfg.key) {
+        if (!known) {
+            lines.push(`  ⚠️ This sort value has no debug config — order shown as returned, not verified.`);
+        } else if (cfg.direction && cfg.key) {
             lines.push(`  expected: ${cfg.direction === 'desc' ? 'HIGHER first' : 'LOWER first'} by ${cfg.key}`);
         } else {
             lines.push(`  expected: server-scored (informational only)`);

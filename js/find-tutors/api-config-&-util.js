@@ -1021,6 +1021,22 @@ const FindTutorsAPI = {
                 case 'oldest':
                     filteredTutors.sort((a, b) => (a.id || 0) - (b.id || 0));
                     break;
+                case 'popularity':
+                case 'popular':
+                    filteredTutors.sort((a, b) => {
+                        const ta = parseFloat(a.trending_score || 0), tb = parseFloat(b.trending_score || 0);
+                        if (tb !== ta) return tb - ta;
+                        return parseInt(b.search_count || 0) - parseInt(a.search_count || 0);
+                    });
+                    break;
+                case 'students':
+                    filteredTutors.sort((a, b) =>
+                        parseInt(b.students_count || 0) - parseInt(a.students_count || 0));
+                    break;
+                case 'response_time':
+                    filteredTutors.sort((a, b) =>
+                        (parseFloat(a.response_time_hours ?? 9999)) - (parseFloat(b.response_time_hours ?? 9999)));
+                    break;
                 default:
                     // Default sort by rating descending
                     filteredTutors.sort((a, b) => parseFloat(b.rating || 0) - parseFloat(a.rating || 0));

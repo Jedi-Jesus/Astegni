@@ -1752,10 +1752,28 @@ def get_tutors(
         # Traditional sorting for explicit sort requests
         tutors = all_tutors
 
-        # Experience (students taught per active year) and verified-credential counts
-        # are computed on demand for the experience/credentials sorts.
+        # Experience (students taught per active year), verified-credential counts,
+        # and total-students are computed on demand for the relevant sorts.
         experience_map = {}
         credentials_map = {}
+        students_map = {}
+        response_map = {}
+        if sort_by == "students":
+            students_map = {
+                row.tutor_id: int(row.student_count or 0)
+                for row in db.execute(text("""
+                    SELECT tutor_id, COUNT(DISTINCT student_id) AS student_count
+                    FROM enrolled_students WHERE tutor_id = ANY(:ids) GROUP BY tutor_id
+                """), {"ids": [t.id for t in tutors]}).fetchall()
+            }
+        if sort_by == "response_time":
+            response_map = {
+                row.tutor_id: float(row.average_response_time)
+                for row in db.execute(text("""
+                    SELECT tutor_id, average_response_time FROM tutor_analysis
+                    WHERE tutor_id = ANY(:ids) AND average_response_time > 0
+                """), {"ids": [t.id for t in tutors]}).fetchall()
+            }
         if sort_by in ("experience", "experience_desc", "experience_asc",
                        "credentials", "credentials_desc", "credentials_asc"):
             sort_tutor_ids = [t.id for t in tutors]
@@ -1817,6 +1835,12 @@ def get_tutors(
             tutors.sort(key=lambda t: t.created_at or datetime.min, reverse=True)
         elif sort_by == "oldest":
             tutors.sort(key=lambda t: t.created_at or datetime.min)
+        elif sort_by in ("popularity", "popular"):
+            tutors.sort(key=lambda t: ((getattr(t, 'trending_score', 0) or 0), (getattr(t, 'search_count', 0) or 0)), reverse=True)
+        elif sort_by == "students":
+            tutors.sort(key=lambda t: students_map.get(t.id, 0), reverse=True)
+        elif sort_by == "response_time":
+            tutors.sort(key=lambda t: response_map.get(t.id, 9999.0))
 
     # Apply pagination AFTER sorting
     offset = (page - 1) * limit
@@ -2629,6 +2653,29 @@ def get_tutors_tiered(
             for row in db.execute(credentials_query, {"user_ids": user_ids_for_sort}).fetchall()
         }
 
+        # Total enrolled students per tutor (for "Most Students" sort)
+        students_query = text("""
+            SELECT tutor_id, COUNT(DISTINCT student_id) AS student_count
+            FROM enrolled_students
+            WHERE tutor_id = ANY(:tutor_ids)
+            GROUP BY tutor_id
+        """)
+        students_map = {
+            row.tutor_id: int(row.student_count or 0)
+            for row in db.execute(students_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
+        }
+
+        # Average response time (hours) from tutor_analysis (for "Fastest Response" sort)
+        response_query = text("""
+            SELECT tutor_id, average_response_time
+            FROM tutor_analysis
+            WHERE tutor_id = ANY(:tutor_ids) AND average_response_time > 0
+        """)
+        response_map = {
+            row.tutor_id: float(row.average_response_time)
+            for row in db.execute(response_query, {"tutor_ids": tutor_ids_for_sort}).fetchall()
+        }
+
         # Apply sorting
         if sort_by in ['rating', 'rating_desc']:
             filtered_tutors.sort(key=lambda t: float(sort_map.get(t.id).avg_rating) if sort_map.get(t.id) and sort_map.get(t.id).avg_rating else 0.0, reverse=True)
@@ -2658,6 +2705,18 @@ def get_tutors_tiered(
             filtered_tutors.sort(key=lambda t: t.created_at if t.created_at else datetime.min, reverse=True)
         elif sort_by == 'oldest':
             filtered_tutors.sort(key=lambda t: t.created_at if t.created_at else datetime.max)
+        elif sort_by in ['popularity', 'popular']:
+            # Most popular: highest trending_score, tie-broken by search_count
+            filtered_tutors.sort(
+                key=lambda t: ((getattr(t, 'trending_score', 0) or 0), (getattr(t, 'search_count', 0) or 0)),
+                reverse=True
+            )
+        elif sort_by == 'students':
+            # Most students taught first
+            filtered_tutors.sort(key=lambda t: students_map.get(t.id, 0), reverse=True)
+        elif sort_by == 'response_time':
+            # Fastest response first (lowest avg response hours; missing → slowest)
+            filtered_tutors.sort(key=lambda t: response_map.get(t.id, 9999.0))
         # If sort_by is 'smart' or unknown, keep tier ranking
 
     # Apply pagination
@@ -2666,6 +2725,49 @@ def get_tutors_tiered(
 
     # Build tutor data (same format as get_tutors)
     tutor_ids = [tutor.id for tutor in tutors]
+    page_user_ids = [tutor.user_id for tutor in tutors]
+
+    # Enrichment data for the visible page (experience, credentials, students)
+    # so the payload carries the values used by the experience/credentials/students
+    # sorts (and the sort-debug panel can verify them client-side).
+    page_experience_map = {}
+    page_credentials_map = {}
+    page_students_map = {}
+    page_response_map = {}
+    if tutor_ids:
+        page_experience_map = {
+            row.tutor_id: round(float(row.experience_score or 0.0), 2)
+            for row in db.execute(text("""
+                SELECT tutor_id,
+                       COUNT(DISTINCT student_id)::float
+                           / GREATEST(EXTRACT(EPOCH FROM (NOW() - MIN(enrolled_at))) / 31557600.0, 0.5)
+                           AS experience_score
+                FROM enrolled_students WHERE tutor_id = ANY(:ids) GROUP BY tutor_id
+            """), {"ids": tutor_ids}).fetchall()
+        }
+        page_students_map = {
+            row.tutor_id: int(row.student_count or 0)
+            for row in db.execute(text("""
+                SELECT tutor_id, COUNT(DISTINCT student_id) AS student_count
+                FROM enrolled_students WHERE tutor_id = ANY(:ids) GROUP BY tutor_id
+            """), {"ids": tutor_ids}).fetchall()
+        }
+        page_credentials_map = {
+            row.uploader_id: int(row.credential_count or 0)
+            for row in db.execute(text("""
+                SELECT uploader_id, COUNT(*) AS credential_count
+                FROM credentials
+                WHERE uploader_id = ANY(:uids) AND uploader_role = 'tutor' AND is_verified = true
+                GROUP BY uploader_id
+            """), {"uids": page_user_ids}).fetchall()
+        }
+        page_response_map = {
+            row.tutor_id: float(row.average_response_time)
+            for row in db.execute(text("""
+                SELECT tutor_id, average_response_time FROM tutor_analysis
+                WHERE tutor_id = ANY(:ids) AND average_response_time > 0
+            """), {"ids": tutor_ids}).fetchall()
+        }
 
     # Fetch package data
     package_data_query = text("""
@@ -2780,7 +2882,14 @@ def get_tutors_tiered(
             "is_active": tutor.is_active,
             "cover_image": tutor.cover_image,
             "subscription_plan_id": tutor.user.subscription_plan_id,
-            "created_at": tutor.created_at.isoformat() if tutor.created_at else None,  # for newest/oldest sort debugging
+            "created_at": tutor.created_at.isoformat() if tutor.created_at else None,  # for newest/oldest sort
+            # Sort-relevant metrics (also surfaced so the sort-debug panel can verify them)
+            "experience": page_experience_map.get(tutor.id, 0.0),       # students-taught-per-year
+            "students_count": page_students_map.get(tutor.id, 0),       # total enrolled students
+            "credentials_count": page_credentials_map.get(tutor.user_id, 0),  # verified credentials
+            "trending_score": getattr(tutor, 'trending_score', 0) or 0,
+            "search_count": getattr(tutor, 'search_count', 0) or 0,
+            "response_time_hours": page_response_map.get(tutor.id),  # avg hours, None if no data
             "tier": tier_label  # NEW: Tier information for debugging
         }
         tutor_list.append(tutor_data)
