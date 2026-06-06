@@ -509,6 +509,58 @@ class TutorScoringCalculator:
             print(f"⚠️ Error calculating payment reliability for user {tutor_user_id}: {e}")
             return 0, {"error": str(e), "penalty": 0}
 
+    # New tutors (no reviews) are treated as this rating, and few-review tutors
+    # are pulled toward it (Bayesian prior), so a single 5★ review can't top the list.
+    RATING_PRIOR_VALUE = 2.0   # default ("2 stars") for tutors with no/few reviews
+    RATING_PRIOR_WEIGHT = 10   # number of "virtual" prior reviews (confidence weight)
+    RATING_MAX_POINTS = 500    # rating is the PRIMARY ranking factor (replaces subscription)
+
+    def calculate_rating_score(self, tutor_id: int) -> tuple[int, dict]:
+        """
+        Calculate score based on tutor rating (0-500 points) - PRIMARY FACTOR.
+
+        Uses a confidence-weighted (Bayesian) average so tutors with few reviews
+        are pulled toward a 2-star baseline and only tutors with many genuinely
+        high reviews approach the 500-point ceiling:
+
+            effective = (avg * count + PRIOR_VALUE * PRIOR_WEIGHT) / (count + PRIOR_WEIGHT)
+            score     = effective / 5 * 500
+
+        New tutors (0 reviews) -> effective = 2.0 -> 200 points.
+
+        Returns: (score, details_dict)
+        """
+        query = text("""
+            SELECT
+                COUNT(*) AS review_count,
+                COALESCE(AVG(rating), 0) AS avg_rating
+            FROM tutor_reviews
+            WHERE tutor_id = :tutor_id
+        """)
+        result = self.db.execute(query, {"tutor_id": tutor_id}).fetchone()
+
+        review_count = int(result.review_count) if result else 0
+        avg_rating = float(result.avg_rating) if result and result.avg_rating else 0.0
+
+        prior_v = self.RATING_PRIOR_VALUE
+        prior_w = self.RATING_PRIOR_WEIGHT
+
+        # Confidence-weighted rating on the 0-5 scale
+        effective_rating = (
+            (avg_rating * review_count + prior_v * prior_w)
+            / (review_count + prior_w)
+        )
+
+        score = round(effective_rating / 5.0 * self.RATING_MAX_POINTS)
+
+        return score, {
+            "review_count": review_count,
+            "avg_rating": round(avg_rating, 2),
+            "effective_rating": round(effective_rating, 2),
+            "score": score,
+            "note": "no reviews → 2★ baseline" if review_count == 0 else None
+        }
+
     def calculate_all_new_scores(
         self,
         tutor_id: int,
@@ -524,6 +576,14 @@ class TutorScoringCalculator:
         """
         total_score = 0
         breakdown = {}
+
+        # 0. Rating (0-500 points) - PRIMARY FACTOR (replaces subscription plan)
+        rating_score, rating_details = self.calculate_rating_score(tutor_id)
+        total_score += rating_score
+        breakdown["rating"] = {
+            "score": rating_score,
+            "details": rating_details
+        }
 
         # 1. Interest/Hobby Matching (0-150 points)
         interest_score, interest_details = self.calculate_interest_hobby_score(
@@ -580,7 +640,7 @@ class TutorScoringCalculator:
         }
 
         breakdown["total_new_score"] = total_score
-        breakdown["max_possible_new_score"] = 440  # 150+100+80+60+50
+        breakdown["max_possible_new_score"] = 940  # 500(rating)+150+100+80+60+50
         breakdown["payment_penalty_applied"] = payment_penalty
 
         return total_score, breakdown

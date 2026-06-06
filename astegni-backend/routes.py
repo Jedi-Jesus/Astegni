@@ -1578,56 +1578,28 @@ def get_tutors(
         import random
         from datetime import datetime, timedelta
 
-        # Subscription Plan Visibility Tiers (higher = more visibility)
-        # Based on subscription_plans in admin_db:
-        # - Premium (id=9): 5000 ETB - "Premium visibility" → 500 points
-        # - Standard+ (id=8): 2800 ETB - "Standard plus visibility" → 400 points
-        # - Standard (id=7): 1500 ETB - "Boosted visibility" → 300 points
-        # - Basic+ (id=6): 700 ETB - "Better visibility" → 200 points
-        # - Basic (id=5): 500 ETB - "Better visibility" → 200 points
-        # - Free (id=16): 0 ETB - "visibility" → 0 points (baseline)
-        SUBSCRIPTION_VISIBILITY_SCORES = {
-            9: 500,   # Premium - highest visibility
-            8: 400,   # Standard+
-            7: 300,   # Standard - boosted visibility
-            6: 200,   # Basic+ - better visibility
-            5: 200,   # Basic - better visibility
-            16: 0,    # Free - baseline visibility
-            None: 0   # No plan - baseline
-        }
-
         def calculate_tutor_score(tutor):
             """
             Calculate ranking score for each tutor based on multiple factors
             Higher score = Higher priority in results
 
-            NEW SCORING SYSTEM:
-            - Subscription Plan: 0-500 points
+            SCORING SYSTEM (subscription plan removed - rating is now primary,
+            to reward genuinely good tutors over paid placement):
+            - Rating (confidence-weighted): 0-500 points (PRIMARY, via TutorScoringCalculator)
             - Trending Score: 0-200+ points
-            - Interest/Hobby Match: 0-150 points (NEW)
-            - Total Students: 0-100 points (NEW)
-            - Completion Rate: 0-80 points (NEW)
-            - Response Time: 0-60 points (NEW)
-            - Experience: 0-50 points (NEW - RESTORED)
+            - Interest/Hobby Match: 0-150 points
+            - Total Students: 0-100 points
+            - Completion Rate: 0-80 points
+            - Response Time: 0-60 points
+            - Experience: 0-50 points
             - Search History: 0-50 points
             - Legacy Basic Flag: 0-100 points
             - New Tutor Bonus: 0-50 points
             - Verification: 0-25 points
             - Combo Bonuses: 0-150 points
-
-            MAX POSSIBLE: ~1,615 points (was ~1,175)
+            - Payment Reliability: 0 to -100 points (penalty)
             """
             score = 0
-
-            # SUBSCRIPTION PLAN VISIBILITY SCORE (0-500 points) - PRIMARY FACTOR
-            subscription_plan_id = tutor.user.subscription_plan_id
-            subscription_score = SUBSCRIPTION_VISIBILITY_SCORES.get(subscription_plan_id, 0)
-            score += subscription_score
-
-            # Check if subscription is expired (reduce score if expired)
-            if tutor.user.subscription_expires_at and tutor.user.subscription_expires_at < datetime.utcnow():
-                # Expired subscription - treat as Free tier
-                score -= subscription_score  # Remove the subscription bonus
 
             # TRENDING SCORE (0-200+ points) - POPULARITY BOOST
             trending_score = getattr(tutor, 'trending_score', 0) or 0
@@ -1718,22 +1690,21 @@ def get_tutors(
         # Sort by score (descending)
         tutors_with_scores.sort(key=lambda x: x[1], reverse=True)
 
-        # Subscription tier names for logging
-        SUBSCRIPTION_TIER_NAMES = {
-            9: "PREMIUM", 8: "STD+", 7: "STD", 6: "BASIC+", 5: "BASIC", 16: "FREE", None: "NONE"
-        }
-
         # Log top 5 tutors with scores for debugging
         print(f"\n📊 Smart Ranking Results (Total: {len(tutors_with_scores)} tutors)")
         print("   Top 5 tutors:")
         for i, (tutor, score) in enumerate(tutors_with_scores[:5], 1):
-            tier_label = SUBSCRIPTION_TIER_NAMES.get(tutor.user.subscription_plan_id, "NONE")
+            rating_label = ""
+            breakdown = getattr(tutor, '_score_breakdown', None)
+            if breakdown and breakdown.get("rating"):
+                rd = breakdown["rating"]["details"]
+                rating_label = f"RATING({rd.get('avg_rating', 0)}★×{rd.get('review_count', 0)})"
             basic_label = "BASIC" if (tutor.is_basic or False) else ""
             new_label = "NEW" if tutor.created_at and (datetime.utcnow() - tutor.created_at).days <= 30 else ""
             history_label = "HIST" if tutor.id in search_history_tutor_ids else ""
             trending_count = getattr(tutor, 'search_count', 0) or 0
             trending_label = f"TREND({trending_count})" if trending_count > 0 else ""
-            labels = f"[{tier_label}] {basic_label} {new_label} {history_label} {trending_label}".strip()
+            labels = f"{rating_label} {basic_label} {new_label} {history_label} {trending_label}".strip()
             print(f"   {i}. {labels} Score: {score:.0f} - {tutor.user.first_name} {tutor.user.father_name}")
 
         # Apply shuffling with 80% probability on first page
@@ -2332,19 +2303,21 @@ def get_tutors_tiered(
     import random
     from datetime import datetime
 
+    # Rating is the PRIMARY ranking factor (subscription plan removed) so genuinely
+    # well-reviewed tutors rank highest. Confidence-weighted toward a 2★ baseline so
+    # new/few-review tutors aren't unfairly buried or boosted by a single review.
+    tier_scoring_calculator = TutorScoringCalculator(db)
+
     def calculate_tier_score(tutor):
         """Calculate smart ranking score for tutors within their tier"""
         score = 0
 
-        # Subscription visibility score
-        SUBSCRIPTION_SCORES = {
-            9: 500, 8: 400, 7: 300, 6: 200, 5: 200, 16: 0, None: 0
-        }
-        score += SUBSCRIPTION_SCORES.get(tutor.user.subscription_plan_id, 0)
-
-        # Check if subscription is expired
-        if tutor.user.subscription_expires_at and tutor.user.subscription_expires_at < datetime.utcnow():
-            score -= SUBSCRIPTION_SCORES.get(tutor.user.subscription_plan_id, 0)
+        # Rating score (0-500) - PRIMARY FACTOR
+        try:
+            rating_score, _ = tier_scoring_calculator.calculate_rating_score(tutor.id)
+            score += rating_score
+        except Exception as e:
+            print(f"⚠️ [Tiered] rating score failed for tutor {tutor.id}: {e}")
 
         # Trending score
         trending_score = getattr(tutor, 'trending_score', 0) or 0
