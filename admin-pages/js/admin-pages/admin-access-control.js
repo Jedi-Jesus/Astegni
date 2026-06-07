@@ -23,7 +23,6 @@
         'manage-schools.html': ['manage-schools', 'manage-system-settings'],
         'manage-campaign.html': ['manage-campaign', 'manage-system-settings'],
         'manage-companies.html': ['manage-companies', 'manage-system-settings'],
-        'manage-brands.html': ['manage-brands', 'manage-system-settings'],
         'manage-contents.html': ['manage-contents', 'manage-system-settings'],
         'manage-customers.html': ['manage-customers', 'manage-system-settings'],
         'manage-admins.html': ['manage-admins', 'manage-system-settings'],

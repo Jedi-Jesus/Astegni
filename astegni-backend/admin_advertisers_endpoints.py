@@ -107,15 +107,11 @@ async def get_brands(
                 """
                 params = []
 
-                if status:
-                    if status == 'verified':
-                        query += " AND bp.status = 'verified'"
-                    elif status == 'pending' or status == 'requested':
-                        query += " AND (bp.status = 'pending' OR bp.status IS NULL)"
-                    elif status == 'rejected':
-                        query += " AND bp.status = 'rejected'"
-                    elif status == 'suspended':
-                        query += " AND bp.status = 'suspended'"
+                # Brands have no verification concept. `status` carries only
+                # operational values (active/paused/inactive).
+                if status in ('active', 'paused', 'inactive'):
+                    query += " AND bp.status = %s"
+                    params.append(status)
 
                 if search:
                     query += " AND (bp.name ILIKE %s OR cp.company_name ILIKE %s)"
@@ -153,11 +149,9 @@ async def get_brands(
                         'industry': b.get('industry'),
                         'location': b['location'],
                         'email': b['email'],
-                        'verification_status': b['status'] or 'pending',
-                        'is_verified': b['is_verified'],
+                        'status': b['status'] or 'active',  # operational: active/paused/inactive
                         'is_active': b['is_active'],
                         'created_at': str(b['created_at']) if b['created_at'] else None,
-                        'status_at': str(b['status_at']) if b.get('status_at') else None,
                         'company_id': b.get('company_id_out'),
                         'company_name': b.get('company_name'),
                         'company_logo': b.get('company_logo'),
@@ -175,27 +169,6 @@ async def get_brands(
                     "limit": limit,
                     "pages": (total + limit - 1) // limit if total > 0 else 0
                 }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/brands/counts")
-async def get_brand_counts():
-    """Get brand counts by status"""
-    try:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT
-                        COUNT(*) as total,
-                        COUNT(*) FILTER (WHERE status = 'verified') as verified,
-                        COUNT(*) FILTER (WHERE status = 'pending' OR status IS NULL) as pending,
-                        COUNT(*) FILTER (WHERE status = 'rejected') as rejected,
-                        COUNT(*) FILTER (WHERE status = 'suspended') as suspended
-                    FROM brand_profile
-                """)
-                counts = cur.fetchone()
-                return dict(counts)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -244,11 +217,8 @@ async def get_brand(brand_id: int):
                     'hero_title': brand['hero_title'],
                     'hero_subtitle': brand['hero_subtitle'],
                     'badge': brand['badge'],
-                    'verification_status': brand['status'] or 'pending',
-                    'is_verified': brand['is_verified'],
+                    'status': brand['status'] or 'active',  # operational: active/paused/inactive
                     'is_active': brand['is_active'],
-                    'status_reason': brand['status_reason'],
-                    'status_at': str(brand['status_at']) if brand['status_at'] else None,
                     'created_at': str(brand['created_at']) if brand['created_at'] else None,
                     'company_id': brand.get('company_id_out'),
                     'company_name': brand.get('company_name'),
@@ -264,146 +234,10 @@ async def get_brand(brand_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/brands/{brand_id}/verify")
-async def verify_brand(brand_id: int, admin_id: Optional[int] = None):
-    """Verify a brand"""
-    try:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE brand_profile
-                    SET status = 'verified',
-                        is_verified = TRUE,
-                        status_by = %s,
-                        status_at = NOW(),
-                        updated_at = NOW()
-                    WHERE id = %s
-                    RETURNING *
-                """, (admin_id, brand_id))
-                brand = cur.fetchone()
-                conn.commit()
-
-                if not brand:
-                    raise HTTPException(status_code=404, detail="Brand not found")
-                return {"message": "Brand verified successfully", "brand": dict(brand)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/brands/{brand_id}/reject")
-async def reject_brand(brand_id: int, data: dict):
-    """Reject a brand"""
-    try:
-        reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE brand_profile
-                    SET status = 'rejected',
-                        is_verified = FALSE,
-                        status_reason = %s,
-                        status_at = NOW(),
-                        updated_at = NOW()
-                    WHERE id = %s
-                    RETURNING *
-                """, (reason, brand_id))
-                brand = cur.fetchone()
-                conn.commit()
-
-                if not brand:
-                    raise HTTPException(status_code=404, detail="Brand not found")
-                return {"message": "Brand rejected", "brand": dict(brand)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/brands/{brand_id}/suspend")
-async def suspend_brand(brand_id: int, data: dict):
-    """Suspend a brand"""
-    try:
-        reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE brand_profile
-                    SET status = 'suspended',
-                        is_active = FALSE,
-                        status_reason = %s,
-                        status_at = NOW(),
-                        updated_at = NOW()
-                    WHERE id = %s
-                    RETURNING *
-                """, (reason, brand_id))
-                brand = cur.fetchone()
-                conn.commit()
-
-                if not brand:
-                    raise HTTPException(status_code=404, detail="Brand not found")
-                return {"message": "Brand suspended", "brand": dict(brand)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/brands/{brand_id}/restore")
-async def restore_brand(brand_id: int):
-    """Restore a suspended/rejected brand to pending"""
-    try:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE brand_profile
-                    SET status = 'pending',
-                        is_active = TRUE,
-                        status_reason = NULL,
-                        updated_at = NOW()
-                    WHERE id = %s
-                    RETURNING *
-                """, (brand_id,))
-                brand = cur.fetchone()
-                conn.commit()
-
-                if not brand:
-                    raise HTTPException(status_code=404, detail="Brand not found")
-                return {"message": "Brand restored to pending", "brand": dict(brand)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/brands/{brand_id}/reinstate")
-async def reinstate_brand(brand_id: int):
-    """Reinstate a suspended brand to verified status"""
-    try:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE brand_profile
-                    SET status = 'verified',
-                        is_verified = TRUE,
-                        is_active = TRUE,
-                        status_reason = NULL,
-                        status_at = NOW(),
-                        updated_at = NOW()
-                    WHERE id = %s
-                    RETURNING *
-                """, (brand_id,))
-                brand = cur.fetchone()
-                conn.commit()
-
-                if not brand:
-                    raise HTTPException(status_code=404, detail="Brand not found")
-                return {"message": "Brand reinstated to verified", "brand": dict(brand)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# NOTE: Brand verification was removed. A brand can only exist under an
+# already-verified company, so brands have no verify/reject/suspend/restore/
+# reinstate lifecycle. `brand_profile.status` carries only operational values
+# (active/paused/inactive). Campaign-level moderation remains below.
 
 
 # ============================================================

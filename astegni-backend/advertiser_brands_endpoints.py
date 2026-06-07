@@ -285,6 +285,11 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                 company_id = company["id"]
 
                 # --- Create the brand, owned by this company ---
+                # Brands have NO verification concept: a brand can only exist under
+                # an already-verified company (guard above), so it is active on
+                # creation. `status` carries only operational values
+                # (active/paused/inactive) — never verification states.
+                op_status = brand.status if brand.status in ('active', 'paused', 'inactive') else 'active'
                 cur.execute("""
                     INSERT INTO brand_profile (
                         name, bio, quote, thumbnail, hero_title, hero_subtitle,
@@ -296,7 +301,7 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s,
-                        %s, FALSE, TRUE, '{}',
+                        %s, TRUE, TRUE, '{}',
                         %s,
                         NOW(), NOW()
                     )
@@ -315,7 +320,7 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
                     brand.industry,
                     brand.website,
                     brand.brand_color or '#8B5CF6',
-                    brand.status or 'active',
+                    op_status,
                     company_id,
                 ))
                 new_brand = cur.fetchone()

@@ -1059,9 +1059,10 @@ function viewBrand(brandDataStr, status) {
             statsSection.classList.add('hidden');
         }
 
-        // Generate action buttons based on status
+        // Brands have no verification actions (a brand only exists under a
+        // verified company). Leave the actions container empty.
         const actionsContainer = document.getElementById('view-brand-actions');
-        actionsContainer.innerHTML = getBrandActionButtons(brand.id, status);
+        if (actionsContainer) actionsContainer.innerHTML = '';
 
         // Open modal
         openViewBrandModal();
@@ -1301,49 +1302,6 @@ async function loadCampaignMedia(campaignId) {
 }
 
 /**
- * Generate action buttons for brand modal based on status
- */
-function getBrandActionButtons(brandId, status) {
-    let buttons = '';
-
-    if (status === 'pending') {
-        buttons = `
-            <button onclick="verifyBrand(${brandId})"
-                class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                <i class="fas fa-check mr-2"></i>Verify
-            </button>
-            <button onclick="rejectBrand(${brandId})"
-                class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                <i class="fas fa-times mr-2"></i>Reject
-            </button>
-        `;
-    } else if (status === 'verified') {
-        buttons = `
-            <button onclick="suspendBrand(${brandId})"
-                class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
-                <i class="fas fa-pause mr-2"></i>Suspend
-            </button>
-        `;
-    } else if (status === 'rejected') {
-        buttons = `
-            <button onclick="reconsiderBrand(${brandId})"
-                class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                <i class="fas fa-redo mr-2"></i>Reconsider
-            </button>
-        `;
-    } else if (status === 'suspended') {
-        buttons = `
-            <button onclick="reinstateBrand(${brandId})"
-                class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                <i class="fas fa-play mr-2"></i>Reinstate
-            </button>
-        `;
-    }
-
-    return buttons;
-}
-
-/**
  * Generate action buttons for campaign modal based on status
  */
 function getCampaignActionButtons(campaignId, status) {
@@ -1454,130 +1412,9 @@ function formatRelativeTime(date) {
 }
 
 // ==================== BRAND ACTION FUNCTIONS ====================
-
-async function verifyBrand(brandId) {
-    if (!confirm('Are you sure you want to verify this brand?')) return;
-
-    try {
-        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/brands/${brandId}/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            alert('Brand verified successfully');
-            closeViewBrandModal();
-            ModeManager.loadModeData('brand');
-            PanelManager.loadPanelData(PanelManager.currentPanel);
-        } else {
-            const error = await response.json();
-            alert(`Failed to verify: ${error.detail || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('[Action] Error verifying brand:', error);
-        alert('An error occurred while verifying the brand');
-    }
-}
-
-async function rejectBrand(brandId) {
-    const reason = prompt('Enter rejection reason for this brand:');
-    if (!reason) return;
-
-    try {
-        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/brands/${brandId}/reject`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason })
-        });
-
-        if (response.ok) {
-            alert('Brand rejected');
-            closeViewBrandModal();
-            ModeManager.loadModeData('brand');
-            PanelManager.loadPanelData(PanelManager.currentPanel);
-        } else {
-            const error = await response.json();
-            alert(`Failed to reject: ${error.detail || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('[Action] Error rejecting brand:', error);
-        alert('An error occurred while rejecting the brand');
-    }
-}
-
-async function suspendBrand(brandId) {
-    const reason = prompt('Enter suspension reason for this brand:');
-    if (!reason) return;
-
-    try {
-        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/brands/${brandId}/suspend`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason })
-        });
-
-        if (response.ok) {
-            alert('Brand suspended');
-            closeViewBrandModal();
-            ModeManager.loadModeData('brand');
-            PanelManager.loadPanelData(PanelManager.currentPanel);
-        } else {
-            const error = await response.json();
-            alert(`Failed to suspend: ${error.detail || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('[Action] Error suspending brand:', error);
-        alert('An error occurred while suspending the brand');
-    }
-}
-
-async function reconsiderBrand(brandId) {
-    if (!confirm('Are you sure you want to reconsider this brand? It will be moved back to pending status.')) return;
-
-    try {
-        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/brands/${brandId}/restore`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            alert('Brand moved to pending for reconsideration');
-            closeViewBrandModal();
-            ModeManager.loadModeData('brand');
-            PanelManager.loadPanelData(PanelManager.currentPanel);
-        } else {
-            const error = await response.json();
-            alert(`Failed to reconsider: ${error.detail || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('[Action] Error reconsidering brand:', error);
-        alert('An error occurred');
-    }
-}
-
-async function reinstateBrand(brandId) {
-    if (!confirm('Are you sure you want to reinstate this brand? It will be moved back to verified status.')) return;
-
-    try {
-        const response = await fetch(`${ADVERTISERS_API_URL}/api/admin-advertisers/brands/${brandId}/reinstate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            alert('Brand reinstated successfully');
-            closeViewBrandModal();
-            ModeManager.loadModeData('brand');
-            PanelManager.loadPanelData(PanelManager.currentPanel);
-        } else {
-            const error = await response.json();
-            alert(`Failed to reinstate: ${error.detail || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('[Action] Error reinstating brand:', error);
-        alert('An error occurred');
-    }
-}
+// Brand verification was removed: a brand only exists under an already-verified
+// company, so brands have no verify/reject/suspend/reconsider/reinstate flow.
+// Campaign-level moderation remains below.
 
 // ==================== CAMPAIGN ACTION FUNCTIONS ====================
 
