@@ -28,14 +28,22 @@ load_dotenv()
 
 router = APIRouter(prefix="/api/advertiser", tags=["Advertiser Brands"])
 
-DATABASE_URL = os.getenv(
-    'DATABASE_URL',
-    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
+# Advertiser tables (advertiser_profiles, brand_profile, campaign_profile,
+# campaign_media, campaign_impressions, campaign_engagement, advertiser_transactions,
+# company_profile, ...) now live in the dedicated advertiser database.
+ADVERTISER_DATABASE_URL = os.getenv(
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
 )
 
 def get_db():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    """Get a connection to the advertiser database.
+
+    Every query in this module touches advertiser-owned tables only; the
+    former users.account_balance gate (the only user-DB access) has been
+    removed, so no user-DB connection is needed here anymore.
+    """
+    return psycopg.connect(ADVERTISER_DATABASE_URL, row_factory=dict_row)
 
 
 def _assert_brand_owned_by_advertiser(cur, advertiser_profile_id: int, brand_id: int) -> None:
@@ -745,7 +753,7 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
             with conn.cursor() as cur:
                 # Verify ownership
                 cur.execute("""
-                    SELECT id, brand_ids, user_id FROM advertiser_profiles WHERE id = %s
+                    SELECT id, brand_ids FROM advertiser_profiles WHERE id = %s
                 """, (advertiser_profile_id,))
                 advertiser = cur.fetchone()
 
@@ -758,23 +766,11 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
 
                 campaign_budget_amount = float(campaign.campaign_budget)
 
-                # Get user's account balance (not advertiser balance)
-                cur.execute("""
-                    SELECT account_balance FROM users WHERE id = %s
-                """, (advertiser['user_id'],))
-                user = cur.fetchone()
-
-                if not user:
-                    raise HTTPException(status_code=404, detail="User not found")
-
-                user_balance = float(user.get('account_balance', 0))
-
-                # Check if user has sufficient balance
-                if user_balance < campaign_budget_amount:
-                    raise HTTPException(
-                        status_code=402,
-                        detail=f"Insufficient balance. Need {campaign_budget_amount:.2f} ETB, have {user_balance:.2f} ETB. Please deposit funds to your account."
-                    )
+                # NOTE: the users.account_balance gate (balance read,
+                # insufficient-balance 402, and account_balance deduction) was
+                # removed as a product decision. Campaign creation no longer
+                # touches the user DB; spend is tracked on advertiser/company
+                # only (total_spent + advertiser_transactions below).
 
                 # Get brand info
                 cur.execute("""
@@ -837,23 +833,22 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
                 ))
                 new_campaign = cur.fetchone()
 
-                # Deduct from user's account balance and transfer to Astegni
-                new_user_balance = user_balance - campaign_budget_amount
-                cur.execute("""
-                    UPDATE users
-                    SET account_balance = %s
-                    WHERE id = %s
-                """, (new_user_balance, advertiser['user_id']))
-
-                # Update advertiser total_spent tracking (but don't deduct from advertiser balance)
+                # Update advertiser total_spent tracking. We bump total_spent and
+                # capture the before/after spend totals for the transaction audit
+                # record (the user-balance gate that previously supplied these
+                # figures has been removed).
                 cur.execute("""
                     UPDATE advertiser_profiles
                     SET total_spent = COALESCE(total_spent, 0) + %s,
                         last_transaction_at = NOW()
                     WHERE id = %s
+                    RETURNING COALESCE(total_spent, 0) AS total_spent_after
                 """, (campaign_budget_amount, advertiser_profile_id))
+                _spent_row = cur.fetchone()
+                spent_after = float(_spent_row['total_spent_after']) if _spent_row else campaign_budget_amount
+                spent_before = spent_after - campaign_budget_amount
 
-                # Record transaction (user account → Astegni transfer)
+                # Record transaction (campaign budget committed → Astegni)
                 cur.execute("""
                     INSERT INTO advertiser_transactions (
                         advertiser_id, campaign_id, brand_id, transaction_type,
@@ -870,9 +865,9 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
                     new_campaign['id'],
                     brand_id,
                     campaign_budget_amount,
-                    user_balance,
-                    new_user_balance,
-                    f"Campaign '{campaign.name}' created - Paid from user account - Budget: {campaign_budget_amount:.2f} ETB transferred to Astegni"
+                    spent_before,
+                    spent_after,
+                    f"Campaign '{campaign.name}' created - Budget: {campaign_budget_amount:.2f} ETB committed to Astegni"
                 ))
                 transaction = cur.fetchone()
 
@@ -915,9 +910,9 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
                     "payment": {
                         'transaction_id': transaction['id'],
                         'amount_charged': campaign_budget_amount,
-                        'user_balance_before': user_balance,
-                        'user_balance_after': new_user_balance,
-                        'payment_source': 'user_account',
+                        'total_spent_before': spent_before,
+                        'total_spent_after': spent_after,
+                        'payment_source': 'advertiser_account',
                         'transferred_to': 'astegni'
                     }
                 }

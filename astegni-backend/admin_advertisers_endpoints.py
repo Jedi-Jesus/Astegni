@@ -1,9 +1,11 @@
 """
 Admin Advertisers Endpoints
-Manages brands and campaigns from astegni_user_db for admin dashboard
+Manages brands and campaigns for admin dashboard
 
 Database Sources:
-- astegni_user_db: advertiser_profiles, brand_profile, campaign_profile
+- astegni_advertiser_db: advertiser_profiles, company_profile, brand_profile, campaign_profile,
+                         campaign_impressions, campaign_engagement, campaign_media
+- astegni_user_db: users (resolved separately; Postgres cannot join across databases)
 - astegni_admin_db: brand_packages (pricing packages)
 
 Table Relationships:
@@ -49,13 +51,57 @@ ADMIN_DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
 )
 
+# Advertiser Database URL - advertiser_profiles, company_profile, brand_profile,
+# campaign_profile, campaign_impressions, campaign_engagement, campaign_media all
+# live in astegni_advertiser_db after the May/June 2026 DB split.
+ADVERTISER_DATABASE_URL = os.getenv(
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
+)
+
 def get_user_db():
-    """Get user database connection"""
+    """Get user database connection (users table only)"""
     return psycopg.connect(USER_DATABASE_URL, row_factory=dict_row)
 
 def get_admin_db():
-    """Get admin database connection"""
+    """Get admin database connection (brand_packages)"""
     return psycopg.connect(ADMIN_DATABASE_URL, row_factory=dict_row)
+
+def get_adv_db():
+    """Get advertiser database connection (all advertiser tables)"""
+    return psycopg.connect(ADVERTISER_DATABASE_URL, row_factory=dict_row)
+
+
+def _fetch_users_by_ids(user_ids):
+    """Resolve a set of user_ids to user records from astegni_user_db.
+
+    Postgres cannot join across databases, so advertiser-table queries select
+    ap.user_id and we merge user fields in Python. Returns {id: {...}}.
+    """
+    ids = [uid for uid in {u for u in user_ids} if uid is not None]
+    if not ids:
+        return {}
+    users_map = {}
+    with get_user_db() as uconn:
+        with uconn.cursor() as ucur:
+            ucur.execute(
+                "SELECT id, email, first_name, father_name, grandfather_name, "
+                "last_name, profile_picture FROM users WHERE id = ANY(%s)",
+                (ids,),
+            )
+            for u in ucur.fetchall():
+                users_map[u['id']] = u
+    return users_map
+
+
+def _full_name(u):
+    """Build a CONCAT_WS(' ', ...) equivalent name from a user dict (or None)."""
+    if not u:
+        return None
+    parts = [u.get('first_name'), u.get('father_name'),
+             u.get('grandfather_name'), u.get('last_name')]
+    name = ' '.join(p for p in parts if p)
+    return name or None
 
 
 # ============================================================
@@ -85,24 +131,23 @@ async def get_brands(
             print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
             # Continue without packages - they'll show as "No Package"
 
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
-                # Post-restructure JOIN chain:
+                # Post-restructure JOIN chain (all in astegni_advertiser_db):
                 #   brand_profile.company_id -> company_profile.id
                 #   company_profile.advertiser_id -> advertiser_profiles.id
-                #   advertiser_profiles.user_id -> users.id
+                #   advertiser_profiles.user_id -> users.id (in astegni_user_db,
+                #     resolved separately below; Postgres can't join across DBs).
                 # The legacy ap.brand_ids[] join is now empty for new brands.
                 query = """
                     SELECT bp.*,
                            cp.company_name AS company_name,
                            cp.company_logo AS company_logo,
                            cp.id AS company_id_out,
-                           u.email AS advertiser_email,
-                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name
+                           ap.user_id AS advertiser_user_id
                     FROM brand_profile bp
                     LEFT JOIN company_profile cp ON bp.company_id = cp.id
                     LEFT JOIN advertiser_profiles ap ON cp.advertiser_id = ap.id
-                    LEFT JOIN users u ON ap.user_id = u.id
                     WHERE 1=1
                 """
                 params = []
@@ -135,40 +180,44 @@ async def get_brands(
                 cur.execute(query, params)
                 brands = cur.fetchall()
 
-                # Transform to match frontend expectations
-                result = []
-                for b in brands:
-                    package_id = b.get('package_id')
-                    package_info = packages_map.get(package_id, {}) if package_id else {}
+        # Resolve advertiser users from astegni_user_db (cross-DB; merged in Python)
+        users_map = _fetch_users_by_ids([b.get('advertiser_user_id') for b in brands])
 
-                    result.append({
-                        'id': b['id'],
-                        'brand_name': b['name'],
-                        'brand_logo': b['thumbnail'],
-                        'description': b['bio'],
-                        'industry': b.get('industry'),
-                        'location': b['location'],
-                        'email': b['email'],
-                        'status': b['status'] or 'active',  # operational: active/paused/inactive
-                        'is_active': b['is_active'],
-                        'created_at': str(b['created_at']) if b['created_at'] else None,
-                        'company_id': b.get('company_id_out'),
-                        'company_name': b.get('company_name'),
-                        'company_logo': b.get('company_logo'),
-                        'advertiser_name': b.get('advertiser_name'),
-                        'advertiser_email': b.get('advertiser_email'),
-                        'package_id': package_id,
-                        'package_name': package_info.get('name'),
-                        'package_price': float(package_info['price']) if package_info.get('price') else None
-                    })
+        # Transform to match frontend expectations
+        result = []
+        for b in brands:
+            package_id = b.get('package_id')
+            package_info = packages_map.get(package_id, {}) if package_id else {}
+            u = users_map.get(b.get('advertiser_user_id'))
 
-                return {
-                    "brands": result,
-                    "total": total,
-                    "page": page,
-                    "limit": limit,
-                    "pages": (total + limit - 1) // limit if total > 0 else 0
-                }
+            result.append({
+                'id': b['id'],
+                'brand_name': b['name'],
+                'brand_logo': b['thumbnail'],
+                'description': b['bio'],
+                'industry': b.get('industry'),
+                'location': b['location'],
+                'email': b['email'],
+                'status': b['status'] or 'active',  # operational: active/paused/inactive
+                'is_active': b['is_active'],
+                'created_at': str(b['created_at']) if b['created_at'] else None,
+                'company_id': b.get('company_id_out'),
+                'company_name': b.get('company_name'),
+                'company_logo': b.get('company_logo'),
+                'advertiser_name': _full_name(u),
+                'advertiser_email': u['email'] if u else None,
+                'package_id': package_id,
+                'package_name': package_info.get('name'),
+                'package_price': float(package_info['price']) if package_info.get('price') else None
+            })
+
+        return {
+            "brands": result,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit if total > 0 else 0
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -181,7 +230,7 @@ async def get_brand(brand_id: int):
       company_profile.advertiser_id -> advertiser_profiles.id
       advertiser_profiles.user_id -> users.id"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT bp.*,
@@ -190,19 +239,20 @@ async def get_brand(brand_id: int):
                            cp.company_logo AS company_logo,
                            cp.is_verified AS company_is_verified,
                            ap.id AS advertiser_id,
-                           u.email AS advertiser_email,
-                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name
+                           ap.user_id AS advertiser_user_id
                     FROM brand_profile bp
                     LEFT JOIN company_profile cp ON bp.company_id = cp.id
                     LEFT JOIN advertiser_profiles ap ON cp.advertiser_id = ap.id
-                    LEFT JOIN users u ON ap.user_id = u.id
                     WHERE bp.id = %s
                 """, (brand_id,))
                 brand = cur.fetchone()
                 if not brand:
                     raise HTTPException(status_code=404, detail="Brand not found")
 
-                return {
+        # Resolve advertiser user from astegni_user_db (cross-DB; merged in Python)
+        u = _fetch_users_by_ids([brand.get('advertiser_user_id')]).get(brand.get('advertiser_user_id'))
+
+        return {
                     'id': brand['id'],
                     'brand_name': brand['name'],
                     'brand_logo': brand['thumbnail'],
@@ -225,8 +275,8 @@ async def get_brand(brand_id: int):
                     'company_logo': brand.get('company_logo'),
                     'company_is_verified': brand.get('company_is_verified'),
                     'advertiser_id': brand.get('advertiser_id'),
-                    'advertiser_name': brand.get('advertiser_name'),
-                    'advertiser_email': brand.get('advertiser_email'),
+                    'advertiser_name': _full_name(u),
+                    'advertiser_email': u['email'] if u else None,
                 }
     except HTTPException:
         raise
@@ -268,7 +318,7 @@ async def get_campaigns(
             print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
             # Continue without packages - they'll show as "No Package"
 
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Build query - join with brand_profile using brand_id (proper foreign key relationship)
                 # campaign_profile.brand_id references brand_profile.id
@@ -424,7 +474,7 @@ async def get_campaigns(
 async def get_campaign_counts():
     """Get campaign counts by status"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
@@ -450,7 +500,7 @@ async def get_campaign_counts():
 async def verify_campaign(campaign_id: int, admin_id: Optional[int] = None):
     """Verify a campaign"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE campaign_profile
@@ -480,7 +530,7 @@ async def reject_campaign(campaign_id: int, data: dict):
     """Reject a campaign"""
     try:
         reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE campaign_profile
@@ -509,7 +559,7 @@ async def suspend_campaign(campaign_id: int, data: dict):
     """Suspend a campaign"""
     try:
         reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE campaign_profile
@@ -536,7 +586,7 @@ async def suspend_campaign(campaign_id: int, data: dict):
 async def restore_campaign(campaign_id: int):
     """Restore a suspended/rejected campaign to pending"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE campaign_profile
@@ -562,7 +612,7 @@ async def restore_campaign(campaign_id: int):
 async def reinstate_campaign(campaign_id: int):
     """Reinstate a suspended campaign to verified status"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE campaign_profile
@@ -596,7 +646,7 @@ async def get_recent_brands(limit: int = Query(default=5, le=20)):
     """Get most recent brand submissions.
     Post-restructure JOIN via brand_profile.company_id -> company_profile."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT bp.id, bp.name, bp.thumbnail, bp.status, bp.created_at,
@@ -629,7 +679,7 @@ async def get_recent_campaigns(limit: int = Query(default=5, le=20)):
     """Get most recent campaign submissions with brand names.
     Joins with brand_profile using brand_id (proper foreign key relationship)"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT cp.id, cp.name, cp.verification_status, cp.created_at,
@@ -680,7 +730,7 @@ async def get_recent_campaigns(limit: int = Query(default=5, le=20)):
 async def get_advertiser_stats():
     """Get combined stats for brands and campaigns"""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Get brand counts
                 cur.execute("""
@@ -1018,7 +1068,7 @@ async def get_campaign_details(campaign_id: int):
     Fetches from campaign_profile and brand_profile tables
     """
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Get campaign details with brand information directly from DB
                 cur.execute("""
@@ -1164,7 +1214,7 @@ async def get_campaign_media(campaign_id: int):
     Fetches from campaign_media table
     """
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Verify campaign exists
                 cur.execute("""
@@ -1246,16 +1296,15 @@ async def admin_get_companies(
 ):
     """List companies with optional status filter + search."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
+                # users live in astegni_user_db (cross-DB); select ap.user_id here
+                # and resolve advertiser email/name/avatar in Python after the query.
                 query = """
                     SELECT cp.*,
-                           u.email AS advertiser_email,
-                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name,
-                           u.profile_picture AS advertiser_avatar
+                           ap.user_id AS advertiser_user_id
                     FROM company_profile cp
                     JOIN advertiser_profiles ap ON ap.id = cp.advertiser_id
-                    JOIN users u ON u.id = ap.user_id
                     WHERE 1=1
                 """
                 params: list = []
@@ -1299,8 +1348,12 @@ async def admin_get_companies(
                 cur.execute(query, params)
                 rows = cur.fetchall()
 
-                result = []
-                for c in rows:
+        # Resolve advertiser users from astegni_user_db (cross-DB; merged in Python)
+        users_map = _fetch_users_by_ids([c.get('advertiser_user_id') for c in rows])
+
+        result = []
+        for c in rows:
+                    u = users_map.get(c.get('advertiser_user_id'))
                     result.append({
                         'id': c['id'],
                         'advertiser_id': c['advertiser_id'],
@@ -1326,12 +1379,12 @@ async def admin_get_companies(
                         'balance': float(c['balance']) if c.get('balance') is not None else 0.0,
                         'currency': c.get('currency') or 'ETB',
                         'created_at': str(c['created_at']) if c.get('created_at') else None,
-                        'advertiser_email': c.get('advertiser_email'),
-                        'advertiser_name': c.get('advertiser_name'),
-                        'advertiser_avatar': c.get('advertiser_avatar'),
+                        'advertiser_email': u['email'] if u else None,
+                        'advertiser_name': _full_name(u),
+                        'advertiser_avatar': u.get('profile_picture') if u else None,
                     })
 
-                return {
+        return {
                     "companies": result,
                     "total": total,
                     "page": page,
@@ -1346,7 +1399,7 @@ async def admin_get_companies(
 async def admin_get_company_counts():
     """Count companies by verification status (for admin dashboard tiles)."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # "total" excludes unverified companies (advertiser-driven, never
                 # shown to admins). escalated = advertiser pressed "Notify admins".
@@ -1372,25 +1425,27 @@ async def admin_get_company_counts():
 async def admin_get_company(company_id: int):
     """Get full details for one company, including its brand + campaign counts."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
+                # users live in astegni_user_db (cross-DB); select ap.user_id here
+                # and resolve advertiser email/name/avatar in Python after the query.
                 cur.execute("""
                     SELECT cp.*,
-                           u.email AS advertiser_email,
-                           CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name, u.last_name) AS advertiser_name,
-                           u.profile_picture AS advertiser_avatar,
+                           ap.user_id AS advertiser_user_id,
                            (SELECT COUNT(*) FROM brand_profile bp WHERE bp.company_id = cp.id) AS brand_count,
                            (SELECT COUNT(*) FROM campaign_profile camp WHERE camp.company_id = cp.id) AS campaign_count
                     FROM company_profile cp
                     JOIN advertiser_profiles ap ON ap.id = cp.advertiser_id
-                    JOIN users u ON u.id = ap.user_id
                     WHERE cp.id = %s
                 """, (company_id,))
                 c = cur.fetchone()
                 if not c:
                     raise HTTPException(status_code=404, detail="Company not found")
 
-                return {
+        # Resolve advertiser user from astegni_user_db (cross-DB; merged in Python)
+        u = _fetch_users_by_ids([c.get('advertiser_user_id')]).get(c.get('advertiser_user_id'))
+
+        return {
                     'id': c['id'],
                     'advertiser_id': c['advertiser_id'],
                     'company_name': c['company_name'],
@@ -1424,9 +1479,9 @@ async def admin_get_company(company_id: int):
                     'total_spent': float(c['total_spent']) if c.get('total_spent') is not None else 0.0,
                     'created_at': str(c['created_at']) if c.get('created_at') else None,
                     'updated_at': str(c['updated_at']) if c.get('updated_at') else None,
-                    'advertiser_email': c.get('advertiser_email'),
-                    'advertiser_name': c.get('advertiser_name'),
-                    'advertiser_avatar': c.get('advertiser_avatar'),
+                    'advertiser_email': u['email'] if u else None,
+                    'advertiser_name': _full_name(u),
+                    'advertiser_avatar': u.get('profile_picture') if u else None,
                     'brand_count': c.get('brand_count') or 0,
                     'campaign_count': c.get('campaign_count') or 0,
                 }
@@ -1440,7 +1495,7 @@ async def admin_get_company(company_id: int):
 async def admin_verify_company(company_id: int, admin_id: Optional[int] = None):
     """Approve a company's KYC submission."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE company_profile
@@ -1471,7 +1526,7 @@ async def admin_reject_company(company_id: int, data: dict):
     """Reject a company's KYC submission with a reason."""
     try:
         reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE company_profile
@@ -1500,7 +1555,7 @@ async def admin_suspend_company(company_id: int, data: dict):
     """Suspend a previously-verified company (e.g. policy violation)."""
     try:
         reason = data.get('reason', 'No reason provided')
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE company_profile
@@ -1527,7 +1582,7 @@ async def admin_suspend_company(company_id: int, data: dict):
 async def admin_restore_company(company_id: int):
     """Restore a suspended/rejected company to pending so it can be re-reviewed."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE company_profile
@@ -1553,7 +1608,7 @@ async def admin_restore_company(company_id: int):
 async def admin_reinstate_company(company_id: int):
     """Reinstate a suspended company back to verified (e.g. after appeal)."""
     try:
-        with get_user_db() as conn:
+        with get_adv_db() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE company_profile

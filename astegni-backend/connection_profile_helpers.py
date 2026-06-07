@@ -12,7 +12,8 @@ from fastapi import HTTPException
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app.py modules'))
-from models import TutorProfile, StudentProfile, ParentProfile, AdvertiserProfile, User
+from models import TutorProfile, StudentProfile, ParentProfile, User
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 
 
 def get_profile_from_user_id(db: Session, user_id: int, preferred_profile_type: str = None):
@@ -69,9 +70,14 @@ def _get_specific_profile(db: Session, user_id: int, profile_type: str):
             return {'profile_id': profile.id, 'profile_type': 'parent'}
 
     elif profile_type == 'advertiser':
-        profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
-        if profile:
-            return {'profile_id': profile.id, 'profile_type': 'advertiser'}
+        # AdvertiserProfile lives in the separate advertiser DB; use its own session.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
+            if profile:
+                return {'profile_id': profile.id, 'profile_type': 'advertiser'}
+        finally:
+            adv_db.close()
 
     return None
 
@@ -102,8 +108,13 @@ def get_user_id_from_profile(db: Session, profile_id: int, profile_type: str):
         return profile.user_id if profile else None
 
     elif profile_type == 'advertiser':
-        profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.id == profile_id).first()
-        return profile.user_id if profile else None
+        # AdvertiserProfile lives in the separate advertiser DB; use its own session.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.id == profile_id).first()
+            return profile.user_id if profile else None
+        finally:
+            adv_db.close()
 
     return None
 

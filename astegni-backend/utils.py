@@ -111,7 +111,9 @@ def get_first_active_role(user: User, db: Session) -> Optional[str]:
         - First active role found, or
         - None if no active roles exist
     """
-    from models import StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile, UserProfile
+    from models import StudentProfile, TutorProfile, ParentProfile, UserProfile
+    # AdvertiserProfile lives in the separate advertiser DB.
+    from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 
     # Users registered without a role have roles=None — nothing to resolve.
     if not user.roles:
@@ -137,8 +139,15 @@ def get_first_active_role(user: User, db: Session) -> Optional[str]:
             profile = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
             is_active = profile and getattr(profile, 'is_active', True)
         elif role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-            is_active = profile and getattr(profile, 'is_active', True)
+            # Advertiser profile is in astegni_advertiser_db — use a dedicated session.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(
+                    AdvertiserProfile.user_id == user.id
+                ).first()
+                is_active = profile and getattr(profile, 'is_active', True)
+            finally:
+                adv_db.close()
         elif role == 'user':
             profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
             is_active = profile and getattr(profile, 'is_active', True)
@@ -165,7 +174,9 @@ def get_role_ids_from_user(user: User, db: Session) -> dict:
     Note: Admin authentication is separate and uses admin_profile table directly,
     not linked to users table. Admins don't have role_ids in this function.
     """
-    from models import StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile
+    from models import StudentProfile, TutorProfile, ParentProfile
+    # AdvertiserProfile lives in the separate advertiser DB.
+    from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 
     role_ids = {}
 
@@ -194,12 +205,16 @@ def get_role_ids_from_user(user: User, db: Session) -> dict:
         ).first()
         role_ids['parent'] = parent_profile.id if parent_profile else None
 
-    # Get advertiser profile ID if exists
+    # Get advertiser profile ID if exists (advertiser DB is separate)
     if 'advertiser' in user.roles:
-        advertiser_profile = db.query(AdvertiserProfile).filter(
-            AdvertiserProfile.user_id == user.id
-        ).first()
-        role_ids['advertiser'] = advertiser_profile.id if advertiser_profile else None
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser_profile = adv_db.query(AdvertiserProfile).filter(
+                AdvertiserProfile.user_id == user.id
+            ).first()
+            role_ids['advertiser'] = advertiser_profile.id if advertiser_profile else None
+        finally:
+            adv_db.close()
 
     # Note: Admin role is NOT included here because admin_profile table
     # is separate from users table and has its own authentication system

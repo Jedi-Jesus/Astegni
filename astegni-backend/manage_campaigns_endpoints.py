@@ -25,10 +25,20 @@ ADMIN_DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
 )
 
-# Use astegni_user_db for campaign data
+# Use astegni_user_db for user/campaign data that stayed in the user DB
+# (ad_campaigns lives here)
 USER_DATABASE_URL = os.getenv(
     'DATABASE_URL',
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
+)
+
+# Use astegni_advertiser_db for advertiser tables that were split out of the
+# user DB (advertiser_profiles, company_profile, brand_profile, campaign_profile,
+# campaign_media, etc.). Postgres cannot join these against user-DB tables, so
+# any such join must be performed as two separate queries.
+ADVERTISER_DATABASE_URL = os.getenv(
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
 )
 
 router = APIRouter(prefix="/api/manage-campaigns", tags=["Manage Campaigns Profile"])
@@ -120,6 +130,10 @@ def get_admin_db():
 def get_user_db():
     """Get user database connection with dict_row factory"""
     return psycopg.connect(USER_DATABASE_URL, row_factory=dict_row)
+
+def get_advertiser_db():
+    """Get advertiser database connection with dict_row factory"""
+    return psycopg.connect(ADVERTISER_DATABASE_URL, row_factory=dict_row)
 
 def verify_department_access(admin_id: int, allowed_departments: List[str] = ALLOWED_DEPARTMENTS):
     """
@@ -525,20 +539,50 @@ async def get_campaigns(
     if admin_id:
         verify_department_access(admin_id)
 
+    # ad_campaigns lives in the USER DB; advertiser_profiles (company_name,
+    # industry) lives in the ADVERTISER DB. Postgres cannot join across the two,
+    # so we resolve advertiser data separately.
+    #
+    # When the request filters by company name (via `search`) or `industry`,
+    # those predicates can only be evaluated in the advertiser DB. We pre-resolve
+    # the set of matching advertiser_ids there, then constrain the user-DB query.
+    company_filter_active = bool(search) or bool(industry)
+    matching_advertiser_ids = None  # None = no advertiser-side restriction
+
+    adv_conn = get_advertiser_db()
+    adv_cursor = adv_conn.cursor()
+    try:
+        if company_filter_active:
+            adv_filter_query = "SELECT id FROM advertiser_profiles WHERE 1=1"
+            adv_filter_params = []
+            # `search` may match either the campaign text (user DB) or the
+            # company name (advertiser DB). We collect company-name matches
+            # here and OR them with campaign-text matches below.
+            if search:
+                adv_filter_query += " AND company_name ILIKE %s"
+                adv_filter_params.append(f"%{search}%")
+            if industry:
+                adv_filter_query += " AND industry ILIKE %s"
+                adv_filter_params.append(f"%{industry}%")
+            adv_cursor.execute(adv_filter_query, adv_filter_params)
+            matching_advertiser_ids = [r['id'] for r in adv_cursor.fetchall()]
+    finally:
+        adv_cursor.close()
+        adv_conn.close()
+
     conn = get_user_db()
     cursor = conn.cursor()
 
     try:
-        # Base query with all needed fields including campaign_socials
+        # Base query against ad_campaigns only (no cross-DB join).
         query = """
             SELECT
                 ac.id, ac.name, ac.description, ac.verification_status, ac.budget,
                 ac.start_date, ac.end_date, ac.created_at, ac.advertiser_id,
                 ac.impressions, ac.clicks, ac.ctr, ac.ad_type, ac.creative_urls,
                 ac.objective, ac.target_location, ac.target_audience, ac.spent,
-                ap.company_name, ap.industry, ac.campaign_socials, ac.target_age_range
+                ac.campaign_socials, ac.target_age_range
             FROM ad_campaigns ac
-            LEFT JOIN advertiser_profiles ap ON ac.advertiser_id = ap.id
             WHERE 1=1
         """
         params = []
@@ -548,16 +592,17 @@ async def get_campaigns(
             query += " AND ac.verification_status = %s"
             params.append(status)
 
-        # Search filter (searches in name, description, company)
+        # Search filter: matches campaign name/description (user DB) OR the
+        # advertiser_ids whose company_name matched in the advertiser DB.
         if search:
-            query += " AND (ac.name ILIKE %s OR ac.description ILIKE %s OR ap.company_name ILIKE %s)"
             search_param = f"%{search}%"
-            params.extend([search_param, search_param, search_param])
+            query += " AND (ac.name ILIKE %s OR ac.description ILIKE %s OR ac.advertiser_id = ANY(%s))"
+            params.extend([search_param, search_param, matching_advertiser_ids or []])
 
-        # Industry filter
+        # Industry filter: only advertiser_ids matching the industry (advertiser DB).
         if industry:
-            query += " AND ap.industry ILIKE %s"
-            params.append(f"%{industry}%")
+            query += " AND ac.advertiser_id = ANY(%s)"
+            params.append(matching_advertiser_ids or [])
 
         # Ad type filter
         if ad_type:
@@ -584,8 +629,29 @@ async def get_campaigns(
 
         cursor.execute(query, params)
 
+        rows = cursor.fetchall()
+
+        # Collect advertiser_ids on the returned page to fetch company/industry
+        # in a single advertiser-DB lookup (avoids cross-DB join).
+        page_advertiser_ids = [row[8] for row in rows if row[8] is not None]
+        advertiser_info = {}
+        if page_advertiser_ids:
+            adv_conn2 = get_advertiser_db()
+            adv_cursor2 = adv_conn2.cursor()
+            try:
+                adv_cursor2.execute(
+                    "SELECT id, company_name, industry FROM advertiser_profiles WHERE id = ANY(%s)",
+                    (page_advertiser_ids,)
+                )
+                for r in adv_cursor2.fetchall():
+                    advertiser_info[r['id']] = (r['company_name'], r['industry'])
+            finally:
+                adv_cursor2.close()
+                adv_conn2.close()
+
         campaigns = []
-        for row in cursor.fetchall():
+        for row in rows:
+            adv = advertiser_info.get(row[8], (None, None))
             campaigns.append({
                 "id": row[0],
                 "campaign_name": row[1],  # Changed from "name" to "campaign_name"
@@ -605,21 +671,21 @@ async def get_campaigns(
                 "target_location": row[15] or [],  # Changed from "locations"
                 "target_audience": row[16] or [],
                 "spent": float(row[17]) if row[17] else 0.0,
-                "company_name": row[18],
-                "industry": row[19],
-                "campaign_socials": row[20] or {},  # New field
-                "target_age_range": row[21] or {},  # New field
+                "company_name": adv[0],
+                "industry": adv[1],
+                "campaign_socials": row[18] or {},  # New field
+                "target_age_range": row[19] or {},  # New field
                 # Determine media type from creative_urls
                 "has_video": any('video' in url.lower() or url.endswith('.mp4') for url in (row[13] or [])),
                 "has_image": any('jpg' in url.lower() or 'jpeg' in url.lower() or 'png' in url.lower() for url in (row[13] or [])),
                 "media_url": row[13][0] if row[13] and len(row[13]) > 0 else None
             })
 
-        # Get total count with same filters
+        # Get total count with same filters (user DB only, advertiser-side
+        # predicates already resolved into matching_advertiser_ids).
         count_query = """
             SELECT COUNT(*)
             FROM ad_campaigns ac
-            LEFT JOIN advertiser_profiles ap ON ac.advertiser_id = ap.id
             WHERE 1=1
         """
         count_params = []
@@ -629,13 +695,13 @@ async def get_campaigns(
             count_params.append(status)
 
         if search:
-            count_query += " AND (ac.name ILIKE %s OR ac.description ILIKE %s OR ap.company_name ILIKE %s)"
             search_param = f"%{search}%"
-            count_params.extend([search_param, search_param, search_param])
+            count_query += " AND (ac.name ILIKE %s OR ac.description ILIKE %s OR ac.advertiser_id = ANY(%s))"
+            count_params.extend([search_param, search_param, matching_advertiser_ids or []])
 
         if industry:
-            count_query += " AND ap.industry ILIKE %s"
-            count_params.append(f"%{industry}%")
+            count_query += " AND ac.advertiser_id = ANY(%s)"
+            count_params.append(matching_advertiser_ids or [])
 
         if ad_type:
             count_query += " AND ac.ad_type = %s"
@@ -699,19 +765,39 @@ async def get_live_campaign_requests(
     cursor = conn.cursor()
 
     try:
+        # ad_campaigns lives in the USER DB; company_name comes from
+        # advertiser_profiles in the ADVERTISER DB. Fetch campaigns first, then
+        # resolve company names in a separate advertiser-DB query (no cross-DB join).
         cursor.execute("""
             SELECT
                 ac.id, ac.name, ac.verification_status, ac.budget,
-                ac.created_at, ac.ad_type, ac.objective,
-                ap.company_name
+                ac.created_at, ac.ad_type, ac.objective, ac.advertiser_id
             FROM ad_campaigns ac
-            LEFT JOIN advertiser_profiles ap ON ac.advertiser_id = ap.id
             ORDER BY ac.created_at DESC
             LIMIT %s
         """, (limit,))
 
+        rows = cursor.fetchall()
+
+        # Resolve company names for the returned advertiser_ids in one lookup.
+        page_advertiser_ids = [row[7] for row in rows if row[7] is not None]
+        company_names = {}
+        if page_advertiser_ids:
+            adv_conn = get_advertiser_db()
+            adv_cursor = adv_conn.cursor()
+            try:
+                adv_cursor.execute(
+                    "SELECT id, company_name FROM advertiser_profiles WHERE id = ANY(%s)",
+                    (page_advertiser_ids,)
+                )
+                for r in adv_cursor.fetchall():
+                    company_names[r['id']] = r['company_name']
+            finally:
+                adv_cursor.close()
+                adv_conn.close()
+
         requests = []
-        for row in cursor.fetchall():
+        for row in rows:
             # Calculate time ago
             created_at = row[4]
             time_diff = datetime.now() - created_at
@@ -736,7 +822,7 @@ async def get_live_campaign_requests(
                 "time_ago": time_ago,
                 "ad_type": row[5],
                 "objective": row[6],
-                "company_name": row[7]
+                "company_name": company_names.get(row[7])
             })
 
         cursor.close()
@@ -773,6 +859,9 @@ async def get_campaign_details(
     cursor = conn.cursor()
 
     try:
+        # ad_campaigns lives in the USER DB; company_name/industry come from
+        # advertiser_profiles in the ADVERTISER DB. Fetch the campaign first,
+        # then resolve advertiser fields in a separate query (no cross-DB join).
         cursor.execute("""
             SELECT
                 ac.id, ac.name, ac.description, ac.verification_status, ac.budget,
@@ -782,10 +871,8 @@ async def get_campaign_details(
                 ac.submitted_date,
                 ac.rejected_date, ac.rejected_reason,
                 ac.suspended_date, ac.suspended_reason,
-                ac.verified_date, ac.campaign_socials, ac.target_age_range,
-                ap.company_name, ap.industry
+                ac.verified_date, ac.campaign_socials, ac.target_age_range
             FROM ad_campaigns ac
-            LEFT JOIN advertiser_profiles ap ON ac.advertiser_id = ap.id
             WHERE ac.id = %s
         """, (campaign_id,))
 
@@ -793,6 +880,26 @@ async def get_campaign_details(
 
         if not row:
             raise HTTPException(status_code=404, detail="Campaign not found")
+
+        # Resolve advertiser company_name/industry from the advertiser DB.
+        company_name = None
+        industry = None
+        advertiser_id = row[9]
+        if advertiser_id is not None:
+            adv_conn = get_advertiser_db()
+            adv_cursor = adv_conn.cursor()
+            try:
+                adv_cursor.execute(
+                    "SELECT company_name, industry FROM advertiser_profiles WHERE id = %s",
+                    (advertiser_id,)
+                )
+                adv_row = adv_cursor.fetchone()
+                if adv_row:
+                    company_name = adv_row['company_name']
+                    industry = adv_row['industry']
+            finally:
+                adv_cursor.close()
+                adv_conn.close()
 
         campaign = {
             "id": row[0],
@@ -822,8 +929,8 @@ async def get_campaign_details(
             "verified_date": row[24].isoformat() if row[24] else None,
             "campaign_socials": row[25] or {},
             "target_age_range": row[26] or {},  # New field
-            "company_name": row[27],
-            "industry": row[28]
+            "company_name": company_name,
+            "industry": industry
         }
 
         cursor.close()

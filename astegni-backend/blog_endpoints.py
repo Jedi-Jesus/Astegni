@@ -12,9 +12,10 @@ import json
 
 # Import from modular structure
 from models import (
-    Blog, TutorProfile, StudentProfile, ParentProfile, AdvertiserProfile,
+    Blog, TutorProfile, StudentProfile, ParentProfile,
     SessionLocal
 )
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 from utils import get_current_user
 
 router = APIRouter()
@@ -94,7 +95,15 @@ def get_author_info(db: Session, profile_id: int, role: str):
         elif role == 'parent':
             profile = db.query(ParentProfile).filter(ParentProfile.id == profile_id).first()
         elif role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.id == profile_id).first()
+            # Advertiser tables live in a SEPARATE database; use an advertiser session
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.id == profile_id).first()
+                if profile:
+                    return getattr(profile, 'username', 'Unknown'), getattr(profile, 'profile_picture', None)
+                return None, None
+            finally:
+                adv_db.close()
         else:
             return None, None
 

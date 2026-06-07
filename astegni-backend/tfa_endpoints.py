@@ -16,7 +16,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from models import User, StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile, get_db
+from models import User, StudentProfile, TutorProfile, ParentProfile, get_db
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal, get_advertiser_db
 from utils import get_current_user
 from email_service import email_service
 

@@ -24,12 +24,24 @@ ADMIN_DATABASE_URL = os.getenv(
     "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db"
 )
 
+# Advertiser Database (advertiser-only data - advertiser_profiles, company_profile,
+# brand_profile, campaign_profile, campaign_media, impressions, engagement, invoices,
+# team members, transactions, ad earnings). Separate DB like admin: no DB-level FK to
+# astegni_user_db; the advertiser_profiles.user_id link is enforced in application code.
+ADVERTISER_DATABASE_URL = os.getenv(
+    "ADVERTISER_DATABASE_URL",
+    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db"
+)
+
 # Convert DATABASE_URLs for psycopg3
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
 
 if ADMIN_DATABASE_URL.startswith("postgresql://"):
     ADMIN_DATABASE_URL = ADMIN_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+
+if ADVERTISER_DATABASE_URL.startswith("postgresql://"):
+    ADVERTISER_DATABASE_URL = ADVERTISER_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
 
 # ============================================
 # SECURITY CONFIGURATION

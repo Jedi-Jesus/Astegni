@@ -100,6 +100,57 @@ ROLE_PROFILE_TABLES = {
     "advertiser": "advertiser_profiles"
 }
 
+# Advertiser data lives in a SEPARATE database (astegni_advertiser_db) with no
+# cross-DB FK back to users, so it does NOT cascade when a users row is deleted.
+# Root advertiser table whose internal FKs CASCADE to company/campaign/brand/etc.
+ADVERTISER_DATABASE_URL = os.getenv(
+    "ADVERTISER_DATABASE_URL",
+    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db"
+)
+ADVERTISER_ROOT_TABLE = "advertiser_profiles"  # delete by user_id; FKs cascade
+
+
+def _cleanup_advertiser_db(user_id: int):
+    """
+    Delete the user's advertiser data from the separate advertiser DB.
+
+    Postgres cannot cascade across databases, so this must be done with its own
+    connection after the users row is hard-deleted. Deleting from
+    advertiser_profiles cascades (internal FKs) to company_profile, brand_profile,
+    campaign_profile, campaign_media, etc.
+
+    Failures here MUST NOT break user deletion: the user is already gone from the
+    user DB. We log a warning and move on (orphaned advertiser rows can be swept
+    later).
+    """
+    adv_conn = None
+    try:
+        adv_conn = psycopg.connect(ADVERTISER_DATABASE_URL)
+        adv_cursor = adv_conn.cursor()
+        try:
+            adv_cursor.execute(
+                f"DELETE FROM {ADVERTISER_ROOT_TABLE} WHERE user_id = %s",
+                (user_id,)
+            )
+            removed = adv_cursor.rowcount
+            adv_conn.commit()
+            print(f"[ACCOUNT DELETION] Removed {removed} advertiser_profiles row(s) "
+                  f"(cascaded company/campaign/brand) for user {user_id}")
+        finally:
+            adv_cursor.close()
+    except Exception as e:
+        # Do not propagate: user-DB deletion already succeeded/committed.
+        if adv_conn is not None:
+            try:
+                adv_conn.rollback()
+            except Exception:
+                pass
+        print(f"[ACCOUNT DELETION] WARNING: failed to clean up advertiser DB for "
+              f"user {user_id}: {e}")
+    finally:
+        if adv_conn is not None:
+            adv_conn.close()
+
 # ==================== SCHEMAS ====================
 
 class DeletionSendOTPRequest(BaseModel):
@@ -705,12 +756,22 @@ def process_expired_deletions():
                     WHERE id = %s
                 """, (request_id,))
 
-                # Permanently delete user (CASCADE will handle all related data)
+                # Permanently delete user (CASCADE will handle all related data
+                # in the USER DB). Advertiser data lives in a separate DB and is
+                # cleaned up after this commit (see below).
                 cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                # Commit per-user so the user-DB deletion is durable before we
+                # touch the separate advertiser DB (cross-DB cleanup is best-effort).
+                conn.commit()
                 deleted_count += 1
                 print(f"Permanently deleted user {user_id} ({email})")
 
+                # Cross-DB cleanup: advertiser data does NOT cascade from users.
+                # Best-effort; never blocks user deletion (already committed above).
+                _cleanup_advertiser_db(user_id)
+
             except Exception as e:
+                conn.rollback()
                 print(f"Error deleting user {user_id}: {e}")
                 continue
 

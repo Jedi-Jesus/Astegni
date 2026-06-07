@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db")
+DATABASE_URL = os.getenv("ADVERTISER_DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db")
 
 router = APIRouter(prefix="/api/campaigns", tags=["Campaign Launch"])
 

@@ -432,139 +432,14 @@ class ParentProfile(Base):
     user = relationship("User", back_populates="parent_profile")
     reviews = relationship("ParentReview", back_populates="parent")
 
-class AdvertiserProfile(Base):
-    __tablename__ = "advertiser_profiles"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-
-    # Basic Info
-    username = Column(String, unique=True, index=True)  # Role-specific username
-    bio = Column(Text)
-    quote = Column(Text)
-
-    # NOTE: location moved to users.location (VARCHAR)
-    # NOTE: socials moved to users.social_links (JSON)
-
-    # Media
-    # NOTE: profile_picture moved to users.profile_picture
-    cover_image = Column(String)
-
-    # Hero section content (arrays for multiple lines)
-    hero_title = Column(ARRAY(String), default=[])  # ["Title Line 1", "Title Line 2"]
-    hero_subtitle = Column(ARRAY(String), default=[])  # ["Subtitle Line 1", "Subtitle Line 2"]
-
-    # Status & Verification
-    # NOTE: Verification columns moved to users table (users.is_verified, users.verification_status, etc.)
-    is_active = Column(Boolean, default=True)
-    scheduled_deletion_at = Column(DateTime, nullable=True)  # Role scheduled for deletion
-
-    # Membership date
-    joined_in = Column(Date)
-
-    # Two-Factor Authentication (2FA) - Role-specific
-    two_factor_enabled = Column(Boolean, default=False)
-    two_factor_method = Column(String, nullable=True)  # 'email', 'authenticator', 'inapp'
-    two_factor_secret = Column(String, nullable=True)  # TOTP secret for authenticator
-    two_factor_backup_codes = Column(Text, nullable=True)  # Comma-separated backup codes
-    two_factor_temp_code = Column(String, nullable=True)  # Temporary OTP code
-    two_factor_temp_expiry = Column(DateTime, nullable=True)  # OTP expiry time
-    two_factor_inapp_password = Column(String, nullable=True)  # Separate password hash for in-app 2FA
-    two_factor_verification_token = Column(String, nullable=True)  # Temporary token for protected actions
-    two_factor_verification_expiry = Column(DateTime, nullable=True)  # Verification token expiry
-    two_factor_protected_panels = Column(JSON, nullable=True)  # List of panel IDs that require 2FA
-
-    # Company Verification Fields
-    company_name = Column(String(255), nullable=True)
-    industry = Column(String(100), nullable=True)
-    company_size = Column(String(50), nullable=True)
-    business_reg_no = Column(String(100), nullable=True)
-    tin_number = Column(String(50), nullable=True)
-    website = Column(String(500), nullable=True)
-    company_email = Column(JSON, default=[])  # JSON array of company emails
-    company_phone = Column(JSON, default=[])  # JSON array of company phones
-    address = Column(Text, nullable=True)
-    city = Column(String(100), nullable=True)
-    company_description = Column(Text, nullable=True)
-    company_logo = Column(String(500), nullable=True)
-    business_license_url = Column(String(500), nullable=True)
-    tin_certificate_url = Column(String(500), nullable=True)
-    additional_docs_urls = Column(JSON, default=[])
-    # NOTE: verification_status moved to users table (users.verification_status)
-    verification_submitted_at = Column(DateTime, nullable=True)
-    verification_reviewed_at = Column(DateTime, nullable=True)
-    verification_notes = Column(Text, nullable=True)
-
-    # Online Status (for whiteboard video calls)
-    is_online = Column(Boolean, default=False)  # Whether advertiser is currently online
-    last_seen = Column(DateTime, nullable=True)  # Last time advertiser was seen online
-
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    user = relationship("User", backref="advertiser_profile")
-    companies = relationship("CompanyProfile", back_populates="advertiser", cascade="all, delete-orphan")
-
-
-class CompanyProfile(Base):
-    """A company owned by an advertiser. One advertiser can own multiple companies;
-    each company has its own brands, campaigns, billing wallet, and KYC verification.
-
-    Introduced May 2026; see migrate_introduce_company_profile.py and
-    DESIGN_company_profile_restructure.md.
-    """
-    __tablename__ = "company_profile"
-
-    id = Column(Integer, primary_key=True, index=True)
-    advertiser_id = Column(Integer, ForeignKey("advertiser_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
-
-    # Company identity
-    company_name = Column(String(255), nullable=False)
-    industry = Column(String(100), nullable=True)
-    company_size = Column(String(50), nullable=True)
-    business_reg_no = Column(String(100), nullable=True)
-    tin_number = Column(String(50), nullable=True)
-    website = Column(String(500), nullable=True)
-    address = Column(Text, nullable=True)
-    city = Column(String(100), nullable=True)
-    company_description = Column(Text, nullable=True)
-    company_email = Column(JSON, default=[])
-    company_phone = Column(JSON, default=[])
-
-    # KYC / verification documents
-    company_logo = Column(String(500), nullable=True)
-    business_license_url = Column(String(500), nullable=True)
-    tin_certificate_url = Column(String(500), nullable=True)
-    additional_docs_urls = Column(JSON, default=[])
-
-    # Verification status (per-company; replaces users.is_verified for advertiser ad operations)
-    is_verified = Column(Boolean, default=False)
-    verification_status = Column(String(20), nullable=True)  # 'pending' | 'verified' | 'rejected'
-    verification_method = Column(String(20), nullable=True)  # 'kyc' | 'manual' | 'admin'
-    verified_at = Column(DateTime, nullable=True)
-    rejected_at = Column(DateTime, nullable=True)
-    verification_submitted_at = Column(DateTime, nullable=True)
-    verification_reviewed_at = Column(DateTime, nullable=True)
-    verification_notes = Column(Text, nullable=True)  # current reason for rejected/suspended status
-    verification_escalated = Column(Boolean, default=False)  # advertiser pressed "Notify admins" while pending
-    verification_escalated_at = Column(DateTime, nullable=True)
-
-    # Billing / wallet (per-company)
-    balance = Column(Numeric(12, 2), default=0.00)
-    currency = Column(String(3), default='ETB')
-    total_deposits = Column(Numeric(12, 2), default=0.00)
-    total_spent = Column(Numeric(12, 2), default=0.00)
-    last_transaction_at = Column(DateTime, nullable=True)
-    default_cancellation_fee_percent = Column(Numeric(5, 2), default=5.00)
-
-    # Timestamps
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    advertiser = relationship("AdvertiserProfile", back_populates="companies")
+# ============================================================================
+# AdvertiserProfile and CompanyProfile MOVED to a separate database.
+# They now live in astegni_advertiser_db, defined in:
+#     app.py modules/advertiser_models.py
+# (AdvertiserBase / AdvertiserSessionLocal / get_advertiser_db). Use those for
+# the advertiser tables; advertiser_profiles.user_id is a plain integer link to
+# users.id resolved in application code (no cross-DB ForeignKey).
+# ============================================================================
 
 
 class VideoReel(Base):

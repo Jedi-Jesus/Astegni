@@ -28,6 +28,11 @@ DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
 )
 
+ADVERTISER_DATABASE_URL = os.getenv(
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
+)
+
 def delete_all_user_data():
     """Delete all user data from the database"""
 
@@ -35,11 +40,18 @@ def delete_all_user_data():
     print("DELETE ALL USER DATA - LOCAL DATABASE CLEANUP")
     print("=" * 80)
     print("\nWARNING: This will PERMANENTLY DELETE ALL user data!")
-    print("Database:", DATABASE_URL)
+    print("User Database:", DATABASE_URL)
+    print("Advertiser Database:", ADVERTISER_DATABASE_URL)
     print("\nCurrent data:")
 
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
+
+    # Separate connection for the advertiser DB (advertiser tables were moved
+    # out of astegni_user_db into astegni_advertiser_db; Postgres cannot join
+    # or delete across databases).
+    adv_conn = psycopg.connect(ADVERTISER_DATABASE_URL)
+    adv_cur = adv_conn.cursor()
 
     try:
         # Show current counts
@@ -59,8 +71,8 @@ def delete_all_user_data():
         parent_count = cur.fetchone()[0]
         print(f"  - Parent profiles: {parent_count}")
 
-        cur.execute("SELECT COUNT(*) FROM advertiser_profiles")
-        advertiser_count = cur.fetchone()[0]
+        adv_cur.execute("SELECT COUNT(*) FROM advertiser_profiles")
+        advertiser_count = adv_cur.fetchone()[0]
         print(f"  - Advertiser profiles: {advertiser_count}")
 
         cur.execute("SELECT COUNT(*) FROM kyc_verifications")
@@ -132,31 +144,51 @@ def delete_all_user_data():
         cur.execute("DELETE FROM otps")
         print(f"   Deleted {cur.rowcount} rows")
 
-        # Step 7: Delete profile tables
-        print("[14/18] Deleting advertiser profiles...")
-        cur.execute("DELETE FROM advertiser_profiles")
-        print(f"   Deleted {cur.rowcount} rows")
-
-        print("[15/18] Deleting parent profiles...")
+        # Step 7: Delete profile tables (advertiser profiles now live in the
+        # separate advertiser DB and are handled in Step 7b below)
+        print("[14/18] Deleting parent profiles...")
         cur.execute("DELETE FROM parent_profiles")
         print(f"   Deleted {cur.rowcount} rows")
 
-        print("[16/18] Deleting student profiles...")
+        print("[15/18] Deleting student profiles...")
         cur.execute("DELETE FROM student_profiles")
         print(f"   Deleted {cur.rowcount} rows")
 
-        print("[17/18] Deleting tutor profiles...")
+        print("[16/18] Deleting tutor profiles...")
         cur.execute("DELETE FROM tutor_profiles")
         print(f"   Deleted {cur.rowcount} rows")
 
         # Step 8: Finally delete users (CASCADE will handle remaining foreign keys)
-        print("[18/18] Deleting users...")
+        print("[17/18] Deleting users...")
         cur.execute("DELETE FROM users")
         deleted_users = cur.rowcount
         print(f"   Deleted {deleted_users} rows")
 
-        # Commit all changes
+        # Step 7b: Delete ALL advertiser data from the separate advertiser DB.
+        # Children first, then parents (internal FK CASCADE means deleting
+        # advertiser_profiles alone may suffice, but explicit deletes are
+        # clearer for a wipe script).
+        print("\n[18/18] Deleting advertiser data (advertiser DB)...")
+        advertiser_tables = [
+            "campaign_invoices",
+            "advertisement_earnings",
+            "campaign_engagement",
+            "campaign_impressions",
+            "campaign_media",
+            "advertiser_transactions",
+            "advertiser_team_members",
+            "campaign_profile",
+            "brand_profile",
+            "company_profile",
+            "advertiser_profiles",
+        ]
+        for table in advertiser_tables:
+            adv_cur.execute(f"DELETE FROM {table}")
+            print(f"   Deleted {adv_cur.rowcount} rows from {table}")
+
+        # Commit all changes (both connections)
         conn.commit()
+        adv_conn.commit()
 
         # Verify deletion
         print("\n" + "=" * 80)
@@ -179,8 +211,8 @@ def delete_all_user_data():
         remaining_parents = cur.fetchone()[0]
         print(f"Remaining parent profiles: {remaining_parents}")
 
-        cur.execute("SELECT COUNT(*) FROM advertiser_profiles")
-        remaining_advertisers = cur.fetchone()[0]
+        adv_cur.execute("SELECT COUNT(*) FROM advertiser_profiles")
+        remaining_advertisers = adv_cur.fetchone()[0]
         print(f"Remaining advertiser profiles: {remaining_advertisers}")
 
         print("\n" + "=" * 80)
@@ -198,11 +230,14 @@ def delete_all_user_data():
     except Exception as e:
         print(f"\n[ERROR] {e}")
         conn.rollback()
+        adv_conn.rollback()
         raise
 
     finally:
         cur.close()
         conn.close()
+        adv_cur.close()
+        adv_conn.close()
 
 if __name__ == "__main__":
     print("\n" + "=" * 80)

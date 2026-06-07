@@ -17,7 +17,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'app.py modules'))
 
-from models import SessionLocal, User, StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile
+from models import SessionLocal, User, StudentProfile, TutorProfile, ParentProfile
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 from utils import create_access_token, create_refresh_token, hash_password
 
 router = APIRouter(prefix="/api/oauth", tags=["Google OAuth"])
@@ -217,10 +218,17 @@ def create_profile_for_role(db: Session, user_id: int, role: str) -> Optional[in
             db.flush()
             return profile.id
         elif role == "advertiser":
-            profile = AdvertiserProfile(user_id=user_id)
-            db.add(profile)
-            db.flush()
-            return profile.id
+            # AdvertiserProfile lives in the separate advertiser DB.
+            # Use a short-lived advertiser session (not the user-DB 'db').
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = AdvertiserProfile(user_id=user_id)
+                adv_db.add(profile)
+                adv_db.commit()
+                adv_db.refresh(profile)
+                return profile.id
+            finally:
+                adv_db.close()
         return None
     except Exception as e:
         print(f"Error creating profile for role {role}: {e}")
@@ -395,8 +403,14 @@ async def google_oauth_login(
         role_ids["parent"] = parent.id if parent else None
 
     if "advertiser" in user_roles:
-        advertiser = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-        role_ids["advertiser"] = advertiser.id if advertiser else None
+        # AdvertiserProfile lives in the separate advertiser DB; query it via
+        # a short-lived advertiser session instead of the user-DB 'db'.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            role_ids["advertiser"] = advertiser.id if advertiser else None
+        finally:
+            adv_db.close()
 
     # Step 4: Generate tokens
     access_token = create_access_token(

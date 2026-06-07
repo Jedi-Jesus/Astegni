@@ -28,8 +28,8 @@ load_dotenv()
 router = APIRouter(prefix="/api/advertiser", tags=["Campaign Deposit System"])
 
 DATABASE_URL = os.getenv(
-    'DATABASE_URL',
-    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
 )
 
 def get_db():

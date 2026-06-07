@@ -14,7 +14,8 @@ import os
 # Add path to models directory
 sys.path.append(os.path.join(os.path.dirname(__file__), 'app.py modules'))
 
-from models import SessionLocal, User, StudentProfile, TutorProfile, ParentProfile, AdvertiserProfile, UserProfile, OTP
+from models import SessionLocal, User, StudentProfile, TutorProfile, ParentProfile, UserProfile, OTP
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 from utils import get_current_user
 from datetime import datetime
 
@@ -97,26 +98,39 @@ async def deactivate_role(
         )
 
     # Get the role profile
-    role_model = None
-    if request.role == 'student':
-        role_model = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
-    elif request.role == 'tutor':
-        role_model = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
-    elif request.role == 'parent':
-        role_model = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
-    elif request.role == 'advertiser':
-        role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-    elif request.role == 'user':
-        role_model = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
+    # Advertiser lives in the advertiser DB: handle it on a short-lived adv session.
+    if request.role == 'advertiser':
+        adv_db = AdvertiserSessionLocal()
+        try:
+            adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            if not adv_profile:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"{request.role.capitalize()} profile not found"
+                )
+            adv_profile.is_active = False
+            adv_db.commit()
+        finally:
+            adv_db.close()
+    else:
+        role_model = None
+        if request.role == 'student':
+            role_model = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
+        elif request.role == 'tutor':
+            role_model = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+        elif request.role == 'parent':
+            role_model = db.query(ParentProfile).filter(ParentProfile.user_id == user.id).first()
+        elif request.role == 'user':
+            role_model = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
 
-    if not role_model:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{request.role.capitalize()} profile not found"
-        )
+        if not role_model:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{request.role.capitalize()} profile not found"
+            )
 
-    # Deactivate the role
-    role_model.is_active = False
+        # Deactivate the role
+        role_model.is_active = False
 
     # If this was the active role, clear it (don't auto-assign another role)
     # Let the user choose their next role from the frontend
@@ -147,9 +161,13 @@ async def deactivate_role(
             if profile and hasattr(profile, 'is_active'):
                 is_active = profile.is_active
         elif role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-            if profile and hasattr(profile, 'is_active'):
-                is_active = profile.is_active
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+                if profile and hasattr(profile, 'is_active'):
+                    is_active = profile.is_active
+            finally:
+                adv_db.close()
         elif role == 'user':
             profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
             if profile and hasattr(profile, 'is_active'):
@@ -260,11 +278,17 @@ async def remove_role(
             role_found = True
 
     elif request.role == 'advertiser':
-        advertiser = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-        if advertiser:
-            advertiser.is_active = False
-            advertiser.scheduled_deletion_at = scheduled_deletion_at
-            role_found = True
+        # Advertiser lives in the advertiser DB: handle on a short-lived adv session.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            if advertiser:
+                advertiser.is_active = False
+                advertiser.scheduled_deletion_at = scheduled_deletion_at
+                adv_db.commit()
+                role_found = True
+        finally:
+            adv_db.close()
 
     elif request.role == 'user':
         user_profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
@@ -309,9 +333,13 @@ async def remove_role(
             if profile and hasattr(profile, 'is_active'):
                 is_active = profile.is_active
         elif role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-            if profile and hasattr(profile, 'is_active'):
-                is_active = profile.is_active
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+                if profile and hasattr(profile, 'is_active'):
+                    is_active = profile.is_active
+            finally:
+                adv_db.close()
         elif role == 'user':
             profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
             if profile and hasattr(profile, 'is_active'):
@@ -389,16 +417,20 @@ async def get_role_deletion_status(
                 'days_remaining': days_remaining
             })
 
-    # Check advertiser profile
+    # Check advertiser profile (lives in the advertiser DB)
     if 'advertiser' in user.roles:
-        advertiser = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-        if advertiser and advertiser.scheduled_deletion_at and advertiser.scheduled_deletion_at > datetime.utcnow():
-            days_remaining = (advertiser.scheduled_deletion_at - datetime.utcnow()).days
-            pending_deletions.append({
-                'role': 'advertiser',
-                'scheduled_deletion_at': advertiser.scheduled_deletion_at,
-                'days_remaining': days_remaining
-            })
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            if advertiser and advertiser.scheduled_deletion_at and advertiser.scheduled_deletion_at > datetime.utcnow():
+                days_remaining = (advertiser.scheduled_deletion_at - datetime.utcnow()).days
+                pending_deletions.append({
+                    'role': 'advertiser',
+                    'scheduled_deletion_at': advertiser.scheduled_deletion_at,
+                    'days_remaining': days_remaining
+                })
+        finally:
+            adv_db.close()
 
     # Check user profile
     if 'user' in user.roles:
@@ -481,11 +513,17 @@ async def restore_role(
             role_restored = True
 
     elif request.role == 'advertiser':
-        advertiser = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-        if advertiser and advertiser.scheduled_deletion_at:
-            advertiser.scheduled_deletion_at = None
-            advertiser.is_active = True
-            role_restored = True
+        # Advertiser lives in the advertiser DB: handle on a short-lived adv session.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            if advertiser and advertiser.scheduled_deletion_at:
+                advertiser.scheduled_deletion_at = None
+                advertiser.is_active = True
+                adv_db.commit()
+                role_restored = True
+        finally:
+            adv_db.close()
 
     elif request.role == 'user':
         user_profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()

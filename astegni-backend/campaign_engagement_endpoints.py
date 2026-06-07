@@ -10,10 +10,24 @@ Handles social engagement with campaign ads:
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime
+import os
 import psycopg
 from app import get_current_user, get_db_connection
 
 router = APIRouter()
+
+
+def get_advertiser_db_connection():
+    """Get a connection to the advertiser database (astegni_advertiser_db).
+
+    Returns tuple-row cursors to match get_db_connection's style, since the
+    endpoints in this module index result rows positionally (e.g. row[0]).
+    """
+    database_url = os.getenv(
+        "ADVERTISER_DATABASE_URL",
+        "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db",
+    )
+    return psycopg.connect(database_url)
 
 
 # ============================================================================
@@ -49,7 +63,7 @@ async def engage_with_campaign(
     if engagement_type == 'comment' and not comment_text:
         raise HTTPException(status_code=400, detail="comment_text is required for comments")
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -142,7 +156,7 @@ async def remove_engagement(
     if engagement_type == 'comment':
         raise HTTPException(status_code=400, detail="Use DELETE /api/campaigns/{campaign_id}/comments/{comment_id} to delete comments")
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -192,7 +206,7 @@ async def get_campaign_comments(
     Get comments for campaign with pagination
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -201,6 +215,8 @@ async def get_campaign_comments(
         # Build query
         parent_filter = "AND parent_comment_id IS NULL" if parent_only else ""
 
+        # Step 1: fetch comment (engagement) rows from the advertiser DB.
+        # The previous JOIN to users (user DB) is no longer possible cross-database.
         cursor.execute(f"""
             SELECT
                 ce.id,
@@ -211,12 +227,10 @@ async def get_campaign_comments(
                 ce.parent_comment_id,
                 ce.created_at,
                 ce.updated_at,
-                u.email,
                 -- Count replies
                 (SELECT COUNT(*) FROM campaign_engagement
                  WHERE parent_comment_id = ce.id) as reply_count
             FROM campaign_engagement ce
-            JOIN users u ON u.id = ce.user_id
             WHERE ce.campaign_id = %s
             AND ce.engagement_type = 'comment'
             {parent_filter}
@@ -237,6 +251,22 @@ async def get_campaign_comments(
 
         total = cursor.fetchone()[0]
 
+        # Step 2: resolve user display fields (email) from the user DB.
+        user_ids = list({c[1] for c in comments if c[1] is not None})
+        email_by_user_id = {}
+        if user_ids:
+            user_conn = get_db_connection()
+            user_cursor = user_conn.cursor()
+            try:
+                user_cursor.execute(
+                    "SELECT id, email FROM users WHERE id = ANY(%s)",
+                    (user_ids,),
+                )
+                email_by_user_id = {row[0]: row[1] for row in user_cursor.fetchall()}
+            finally:
+                user_cursor.close()
+                user_conn.close()
+
         return {
             "comments": [
                 {
@@ -248,8 +278,8 @@ async def get_campaign_comments(
                     "parent_comment_id": c[5],
                     "created_at": c[6],
                     "updated_at": c[7],
-                    "user_email": c[8],
-                    "reply_count": c[9]
+                    "user_email": email_by_user_id.get(c[1]),
+                    "reply_count": c[8]
                 }
                 for c in comments
             ],
@@ -279,12 +309,14 @@ async def get_comment_replies(
     Get replies to a specific comment
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
         offset = (page - 1) * limit
 
+        # Step 1: fetch reply (engagement) rows from the advertiser DB.
+        # The previous JOIN to users (user DB) is no longer possible cross-database.
         cursor.execute("""
             SELECT
                 ce.id,
@@ -293,10 +325,8 @@ async def get_comment_replies(
                 ce.profile_type,
                 ce.comment_text,
                 ce.created_at,
-                ce.updated_at,
-                u.email
+                ce.updated_at
             FROM campaign_engagement ce
-            JOIN users u ON u.id = ce.user_id
             WHERE ce.parent_comment_id = %s
             AND ce.engagement_type = 'comment'
             ORDER BY ce.created_at ASC
@@ -315,6 +345,22 @@ async def get_comment_replies(
 
         total = cursor.fetchone()[0]
 
+        # Step 2: resolve user display fields (email) from the user DB.
+        user_ids = list({r[1] for r in replies if r[1] is not None})
+        email_by_user_id = {}
+        if user_ids:
+            user_conn = get_db_connection()
+            user_cursor = user_conn.cursor()
+            try:
+                user_cursor.execute(
+                    "SELECT id, email FROM users WHERE id = ANY(%s)",
+                    (user_ids,),
+                )
+                email_by_user_id = {row[0]: row[1] for row in user_cursor.fetchall()}
+            finally:
+                user_cursor.close()
+                user_conn.close()
+
         return {
             "replies": [
                 {
@@ -325,7 +371,7 @@ async def get_comment_replies(
                     "comment_text": r[4],
                     "created_at": r[5],
                     "updated_at": r[6],
-                    "user_email": r[7]
+                    "user_email": email_by_user_id.get(r[1])
                 }
                 for r in replies
             ],
@@ -355,7 +401,7 @@ async def delete_comment(
     Only comment author can delete
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -411,7 +457,7 @@ async def get_campaign_engagements(
     Get engagement counts and details for campaign
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -477,7 +523,7 @@ async def check_user_engagement(
     Check if current user has engaged with campaign
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -508,7 +554,7 @@ async def get_campaign_metrics(campaign_id: int):
     Get full campaign metrics including impressions and engagement
     """
 
-    conn = get_db_connection()
+    conn = get_advertiser_db_connection()
     cursor = conn.cursor()
 
     try:

@@ -25,14 +25,14 @@ load_dotenv()
 
 router = APIRouter(prefix="/api/campaign", tags=["Campaign Cancellation"])
 
-DATABASE_URL = os.getenv(
-    'DATABASE_URL',
-    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
+ADVERTISER_DATABASE_URL = os.getenv(
+    'ADVERTISER_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
 )
 
 def get_db():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    """Get database connection (advertiser DB)"""
+    return psycopg.connect(ADVERTISER_DATABASE_URL, row_factory=dict_row)
 
 
 class CampaignCancellationRequest(BaseModel):

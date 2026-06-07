@@ -22,10 +22,11 @@ from datetime import datetime
 
 # Import from modular structure (path already set up by app.py)
 from models import (
-    Connection, User, TutorProfile, StudentProfile, ParentProfile, AdvertiserProfile,
+    Connection, User, TutorProfile, StudentProfile, ParentProfile,
     ConnectionCreate, ConnectionUpdate, ConnectionResponse,
     SessionLocal
 )
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 from utils import get_current_user
 
 router = APIRouter()
@@ -53,9 +54,13 @@ def get_user_role(db: Session, user_id: int) -> Optional[str]:
     # Check parent
     if db.query(ParentProfile).filter(ParentProfile.user_id == user_id).first():
         return 'parent'
-    # Check advertiser
-    if db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first():
-        return 'advertiser'
+    # Check advertiser (lives in separate advertiser DB)
+    adv_db = AdvertiserSessionLocal()
+    try:
+        if adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first():
+            return 'advertiser'
+    finally:
+        adv_db.close()
     return None
 
 
@@ -71,8 +76,13 @@ def get_all_user_roles(db: Session, user_id: int) -> List[str]:
         roles.append('student')
     if db.query(ParentProfile).filter(ParentProfile.user_id == user_id).first():
         roles.append('parent')
-    if db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first():
-        roles.append('advertiser')
+    # Advertiser profiles live in a separate advertiser DB
+    adv_db = AdvertiserSessionLocal()
+    try:
+        if adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first():
+            roles.append('advertiser')
+    finally:
+        adv_db.close()
     return roles
 
 
@@ -112,23 +122,33 @@ async def create_connection(
     # Resolve user_id from profile_id if recipient_profile_id is provided
     if connection_data.recipient_profile_id:
         # Look up user_id from the appropriate profile table based on recipient_type
+        profile_user_id = None  # resolved profile owner's user_id
         if target_role == 'tutor':
             profile = db.query(TutorProfile).filter(TutorProfile.id == connection_data.recipient_profile_id).first()
+            profile_user_id = profile.user_id if profile else None
         elif target_role == 'student':
             profile = db.query(StudentProfile).filter(StudentProfile.id == connection_data.recipient_profile_id).first()
+            profile_user_id = profile.user_id if profile else None
         elif target_role == 'parent':
             profile = db.query(ParentProfile).filter(ParentProfile.id == connection_data.recipient_profile_id).first()
+            profile_user_id = profile.user_id if profile else None
         elif target_role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.id == connection_data.recipient_profile_id).first()
+            # Advertiser profiles live in a separate advertiser DB
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.id == connection_data.recipient_profile_id).first()
+                profile_user_id = profile.user_id if profile else None
+            finally:
+                adv_db.close()
         else:
             profile = None
 
-        if not profile:
+        if profile_user_id is None:
             raise HTTPException(
                 status_code=404,
                 detail=f"{target_role.capitalize()} profile with ID {connection_data.recipient_profile_id} not found"
             )
-        target_user_id = profile.user_id
+        target_user_id = profile_user_id
     else:
         # Use the provided recipient_id (user_id) directly
         target_user_id = connection_data.recipient_id
@@ -250,8 +270,13 @@ def get_profile_id_for_role(db: Session, user_id: int, role: str) -> Optional[in
         profile = db.query(ParentProfile).filter(ParentProfile.user_id == user_id).first()
         return profile.id if profile else None
     elif role == 'advertiser':
-        profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
-        return profile.id if profile else None
+        # Advertiser profiles live in a separate advertiser DB
+        adv_db = AdvertiserSessionLocal()
+        try:
+            profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
+            return profile.id if profile else None
+        finally:
+            adv_db.close()
     return None
 
 
@@ -810,8 +835,13 @@ async def check_connection_status_batch(
         profiles = db.query(ParentProfile).filter(ParentProfile.id.in_(target_profile_ids)).all()
         profile_to_user = {p.id: p.user_id for p in profiles}
     elif target_type == 'advertiser':
-        profiles = db.query(AdvertiserProfile).filter(AdvertiserProfile.id.in_(target_profile_ids)).all()
-        profile_to_user = {p.id: p.user_id for p in profiles}
+        # Advertiser profiles live in a separate advertiser DB
+        adv_db = AdvertiserSessionLocal()
+        try:
+            profiles = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.id.in_(target_profile_ids)).all()
+            profile_to_user = {p.id: p.user_id for p in profiles}
+        finally:
+            adv_db.close()
 
     if not profile_to_user:
         return {"connections": {}}

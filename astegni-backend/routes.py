@@ -20,6 +20,11 @@ from sqlalchemy import and_, or_, desc, func, text, cast, String
 
 # Import models and utilities
 from models import *
+# Advertiser models moved to a separate database (astegni_advertiser_db).
+from advertiser_models import (
+    AdvertiserProfile, CompanyProfile,
+    AdvertiserSessionLocal, get_advertiser_db,
+)
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -66,9 +71,14 @@ def get_role_specific_username(user: User, db: Session) -> Optional[str]:
         if parent_profile and parent_profile.username:
             return parent_profile.username
     elif active_role == "advertiser":
-        advertiser_profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
-        if advertiser_profile and advertiser_profile.username:
-            return advertiser_profile.username
+        # Advertiser profile is in the separate advertiser DB.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            advertiser_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user.id).first()
+            if advertiser_profile and advertiser_profile.username:
+                return advertiser_profile.username
+        finally:
+            adv_db.close()
 
     # No username found - user needs to set it in their profile
     return None
@@ -269,19 +279,35 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
             if existing_user.roles and user_data.role in existing_user.roles:
                 # REACTIVATION LOGIC: Check if the role is deactivated
                 role_profile = None
+                role_exists_deactivated = False
                 if user_data.role == "tutor":
                     role_profile = db.query(TutorProfile).filter(TutorProfile.user_id == existing_user.id).first()
+                    role_exists_deactivated = bool(role_profile and not role_profile.is_active)
                 elif user_data.role == "student":
                     role_profile = db.query(StudentProfile).filter(StudentProfile.user_id == existing_user.id).first()
+                    role_exists_deactivated = bool(role_profile and not role_profile.is_active)
                 elif user_data.role == "parent":
                     role_profile = db.query(ParentProfile).filter(ParentProfile.user_id == existing_user.id).first()
+                    role_exists_deactivated = bool(role_profile and not role_profile.is_active)
                 elif user_data.role == "advertiser":
-                    role_profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == existing_user.id).first()
+                    # Advertiser profile is in the separate advertiser DB: reactivate it there.
+                    adv_db = AdvertiserSessionLocal()
+                    try:
+                        adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == existing_user.id).first()
+                        if adv_profile and not adv_profile.is_active:
+                            adv_profile.is_active = True
+                            adv_db.commit()
+                            role_exists_deactivated = True
+                    finally:
+                        adv_db.close()
 
                 # If profile exists and is deactivated, reactivate it
-                if role_profile and not role_profile.is_active:
+                if role_exists_deactivated:
                     print(f"[REACTIVATION] Reactivating {user_data.role} role for user {existing_user.id}")
-                    role_profile.is_active = True
+                    # Non-advertiser role objects (still on the user-DB session) flip here;
+                    # advertiser already flipped on its own session above.
+                    if role_profile is not None:
+                        role_profile.is_active = True
                     existing_user.active_role = user_data.role
                     db.commit()
 
@@ -340,12 +366,17 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                     db.add(parent_profile)
                     db.commit()
                 elif user_data.role == "advertiser":
-                    advertiser_profile = AdvertiserProfile(
-                        user_id=existing_user.id,
-                        company_name=(getattr(user_data, 'company_name', None) or None),
-                    )
-                    db.add(advertiser_profile)
-                    db.commit()
+                    # Advertiser profile lives in the separate advertiser DB.
+                    adv_db = AdvertiserSessionLocal()
+                    try:
+                        advertiser_profile = AdvertiserProfile(
+                            user_id=existing_user.id,
+                            company_name=(getattr(user_data, 'company_name', None) or None),
+                        )
+                        adv_db.add(advertiser_profile)
+                        adv_db.commit()
+                    finally:
+                        adv_db.close()
                 elif user_data.role == "admin":
                     # Create admin_profile record using raw SQL
                     db.execute(text("""
@@ -475,11 +506,17 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
             )
             db.add(parent_profile)
         elif user_data.role == "advertiser":
-            advertiser_profile = AdvertiserProfile(
-                user_id=new_user.id,
-                company_name=(getattr(user_data, 'company_name', None) or None),
-            )
-            db.add(advertiser_profile)
+            # Advertiser profile lives in the separate advertiser DB; commit on its own session.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                advertiser_profile = AdvertiserProfile(
+                    user_id=new_user.id,
+                    company_name=(getattr(user_data, 'company_name', None) or None),
+                )
+                adv_db.add(advertiser_profile)
+                adv_db.commit()
+            finally:
+                adv_db.close()
         elif user_data.role == "admin":
             # Create admin_profile record using raw SQL
             db.execute(text("""
@@ -3286,11 +3323,15 @@ async def upload_profile_picture(
                 raise HTTPException(status_code=404, detail="Student profile not found")
             profile_id = profile.id
         elif current_user.active_role == "advertiser":
-            from models import AdvertiserProfile
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-            if not profile:
-                raise HTTPException(status_code=404, detail="Advertiser profile not found")
-            profile_id = profile.id
+            # Advertiser profile lives in the separate advertiser DB.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if not profile:
+                    raise HTTPException(status_code=404, detail="Advertiser profile not found")
+                profile_id = profile.id
+            finally:
+                adv_db.close()
         elif current_user.active_role == "parent":
             from models import ParentProfile
             profile = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
@@ -3379,11 +3420,15 @@ async def upload_cover_image(
                 raise HTTPException(status_code=404, detail="Student profile not found")
             profile_id = profile.id
         elif current_user.active_role == "advertiser":
-            from models import AdvertiserProfile
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-            if not profile:
-                raise HTTPException(status_code=404, detail="Advertiser profile not found")
-            profile_id = profile.id
+            # Advertiser profile lives in the separate advertiser DB.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if not profile:
+                    raise HTTPException(status_code=404, detail="Advertiser profile not found")
+                profile_id = profile.id
+            finally:
+                adv_db.close()
         elif current_user.active_role == "parent":
             from models import ParentProfile
             profile = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
@@ -3501,10 +3546,14 @@ async def upload_story(
                 raise HTTPException(status_code=404, detail="Parent profile not found")
             profile_id = profile.id
         elif current_user.active_role == "advertiser":
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-            if not profile:
-                raise HTTPException(status_code=404, detail="Advertiser profile not found")
-            profile_id = profile.id
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if not profile:
+                    raise HTTPException(status_code=404, detail="Advertiser profile not found")
+                profile_id = profile.id
+            finally:
+                adv_db.close()
         else:
             raise HTTPException(status_code=400, detail="Invalid role")
 
@@ -3701,8 +3750,12 @@ def get_my_stories(
             profile = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
             profile_id = profile.id if profile else None
         elif current_user.active_role == "advertiser":
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-            profile_id = profile.id if profile else None
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                profile_id = profile.id if profile else None
+            finally:
+                adv_db.close()
 
         if not profile_id:
             return {"stories": [], "total": 0}
@@ -4452,9 +4505,13 @@ def get_user_roles(
             if profile and hasattr(profile, 'is_active'):
                 is_active = profile.is_active
         elif role == 'advertiser':
-            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
-            if profile and hasattr(profile, 'is_active'):
-                is_active = profile.is_active
+            adv_db = AdvertiserSessionLocal()
+            try:
+                profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if profile and hasattr(profile, 'is_active'):
+                    is_active = profile.is_active
+            finally:
+                adv_db.close()
         elif role == 'user':
             profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
             if profile and hasattr(profile, 'is_active'):
@@ -4485,6 +4542,7 @@ def check_role_status(
 
     # Check if role is deactivated
     role_model = None
+    is_active = True
     if role == 'student':
         role_model = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
     elif role == 'tutor':
@@ -4492,11 +4550,17 @@ def check_role_status(
     elif role == 'parent':
         role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
     elif role == 'advertiser':
-        role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+        # Advertiser profile is in the separate advertiser DB.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            if adv_profile and hasattr(adv_profile, 'is_active'):
+                is_active = adv_profile.is_active
+        finally:
+            adv_db.close()
     elif role == 'user':
         role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
 
-    is_active = True
     if role_model and hasattr(role_model, 'is_active'):
         is_active = role_model.is_active
 
@@ -5021,7 +5085,14 @@ def add_user_role(
         elif new_role == 'parent':
             role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
         elif new_role == 'advertiser':
-            role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            # Advertiser profile is in the separate advertiser DB.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if adv_profile and hasattr(adv_profile, 'is_active'):
+                    is_deactivated = not adv_profile.is_active
+            finally:
+                adv_db.close()
         elif new_role == 'user':
             role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
 
@@ -5049,6 +5120,7 @@ def add_user_role(
 
     # Check if role is deactivated and reactivate it
     role_reactivated = False
+    advertiser_reactivated = False
     if new_role in (current_user.roles or []):
         role_model = None
         if new_role == 'student':
@@ -5058,16 +5130,31 @@ def add_user_role(
         elif new_role == 'parent':
             role_model = db.query(ParentProfile).filter(ParentProfile.user_id == current_user.id).first()
         elif new_role == 'advertiser':
-            role_model = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+            # Advertiser profile is in the separate advertiser DB; reactivate it there.
+            adv_db = AdvertiserSessionLocal()
+            try:
+                adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == current_user.id).first()
+                if adv_profile and not adv_profile.is_active:
+                    adv_profile.is_active = True
+                    adv_profile.scheduled_deletion_at = None
+                    adv_db.commit()
+                    # Already reactivated on the advertiser DB; signal the shared
+                    # block below to finish the OTP/token flow.
+                    advertiser_reactivated = True
+            finally:
+                adv_db.close()
         elif new_role == 'user':
             role_model = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
 
-        if role_model and hasattr(role_model, 'is_active') and not role_model.is_active:
-            # Reactivate the role
-            role_model.is_active = True
-            # CRITICAL FIX: Clear scheduled_deletion_at when reactivating
-            if hasattr(role_model, 'scheduled_deletion_at'):
-                role_model.scheduled_deletion_at = None
+        user_db_role_deactivated = bool(role_model and hasattr(role_model, 'is_active') and not role_model.is_active)
+        if user_db_role_deactivated or advertiser_reactivated:
+            # Reactivate the role. Advertiser was already flipped on its own session;
+            # user-DB role objects flip here.
+            if user_db_role_deactivated:
+                role_model.is_active = True
+                # CRITICAL FIX: Clear scheduled_deletion_at when reactivating
+                if hasattr(role_model, 'scheduled_deletion_at'):
+                    role_model.scheduled_deletion_at = None
             role_reactivated = True
 
             # DO NOT automatically set as active role - let user choose
@@ -5201,9 +5288,19 @@ def add_user_role(
         db.add(parent_profile)
         new_parent_created = True
 
-    elif new_role == "advertiser" and not hasattr(current_user, 'advertiser_profile'):
-        advertiser_profile = AdvertiserProfile(user_id=current_user.id)
-        db.add(advertiser_profile)
+    elif new_role == "advertiser":
+        # Advertiser profile lives in the separate advertiser DB; create it there
+        # only if one does not already exist for this user.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            existing_adv = adv_db.query(AdvertiserProfile).filter(
+                AdvertiserProfile.user_id == current_user.id
+            ).first()
+            if not existing_adv:
+                adv_db.add(AdvertiserProfile(user_id=current_user.id))
+                adv_db.commit()
+        finally:
+            adv_db.close()
 
     elif new_role == "user" and not current_user.user_profile:
         user_profile = UserProfile(user_id=current_user.id)
@@ -5540,8 +5637,13 @@ def verify_registration_otp(
         student_profile = StudentProfile(user_id=new_user.id)
         db.add(student_profile)
     elif role == "advertiser":
-        advertiser_profile = AdvertiserProfile(user_id=new_user.id)
-        db.add(advertiser_profile)
+        # Advertiser profile lives in the separate advertiser DB.
+        adv_db = AdvertiserSessionLocal()
+        try:
+            adv_db.add(AdvertiserProfile(user_id=new_user.id))
+            adv_db.commit()
+        finally:
+            adv_db.close()
     elif role == "parent":
         parent_profile = ParentProfile(user_id=new_user.id, rating=2.0, rating_count=0)
         db.add(parent_profile)
@@ -7749,17 +7851,16 @@ async def update_parent_profile(
 @router.get("/api/advertiser/profile")
 async def get_advertiser_profile(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """Get current user's advertiser profile"""
-    from models import AdvertiserProfile
-
     # Check if user has advertiser role
     if "advertiser" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-    # Get or create advertiser profile
-    advertiser_profile = db.query(AdvertiserProfile).filter(
+    # Get or create advertiser profile (advertiser DB)
+    advertiser_profile = adv_db.query(AdvertiserProfile).filter(
         AdvertiserProfile.user_id == current_user.id
     ).first()
 
@@ -7773,9 +7874,9 @@ async def get_advertiser_profile(
             hero_title=[],
             hero_subtitle=[]
         )
-        db.add(advertiser_profile)
-        db.commit()
-        db.refresh(advertiser_profile)
+        adv_db.add(advertiser_profile)
+        adv_db.commit()
+        adv_db.refresh(advertiser_profile)
 
     # Build name based on naming convention
     # Ethiopian: first_name + father_name + grandfather_name
@@ -7826,17 +7927,16 @@ async def get_advertiser_profile(
 async def update_advertiser_profile(
     profile_data: AdvertiserProfileUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """Update advertiser profile"""
-    from models import AdvertiserProfile
-
     # Check if user has advertiser role
     if "advertiser" not in current_user.roles:
         raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-    # Get advertiser profile
-    advertiser_profile = db.query(AdvertiserProfile).filter(
+    # Get advertiser profile (advertiser DB)
+    advertiser_profile = adv_db.query(AdvertiserProfile).filter(
         AdvertiserProfile.user_id == current_user.id
     ).first()
 
@@ -7878,20 +7978,20 @@ async def update_advertiser_profile(
         from currency_utils import get_currency_from_country
         current_user.currency = get_currency_from_country(update_data['country_code'])
 
+    # User-table fields commit on the user DB; advertiser fields on the advertiser DB.
     db.commit()
-    db.refresh(advertiser_profile)
+    adv_db.commit()
+    adv_db.refresh(advertiser_profile)
 
     return {"message": "Profile updated successfully", "id": advertiser_profile.id}
 
 @router.get("/api/advertiser/{advertiser_id}")
 async def get_advertiser_by_id(
     advertiser_id: int,
-    db: Session = Depends(get_db)
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """Get specific advertiser profile (public view)"""
-    from models import AdvertiserProfile
-
-    advertiser_profile = db.query(AdvertiserProfile).filter(
+    advertiser_profile = adv_db.query(AdvertiserProfile).filter(
         AdvertiserProfile.id == advertiser_id
     ).first()
 
@@ -7913,7 +8013,8 @@ async def upload_campaign_media(
     campaign_id: Optional[int] = Form(None),
     brand_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """Upload campaign media (image or video) to Backblaze B2 with organized folder structure and save to database"""
     import psycopg
@@ -7923,8 +8024,8 @@ async def upload_campaign_media(
         if "advertiser" not in current_user.roles:
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-        # Get advertiser profile to use profile_id instead of user_id
-        advertiser_profile = db.query(AdvertiserProfile).filter(
+        # Get advertiser profile to use profile_id instead of user_id (advertiser DB)
+        advertiser_profile = adv_db.query(AdvertiserProfile).filter(
             AdvertiserProfile.user_id == current_user.id
         ).first()
 
@@ -7968,7 +8069,7 @@ async def upload_campaign_media(
         resolved_company_id = None
         if brand_id:
             try:
-                with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+                with psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL')) as _conn:
                     with _conn.cursor() as _cur:
                         _cur.execute(
                             "SELECT company_id FROM brand_profile WHERE id = %s",
@@ -7981,7 +8082,7 @@ async def upload_campaign_media(
                 pass  # Fall through to advertiser's single-company resolver
 
         try:
-            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+            with psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL')) as _conn:
                 with _conn.cursor() as _cur:
                     company_id, company_name = resolve_company_for_upload(
                         _cur, advertiser_profile.id, resolved_company_id,
@@ -8017,7 +8118,7 @@ async def upload_campaign_media(
         if campaign_id and brand_id:
             try:
                 # Get database connection (using psycopg directly)
-                conn = psycopg.connect(os.getenv('DATABASE_URL'))
+                conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'))
                 cursor = conn.cursor()
 
                 cursor.execute("""
@@ -8081,7 +8182,7 @@ async def get_campaign_media(
 
     try:
         # Get database connection
-        conn = psycopg.connect(os.getenv('DATABASE_URL'), row_factory=dict_row)
+        conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'), row_factory=dict_row)
         cursor = conn.cursor()
 
         # Build query with optional filters
@@ -8137,7 +8238,7 @@ async def delete_campaign_media(
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
         # Get database connection
-        conn = psycopg.connect(os.getenv('DATABASE_URL'))
+        conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'))
         cursor = conn.cursor()
 
         # Get media info to verify ownership
@@ -8207,7 +8308,8 @@ async def upload_company_document(
     file: UploadFile = File(...),
     document_type: str = Form(...),  # business_license, tin_certificate, company_logo, additional_doc
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """
     Upload company verification document to Backblaze B2.
@@ -8223,8 +8325,8 @@ async def upload_company_document(
         if "advertiser" not in current_user.roles:
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-        # Get advertiser profile
-        advertiser_profile = db.query(AdvertiserProfile).filter(
+        # Get advertiser profile (advertiser DB)
+        advertiser_profile = adv_db.query(AdvertiserProfile).filter(
             AdvertiserProfile.user_id == current_user.id
         ).first()
 
@@ -8265,7 +8367,7 @@ async def upload_company_document(
         import psycopg
         from advertiser_b2_paths import resolve_company_for_upload, company_folder, CompanyResolutionError
         try:
-            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn:
+            with psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL')) as _conn:
                 with _conn.cursor() as _cur:
                     resolved_company_id, resolved_company_name = resolve_company_for_upload(
                         _cur, advertiser_profile.id,
@@ -8304,7 +8406,7 @@ async def upload_company_document(
 
         # Also write to the new company_profile row so per-company UI sees it.
         try:
-            with psycopg.connect(os.getenv('DATABASE_URL')) as _conn2:
+            with psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL')) as _conn2:
                 with _conn2.cursor() as _cur2:
                     if document_type == 'business_license':
                         _cur2.execute(
@@ -8355,7 +8457,8 @@ async def upload_company_document(
 @router.post("/api/advertiser/submit-verification")
 async def submit_company_verification(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """
     Submit company for verification after all required documents are uploaded.
@@ -8366,8 +8469,8 @@ async def submit_company_verification(
         if "advertiser" not in current_user.roles:
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-        # Get advertiser profile
-        advertiser_profile = db.query(AdvertiserProfile).filter(
+        # Get advertiser profile (advertiser DB)
+        advertiser_profile = adv_db.query(AdvertiserProfile).filter(
             AdvertiserProfile.user_id == current_user.id
         ).first()
 
@@ -8418,7 +8521,8 @@ async def submit_company_verification(
 @router.get("/api/advertiser/verification-status")
 async def get_company_verification_status(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    adv_db: Session = Depends(get_advertiser_db)
 ):
     """Get the current company verification status and uploaded documents."""
     try:
@@ -8426,8 +8530,8 @@ async def get_company_verification_status(
         if "advertiser" not in current_user.roles:
             raise HTTPException(status_code=403, detail="User does not have advertiser role")
 
-        # Get advertiser profile
-        advertiser_profile = db.query(AdvertiserProfile).filter(
+        # Get advertiser profile (advertiser DB)
+        advertiser_profile = adv_db.query(AdvertiserProfile).filter(
             AdvertiserProfile.user_id == current_user.id
         ).first()
 

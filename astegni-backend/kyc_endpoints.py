@@ -25,8 +25,9 @@ import os
 
 from models import (
     SessionLocal, User, KYCVerification, KYCVerificationAttempt,
-    TutorProfile, StudentProfile, ParentProfile, AdvertiserProfile
+    TutorProfile, StudentProfile, ParentProfile
 )
+from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
 from utils import get_current_user
 
 def _nonempty(v) -> bool:
