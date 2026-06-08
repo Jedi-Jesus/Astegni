@@ -88,16 +88,6 @@ class AffiliateSettings(BaseModel):
     cookie_duration_days: int
     tier_bonuses: Dict = {}
 
-class CampaignPackage(BaseModel):
-    package_name: str
-    price: float
-    currency: str = "ETB"
-    duration_days: int
-    impressions_limit: Optional[int] = None
-    clicks_limit: Optional[int] = None
-    features: List[str]
-    is_featured: bool = False
-
 # Create router
 router = APIRouter(prefix="/api/admin/pricing", tags=["pricing"])
 
@@ -586,108 +576,8 @@ async def save_affiliate_settings(settings: AffiliateSettings):
             cursor.close()
             conn.close()
 
-# Campaign Package Endpoints
-@router.get("/campaign-packages")
-async def get_campaign_packages():
-    """Get all campaign advertising packages"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT * FROM campaign_packages
-            ORDER BY price ASC
-        """)
-
-        columns = [desc[0] for desc in cursor.description]
-        packages = []
-
-        for row in cursor.fetchall():
-            package = dict(zip(columns, row))
-            packages.append(package)
-
-        return {"success": True, "packages": packages}
-
-    except Exception as e:
-        if "does not exist" in str(e):
-            return {"success": True, "packages": []}
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
-
-@router.post("/campaign-packages")
-async def save_campaign_package(package: CampaignPackage):
-    """Save or update campaign package"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Create table if it doesn't exist
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS campaign_packages (
-                id SERIAL PRIMARY KEY,
-                package_name VARCHAR(100) UNIQUE NOT NULL,
-                price DECIMAL(10, 2) NOT NULL,
-                currency VARCHAR(10) DEFAULT 'ETB',
-                duration_days INTEGER NOT NULL,
-                impressions_limit INTEGER,
-                clicks_limit INTEGER,
-                features JSONB DEFAULT '[]',
-                is_featured BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-
-        # Upsert campaign package
-        cursor.execute("""
-            INSERT INTO campaign_packages (
-                package_name, price, currency, duration_days,
-                impressions_limit, clicks_limit, features, is_featured, updated_at
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (package_name)
-            DO UPDATE SET
-                price = EXCLUDED.price,
-                currency = EXCLUDED.currency,
-                duration_days = EXCLUDED.duration_days,
-                impressions_limit = EXCLUDED.impressions_limit,
-                clicks_limit = EXCLUDED.clicks_limit,
-                features = EXCLUDED.features,
-                is_featured = EXCLUDED.is_featured,
-                updated_at = EXCLUDED.updated_at
-        """, (
-            package.package_name,
-            package.price,
-            package.currency,
-            package.duration_days,
-            package.impressions_limit,
-            package.clicks_limit,
-            json.dumps(package.features),
-            package.is_featured,
-            datetime.now()
-        ))
-
-        conn.commit()
-        return {"success": True, "message": f"Campaign package {package.package_name} saved"}
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
+# NOTE: legacy /campaign-packages endpoints removed. Advertising is priced via
+# CPI view tiers (cpi_settings.view_tier_premiums) managed by the CPI endpoints.
 
 # Export router
 __all__ = ['router']

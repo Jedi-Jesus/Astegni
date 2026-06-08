@@ -398,34 +398,11 @@ window.openJobDetailModal = function(jobId) {
 };
 
 // ============================================
-// PACKAGE & AD FUNCTIONS (for advertiser profiles)
+// AD FUNCTIONS (for advertiser profiles)
 // ============================================
-
-window.selectPackage = function(packageId) {
-    Utils.showToast(`✅ Package ${packageId} selected! Redirecting to checkout...`, "success");
-    setTimeout(() => {
-        window.location.href = "#checkout";
-    }, 1500);
-};
-
-window.showPackageType = function(type) {
-    document.querySelectorAll('.package-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    const grid = document.getElementById('packagesGrid');
-    if (grid && window.AdPackageManager) {
-        grid.innerHTML = window.AdPackageManager.getPackagesHTML(type);
-    }
-};
-
-window.submitCustomPackage = function() {
-    Utils.showToast("📧 Custom package request sent! We'll contact you within 24 hours.", "success");
-    if (window.modalsManager) {
-        window.modalsManager.close('promoAnalyticsModal');
-    }
-};
+// NOTE: legacy ad-package handlers (selectPackage / showPackageType /
+// submitCustomPackage) removed. Advertising pricing now uses CPI view tiers
+// via the "View pricing" CTA (advertise-with-us-cta.js).
 
 window.switchMetric = function(metric) {
     if (window.analyticsManager) {

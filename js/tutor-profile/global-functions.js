@@ -370,10 +370,8 @@ function openAdAnalyticsModal(event) {
         modal.style.opacity = '1';
         document.body.style.overflow = 'hidden';
 
-        // Initialize content if AdPackageManager exists
-        if (typeof AdPackageManager !== 'undefined' && AdPackageManager.renderPackages) {
-            AdPackageManager.renderPackages();
-        }
+        // Ad-package rendering removed: pricing now uses CPI view tiers
+        // via the "View pricing" CTA (advertise-with-us-cta.js).
 
         setTimeout(() => {
             if (typeof animateAnalyticsNumbers !== 'undefined') animateAnalyticsNumbers();

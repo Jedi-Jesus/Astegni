@@ -19,49 +19,12 @@ if (!window.modalsManager) {
 
 
 
-// Global function for package selection
-window.selectPackage = function(packageId) {
-    const pkg = AdPackageManager.packages.find(p => p.id === packageId);
-    if (!pkg) return;
-    
-    Utils.showToast(`✅ Selected: ${pkg.title} - ${pkg.pricePerDay} ${pkg.currency}/day`, "success");
-    
-    // You can add checkout redirection here
-    setTimeout(() => {
-        // window.location.href = `/checkout?package=${packageId}`;
-        console.log('Proceed to checkout with:', pkg);
-    }, 1500);
-};
-
-
 // ============================================
 // GLOBAL FUNCTION HANDLERS
 // ============================================
-
-// Package selection handlers
-window.showPackageType = function(type) {
-    document.querySelectorAll('.package-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    const grid = document.getElementById('packagesGrid');
-    if (grid) {
-        grid.innerHTML = getPackagesHTML(type);
-    }
-};
-
-window.selectPackage = function(packageId) {
-    Utils.showToast(`✅ Package ${packageId} selected! Redirecting to checkout...`, "success");
-    setTimeout(() => {
-        window.location.href = "#checkout";
-    }, 1500);
-};
-
-window.submitCustomPackage = function() {
-    Utils.showToast("📧 Custom package request sent! We'll contact you within 24 hours.", "success");
-    window.modalsManager.close('promoAnalyticsModal');
-};
+// NOTE: legacy ad-package handlers (selectPackage / showPackageType /
+// submitCustomPackage) removed. Advertising pricing now uses CPI view tiers
+// via the "View pricing" CTA (advertise-with-us-cta.js).
 
 // Switch metric for analytics
 window.switchMetric = function(metric) {
@@ -104,8 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     AIInsights.init();
 
-    // Enhance ad analytics modal
-AdPackageManager.renderPackages();
+    // Ad-package rendering removed: advertising pricing now lives in the
+    // "View pricing" CTA (advertise-with-us-cta.js), which fetches the CPI
+    // view tiers from /api/cpi/full-rates. Legacy AdPackageManager is gone.
 
     // Ensure all modal close buttons work
     document.querySelectorAll('.modal').forEach(modal => {

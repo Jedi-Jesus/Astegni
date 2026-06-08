@@ -40,10 +40,8 @@ class InitializationManager {
             window.AIInsights.init();
         }
 
-        // Render ad packages if available
-        if (window.AdPackageManager) {
-            window.AdPackageManager.renderPackages();
-        }
+        // Ad-package rendering removed: pricing now lives in the "View pricing"
+        // CTA (advertise-with-us-cta.js) using CPI view tiers.
     }
 
     static setupModalHandlers() {

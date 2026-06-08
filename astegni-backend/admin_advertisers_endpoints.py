@@ -6,26 +6,23 @@ Database Sources:
 - astegni_advertiser_db: advertiser_profiles, company_profile, brand_profile, campaign_profile,
                          campaign_impressions, campaign_engagement, campaign_media
 - astegni_user_db: users (resolved separately; Postgres cannot join across databases)
-- astegni_admin_db: brand_packages (pricing packages)
+
+Pricing note: advertising is priced via CPI view tiers (cpi_settings.view_tier_premiums in
+astegni_admin_db). The legacy brand_packages system has been removed.
 
 Table Relationships:
 - advertiser_profiles: id, user_id, username, company_name, bio, logo, brand_ids[] (array of brand IDs)
 - brand_profile: id, name, bio, quote, thumbnail, social_links, hero_title, hero_subtitle, badge,
                  status, status_by, status_reason, status_at, is_verified, is_active,
-                 created_at, updated_at, phone, email, location, campaign_ids[] (array of campaign IDs),
-                 package_id (references brand_packages.id in admin db)
+                 created_at, updated_at, phone, email, location, campaign_ids[] (array of campaign IDs)
 - campaign_profile: id, name, description, brand_id (FK to brand_profile.id), objective, is_verified,
-                    verification_status, status_by, status_reason, status_at, campaign_package_id
-                    (references brand_packages.id in admin db),
+                    verification_status, status_by, status_reason, status_at,
                     start_date, target_audience, target_location, impressions, clicks, etc.
-- brand_packages (in admin db): id, name, price, etc.
 
 Relationships:
 - advertiser_profiles.brand_ids[] contains brand IDs -> join: bp.id = ANY(ap.brand_ids)
 - campaign_profile.brand_id -> brand_profile.id (proper FK) -> join: cp.brand_id = bp.id
 - brand_profile.campaign_ids[] (deprecated, kept for backward compatibility)
-- brand_profile.package_id -> brand_packages.id (cross-database lookup)
-- campaign_profile.campaign_package_id -> brand_packages.id (cross-database lookup)
 """
 
 from fastapi import APIRouter, HTTPException, Query
@@ -45,7 +42,7 @@ USER_DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
 )
 
-# Admin Database URL - brand_packages table is in astegni_admin_db
+# Admin Database URL (used for admin-side lookups, e.g. CPI/pricing settings)
 ADMIN_DATABASE_URL = os.getenv(
     'ADMIN_DATABASE_URL',
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
@@ -116,21 +113,8 @@ async def get_brands(
     limit: int = Query(default=20, le=100)
 ):
     """Get all brands with optional filtering.
-    Joins with advertiser_profiles via brand_ids array: bp.id = ANY(ap.brand_ids)
-    Fetches brand_packages from astegni_admin_db"""
+    Joins with advertiser_profiles via brand_ids array: bp.id = ANY(ap.brand_ids)"""
     try:
-        # First, fetch all brand_packages from admin database
-        packages_map = {}
-        try:
-            with get_admin_db() as admin_conn:
-                with admin_conn.cursor() as admin_cur:
-                    admin_cur.execute("SELECT id, package_title, package_price FROM brand_packages")
-                    for pkg in admin_cur.fetchall():
-                        packages_map[pkg['id']] = {'name': pkg['package_title'], 'price': pkg['package_price']}
-        except Exception as pkg_error:
-            print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
-            # Continue without packages - they'll show as "No Package"
-
         with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Post-restructure JOIN chain (all in astegni_advertiser_db):
@@ -186,8 +170,6 @@ async def get_brands(
         # Transform to match frontend expectations
         result = []
         for b in brands:
-            package_id = b.get('package_id')
-            package_info = packages_map.get(package_id, {}) if package_id else {}
             u = users_map.get(b.get('advertiser_user_id'))
 
             result.append({
@@ -205,10 +187,7 @@ async def get_brands(
                 'company_name': b.get('company_name'),
                 'company_logo': b.get('company_logo'),
                 'advertiser_name': _full_name(u),
-                'advertiser_email': u['email'] if u else None,
-                'package_id': package_id,
-                'package_name': package_info.get('name'),
-                'package_price': float(package_info['price']) if package_info.get('price') else None
+                'advertiser_email': u['email'] if u else None
             })
 
         return {
@@ -303,21 +282,8 @@ async def get_campaigns(
     limit: int = Query(default=20, le=100)
 ):
     """Get all campaigns with optional filtering.
-    Joins with brand_profile using brand_id (proper foreign key relationship)
-    Fetches brand_packages from astegni_admin_db"""
+    Joins with brand_profile using brand_id (proper foreign key relationship)"""
     try:
-        # First, fetch all brand_packages from admin database
-        packages_map = {}
-        try:
-            with get_admin_db() as admin_conn:
-                with admin_conn.cursor() as admin_cur:
-                    admin_cur.execute("SELECT id, package_title, package_price FROM brand_packages")
-                    for pkg in admin_cur.fetchall():
-                        packages_map[pkg['id']] = {'name': pkg['package_title'], 'price': pkg['package_price']}
-        except Exception as pkg_error:
-            print(f"[Warning] Could not fetch brand_packages from admin db: {pkg_error}")
-            # Continue without packages - they'll show as "No Package"
-
         with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Build query - join with brand_profile using brand_id (proper foreign key relationship)
@@ -454,9 +420,7 @@ async def get_campaigns(
                         'target_audience': c.get('target_audiences', []),
                         'brand_name': c.get('brand_name'),
                         'brand_logo': c.get('brand_logo'),
-                        'brand_id': c.get('brand_id'),
-                        'package_name': 'Custom',
-                        'package_price': None
+                        'brand_id': c.get('brand_id')
                     })
 
                 return {

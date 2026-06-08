@@ -284,9 +284,8 @@ app.include_router(pricing_router)
 from base_price_endpoints import router as base_price_router
 app.include_router(base_price_router)
 
-# Include campaign packages routes
-from campaign_packages_endpoints import router as campaign_packages_router
-app.include_router(campaign_packages_router)
+# Legacy brand/campaign packages routes removed: advertising pricing now uses
+# CPI view tiers (cpi_settings.view_tier_premiums) served by the CPI routes below.
 
 # Include CPI (Cost Per Impression) settings routes
 from cpi_settings_endpoints import router as cpi_settings_router
