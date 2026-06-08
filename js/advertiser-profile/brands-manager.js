@@ -1766,7 +1766,10 @@ const BrandsManager = {
 
     // Show info about already used budget
     showUsedBudgetInfo(campaign) {
-        const budgetGroup = document.querySelector('#campaign-budget-input').closest('.campaign-form-group');
+        const budgetInputEl = document.querySelector('#campaign-budget-input');
+        const budgetGroup = budgetInputEl ? budgetInputEl.closest('.campaign-form-group') : null;
+        // Budget input was removed in favor of view-tier packages; nothing to annotate.
+        if (!budgetGroup) return;
 
         // Remove existing info if any
         const existingInfo = budgetGroup.querySelector('.used-budget-info');
@@ -1833,10 +1836,15 @@ const BrandsManager = {
                             'logo': 0.02,
                             'in-session-skyscrapper-banner': 0.05
                         },
+                        viewTierPremiums: Array.isArray(data.viewTierPremiums) ? data.viewTierPremiums : [],
+                        advancePaymentPercent: (data.advancePaymentPercent != null) ? data.advancePaymentPercent : 20,
                         currency: data.currency || CurrencyManager.getCurrency()
                     };
 
                     badge.classList.remove('loading');
+
+                    // Render the view-tier package options for selection
+                    this.renderViewTierPackages();
 
                     // Calculate initial CPI based on current form selections
                     this.updateCpiDisplay();
@@ -1861,10 +1869,74 @@ const BrandsManager = {
                 placementPremiums: { 'leaderboard-banner': 0.01, 'logo': 0.02, 'in-session-skyscrapper-banner': 0.05 },
                 currency: CurrencyManager.getSymbol()
             };
+            this.cpiRates.viewTierPremiums = [];
+            this.cpiRates.advancePaymentPercent = 20;
             badge.classList.remove('loading');
+            this.renderViewTierPackages();
             this.updateCpiDisplay();
             this.setupCpiListeners();
         }
+    },
+
+    // Render selectable view-tier package cards (source: CPI settings view tiers)
+    renderViewTierPackages() {
+        const container = document.getElementById('view-tier-packages');
+        if (!container) return;
+
+        const tiers = (this.cpiRates?.viewTierPremiums || [])
+            .slice()
+            .sort((a, b) => (a.view_count || 0) - (b.view_count || 0));
+        const currency = this.cpiRates?.currency || CurrencyManager.getCurrency();
+
+        if (!tiers.length) {
+            container.innerHTML = `
+                <div class="view-tier-empty" style="padding:12px;border:1px dashed var(--border);border-radius:8px;color:var(--text-secondary);font-size:0.9rem;">
+                    <i class="fas fa-info-circle"></i> No packages are configured yet. Please contact the Astegni team.
+                </div>`;
+            this.selectedViewTier = null;
+            const hidden = document.getElementById('campaign-view-tier-input');
+            if (hidden) hidden.value = '';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="view-tier-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+                ${tiers.map((t) => {
+                    const views = Number(t.view_count) || 0;
+                    const perView = Number(t.base_cpi != null ? t.base_cpi : t.premium) || 0;
+                    const label = (t.label || '').trim();
+                    return `
+                        <div class="view-tier-card" data-views="${views}" data-perview="${perView}"
+                             onclick="BrandsManager.selectViewTier(${views}, ${perView})"
+                             style="cursor:pointer;border:2px solid var(--border);border-radius:10px;padding:12px;text-align:center;transition:all .15s;">
+                            ${label ? `<div class="view-tier-badge" style="font-size:0.7rem;font-weight:700;color:#667eea;text-transform:uppercase;">${label}</div>` : ''}
+                            <div class="view-tier-views" style="font-size:1.15rem;font-weight:700;color:var(--text);">${views.toLocaleString()}</div>
+                            <div style="font-size:0.75rem;color:var(--text-secondary);">views</div>
+                            <div class="view-tier-rate" style="margin-top:6px;font-size:0.85rem;color:var(--text-secondary);">${perView.toFixed(2)} ${currency}/view</div>
+                        </div>`;
+                }).join('')}
+            </div>`;
+
+        // Auto-select the first tier so the form always has a valid selection.
+        this.selectViewTier(Number(tiers[0].view_count) || 0,
+                            Number(tiers[0].base_cpi != null ? tiers[0].base_cpi : tiers[0].premium) || 0);
+    },
+
+    // Handle view-tier package selection
+    selectViewTier(views, perView) {
+        this.selectedViewTier = { view_count: views, base_cpi: perView };
+        const hidden = document.getElementById('campaign-view-tier-input');
+        if (hidden) hidden.value = String(views);
+
+        document.querySelectorAll('#view-tier-packages .view-tier-card').forEach(card => {
+            const isSel = Number(card.dataset.views) === Number(views);
+            card.style.borderColor = isSel ? '#667eea' : 'var(--border)';
+            card.style.background = isSel ? 'rgba(102,126,234,0.08)' : 'transparent';
+            card.classList.toggle('selected', isSel);
+        });
+
+        // Recompute the CPI/cost display for the new commitment.
+        this.updateCpiDisplay();
     },
 
     // Setup event listeners for CPI recalculation
@@ -2852,16 +2924,28 @@ const BrandsManager = {
         const selectedAudiences = this.getSelectedAudiences();
         const selectedRegions = this.getSelectedRegions();
         const location = document.getElementById('campaign-location-input')?.value || 'global';
-        const budget = parseFloat(document.getElementById('campaign-budget-input').value) || 0;
 
-        console.log('[BrandsManager] Form data gathered:', { selectedObjectives, selectedAudiences, location, budget });
+        // Selected view-tier package (replaces the old manual budget input)
+        const tier = this.selectedViewTier;
+        if (!tier || !(tier.view_count > 0)) {
+            alert('Please select a package (view tier) before continuing.');
+            return;
+        }
 
-        // NOTE: Balance validation removed - using 20% deposit model with external payment gateway
-        // Campaign creation proceeds directly to backend, which returns Chapa payment link
-
-        // Calculate CPI breakdown
+        // Pricing: tier per-view rate + audience/location premiums (placement removed from form).
         const cpiBreakdown = this.calculateCpiBreakdown();
-        console.log('[BrandsManager] CPI breakdown:', cpiBreakdown);
+        const targetingPremium = (cpiBreakdown.audiencePremium || 0)
+                               + (cpiBreakdown.locationPremium || 0)
+                               + (cpiBreakdown.regionExclusionPremium || 0);
+        const effectiveCpi = (tier.base_cpi || 0) + targetingPremium;
+        const views = tier.view_count;
+        const totalCost = views * effectiveCpi;
+
+        const advancePercent = (this.cpiRates?.advancePaymentPercent != null)
+            ? this.cpiRates.advancePaymentPercent : 20;
+        const advanceAmount = totalCost * (advancePercent / 100);
+
+        console.log('[BrandsManager] Package pricing:', { views, effectiveCpi, totalCost, advancePercent, advanceAmount });
 
         // Prepare confirmation data
         const confirmationData = {
@@ -2871,23 +2955,24 @@ const BrandsManager = {
             // Targeting summary
             audiences: this.formatAudiencesForDisplay(selectedAudiences),
             location: this.formatLocationForDisplay(location, selectedRegions),
-            placements: this.formatPlacementsForDisplay(),
 
-            // CPI breakdown
-            base_cpi: cpiBreakdown.baseRate,
+            // Package + CPI breakdown
+            view_count: views,
+            tier_base_cpi: tier.base_cpi || 0,
             audience_premium: cpiBreakdown.audiencePremium,
             location_premium: cpiBreakdown.locationPremium + cpiBreakdown.regionExclusionPremium,
-            placement_premium: cpiBreakdown.placementPremium,
-            total_cpi: cpiBreakdown.totalCpi,
+            total_cpi: effectiveCpi,
 
-            // Budget info
-            deposit_amount: budget,
-            estimated_impressions: Math.floor(budget / cpiBreakdown.totalCpi),
+            // Cost + advance payment (advertiser uploads a receipt for the advance)
+            total_cost: totalCost,
+            advance_percent: advancePercent,
+            advance_amount: advanceAmount,
+            estimated_impressions: views,
 
             // Terms
             cancellation_fee_percent: 5,
             min_threshold: 100,
-            currency: this.cpiCurrency || CurrencyManager.getCurrency()
+            currency: this.cpiRates?.currency || CurrencyManager.getCurrency()
         };
 
         console.log('[BrandsManager] Confirmation data prepared:', confirmationData);
@@ -2939,7 +3024,7 @@ const BrandsManager = {
 
             // For edit mode, budget input contains the NEW remaining balance to add
             // We need to calculate the budget change
-            const newBudgetInput = parseFloat(document.getElementById('campaign-budget-input').value) || 0;
+            const newBudgetInput = parseFloat(document.getElementById('campaign-budget-input')?.value) || 0;
 
             // For national targeting, get user's location and country code
             let nationalLocation = null;
@@ -3201,7 +3286,11 @@ const BrandsManager = {
                 objective: selectedObjectives.join(', '),
                 target_audiences: selectedAudiences,
                 target_placements: selectedPlacements,
-                planned_budget: parseFloat(document.getElementById('campaign-budget-input').value) || 0,
+                // View-tier package model (replaces manual budget):
+                view_count: confirmationData.view_count,
+                total_cost: confirmationData.total_cost,
+                advance_amount: confirmationData.advance_amount,
+                advance_percent: confirmationData.advance_percent,
                 start_date: document.getElementById('campaign-start-date-input').value,
                 target_location: location,
                 target_regions: location === 'regional' ? selectedRegions : [],
@@ -3211,7 +3300,7 @@ const BrandsManager = {
                 cpi_rate: confirmationData.total_cpi
             };
 
-            // Use new 20% deposit endpoint
+            // Use new deposit/package endpoint
             const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/create-with-deposit`, {
                 method: 'POST',
                 headers: {
@@ -3221,11 +3310,42 @@ const BrandsManager = {
                 body: JSON.stringify(campaignData)
             });
 
+            // After the campaign is created, upload the payment receipt (if attached)
+            // so the advance can be verified by an admin before ad upload.
+            const uploadReceiptForCampaign = async (campaignId) => {
+                const receiptFile = confirmationData.receiptFile;
+                if (!receiptFile || !campaignId) return;
+                try {
+                    const fd = new FormData();
+                    fd.append('file', receiptFile);
+                    if (confirmationData.advance_amount != null) {
+                        fd.append('amount', String(confirmationData.advance_amount));
+                    }
+                    const rcptResp = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaignId}/upload-receipt`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: fd
+                    });
+                    if (!rcptResp.ok) {
+                        console.error('[BrandsManager] Receipt upload failed:', await rcptResp.text());
+                        if (window.Utils?.showToast) {
+                            window.Utils.showToast('⚠️ Campaign created, but receipt upload failed. Re-upload it from the campaign.', 'warning');
+                        }
+                    }
+                } catch (err) {
+                    console.error('[BrandsManager] Receipt upload error:', err);
+                }
+            };
+
             if (response.ok) {
                 const result = await response.json();
 
-                // Campaign created successfully
-                if (result.payment && result.payment.payment_url) {
+                // Upload the advance-payment receipt now that we have a campaign id.
+                await uploadReceiptForCampaign(result.campaign?.id);
+
+                // Campaign created successfully. With the receipt-based model there is
+                // no external payment URL; a created campaign (result.campaign) is enough.
+                if (result.campaign) {
                     // Hide create campaign form first
                     this.hideCreateCampaignForm();
 
@@ -3237,12 +3357,13 @@ const BrandsManager = {
                     // Show success in confirmation modal
                     this.showConfirmationModal({
                         title: 'Campaign Created Successfully!',
-                        message: `Your campaign "${result.campaign?.name || 'campaign'}" has been created and saved as a draft.`,
+                        message: `Your campaign "${result.campaign?.name || 'campaign'}" has been created and your payment receipt was submitted.`,
                         details: `
                             <ul>
-                                <li>Upload your images and videos in the campaign tabs</li>
-                                <li>Submit for verification when ready</li>
-                                <li>Payment will be required when you launch the campaign</li>
+                                <li>Our team verifies your payment receipt</li>
+                                <li>Once approved, upload your ad images and videos</li>
+                                <li>Your ad is then reviewed for appropriateness</li>
+                                <li>After both checks pass, you can launch the campaign</li>
                             </ul>
                         `,
                         confirmText: 'OK',

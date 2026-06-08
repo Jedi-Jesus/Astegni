@@ -13,7 +13,7 @@ Author: Astegni Platform
 Date: 2026-01-15
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional, List
 import psycopg
@@ -48,8 +48,15 @@ class CampaignCreateWithDeposit(BaseModel):
     thumbnail_url: Optional[str] = None
     file_url: Optional[str] = None
     objective: Optional[str] = None
-    planned_budget: float  # Total planned budget
-    cpi_rate: float  # Cost per impression rate
+    planned_budget: Optional[float] = None  # Total planned budget (legacy; derived from view_count*cpi when absent)
+    cpi_rate: float  # Effective cost per view (tier rate + targeting premiums)
+    # New view-tier package model (preferred): the advertiser commits to view_count
+    # at the effective cpi_rate; total_cost + advance_amount are computed client-side
+    # from the admin advance-payment %.
+    view_count: Optional[int] = None
+    total_cost: Optional[float] = None
+    advance_amount: Optional[float] = None
+    advance_percent: Optional[float] = None
     target_audiences: Optional[List[str]] = None
     target_regions: Optional[List[str]] = None
     target_placements: Optional[List[str]] = None
@@ -100,32 +107,44 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 if not advertiser or campaign.brand_id not in (advertiser.get('brand_ids') or []):
                     raise HTTPException(status_code=403, detail="You don't own this brand")
 
-                # Validate planned budget
-                if not campaign.planned_budget or campaign.planned_budget <= 0:
-                    raise HTTPException(status_code=400, detail="Planned budget must be greater than 0")
-
                 if not campaign.cpi_rate or campaign.cpi_rate <= 0:
                     raise HTTPException(status_code=400, detail="CPI rate must be greater than 0")
 
-                planned_budget = float(campaign.planned_budget)
                 cpi_rate = float(campaign.cpi_rate)
-
-                # Validate budget doesn't exceed database limits
-                # deposit_amount, outstanding_balance have precision(10,2) = max 99,999,999.99
-                if planned_budget > 99999999.99:
-                    raise HTTPException(status_code=400, detail="Planned budget cannot exceed 99,999,999.99")
 
                 # Validate CPI rate is reasonable (not too small to cause overflow)
                 if cpi_rate < 0.0001:
                     raise HTTPException(status_code=400, detail="CPI rate must be at least 0.0001")
 
-                # Calculate 20% deposit
-                deposit_percent = 20.00
-                deposit_amount = planned_budget * (deposit_percent / 100)
-                outstanding_balance = planned_budget - deposit_amount
+                # PACKAGE MODEL (preferred): advertiser commits to view_count.
+                # total_cost = view_count * effective cpi (computed client-side from the
+                # selected view tier + targeting premiums). Fall back to legacy
+                # planned_budget when the package fields are absent.
+                if campaign.view_count and campaign.view_count > 0:
+                    total_impressions_planned = int(campaign.view_count)
+                    planned_budget = float(campaign.total_cost) if campaign.total_cost else (total_impressions_planned * cpi_rate)
+                elif campaign.planned_budget and campaign.planned_budget > 0:
+                    planned_budget = float(campaign.planned_budget)
+                    total_impressions_planned = int(planned_budget / cpi_rate)
+                else:
+                    raise HTTPException(status_code=400, detail="Select a package (view count) for the campaign")
 
-                # Calculate total planned impressions
-                total_impressions_planned = int(planned_budget / cpi_rate)
+                # Validate budget doesn't exceed database limits
+                # deposit_amount, outstanding_balance have precision(10,2) = max 99,999,999.99
+                if planned_budget > 99999999.99:
+                    raise HTTPException(status_code=400, detail="Total cost cannot exceed 99,999,999.99")
+
+                # Advance payment: prefer the client-computed amount (from the admin
+                # advance %); otherwise default to 20%.
+                if campaign.advance_percent and campaign.advance_percent > 0:
+                    deposit_percent = float(campaign.advance_percent)
+                else:
+                    deposit_percent = 20.00
+                if campaign.advance_amount is not None and campaign.advance_amount >= 0:
+                    deposit_amount = float(campaign.advance_amount)
+                else:
+                    deposit_amount = planned_budget * (deposit_percent / 100)
+                outstanding_balance = planned_budget - deposit_amount
 
                 # Validate total impressions doesn't overflow bigint (max: 9,223,372,036,854,775,807)
                 if total_impressions_planned > 9223372036854775807:
@@ -144,6 +163,13 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 target_regions = campaign.target_regions or []
                 target_placements = campaign.target_placements or ['placeholder', 'widget', 'popup', 'insession']
 
+                # campaign_profile.company_id is NOT NULL — resolve it from the brand.
+                cur.execute("SELECT company_id FROM brand_profile WHERE id = %s", (campaign.brand_id,))
+                brand_row = cur.fetchone()
+                company_id = brand_row.get('company_id') if brand_row else None
+                if not company_id:
+                    raise HTTPException(status_code=400, detail="Brand is not linked to a company")
+
                 # Create the campaign (without removed/deprecated fields)
                 # Removed fields: thumbnail_url, file_url (→ campaign_media table)
                 # Removed fields: target_audience (singular) (→ use target_audiences array instead)
@@ -157,7 +183,7 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                         target_audiences, target_regions, target_placements,
                         cpi_rate, total_charged, billing_frequency,
                         campaign_budget, amount_used, remaining_balance,
-                        advertiser_id, brand_id,
+                        advertiser_id, brand_id, company_id,
                         deposit_percent, deposit_amount,
                         outstanding_balance, total_impressions_planned,
                         created_at, updated_at
@@ -167,7 +193,7 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                         %s, %s, %s,
                         %s, 0.00, 1000,
                         %s, 0.00, 0.00,
-                        %s, %s,
+                        %s, %s, %s,
                         %s, %s,
                         %s, %s,
                         NOW(), NOW()
@@ -187,6 +213,7 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                     planned_budget,
                     advertiser_profile_id,
                     campaign.brand_id,
+                    company_id,
                     deposit_percent,
                     deposit_amount,
                     outstanding_balance,
@@ -533,6 +560,114 @@ async def pay_invoice(invoice_id: int, current_user = Depends(get_current_user))
                 # 1. Mark invoice as 'paid'
                 # 2. Update campaign status to 'completed'
                 # 3. Record transaction in advertiser_transactions
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================
+# PAYMENT RECEIPT UPLOAD (advance payment proof)
+# ============================================================
+
+@router.post("/campaigns/{campaign_id}/upload-receipt")
+async def upload_campaign_receipt(
+    campaign_id: int,
+    file: UploadFile = File(...),
+    amount: Optional[float] = Form(None),
+    current_user = Depends(get_current_user),
+):
+    """
+    Upload an advance-payment receipt (image or PDF) for a campaign.
+
+    Stores the file in Backblaze B2 and records a 'pending' advance invoice on
+    campaign_invoices. An admin reviews the receipt (manage-campaign) before the
+    advertiser may upload the ad. This is the FIRST of the two campaign
+    verifications (payment); ad-content verification is the second.
+    """
+    try:
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if not advertiser_profile_id:
+            raise HTTPException(status_code=403, detail="Not authorized as advertiser")
+
+        # Validate file type (receipts are images or PDFs).
+        content_type = (file.content_type or '').lower()
+        if not (content_type.startswith('image/') or content_type == 'application/pdf'):
+            raise HTTPException(status_code=400, detail="Receipt must be an image or PDF")
+
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="Empty file")
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Verify the campaign belongs to this advertiser.
+                cur.execute("""
+                    SELECT id, brand_id, advertiser_id, deposit_amount
+                    FROM campaign_profile
+                    WHERE id = %s AND advertiser_id = %s
+                """, (campaign_id, advertiser_profile_id))
+                campaign = cur.fetchone()
+                if not campaign:
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+
+                # Upload the receipt to B2 under the advertiser's folder.
+                from backblaze_service import get_backblaze_service
+                b2_service = get_backblaze_service()
+                result = b2_service.upload_file(
+                    file_data=contents,
+                    file_name=file.filename or f"receipt_campaign_{campaign_id}",
+                    file_type='document',
+                    user_id=f"advertiser_{advertiser_profile_id}",
+                    content_type=file.content_type,
+                )
+                if not result or not result.get('url'):
+                    raise HTTPException(status_code=500, detail="Receipt upload failed")
+                receipt_url = result['url']
+
+                advance_amount = float(amount) if amount is not None else float(campaign.get('deposit_amount') or 0)
+
+                # Record (or refresh) the advance invoice with the receipt + pending status.
+                # invoice_number is unique; use a deterministic per-campaign advance number.
+                invoice_number = f"ADV-{campaign_id}"
+                cur.execute("""
+                    INSERT INTO campaign_invoices (
+                        campaign_id, advertiser_id, brand_id,
+                        invoice_number, invoice_type, amount,
+                        deposit_amount, outstanding_amount, status,
+                        payment_method, invoice_pdf_url, notes,
+                        issued_at, created_at, updated_at
+                    ) VALUES (
+                        %s, %s, %s, %s, 'advance', %s,
+                        %s, 0.00, 'pending',
+                        'receipt', %s, 'Advance payment receipt awaiting admin verification',
+                        NOW(), NOW(), NOW()
+                    )
+                    ON CONFLICT (invoice_number) DO UPDATE SET
+                        amount = EXCLUDED.amount,
+                        deposit_amount = EXCLUDED.deposit_amount,
+                        status = 'pending',
+                        invoice_pdf_url = EXCLUDED.invoice_pdf_url,
+                        payment_method = 'receipt',
+                        notes = 'Advance payment receipt re-uploaded; awaiting admin verification',
+                        updated_at = NOW()
+                    RETURNING id
+                """, (
+                    campaign_id, advertiser_profile_id, campaign.get('brand_id'),
+                    invoice_number, advance_amount,
+                    advance_amount, receipt_url,
+                ))
+                invoice = cur.fetchone()
+                conn.commit()
+
+                return {
+                    "success": True,
+                    "message": "Receipt uploaded. Our team will verify your payment shortly.",
+                    "receipt_url": receipt_url,
+                    "invoice_id": invoice['id'] if invoice else None,
+                    "status": "pending",
+                }
 
     except HTTPException:
         raise

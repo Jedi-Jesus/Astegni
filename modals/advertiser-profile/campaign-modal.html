@@ -149,6 +149,23 @@
                                 <textarea id="campaign-description-input" placeholder="Describe your campaign..." rows="2"></textarea>
                             </div>
 
+                            <!-- View-Tier Package (replaces manual budget; tiers come from CPI settings) -->
+                            <div class="campaign-form-group">
+                                <label>
+                                    <i class="fas fa-eye"></i>
+                                    Package <span class="required">*</span>
+                                </label>
+                                <p class="campaign-field-hint" style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 8px;">
+                                    Choose how many views your campaign commits to. Audience and location targeting add premiums on top.
+                                </p>
+                                <div class="view-tier-packages" id="view-tier-packages">
+                                    <div class="view-tier-loading" style="color:var(--text-secondary);font-size:0.9rem;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading packages...
+                                    </div>
+                                </div>
+                                <input type="hidden" id="campaign-view-tier-input" required>
+                            </div>
+
                             <!-- Target Location -->
                             <div class="campaign-form-group">
                                 <label for="campaign-location-input">
@@ -402,111 +419,6 @@
                                 </div>
                             </div>
 
-                            <!-- Ad Placement Checkboxes -->
-                            <div class="campaign-form-group">
-                                <label>
-                                    <i class="fas fa-ad"></i>
-                                    Ad Placements
-                                </label>
-                                <div class="campaign-checkbox-section">
-                                    <!-- All Placements -->
-                                    <div class="campaign-checkbox-item master-checkbox">
-                                        <label class="campaign-checkbox-label">
-                                            <input type="checkbox" id="placement-all" checked onchange="BrandsManager.toggleAllPlacements(this.checked)">
-                                            <span class="campaign-checkbox-custom"></span>
-                                            <span class="campaign-checkbox-text">
-                                                <i class="fas fa-check-double"></i>
-                                                All Placements
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="campaign-checkboxes-grid">
-                                        <div class="campaign-checkbox-item">
-                                            <label class="campaign-checkbox-label">
-                                                <input type="checkbox" id="placement-leaderboard-banner" checked onchange="BrandsManager.updatePlacementSelection()">
-                                                <span class="campaign-checkbox-custom"></span>
-                                                <span class="campaign-checkbox-text">
-                                                    <i class="fas fa-rectangle-ad"></i>
-                                                    Leaderboard Banner
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="campaign-checkbox-item">
-                                            <label class="campaign-checkbox-label">
-                                                <input type="checkbox" id="placement-logo" checked onchange="BrandsManager.updatePlacementSelection()">
-                                                <span class="campaign-checkbox-custom"></span>
-                                                <span class="campaign-checkbox-text">
-                                                    <i class="fas fa-window-maximize"></i>
-                                                    Logo
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="campaign-checkbox-item">
-                                            <label class="campaign-checkbox-label">
-                                                <input type="checkbox" id="placement-in-session-skyscrapper-banner" checked onchange="BrandsManager.updatePlacementSelection()">
-                                                <span class="campaign-checkbox-custom"></span>
-                                                <span class="campaign-checkbox-text">
-                                                    <i class="fas fa-window-restore"></i>
-                                                    In-Session Skyscrapper Banner
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Placement CPI Notice -->
-                                <div class="campaign-cpi-notice" id="placement-cpi-notice" style="display: none;">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <span>Excluding placements increases your CPI by <strong id="placement-premium-amount">+0.00 ETB</strong></span>
-                                </div>
-                            </div>
-
-                            <!-- Total Campaign Budget Row (Full Width) -->
-                            <div class="campaign-form-group">
-                                <label for="campaign-budget-input">
-                                    <i class="fas fa-coins"></i>
-                                    Total Campaign Budget <span class="required">*</span>
-                                </label>
-
-                                <div class="campaign-budget-input-wrapper">
-                                    <span class="budget-currency">ETB</span>
-                                    <input type="number" id="campaign-budget-input" placeholder="10000" min="10000" step="100" required oninput="BrandsManager.calculateEstimatedImpressions(this.value); BrandsManager.updateBudgetBreakdown(this.value)">
-                                </div>
-
-                                <!-- Minimum budget notice -->
-                                <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
-                                    <i class="fas fa-info-circle" style="color: #667eea;"></i>
-                                    Minimum campaign budget: <strong style="color: #667eea;">10,000 ETB</strong>
-                                </div>
-
-                                <!-- Budget Breakdown (20% / 80%) -->
-                                <div id="budget-breakdown" style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-radius: 8px; border-left: 3px solid #667eea; display: none;">
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem;">
-                                        <div>
-                                            <div style="color: var(--text-secondary); margin-bottom: 4px;">
-                                                <i class="fas fa-arrow-right" style="color: #667eea;"></i>
-                                                20% Advance Payment (Invoice #1)
-                                            </div>
-                                            <div style="font-size: 1.1rem; font-weight: 600; color: #667eea;">
-                                                <span id="advance-payment-amount">2,000</span> ETB
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div style="color: var(--text-secondary); margin-bottom: 4px;">
-                                                <i class="fas fa-arrow-right" style="color: #764ba2;"></i>
-                                                80% After Completion (Invoice #2)
-                                            </div>
-                                            <div style="font-size: 1.1rem; font-weight: 600; color: #764ba2;">
-                                                <span id="remaining-payment-amount">8,000</span> ETB
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Show estimated impressions -->
-                                <div class="campaign-budget-estimate" id="budget-estimate" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">
-                                    Estimated: ~0 impressions at 0.00 ETB/impression
-                                </div>
-                            </div>
 
                             <!-- Start Date Row -->
                             <div class="campaign-form-group">
