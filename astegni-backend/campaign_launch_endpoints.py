@@ -115,11 +115,27 @@ async def launch_campaign(campaign_id: int):
                 "message": "Campaign is already active"
             }
 
-        # Validate verification status (must be approved by admin)
+        # Validate AD-CONTENT verification status (must be approved by admin)
         if verification_status not in ['verified', 'approved']:
             raise HTTPException(
                 status_code=400,
                 detail=f"Cannot launch campaign. Admin verification status is '{verification_status}'. Must be 'verified' or 'approved' first."
+            )
+
+        # Validate PAYMENT verification (double verification): the advance-payment
+        # receipt must be verified by an admin before the campaign can launch.
+        cursor.execute("""
+            SELECT status FROM campaign_invoices
+            WHERE campaign_id = %s AND invoice_type = 'advance'
+            ORDER BY id DESC LIMIT 1
+        """, (campaign_id,))
+        invoice_row = cursor.fetchone()
+        invoice_status = invoice_row[0] if invoice_row else None
+        if invoice_status != 'verified':
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot launch campaign. Your advance payment has not been verified yet. "
+                       "Upload a valid receipt and wait for admin approval."
             )
 
         # Check if campaign has media uploaded

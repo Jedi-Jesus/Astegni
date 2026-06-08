@@ -1203,6 +1203,9 @@ async function viewCampaign(campaignDataStr, status) {
         // C. Populate Campaign Media
         loadCampaignMedia(campaign.id);
 
+        // C2. Payment (receipt) review — first of the double verification
+        loadCampaignPaymentReview(campaign.id);
+
         // Generate action buttons based on status
         const actionsContainer = document.getElementById('view-campaign-actions');
         if (actionsContainer) {
@@ -1417,6 +1420,103 @@ function formatRelativeTime(date) {
 // Campaign-level moderation remains below.
 
 // ==================== CAMPAIGN ACTION FUNCTIONS ====================
+
+/**
+ * Load + render the advance-payment receipt review (payment verification).
+ * Injected into the campaign view modal next to the media/actions.
+ */
+async function loadCampaignPaymentReview(campaignId) {
+    // Ensure a container exists inside the modal (inject before the actions row).
+    let container = document.getElementById('view-campaign-payment-review');
+    if (!container) {
+        const actions = document.getElementById('view-campaign-actions');
+        if (!actions || !actions.parentNode) return;
+        container = document.createElement('div');
+        container.id = 'view-campaign-payment-review';
+        container.style.margin = '16px 0';
+        actions.parentNode.insertBefore(container, actions);
+    }
+    container.innerHTML = '<div style="color:#6b7280;font-size:0.9rem;">Loading payment receipt…</div>';
+
+    try {
+        const resp = await fetch(`${ADVERTISERS_API_URL}/api/manage-campaigns/campaigns/${campaignId}/payment`);
+        const data = resp.ok ? await resp.json() : null;
+        const pay = data && data.payment;
+
+        if (!pay || !data.has_receipt) {
+            container.innerHTML = `
+                <div style="padding:12px;border:1px dashed #e5e7eb;border-radius:8px;color:#6b7280;font-size:0.9rem;">
+                    <i class="fas fa-receipt"></i> No payment receipt uploaded yet.
+                </div>`;
+            return;
+        }
+
+        const statusColors = { verified: '#16a34a', rejected: '#dc2626', pending: '#d97706' };
+        const sc = statusColors[pay.status] || '#6b7280';
+        const amount = (pay.amount != null) ? `${Number(pay.amount).toLocaleString()} ETB` : '—';
+        const isPending = pay.status === 'pending';
+
+        container.innerHTML = `
+            <div style="padding:14px;border:2px solid #e5e7eb;border-radius:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <strong style="font-size:0.95rem;"><i class="fas fa-hand-holding-usd"></i> Advance Payment</strong>
+                    <span style="color:${sc};font-weight:700;text-transform:uppercase;font-size:0.8rem;">${pay.status}</span>
+                </div>
+                <div style="font-size:0.9rem;color:#374151;margin-bottom:10px;">
+                    Advance due: <strong>${amount}</strong>
+                    ${pay.notes ? `<div style="color:#6b7280;font-size:0.82rem;margin-top:4px;">${pay.notes}</div>` : ''}
+                </div>
+                <a href="${pay.receipt_url}" target="_blank" rel="noopener"
+                   style="display:inline-flex;align-items:center;gap:6px;color:#2563eb;font-size:0.9rem;text-decoration:none;">
+                    <i class="fas fa-file-invoice"></i> View uploaded receipt
+                </a>
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                    <button onclick="verifyCampaignPayment(${campaignId})" ${isPending ? '' : 'disabled'}
+                        style="padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-weight:600;background:${isPending ? '#16a34a' : '#9ca3af'};color:#fff;">
+                        <i class="fas fa-check"></i> Verify Payment
+                    </button>
+                    <button onclick="rejectCampaignPayment(${campaignId})" ${isPending ? '' : 'disabled'}
+                        style="padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-weight:600;background:${isPending ? '#dc2626' : '#9ca3af'};color:#fff;">
+                        <i class="fas fa-times"></i> Reject Payment
+                    </button>
+                </div>
+            </div>`;
+    } catch (err) {
+        console.error('[PaymentReview] Error:', err);
+        container.innerHTML = '<div style="color:#dc2626;font-size:0.9rem;">Failed to load payment receipt.</div>';
+    }
+}
+
+async function _updateCampaignPayment(campaignId, newStatus, reason) {
+    try {
+        const resp = await fetch(`${ADVERTISERS_API_URL}/api/manage-campaigns/campaigns/${campaignId}/payment-status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ new_status: newStatus, reason: reason || null }),
+        });
+        if (resp.ok) {
+            alert(`Payment ${newStatus}.`);
+            loadCampaignPaymentReview(campaignId);
+        } else {
+            const e = await resp.json().catch(() => ({}));
+            alert(`Failed: ${e.detail || 'Unknown error'}`);
+        }
+    } catch (err) {
+        console.error('[PaymentReview] update error:', err);
+        alert('An error occurred while updating the payment status.');
+    }
+}
+
+function verifyCampaignPayment(campaignId) {
+    if (!confirm('Verify this advance payment? The advertiser will then be able to upload their ad.')) return;
+    _updateCampaignPayment(campaignId, 'verified', null);
+}
+
+function rejectCampaignPayment(campaignId) {
+    const reason = prompt('Enter a reason for rejecting this payment:');
+    if (!reason) return;
+    _updateCampaignPayment(campaignId, 'rejected', reason);
+}
 
 async function verifyCampaign(campaignId) {
     if (!confirm('Are you sure you want to verify this campaign?')) return;

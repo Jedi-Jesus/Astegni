@@ -1087,3 +1087,113 @@ async def update_campaign_status(
         cursor.close()
         conn.close()
         raise HTTPException(status_code=500, detail=f"Failed to update campaign status: {str(e)}")
+
+
+# ============================================================
+# PAYMENT (RECEIPT) VERIFICATION — first of the double verification
+# ============================================================
+
+class CampaignPaymentStatusUpdate(BaseModel):
+    new_status: str           # 'verified' | 'rejected' | 'pending'
+    reason: Optional[str] = None
+    admin_id: Optional[int] = None
+
+
+@router.get("/campaigns/{campaign_id}/payment")
+async def get_campaign_payment(campaign_id: int, admin_id: Optional[int] = None):
+    """Return the advance-payment invoice + receipt for admin review."""
+    if admin_id:
+        verify_department_access(admin_id)
+
+    conn = get_advertiser_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, campaign_id, advertiser_id, brand_id, invoice_number,
+                   invoice_type, amount, deposit_amount, status, payment_method,
+                   invoice_pdf_url, notes, issued_at, updated_at
+            FROM campaign_invoices
+            WHERE campaign_id = %s AND invoice_type = 'advance'
+            ORDER BY id DESC LIMIT 1
+        """, (campaign_id,))
+        inv = cur.fetchone()
+        if not inv:
+            return {"success": True, "has_receipt": False, "payment": None}
+        return {
+            "success": True,
+            "has_receipt": bool(inv.get('invoice_pdf_url')),
+            "payment": {
+                "invoice_id": inv['id'],
+                "campaign_id": inv['campaign_id'],
+                "invoice_number": inv['invoice_number'],
+                "amount": float(inv['amount']) if inv['amount'] is not None else None,
+                "status": inv['status'],
+                "payment_method": inv['payment_method'],
+                "receipt_url": inv['invoice_pdf_url'],
+                "notes": inv['notes'],
+                "issued_at": str(inv['issued_at']) if inv['issued_at'] else None,
+                "updated_at": str(inv['updated_at']) if inv['updated_at'] else None,
+            },
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.put("/campaigns/{campaign_id}/payment-status")
+async def update_campaign_payment_status(campaign_id: int, body: CampaignPaymentStatusUpdate):
+    """
+    Admin verifies/rejects an advance-payment receipt (payment verification).
+
+    'verified' lets the advertiser upload ad media (which is then content-verified
+    via the existing /campaigns/{id}/status before launch). 'rejected' requires a
+    reason and blocks ad upload until a valid receipt is re-uploaded.
+    """
+    valid = ['verified', 'rejected', 'pending']
+    if body.new_status not in valid:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid)}")
+    if body.new_status == 'rejected' and not (body.reason and body.reason.strip()):
+        raise HTTPException(status_code=400, detail="A reason is required when rejecting a payment.")
+    if body.admin_id:
+        verify_department_access(body.admin_id)
+
+    conn = get_advertiser_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id FROM campaign_invoices
+            WHERE campaign_id = %s AND invoice_type = 'advance'
+            ORDER BY id DESC LIMIT 1
+        """, (campaign_id,))
+        inv = cur.fetchone()
+        if not inv:
+            raise HTTPException(status_code=404, detail="No advance-payment receipt found for this campaign")
+
+        note = (body.reason or '').strip() or (
+            'Payment verified by admin' if body.new_status == 'verified' else None
+        )
+        cur.execute("""
+            UPDATE campaign_invoices
+            SET status = %s,
+                paid_at = CASE WHEN %s = 'verified' THEN NOW() ELSE paid_at END,
+                notes = COALESCE(%s, notes),
+                updated_at = NOW()
+            WHERE id = %s
+        """, (body.new_status, body.new_status, note, inv['id']))
+        conn.commit()
+        return {
+            "success": True,
+            "campaign_id": campaign_id,
+            "invoice_id": inv['id'],
+            "payment_status": body.new_status,
+            "message": f"Payment {body.new_status}.",
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update payment status: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()

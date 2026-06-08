@@ -8047,6 +8047,27 @@ async def upload_campaign_media(
         file_contents = await file.read()
         file_size = len(file_contents)
 
+        # DOUBLE VERIFICATION gate (payment-first): block ad media upload until the
+        # advance-payment receipt is admin-verified. Checked BEFORE the B2 upload so
+        # we don't store an orphaned file for a campaign that can't accept media yet.
+        if campaign_id:
+            _adv_conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'))
+            try:
+                _c = _adv_conn.cursor()
+                _c.execute("""
+                    SELECT status FROM campaign_invoices
+                    WHERE campaign_id = %s AND invoice_type = 'advance'
+                    ORDER BY id DESC LIMIT 1
+                """, (campaign_id,))
+                _inv = _c.fetchone()
+            finally:
+                _adv_conn.close()
+            if not _inv or _inv[0] != 'verified':
+                raise HTTPException(
+                    status_code=403,
+                    detail="Your advance payment must be verified before you can upload ad media."
+                )
+
         # Validate file size
         if is_image and file_size > 5 * 1024 * 1024:  # 5MB for images
             raise HTTPException(status_code=400, detail="Image size exceeds 5MB limit")
@@ -8120,6 +8141,7 @@ async def upload_campaign_media(
                 # Get database connection (using psycopg directly)
                 conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'))
                 cursor = conn.cursor()
+                # (Payment-verification gate already enforced earlier, before B2 upload.)
 
                 cursor.execute("""
                     INSERT INTO campaign_media (
@@ -8146,6 +8168,9 @@ async def upload_campaign_media(
                 cursor.close()
                 conn.close()
 
+            except HTTPException:
+                # Verification gate (e.g. payment not verified) must reach the client.
+                raise
             except Exception as db_error:
                 print(f"Warning: Failed to save media to database: {db_error}")
                 # Don't fail the upload if database save fails - file is already in Backblaze
