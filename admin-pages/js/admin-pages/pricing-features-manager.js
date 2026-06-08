@@ -387,6 +387,13 @@ function loadCpiSettingsToForm() {
     const nationalEl = document.getElementById('cpi-national-premium');
     if (nationalEl) nationalEl.value = cpiSettings.locationPremiums?.national || '';
 
+    // Advance payment percentage
+    const advanceEl = document.getElementById('cpi-advance-payment-percent');
+    if (advanceEl) {
+        advanceEl.value = (cpiSettings.advancePaymentPercent != null)
+            ? cpiSettings.advancePaymentPercent : 20;
+    }
+
     // Determine which location type to show based on existing settings
     const locationTypeEl = document.getElementById('cpi-location-type');
     const hasRegionPremiums = cpiSettings.regionExclusionPremiums &&
@@ -721,6 +728,11 @@ async function saveCpiSettings(event) {
     const userPremium = parseFloat(document.getElementById('cpi-user-premium')?.value) || 0;
     const nationalPremium = parseFloat(document.getElementById('cpi-national-premium')?.value) || 0;
 
+    // Advance payment percentage (charged up-front; advertiser uploads a receipt)
+    let advancePaymentPercent = parseFloat(document.getElementById('cpi-advance-payment-percent')?.value);
+    if (!Number.isFinite(advancePaymentPercent)) advancePaymentPercent = 20;
+    advancePaymentPercent = Math.min(100, Math.max(0, advancePaymentPercent));
+
     // Save current country's region premiums before collecting all
     saveCurrentCountryPremiums();
 
@@ -769,7 +781,8 @@ async function saveCpiSettings(event) {
             popup: popupPremium,
             insession: insessionPremium
         },
-        viewTierPremiums: cpiSettings.viewTierPremiums || []
+        viewTierPremiums: cpiSettings.viewTierPremiums || [],
+        advancePaymentPercent
     };
 
     try {

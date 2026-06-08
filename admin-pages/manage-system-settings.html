@@ -3087,7 +3087,7 @@
     <script src="./js/admin-pages/sms-ethiopian-providers-safe.js"></script>
 
     <!-- Pricing & Features Manager (CPI View-Tier Pricing, Subscription Pricing, Affiliate Settings) -->
-    <script src="./js/admin-pages/pricing-features-manager.js?v202606080100"></script>
+    <script src="./js/admin-pages/pricing-features-manager.js?v202606080200"></script>
 
     <!-- Fix theme background -->
     <script>
@@ -4808,6 +4808,24 @@ The Team" required></textarea>
                                             <i class="fas fa-map-marker-alt mr-1"></i>
                                             Automatically detected from your physical location via GPS.
                                         </span>
+                                    </div>
+                                </div>
+
+                                <!-- Advance Payment % (charged up-front when a campaign is booked; advertiser uploads a receipt) -->
+                                <div class="p-3 bg-white rounded-lg border mb-4">
+                                    <label class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-hand-holding-usd text-green-600"></i>
+                                        <span class="font-semibold">Advance Payment</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mb-2">
+                                        Percentage of a campaign's total cost the advertiser pays up-front
+                                        (they upload a payment receipt at booking). The rest is settled after delivery.
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="cpi-advance-payment-percent"
+                                            class="w-32 px-3 py-2 border rounded-lg" min="0" max="100" step="1"
+                                            value="20" placeholder="20">
+                                        <span class="text-gray-600 font-medium">% of total</span>
                                     </div>
                                 </div>
 
