@@ -65,8 +65,21 @@ class AdvertiserProfile(AdvertiserBase):
     __tablename__ = "advertiser_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
-    # Cross-DB link to users.id (astegni_user_db) - app-enforced, NOT a DB FK.
-    user_id = Column(Integer, unique=True, nullable=False, index=True)
+    # Legacy cross-DB link to users.id (astegni_user_db). Self-contained advertiser
+    # auth no longer requires it: nullable so users-less advertisers can register.
+    user_id = Column(Integer, nullable=True, index=True)
+
+    # Self-contained authentication (advertiser_profiles IS the advertiser users
+    # table, analogous to admin_profile). email is unique (case-insensitive) via a
+    # partial index defined in migrate_advertiser_auth.py.
+    email = Column(String, nullable=True)
+    password_hash = Column(String, nullable=True)
+    has_password = Column(Boolean, nullable=False, default=False)
+    email_verified = Column(Boolean, nullable=False, default=False)
+    phone = Column(String, nullable=True)
+    first_name = Column(String, nullable=True)
+    father_name = Column(String, nullable=True)
+    last_login = Column(DateTime(timezone=True), nullable=True)
 
     # Basic Info
     username = Column(String, unique=True, index=True)
