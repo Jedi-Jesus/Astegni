@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 
 load_dotenv()
 
@@ -71,7 +72,7 @@ class CampaignCreateWithDeposit(BaseModel):
 # ============================================================
 
 @router.post("/campaigns/create-with-deposit")
-async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, current_user = Depends(get_current_user)):
+async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, current_user = Depends(resolve_advertiser)):
     """
     Create campaign with 20% deposit payment model
 
@@ -328,7 +329,7 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
 # ============================================================
 
 @router.post("/campaigns/{campaign_id}/complete-and-invoice")
-async def complete_campaign_and_generate_invoice(campaign_id: int, current_user = Depends(get_current_user)):
+async def complete_campaign_and_generate_invoice(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """
     Complete campaign and generate invoice for remaining payment
 
@@ -461,7 +462,7 @@ async def complete_campaign_and_generate_invoice(campaign_id: int, current_user 
 
 
 @router.get("/invoices")
-async def get_advertiser_invoices(current_user = Depends(get_current_user)):
+async def get_advertiser_invoices(current_user = Depends(resolve_advertiser)):
     """Get all invoices for current advertiser"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -496,7 +497,7 @@ async def get_advertiser_invoices(current_user = Depends(get_current_user)):
 
 
 @router.post("/invoices/{invoice_id}/pay")
-async def pay_invoice(invoice_id: int, current_user = Depends(get_current_user)):
+async def pay_invoice(invoice_id: int, current_user = Depends(resolve_advertiser)):
     """Pay an outstanding invoice"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -576,7 +577,7 @@ async def upload_campaign_receipt(
     campaign_id: int,
     file: UploadFile = File(...),
     amount: Optional[float] = Form(None),
-    current_user = Depends(get_current_user),
+    current_user = Depends(resolve_advertiser),
 ):
     """
     Upload an advance-payment receipt (image or PDF) for a campaign.

@@ -60,6 +60,7 @@ def get_adv_db():
 
 # Auth dependency (simplified - use your actual auth)
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 from email_service import email_service
 
 # Base URL for invitation links
@@ -70,7 +71,7 @@ BASE_URL = os.getenv("BASE_URL", "https://astegni.com")
 # ============================================
 
 @router.get("/team")
-async def get_team_members(current_user = Depends(get_current_user)):
+async def get_team_members(current_user = Depends(resolve_advertiser)):
     """Get all team members for the current advertiser"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -191,7 +192,7 @@ async def get_team_members(current_user = Depends(get_current_user)):
 
 
 @router.post("/team/invite")
-async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(get_current_user)):
+async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(resolve_advertiser)):
     """Invite a new Brand Manager to the team"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -400,7 +401,7 @@ async def accept_invitation(token: str, current_user = Depends(get_current_user)
 
 
 @router.put("/team/{member_id}")
-async def update_team_member(member_id: int, update: TeamMemberUpdate, current_user = Depends(get_current_user)):
+async def update_team_member(member_id: int, update: TeamMemberUpdate, current_user = Depends(resolve_advertiser)):
     """Update a Brand Manager's permissions (can_set_price)"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -451,7 +452,7 @@ async def update_team_member(member_id: int, update: TeamMemberUpdate, current_u
 
 
 @router.delete("/team/{member_id}")
-async def remove_team_member(member_id: int, current_user = Depends(get_current_user)):
+async def remove_team_member(member_id: int, current_user = Depends(resolve_advertiser)):
     """Remove a Brand Manager from the team"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -497,7 +498,7 @@ async def remove_team_member(member_id: int, current_user = Depends(get_current_
 
 
 @router.post("/team/{member_id}/resend")
-async def resend_invitation(member_id: int, current_user = Depends(get_current_user)):
+async def resend_invitation(member_id: int, current_user = Depends(resolve_advertiser)):
     """Resend invitation to a pending team member"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -586,7 +587,7 @@ async def resend_invitation(member_id: int, current_user = Depends(get_current_u
 # ============================================
 
 @router.get("/team/search-users")
-async def search_users_for_invite(q: str, current_user = Depends(get_current_user)):
+async def search_users_for_invite(q: str, current_user = Depends(resolve_advertiser)):
     """Search for existing users to invite to the team"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -882,7 +883,7 @@ async def decline_invitation_by_token(token: str, current_user = Depends(get_cur
 
 
 @router.get("/team/stats")
-async def get_team_stats(current_user = Depends(get_current_user)):
+async def get_team_stats(current_user = Depends(resolve_advertiser)):
     """Get team statistics"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None

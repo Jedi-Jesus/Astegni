@@ -184,12 +184,21 @@
         if (tokenResponse.refresh_token) {
             localStorage.setItem('refresh_token', tokenResponse.refresh_token);
         }
-        if (tokenResponse.user) {
-            localStorage.setItem('currentUser', JSON.stringify(tokenResponse.user));
-            // Force the advertise surface's view of the role, regardless of any
-            // stale active_role on the user object.
-            localStorage.setItem('userRole', 'advertiser');
-        }
+        // The advertiser auth endpoints return a flat advertiser shape
+        // ({advertiser_id, email, name, company_name}). Build a currentUser object
+        // the advertiser profile pages can read. (Legacy responses with a nested
+        // `user` object are still honored for safety.)
+        const adv = tokenResponse.user || {
+            id: tokenResponse.advertiser_id,
+            advertiser_id: tokenResponse.advertiser_id,
+            email: tokenResponse.email,
+            name: tokenResponse.name,
+            company_name: tokenResponse.company_name,
+            roles: ['advertiser'],
+            active_role: 'advertiser'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(adv));
+        localStorage.setItem('userRole', 'advertiser');
     }
 
     function redirectToProfile() {
@@ -243,26 +252,26 @@
         window.location.href = 'https://astegni.com' + path + '#' + params.toString();
     }
 
-    // Google sign-in goes through the shared googleOAuthManager (js/root/google-oauth.js).
-    // Override its post-login navigation on this surface so the same branching applies.
-    (function patchGoogleNavigateAfterLogin() {
+    // Advertiser accounts are self-contained in astegni_advertiser_db and do NOT
+    // share identity with the astegni.com users table. The shared Google OAuth
+    // manager (js/root/google-oauth.js) authenticates against the users table, so
+    // it cannot establish an advertiser session. Until a dedicated advertiser
+    // Google flow exists, intercept its post-login navigation: clear the (wrong)
+    // user-DB session it just wrote and tell the user to use email + password.
+    (function disableGoogleAdvertiserLogin() {
         function apply() {
             if (!window.googleOAuthManager) return false;
-            window.googleOAuthManager.navigateAfterLogin = function (user) {
-                // Reconstruct a token-response-like object from what storeSession
-                // already wrote (the shared manager stored tokens before calling
-                // this navigate hook).
-                const fake = {
-                    access_token: localStorage.getItem('token') || localStorage.getItem('access_token'),
-                    refresh_token: localStorage.getItem('refresh_token') || null,
-                    user: user
-                };
-                dispatchAfterLogin(fake);
+            window.googleOAuthManager.navigateAfterLogin = function () {
+                try {
+                    ['token', 'access_token', 'refresh_token', 'currentUser', 'user', 'userRole']
+                        .forEach(k => localStorage.removeItem(k));
+                } catch (e) { }
+                setError('adv-login-error',
+                    'Google sign-in isn\'t available for advertiser accounts yet. Please use your email and password.');
             };
             return true;
         }
         if (!apply()) {
-            // Manager initializes ~1s after DOMContentLoaded; retry briefly.
             let tries = 0;
             const iv = setInterval(() => {
                 if (apply() || ++tries > 30) clearInterval(iv);
@@ -326,10 +335,10 @@
         const sendBtn = document.querySelector('#adv-confirm-contact-modal .adv-btn-primary');
         setBtnBusy(sendBtn, true);
         try {
-            const res = await fetch(API + '/api/send-registration-otp', {
+            const res = await fetch(API + '/api/advertiser/send-registration-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: pendingSignup.email, phone: '' })
+                body: JSON.stringify({ email: pendingSignup.email })
             });
             const data = await res.json().catch(() => ({}));
 
@@ -374,15 +383,13 @@
         const verifyBtn = document.querySelector('#adv-otp-modal .adv-btn-primary');
         setBtnBusy(verifyBtn, true);
         try {
-            const res = await fetch(API + '/api/verify-registration-otp', {
+            const res = await fetch(API + '/api/advertiser/verify-registration-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     otp_code: otp,
                     email: pendingSignup.email,
-                    phone: '',
-                    password: pendingSignup.password,
-                    role: 'advertiser'
+                    password: pendingSignup.password
                 })
             });
             const data = await res.json().catch(() => ({}));
@@ -485,32 +492,33 @@
             return;
         }
 
-        // /api/login uses OAuth2PasswordRequestForm — form-encoded, "username" field.
-        // We intentionally do NOT send surface='advertise' here: the backend gates
-        // that surface to advertiser-only (403 otherwise), but we now want to *log
-        // in* non-advertisers on advertise.astegni.com so we can redirect them to
-        // astegni.com with a valid token. The role branching lives in
-        // dispatchAfterLogin() below.
-        const body = new URLSearchParams();
-        body.set('username', email);
-        body.set('password', password);
-
+        // Advertiser auth is self-contained (astegni_advertiser_db). The advertiser
+        // login endpoint takes JSON {email, password} and returns a token of
+        // type 'advertiser'. There is no longer any role branching or hand-off to
+        // astegni.com — an advertiser account is fully independent of any
+        // student/tutor/parent account that may share the same email.
         setBusy(form, true);
         try {
-            const res = await fetch(API + '/api/login', {
+            const res = await fetch(API + '/api/advertiser/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body.toString()
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
             });
 
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                setError('adv-login-error', data.detail || 'Invalid email or password.');
+                // 403 = account has no password set (e.g. legacy OAuth-only).
+                if (res.status === 403) {
+                    setError('adv-login-error',
+                        data.detail || 'This account has no password set. Use "Forgot password" to set one.');
+                } else {
+                    setError('adv-login-error', data.detail || 'Invalid email or password.');
+                }
                 return;
             }
 
-            const data = await res.json();
-            dispatchAfterLogin(data);
+            storeSession(data);
+            redirectToProfile();
         } catch (err) {
             console.error('[advertise] login error:', err);
             setError('adv-login-error', 'Could not reach the server. Please try again.');

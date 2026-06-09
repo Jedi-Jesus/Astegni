@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 
 load_dotenv()
 
@@ -55,7 +56,7 @@ class CampaignStopRequest(BaseModel):
 async def stop_campaign_with_settlement(
     campaign_id: int,
     stop_request: CampaignStopRequest,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """
     Stop campaign and calculate final settlement
@@ -278,7 +279,7 @@ async def stop_campaign_with_settlement(
 
 
 @router.post("/{campaign_id}/pause")
-async def pause_campaign(campaign_id: int, current_user = Depends(get_current_user)):
+async def pause_campaign(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """
     Pause campaign temporarily (no settlement, can resume later)
 
@@ -344,7 +345,7 @@ async def pause_campaign(campaign_id: int, current_user = Depends(get_current_us
 
 
 @router.post("/{campaign_id}/resume")
-async def resume_campaign(campaign_id: int, current_user = Depends(get_current_user)):
+async def resume_campaign(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """Resume a paused campaign"""
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None

@@ -231,6 +231,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Reject admin/advertiser tokens on user-facing endpoints (symmetric to
+        # the admin/advertiser dependencies rejecting plain user tokens). User
+        # tokens carry no "type"; these do.
+        if payload.get("type") in ("admin", "advertiser"):
+            raise credentials_exception
         user_id_str = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception

@@ -276,6 +276,10 @@ app.include_router(admin_management_router)
 from admin_auth_endpoints import router as admin_auth_router
 app.include_router(admin_auth_router)
 
+# Advertiser self-contained authentication (astegni_advertiser_db)
+from advertiser_auth_endpoints import router as advertiser_auth_router
+app.include_router(advertiser_auth_router)
+
 # Include pricing settings routes
 from pricing_settings_endpoints import router as pricing_router
 app.include_router(pricing_router)

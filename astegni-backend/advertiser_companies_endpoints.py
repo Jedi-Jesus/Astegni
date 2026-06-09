@@ -35,6 +35,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 
 load_dotenv()
 
@@ -170,7 +171,7 @@ def _business_days_since(dt: Optional[datetime], now: datetime) -> int:
 # ============================================================
 
 @router.post("/companies", status_code=201)
-async def create_company(payload: CompanyCreate, current_user=Depends(get_current_user)):
+async def create_company(payload: CompanyCreate, current_user=Depends(resolve_advertiser)):
     """Create a new company under the current advertiser."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
 
@@ -225,7 +226,7 @@ async def create_company(payload: CompanyCreate, current_user=Depends(get_curren
 
 
 @router.get("/companies")
-async def list_companies(current_user=Depends(get_current_user)):
+async def list_companies(current_user=Depends(resolve_advertiser)):
     """List companies owned by the current advertiser."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -242,7 +243,7 @@ async def list_companies(current_user=Depends(get_current_user)):
 
 
 @router.get("/companies/{company_id}")
-async def get_company(company_id: int, current_user=Depends(get_current_user)):
+async def get_company(company_id: int, current_user=Depends(resolve_advertiser)):
     """Get one company. Must belong to the current advertiser."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -257,7 +258,7 @@ async def get_company(company_id: int, current_user=Depends(get_current_user)):
 
 
 @router.put("/companies/{company_id}")
-async def update_company(company_id: int, payload: CompanyUpdate, current_user=Depends(get_current_user)):
+async def update_company(company_id: int, payload: CompanyUpdate, current_user=Depends(resolve_advertiser)):
     """Update editable identity fields. Wallet / verification fields are not editable here.
 
     If company_name changes, B2 files under the company's subtree are re-migrated
@@ -374,7 +375,7 @@ async def update_company(company_id: int, payload: CompanyUpdate, current_user=D
 
 
 @router.delete("/companies/{company_id}")
-async def delete_company(company_id: int, current_user=Depends(get_current_user)):
+async def delete_company(company_id: int, current_user=Depends(resolve_advertiser)):
     """Delete a company. Refuses if any brands still exist under it (delete the brands first)."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -405,7 +406,7 @@ async def delete_company(company_id: int, current_user=Depends(get_current_user)
 # ============================================================
 
 @router.get("/companies/{company_id}/brands")
-async def list_brands_for_company(company_id: int, current_user=Depends(get_current_user)):
+async def list_brands_for_company(company_id: int, current_user=Depends(resolve_advertiser)):
     """List brands belonging to a single company."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -448,7 +449,7 @@ VERIFICATION_SLA_BUSINESS_DAYS = 2
 
 
 @router.post("/companies/{company_id}/submit-verification")
-async def submit_company_verification(company_id: int, current_user=Depends(get_current_user)):
+async def submit_company_verification(company_id: int, current_user=Depends(resolve_advertiser)):
     """Submit a company for KYC review.
 
     Requirements (logo is optional):
@@ -508,7 +509,7 @@ async def submit_company_verification(company_id: int, current_user=Depends(get_
 
 
 @router.get("/companies/{company_id}/verification-status")
-async def get_company_verification_status(company_id: int, current_user=Depends(get_current_user)):
+async def get_company_verification_status(company_id: int, current_user=Depends(resolve_advertiser)):
     """Return verification state + reason + escalation eligibility for the company."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
     try:
@@ -559,7 +560,7 @@ async def get_company_verification_status(company_id: int, current_user=Depends(
 
 
 @router.post("/companies/{company_id}/notify-admins")
-async def notify_admins_verification(company_id: int, current_user=Depends(get_current_user)):
+async def notify_admins_verification(company_id: int, current_user=Depends(resolve_advertiser)):
     """Advertiser escalates a long-pending verification (>2 business days).
 
     Flags the company as escalated so it surfaces in manage-companies. Idempotent:
@@ -609,7 +610,7 @@ async def upload_company_document(
     company_id: int,
     doc_type: str = Form(...),                # 'logo' | 'business_license'
     file: UploadFile = File(...),
-    current_user=Depends(get_current_user),
+    current_user=Depends(resolve_advertiser),
 ):
     """Upload a company logo or business license to B2 and store its URL.
 

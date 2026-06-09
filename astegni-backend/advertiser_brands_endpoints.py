@@ -21,6 +21,7 @@ from psycopg.types.json import Jsonb
 from dotenv import load_dotenv
 import os
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 from backblaze_service import get_backblaze_service
 from advertiser_balance_endpoints import mirror_balance_to_company
 
@@ -153,7 +154,7 @@ class CampaignUpdate(BaseModel):
 # ============================================================
 
 @router.get("/brands")
-async def get_my_brands(company_id: Optional[int] = None, current_user = Depends(get_current_user)):
+async def get_my_brands(company_id: Optional[int] = None, current_user = Depends(resolve_advertiser)):
     """List brands owned by the current advertiser, optionally scoped to one company.
 
     Reads via the new schema (brand_profile.company_id -> company_profile.advertiser_id).
@@ -236,7 +237,7 @@ async def get_my_brands(company_id: Optional[int] = None, current_user = Depends
 
 
 @router.post("/brands")
-async def create_brand(brand: BrandCreate, current_user = Depends(get_current_user)):
+async def create_brand(brand: BrandCreate, current_user = Depends(resolve_advertiser)):
     """Create a new brand under one of the advertiser's companies.
 
     company_id in the request body is preferred. If omitted (legacy frontend),
@@ -370,7 +371,7 @@ async def create_brand(brand: BrandCreate, current_user = Depends(get_current_us
 
 
 @router.get("/brands/{brand_id}")
-async def get_brand(brand_id: int, current_user = Depends(get_current_user)):
+async def get_brand(brand_id: int, current_user = Depends(resolve_advertiser)):
     """Get a specific brand with its campaigns"""
     try:
         # Get advertiser profile ID from role_ids
@@ -397,7 +398,7 @@ async def get_brand(brand_id: int, current_user = Depends(get_current_user)):
 
 
 @router.put("/brands/{brand_id}")
-async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends(get_current_user)):
+async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends(resolve_advertiser)):
     """Update a brand"""
     try:
         # Get advertiser profile ID from role_ids
@@ -513,7 +514,7 @@ async def update_brand(brand_id: int, brand: BrandUpdate, current_user = Depends
 
 
 @router.delete("/brands/{brand_id}")
-async def delete_brand(brand_id: int, current_user = Depends(get_current_user)):
+async def delete_brand(brand_id: int, current_user = Depends(resolve_advertiser)):
     """Delete a brand (soft delete - set is_active to false)"""
     try:
         # Get advertiser profile ID from role_ids
@@ -555,7 +556,7 @@ async def delete_brand(brand_id: int, current_user = Depends(get_current_user)):
 async def upload_brand_logo(
     brand_id: int,
     file: UploadFile = File(...),
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Upload brand logo (updates thumbnail field)"""
     try:
@@ -636,7 +637,7 @@ async def upload_brand_logo(
 # ============================================================
 
 @router.get("/brands/{brand_id}/campaigns")
-async def get_brand_campaigns(brand_id: int, current_user = Depends(get_current_user)):
+async def get_brand_campaigns(brand_id: int, current_user = Depends(resolve_advertiser)):
     """Get all campaigns for a specific brand"""
     try:
         # Get advertiser profile ID from role_ids
@@ -731,7 +732,7 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(get_current_
 
 
 @router.post("/brands/{brand_id}/campaigns")
-async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user = Depends(get_current_user)):
+async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user = Depends(resolve_advertiser)):
     """
     Create a new campaign for a brand with upfront payment
 
@@ -924,7 +925,7 @@ async def create_campaign(brand_id: int, campaign: CampaignCreate, current_user 
 
 
 @router.get("/campaigns/{campaign_id}")
-async def get_campaign(campaign_id: int, current_user = Depends(get_current_user)):
+async def get_campaign(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """Get a specific campaign"""
     try:
         # Get advertiser profile ID from role_ids
@@ -986,7 +987,7 @@ async def get_campaign(campaign_id: int, current_user = Depends(get_current_user
 
 
 @router.put("/campaigns/{campaign_id}")
-async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_user = Depends(get_current_user)):
+async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_user = Depends(resolve_advertiser)):
     """Update a campaign"""
     try:
         # Get advertiser profile ID from role_ids
@@ -1125,7 +1126,7 @@ async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_us
 
 
 @router.delete("/campaigns/{campaign_id}")
-async def delete_campaign(campaign_id: int, current_user = Depends(get_current_user)):
+async def delete_campaign(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """Delete a campaign"""
     try:
         # Get advertiser profile ID from role_ids
@@ -1235,7 +1236,7 @@ async def delete_campaign(campaign_id: int, current_user = Depends(get_current_u
 # ============================================================
 
 @router.get("/stats")
-async def get_advertiser_stats(current_user = Depends(get_current_user)):
+async def get_advertiser_stats(current_user = Depends(resolve_advertiser)):
     """Get stats for the current advertiser"""
     try:
         # Get advertiser profile ID from role_ids
@@ -1318,7 +1319,7 @@ async def get_advertiser_stats(current_user = Depends(get_current_user)):
 # ============================================================
 
 @router.post("/campaigns/{campaign_id}/submit-for-verification")
-async def submit_campaign_for_verification(campaign_id: int, current_user = Depends(get_current_user)):
+async def submit_campaign_for_verification(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """
     Submit a campaign for admin verification.
     This marks the campaign as ready for review in the admin dashboard.
