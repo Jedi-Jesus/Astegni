@@ -30,6 +30,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import *
 from config import *
+from advertiser_auth_endpoints import resolve_advertiser  # advertiser-token auth dependency
 from backblaze_service import get_backblaze_service  # Import Backblaze service
 from admin_auth_endpoints import get_current_admin  # Import admin authentication
 from tutor_scoring import TutorScoringCalculator  # Import enhanced tutor scoring
@@ -7813,73 +7814,53 @@ async def update_parent_profile(
 
 @router.get("/api/advertiser/profile")
 async def get_advertiser_profile(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user = Depends(resolve_advertiser),
     adv_db: Session = Depends(get_advertiser_db)
 ):
-    """Get current user's advertiser profile"""
-    # Check if user has advertiser role
-    if "advertiser" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have advertiser role")
+    """Get the current advertiser's profile (self-contained advertiser auth)."""
+    advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    if not advertiser_profile_id:
+        raise HTTPException(status_code=403, detail="Not authorized as advertiser")
 
-    # Get or create advertiser profile (advertiser DB)
     advertiser_profile = adv_db.query(AdvertiserProfile).filter(
-        AdvertiserProfile.user_id == current_user.id
+        AdvertiserProfile.id == advertiser_profile_id
     ).first()
-
     if not advertiser_profile:
-        # Create new advertiser profile with defaults
-        from datetime import date
-        advertiser_profile = AdvertiserProfile(
-            user_id=current_user.id,
-            username=None,  # Will be set later by user
-            joined_in=date.today(),
-            hero_title=[],
-            hero_subtitle=[]
-        )
-        adv_db.add(advertiser_profile)
-        adv_db.commit()
-        adv_db.refresh(advertiser_profile)
+        raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
-    # Build name based on naming convention
-    # Ethiopian: first_name + father_name + grandfather_name
-    # International: first_name + last_name
-    if current_user.last_name:
-        # International naming convention
-        display_name = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
-    else:
-        # Ethiopian naming convention
-        name_parts = [current_user.first_name, current_user.father_name, current_user.grandfather_name]
-        display_name = " ".join(part for part in name_parts if part)
+    # Identity now lives ON advertiser_profiles (email/first_name/father_name).
+    first_name = getattr(advertiser_profile, 'first_name', None)
+    father_name = getattr(advertiser_profile, 'father_name', None)
+    email = getattr(advertiser_profile, 'email', None)
+    name_parts = [first_name, father_name]
+    display_name = " ".join(part for part in name_parts if part)
+    full_name = display_name or (email.split('@')[0] if email else 'Advertiser')
 
-    full_name = display_name or (current_user.email.split('@')[0] if current_user.email else 'Advertiser')
-
-    # Build response with user data
     response = AdvertiserProfileResponse.from_orm(advertiser_profile)
     response_dict = response.dict()
 
-    # Add user data (email, phone, full_name, and centralized fields)
-    response_dict['email'] = current_user.email
-    response_dict['phone'] = getattr(current_user, 'phone', None)
+    response_dict['email'] = email
+    response_dict['phone'] = getattr(advertiser_profile, 'phone', None)
     response_dict['full_name'] = full_name
-    response_dict['first_name'] = current_user.first_name
-    response_dict['father_name'] = current_user.father_name
-    response_dict['grandfather_name'] = current_user.grandfather_name
-    response_dict['last_name'] = current_user.last_name
-    response_dict['profile_picture'] = current_user.profile_picture  # Read from users table
-    response_dict['location'] = current_user.location  # Read from users table
-    response_dict['social_links'] = current_user.social_links or {}  # Read from users table
-    response_dict['languages'] = current_user.languages or []  # Read from users table
+    response_dict['first_name'] = first_name
+    response_dict['father_name'] = father_name
+    # Fields that lived on the users table no longer apply to a standalone
+    # advertiser; return safe defaults so the page renders.
+    response_dict['grandfather_name'] = None
+    response_dict['last_name'] = None
+    response_dict['profile_picture'] = getattr(advertiser_profile, 'company_logo', None)
+    response_dict['location'] = None
+    response_dict['social_links'] = {}
+    response_dict['languages'] = []
 
-    # Verification status (CANONICAL fields live on users table, not advertiser_profiles)
-    # The frontend's brand-creation guard reads is_verified from this response.
-    response_dict['is_verified'] = bool(getattr(current_user, 'is_verified', False))
-    response_dict['verification_status'] = getattr(current_user, 'verification_status', None)
-    response_dict['verification_method'] = getattr(current_user, 'verification_method', None)
-    response_dict['kyc_verified'] = bool(getattr(current_user, 'kyc_verified', False))
+    # Verification status now lives on advertiser_profiles (KYC).
+    response_dict['is_verified'] = bool(getattr(advertiser_profile, 'email_verified', False))
+    response_dict['verification_status'] = getattr(advertiser_profile, 'verification_status', None)
+    response_dict['verification_method'] = None
+    response_dict['kyc_verified'] = bool(getattr(advertiser_profile, 'kyc_verified', False)) \
+        if hasattr(advertiser_profile, 'kyc_verified') else False
 
-    # Use joined_in instead of created_at (AdvertiserProfile model has joined_in, not created_at)
-    if hasattr(advertiser_profile, 'joined_in') and advertiser_profile.joined_in:
+    if getattr(advertiser_profile, 'joined_in', None):
         response_dict['created_at'] = advertiser_profile.joined_in.isoformat()
     else:
         response_dict['created_at'] = None
@@ -7889,60 +7870,32 @@ async def get_advertiser_profile(
 @router.put("/api/advertiser/profile")
 async def update_advertiser_profile(
     profile_data: AdvertiserProfileUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user = Depends(resolve_advertiser),
     adv_db: Session = Depends(get_advertiser_db)
 ):
-    """Update advertiser profile"""
-    # Check if user has advertiser role
-    if "advertiser" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have advertiser role")
+    """Update the current advertiser's profile (self-contained advertiser auth)."""
+    advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    if not advertiser_profile_id:
+        raise HTTPException(status_code=403, detail="Not authorized as advertiser")
 
-    # Get advertiser profile (advertiser DB)
     advertiser_profile = adv_db.query(AdvertiserProfile).filter(
-        AdvertiserProfile.user_id == current_user.id
+        AdvertiserProfile.id == advertiser_profile_id
     ).first()
-
     if not advertiser_profile:
         raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
-    # Fields that belong to users table
-    user_fields = {'first_name', 'father_name', 'grandfather_name', 'last_name',
-                   'email', 'phone', 'gender', 'location', 'country_code', 'display_location', 'profile_picture',
-                   'social_links', 'languages'}
-
-    # Update profile fields
+    # Apply only fields that exist on advertiser_profiles (identity + profile are
+    # both on this row now; user-only fields are silently ignored).
     update_data = profile_data.dict(exclude_unset=True)
-
     for key, value in update_data.items():
-        if key in user_fields:
-            # Update user table
-            if hasattr(current_user, key):
-                if isinstance(value, str):
-                    value = value.strip()
-                    if value:  # Only update if non-empty
-                        setattr(current_user, key, value)
-                else:
-                    # For non-string fields (JSON, arrays, etc.)
-                    setattr(current_user, key, value)
-        elif hasattr(advertiser_profile, key):
-            # Update advertiser_profile table
-            setattr(advertiser_profile, key, value)
+        if hasattr(advertiser_profile, key):
+            if isinstance(value, str):
+                value = value.strip()
+                if value:
+                    setattr(advertiser_profile, key, value)
+            else:
+                setattr(advertiser_profile, key, value)
 
-    # Auto-deduce country_code and currency from location if not explicitly provided
-    if update_data.get('location') and not update_data.get('country_code'):
-        from currency_utils import get_country_code_from_location, get_currency_from_country
-        deduced_code = get_country_code_from_location(update_data['location'])
-        if deduced_code:
-            current_user.country_code = deduced_code
-            current_user.currency = get_currency_from_country(deduced_code)
-            print(f"[Advertiser] Auto-deduced country: {deduced_code}, currency: {current_user.currency}")
-    elif update_data.get('country_code'):
-        from currency_utils import get_currency_from_country
-        current_user.currency = get_currency_from_country(update_data['country_code'])
-
-    # User-table fields commit on the user DB; advertiser fields on the advertiser DB.
-    db.commit()
     adv_db.commit()
     adv_db.refresh(advertiser_profile)
 

@@ -149,6 +149,34 @@
         getToken() { return this.token; }
         getUserRole() { return 'advertiser'; }
 
+        // Profile dropdown helpers (mirror the shared AuthManager API).
+        getPrimaryContact(user) {
+            const u = user || this.user;
+            if (!u) return null;
+            if (u.email) return 'email';
+            if (u.phone) return 'phone';
+            return null;
+        }
+        maskContact(value, type = 'email') {
+            if (!value) return '***';
+            if (type === 'phone') {
+                const cleaned = value.replace(/\s/g, '');
+                if (cleaned.length <= 5) return '***';
+                return `${cleaned.substring(0, 3)}${'*'.repeat(cleaned.length - 5)}${cleaned.substring(cleaned.length - 2)}`;
+            }
+            const [localPart, domain] = value.split('@');
+            if (!domain) return '***';
+            if (localPart.length <= 5) return `***@${domain}`;
+            return `${localPart.substring(0, 3)}${'*'.repeat(localPart.length - 5)}${localPart.substring(localPart.length - 2)}@${domain}`;
+        }
+        getMaskedContact(user) {
+            const u = user || this.user;
+            if (!u) return '***';
+            const type = this.getPrimaryContact(u);
+            if (!type) return '***';
+            return this.maskContact(type === 'email' ? u.email : u.phone, type);
+        }
+
         getAuthHeaders() {
             return this.token
                 ? { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' }

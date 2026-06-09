@@ -18,6 +18,7 @@ from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 from datetime import datetime
 from advertiser_balance_endpoints import mirror_balance_to_company
 
@@ -40,7 +41,7 @@ class CampaignCancellationRequest(BaseModel):
 
 
 @router.post("/cancel/{campaign_id}")
-async def cancel_campaign(campaign_id: int, request: CampaignCancellationRequest, current_user = Depends(get_current_user)):
+async def cancel_campaign(campaign_id: int, request: CampaignCancellationRequest, current_user = Depends(resolve_advertiser)):
     """
     Cancel a campaign with 5% fee on remaining balance
 
@@ -207,7 +208,7 @@ async def cancel_campaign(campaign_id: int, request: CampaignCancellationRequest
 
 
 @router.get("/cancellation-preview/{campaign_id}")
-async def get_cancellation_preview(campaign_id: int, current_user = Depends(get_current_user)):
+async def get_cancellation_preview(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """
     Preview cancellation costs before actually cancelling
 
