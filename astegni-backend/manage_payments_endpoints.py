@@ -148,10 +148,12 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
             SELECT ci.id, ci.campaign_id, ci.advertiser_id, ci.brand_id,
                    ci.invoice_number, ci.amount, ci.status, ci.payment_method,
                    ci.invoice_pdf_url, ci.notes, ci.issued_at, ci.updated_at,
-                   cp.name AS campaign_name, bp.name AS brand_name
+                   cp.name AS campaign_name, cp.company_id,
+                   bp.name AS brand_name, comp.company_name
             FROM campaign_invoices ci
             LEFT JOIN campaign_profile cp ON ci.campaign_id = cp.id
             LEFT JOIN brand_profile bp ON ci.brand_id = bp.id
+            LEFT JOIN company_profile comp ON cp.company_id = comp.id
             {where}
             ORDER BY ci.updated_at DESC
             LIMIT %s
@@ -166,6 +168,7 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                 "invoice_id": r['id'],
                 "campaign_id": r['campaign_id'],
                 "campaign_name": r['campaign_name'],
+                "company_name": r['company_name'],
                 "brand_name": r['brand_name'],
                 "advertiser_name": adv.get('name'),
                 "advertiser_email": adv.get('email'),

@@ -1,92 +1,248 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Payments | Astegni Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>ASTEGNI - Manage Payments</title>
+    <!-- TailwindCSS CDN -->
+    <script>tailwind.config={corePlugins:{preflight:false}}</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>html{font-size:18px!important}</style>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <style>
-        :root {
-            --primary: #667eea; --primary-dark: #5568d3;
-            --bg: #f3f4f6; --card: #ffffff; --text: #111827; --text-muted: #6b7280;
-            --border: #e5e7eb; --pending: #d97706; --verified: #16a34a; --rejected: #dc2626;
+        /* ---- Manage Payments page-specific ---- */
+        .mp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .mp-stat-card {
+            background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e5e7eb);
+            border-radius: 14px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .15s ease, box-shadow .15s ease;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
-        .topbar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; }
-        .topbar h1 { font-size: 1.35rem; display: flex; align-items: center; gap: 10px; }
-        .topbar a { color: #fff; text-decoration: none; font-size: 0.9rem; opacity: 0.9; }
-        .topbar a:hover { opacity: 1; }
-        .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
-        .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-        .stat .n { font-size: 1.7rem; font-weight: 700; }
-        .stat .l { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
-        .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-        .tab { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 0.9rem; font-weight: 600; }
-        .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 14px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
-        th { background: #f9fafb; color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
-        tr:last-child td { border-bottom: none; }
-        .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
-        .badge.pending { background: rgba(217,119,6,.12); color: var(--pending); }
-        .badge.verified { background: rgba(22,163,74,.12); color: var(--verified); }
-        .badge.rejected { background: rgba(220,38,38,.12); color: var(--rejected); }
-        .btn { padding: 7px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.82rem; color: #fff; }
-        .btn-view { background: #2563eb; }
-        .btn-verify { background: var(--verified); }
-        .btn-reject { background: var(--rejected); }
-        .btn:disabled { background: #9ca3af; cursor: not-allowed; }
-        .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-        .empty, .loading { padding: 40px; text-align: center; color: var(--text-muted); }
-        .muted { color: var(--text-muted); font-size: 0.82rem; }
-        #access-denied { display: none; padding: 40px; text-align: center; color: var(--rejected); font-weight: 600; }
+        .mp-stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.10); }
+        .mp-stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; flex-shrink: 0; }
+        .mp-stat-icon.pending { background: linear-gradient(135deg,#f59e0b,#d97706); }
+        .mp-stat-icon.verified { background: linear-gradient(135deg,#22c55e,#16a34a); }
+        .mp-stat-icon.rejected { background: linear-gradient(135deg,#ef4444,#dc2626); }
+        .mp-stat-icon.total { background: linear-gradient(135deg,#6366f1,#4f46e5); }
+        .mp-stat-num { font-size: 1.75rem; font-weight: 800; line-height: 1; color: var(--text-color, #111827); }
+        .mp-stat-label { font-size: .8rem; color: var(--text-muted, #6b7280); text-transform: uppercase; letter-spacing: .03em; margin-top: .25rem; }
+
+        .mp-tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .mp-tab {
+            padding: .55rem 1.25rem; border-radius: 999px; border: 1px solid var(--border-color, #e5e7eb);
+            background: var(--card-bg, #fff); color: var(--text-color, #374151); cursor: pointer;
+            font-size: .9rem; font-weight: 600; transition: all .15s ease; display: inline-flex; align-items: center; gap: .4rem;
+        }
+        .mp-tab:hover { border-color: #6366f1; }
+        .mp-tab.active { background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+        .mp-tab .mp-tab-count { background: rgba(0,0,0,.08); border-radius: 999px; padding: 0 .5rem; font-size: .72rem; }
+        .mp-tab.active .mp-tab-count { background: rgba(255,255,255,.25); }
+
+        .mp-card { background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .mp-table { width: 100%; border-collapse: collapse; }
+        .mp-table th, .mp-table td { padding: .9rem 1.1rem; text-align: left; font-size: .9rem; border-bottom: 1px solid var(--border-color, #eef0f3); vertical-align: middle; }
+        .mp-table th { background: var(--table-head-bg, #f9fafb); color: var(--text-muted, #6b7280); font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+        .mp-table tbody tr { transition: background .12s ease; }
+        .mp-table tbody tr:hover { background: rgba(99,102,241,.04); }
+        .mp-table tr:last-child td { border-bottom: none; }
+        .mp-primary { font-weight: 600; color: var(--text-color, #111827); }
+        .mp-muted { color: var(--text-muted, #9ca3af); font-size: .8rem; }
+
+        .mp-badge { padding: .25rem .7rem; border-radius: 999px; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; display: inline-flex; align-items: center; gap: .3rem; }
+        .mp-badge.pending { background: rgba(245,158,11,.14); color: #b45309; }
+        .mp-badge.verified { background: rgba(34,197,94,.14); color: #15803d; }
+        .mp-badge.rejected { background: rgba(239,68,68,.14); color: #b91c1c; }
+
+        .mp-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .mp-btn { padding: .45rem .85rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .82rem; color: #fff; display: inline-flex; align-items: center; gap: .35rem; transition: filter .12s ease; text-decoration: none; }
+        .mp-btn:hover { filter: brightness(.93); }
+        .mp-btn-view { background: #2563eb; }
+        .mp-btn-verify { background: linear-gradient(135deg,#22c55e,#16a34a); }
+        .mp-btn-reject { background: linear-gradient(135deg,#ef4444,#dc2626); }
+        .mp-btn:disabled { background: #cbd5e1; cursor: not-allowed; filter: none; }
+
+        .mp-empty, .mp-loading { padding: 3rem 1rem; text-align: center; color: var(--text-muted, #9ca3af); }
+        .mp-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; opacity: .4; }
+        #access-denied { display: none; padding: 3rem; text-align: center; color: #dc2626; font-weight: 600; }
+        #access-denied i { font-size: 2.5rem; display: block; margin-bottom: 1rem; }
+
+        /* Dark theme overrides */
+        [data-theme="dark"] .mp-stat-card,
+        [data-theme="dark"] .mp-tab,
+        [data-theme="dark"] .mp-card { background: #2a2a2a; border-color: #3a3a3a; }
+        [data-theme="dark"] .mp-stat-num, [data-theme="dark"] .mp-primary { color: #f3f4f6; }
+        [data-theme="dark"] .mp-table th { background: #232323; color: #9ca3af; }
+        [data-theme="dark"] .mp-table th, [data-theme="dark"] .mp-table td { border-color: #3a3a3a; }
+        [data-theme="dark"] .mp-table tbody tr:hover { background: rgba(99,102,241,.10); }
     </style>
 </head>
-<body>
-    <div class="topbar">
-        <h1><i class="fas fa-hand-holding-usd"></i> Manage Payments</h1>
-        <a href="./index.html"><i class="fas fa-arrow-left"></i> Admin Home</a>
-    </div>
 
-    <div class="container">
-        <div id="access-denied"><i class="fas fa-lock"></i> Access denied. This page requires the <b>manage-payments</b> department.</div>
+<body class="font-sans">
 
-        <div id="main">
-            <div class="stats">
-                <div class="stat"><div class="n" id="stat-pending" style="color:var(--pending)">0</div><div class="l">Pending</div></div>
-                <div class="stat"><div class="n" id="stat-verified" style="color:var(--verified)">0</div><div class="l">Verified</div></div>
-                <div class="stat"><div class="n" id="stat-rejected" style="color:var(--rejected)">0</div><div class="l">Rejected</div></div>
-                <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Total</div></div>
+    <!-- Navigation -->
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Left: Logo -->
+            <div class="nav-left flex items-center gap-4">
+                <a href="manage-payments.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage Payments</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
             </div>
 
-            <div class="tabs">
-                <div class="tab active" data-status="pending" onclick="ManagePayments.switchTab('pending')">Pending Review</div>
-                <div class="tab" data-status="verified" onclick="ManagePayments.switchTab('verified')">Verified</div>
-                <div class="tab" data-status="rejected" onclick="ManagePayments.switchTab('rejected')">Rejected</div>
-                <div class="tab" data-status="all" onclick="ManagePayments.switchTab('all')">All</div>
+            <!-- Center: Live Clock -->
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
             </div>
 
-            <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Campaign</th><th>Brand</th><th>Advertiser</th>
-                            <th>Advance</th><th>Status</th><th>Updated</th><th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="payments-body">
-                        <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>
-                    </tbody>
-                </table>
+            <!-- Right: Home, Theme -->
+            <div class="header-right">
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()" title="Toggle theme">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
+                    </span>
+                </button>
             </div>
         </div>
-    </div>
+    </nav>
 
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+
+            <!-- Page header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold flex items-center gap-3" style="color:var(--text-color,#111827)">
+                    <span class="mp-stat-icon total" style="width:44px;height:44px"><i class="fas fa-hand-holding-usd"></i></span>
+                    Manage Payments
+                </h1>
+                <p class="mp-muted mt-2" style="font-size:.95rem">
+                    Review and verify advertiser advance-payment receipts — the first of the two campaign verifications.
+                </p>
+            </div>
+
+            <div id="access-denied">
+                <i class="fas fa-lock"></i>
+                Access denied. This page requires the <b>manage-payments</b> department.
+            </div>
+
+            <div id="main">
+                <!-- Stats -->
+                <div class="mp-stats">
+                    <div class="mp-stat-card">
+                        <div class="mp-stat-icon pending"><i class="fas fa-clock"></i></div>
+                        <div><div class="mp-stat-num" id="stat-pending">0</div><div class="mp-stat-label">Pending</div></div>
+                    </div>
+                    <div class="mp-stat-card">
+                        <div class="mp-stat-icon verified"><i class="fas fa-check-circle"></i></div>
+                        <div><div class="mp-stat-num" id="stat-verified">0</div><div class="mp-stat-label">Verified</div></div>
+                    </div>
+                    <div class="mp-stat-card">
+                        <div class="mp-stat-icon rejected"><i class="fas fa-times-circle"></i></div>
+                        <div><div class="mp-stat-num" id="stat-rejected">0</div><div class="mp-stat-label">Rejected</div></div>
+                    </div>
+                    <div class="mp-stat-card">
+                        <div class="mp-stat-icon total"><i class="fas fa-receipt"></i></div>
+                        <div><div class="mp-stat-num" id="stat-total">0</div><div class="mp-stat-label">Total</div></div>
+                    </div>
+                </div>
+
+                <!-- Filter tabs -->
+                <div class="mp-tabs">
+                    <div class="mp-tab active" data-status="pending" onclick="ManagePayments.switchTab('pending')"><i class="fas fa-clock"></i> Pending Review</div>
+                    <div class="mp-tab" data-status="verified" onclick="ManagePayments.switchTab('verified')"><i class="fas fa-check"></i> Verified</div>
+                    <div class="mp-tab" data-status="rejected" onclick="ManagePayments.switchTab('rejected')"><i class="fas fa-times"></i> Rejected</div>
+                    <div class="mp-tab" data-status="all" onclick="ManagePayments.switchTab('all')"><i class="fas fa-list"></i> All</div>
+                </div>
+
+                <!-- Table -->
+                <div class="mp-card">
+                    <table class="mp-table">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Company</th>
+                                <th>Brand</th>
+                                <th>Advertiser</th>
+                                <th>Advance</th>
+                                <th>Status</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-body">
+                            <tr><td colspan="8" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
     <script src="./js/api-config.js"></script>
     <script src="./js/auth.js"></script>
-    <script src="./js/admin-pages/manage-payments.js?v202606090100"></script>
+    <script src="./js/admin-pages/manage-payments.js?v202606090300"></script>
+
+    <!-- Theme toggle + live clock (lightweight, self-contained) -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            applyThemeIcons(next);
+        }
+        function applyThemeIcons(theme) {
+            const moon = document.getElementById('moon-icon');
+            const sun = document.getElementById('sun-icon');
+            if (moon && sun) {
+                const dark = theme === 'dark';
+                moon.style.display = dark ? 'none' : 'inline';
+                sun.style.display = dark ? 'inline' : 'none';
+            }
+        }
+        (function () {
+            const saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+            document.addEventListener('DOMContentLoaded', () => applyThemeIcons(saved));
+        })();
+
+        function updateClock() {
+            const now = new Date();
+            const t = document.getElementById('current-time');
+            const d = document.getElementById('current-date');
+            if (t) t.textContent = now.toLocaleTimeString();
+            if (d) d.textContent = now.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        setInterval(updateClock, 1000);
+        document.addEventListener('DOMContentLoaded', updateClock);
+    </script>
 </body>
+
 </html>
