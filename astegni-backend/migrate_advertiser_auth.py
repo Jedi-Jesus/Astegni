@@ -60,6 +60,14 @@ ALTER TABLE advertiser_profiles DROP CONSTRAINT IF EXISTS advertiser_profiles_us
 CREATE UNIQUE INDEX IF NOT EXISTS advertiser_profiles_user_id_unique
     ON advertiser_profiles (user_id) WHERE user_id IS NOT NULL;
 
+-- Team membership: the accepting member is now an advertiser account, not a
+-- platform user. member_advertiser_id -> advertiser_profiles.id (legacy user_id
+-- column is left for back-compat but no longer written).
+ALTER TABLE advertiser_team_members
+    ADD COLUMN IF NOT EXISTS member_advertiser_id INTEGER;
+CREATE INDEX IF NOT EXISTS idx_team_member_advertiser_id
+    ON advertiser_team_members (member_advertiser_id);
+
 -- Advertiser-side OTP store (user_db and admin_db each have their own).
 CREATE TABLE IF NOT EXISTS otps (
     id SERIAL PRIMARY KEY,

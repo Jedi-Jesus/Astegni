@@ -79,14 +79,15 @@ async def get_team_members(current_user = Depends(resolve_advertiser)):
         if not advertiser_profile_id:
             raise HTTPException(status_code=403, detail="Not authorized as advertiser")
 
-        # --- Step 1: advertiser DB reads (profile + team members) -----------
+        # Everything is read from the advertiser DB — advertiser identity is
+        # self-contained, no users-table lookups.
         with get_adv_db() as adv_conn:
             with adv_conn.cursor() as adv_cur:
-                # Account owner: advertiser profile creator's user_id
+                # Account owner: the advertiser themselves.
                 adv_cur.execute("""
-                    SELECT ap.user_id
-                    FROM advertiser_profiles ap
-                    WHERE ap.id = %s
+                    SELECT email, company_name, first_name, father_name,
+                           company_logo, created_at
+                    FROM advertiser_profiles WHERE id = %s
                 """, (advertiser_profile_id,))
                 owner_row = adv_cur.fetchone()
 
@@ -102,8 +103,10 @@ async def get_team_members(current_user = Depends(resolve_advertiser)):
                         tm.accepted_at,
                         tm.last_active,
                         tm.permissions,
-                        tm.user_id
+                        tm.member_advertiser_id,
+                        ap.company_logo AS member_logo
                     FROM advertiser_team_members tm
+                    LEFT JOIN advertiser_profiles ap ON ap.id = tm.member_advertiser_id
                     WHERE tm.advertiser_profile_id = %s
                     AND tm.status != 'removed'
                     ORDER BY
@@ -116,53 +119,32 @@ async def get_team_members(current_user = Depends(resolve_advertiser)):
                 """, (advertiser_profile_id,))
                 members = adv_cur.fetchall()
 
-        # --- Step 2: user DB reads (resolve user_ids -> user info) ----------
-        # Collect all user_ids we need from the user DB.
-        user_ids = set()
-        if owner_row and owner_row['user_id'] is not None:
-            user_ids.add(owner_row['user_id'])
-        for m in members:
-            if m['user_id'] is not None:
-                user_ids.add(m['user_id'])
-
-        users_by_id = {}
-        if user_ids:
-            with get_db() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT id, email,
-                               CONCAT_WS(' ', first_name, father_name, grandfather_name) as full_name,
-                               profile_picture, created_at
-                        FROM users
-                        WHERE id = ANY(%s)
-                    """, (list(user_ids),))
-                    for u in cur.fetchall():
-                        users_by_id[u['id']] = u
-
-        # --- Step 3: merge in Python ----------------------------------------
+        # --- merge ----------------------------------------------------------
         result = []
 
-        # Add owner as the first member (admin/owner)
-        owner = users_by_id.get(owner_row['user_id']) if owner_row and owner_row['user_id'] is not None else None
-        if owner:
+        # Owner = the advertiser account itself.
+        if owner_row:
+            owner_person = " ".join(p for p in [owner_row.get('first_name'),
+                                                owner_row.get('father_name')] if p).strip()
             result.append({
                 "id": 0,  # Special ID for owner
-                "email": owner['email'],
-                "full_name": owner['full_name'],
+                "email": owner_row['email'],
+                "full_name": owner_row.get('company_name') or owner_person or owner_row['email'],
                 "role": "owner",  # Special role for account creator
                 "status": "active",
                 "invited_at": None,
-                "accepted_at": owner['created_at'].isoformat() if owner['created_at'] else None,
+                "accepted_at": owner_row['created_at'].isoformat() if owner_row.get('created_at') else None,
                 "last_active": None,
                 "permissions": {"full_access": True},
-                "profile_picture": owner['profile_picture'],
+                "profile_picture": owner_row.get('company_logo'),
                 "is_owner": True
             })
 
-        # Add other team members (all are Brand Managers now)
+        # Other team members (Brand Managers). Identity (email/full_name) is stored
+        # on the team row; profile picture comes from the member's advertiser
+        # account when they've accepted.
         for m in members:
             perms = m['permissions'] or {}
-            user_info = users_by_id.get(m['user_id']) if m['user_id'] is not None else None
             result.append({
                 "id": m['id'],
                 "email": m['email'],
@@ -174,7 +156,7 @@ async def get_team_members(current_user = Depends(resolve_advertiser)):
                 "last_active": m['last_active'].isoformat() if m['last_active'] else None,
                 "can_set_price": perms.get('can_set_price', False),
                 "permissions": perms,
-                "profile_picture": user_info['profile_picture'] if user_info else None,
+                "profile_picture": m.get('member_logo'),
                 "is_owner": False
             })
 
@@ -239,18 +221,22 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(re
                         )
                     company_id = company_rows[0]['id']
 
-                # Get inviter's user_id + brand name for the email.
-                # SPLIT cross-DB join: advertiser_profiles/brand_profile are on the
-                # advertiser DB; the inviter's name lives in users on the user DB.
+                # Inviter identity + brand name, read entirely from the advertiser
+                # DB. Advertiser auth is self-contained, so the inviter's name lives
+                # on advertiser_profiles (no users lookup).
                 adv_cur.execute("""
-                    SELECT ap.user_id,
+                    SELECT ap.company_name, ap.first_name, ap.father_name,
                            bp.name as brand_name
                     FROM advertiser_profiles ap
                     LEFT JOIN brand_profile bp ON bp.id = ap.brand_ids[1]
                     WHERE ap.id = %s
                 """, (advertiser_profile_id,))
                 inviter_info = adv_cur.fetchone()
-                inviter_user_id = inviter_info['user_id'] if inviter_info else None
+                _person = " ".join(p for p in [
+                    (inviter_info or {}).get('first_name'),
+                    (inviter_info or {}).get('father_name')] if p).strip()
+                inviter_name = ((inviter_info or {}).get('company_name')
+                                or _person or "A team member")
                 brand_name = inviter_info['brand_name'] if inviter_info else "an advertiser"
 
                 # Check if already invited (scoped to the same company)
@@ -281,18 +267,12 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(re
                                 dob = COALESCE(%s, dob)
                             WHERE id = %s
                             RETURNING id
-                        """, (psycopg.types.json.Json(permissions), invitation_token, current_user.id, invite.full_name, invite.dob, existing['id']))
+                        """, (psycopg.types.json.Json(permissions), invitation_token, advertiser_profile_id, invite.full_name, invite.dob, existing['id']))
                         member_id = adv_cur.fetchone()['id']
                 else:
-                    # Check if email belongs to existing user (USER DB).
-                    with get_db() as conn:
-                        with conn.cursor() as cur:
-                            cur.execute("""
-                                SELECT id, CONCAT_WS(' ', first_name, father_name, grandfather_name) as full_name
-                                FROM users WHERE email = %s
-                            """, (invite.email,))
-                            user = cur.fetchone()
-
+                    # Invitees are identified by email only. user_id is legacy and
+                    # left NULL — a team member accepts as an advertiser-portal user,
+                    # not a platform users row.
                     invitation_token = secrets.token_urlsafe(32)
 
                     adv_cur.execute("""
@@ -304,30 +284,19 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(re
                     """, (
                         advertiser_profile_id,
                         company_id,
-                        user['id'] if user else None,
+                        None,
                         invite.email,
-                        invite.full_name or (user['full_name'] if user else None),
+                        invite.full_name,
                         invite.dob,
                         invitation_token,
-                        current_user.id,
+                        advertiser_profile_id,
                         psycopg.types.json.Json(permissions)
                     ))
                     member_id = adv_cur.fetchone()['id']
 
                 adv_conn.commit()
 
-        # Resolve inviter's name from the user DB (split cross-DB join).
-        inviter_name = "A team member"
-        if inviter_user_id is not None:
-            with get_db() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT CONCAT_WS(' ', first_name, father_name, grandfather_name) as inviter_name
-                        FROM users WHERE id = %s
-                    """, (inviter_user_id,))
-                    name_row = cur.fetchone()
-                    if name_row and name_row['inviter_name']:
-                        inviter_name = name_row['inviter_name']
+        # inviter_name was resolved above from advertiser_profiles.
 
         # Send invitation email with link
         email_sent = email_service.send_team_invitation_email(
@@ -355,9 +324,12 @@ async def invite_team_member(invite: TeamMemberInvite, current_user = Depends(re
 
 
 @router.post("/team/accept/{token}")
-async def accept_invitation(token: str, current_user = Depends(get_current_user)):
-    """Accept a team invitation"""
+async def accept_invitation(token: str, current_user = Depends(resolve_advertiser)):
+    """Accept a team invitation. The invitee accepts as an advertiser-portal user
+    whose advertiser account email matches the invited email."""
     try:
+        invitee_advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        invitee_email = (current_user.email or "").lower()
         with get_adv_db() as conn:
             with conn.cursor() as cur:
                 # Find invitation
@@ -372,19 +344,20 @@ async def accept_invitation(token: str, current_user = Depends(get_current_user)
                 if not invitation:
                     raise HTTPException(status_code=404, detail="Invalid or expired invitation")
 
-                # Verify email matches (optional - could allow any logged in user)
-                if invitation['email'].lower() != current_user.email.lower():
+                # The accepting advertiser's email must match the invited email.
+                if invitation['email'].lower() != invitee_email:
                     raise HTTPException(status_code=403, detail="This invitation was sent to a different email")
 
-                # Accept invitation
+                # Record the accepting advertiser as member_advertiser_id (user_id
+                # is legacy/NULL — membership is keyed by advertiser_profile_id + email).
                 cur.execute("""
                     UPDATE advertiser_team_members
                     SET status = 'active',
-                        user_id = %s,
+                        member_advertiser_id = %s,
                         accepted_at = CURRENT_TIMESTAMP,
                         invitation_token = NULL
                     WHERE id = %s
-                """, (current_user.id, invitation['id']))
+                """, (invitee_advertiser_id, invitation['id']))
 
                 conn.commit()
 
@@ -508,18 +481,20 @@ async def resend_invitation(member_id: int, current_user = Depends(resolve_adver
 
         with get_adv_db() as conn:
             with conn.cursor() as cur:
-                # Get inviter's user_id + brand name for the email.
-                # SPLIT cross-DB join: advertiser_profiles/brand_profile on the
-                # advertiser DB; inviter's name in users on the user DB.
+                # Inviter name + brand, read entirely from the advertiser DB.
                 cur.execute("""
-                    SELECT ap.user_id,
+                    SELECT ap.company_name, ap.first_name, ap.father_name,
                            bp.name as brand_name
                     FROM advertiser_profiles ap
                     LEFT JOIN brand_profile bp ON bp.id = ap.brand_ids[1]
                     WHERE ap.id = %s
                 """, (advertiser_profile_id,))
                 inviter_info = cur.fetchone()
-                inviter_user_id = inviter_info['user_id'] if inviter_info else None
+                _person = " ".join(p for p in [
+                    (inviter_info or {}).get('first_name'),
+                    (inviter_info or {}).get('father_name')] if p).strip()
+                inviter_name = ((inviter_info or {}).get('company_name')
+                                or _person or "A team member")
                 brand_name = inviter_info['brand_name'] if inviter_info else "an advertiser"
 
                 # Verify ownership and status
@@ -546,18 +521,7 @@ async def resend_invitation(member_id: int, current_user = Depends(resolve_adver
 
                 conn.commit()
 
-        # Resolve inviter's name from the user DB (split cross-DB join).
-        inviter_name = "A team member"
-        if inviter_user_id is not None:
-            with get_db() as user_conn:
-                with user_conn.cursor() as user_cur:
-                    user_cur.execute("""
-                        SELECT CONCAT_WS(' ', first_name, father_name, grandfather_name) as inviter_name
-                        FROM users WHERE id = %s
-                    """, (inviter_user_id,))
-                    name_row = user_cur.fetchone()
-                    if name_row and name_row['inviter_name']:
-                        inviter_name = name_row['inviter_name']
+        # inviter_name resolved above from advertiser_profiles.
 
         # Send invitation email with link
         email_sent = email_service.send_team_invitation_email(
@@ -598,9 +562,10 @@ async def search_users_for_invite(q: str, current_user = Depends(resolve_adverti
         if not q or len(q) < 2:
             return {"success": True, "users": []}
 
-        # SPLIT cross-DB subquery: the "already invited" emails live in
-        # advertiser_team_members on the advertiser DB. Fetch them first, then
-        # exclude them from the users search on the user DB.
+        # Search existing ADVERTISER accounts to invite (advertisers are a separate
+        # identity; team invitees are advertiser-portal users, not platform users).
+        # Everything stays within the advertiser DB. Exclude already-invited emails
+        # and the inviter's own account.
         with get_adv_db() as adv_conn:
             with adv_conn.cursor() as adv_cur:
                 adv_cur.execute("""
@@ -610,76 +575,54 @@ async def search_users_for_invite(q: str, current_user = Depends(resolve_adverti
                 """, (advertiser_profile_id,))
                 excluded_emails = [r['email'] for r in adv_cur.fetchall()]
 
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                # Search users by email, first_name, father_name, or grandfather_name.
-                # Exclude already-invited members via email <> ALL(%s) (empty list
-                # is a no-op exclusion).
-                cur.execute("""
+                adv_cur.execute("""
                     SELECT
-                        u.id,
-                        u.email,
-                        u.first_name,
-                        u.father_name,
-                        u.grandfather_name,
-                        CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name) as full_name,
-                        u.profile_picture,
-                        u.roles
-                    FROM users u
-                    WHERE (
-                        LOWER(u.email) LIKE LOWER(%s)
-                        OR LOWER(u.first_name) LIKE LOWER(%s)
-                        OR LOWER(u.father_name) LIKE LOWER(%s)
-                        OR LOWER(u.grandfather_name) LIKE LOWER(%s)
-                        OR LOWER(CONCAT_WS(' ', u.first_name, u.father_name, u.grandfather_name)) LIKE LOWER(%s)
+                        ap.id,
+                        ap.email,
+                        ap.first_name,
+                        ap.father_name,
+                        ap.company_name,
+                        ap.company_logo,
+                        CONCAT_WS(' ', ap.first_name, ap.father_name) as full_name
+                    FROM advertiser_profiles ap
+                    WHERE ap.email IS NOT NULL
+                    AND ap.is_active = TRUE
+                    AND (
+                        LOWER(ap.email) LIKE LOWER(%s)
+                        OR LOWER(ap.first_name) LIKE LOWER(%s)
+                        OR LOWER(ap.father_name) LIKE LOWER(%s)
+                        OR LOWER(ap.company_name) LIKE LOWER(%s)
+                        OR LOWER(CONCAT_WS(' ', ap.first_name, ap.father_name)) LIKE LOWER(%s)
                     )
-                    AND u.id != %s
-                    AND u.email <> ALL(%s)
+                    AND ap.id != %s
+                    AND ap.email <> ALL(%s)
                     ORDER BY
-                        CASE WHEN LOWER(u.email) LIKE LOWER(%s) THEN 0 ELSE 1 END,
-                        u.first_name,
-                        u.father_name
+                        CASE WHEN LOWER(ap.email) LIKE LOWER(%s) THEN 0 ELSE 1 END,
+                        ap.first_name, ap.father_name
                     LIMIT 10
                 """, (
-                    f"%{q}%",  # email
-                    f"%{q}%",  # first_name
-                    f"%{q}%",  # father_name
-                    f"%{q}%",  # grandfather_name
-                    f"%{q}%",  # full name combined
-                    current_user.id,
-                    excluded_emails,  # email <> ALL(...)
-                    f"{q}%"    # for ordering
+                    f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%",
+                    advertiser_profile_id,
+                    excluded_emails,
+                    f"{q}%",
                 ))
+                advertisers = adv_cur.fetchall()
 
-                users = cur.fetchall()
+        result = [{
+            "id": a['id'],
+            "email": a['email'],
+            "first_name": a['first_name'],
+            "father_name": a['father_name'],
+            "grandfather_name": None,
+            "full_name": a['company_name'] or a['full_name'],
+            "profile_picture": a['company_logo'],
+            "roles": ['advertiser'],
+        } for a in advertisers]
 
-                result = []
-                for user in users:
-                    # roles is stored as a JSON array like ["parent", "tutor", "student"]
-                    roles = user['roles'] or []
-                    # Handle both array format and legacy dict format
-                    if isinstance(roles, list):
-                        role_list = roles
-                    elif isinstance(roles, dict):
-                        role_list = [role for role, enabled in roles.items() if enabled]
-                    else:
-                        role_list = []
-
-                    result.append({
-                        "id": user['id'],
-                        "email": user['email'],
-                        "first_name": user['first_name'],
-                        "father_name": user['father_name'],
-                        "grandfather_name": user['grandfather_name'],
-                        "full_name": user['full_name'],
-                        "profile_picture": user['profile_picture'],
-                        "roles": role_list
-                    })
-
-                return {
-                    "success": True,
-                    "users": result
-                }
+        return {
+            "success": True,
+            "users": result
+        }
 
     except HTTPException:
         raise
@@ -700,6 +643,8 @@ async def get_invitation_details(token: str):
         # the inviter's name (invited_by) lives in users on the user DB.
         with get_adv_db() as conn:
             with conn.cursor() as cur:
+                # invited_by is the inviting advertiser_profiles.id, so the inviter
+                # name comes from advertiser_profiles (all within the advertiser DB).
                 cur.execute("""
                     SELECT
                         tm.id,
@@ -710,10 +655,14 @@ async def get_invitation_details(token: str):
                         tm.invited_at,
                         tm.invited_by,
                         bp.name as brand_name,
-                        bp.thumbnail as brand_logo
+                        bp.thumbnail as brand_logo,
+                        inviter.company_name AS inviter_company,
+                        inviter.first_name  AS inviter_first,
+                        inviter.father_name AS inviter_father
                     FROM advertiser_team_members tm
                     JOIN advertiser_profiles ap ON tm.advertiser_profile_id = ap.id
                     LEFT JOIN brand_profile bp ON bp.id = ap.brand_ids[1]
+                    LEFT JOIN advertiser_profiles inviter ON inviter.id = tm.invited_by
                     WHERE tm.invitation_token = %s
                 """, (token,))
 
@@ -728,18 +677,9 @@ async def get_invitation_details(token: str):
             else:
                 raise HTTPException(status_code=400, detail="This invitation is no longer valid")
 
-        # Resolve inviter's name from the user DB.
-        inviter_name = None
-        if invitation['invited_by'] is not None:
-            with get_db() as user_conn:
-                with user_conn.cursor() as user_cur:
-                    user_cur.execute("""
-                        SELECT CONCAT_WS(' ', first_name, father_name, grandfather_name) as inviter_name
-                        FROM users WHERE id = %s
-                    """, (invitation['invited_by'],))
-                    name_row = user_cur.fetchone()
-                    if name_row:
-                        inviter_name = name_row['inviter_name']
+        _inviter_person = " ".join(p for p in [invitation.get('inviter_first'),
+                                               invitation.get('inviter_father')] if p).strip()
+        inviter_name = invitation.get('inviter_company') or _inviter_person or None
 
         permissions = invitation['permissions'] or {}
 
@@ -762,7 +702,7 @@ async def get_invitation_details(token: str):
 
 
 @router.post("/team/invitation/{token}/accept")
-async def accept_invitation_by_token(token: str, current_user = Depends(get_current_user)):
+async def accept_invitation_by_token(token: str, current_user = Depends(resolve_advertiser)):
     """Accept a team invitation using the token from email link"""
     try:
         # Advertiser-DB read + write of the team membership.
@@ -780,46 +720,27 @@ async def accept_invitation_by_token(token: str, current_user = Depends(get_curr
                 if not invitation:
                     raise HTTPException(status_code=404, detail="Invalid or expired invitation")
 
-                # Verify email matches
-                if invitation['email'].lower() != current_user.email.lower():
+                # The accepting advertiser's email must match the invited email.
+                invitee_advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+                if invitation['email'].lower() != (current_user.email or "").lower():
                     raise HTTPException(
                         status_code=403,
                         detail=f"This invitation was sent to {invitation['email']}. Please log in with that email address."
                     )
 
-                # Accept invitation
+                # Accept invitation. The invitee is already an advertiser-portal
+                # user (they logged in to accept), so there is no users-table role
+                # to grant. user_id is legacy/NULL; record member_advertiser_id.
                 cur.execute("""
                     UPDATE advertiser_team_members
                     SET status = 'active',
-                        user_id = %s,
+                        member_advertiser_id = %s,
                         accepted_at = CURRENT_TIMESTAMP,
                         invitation_token = NULL
                     WHERE id = %s
-                """, (current_user.id, invitation['id']))
+                """, (invitee_advertiser_id, invitation['id']))
 
                 conn.commit()
-
-        # Check if user already has advertiser role
-        existing_advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
-
-        # If user doesn't have advertiser role, add it (USER DB write).
-        # (This allows them to access the advertiser dashboard.)
-        if not existing_advertiser_id:
-            with get_db() as user_conn:
-                with user_conn.cursor() as user_cur:
-                    user_cur.execute("SELECT roles FROM users WHERE id = %s", (current_user.id,))
-                    user = user_cur.fetchone()
-                    roles = user['roles'] or {}
-
-                    # Add advertiser role if not present
-                    if 'advertiser' not in roles:
-                        roles['advertiser'] = True
-                        user_cur.execute("""
-                            UPDATE users
-                            SET roles = %s
-                            WHERE id = %s
-                        """, (psycopg.types.json.Json(roles), current_user.id))
-                        user_conn.commit()
 
         return {
             "success": True,
@@ -835,7 +756,7 @@ async def accept_invitation_by_token(token: str, current_user = Depends(get_curr
 
 
 @router.post("/team/invitation/{token}/decline")
-async def decline_invitation_by_token(token: str, current_user = Depends(get_current_user)):
+async def decline_invitation_by_token(token: str, current_user = Depends(resolve_advertiser)):
     """Decline a team invitation"""
     try:
         with get_adv_db() as conn:
@@ -853,7 +774,7 @@ async def decline_invitation_by_token(token: str, current_user = Depends(get_cur
                     raise HTTPException(status_code=404, detail="Invalid or expired invitation")
 
                 # Verify email matches
-                if invitation['email'].lower() != current_user.email.lower():
+                if invitation['email'].lower() != (current_user.email or "").lower():
                     raise HTTPException(
                         status_code=403,
                         detail="This invitation was sent to a different email address"

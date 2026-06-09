@@ -1290,16 +1290,23 @@ async def get_advertiser_stats(current_user = Depends(resolve_advertiser)):
                 brand_stats = cur.fetchone()
 
                 # Get campaign stats
+                # Real impressions come from campaign_impressions (campaign_profile
+                # has no impressions column); budget is campaign_budget.
                 cur.execute("""
                     SELECT
-                        COALESCE(SUM(impressions), 0) as total_impressions,
-                        COALESCE(SUM(campaign_budget), 0) as total_budget,
-                        COUNT(*) FILTER (WHERE verification_status = 'verified') as active_campaigns
-                    FROM campaign_profile
-                    WHERE id IN (
+                        COALESCE(SUM(cp.campaign_budget), 0) as total_budget,
+                        COUNT(*) FILTER (WHERE cp.verification_status = 'verified') as active_campaigns,
+                        COALESCE((
+                            SELECT COUNT(*) FROM campaign_impressions ci
+                            WHERE ci.campaign_id IN (
+                                SELECT unnest(campaign_ids) FROM brand_profile WHERE id = ANY(%s)
+                            )
+                        ), 0) as total_impressions
+                    FROM campaign_profile cp
+                    WHERE cp.id IN (
                         SELECT unnest(campaign_ids) FROM brand_profile WHERE id = ANY(%s)
                     )
-                """, (brand_ids,))
+                """, (brand_ids, brand_ids))
                 campaign_stats = cur.fetchone()
 
                 return {

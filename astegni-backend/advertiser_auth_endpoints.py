@@ -165,14 +165,13 @@ class _AdvertiserActor:
 
 
 def resolve_advertiser(authorization: str = Header(None, alias="Authorization")):
-    """Dual-accept dependency for advertiser-portal endpoints.
+    """Dependency for advertiser-portal endpoints.
 
-    Accepts EITHER a new advertiser token (type='advertiser' -> advertiser_id is
-    advertiser_profiles.id) OR a legacy user token (sub -> users.id, resolve the
-    advertiser_profiles row by user_id). Returns an object exposing
-    `.role_ids['advertiser']`, so existing handlers need no body changes.
-
-    The legacy user-token branch is a transition fallback; it is removed in Stage 3.
+    Accepts ONLY a self-contained advertiser token (type='advertiser', where
+    advertiser_id is advertiser_profiles.id). Returns an object exposing
+    `.role_ids['advertiser']` so handlers can read the advertiser id uniformly.
+    (The legacy user-token fallback was removed once the frontend cut over to
+    advertiser tokens.)
     """
     if not authorization or not authorization.startswith('Bearer '):
         raise HTTPException(
@@ -187,38 +186,12 @@ def resolve_advertiser(authorization: str = Header(None, alias="Authorization"))
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # New advertiser token.
-    if payload.get("type") == "advertiser":
-        adv_id = payload.get("advertiser_id")
-        if not adv_id:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-        return _AdvertiserActor(adv_id, email=payload.get("email"))
-
-    # Legacy user token: resolve advertiser_profiles by user_id (transition only).
-    if payload.get("type") in ("admin",):
+    if payload.get("type") != "advertiser":
         raise HTTPException(status_code=401, detail="Could not validate credentials")
-    sub = payload.get("sub")
-    if sub is None:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-    try:
-        user_id = int(sub)
-    except (ValueError, TypeError):
+    adv_id = payload.get("advertiser_id")
+    if not adv_id:
         raise HTTPException(status_code=401, detail="Invalid token payload")
-    conn = None
-    try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id, email FROM advertiser_profiles WHERE user_id = %s AND is_active = TRUE",
-            (user_id,),
-        )
-        row = cur.fetchone()
-    finally:
-        if conn:
-            conn.close()
-    if not row:
-        raise HTTPException(status_code=403, detail="This account has no advertiser profile")
-    return _AdvertiserActor(row[0], email=row[1], user_id=user_id)
+    return _AdvertiserActor(adv_id, email=payload.get("email"))
 
 
 def _issue_token(advertiser_id: int, email: str) -> str:
