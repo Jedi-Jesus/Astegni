@@ -2788,7 +2788,7 @@ window.closeModal = closeModal;
 // window.openEditProfileModal is defined in inline script in advertiser-profile.html
 window.saveProfile = saveProfile;
 window.openShareModal = typeof shareProfile !== 'undefined' ? shareProfile : function() { console.error('shareProfile not loaded'); };
-window.switchShareImage = switchShareImage;
+window.switchShareImage = typeof switchShareImage !== 'undefined' ? switchShareImage : function() { console.warn('switchShareImage not loaded'); };
 window.copyShareLink = copyShareLink;
 window.openContactModal = openContactModal;
 window.startLiveChat = startLiveChat;
