@@ -3477,6 +3477,33 @@ const BrandsManager = {
             return;
         }
 
+        // FIRST verification (payment) must pass before submitting the ad for
+        // content verification.
+        if (campaign.payment_verified !== true) {
+            const msg = campaign.payment_status === 'rejected'
+                ? 'Your payment receipt was rejected. Re-upload a valid receipt and wait for verification first.'
+                : 'Your advance payment must be verified before you can submit the campaign for ad review.';
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`🔒 ${msg}`, 'error');
+            } else {
+                alert(msg);
+            }
+            return;
+        }
+
+        // Must have at least one ad uploaded to submit for content review.
+        const hasMedia = Array.isArray(this.currentCampaignMedia)
+            ? this.currentCampaignMedia.length > 0
+            : (document.querySelectorAll('#campaign-images-gallery .media-item, #campaign-videos-gallery .media-item').length > 0);
+        if (!hasMedia) {
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('📤 Upload at least one ad image or video before submitting for verification.', 'error');
+            } else {
+                alert('Upload at least one ad image or video before submitting for verification.');
+            }
+            return;
+        }
+
         // Show confirmation modal instead of browser confirm
         this.showConfirmationModal({
             title: `Submit "${campaign.name}" for Verification?`,
@@ -3992,16 +4019,26 @@ const BrandsManager = {
             && campaign.verification_status !== 'verified'
             && campaign.verification_status !== 'approved';
 
+        // FIRST verification (payment): ad media upload is not allowed until the
+        // advance-payment receipt has been verified by an admin.
+        const paymentVerified = campaign.payment_verified === true;
+
+        // Block uploads if payment isn't verified yet OR the ad is under review.
+        const uploadsDisabled = !paymentVerified || isUnderVerification;
+        const disabledReason = !paymentVerified
+            ? 'You can upload ad media after your advance payment is verified'
+            : 'Cannot upload while campaign is under verification';
+
         // Get all upload buttons in the Images and Videos tabs
         const uploadButtons = document.querySelectorAll('.media-upload-btn');
 
         uploadButtons.forEach(btn => {
-            if (isUnderVerification) {
+            if (uploadsDisabled) {
                 // Disable upload buttons
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
-                btn.title = 'Cannot upload while campaign is under verification';
+                btn.title = disabledReason;
             } else {
                 // Enable upload buttons
                 btn.disabled = false;
@@ -4010,6 +4047,9 @@ const BrandsManager = {
                 btn.title = '';
             }
         });
+
+        // Show a hint banner in the Images/Videos tabs when payment isn't verified.
+        this.renderPaymentGateNotice(!paymentVerified, campaign.payment_status);
 
         // Also disable/enable edit buttons on campaign cards
         const editButtons = document.querySelectorAll('.campaign-card-edit-btn-bottom');
@@ -4027,6 +4067,47 @@ const BrandsManager = {
                     btn.style.cursor = 'pointer';
                     btn.title = '';
                 }
+            }
+        });
+    },
+
+    // Show/hide a notice in the Images & Videos tabs explaining that ad media
+    // upload is locked until the advance payment is verified.
+    renderPaymentGateNotice(show, paymentStatus) {
+        const tabs = ['tab-images', 'tab-videos'];
+        tabs.forEach(tabId => {
+            const tab = document.getElementById(tabId);
+            if (!tab) return;
+            let notice = tab.querySelector('.payment-gate-notice');
+
+            if (!show) {
+                if (notice) notice.remove();
+                return;
+            }
+
+            const msg = paymentStatus === 'rejected'
+                ? 'Your payment receipt was rejected. Please re-upload a valid receipt; ad uploads unlock once it is verified.'
+                : 'Ad uploads are locked until our team verifies your advance-payment receipt.';
+
+            const html = `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;margin-bottom:12px;
+                            border-radius:8px;border:1px solid #fcd34d;background:rgba(251,191,36,0.12);color:var(--text);">
+                    <i class="fas fa-lock" style="color:#d97706;margin-top:2px;"></i>
+                    <div style="font-size:0.9rem;">
+                        <strong>Awaiting payment verification</strong><br>
+                        <span style="color:var(--text-secondary);">${msg}</span>
+                    </div>
+                </div>`;
+
+            if (notice) {
+                notice.innerHTML = html;
+            } else {
+                notice = document.createElement('div');
+                notice.className = 'payment-gate-notice';
+                notice.innerHTML = html;
+                // Insert at the top of the tab's upload section.
+                const section = tab.querySelector('.media-upload-section') || tab;
+                section.insertBefore(notice, section.firstChild);
             }
         });
     },
@@ -4883,9 +4964,24 @@ const BrandsManager = {
 
     // Open media upload modal
     openMediaUploadModal(type = 'image') {
+        const c = this.currentCampaign;
+
+        // FIRST verification (payment): ad media upload is locked until the
+        // advance-payment receipt is verified by an admin.
+        if (c && c.payment_verified !== true) {
+            const msg = c.payment_status === 'rejected'
+                ? '❌ Your payment receipt was rejected. Re-upload a valid receipt to unlock ad uploads.'
+                : '🔒 Ad uploads unlock after your advance payment is verified.';
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(msg, 'error');
+            } else {
+                alert(msg.replace(/^[^ ]+ /, ''));
+            }
+            return;
+        }
+
         // Check if campaign is currently under verification (submitted but not yet decided).
         // Verified/approved campaigns can have media uploaded; only pending-review is locked.
-        const c = this.currentCampaign;
         const pendingReview = c
             && c.submit_for_verification
             && !c.is_verified
@@ -5331,8 +5427,12 @@ const BrandsManager = {
 
             if (!response || !response.media) {
                 console.log('No media found for this campaign');
+                this.currentCampaignMedia = [];
                 return;
             }
+
+            // Track loaded media so submit-for-verification can require an ad.
+            this.currentCampaignMedia = response.media;
 
             console.log(`✅ Loaded ${response.total} media items`);
 

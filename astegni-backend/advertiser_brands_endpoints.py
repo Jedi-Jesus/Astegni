@@ -964,7 +964,20 @@ async def get_campaign(campaign_id: int, current_user = Depends(get_current_user
                 if not campaign:
                     raise HTTPException(status_code=404, detail="Campaign not found")
 
-                return dict(campaign)
+                result = dict(campaign)
+
+                # Attach advance-payment (receipt) verification status. Ad media
+                # upload + submit-for-verification are gated on this being 'verified'.
+                cur.execute("""
+                    SELECT status FROM campaign_invoices
+                    WHERE campaign_id = %s AND invoice_type = 'advance'
+                    ORDER BY id DESC LIMIT 1
+                """, (campaign_id,))
+                inv = cur.fetchone()
+                result['payment_status'] = inv['status'] if inv else None
+                result['payment_verified'] = bool(inv and inv['status'] == 'verified')
+
+                return result
 
     except HTTPException:
         raise
