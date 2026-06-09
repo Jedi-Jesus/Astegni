@@ -17,7 +17,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db")
 ADVERTISER_DATABASE_URL = os.getenv("ADVERTISER_DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db")
 
 router = APIRouter(prefix="/api/advertiser", tags=["Advertiser Team"])
@@ -47,19 +46,13 @@ class TeamMemberResponse(BaseModel):
     can_set_price: bool
     permissions: dict
 
-# Database connections
-# get_db() -> USER DB (users reads/writes)
-def get_db():
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
-
-# get_adv_db() -> ADVERTISER DB (advertiser_profiles, advertiser_team_members,
-# company_profile, brand_profile). Postgres cannot join across these two DBs,
-# so cross-DB joins are split into two queries and merged in Python.
+# Database connection. Advertiser team data is self-contained in the advertiser
+# DB (advertiser_profiles, advertiser_team_members, company_profile,
+# brand_profile) — there are no users-table reads here anymore.
 def get_adv_db():
     return psycopg.connect(ADVERTISER_DATABASE_URL, row_factory=dict_row)
 
-# Auth dependency (simplified - use your actual auth)
-from utils import get_current_user
+# Auth dependency: advertiser-token only.
 from advertiser_auth_endpoints import resolve_advertiser
 from email_service import email_service
 

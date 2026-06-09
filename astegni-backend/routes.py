@@ -283,23 +283,12 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 elif user_data.role == "parent":
                     role_profile = db.query(ParentProfile).filter(ParentProfile.user_id == existing_user.id).first()
                     role_exists_deactivated = bool(role_profile and not role_profile.is_active)
-                elif user_data.role == "advertiser":
-                    # Advertiser profile is in the separate advertiser DB: reactivate it there.
-                    adv_db = AdvertiserSessionLocal()
-                    try:
-                        adv_profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == existing_user.id).first()
-                        if adv_profile and not adv_profile.is_active:
-                            adv_profile.is_active = True
-                            adv_db.commit()
-                            role_exists_deactivated = True
-                    finally:
-                        adv_db.close()
+                # (No 'advertiser' branch: advertiser signup is rejected above and
+                # handled by the separate /api/advertiser endpoints.)
 
                 # If profile exists and is deactivated, reactivate it
                 if role_exists_deactivated:
                     print(f"[REACTIVATION] Reactivating {user_data.role} role for user {existing_user.id}")
-                    # Non-advertiser role objects (still on the user-DB session) flip here;
-                    # advertiser already flipped on its own session above.
                     if role_profile is not None:
                         role_profile.is_active = True
                     existing_user.active_role = user_data.role
@@ -359,18 +348,8 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                     )
                     db.add(parent_profile)
                     db.commit()
-                elif user_data.role == "advertiser":
-                    # Advertiser profile lives in the separate advertiser DB.
-                    adv_db = AdvertiserSessionLocal()
-                    try:
-                        advertiser_profile = AdvertiserProfile(
-                            user_id=existing_user.id,
-                            company_name=(getattr(user_data, 'company_name', None) or None),
-                        )
-                        adv_db.add(advertiser_profile)
-                        adv_db.commit()
-                    finally:
-                        adv_db.close()
+                # (No 'advertiser' branch: advertiser accounts are created via the
+                # separate /api/advertiser endpoints, not here.)
                 elif user_data.role == "admin":
                     # Create admin_profile record using raw SQL
                     db.execute(text("""
@@ -499,18 +478,8 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 rating_count=0
             )
             db.add(parent_profile)
-        elif user_data.role == "advertiser":
-            # Advertiser profile lives in the separate advertiser DB; commit on its own session.
-            adv_db = AdvertiserSessionLocal()
-            try:
-                advertiser_profile = AdvertiserProfile(
-                    user_id=new_user.id,
-                    company_name=(getattr(user_data, 'company_name', None) or None),
-                )
-                adv_db.add(advertiser_profile)
-                adv_db.commit()
-            finally:
-                adv_db.close()
+        # (No 'advertiser' branch: advertiser accounts are created via the
+        # separate /api/advertiser endpoints, not here.)
         elif user_data.role == "admin":
             # Create admin_profile record using raw SQL
             db.execute(text("""
