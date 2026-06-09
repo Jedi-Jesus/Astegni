@@ -767,6 +767,7 @@ function requireAuth(page) {
         'manage-customers': ['manage-customers.html'],
         'manage-contents': ['manage-contents.html'],
         'manage-campaign': ['manage-campaign.html'],
+        'manage-payments': ['manage-payments.html'],
         'manage-companies': ['manage-companies.html'],
         'manage-admins': ['manage-admins.html'],
         'manage-system-settings': [  // Full access (super admin)
@@ -778,6 +779,7 @@ function requireAuth(page) {
             'manage-customers.html',
             'manage-contents.html',
             'manage-campaign.html',
+            'manage-payments.html',
             'manage-companies.html',
             'manage-admins.html',
             'manage-system-settings.html'
