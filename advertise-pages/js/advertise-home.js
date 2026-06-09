@@ -175,19 +175,9 @@
 
     function storeSession(tokenResponse) {
         if (!tokenResponse || !tokenResponse.access_token) return;
-        // Match the keys js/root/auth.js (AuthManager.restoreSession) looks for:
-        // 'token' (also 'access_token' for compatibility), 'currentUser', 'userRole'.
-        // Without these, the shared auth manager treats the user as logged-out and
-        // some legacy redirect kicks them back to astegni.com/index.html.
-        localStorage.setItem('token', tokenResponse.access_token);
-        localStorage.setItem('access_token', tokenResponse.access_token);
-        if (tokenResponse.refresh_token) {
-            localStorage.setItem('refresh_token', tokenResponse.refresh_token);
-        }
         // The advertiser auth endpoints return a flat advertiser shape
-        // ({advertiser_id, email, name, company_name}). Build a currentUser object
-        // the advertiser profile pages can read. (Legacy responses with a nested
-        // `user` object are still honored for safety.)
+        // ({advertiser_id, email, name, company_name}). Build the advertiser user
+        // object the profile pages read.
         const adv = tokenResponse.user || {
             id: tokenResponse.advertiser_id,
             advertiser_id: tokenResponse.advertiser_id,
@@ -197,8 +187,20 @@
             roles: ['advertiser'],
             active_role: 'advertiser'
         };
-        localStorage.setItem('currentUser', JSON.stringify(adv));
-        localStorage.setItem('userRole', 'advertiser');
+        // Persist through the dedicated advertiser auth manager (own keys
+        // 'advertiserToken'/'advertiserUser', mirrored to the shared token keys the
+        // profile managers still read). Falls back to direct writes if it hasn't
+        // loaded for any reason.
+        if (window.AdvertiserAuth && typeof window.AdvertiserAuth.store === 'function') {
+            window.AdvertiserAuth.store(tokenResponse.access_token, adv);
+        } else {
+            localStorage.setItem('advertiserToken', tokenResponse.access_token);
+            localStorage.setItem('advertiserUser', JSON.stringify(adv));
+            localStorage.setItem('token', tokenResponse.access_token);
+            localStorage.setItem('access_token', tokenResponse.access_token);
+            localStorage.setItem('currentUser', JSON.stringify(adv));
+            localStorage.setItem('userRole', 'advertiser');
+        }
     }
 
     function redirectToProfile() {

@@ -112,22 +112,6 @@ class AuthenticationManager {
                     roles: this.user.roles
                 });
 
-                // Advertiser accounts use a self-contained token (type='advertiser')
-                // and authenticate against /api/advertiser/* — NOT the user-DB
-                // endpoints (/api/me, /api/verify-token, /api/refresh) which would
-                // 401 and wipe the session. Validate against the advertiser endpoint
-                // and return early, bypassing the user-token verification chain.
-                if (this._isAdvertiserToken(token)) {
-                    console.log('[AuthManager.restoreSession] Advertiser token detected — validating via /api/advertiser/auth/me');
-                    this.user.roles = ['advertiser'];
-                    this.user.active_role = 'advertiser';
-                    this.verifyAdvertiserToken().catch(() => {
-                        // Don't block / don't clear on network errors — allow the page to load.
-                    });
-                    console.log('[AuthManager.restoreSession] Advertiser session restored');
-                    return true;
-                }
-
                 // Ensure user has roles array (for backward compatibility)
                 if (!this.user.roles && this.user.role) {
                     this.user.roles = [this.user.role];
@@ -615,66 +599,6 @@ async login(email, password) {
         }
     }
 
-    /**
-     * Decode a JWT payload (no signature check) and return true if it is an
-     * advertiser token (type === 'advertiser').
-     */
-    _isAdvertiserToken(token) {
-        try {
-            const part = (token || '').split('.')[1];
-            if (!part) return false;
-            const json = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
-            const payload = JSON.parse(json);
-            return payload && payload.type === 'advertiser';
-        } catch (e) {
-            return false;
-        }
-    }
-
-    /**
-     * Validate the advertiser token against /api/advertiser/auth/me. On 401 the
-     * advertiser token is genuinely expired/invalid, so clear auth (no user-DB
-     * refresh exists for advertisers). Network errors are tolerated (offline).
-     */
-    async verifyAdvertiserToken() {
-        if (!this.token) return false;
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/api/advertiser/auth/me`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (response.ok) {
-                const me = await response.json();
-                this.user = {
-                    ...this.user,
-                    id: me.advertiser_id,
-                    advertiser_id: me.advertiser_id,
-                    email: me.email,
-                    name: me.name,
-                    company_name: me.company_name,
-                    roles: ['advertiser'],
-                    active_role: 'advertiser',
-                    role_ids: { advertiser: me.advertiser_id }
-                };
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
-                document.dispatchEvent(new CustomEvent('userDataLoaded', { detail: this.user }));
-                return true;
-            }
-            if (response.status === 401) {
-                console.log('[AuthManager.verifyAdvertiserToken] Advertiser token invalid (401) — clearing auth');
-                this.logout(false);
-                return false;
-            }
-            return true;
-        } catch (error) {
-            // Network error — keep the session, allow offline usage.
-            return true;
-        }
-    }
-
     async verifyToken() {
         console.log('[AuthManager.verifyToken] Starting token verification');
 
@@ -745,14 +669,6 @@ async login(email, password) {
     }
 
     async refreshAccessToken() {
-        // Advertiser tokens have no user-DB refresh flow. Never call /api/refresh
-        // (it 401s) and never wipe the advertiser session here — leave that to
-        // verifyAdvertiserToken, which clears only on a genuine advertiser 401.
-        if (this._isAdvertiserToken(this.token)) {
-            console.log('[AuthManager.refreshAccessToken] Advertiser token — no user refresh, skipping');
-            return false;
-        }
-
         const refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) {

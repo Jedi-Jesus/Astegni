@@ -3698,8 +3698,9 @@
     <!-- Share Profile Manager (Must load early for onclick handlers) -->
     <script src="../js/common-modals/share-profile-manager.js?v202605252300"></script>
 
-    <!-- Authentication Manager - MUST load before profile-specific code -->
-    <script src="../js/root/auth.js?v202606091500"></script>
+    <!-- Advertiser Authentication Manager (dedicated; NOT the shared user auth.js).
+         Advertisers authenticate against /api/advertiser/* with their own token. -->
+    <script src="./js/advertiser-auth.js?v202606091600"></script>
     <script src="../js/root/google-oauth.js?v202605252300"></script>
     <!-- Navigation - mobile menu handler -->
     <script src="../js/root/nav.js?v202605252300"></script>
