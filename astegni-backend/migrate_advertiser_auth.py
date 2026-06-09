@@ -15,7 +15,16 @@ nullable so Stage 3 can register users-less advertisers.
 
 Run:
     python migrate_advertiser_auth.py
+
+PROD NOTE: advertiser_profiles is owned by `postgres` (created via pg_dump in the
+DB split), and even `ALTER ... ADD COLUMN IF NOT EXISTS` requires table ownership.
+On prod, run the DDL block (printed by --print-ddl) as the postgres OS user via
+`sudo -u postgres psql -d astegni_advertiser_db`, GRANT ALL on the table/otps to
+astegni_user, then run this script with --backfill-only (UPDATEs work as the app
+role once granted).
 """
+
+import argparse
 
 import sys
 import os
@@ -133,10 +142,22 @@ def verify(adv_conn):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Advertiser auth Stage 1 migration")
+    parser.add_argument("--print-ddl", action="store_true",
+                        help="Print the DDL (run it as the postgres owner on prod) and exit")
+    parser.add_argument("--backfill-only", action="store_true",
+                        help="Skip DDL (already applied as owner); run backfill + verify only")
+    args = parser.parse_args()
+
+    if args.print_ddl:
+        print(DDL)
+        return
+
     adv_conn = psycopg.connect(_libpq(ADVERTISER_DATABASE_URL))
     usr_conn = psycopg.connect(_libpq(DATABASE_URL))
     try:
-        apply_ddl(adv_conn)
+        if not args.backfill_only:
+            apply_ddl(adv_conn)
         backfill(adv_conn, usr_conn)
         verify(adv_conn)
         print("\nStage 1 migration complete.")
