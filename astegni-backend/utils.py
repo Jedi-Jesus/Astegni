@@ -205,16 +205,11 @@ def get_role_ids_from_user(user: User, db: Session) -> dict:
         ).first()
         role_ids['parent'] = parent_profile.id if parent_profile else None
 
-    # Get advertiser profile ID if exists (advertiser DB is separate)
-    if 'advertiser' in user.roles:
-        adv_db = AdvertiserSessionLocal()
-        try:
-            advertiser_profile = adv_db.query(AdvertiserProfile).filter(
-                AdvertiserProfile.user_id == user.id
-            ).first()
-            role_ids['advertiser'] = advertiser_profile.id if advertiser_profile else None
-        finally:
-            adv_db.close()
+    # Advertiser is NOT resolved here anymore. Advertiser accounts are a separate
+    # identity in astegni_advertiser_db with their own login (/api/advertiser/login)
+    # and their own token (type='advertiser'); they are no longer a role on the
+    # users table. A user token therefore carries no advertiser role_id.
+    # (Same rationale as admin, below.)
 
     # Note: Admin role is NOT included here because admin_profile table
     # is separate from users table and has its own authentication system

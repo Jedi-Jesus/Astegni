@@ -92,12 +92,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise credentials_exception
 
-# Profile table mapping for each role
+# Profile table mapping for each role.
+# NOTE: 'advertiser' is intentionally absent — advertiser accounts are a separate
+# identity in astegni_advertiser_db and are NOT deleted when a users row is deleted.
 ROLE_PROFILE_TABLES = {
     "student": "student_profiles",
     "tutor": "tutor_profiles",
     "parent": "parent_profiles",
-    "advertiser": "advertiser_profiles"
 }
 
 # Advertiser data lives in a SEPARATE database (astegni_advertiser_db) with no
@@ -112,16 +113,11 @@ ADVERTISER_ROOT_TABLE = "advertiser_profiles"  # delete by user_id; FKs cascade
 
 def _cleanup_advertiser_db(user_id: int):
     """
-    Delete the user's advertiser data from the separate advertiser DB.
-
-    Postgres cannot cascade across databases, so this must be done with its own
-    connection after the users row is hard-deleted. Deleting from
-    advertiser_profiles cascades (internal FKs) to company_profile, brand_profile,
-    campaign_profile, campaign_media, etc.
-
-    Failures here MUST NOT break user deletion: the user is already gone from the
-    user DB. We log a warning and move on (orphaned advertiser rows can be swept
-    later).
+    DEPRECATED / UNUSED. Advertiser accounts are now an independent identity in
+    astegni_advertiser_db with their own login; deleting a users row must NOT
+    delete the advertiser account. Kept only for reference — do NOT call from the
+    user-deletion flow. Advertiser self-deletion belongs in the advertiser portal
+    (delete by advertiser_profiles.id, which cascades internally).
     """
     adv_conn = None
     try:
@@ -756,19 +752,16 @@ def process_expired_deletions():
                     WHERE id = %s
                 """, (request_id,))
 
-                # Permanently delete user (CASCADE will handle all related data
-                # in the USER DB). Advertiser data lives in a separate DB and is
-                # cleaned up after this commit (see below).
+                # Permanently delete user (CASCADE handles all related data in the
+                # USER DB). Advertiser accounts are SEPARATE: they live in
+                # astegni_advertiser_db with their own login and are NOT owned by
+                # this users row, so deleting the user must NOT delete the
+                # advertiser account. (An advertiser deletes their own account via
+                # the advertiser portal.)
                 cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-                # Commit per-user so the user-DB deletion is durable before we
-                # touch the separate advertiser DB (cross-DB cleanup is best-effort).
                 conn.commit()
                 deleted_count += 1
                 print(f"Permanently deleted user {user_id} ({email})")
-
-                # Cross-DB cleanup: advertiser data does NOT cascade from users.
-                # Best-effort; never blocks user deletion (already committed above).
-                _cleanup_advertiser_db(user_id)
 
             except Exception as e:
                 conn.rollback()

@@ -126,14 +126,11 @@ if orphaned_parents:
         print(f"   Deleted parent profile {parent_id} (orphaned user {user_id})")
         total_fixes += 1
 
-# Check advertiser_profiles.user_id
-cur.execute("SELECT id, user_id FROM advertiser_profiles WHERE user_id NOT IN (SELECT id FROM users)")
-orphaned_advertisers = cur.fetchall()
-if orphaned_advertisers:
-    for advertiser_id, user_id in orphaned_advertisers:
-        cur.execute("DELETE FROM advertiser_profiles WHERE id = %s", (advertiser_id,))
-        print(f"   Deleted advertiser profile {advertiser_id} (orphaned user {user_id})")
-        total_fixes += 1
+# NOTE: advertiser_profiles are intentionally NOT swept here.
+# Advertisers are an independent identity in astegni_advertiser_db (separate DB,
+# own login) and may legitimately have user_id = NULL (users-less accounts). They
+# are NOT orphans of the users table, so there is nothing to clean up here.
+# (This table no longer even lives in this database after the advertiser DB split.)
 
 # ============================================================================
 # 5. COURSE ORPHANS

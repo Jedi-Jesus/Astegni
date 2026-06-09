@@ -246,21 +246,15 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     if surface not in ("platform", "advertise"):
         surface = "platform"
 
-    if surface == "advertise":
-        if user_data.role and user_data.role != "advertiser":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="advertise.astegni.com only supports advertiser signup."
-            )
-        # If no role was provided at all on the advertise surface, force it.
-        user_data.role = "advertiser"
-    else:
-        # Platform surface: advertiser signup must happen at advertise.astegni.com
-        if user_data.role == "advertiser":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Advertiser signup has moved to advertise.astegni.com. Please sign up there instead."
-            )
+    # Advertiser accounts are no longer a role on the users table — they are a
+    # self-contained identity in astegni_advertiser_db. /api/register must NEVER
+    # create or attach an advertiser role; advertiser signup goes through
+    # /api/advertiser/register (send/verify-registration-otp).
+    if user_data.role == "advertiser":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Advertiser accounts use a separate signup at advertise.astegni.com (/api/advertiser/register)."
+        )
 
     # Check if user exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()

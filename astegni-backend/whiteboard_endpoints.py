@@ -2638,9 +2638,11 @@ async def get_online_users(
         if profile_types:
             types_list = [t.strip() for t in profile_types.split(',')]
         else:
-            types_list = ['tutor', 'student', 'parent', 'advertiser']
+            types_list = ['tutor', 'student', 'parent']
 
-        # Table configuration for each profile type
+        # Table configuration for each profile type.
+        # 'advertiser' omitted: separate identity (astegni_advertiser_db), not a
+        # whiteboard participant.
         table_configs = {
             'tutor': {
                 'table': 'tutor_profiles',
@@ -2656,11 +2658,6 @@ async def get_online_users(
                 'table': 'parent_profiles',
                 'name_column': 'full_name',
                 'extra_column': 'profile_picture'
-            },
-            'advertiser': {
-                'table': 'advertiser_profiles',
-                'name_column': 'brand_name',
-                'extra_column': 'brand_logo'
             }
         }
 
@@ -2724,11 +2721,12 @@ async def get_profile_online_status(
     Returns:
         Object with is_online status and last_seen timestamp
     """
+    # 'advertiser' omitted: separate identity (astegni_advertiser_db), not a
+    # whiteboard participant.
     table_map = {
         'tutor': 'tutor_profiles',
         'student': 'student_profiles',
         'parent': 'parent_profiles',
-        'advertiser': 'advertiser_profiles'
     }
 
     table_name = table_map.get(profile_type)
@@ -3216,8 +3214,8 @@ async def create_call_history(
             cursor.execute("SELECT user_id FROM student_profiles WHERE id = %s", (call_data.callee_profile_id,))
         elif call_data.callee_profile_type == 'parent':
             cursor.execute("SELECT user_id FROM parent_profiles WHERE id = %s", (call_data.callee_profile_id,))
-        elif call_data.callee_profile_type == 'advertiser':
-            cursor.execute("SELECT user_id FROM advertiser_profiles WHERE id = %s", (call_data.callee_profile_id,))
+        # 'advertiser' is a separate identity (astegni_advertiser_db) and is not a
+        # whiteboard call participant.
 
         callee_row = cursor.fetchone()
         if callee_row:

@@ -13,7 +13,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app.py modules'))
 from models import TutorProfile, StudentProfile, ParentProfile, User
-from advertiser_models import AdvertiserProfile, AdvertiserSessionLocal
+# (advertiser models intentionally not imported: advertisers don't do connections)
 
 
 def get_profile_from_user_id(db: Session, user_id: int, preferred_profile_type: str = None):
@@ -41,8 +41,10 @@ def get_profile_from_user_id(db: Session, user_id: int, preferred_profile_type: 
         if profile:
             return profile
 
-    # Otherwise, try in priority order
-    profile_types = ['tutor', 'student', 'parent', 'advertiser']
+    # Otherwise, try in priority order.
+    # 'advertiser' is intentionally excluded: advertisers are a separate identity
+    # (astegni_advertiser_db) and do not participate in connections.
+    profile_types = ['tutor', 'student', 'parent']
     for profile_type in profile_types:
         profile = _get_specific_profile(db, user_id, profile_type)
         if profile:
@@ -69,15 +71,8 @@ def _get_specific_profile(db: Session, user_id: int, profile_type: str):
         if profile:
             return {'profile_id': profile.id, 'profile_type': 'parent'}
 
-    elif profile_type == 'advertiser':
-        # AdvertiserProfile lives in the separate advertiser DB; use its own session.
-        adv_db = AdvertiserSessionLocal()
-        try:
-            profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
-            if profile:
-                return {'profile_id': profile.id, 'profile_type': 'advertiser'}
-        finally:
-            adv_db.close()
+    # 'advertiser' is not a connectable profile type (separate identity in
+    # astegni_advertiser_db).
 
     return None
 
@@ -107,14 +102,7 @@ def get_user_id_from_profile(db: Session, profile_id: int, profile_type: str):
         profile = db.query(ParentProfile).filter(ParentProfile.id == profile_id).first()
         return profile.user_id if profile else None
 
-    elif profile_type == 'advertiser':
-        # AdvertiserProfile lives in the separate advertiser DB; use its own session.
-        adv_db = AdvertiserSessionLocal()
-        try:
-            profile = adv_db.query(AdvertiserProfile).filter(AdvertiserProfile.id == profile_id).first()
-            return profile.user_id if profile else None
-        finally:
-            adv_db.close()
+    # 'advertiser' is not a connectable profile type (separate identity).
 
     return None
 
@@ -149,11 +137,12 @@ def validate_profile_exists(db: Session, profile_id: int, profile_type: str):
 def get_profile_table_name(profile_type: str):
     """Get the database table name for a profile type"""
 
+    # 'advertiser' omitted: separate identity (astegni_advertiser_db), not a
+    # connectable profile type.
     mapping = {
         'tutor': 'tutor_profiles',
         'student': 'student_profiles',
         'parent': 'parent_profiles',
-        'advertiser': 'advertiser_profiles'
     }
 
     return mapping.get(profile_type)

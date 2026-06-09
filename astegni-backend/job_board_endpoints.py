@@ -11,6 +11,7 @@ import json
 from sqlalchemy import text
 
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 from models import engine
 
 router = APIRouter()
@@ -149,26 +150,20 @@ class JobApplicationResponse(BaseModel):
 @router.post("/api/jobs/posts", status_code=status.HTTP_201_CREATED)
 async def create_job_post(
     job_data: JobPostCreate,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Create a new job posting"""
 
-    # Verify user has advertiser profile
+    # Advertiser identity comes from the advertiser token (resolve_advertiser).
+    advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    if not advertiser_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only advertisers can create job posts"
+        )
+
     with engine.connect() as conn:
-        result = conn.execute(
-            text("SELECT id FROM advertiser_profiles WHERE user_id = :user_id"),
-            {"user_id": current_user.id}
-        ).fetchone()
-
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only advertisers can create job posts"
-            )
-
-        advertiser_id = result[0]
-
-        # Insert job post
+        # Insert job post (jobs are owned by advertiser_id; user_id is legacy/nullable)
         query = text("""
             INSERT INTO job_posts (
                 advertiser_id, user_id, title, description, requirements,
@@ -188,7 +183,7 @@ async def create_job_post(
 
         result = conn.execute(query, {
             "advertiser_id": advertiser_id,
-            "user_id": current_user.id,
+            "user_id": current_user.id,  # legacy column; None for users-less advertisers
             "title": job_data.title,
             "description": job_data.description,
             "requirements": job_data.requirements,
@@ -234,24 +229,17 @@ async def get_job_posts(
     job_status: Optional[str] = Query(None, pattern="^(draft|active|paused|closed|all)$", alias="status"),
     page: int = Query(1, ge=1),
     limit: int = Query(15, ge=1, le=100),
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Get all job posts for the current advertiser"""
 
+    advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    if not advertiser_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only advertisers can view job posts"
+        )
     with engine.connect() as conn:
-        # Get advertiser_id
-        advertiser = conn.execute(
-            text("SELECT id FROM advertiser_profiles WHERE user_id = :user_id"),
-            {"user_id": current_user.id}
-        ).fetchone()
-
-        if not advertiser:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only advertisers can view job posts"
-            )
-
-        advertiser_id = advertiser[0]
 
         # Build query
         where_clause = "WHERE advertiser_id = :advertiser_id"
@@ -324,7 +312,7 @@ async def get_job_posts(
 @router.get("/api/jobs/posts/{job_id}")
 async def get_job_post(
     job_id: int,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Get a specific job post"""
 
@@ -350,8 +338,9 @@ async def get_job_post(
                 detail="Job post not found"
             )
 
-        # Verify ownership
-        if job[2] != current_user.id:
+        # Verify ownership by advertiser_id (job[1])
+        advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if job[1] != advertiser_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to view this job post"
@@ -391,14 +380,14 @@ async def get_job_post(
 async def update_job_post(
     job_id: int,
     job_data: JobPostUpdate,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Update a job post"""
 
     with engine.connect() as conn:
         # Verify ownership
         job = conn.execute(
-            text("SELECT user_id, status FROM job_posts WHERE id = :job_id"),
+            text("SELECT advertiser_id, status FROM job_posts WHERE id = :job_id"),
             {"job_id": job_id}
         ).fetchone()
 
@@ -408,7 +397,8 @@ async def update_job_post(
                 detail="Job post not found"
             )
 
-        if job[0] != current_user.id:
+        _adv_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if job[0] != _adv_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to update this job post"
@@ -488,14 +478,14 @@ async def update_job_post(
 @router.delete("/api/jobs/posts/{job_id}")
 async def delete_job_post(
     job_id: int,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Delete a job post"""
 
     with engine.connect() as conn:
         # Verify ownership
         job = conn.execute(
-            text("SELECT user_id FROM job_posts WHERE id = :job_id"),
+            text("SELECT advertiser_id FROM job_posts WHERE id = :job_id"),
             {"job_id": job_id}
         ).fetchone()
 
@@ -505,7 +495,8 @@ async def delete_job_post(
                 detail="Job post not found"
             )
 
-        if job[0] != current_user.id:
+        _adv_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if job[0] != _adv_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to delete this job post"
@@ -525,7 +516,7 @@ async def delete_job_post(
 async def update_job_status(
     job_id: int,
     status_data: dict,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Update job post status (close, repost, pause, etc.)"""
 
@@ -539,7 +530,7 @@ async def update_job_status(
     with engine.connect() as conn:
         # Verify ownership
         job = conn.execute(
-            text("SELECT user_id, status FROM job_posts WHERE id = :job_id"),
+            text("SELECT advertiser_id, status FROM job_posts WHERE id = :job_id"),
             {"job_id": job_id}
         ).fetchone()
 
@@ -549,7 +540,8 @@ async def update_job_status(
                 detail="Job post not found"
             )
 
-        if job[0] != current_user.id:
+        _adv_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if job[0] != _adv_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to update this job post"
@@ -592,25 +584,17 @@ async def update_job_status(
 
 @router.get("/api/jobs/analytics/overview")
 async def get_job_analytics_overview(
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Get overall job posting analytics for the advertiser"""
 
+    advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+    if not advertiser_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only advertisers can view analytics"
+        )
     with engine.connect() as conn:
-        # Get advertiser_id
-        advertiser = conn.execute(
-            text("SELECT id FROM advertiser_profiles WHERE user_id = :user_id"),
-            {"user_id": current_user.id}
-        ).fetchone()
-
-        if not advertiser:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only advertisers can view analytics"
-            )
-
-        advertiser_id = advertiser[0]
-
         # Get overview stats
         stats = conn.execute(
             text("""
@@ -681,14 +665,15 @@ async def get_all_applications(
     application_status: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Get all applications across all jobs owned by the current user"""
 
+    advertiser_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
     with engine.connect() as conn:
-        # Build query to get applications for jobs owned by this user
-        where_clauses = ["jp.user_id = :user_id"]
-        params = {"user_id": current_user.id}
+        # Applications for jobs owned by this advertiser.
+        where_clauses = ["jp.advertiser_id = :advertiser_id"]
+        params = {"advertiser_id": advertiser_id}
 
         if job_id:
             where_clauses.append("ja.job_id = :job_id")
@@ -764,14 +749,14 @@ async def get_job_applications(
     application_status: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Get all applications for a specific job"""
 
     with engine.connect() as conn:
         # Verify job ownership
         job = conn.execute(
-            text("SELECT user_id FROM job_posts WHERE id = :job_id"),
+            text("SELECT advertiser_id FROM job_posts WHERE id = :job_id"),
             {"job_id": job_id}
         ).fetchone()
 
@@ -781,7 +766,8 @@ async def get_job_applications(
                 detail="Job post not found"
             )
 
-        if job[0] != current_user.id:
+        _adv_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if job[0] != _adv_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to view these applications"
@@ -855,7 +841,7 @@ class ApplicationStatusUpdate(BaseModel):
 async def update_application_status(
     application_id: int,
     status_data: ApplicationStatusUpdate,
-    current_user = Depends(get_current_user)
+    current_user = Depends(resolve_advertiser)
 ):
     """Update job application status"""
 
@@ -863,7 +849,7 @@ async def update_application_status(
         # Verify ownership through job post
         application = conn.execute(
             text("""
-                SELECT ja.job_id, jp.user_id
+                SELECT ja.job_id, jp.advertiser_id
                 FROM job_applications ja
                 JOIN job_posts jp ON ja.job_id = jp.id
                 WHERE ja.id = :application_id
@@ -877,7 +863,8 @@ async def update_application_status(
                 detail="Application not found"
             )
 
-        if application[1] != current_user.id:
+        _adv_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if application[1] != _adv_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to update this application"

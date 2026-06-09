@@ -76,35 +76,27 @@ class PaymentStatusUpdate(BaseModel):
 
 
 def _resolve_advertiser_names(rows: List[dict]) -> dict:
-    """Map advertiser_id -> display name via advertiser_profiles.user_id -> users (cross-DB)."""
+    """Map advertiser_id -> display name/email, read directly from advertiser_profiles.
+
+    Advertiser identity (email, first_name, father_name) now lives on
+    advertiser_profiles itself (self-contained auth), so there is no cross-DB
+    users lookup anymore."""
     adv_ids = [r['advertiser_id'] for r in rows if r.get('advertiser_id')]
     if not adv_ids:
         return {}
-    # advertiser_id -> user_id (advertiser DB)
     with get_advertiser_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT id, user_id, company_name FROM advertiser_profiles WHERE id = ANY(%s)",
+                """SELECT id, company_name, first_name, father_name, email
+                   FROM advertiser_profiles WHERE id = ANY(%s)""",
                 (adv_ids,),
             )
             adv = {r['id']: r for r in cur.fetchall()}
-    user_ids = [a['user_id'] for a in adv.values() if a.get('user_id')]
-    users = {}
-    if user_ids:
-        with get_user_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT id, first_name, father_name, email FROM users WHERE id = ANY(%s)",
-                    (user_ids,),
-                )
-                users = {r['id']: r for r in cur.fetchall()}
     out = {}
     for adv_id, a in adv.items():
-        u = users.get(a.get('user_id'))
-        name = a.get('company_name') or (
-            f"{u['first_name']} {u['father_name']}".strip() if u else None
-        )
-        out[adv_id] = {"name": name or "Unknown", "email": u['email'] if u else None}
+        person = " ".join(p for p in [a.get('first_name'), a.get('father_name')] if p).strip()
+        name = a.get('company_name') or person or None
+        out[adv_id] = {"name": name or "Unknown", "email": a.get('email')}
     return out
 
 

@@ -40,8 +40,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 # Gate: enable creating brand-new (users-less) advertisers at registration.
-# Stays False until Stage 3 (cross-features dropped + orphan-cleanup updated).
-ALLOW_NEW_REGISTRATION = os.getenv("ADVERTISER_ALLOW_NEW_REGISTRATION", "false").lower() == "true"
+# Enabled in Stage 3 now that the prerequisites are in place (cross-features
+# dropped, account-deletion re-keyed off user_id, orphan-cleanup no longer sweeps
+# users-less advertisers). Can be force-disabled by setting the env var to "false".
+ALLOW_NEW_REGISTRATION = os.getenv("ADVERTISER_ALLOW_NEW_REGISTRATION", "true").lower() == "true"
 
 router = APIRouter(prefix="/api/advertiser", tags=["Advertiser Auth"])
 

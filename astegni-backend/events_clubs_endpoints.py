@@ -206,10 +206,8 @@ async def get_events(
                 cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user_id,))
                 result = cur.fetchone()
                 profile_id = result[0] if result else None
-            elif profile_type == 'advertiser':
-                cur.execute("SELECT id FROM advertiser_profiles WHERE user_id = %s", (current_user_id,))
-                result = cur.fetchone()
-                profile_id = result[0] if result else None
+            # 'advertiser' is a separate identity (astegni_advertiser_db) and does
+            # not participate in events/clubs.
 
             # Logged in: show user's events + system events + joined events
             query = """
@@ -731,10 +729,8 @@ async def get_clubs(
                 cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user_id,))
                 result = cur.fetchone()
                 profile_id = result[0] if result else None
-            elif profile_type == 'advertiser':
-                cur.execute("SELECT id FROM advertiser_profiles WHERE user_id = %s", (current_user_id,))
-                result = cur.fetchone()
-                profile_id = result[0] if result else None
+            # 'advertiser' is a separate identity (astegni_advertiser_db) and does
+            # not participate in events/clubs.
 
             # Logged in: show user's clubs + system clubs + joined clubs
             query = """

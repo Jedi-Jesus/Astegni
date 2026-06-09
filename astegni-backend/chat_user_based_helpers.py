@@ -142,6 +142,8 @@ def are_users_connected(conn, user1_id: int, user2_id: int) -> bool:
     try:
         # Check for any accepted connection between the two users
         # This query looks for connections where either user is requester or recipient
+        # Advertisers are a separate identity (astegni_advertiser_db) and do not
+        # participate in connections, so advertiser_profiles is not unioned here.
         cur.execute("""
             SELECT 1 FROM connections c1
             JOIN connections c2 ON c1.id = c2.id
@@ -151,31 +153,27 @@ def are_users_connected(conn, user1_id: int, user2_id: int) -> bool:
                     SELECT id FROM student_profiles WHERE user_id = %s
                     UNION SELECT id FROM tutor_profiles WHERE user_id = %s
                     UNION SELECT id FROM parent_profiles WHERE user_id = %s
-                    UNION SELECT id FROM advertiser_profiles WHERE user_id = %s
                 ) AND c1.recipient_profile_id IN (
                     SELECT id FROM student_profiles WHERE user_id = %s
                     UNION SELECT id FROM tutor_profiles WHERE user_id = %s
                     UNION SELECT id FROM parent_profiles WHERE user_id = %s
-                    UNION SELECT id FROM advertiser_profiles WHERE user_id = %s
                 ))
                 OR
                 (c1.recipient_profile_id IN (
                     SELECT id FROM student_profiles WHERE user_id = %s
                     UNION SELECT id FROM tutor_profiles WHERE user_id = %s
                     UNION SELECT id FROM parent_profiles WHERE user_id = %s
-                    UNION SELECT id FROM advertiser_profiles WHERE user_id = %s
                 ) AND c1.requester_profile_id IN (
                     SELECT id FROM student_profiles WHERE user_id = %s
                     UNION SELECT id FROM tutor_profiles WHERE user_id = %s
                     UNION SELECT id FROM parent_profiles WHERE user_id = %s
-                    UNION SELECT id FROM advertiser_profiles WHERE user_id = %s
                 ))
             )
             LIMIT 1
-        """, (user1_id, user1_id, user1_id, user1_id,
-              user2_id, user2_id, user2_id, user2_id,
-              user1_id, user1_id, user1_id, user1_id,
-              user2_id, user2_id, user2_id, user2_id))
+        """, (user1_id, user1_id, user1_id,
+              user2_id, user2_id, user2_id,
+              user1_id, user1_id, user1_id,
+              user2_id, user2_id, user2_id))
 
         return cur.fetchone() is not None
     except Exception as e:
@@ -341,8 +339,6 @@ def get_user_contacts(conn, user_id: int) -> list:
                 SELECT id as profile_id, 'tutor' as profile_type FROM tutor_profiles WHERE user_id = %s
                 UNION
                 SELECT id as profile_id, 'parent' as profile_type FROM parent_profiles WHERE user_id = %s
-                UNION
-                SELECT id as profile_id, 'advertiser' as profile_type FROM advertiser_profiles WHERE user_id = %s
             ),
             connections_out AS (
                 SELECT DISTINCT c.recipient_profile_id, c.recipient_type
@@ -369,20 +365,17 @@ def get_user_contacts(conn, user_id: int) -> list:
                     WHEN 'student' THEN sp.user_id
                     WHEN 'tutor' THEN tp.user_id
                     WHEN 'parent' THEN pp.user_id
-                    WHEN 'advertiser' THEN ap.user_id
                 END as contact_user_id
             FROM all_connections ac
             LEFT JOIN student_profiles sp ON ac.recipient_type = 'student' AND ac.recipient_profile_id = sp.id
             LEFT JOIN tutor_profiles tp ON ac.recipient_type = 'tutor' AND ac.recipient_profile_id = tp.id
             LEFT JOIN parent_profiles pp ON ac.recipient_type = 'parent' AND ac.recipient_profile_id = pp.id
-            LEFT JOIN advertiser_profiles ap ON ac.recipient_type = 'advertiser' AND ac.recipient_profile_id = ap.id
             WHERE CASE ac.recipient_type
                 WHEN 'student' THEN sp.user_id
                 WHEN 'tutor' THEN tp.user_id
                 WHEN 'parent' THEN pp.user_id
-                WHEN 'advertiser' THEN ap.user_id
             END IS NOT NULL
-        """, (user_id, user_id, user_id, user_id))
+        """, (user_id, user_id, user_id))
 
         results = cur.fetchall()
         return [row['contact_user_id'] for row in results]

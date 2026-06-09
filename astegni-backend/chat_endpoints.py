@@ -193,15 +193,15 @@ async def get_connection_requests(user_id: int = Query(...)):
 
     try:
         # Get all profile IDs for this user
+        # Advertisers are a separate identity (astegni_advertiser_db) and do not
+        # participate in chat under the user account, so they are not included here.
         cur.execute("""
             SELECT id as profile_id, 'student' as profile_type FROM student_profiles WHERE user_id = %s
             UNION
             SELECT id as profile_id, 'tutor' as profile_type FROM tutor_profiles WHERE user_id = %s
             UNION
             SELECT id as profile_id, 'parent' as profile_type FROM parent_profiles WHERE user_id = %s
-            UNION
-            SELECT id as profile_id, 'advertiser' as profile_type FROM advertiser_profiles WHERE user_id = %s
-        """, (user_id, user_id, user_id, user_id))
+        """, (user_id, user_id, user_id))
 
         user_profiles = cur.fetchall()
 
