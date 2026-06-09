@@ -313,6 +313,10 @@ app.include_router(affiliate_performance_router)
 from manage_campaigns_endpoints import router as manage_campaigns_router
 app.include_router(manage_campaigns_router)
 
+# Manage Payments (advance-payment receipt verification) routes
+from manage_payments_endpoints import router as manage_payments_router
+app.include_router(manage_payments_router)
+
 # Include manage contents profile routes
 from manage_contents_endpoints import router as manage_contents_router
 app.include_router(manage_contents_router)

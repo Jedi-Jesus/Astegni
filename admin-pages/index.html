@@ -147,6 +147,7 @@
                                 <option value="manage-admins">Manage Admins</option>
                                 <option value="manage-companies">Manage Companies</option>
                                 <option value="manage-campaign">Manage Campaigns</option>
+                                <option value="manage-payments">Manage Payments</option>
                                 <option value="manage-contents">Manage Contents</option>
                                 <option value="manage-courses">Manage Courses</option>
                                 <option value="manage-credentials">Manage Credentials</option>
@@ -562,6 +563,16 @@
                                     <i class="fas fa-bullhorn"></i>
                                 </span>
                                 <span class="action-label">Manage Campaigns</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-payments.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                </span>
+                                <span class="action-label">Manage Payments</span>
                                 <span class="auth-lock" title="Login Required">
                                     <i class="fas fa-lock"></i>
                                 </span>

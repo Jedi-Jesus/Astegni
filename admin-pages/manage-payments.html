@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Payments | Astegni Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea; --primary-dark: #5568d3;
+            --bg: #f3f4f6; --card: #ffffff; --text: #111827; --text-muted: #6b7280;
+            --border: #e5e7eb; --pending: #d97706; --verified: #16a34a; --rejected: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+        .topbar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar h1 { font-size: 1.35rem; display: flex; align-items: center; gap: 10px; }
+        .topbar a { color: #fff; text-decoration: none; font-size: 0.9rem; opacity: 0.9; }
+        .topbar a:hover { opacity: 1; }
+        .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+        .stat .n { font-size: 1.7rem; font-weight: 700; }
+        .stat .l { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+        th { background: #f9fafb; color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+        .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+        .badge.pending { background: rgba(217,119,6,.12); color: var(--pending); }
+        .badge.verified { background: rgba(22,163,74,.12); color: var(--verified); }
+        .badge.rejected { background: rgba(220,38,38,.12); color: var(--rejected); }
+        .btn { padding: 7px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.82rem; color: #fff; }
+        .btn-view { background: #2563eb; }
+        .btn-verify { background: var(--verified); }
+        .btn-reject { background: var(--rejected); }
+        .btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .empty, .loading { padding: 40px; text-align: center; color: var(--text-muted); }
+        .muted { color: var(--text-muted); font-size: 0.82rem; }
+        #access-denied { display: none; padding: 40px; text-align: center; color: var(--rejected); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1><i class="fas fa-hand-holding-usd"></i> Manage Payments</h1>
+        <a href="./index.html"><i class="fas fa-arrow-left"></i> Admin Home</a>
+    </div>
+
+    <div class="container">
+        <div id="access-denied"><i class="fas fa-lock"></i> Access denied. This page requires the <b>manage-payments</b> department.</div>
+
+        <div id="main">
+            <div class="stats">
+                <div class="stat"><div class="n" id="stat-pending" style="color:var(--pending)">0</div><div class="l">Pending</div></div>
+                <div class="stat"><div class="n" id="stat-verified" style="color:var(--verified)">0</div><div class="l">Verified</div></div>
+                <div class="stat"><div class="n" id="stat-rejected" style="color:var(--rejected)">0</div><div class="l">Rejected</div></div>
+                <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Total</div></div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-status="pending" onclick="ManagePayments.switchTab('pending')">Pending Review</div>
+                <div class="tab" data-status="verified" onclick="ManagePayments.switchTab('verified')">Verified</div>
+                <div class="tab" data-status="rejected" onclick="ManagePayments.switchTab('rejected')">Rejected</div>
+                <div class="tab" data-status="all" onclick="ManagePayments.switchTab('all')">All</div>
+            </div>
+
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campaign</th><th>Brand</th><th>Advertiser</th>
+                            <th>Advance</th><th>Status</th><th>Updated</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-body">
+                        <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/api-config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/admin-pages/manage-payments.js?v202606090100"></script>
+</body>
+</html>
