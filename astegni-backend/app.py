@@ -456,6 +456,10 @@ app.include_router(poll_router)
 from kyc_endpoints import router as kyc_router
 app.include_router(kyc_router)
 
+# Advertiser person-KYC (self-contained, /api/advertiser/kyc/*)
+from advertiser_kyc_endpoints import router as advertiser_kyc_router
+app.include_router(advertiser_kyc_router)
+
 # Include TrueVoice (voice-personalized messaging) routes
 from truevoice_endpoints import router as truevoice_router
 app.include_router(truevoice_router)
