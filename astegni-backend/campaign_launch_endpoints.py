@@ -138,6 +138,34 @@ async def launch_campaign(campaign_id: int):
                        "Upload a valid receipt and wait for admin approval."
             )
 
+        # Dual-KYC gate (both required to launch):
+        #  (a) the owning COMPANY is a verified, registered business, and
+        #  (b) the advertiser account owner (the person in charge of the ads) is
+        #      identity-verified (person-KYC).
+        cursor.execute("""
+            SELECT cp.is_verified
+            FROM campaign_profile c
+            LEFT JOIN company_profile cp ON cp.id = c.company_id
+            WHERE c.id = %s
+        """, (campaign_id,))
+        comp_row = cursor.fetchone()
+        company_verified = bool(comp_row[0]) if comp_row else False
+        if not company_verified:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot launch campaign. The company behind this campaign must be "
+                       "verified (business license + TIN) before launching."
+            )
+
+        cursor.execute("SELECT person_verified FROM advertiser_profiles WHERE id = %s", (advertiser_id,))
+        person_row = cursor.fetchone()
+        if not (person_row and person_row[0]):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot launch campaign. The account owner must complete identity "
+                       "verification (KYC) before launching campaigns."
+            )
+
         # Check if campaign has media uploaded
         cursor.execute("""
             SELECT COUNT(*) FROM campaign_media

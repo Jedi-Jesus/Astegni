@@ -291,6 +291,15 @@ async def create_brand(brand: BrandCreate, current_user = Depends(resolve_advert
                         detail="This company must be verified before creating brands. Submit the company for verification first.",
                     )
 
+                # --- Person-KYC guard: the account owner must be identity-verified ---
+                cur.execute("SELECT person_verified FROM advertiser_profiles WHERE id = %s", (advertiser_profile_id,))
+                _pv = cur.fetchone()
+                if not (_pv and _pv["person_verified"]):
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Complete identity verification (KYC) before creating brands.",
+                    )
+
                 company_id = company["id"]
 
                 # --- Create the brand, owned by this company ---
