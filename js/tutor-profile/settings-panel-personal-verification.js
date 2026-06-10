@@ -808,7 +808,7 @@
 
                 if (token) {
                     try {
-                        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me`, {
+                        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.PROFILE_GET_PATH || '/api/me'}`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -1105,7 +1105,7 @@
 
                 // Save names and gender (immediate update to users table)
                 if (Object.keys(updateData).length > 0) {
-                    const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/user/profile`, {
+                    const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.PROFILE_SAVE_PATH || '/api/user/profile'}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',

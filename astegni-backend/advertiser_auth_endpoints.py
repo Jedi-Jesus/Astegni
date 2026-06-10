@@ -463,3 +463,107 @@ async def advertiser_me(adv=Depends(get_current_advertiser)):
     finally:
         if conn:
             conn.close()
+
+
+# ============================================
+# IDENTITY PROFILE (person-KYC prerequisites)
+# ============================================
+# The advertiser account owner has a personal identity profile (names per
+# naming_system + DOB + gender + digital ID) that person-KYC requires. The shared
+# verify-personal-info modal reads/writes these via these endpoints (pointed here
+# by window.PROFILE_API_BASE on the advertiser portal). Paths under /auth/ to
+# avoid the int-typed /api/advertiser/{advertiser_id} route in routes.py.
+
+class AdvertiserIdentityUpdate(BaseModel):
+    naming_system: Optional[str] = None       # 'ethiopian' | 'international'
+    first_name: Optional[str] = None
+    father_name: Optional[str] = None
+    grandfather_name: Optional[str] = None
+    last_name: Optional[str] = None
+    date_of_birth: Optional[str] = None        # YYYY-MM-DD
+    gender: Optional[str] = None
+    digital_id_no: Optional[str] = None
+
+
+@router.get("/auth/identity")
+async def get_advertiser_identity(adv=Depends(get_current_advertiser)):
+    """Return the owner's identity profile, in the shape the shared
+    verify-personal-info modal expects (a `user`-like object)."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT id, email, phone, first_name, father_name, grandfather_name,
+                      last_name, date_of_birth, gender, naming_system, digital_id_no
+               FROM advertiser_profiles WHERE id = %s""",
+            (adv["id"],),
+        )
+        r = cur.fetchone()
+        if not r:
+            raise HTTPException(status_code=404, detail="Advertiser not found")
+        (adv_id, email, phone, first_name, father_name, grandfather_name,
+         last_name, dob, gender, naming_system, digital_id_no) = r
+        user = {
+            "id": adv_id,
+            "advertiser_id": adv_id,
+            "email": email,
+            "phone": phone,
+            "first_name": first_name,
+            "father_name": father_name,
+            "grandfather_name": grandfather_name,
+            "last_name": last_name,
+            "date_of_birth": dob.isoformat() if dob else None,
+            "gender": gender,
+            "naming_system": naming_system or "ethiopian",
+            "digital_id_no": digital_id_no,
+        }
+        # Return both bare and wrapped so callers reading either shape work.
+        return {"valid": True, "user": user, **user}
+    finally:
+        if conn:
+            conn.close()
+
+
+@router.put("/auth/identity")
+async def update_advertiser_identity(body: AdvertiserIdentityUpdate, adv=Depends(get_current_advertiser)):
+    """Update the owner's identity profile on advertiser_profiles."""
+    conn = None
+    try:
+        data = body.dict(exclude_unset=True)
+        # Only persist the columns that exist on advertiser_profiles.
+        allowed = {'naming_system', 'first_name', 'father_name', 'grandfather_name',
+                   'last_name', 'date_of_birth', 'gender', 'digital_id_no'}
+        sets, params = [], []
+        for k, v in data.items():
+            if k not in allowed:
+                continue
+            if isinstance(v, str):
+                v = v.strip() or None
+            sets.append(f"{k} = %s")
+            params.append(v)
+        if not sets:
+            return {"message": "No changes", "advertiser_id": adv["id"]}
+
+        conn = get_connection()
+        cur = conn.cursor()
+        params.append(adv["id"])
+        cur.execute(
+            f"UPDATE advertiser_profiles SET {', '.join(sets)} WHERE id = %s RETURNING id",
+            params,
+        )
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Advertiser not found")
+        conn.commit()
+        return {"message": "Identity profile updated", "advertiser_id": adv["id"]}
+    except HTTPException:
+        if conn:
+            conn.rollback()
+        raise
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update identity: {str(e)}")
+    finally:
+        if conn:
+            conn.close()
