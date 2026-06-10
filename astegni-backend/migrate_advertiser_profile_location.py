@@ -34,14 +34,17 @@ ALTER TABLE advertiser_profiles
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--print-ddl", action="store_true")
+    ap.add_argument("--verify-only", action="store_true",
+                    help="Skip DDL (already applied as postgres on prod); just verify columns")
     args = ap.parse_args()
     if args.print_ddl:
         print(DDL); return
     conn = psycopg.connect(_libpq(ADVERTISER_DATABASE_URL))
     try:
-        with conn.cursor() as cur:
-            cur.execute(DDL)
-        conn.commit()
+        if not args.verify_only:
+            with conn.cursor() as cur:
+                cur.execute(DDL)
+            conn.commit()
         with conn.cursor() as cur:
             cur.execute("""SELECT column_name FROM information_schema.columns
                            WHERE table_name='advertiser_profiles'
