@@ -24,10 +24,103 @@ const CompaniesManager = {
 
     // ---------- Lifecycle ----------
 
+    personVerified: false,
+
     async initialize() {
         console.log('🏢 CompaniesManager.initialize()');
         await this.loadModals();
+        await this.refreshPersonVerified();
         await this.loadCompanies();
+        // When the owner finishes person-KYC, unlock the companies UI live.
+        if (!this._kycListenerAttached) {
+            this._kycListenerAttached = true;
+            document.addEventListener('kycVerificationComplete', async () => {
+                this.personVerified = true;
+                this.renderList();
+            });
+        }
+    },
+
+    // The account owner must be person-KYC verified before creating OR accessing
+    // any company. Cache the flag so rendering can lock the cards.
+    async refreshPersonVerified() {
+        try {
+            const res = await fetch(`${COMPANIES_API_BASE}/api/advertiser/kyc/check`, {
+                headers: this._authHeaders()
+            });
+            if (res.ok) {
+                const d = await res.json();
+                this.personVerified = !!d.person_verified;
+            }
+        } catch (e) { /* default false → locked */ }
+    },
+
+    // Beautiful modal shown when an unverified owner tries to create/open a company.
+    showKycRequiredModal() {
+        let overlay = document.getElementById('kyc-required-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'kyc-required-overlay';
+            overlay.innerHTML = `
+              <div class="kyc-req-backdrop" onclick="CompaniesManager.closeKycRequiredModal()"></div>
+              <div class="kyc-req-card" role="dialog" aria-modal="true">
+                <button class="kyc-req-close" onclick="CompaniesManager.closeKycRequiredModal()" aria-label="Close">&times;</button>
+                <div class="kyc-req-icon">🪪</div>
+                <h2 class="kyc-req-title">Verify your identity first</h2>
+                <p class="kyc-req-text">
+                  As the account owner, you must complete a one-time identity
+                  verification (ID&nbsp;+&nbsp;selfie) before you can create or manage
+                  a company. This keeps the platform trusted and your campaigns safe.
+                </p>
+                <ul class="kyc-req-steps">
+                  <li><span>1</span> Confirm your personal details</li>
+                  <li><span>2</span> Scan your ID document</li>
+                  <li><span>3</span> Take a quick selfie</li>
+                </ul>
+                <div class="kyc-req-actions">
+                  <button class="kyc-req-btn-secondary" onclick="CompaniesManager.closeKycRequiredModal()">Not now</button>
+                  <button class="kyc-req-btn-primary" onclick="CompaniesManager.closeKycRequiredModal(); if (typeof openVerifyPersonalInfoModal==='function') openVerifyPersonalInfoModal();">
+                    Verify identity →
+                  </button>
+                </div>
+              </div>`;
+            document.body.appendChild(overlay);
+            if (!document.getElementById('kyc-required-styles')) {
+                const st = document.createElement('style');
+                st.id = 'kyc-required-styles';
+                st.textContent = `
+                  #kyc-required-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;}
+                  #kyc-required-overlay .kyc-req-backdrop{position:absolute;inset:0;background:rgba(17,24,39,.55);backdrop-filter:blur(3px);}
+                  #kyc-required-overlay .kyc-req-card{position:relative;width:100%;max-width:440px;background:#fff;border-radius:20px;padding:2rem 1.75rem 1.5rem;box-shadow:0 24px 60px rgba(0,0,0,.28);text-align:center;animation:kycReqIn .22s ease;}
+                  @keyframes kycReqIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+                  #kyc-required-overlay .kyc-req-close{position:absolute;top:.85rem;right:1rem;background:none;border:none;font-size:1.6rem;line-height:1;color:#9ca3af;cursor:pointer;}
+                  #kyc-required-overlay .kyc-req-close:hover{color:#4b5563;}
+                  #kyc-required-overlay .kyc-req-icon{font-size:3rem;margin-bottom:.5rem;}
+                  #kyc-required-overlay .kyc-req-title{font-size:1.4rem;font-weight:800;color:#111827;margin:0 0 .5rem;}
+                  #kyc-required-overlay .kyc-req-text{font-size:.95rem;color:#4b5563;line-height:1.55;margin:0 auto 1.25rem;max-width:360px;}
+                  #kyc-required-overlay .kyc-req-steps{list-style:none;padding:0;margin:0 0 1.5rem;text-align:left;display:inline-block;}
+                  #kyc-required-overlay .kyc-req-steps li{display:flex;align-items:center;gap:.6rem;color:#374151;font-size:.92rem;font-weight:600;padding:.3rem 0;}
+                  #kyc-required-overlay .kyc-req-steps li span{flex:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;}
+                  #kyc-required-overlay .kyc-req-actions{display:flex;gap:.6rem;}
+                  #kyc-required-overlay .kyc-req-btn-secondary{flex:1;padding:.75rem;border-radius:12px;border:1px solid #e5e7eb;background:#f9fafb;color:#374151;font-weight:700;cursor:pointer;}
+                  #kyc-required-overlay .kyc-req-btn-secondary:hover{background:#f3f4f6;}
+                  #kyc-required-overlay .kyc-req-btn-primary{flex:2;padding:.75rem;border-radius:12px;border:none;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(79,70,229,.35);}
+                  #kyc-required-overlay .kyc-req-btn-primary:hover{filter:brightness(1.05);}
+                  [data-theme="dark"] #kyc-required-overlay .kyc-req-card{background:#1f2937;}
+                  [data-theme="dark"] #kyc-required-overlay .kyc-req-title{color:#f9fafb;}
+                  [data-theme="dark"] #kyc-required-overlay .kyc-req-text{color:#d1d5db;}
+                  [data-theme="dark"] #kyc-required-overlay .kyc-req-steps li{color:#e5e7eb;}
+                  [data-theme="dark"] #kyc-required-overlay .kyc-req-btn-secondary{background:#374151;border-color:#4b5563;color:#e5e7eb;}
+                `;
+                document.head.appendChild(st);
+            }
+        }
+        overlay.style.display = 'flex';
+    },
+
+    closeKycRequiredModal() {
+        const o = document.getElementById('kyc-required-overlay');
+        if (o) o.style.display = 'none';
     },
 
     async loadModals() {
@@ -117,20 +210,42 @@ const CompaniesManager = {
             return;
         }
 
-        const cards = filtered.map(c => this.createCompanyCard(c)).join('');
-        // Add an "add new company" tile at the end
+        const locked = !this.personVerified;
+        const cards = filtered.map(c => this.createCompanyCard(c, locked)).join('');
+        // Add an "add new company" tile at the end (also locked until verified).
         const addTile = `
-            <div class="company-card company-card-add" onclick="CompaniesManager.openCreateCompanyModal()">
+            <div class="company-card company-card-add${locked ? ' company-card-locked' : ''}" onclick="CompaniesManager.openCreateCompanyModal()">
                 <div class="company-card-add-inner">
-                    <i class="fas fa-plus"></i>
-                    <span>Add Company</span>
+                    <i class="fas ${locked ? 'fa-lock' : 'fa-plus'}"></i>
+                    <span>${locked ? 'Verify to add' : 'Add Company'}</span>
                 </div>
             </div>
         `;
-        grid.innerHTML = cards + addTile;
+        // When locked, show a banner explaining why the companies aren't clickable.
+        const lockNotice = locked ? `
+            <div class="companies-lock-notice" onclick="CompaniesManager.showKycRequiredModal()">
+                <i class="fas fa-lock"></i>
+                <span>Verify your identity to access your companies and create new ones.</span>
+                <button onclick="event.stopPropagation(); CompaniesManager.showKycRequiredModal()">Verify now</button>
+            </div>` : '';
+        grid.innerHTML = lockNotice + cards + addTile;
+        this._ensureLockStyles();
     },
 
-    createCompanyCard(c) {
+    _ensureLockStyles() {
+        if (document.getElementById('companies-lock-styles')) return;
+        const st = document.createElement('style');
+        st.id = 'companies-lock-styles';
+        st.textContent = `
+          .companies-lock-notice{grid-column:1/-1;display:flex;align-items:center;gap:.75rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:12px;padding:.85rem 1.1rem;color:#92400e;font-weight:600;cursor:pointer;margin-bottom:.25rem;}
+          .companies-lock-notice button{margin-left:auto;background:#d97706;color:#fff;border:none;border-radius:8px;padding:.45rem .9rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+          .company-card-locked{position:relative;opacity:.6;filter:grayscale(.4);cursor:not-allowed;}
+          .company-card-locked::after{content:"\\f023";font-family:"Font Awesome 5 Free";font-weight:900;position:absolute;top:.6rem;right:.7rem;color:#6b7280;font-size:1rem;}
+        `;
+        document.head.appendChild(st);
+    },
+
+    createCompanyCard(c, locked = false) {
         const status = this._statusOf(c);
         const badgeMap = {
             verified:  '<span class="company-badge verified"><i class="fas fa-check-circle"></i> Verified</span>',
@@ -148,7 +263,7 @@ const CompaniesManager = {
         const balance = (c.balance || 0).toLocaleString();
 
         return `
-            <div class="company-card" onclick="CompaniesManager.openCompany(${c.id})">
+            <div class="company-card${locked ? ' company-card-locked' : ''}" onclick="CompaniesManager.openCompany(${c.id})">
                 <div class="company-card-header">
                     <div class="company-logo">${logo}</div>
                     <div class="company-info">
@@ -205,6 +320,11 @@ const CompaniesManager = {
     },
 
     openCompany(companyId) {
+        // Existing companies are inaccessible until the owner is identity-verified.
+        if (!this.personVerified) {
+            this.showKycRequiredModal();
+            return;
+        }
         const company = this.companies.find(c => c.id === companyId);
         if (!company) {
             console.error('[CompaniesManager] Company not found:', companyId);
@@ -296,6 +416,11 @@ const CompaniesManager = {
     editingCompanyId: null,  // set => modal is in "edit" mode
 
     openCreateCompanyModal() {
+        // Owner must be identity-verified before creating a company.
+        if (!this.personVerified) {
+            this.showKycRequiredModal();
+            return;
+        }
         const overlay = document.getElementById('create-company-modal-overlay');
         if (!overlay) {
             alert('Create-company modal not loaded yet. Please refresh and try again.');
@@ -465,7 +590,14 @@ const CompaniesManager = {
             }
         } catch (e) {
             console.error('[CompaniesManager] Save failed:', e);
-            alert(`Failed to save company: ${e.message}`);
+            // If the backend rejected because the owner isn't identity-verified,
+            // surface the friendly KYC modal instead of a raw alert.
+            if (/identity|KYC/i.test(e.message || '')) {
+                this.closeCreateCompanyModal();
+                this.showKycRequiredModal();
+            } else {
+                alert(`Failed to save company: ${e.message}`);
+            }
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
