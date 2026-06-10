@@ -1594,3 +1594,122 @@ async def admin_reinstate_company(company_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# PERSON-KYC MANUAL REVIEW (the human-in-charge identity verification)
+# ----------------------------------------------------------------------------
+# Person-KYC is automated (face-match + liveness). This surface is the fallback
+# for verifications that land in 'manual_review' (e.g. no face could be detected
+# after retries) — an admin can verify or reject them by hand.
+# ============================================================================
+
+@router.get("/person-kyc")
+async def list_person_kyc(status: Optional[str] = "manual_review", admin_id: Optional[int] = None):
+    """List advertiser person-KYC verifications needing manual review."""
+    try:
+        with get_adv_db() as conn:
+            with conn.cursor() as cur:
+                params = []
+                where = "WHERE 1=1"
+                if status and status != 'all':
+                    where += " AND v.status = %s"
+                    params.append(status)
+                cur.execute(f"""
+                    SELECT v.id, v.advertiser_id, v.status, v.document_image_url,
+                           v.selfie_image_url, v.face_match_score, v.face_match_passed,
+                           v.liveliness_passed, v.rejection_reason, v.created_at, v.updated_at,
+                           ap.email, ap.first_name, ap.father_name, ap.company_name,
+                           ap.person_verified
+                    FROM advertiser_kyc_verifications v
+                    LEFT JOIN advertiser_profiles ap ON ap.id = v.advertiser_id
+                    {where}
+                    ORDER BY v.updated_at DESC
+                    LIMIT 100
+                """, params)
+                rows = cur.fetchall()
+                items = [{
+                    "verification_id": r['id'],
+                    "advertiser_id": r['advertiser_id'],
+                    "status": r['status'],
+                    "document_image_url": r['document_image_url'],
+                    "selfie_image_url": r['selfie_image_url'],
+                    "face_match_score": float(r['face_match_score']) if r['face_match_score'] is not None else None,
+                    "face_match_passed": bool(r['face_match_passed']),
+                    "liveliness_passed": bool(r['liveliness_passed']),
+                    "rejection_reason": r['rejection_reason'],
+                    "person_verified": bool(r['person_verified']),
+                    "advertiser_name": (" ".join(p for p in [r['first_name'], r['father_name']] if p).strip()
+                                        or r['company_name'] or r['email']),
+                    "email": r['email'],
+                    "updated_at": str(r['updated_at']) if r['updated_at'] else None,
+                } for r in rows]
+                return {"success": True, "count": len(items), "items": items}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/person-kyc/{verification_id}/verify")
+async def admin_verify_person_kyc(verification_id: int, admin_id: Optional[int] = None):
+    """Manually approve an advertiser's person-KYC and flip person_verified."""
+    try:
+        with get_adv_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT advertiser_id FROM advertiser_kyc_verifications WHERE id = %s", (verification_id,))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Verification not found")
+                advertiser_id = row['advertiser_id']
+                cur.execute("""
+                    UPDATE advertiser_kyc_verifications
+                    SET status = 'passed', verification_method = 'manual',
+                        verified_by = %s, verified_at = NOW(), rejection_reason = NULL,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (admin_id, verification_id))
+                cur.execute("""
+                    UPDATE advertiser_profiles
+                    SET person_verified = TRUE, person_verification_status = 'passed',
+                        person_verified_at = NOW(), person_verification_method = 'manual',
+                        person_kyc_verification_id = %s
+                    WHERE id = %s
+                """, (verification_id, advertiser_id))
+                conn.commit()
+                return {"message": "Person-KYC verified", "advertiser_id": advertiser_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/person-kyc/{verification_id}/reject")
+async def admin_reject_person_kyc(verification_id: int, data: dict, admin_id: Optional[int] = None):
+    """Manually reject an advertiser's person-KYC with a reason."""
+    try:
+        reason = (data or {}).get('reason') or 'Rejected by admin'
+        with get_adv_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT advertiser_id FROM advertiser_kyc_verifications WHERE id = %s", (verification_id,))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Verification not found")
+                advertiser_id = row['advertiser_id']
+                cur.execute("""
+                    UPDATE advertiser_kyc_verifications
+                    SET status = 'failed', verification_method = 'manual',
+                        verified_by = %s, rejection_reason = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (admin_id, reason, verification_id))
+                cur.execute("""
+                    UPDATE advertiser_profiles
+                    SET person_verified = FALSE, person_verification_status = 'failed'
+                    WHERE id = %s
+                """, (advertiser_id,))
+                conn.commit()
+                return {"message": "Person-KYC rejected", "advertiser_id": advertiser_id, "reason": reason}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
