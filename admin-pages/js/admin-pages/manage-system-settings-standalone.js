@@ -173,6 +173,11 @@ const PanelManager = {
                 setTimeout(() => window.ManageReviews.init(), 100);
             }
         }
+        if (panelName === 'banks') {
+            if (window.BankAccountsManager && typeof window.BankAccountsManager.init === 'function') {
+                setTimeout(() => window.BankAccountsManager.init(), 100);
+            }
+        }
 
         // Update history if needed
         if (updateHistory) {

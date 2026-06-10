@@ -284,6 +284,10 @@ app.include_router(advertiser_auth_router)
 from pricing_settings_endpoints import router as pricing_router
 app.include_router(pricing_router)
 
+# Platform bank accounts (admin system settings)
+from bank_accounts_endpoints import router as bank_accounts_router
+app.include_router(bank_accounts_router)
+
 # Include base price rules routes (starting prices for new tutors)
 from base_price_endpoints import router as base_price_router
 app.include_router(base_price_router)

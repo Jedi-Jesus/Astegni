@@ -182,6 +182,10 @@
                     <span class="sidebar-icon">💰</span>
                     <span>Pricing Management</span>
                 </a>
+                <a href="#" onclick="switchPanel('banks'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🏦</span>
+                    <span>Bank Accounts</span>
+                </a>
                 <a href="#" onclick="switchPanel('api'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">🔌</span>
                     <span>API & Integrations</span>
@@ -1460,6 +1464,38 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Accounts Panel -->
+                    <div id="banks-panel" class="panel-content hidden">
+                        <div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-3xl font-bold flex items-center gap-3">🏦 Bank Accounts</h2>
+                                <p class="text-gray-600 mt-1">Set the platform's account number for each Ethiopian bank. These are shown to advertisers for payments and used to reconcile receipts.</p>
+                            </div>
+                            <button onclick="BankAccountsManager.saveAll()"
+                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                                <i class="fas fa-save mr-2"></i>Save All
+                            </button>
+                        </div>
+
+                        <div class="card p-6 mb-6">
+                            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                                <div class="relative flex-1 min-w-[220px]">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input id="bank-search" type="text" placeholder="Search banks..."
+                                        oninput="BankAccountsManager.filter(this.value)"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    <span id="bank-configured-count">0</span> of <span id="bank-total-count">0</span> banks configured
+                                </div>
+                            </div>
+
+                            <div id="banks-list" class="space-y-3">
+                                <div class="text-center text-gray-400 py-8"><i class="fas fa-spinner fa-spin"></i> Loading banks…</div>
                             </div>
                         </div>
                     </div>
@@ -6975,6 +7011,8 @@ The Team" required></textarea>
     <script src="./js/admin-pages/feature-assignment-manager.js"></script>
     <script src="./js/admin-pages/base-price-manager.js"></script>
     <script src="./js/admin-pages/affiliate-tier-manager.js?v202605250556"></script>
+    <!-- Bank Accounts Panel -->
+    <script src="./js/admin-pages/bank-accounts-manager.js?v202606100600"></script>
     <!-- Media Panel Managers -->
     <script src="./js/admin-pages/system-media-manager.js"></script>
     <script src="./js/admin-pages/upload-limits-manager.js"></script>
