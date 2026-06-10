@@ -99,7 +99,7 @@ const SidebarManager = {
 // ==================== SECTION 2: PANEL NAVIGATION MANAGER ====================
 const PanelManager = {
     currentPanel: 'dashboard',
-    panels: ['dashboard', 'general', 'media', 'manage-admins', 'manage-reviews', 'pricing', 'email', 'sms', 'api', 'maintenance', 'impressions', 'reports', 'security', 'backup', 'logs', 'performance', 'credentials', 'portfolio', 'settings'],
+    panels: ['dashboard', 'general', 'media', 'manage-admins', 'manage-reviews', 'pricing', 'banks', 'email', 'sms', 'api', 'maintenance', 'impressions', 'reports', 'security', 'backup', 'logs', 'performance', 'credentials', 'portfolio', 'settings'],
 
     init() {
         // Get panel from URL or default to dashboard
