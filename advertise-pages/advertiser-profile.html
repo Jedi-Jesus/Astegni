@@ -1538,6 +1538,27 @@
                         <!-- Dashboard Panel (Default) -->
                         <div id="dashboard-panel" class="panel-content active">
 
+                            <!-- Person-KYC reminder banner (shown only when the account
+                                 owner has not completed identity verification). -->
+                            <div id="person-kyc-banner" style="display:none; margin-bottom:1.25rem;
+                                 background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b;
+                                 border-radius:14px; padding:1rem 1.25rem; display:none; align-items:center;
+                                 gap:1rem; flex-wrap:wrap;">
+                                <div style="font-size:1.6rem;">🪪</div>
+                                <div style="flex:1; min-width:220px;">
+                                    <div style="font-weight:700; color:#92400e;">Verify your identity to launch campaigns</div>
+                                    <div style="font-size:.9rem; color:#b45309;">
+                                        As the account owner, complete a one-time identity check
+                                        (ID&nbsp;+&nbsp;selfie). Required before any campaign can go live.
+                                    </div>
+                                </div>
+                                <button onclick="openVerifyPersonalInfoModal()"
+                                    style="background:#d97706; color:#fff; border:none; border-radius:10px;
+                                    padding:.6rem 1.1rem; font-weight:700; cursor:pointer; white-space:nowrap;">
+                                    Verify identity →
+                                </button>
+                            </div>
+
                             <!-- Hero Section -->
                             <section class="hero-section animate__animated animate__fadeIn">
                                 <h2 class="hero-title">
@@ -3792,6 +3813,25 @@
     <!-- Initialize Profile Data Loader and Load Modals -->
     <script>
     // Initialize Profile Data Loader when available
+    // Show the person-KYC reminder banner only when the owner is not yet verified.
+    async function refreshPersonKycBanner() {
+        try {
+            const token = localStorage.getItem('advertiserToken') || localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) return;
+            const resp = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/advertiser/kyc/check`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const banner = document.getElementById('person-kyc-banner');
+            if (banner) banner.style.display = data.person_verified ? 'none' : 'flex';
+        } catch (e) { /* non-blocking */ }
+    }
+    window.refreshPersonKycBanner = refreshPersonKycBanner;
+    document.addEventListener('DOMContentLoaded', () => setTimeout(refreshPersonKycBanner, 800));
+    // Re-check after a verification completes (the KYC manager dispatches this).
+    document.addEventListener('kycVerificationComplete', refreshPersonKycBanner);
+
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof AdvertiserProfileDataLoader !== 'undefined') {
             setTimeout(function() {

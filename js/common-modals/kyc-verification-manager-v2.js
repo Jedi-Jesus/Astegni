@@ -1029,6 +1029,9 @@ class KYCVerificationManager {
         document.getElementById('kyc-result-failed').style.display = 'none';
         document.getElementById('kyc-result-success').style.display = 'block';
 
+        // Let pages react (e.g. the advertiser person-KYC banner hides itself).
+        try { document.dispatchEvent(new CustomEvent('kycVerificationComplete', { detail: data })); } catch (e) {}
+
         // Update scores
         const faceScore = Math.round((data.face_match_score || 0.95) * 100);
         const livelinessScore = Math.round((data.liveliness_score || 1) * 100);
