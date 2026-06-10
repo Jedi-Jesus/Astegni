@@ -106,12 +106,18 @@
                 });
                 if (res.ok) {
                     const me = await res.json();
+                    // Preserve any existing currentUser fields, then overlay fresh
+                    // server data (incl. country_code/location for the KYC location gate).
                     const user = {
+                        ...(this.user || {}),
                         id: me.advertiser_id,
                         advertiser_id: me.advertiser_id,
                         email: me.email,
                         name: me.name,
                         company_name: me.company_name,
+                        country_code: me.country_code || null,
+                        location: me.location || [],
+                        person_verified: me.person_verified || false,
                         roles: ['advertiser'],
                         active_role: 'advertiser',
                         role_ids: { advertiser: me.advertiser_id }

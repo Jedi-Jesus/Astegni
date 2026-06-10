@@ -144,32 +144,40 @@ class KYCVerificationManager {
             let countryCode = user.country_code || null;
             kycDebug(`User countryCode from localStorage: ${countryCode || '(none)'}`, 'info');
 
-            // If localStorage is stale (missing country_code), fetch fresh from /api/me
+            // Treat an empty-array/empty-string location as "not set".
+            const hasLocation = (loc) => Array.isArray(loc) ? loc.length > 0 : !!loc;
+
+            // If localStorage is stale (missing country_code), fetch fresh. Use the
+            // profile-get path override (advertiser portal points it at its own
+            // endpoint) so this works for advertisers as well as users.
             if (!countryCode) {
                 try {
                     const token = localStorage.getItem('token') || localStorage.getItem('access_token');
                     if (token) {
-                        const meResp = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me`, {
+                        const mePath = window.PROFILE_GET_PATH || '/api/me';
+                        const meResp = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${mePath}`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (meResp.ok) {
-                            const meData = await meResp.json();
-                            if (meData.country_code || meData.location) {
+                            let meData = await meResp.json();
+                            // identity endpoint wraps the object as {user: {...}}
+                            if (meData.user) meData = { ...meData.user, ...meData };
+                            if (meData.country_code || hasLocation(meData.location)) {
                                 user = { ...user, ...meData };
                                 localStorage.setItem('currentUser', JSON.stringify(user));
                                 countryCode = meData.country_code || null;
-                                kycDebug(`Fetched fresh country_code from /api/me: ${countryCode || '(none)'}`, 'ok');
+                                kycDebug(`Fetched fresh country_code: ${countryCode || '(none)'}`, 'ok');
                             }
                         }
                     }
                 } catch (e) {
-                    kycDebug(`/api/me fetch failed: ${e.message}`, 'warn');
+                    kycDebug(`profile fetch failed: ${e.message}`, 'warn');
                 }
             }
 
-            // Fallback: if country_code is missing but location is set, user has provided location
-            if (!countryCode && user.location) {
-                kycDebug(`No country_code but location='${user.location}' exists — proceeding with generic instruction`, 'warn');
+            // Fallback: if country_code is missing but a location is set, proceed.
+            if (!countryCode && hasLocation(user.location)) {
+                kycDebug(`No country_code but location is set — proceeding with generic instruction`, 'warn');
                 countryCode = '__location_set__';
             }
 

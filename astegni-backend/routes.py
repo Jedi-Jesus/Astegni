@@ -7844,14 +7844,15 @@ async def get_advertiser_profile(
     response_dict['full_name'] = full_name
     response_dict['first_name'] = first_name
     response_dict['father_name'] = father_name
-    # Fields that lived on the users table no longer apply to a standalone
-    # advertiser; return safe defaults so the page renders.
-    response_dict['grandfather_name'] = None
-    response_dict['last_name'] = None
-    response_dict['profile_picture'] = getattr(advertiser_profile, 'company_logo', None)
-    response_dict['location'] = None
-    response_dict['social_links'] = {}
-    response_dict['languages'] = []
+    response_dict['grandfather_name'] = getattr(advertiser_profile, 'grandfather_name', None)
+    response_dict['last_name'] = getattr(advertiser_profile, 'last_name', None)
+    response_dict['naming_system'] = getattr(advertiser_profile, 'naming_system', None) or 'ethiopian'
+    response_dict['profile_picture'] = getattr(advertiser_profile, 'profile_picture', None) or getattr(advertiser_profile, 'company_logo', None)
+    response_dict['location'] = getattr(advertiser_profile, 'location', None) or []
+    response_dict['country_code'] = getattr(advertiser_profile, 'country_code', None)
+    response_dict['display_location'] = bool(getattr(advertiser_profile, 'display_location', False))
+    response_dict['social_links'] = getattr(advertiser_profile, 'social_links', None) or {}
+    response_dict['languages'] = getattr(advertiser_profile, 'languages', None) or []
 
     # Verification status now lives on advertiser_profiles (KYC).
     response_dict['is_verified'] = bool(getattr(advertiser_profile, 'email_verified', False))
@@ -7884,10 +7885,39 @@ async def update_advertiser_profile(
     if not advertiser_profile:
         raise HTTPException(status_code=404, detail="Advertiser profile not found")
 
-    # Apply only fields that exist on advertiser_profiles (identity + profile are
-    # both on this row now; user-only fields are silently ignored).
     update_data = profile_data.dict(exclude_unset=True)
+
+    # 'socials' from the edit-profile modal maps to the social_links column.
+    if 'socials' in update_data:
+        advertiser_profile.social_links = update_data.pop('socials') or {}
+
+    # Persist location + auto-deduce country_code/currency from it (mirrors the
+    # user-profile endpoint). country_code/location are the person-KYC precondition.
+    if 'location' in update_data:
+        advertiser_profile.location = update_data.get('location') or []
+    if not update_data.get('country_code') and update_data.get('location'):
+        try:
+            from currency_utils import get_country_code_from_location, get_currency_from_country
+            loc = update_data['location']
+            loc_str = ", ".join(loc) if isinstance(loc, list) else str(loc)
+            code = get_country_code_from_location(loc_str)
+            if code:
+                advertiser_profile.country_code = code
+                advertiser_profile.currency = get_currency_from_country(code)
+        except Exception as e:
+            print(f"[Advertiser] country_code auto-deduce failed: {e}")
+    elif update_data.get('country_code'):
+        advertiser_profile.country_code = update_data['country_code']
+        try:
+            from currency_utils import get_currency_from_country
+            advertiser_profile.currency = get_currency_from_country(update_data['country_code'])
+        except Exception:
+            pass
+
+    # Apply the remaining simple columns that exist on advertiser_profiles.
     for key, value in update_data.items():
+        if key in ('socials', 'location', 'country_code'):
+            continue
         if hasattr(advertiser_profile, key):
             if isinstance(value, str):
                 value = value.strip()

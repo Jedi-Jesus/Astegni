@@ -446,18 +446,25 @@ async def advertiser_me(adv=Depends(get_current_advertiser)):
         conn = get_connection()
         cur = conn.cursor()
         cur.execute(
-            """SELECT id, email, first_name, father_name, company_name, last_login
+            """SELECT id, email, first_name, father_name, company_name, last_login,
+                      country_code, location, person_verified
                FROM advertiser_profiles WHERE id = %s""",
             (adv["id"],),
         )
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Advertiser not found")
-        adv_id, email, first_name, father_name, company_name, last_login = row
+        (adv_id, email, first_name, father_name, company_name, last_login,
+         country_code, location, person_verified) = row
         name = " ".join(p for p in [first_name, father_name] if p).strip() or (company_name or email)
         return {
-            "advertiser_id": adv_id, "email": email, "name": name,
+            "advertiser_id": adv_id, "id": adv_id, "email": email, "name": name,
             "company_name": company_name,
+            # country_code + location let the shared KYC manager clear its
+            # location precondition (it reads these off currentUser).
+            "country_code": country_code,
+            "location": location or [],
+            "person_verified": bool(person_verified),
             "last_login": str(last_login) if last_login else None,
         }
     finally:
@@ -495,7 +502,8 @@ async def get_advertiser_identity(adv=Depends(get_current_advertiser)):
         cur = conn.cursor()
         cur.execute(
             """SELECT id, email, phone, first_name, father_name, grandfather_name,
-                      last_name, date_of_birth, gender, naming_system, digital_id_no
+                      last_name, date_of_birth, gender, naming_system, digital_id_no,
+                      country_code, location
                FROM advertiser_profiles WHERE id = %s""",
             (adv["id"],),
         )
@@ -503,7 +511,8 @@ async def get_advertiser_identity(adv=Depends(get_current_advertiser)):
         if not r:
             raise HTTPException(status_code=404, detail="Advertiser not found")
         (adv_id, email, phone, first_name, father_name, grandfather_name,
-         last_name, dob, gender, naming_system, digital_id_no) = r
+         last_name, dob, gender, naming_system, digital_id_no,
+         country_code, location) = r
         user = {
             "id": adv_id,
             "advertiser_id": adv_id,
@@ -517,6 +526,8 @@ async def get_advertiser_identity(adv=Depends(get_current_advertiser)):
             "gender": gender,
             "naming_system": naming_system or "ethiopian",
             "digital_id_no": digital_id_no,
+            "country_code": country_code,
+            "location": location or [],
         }
         # Return both bare and wrapped so callers reading either shape work.
         return {"valid": True, "user": user, **user}

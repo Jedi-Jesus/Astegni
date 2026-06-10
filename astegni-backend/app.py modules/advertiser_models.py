@@ -116,6 +116,14 @@ class AdvertiserProfile(AdvertiserBase):
     # Legacy brand id cache (array)
     brand_ids = Column(ARRAY(Integer), default=[])
 
+    # Owner profile display + location (location is also the person-KYC precondition).
+    location = Column(JSONB, default=[])
+    country_code = Column(String(10), nullable=True)
+    display_location = Column(Boolean, default=False)
+    social_links = Column(JSONB, default={})
+    languages = Column(JSONB, default=[])
+    profile_picture = Column(String, nullable=True)
+
     # Wallet / billing (legacy advertiser-level; per-company wallet lives on company_profile)
     balance = Column(Numeric(12, 2), default=0.00)
     currency = Column(String(3), default='ETB')
