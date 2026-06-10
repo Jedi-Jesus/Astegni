@@ -312,7 +312,7 @@ class KYCVerificationManager {
                 return;
             }
 
-            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/start`, {
+            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/start`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -328,7 +328,7 @@ class KYCVerificationManager {
                 if (refreshed) {
                     // Retry with new token
                     token = localStorage.getItem('token');
-                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/start`, {
+                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/start`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -609,7 +609,7 @@ class KYCVerificationManager {
             formData.append('image_data', this.documentImage);
             formData.append('document_type', 'digital_id');
 
-            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/upload-document`, {
+            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/upload-document`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -623,7 +623,7 @@ class KYCVerificationManager {
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
-                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/upload-document`, {
+                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/upload-document`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -816,7 +816,7 @@ class KYCVerificationManager {
                 formData.append('extra_frames', JSON.stringify(extraFrames));
             }
 
-            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/verify-liveliness`, {
+            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/verify-liveliness`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -826,7 +826,7 @@ class KYCVerificationManager {
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
-                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/verify-liveliness`, {
+                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/verify-liveliness`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` },
                         body: formData
@@ -926,7 +926,7 @@ class KYCVerificationManager {
                 liveliness_frames: this.livelinessFrames.length
             });
 
-            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/upload-selfie`, {
+            let response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/upload-selfie`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -940,7 +940,7 @@ class KYCVerificationManager {
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     token = localStorage.getItem('token') || localStorage.getItem('access_token');
-                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/upload-selfie`, {
+                    response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/upload-selfie`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -1218,7 +1218,7 @@ class KYCVerificationManager {
             const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) return { kyc_required: false };
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/check`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/check`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

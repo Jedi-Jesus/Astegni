@@ -321,7 +321,7 @@
                     return;
                 }
 
-                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/kyc/check`, {
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}${window.KYC_API_BASE || '/api/kyc'}/check`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -477,7 +477,7 @@
             // Load KYC manager script if not already loaded
             if (typeof kycManager === 'undefined') {
                 const script = document.createElement('script');
-                script.src = '../js/common-modals/kyc-verification-manager-v2.js?v202606021200';
+                script.src = '../js/common-modals/kyc-verification-manager-v2.js?v202606100100';
                 script.onload = () => {
                     console.log('[KYC] Manager loaded, opening modal');
                     if (typeof openKYCModal === 'function') {

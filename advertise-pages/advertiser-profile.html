@@ -7,6 +7,10 @@
     <title>ASTEGNI - Advertiser Profile</title>
     <!-- TailwindCSS CDN -->
     <script src="../js/config.js?v202605252300"></script>
+    <!-- Advertiser person-KYC: point the shared KYC verification manager at the
+         self-contained advertiser endpoints (/api/advertiser/kyc/*) instead of the
+         user endpoints (/api/kyc/*). Must be set BEFORE the KYC manager loads. -->
+    <script>window.KYC_API_BASE = '/api/advertiser/kyc';</script>
     <!-- Safe wrapper for openChatModal - waits for function to be available -->
     <script>
         // Temporary stub - will be replaced by chat-modal.js when it loads
@@ -4212,7 +4216,7 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Settings Panel Modal Scripts -->
-    <script src="../js/tutor-profile/settings-panel-personal-verification.js?v202606021200"></script>
+    <script src="../js/tutor-profile/settings-panel-personal-verification.js?v202606100100"></script>
     <script src="../js/tutor-profile/payment-method-modal.js?v202605252300"></script>
     <script src="../js/common-modals/leave-astegni-modal.js?v202605252300"></script>
     <!-- Appearance Manager (Theme, Font Size, Display Density, etc.) -->
