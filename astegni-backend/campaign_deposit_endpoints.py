@@ -171,6 +171,19 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 if not company_id:
                     raise HTTPException(status_code=400, detail="Brand is not linked to a company")
 
+                # Dual-KYC gate at CREATE time (not just launch): the owner must be
+                # person-verified AND the owning company currently verified. This
+                # blocks creating even a draft campaign under a suspended/unverified
+                # company or by an unverified owner.
+                cur.execute("SELECT person_verified FROM advertiser_profiles WHERE id = %s", (advertiser_profile_id,))
+                _pv = cur.fetchone()
+                if not (_pv and _pv.get('person_verified')):
+                    raise HTTPException(status_code=403, detail="Verify your identity (KYC) before creating a campaign.")
+                cur.execute("SELECT is_verified FROM company_profile WHERE id = %s", (company_id,))
+                _cv = cur.fetchone()
+                if not (_cv and _cv.get('is_verified')):
+                    raise HTTPException(status_code=403, detail="The company behind this brand must be verified before creating a campaign.")
+
                 # Create the campaign (without removed/deprecated fields)
                 # Removed fields: thumbnail_url, file_url (→ campaign_media table)
                 # Removed fields: target_audience (singular) (→ use target_audiences array instead)

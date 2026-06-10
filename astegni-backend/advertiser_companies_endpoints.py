@@ -175,6 +175,18 @@ async def create_company(payload: CompanyCreate, current_user=Depends(resolve_ad
     """Create a new company under the current advertiser."""
     advertiser_profile_id = _current_advertiser_profile_id(current_user)
 
+    # Person-KYC gate: the account owner must be identity-verified before creating
+    # any company. This stops an unvetted person from spinning up a business entity.
+    with get_db() as _c:
+        with _c.cursor() as _cur:
+            _cur.execute("SELECT person_verified FROM advertiser_profiles WHERE id = %s", (advertiser_profile_id,))
+            _pv = _cur.fetchone()
+    if not (_pv and _pv["person_verified"]):
+        raise HTTPException(
+            status_code=403,
+            detail="Verify your identity (KYC) before creating a company.",
+        )
+
     name = (payload.company_name or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="company_name is required")
