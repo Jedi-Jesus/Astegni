@@ -2383,9 +2383,10 @@ const BrandsManager = {
         const userLocationText = document.getElementById('user-location-text');
 
         try {
-            // Fetch user profile to get location
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${BRANDS_API_URL}/api/me`, {
+            // Advertiser portal: read location from the advertiser's own profile
+            // (NOT /api/me, which is user-DB and 401s for an advertiser token).
+            const token = localStorage.getItem('advertiserToken') || localStorage.getItem('token') || localStorage.getItem('access_token');
+            const response = await fetch(`${BRANDS_API_URL}/api/advertiser/auth/identity`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -2393,8 +2394,11 @@ const BrandsManager = {
 
             if (!response.ok) throw new Error('Failed to fetch user profile');
 
-            const userData = await response.json();
-            const userLocation = userData.location;
+            const raw = await response.json();
+            const userData = raw.user || raw;
+            // location is stored as an array on advertiser_profiles; normalize to a string for display.
+            let userLocation = userData.location;
+            if (Array.isArray(userLocation)) userLocation = userLocation.filter(Boolean).join(', ');
             const countryCode = userData.country_code;
 
             // Store user's country code for later use
@@ -2563,45 +2567,26 @@ const BrandsManager = {
         }
     },
 
-    // Save user location to profile
+    // Save the advertiser's base location to their profile (advertiser_profiles).
+    // PUT /api/advertiser/profile persists the location array and auto-deduces
+    // country_code/currency from it.
     async saveUserLocation(location, country_code) {
         try {
-            const token = localStorage.getItem('token');
-            const currentRole = localStorage.getItem('currentRole');
-
-            // Update user's base location (in users table)
-            const userResponse = await fetch(`${BRANDS_API_URL}/api/users/update-location`, {
+            const token = localStorage.getItem('advertiserToken') || localStorage.getItem('token') || localStorage.getItem('access_token');
+            const profileResponse = await fetch(`${BRANDS_API_URL}/api/advertiser/profile`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    location: location,
+                    location: [location],          // advertiser_profiles stores an array
                     country_code: country_code
                 })
             });
 
-            if (!userResponse.ok) {
-                console.warn('[BrandsManager] Failed to update user location, attempting role-specific update');
-
-                // Fallback: Update role-specific profile
-                const roleEndpoint = currentRole === 'advertiser' ? 'advertiser' : currentRole;
-                const profileResponse = await fetch(`${BRANDS_API_URL}/api/${roleEndpoint}/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        location: [location],  // Advertiser uses array
-                        country_code: country_code  // Also save country code
-                    })
-                });
-
-                if (!profileResponse.ok) {
-                    throw new Error('Failed to save location');
-                }
+            if (!profileResponse.ok) {
+                throw new Error('Failed to save location');
             }
 
             console.log('[BrandsManager] Location saved successfully:', location, country_code);
