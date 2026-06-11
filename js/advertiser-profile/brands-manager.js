@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606110800');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112200');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -3607,64 +3607,34 @@ const BrandsManager = {
         this.openPaymentConfirmationModal();
     },
 
-    // Open payment confirmation modal
+    // Open the LAUNCH confirmation modal. By the time Launch is reachable, the
+    // advance is already paid+verified and the ad reviewed — this modal confirms
+    // those gates and that the campaign is about to go live (NOT a payment step).
     openPaymentConfirmationModal() {
         if (!this.currentCampaign) return;
 
         const modal = document.getElementById('payment-confirmation-modal-overlay');
         if (!modal) return;
+        const c = this.currentCampaign;
 
-        // Populate campaign details
-        const campaignNameEl = document.getElementById('payment-campaign-name');
-        const brandNameEl = document.getElementById('payment-brand-name');
-        const startDateEl = document.getElementById('payment-start-date');
+        // Campaign details
+        const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+        setText('payment-campaign-name', c.name || '-');
+        setText('payment-brand-name', this.currentBrand?.name || '-');
+        setText('payment-start-date', c.start_date
+            ? new Date(c.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : '-');
 
-        if (campaignNameEl) campaignNameEl.textContent = this.currentCampaign.name || '-';
-        if (brandNameEl) brandNameEl.textContent = this.currentBrand?.name || '-';
-        if (startDateEl) {
-            const startDate = this.currentCampaign.start_date
-                ? new Date(this.currentCampaign.start_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })
-                : '-';
-            startDateEl.textContent = startDate;
-        }
-
-        // Populate payment breakdown
-        const totalBudget = this.currentCampaign.campaign_budget || 0;
-        const advanceAmount = totalBudget * 0.2; // 20%
-        const remainingAmount = totalBudget * 0.8; // 80%
-
-        const totalBudgetEl = document.getElementById('payment-total-budget');
-        const advanceAmountEl = document.getElementById('payment-advance-amount');
-        const remainingAmountEl = document.getElementById('payment-remaining-amount');
-
-        if (totalBudgetEl) totalBudgetEl.textContent = `${totalBudget.toLocaleString()} ETB`;
-        if (advanceAmountEl) advanceAmountEl.textContent = `${advanceAmount.toLocaleString()} ETB`;
-        if (remainingAmountEl) remainingAmountEl.textContent = `${remainingAmount.toLocaleString()} ETB`;
-
-        // Check if payment method exists (placeholder for now)
-        // TODO: Fetch actual payment method from user profile
-        const hasPaymentMethod = true; // Placeholder
-        const paymentMethodDetails = document.getElementById('payment-method-details');
-        const paymentMethodEmpty = document.getElementById('payment-method-empty');
-
-        if (hasPaymentMethod) {
-            if (paymentMethodDetails) paymentMethodDetails.style.display = 'flex';
-            if (paymentMethodEmpty) paymentMethodEmpty.style.display = 'none';
-
-            // Populate payment method details (placeholder data)
-            const paymentMethodType = document.getElementById('payment-method-type');
-            const paymentMethodNumber = document.getElementById('payment-method-number');
-
-            if (paymentMethodType) paymentMethodType.textContent = 'Credit Card';
-            if (paymentMethodNumber) paymentMethodNumber.textContent = '**** **** **** 1234';
-        } else {
-            if (paymentMethodDetails) paymentMethodDetails.style.display = 'none';
-            if (paymentMethodEmpty) paymentMethodEmpty.style.display = 'flex';
-        }
+        // Verification status badges (payment + ad content).
+        const badge = (ok) => ok
+            ? '<span style="color:#15803d;font-weight:700;"><i class="fas fa-check-circle"></i> Verified</span>'
+            : '<span style="color:#b45309;font-weight:700;"><i class="fas fa-clock"></i> Pending</span>';
+        const payOk = (c.payment_verified === true) || (c.payment_status === 'verified');
+        const adOk = (c.ad_verification_status || c.verification_status) === 'verified' || c.is_verified === true;
+        const payEl = document.getElementById('launch-payment-status');
+        const adEl = document.getElementById('launch-ad-status');
+        if (payEl) payEl.innerHTML = badge(payOk);
+        if (adEl) adEl.innerHTML = badge(adOk);
 
         // Show modal
         modal.classList.add('active');
@@ -3678,20 +3648,18 @@ const BrandsManager = {
         }
     },
 
-    // Process payment and launch campaign
+    // Confirm launch and activate the campaign. No charge happens here — the
+    // advance was already paid+verified; this just calls the launch endpoint
+    // (which enforces the payment + ad-content gates server-side).
     async processPaymentAndLaunch() {
         if (!this.currentCampaign) return;
 
-        // Get campaign currency (default to ETB)
-        const currency = this.currentCampaign.currency || CurrencyManager.getCurrency();
-        const depositPercent = this.currentCampaign.deposit_percent || 20;
-        const advanceAmount = (this.currentCampaign.campaign_budget || 0) * (depositPercent / 100);
-
-        // Close payment modal
+        // Close the launch-confirmation modal.
         this.closePaymentConfirmationModal();
 
-        // Show processing message
-        alert(`Processing payment of ${advanceAmount.toLocaleString()} ${currency}...`);
+        if (window.Utils && window.Utils.showToast) {
+            window.Utils.showToast('Launching your campaign…', 'info');
+        }
 
         try {
             // Get auth token
@@ -3715,10 +3683,6 @@ const BrandsManager = {
             if (!response.ok) {
                 throw new Error(data.detail || 'Failed to launch campaign');
             }
-
-            // Get actual payment info from response
-            const actualPayment = data.advance_payment || advanceAmount;
-            const actualCurrency = data.currency || currency;
 
             // Update campaign status to active
             this.currentCampaign.status = 'active';
@@ -3744,34 +3708,20 @@ const BrandsManager = {
             // Update footer buttons for active campaign
             this.updateFooterButtons();
 
-            // Log activity
-            const activityMessage = actualPayment > 0
-                ? `Campaign was launched and is now running. Advance payment of ${actualPayment.toLocaleString()} ${actualCurrency} processed.`
-                : `Campaign was launched and is now running.`;
-            this.addCampaignActivity('launch', 'Campaign Launched', activityMessage);
+            // Log activity (no charge happens at launch — advance was paid earlier).
+            this.addCampaignActivity('launch', 'Campaign Launched', 'Campaign was launched and is now running.');
 
-            // Show success message
-            const successMessage = actualPayment > 0
-                ? `Campaign "${this.currentCampaign.name}" has been launched successfully!\n\nAdvance payment of ${actualPayment.toLocaleString()} ${actualCurrency} has been charged.`
-                : `Campaign "${this.currentCampaign.name}" has been launched successfully!`;
-            alert(successMessage);
+            // Show success
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast(`🚀 Campaign "${this.currentCampaign.name}" is now live!`, 'success');
+            } else {
+                alert(`Campaign "${this.currentCampaign.name}" has been launched successfully!`);
+            }
 
         } catch (error) {
             console.error('Error launching campaign:', error);
             alert(`Failed to launch campaign: ${error.message}`);
         }
-    },
-
-    // Change payment method
-    changePaymentMethod() {
-        // TODO: Implement payment method change functionality
-        alert('Change payment method functionality will be implemented soon.');
-    },
-
-    // Add payment method
-    addPaymentMethod() {
-        // TODO: Implement add payment method functionality
-        alert('Add payment method functionality will be implemented soon.');
     },
 
     // Handle primary action button (Launch or Cancel based on status)

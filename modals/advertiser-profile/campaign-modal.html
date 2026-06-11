@@ -1252,11 +1252,11 @@
         <div class="payment-confirmation-modal-header">
             <div class="payment-confirmation-modal-title">
                 <div class="payment-confirmation-modal-icon">
-                    <i class="fas fa-credit-card"></i>
+                    <i class="fas fa-rocket"></i>
                 </div>
                 <div>
-                    <h3>Confirm Payment</h3>
-                    <p>Review payment details before launching campaign</p>
+                    <h3>Launch Campaign</h3>
+                    <p>Review and confirm before your campaign goes live</p>
                 </div>
             </div>
             <button class="payment-confirmation-modal-close" onclick="BrandsManager.closePaymentConfirmationModal()">
@@ -1288,77 +1288,41 @@
                 </div>
             </div>
 
-            <!-- Payment Breakdown -->
+            <!-- Verification Status (both gates must pass to launch) -->
             <div class="payment-breakdown-section">
                 <div class="payment-breakdown-header">
-                    <i class="fas fa-receipt"></i>
-                    <span>Payment Breakdown</span>
+                    <i class="fas fa-shield-check"></i>
+                    <span>Verification Status</span>
                 </div>
                 <div class="payment-breakdown-details">
                     <div class="payment-breakdown-row">
-                        <span class="payment-breakdown-label">Total Campaign Budget:</span>
-                        <span class="payment-breakdown-value" id="payment-total-budget">0.00 ETB</span>
+                        <div class="payment-breakdown-label-section">
+                            <span class="payment-breakdown-label">Advance payment</span>
+                            <span class="payment-breakdown-sublabel">Receipt verified by our team</span>
+                        </div>
+                        <span class="payment-breakdown-value" id="launch-payment-status">—</span>
                     </div>
                     <div class="payment-breakdown-divider"></div>
-                    <div class="payment-breakdown-row highlight">
-                        <div class="payment-breakdown-label-section">
-                            <span class="payment-breakdown-label">Advance Payment (20%):</span>
-                            <span class="payment-breakdown-sublabel">Invoice #1 - Due Now</span>
-                        </div>
-                        <span class="payment-breakdown-value highlight" id="payment-advance-amount">0.00 ETB</span>
-                    </div>
                     <div class="payment-breakdown-row">
                         <div class="payment-breakdown-label-section">
-                            <span class="payment-breakdown-label">Remaining Balance (80%):</span>
-                            <span class="payment-breakdown-sublabel">Invoice #2 - After Campaign Completion</span>
+                            <span class="payment-breakdown-label">Ad content</span>
+                            <span class="payment-breakdown-sublabel">Reviewed for appropriateness</span>
                         </div>
-                        <span class="payment-breakdown-value" id="payment-remaining-amount">0.00 ETB</span>
+                        <span class="payment-breakdown-value" id="launch-ad-status">—</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Payment Method -->
-            <div class="payment-method-section">
-                <div class="payment-method-header">
-                    <i class="fas fa-wallet"></i>
-                    <span>Payment Method</span>
-                </div>
-                <div class="payment-method-card" id="payment-method-card">
-                    <!-- If payment method is set -->
-                    <div class="payment-method-details" id="payment-method-details">
-                        <div class="payment-method-icon">
-                            <i class="fas fa-credit-card"></i>
-                        </div>
-                        <div class="payment-method-info">
-                            <span class="payment-method-type" id="payment-method-type">Credit Card</span>
-                            <span class="payment-method-number" id="payment-method-number">**** **** **** 1234</span>
-                        </div>
-                        <button class="payment-method-change-btn" onclick="BrandsManager.changePaymentMethod()">
-                            <i class="fas fa-edit"></i>
-                            Change
-                        </button>
-                    </div>
-                    <!-- If no payment method set -->
-                    <div class="payment-method-empty" id="payment-method-empty" style="display: none;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>No payment method added</span>
-                        <button class="payment-method-add-btn" onclick="BrandsManager.addPaymentMethod()">
-                            <i class="fas fa-plus"></i>
-                            Add Payment Method
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Important Notice -->
+            <!-- What launching does -->
             <div class="payment-notice">
                 <i class="fas fa-info-circle"></i>
                 <div>
-                    <strong>Important:</strong>
+                    <strong>Before you launch:</strong>
                     <ul>
-                        <li>You will be charged 20% of the total budget now</li>
-                        <li>The remaining 80% will be charged after campaign completion</li>
-                        <li>Refunds are subject to cancellation fees based on your tier</li>
+                        <li>Your advance is already paid and verified — no further payment is taken now.</li>
+                        <li>Your ad goes live and starts delivering impressions to your targeted audience.</li>
+                        <li>The remaining balance is settled once the first phase of impressions is delivered.</li>
+                        <li>All payments are non-refundable; you may cancel after the first phase completes.</li>
                     </ul>
                 </div>
             </div>
@@ -1371,8 +1335,8 @@
                 Cancel
             </button>
             <button class="payment-confirmation-btn continue" onclick="BrandsManager.processPaymentAndLaunch()">
-                <i class="fas fa-check-circle"></i>
-                Continue & Launch Campaign
+                <i class="fas fa-rocket"></i>
+                Launch Campaign
             </button>
         </div>
     </div>
