@@ -184,6 +184,35 @@
                 </div>
             </div>
 
+            <!-- Choose which platform bank account the advance was paid to -->
+            <div class="bank-select-section" style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:2px solid var(--primary-color);margin-bottom:20px;">
+                <h3 class="section-title" style="margin-bottom:8px;">
+                    <i class="fas fa-university"></i>
+                    Pay to one of our bank accounts
+                </h3>
+                <p style="font-size:0.9rem;color:var(--text-secondary);margin:0 0 12px;">
+                    Transfer the advance to one of the accounts below, then choose which
+                    account you paid to and upload your receipt.
+                </p>
+                <select id="confirm-bank-select"
+                        onchange="CampaignCreationConfirmation.onBankSelected()"
+                        style="width:100%;padding:12px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--bg-primary,#fff);color:var(--text-primary,#111);">
+                    <option value="">Loading accounts…</option>
+                </select>
+                <!-- Selected account details -->
+                <div id="confirm-bank-details" style="display:none;margin-top:12px;padding:14px;border-radius:10px;background:rgba(34,197,94,.06);border:1px solid #bbf7d0;">
+                    <div style="font-weight:700;" id="confirm-bank-name"></div>
+                    <div id="confirm-bank-holder" style="font-size:.85rem;color:var(--text-secondary);"></div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+                        <span style="font-family:monospace;font-size:1.15rem;font-weight:700;letter-spacing:.05em;" id="confirm-bank-account"></span>
+                        <button type="button" onclick="CampaignCreationConfirmation.copyAccount()"
+                                style="padding:.35rem .7rem;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Upload Payment Receipt -->
             <div class="receipt-upload-section" style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:2px solid var(--primary-color);margin-bottom:20px;">
                 <h3 class="section-title" style="margin-bottom:8px;">
@@ -784,6 +813,10 @@ window.CampaignCreationConfirmation = {
             throw error;
         }
 
+        // Load the platform's bank accounts the advertiser can pay to.
+        this.selectedBank = null;
+        this.loadBanks();
+
         const overlay = document.getElementById('campaign-creation-confirmation-overlay');
         console.log('[CampaignCreationConfirmation] overlay element:', overlay);
 
@@ -815,13 +848,72 @@ window.CampaignCreationConfirmation = {
         document.getElementById('confirm-agreement-checkbox').checked = false;
         document.getElementById('confirm-create-btn').disabled = true;
         this.receiptFile = null;
+        this.selectedBank = null;
         const fileEl = document.getElementById('confirm-receipt-file');
         if (fileEl) fileEl.value = '';
         const fnRow = document.getElementById('confirm-receipt-filename');
         if (fnRow) fnRow.style.display = 'none';
+        const det = document.getElementById('confirm-bank-details');
+        if (det) det.style.display = 'none';
     },
 
     receiptFile: null,
+    banks: [],
+    selectedBank: null,
+
+    async loadBanks() {
+        const sel = document.getElementById('confirm-bank-select');
+        const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+        try {
+            const token = localStorage.getItem('advertiserToken') || localStorage.getItem('token') || localStorage.getItem('access_token');
+            const res = await fetch(`${apiBase}/api/admin/banks`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await res.json();
+            this.banks = (data.accounts || []).filter(a => a.account_number);
+        } catch (e) {
+            console.error('[CampaignCreationConfirmation] loadBanks failed:', e);
+            this.banks = [];
+        }
+        if (!sel) return;
+        if (!this.banks.length) {
+            sel.innerHTML = '<option value="">No bank accounts available — contact support</option>';
+            return;
+        }
+        sel.innerHTML = '<option value="">Select the account you paid to…</option>' +
+            this.banks.map(b => `<option value="${b.bank_code}">${this._esc(b.bank_name)} — ${this._esc(b.account_number)}</option>`).join('');
+    },
+
+    onBankSelected() {
+        const sel = document.getElementById('confirm-bank-select');
+        const code = sel ? sel.value : '';
+        const bank = this.banks.find(b => b.bank_code === code) || null;
+        this.selectedBank = bank;
+        const det = document.getElementById('confirm-bank-details');
+        if (bank && det) {
+            document.getElementById('confirm-bank-name').textContent = bank.bank_name;
+            const holder = document.getElementById('confirm-bank-holder');
+            holder.textContent = bank.account_name ? ('A/C name: ' + bank.account_name) : '';
+            holder.style.display = bank.account_name ? 'block' : 'none';
+            document.getElementById('confirm-bank-account').textContent = bank.account_number;
+            det.style.display = 'block';
+        } else if (det) {
+            det.style.display = 'none';
+        }
+        this.updateCreateButtonState();
+    },
+
+    copyAccount() {
+        if (!this.selectedBank) return;
+        const num = this.selectedBank.account_number || '';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(num).then(() => {
+                if (typeof showToast === 'function') showToast('Account number copied', 'success');
+            }).catch(() => {});
+        }
+    },
+
+    _esc(s) { return (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); },
 
     populateData() {
         const {
@@ -907,23 +999,33 @@ window.CampaignCreationConfirmation = {
         this.updateCreateButtonState();
     },
 
-    // Create is enabled only when the terms are agreed AND a receipt is attached.
+    // Create is enabled only when a bank is chosen, terms agreed, AND a receipt attached.
     updateCreateButtonState() {
         const agreed = document.getElementById('confirm-agreement-checkbox')?.checked;
         const btn = document.getElementById('confirm-create-btn');
-        if (btn) btn.disabled = !(agreed && this.receiptFile);
+        if (btn) btn.disabled = !(agreed && this.receiptFile && this.selectedBank);
     },
 
     confirmCreate() {
+        if (!this.selectedBank) {
+            alert('Please choose which of our bank accounts you paid to.');
+            return;
+        }
         if (!document.getElementById('confirm-agreement-checkbox').checked) return;
         if (!this.receiptFile) {
             alert('Please attach your payment receipt before creating the campaign.');
             return;
         }
 
-        // Pass the receipt file along so the parent can upload it with the campaign.
+        // Pass the receipt file + the chosen account so the parent can record where paid.
         if (typeof BrandsManager !== 'undefined' && typeof BrandsManager.executeCreate === 'function') {
-            BrandsManager.executeCreate({ ...this.campaignData, receiptFile: this.receiptFile });
+            BrandsManager.executeCreate({
+                ...this.campaignData,
+                receiptFile: this.receiptFile,
+                paid_to_bank_code: this.selectedBank.bank_code,
+                paid_to_bank_name: this.selectedBank.bank_name,
+                paid_to_account_number: this.selectedBank.account_number,
+            });
         }
 
         this.close();

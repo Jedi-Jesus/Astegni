@@ -590,6 +590,8 @@ async def upload_campaign_receipt(
     campaign_id: int,
     file: UploadFile = File(...),
     amount: Optional[float] = Form(None),
+    paid_to_bank_name: Optional[str] = Form(None),
+    paid_to_account_number: Optional[str] = Form(None),
     current_user = Depends(resolve_advertiser),
 ):
     """
@@ -642,6 +644,17 @@ async def upload_campaign_receipt(
 
                 advance_amount = float(amount) if amount is not None else float(campaign.get('deposit_amount') or 0)
 
+                # Note which of our bank accounts the advertiser says they paid to,
+                # so the admin can reconcile the receipt against the right account.
+                paid_to = ""
+                if paid_to_bank_name:
+                    paid_to = f" Paid to: {paid_to_bank_name}"
+                    if paid_to_account_number:
+                        paid_to += f" (A/C {paid_to_account_number})"
+                    paid_to += "."
+                note_new = "Advance payment receipt awaiting admin verification." + paid_to
+                note_reupload = "Advance payment receipt re-uploaded; awaiting admin verification." + paid_to
+
                 # Record (or refresh) the advance invoice with the receipt + pending status.
                 # invoice_number is unique; use a deterministic per-campaign advance number.
                 invoice_number = f"ADV-{campaign_id}"
@@ -655,7 +668,7 @@ async def upload_campaign_receipt(
                     ) VALUES (
                         %s, %s, %s, %s, 'advance', %s,
                         %s, 0.00, 'pending',
-                        'receipt', %s, 'Advance payment receipt awaiting admin verification',
+                        'receipt', %s, %s,
                         NOW(), NOW(), NOW()
                     )
                     ON CONFLICT (invoice_number) DO UPDATE SET
@@ -664,13 +677,14 @@ async def upload_campaign_receipt(
                         status = 'pending',
                         invoice_pdf_url = EXCLUDED.invoice_pdf_url,
                         payment_method = 'receipt',
-                        notes = 'Advance payment receipt re-uploaded; awaiting admin verification',
+                        notes = %s,
                         updated_at = NOW()
                     RETURNING id
                 """, (
                     campaign_id, advertiser_profile_id, campaign.get('brand_id'),
                     invoice_number, advance_amount,
-                    advance_amount, receipt_url,
+                    advance_amount, receipt_url, note_new,
+                    note_reupload,
                 ))
                 invoice = cur.fetchone()
                 conn.commit()

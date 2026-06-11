@@ -3321,6 +3321,9 @@ const BrandsManager = {
                     if (confirmationData.advance_amount != null) {
                         fd.append('amount', String(confirmationData.advance_amount));
                     }
+                    // Which of our bank accounts the advertiser paid to (for reconciliation).
+                    if (confirmationData.paid_to_bank_name) fd.append('paid_to_bank_name', confirmationData.paid_to_bank_name);
+                    if (confirmationData.paid_to_account_number) fd.append('paid_to_account_number', confirmationData.paid_to_account_number);
                     const rcptResp = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaignId}/upload-receipt`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` },
