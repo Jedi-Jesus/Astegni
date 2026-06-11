@@ -81,7 +81,10 @@ def _extract_paid_to(notes) -> Optional[str]:
     if not notes:
         return None
     import re
-    m = re.search(r'Paid to:\s*(.+?)\.?\s*$', notes)
+    # Capture everything after "Paid to:" up to the terminating period (or end),
+    # so it works whether the fragment is at the end of the note or followed by
+    # more text (e.g. after a verification status was appended).
+    m = re.search(r'Paid to:\s*(.+?)(?:\.\s|\.$|$)', notes)
     return m.group(1).strip() if m else None
 
 
@@ -240,9 +243,19 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
         if not inv:
             raise HTTPException(status_code=404, detail="No advance-payment receipt found for this campaign")
 
-        note = (body.reason or '').strip() or (
+        # Build the status note, but PRESERVE the "Paid to: <bank> (A/C ...)."
+        # fragment the receipt upload wrote into notes — otherwise verifying
+        # overwrites it and the admin loses which account was paid.
+        cur.execute("SELECT notes FROM campaign_invoices WHERE id = %s", (inv['id'],))
+        existing_notes = (cur.fetchone() or {}).get('notes') or ''
+        paid_to = _extract_paid_to(existing_notes)
+        status_note = (body.reason or '').strip() or (
             'Payment verified by admin' if body.new_status == 'verified' else None
         )
+        if status_note and paid_to:
+            note = f"{status_note} Paid to: {paid_to}."
+        else:
+            note = status_note  # None when rejecting without a reason → keeps existing notes
         cur.execute("""
             UPDATE campaign_invoices
             SET status = %s,
