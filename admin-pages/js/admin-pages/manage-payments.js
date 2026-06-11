@@ -149,8 +149,11 @@ const ManagePayments = {
                 <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
                     ${existingInvoice}
                     <input type="file" id="mp-invoice-file" accept="image/*,application/pdf" style="font-size:.8rem; max-width:230px;">
-                    <button class="mp-btn mp-btn-verify" onclick="ManagePayments.uploadInvoice(${p.campaign_id})">
+                    <button id="mp-invoice-upload-btn" class="mp-btn mp-btn-verify" onclick="ManagePayments.uploadInvoice(${p.campaign_id})">
                         <i class="fas fa-upload"></i> ${p.admin_invoice_url ? 'Replace' : 'Upload'} Invoice
+                    </button>
+                    <button id="mp-invoice-cancel-btn" class="mp-btn mp-btn-reject" style="display:none;" onclick="ManagePayments.cancelInvoiceUpload()">
+                        <i class="fas fa-times"></i> Cancel
                     </button>
                     <span id="mp-invoice-status" class="mp-muted"></span>
                 </div>`;
@@ -225,19 +228,29 @@ const ManagePayments = {
         if (o) o.style.display = 'none';
     },
 
+    _invoiceUploadController: null,
+
     async uploadInvoice(campaignId) {
         const input = document.getElementById('mp-invoice-file');
         const statusEl = document.getElementById('mp-invoice-status');
+        const uploadBtn = document.getElementById('mp-invoice-upload-btn');
+        const cancelBtn = document.getElementById('mp-invoice-cancel-btn');
         const file = input && input.files && input.files[0];
         if (!file) { if (statusEl) statusEl.textContent = 'Choose a file first.'; return; }
+
+        // Allow aborting the in-flight upload via the Cancel button.
+        this._invoiceUploadController = new AbortController();
         if (statusEl) statusEl.textContent = 'Uploading…';
+        if (uploadBtn) uploadBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+
         try {
             const fd = new FormData();
             fd.append('file', file);
             const adminId = this.getAdminId();
             if (adminId) fd.append('admin_id', adminId);
             const resp = await fetch(`${this.apiBase}/api/manage-payments/payments/${campaignId}/invoice`, {
-                method: 'POST', body: fd,
+                method: 'POST', body: fd, signal: this._invoiceUploadController.signal,
             });
             const data = await resp.json().catch(() => ({}));
             if (resp.ok) {
@@ -246,13 +259,27 @@ const ManagePayments = {
                 await this.openDetail(campaignId);   // re-render with the new invoice link
             } else {
                 if (statusEl) statusEl.textContent = '';
+                if (uploadBtn) uploadBtn.style.display = 'inline-flex';
+                if (cancelBtn) cancelBtn.style.display = 'none';
                 alert(`Failed: ${data.detail || 'Unknown error'}`);
             }
         } catch (err) {
-            console.error('[ManagePayments] invoice upload error:', err);
-            if (statusEl) statusEl.textContent = '';
-            alert('An error occurred while uploading the invoice.');
+            if (err && err.name === 'AbortError') {
+                if (statusEl) statusEl.textContent = 'Upload cancelled.';
+            } else {
+                console.error('[ManagePayments] invoice upload error:', err);
+                if (statusEl) statusEl.textContent = '';
+                alert('An error occurred while uploading the invoice.');
+            }
+            if (uploadBtn) uploadBtn.style.display = 'inline-flex';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        } finally {
+            this._invoiceUploadController = null;
         }
+    },
+
+    cancelInvoiceUpload() {
+        if (this._invoiceUploadController) this._invoiceUploadController.abort();
     },
 
     async issueSettlement(campaignId) {
