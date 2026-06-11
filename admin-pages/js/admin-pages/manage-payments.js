@@ -56,7 +56,7 @@ const ManagePayments = {
 
     async loadPayments() {
         const body = document.getElementById('payments-body');
-        if (body) body.innerHTML = '<tr><td colspan="6" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>';
+        if (body) body.innerHTML = '<tr><td colspan="7" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>';
         try {
             const params = [];
             if (this.status && this.status !== 'all') params.push(`status=${encodeURIComponent(this.status)}`);
@@ -69,7 +69,7 @@ const ManagePayments = {
             this.renderRows(this.payments);
         } catch (e) {
             console.error('[ManagePayments] list error:', e);
-            if (body) body.innerHTML = '<tr><td colspan="6" class="mp-empty"><i class="fas fa-triangle-exclamation"></i> Failed to load payments.</td></tr>';
+            if (body) body.innerHTML = '<tr><td colspan="7" class="mp-empty"><i class="fas fa-triangle-exclamation"></i> Failed to load payments.</td></tr>';
         }
     },
 
@@ -77,11 +77,21 @@ const ManagePayments = {
         const body = document.getElementById('payments-body');
         if (!body) return;
         if (!payments.length) {
-            body.innerHTML = '<tr><td colspan="6" class="mp-empty"><i class="fas fa-inbox"></i> No payments in this view.</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" class="mp-empty"><i class="fas fa-inbox"></i> No payments in this view.</td></tr>';
             return;
         }
         const statusIcon = { pending: 'fa-clock', verified: 'fa-check', rejected: 'fa-times' };
         body.innerHTML = payments.map(p => {
+            // Invoice-sent badge: has the admin uploaded the advertiser invoice yet?
+            // Only meaningful once the payment is verified.
+            let invoiceCell;
+            if (p.status !== 'verified') {
+                invoiceCell = '<span class="mp-muted">—</span>';
+            } else if (p.admin_invoice_url) {
+                invoiceCell = '<span class="mp-badge verified"><i class="fas fa-paper-plane"></i> Sent</span>';
+            } else {
+                invoiceCell = '<span class="mp-badge pending"><i class="fas fa-hourglass-half"></i> Not sent</span>';
+            }
             return `
                 <tr>
                     <td><span class="mp-primary">${this.esc(p.campaign_name) || 'CMP-' + p.campaign_id}</span><div class="mp-muted">CMP-${p.campaign_id}</div></td>
@@ -89,6 +99,7 @@ const ManagePayments = {
                     <td>${this.esc(p.brand_name) || '<span class="mp-muted">—</span>'}</td>
                     <td>${this.esc(p.advertiser_name) || '—'}<div class="mp-muted">${this.esc(p.advertiser_email) || ''}</div></td>
                     <td><span class="mp-badge ${p.status}"><i class="fas ${statusIcon[p.status] || 'fa-circle'}"></i> ${p.status}</span></td>
+                    <td>${invoiceCell}</td>
                     <td><div class="mp-actions">
                         <button class="mp-btn mp-btn-view" onclick="ManagePayments.openDetail(${p.campaign_id})"><i class="fas fa-eye"></i> View</button>
                     </div></td>
