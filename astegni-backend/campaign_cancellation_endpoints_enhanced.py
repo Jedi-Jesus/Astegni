@@ -25,6 +25,7 @@ from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
 from utils import get_current_user
+from advertiser_auth_endpoints import resolve_advertiser
 from datetime import datetime, timedelta
 from advertiser_balance_endpoints import mirror_balance_to_company
 
@@ -228,7 +229,7 @@ def _get_fee_tier_reason(fee_percent: float) -> str:
 
 
 @router.post("/pause/{campaign_id}")
-async def pause_campaign(campaign_id: int, request: CampaignPauseRequest, current_user = Depends(get_current_user)):
+async def pause_campaign(campaign_id: int, request: CampaignPauseRequest, current_user = Depends(resolve_advertiser)):
     """
     Pause a campaign with NO FEE
 
@@ -310,7 +311,7 @@ async def pause_campaign(campaign_id: int, request: CampaignPauseRequest, curren
 
 
 @router.post("/resume/{campaign_id}")
-async def resume_campaign(campaign_id: int, current_user = Depends(get_current_user)):
+async def resume_campaign(campaign_id: int, current_user = Depends(resolve_advertiser)):
     """
     Resume a paused campaign
 
@@ -373,22 +374,16 @@ async def resume_campaign(campaign_id: int, current_user = Depends(get_current_u
 
 
 @router.post("/cancel-enhanced/{campaign_id}")
-async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellationRequest, current_user = Depends(get_current_user)):
+async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellationRequest, current_user = Depends(resolve_advertiser)):
     """
-    Enhanced campaign cancellation with:
-    1. Tiered fees (5% → 3% → 1% → 0%)
-    2. Grace period (24 hours = 0% fee)
-    3. Transparent calculation
+    Cancel an active campaign under the receipt-based, NO-REFUND model.
 
-    Fee Tiers:
-    - First campaign: 5%
-    - After 5 campaigns: 3%
-    - After 20 campaigns: 1%
-    - Premium (100K+ ETB spent): 0%
-
-    Grace Period:
-    - Cancel within 24 hours: 0% fee
-    - Cancel after 24 hours: Apply tiered fee
+    Policy (confirmed): payments are non-refundable. An advertiser may cancel
+    once the first phase is complete — i.e. the campaign has been LAUNCHED (the
+    advance was paid + admin-verified and the campaign went live). Cancelling
+    stops delivery; no money is refunded and any UNPAID remaining-balance
+    settlement is no longer owed. There is NO cancellation fee and NO refund
+    (the legacy fee-tier / grace-period / refund-to-balance model was removed).
     """
     try:
         advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
@@ -398,142 +393,61 @@ async def cancel_campaign_enhanced(campaign_id: int, request: CampaignCancellati
 
         with get_db() as conn:
             with conn.cursor() as cur:
-                # Get campaign details
                 cur.execute("""
-                    SELECT
-                        c.*,
-                        a.balance as advertiser_balance,
-                        a.user_id
-                    FROM campaign_profile c
-                    JOIN advertiser_profiles a ON c.advertiser_id = a.id
-                    WHERE c.id = %s AND c.advertiser_id = %s
+                    SELECT id, name, brand_id, campaign_status, launched_at
+                    FROM campaign_profile
+                    WHERE id = %s AND advertiser_id = %s
                 """, (campaign_id, advertiser_profile_id))
                 campaign = cur.fetchone()
 
                 if not campaign:
                     raise HTTPException(status_code=404, detail="Campaign not found or you don't own it")
 
-                if campaign['campaign_status'] == 'cancelled':
+                status = campaign['campaign_status']
+                if status == 'cancelled':
                     raise HTTPException(status_code=400, detail="Campaign already cancelled")
 
-                # Get campaign finance details
-                campaign_budget = float(campaign['campaign_budget'] or 0)
-                amount_used = float(campaign['amount_used'] or 0)
-                remaining_balance = float(campaign['remaining_balance'] or 0)
+                # First phase = the campaign has been LAUNCHED (advance paid+verified,
+                # gone live). Only then can it be cancelled. A never-launched draft is
+                # deleted, not cancelled.
+                if status not in ('active', 'paused') or not campaign.get('launched_at'):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Only a launched campaign can be cancelled. It must complete its first phase (go live) first."
+                    )
 
-                # Check grace period
-                within_grace_period = is_within_grace_period(campaign['created_at'])
-
-                # Calculate tiered cancellation fee
-                base_fee_percent = calculate_cancellation_fee_tier(advertiser_profile_id, cur)
-
-                # Apply grace period (0% fee if within 24 hours)
-                final_fee_percent = 0.0 if within_grace_period else base_fee_percent
-
-                cancellation_fee = remaining_balance * (final_fee_percent / 100)
-                refund_amount = remaining_balance - cancellation_fee
-
-                # Get advertiser current balance
-                advertiser_balance = float(campaign['advertiser_balance'] or 0)
-                new_advertiser_balance = advertiser_balance + refund_amount
-
-                # Update campaign status
+                # No refund, no fee — just stop the campaign.
                 cur.execute("""
                     UPDATE campaign_profile
                     SET campaign_status = 'cancelled',
-                        cancellation_fee_percent = %s,
-                        cancellation_fee_amount = %s,
-                        cancelled_by_user_id = %s,
+                        cancellation_fee_percent = 0,
+                        cancellation_fee_amount = 0,
                         cancellation_reason = %s,
                         ended_at = NOW(),
                         updated_at = NOW()
                     WHERE id = %s
-                """, (
-                    final_fee_percent,
-                    cancellation_fee,
-                    current_user.id,
-                    request.reason or 'Cancelled by advertiser',
-                    campaign_id
-                ))
+                """, (request.reason or 'Cancelled by advertiser', campaign_id))
 
-                # Refund remaining balance minus fee
-                if refund_amount > 0:
-                    cur.execute("""
-                        UPDATE advertiser_profiles
-                        SET balance = %s,
-                            last_transaction_at = NOW()
-                        WHERE id = %s
-                    """, (new_advertiser_balance, advertiser_profile_id))
-
-                    # Record refund transaction
-                    cur.execute("""
-                        INSERT INTO advertiser_transactions (
-                            advertiser_id, campaign_id, brand_id, transaction_type,
-                            amount, balance_before, balance_after, currency,
-                            description, status, created_at
-                        ) VALUES (
-                            %s, %s, %s, 'refund',
-                            %s, %s, %s, 'ETB',
-                            %s, 'completed', NOW()
-                        )
-                    """, (
-                        advertiser_profile_id,
-                        campaign_id,
-                        campaign['brand_id'],
-                        refund_amount,
-                        advertiser_balance,
-                        new_advertiser_balance,
-                        f"Campaign '{campaign['name']}' cancelled - Refund: {refund_amount:.2f} ETB (after {final_fee_percent:.1f}% fee)"
-                    ))
-
-                # Record cancellation fee transaction (if any)
-                if cancellation_fee > 0:
-                    cur.execute("""
-                        INSERT INTO advertiser_transactions (
-                            advertiser_id, campaign_id, brand_id, transaction_type,
-                            amount, balance_before, balance_after, currency,
-                            description, status, created_at
-                        ) VALUES (
-                            %s, %s, %s, 'cancellation_fee',
-                            %s, %s, %s, 'ETB',
-                            %s, 'completed', NOW()
-                        )
-                    """, (
-                        advertiser_profile_id,
-                        campaign_id,
-                        campaign['brand_id'],
-                        cancellation_fee,
-                        advertiser_balance,
-                        advertiser_balance,
-                        f"Campaign '{campaign['name']}' - {final_fee_percent:.1f}% cancellation fee"
-                    ))
-
-                # Mirror to company_profile.balance so per-company views stay accurate.
-                mirror_balance_to_company(cur, advertiser_profile_id)
+                # Void any UNPAID remaining-balance settlement — it's no longer owed.
+                cur.execute("""
+                    UPDATE campaign_invoices
+                    SET status = 'cancelled', updated_at = NOW()
+                    WHERE campaign_id = %s
+                      AND invoice_type = 'final_settlement'
+                      AND status NOT IN ('verified', 'paid')
+                """, (campaign_id,))
 
                 conn.commit()
 
                 return {
                     "success": True,
-                    "message": "Campaign cancelled successfully",
+                    "message": "Campaign cancelled. No refund is issued — payments are non-refundable.",
                     "cancellation_summary": {
                         "campaign_id": campaign_id,
                         "campaign_name": campaign['name'],
-                        "campaign_budget": campaign_budget,
-                        "amount_used": amount_used,
-                        "remaining_balance": remaining_balance,
-                        "within_grace_period": within_grace_period,
-                        "base_fee_percent": base_fee_percent,
-                        "final_fee_percent": final_fee_percent,
-                        "cancellation_fee_amount": cancellation_fee,
-                        "refund_amount": refund_amount,
-                        "fee_tier_reason": _get_fee_tier_reason(base_fee_percent),
+                        "refund_amount": 0,
+                        "cancellation_fee_amount": 0,
                         "cancelled_at": datetime.utcnow().isoformat()
-                    },
-                    "advertiser_balance": {
-                        "balance_before": advertiser_balance,
-                        "balance_after": new_advertiser_balance,
-                        "balance_change": refund_amount
                     }
                 }
 

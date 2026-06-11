@@ -1362,11 +1362,11 @@
         <div class="cancellation-modal-header">
             <div class="cancellation-modal-title">
                 <div class="cancellation-modal-icon">
-                    <i class="fas fa-calculator"></i>
+                    <i class="fas fa-ban"></i>
                 </div>
                 <div>
                     <h3>Cancel Campaign</h3>
-                    <p>Review cancellation fees before proceeding</p>
+                    <p>Stop this campaign from running</p>
                 </div>
             </div>
             <button class="cancellation-modal-close" onclick="BrandsManager.closeCancellationModal()">
@@ -1376,58 +1376,47 @@
 
         <!-- Body -->
         <div class="cancellation-modal-body">
-            <!-- Grace Period Notice (if within 24 hours) -->
-            <div class="grace-period-notice" id="cancel-grace-period-notice" style="display: none;">
-                <div class="grace-period-content">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <strong>Grace Period Active!</strong>
-                        <span>Cancel within <span id="cancel-grace-hours-remaining">24</span> hours for <strong>0% fee</strong></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fee Calculation Section -->
+            <!-- Campaign being cancelled -->
             <div class="cancellation-calculation">
                 <div class="calculation-row">
-                    <span class="calculation-label">Remaining Balance:</span>
-                    <span class="calculation-value" id="cancel-remaining-balance">0.00 ETB</span>
+                    <span class="calculation-label">Campaign:</span>
+                    <span class="calculation-value" id="cancel-campaign-name">—</span>
                 </div>
                 <div class="calculation-row">
-                    <span class="calculation-label">Your Fee Tier:</span>
-                    <span class="calculation-value">
-                        <span class="fee-tier-badge" id="cancel-fee-badge">5%</span>
-                        <span class="fee-tier-reason" id="cancel-fee-reason">New advertiser</span>
-                    </span>
-                </div>
-                <div class="calculation-row">
-                    <span class="calculation-label">Cancellation Fee:</span>
-                    <span class="calculation-value fee-amount" id="cancel-fee-amount">0.00 ETB</span>
-                </div>
-                <div class="calculation-divider"></div>
-                <div class="calculation-row total">
-                    <span class="calculation-label">You Will Receive:</span>
-                    <span class="calculation-value refund-amount" id="cancel-refund-amount">0.00 ETB</span>
+                    <span class="calculation-label">Impressions delivered:</span>
+                    <span class="calculation-value" id="cancel-impressions-delivered">—</span>
                 </div>
             </div>
 
-            <!-- Fee Tier Info -->
-            <div class="fee-tier-info">
-                <div class="fee-tier-info-header">
-                    <i class="fas fa-star"></i>
-                    <span>Reduce Your Fee</span>
+            <!-- No-refund policy -->
+            <div class="payment-notice" style="margin-top:14px;">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>What cancelling means:</strong>
+                    <ul>
+                        <li>Your ad stops delivering immediately and is removed from all placements.</li>
+                        <li>All payments are <strong>non-refundable</strong> — no money is returned.</li>
+                        <li>You keep the impressions already delivered; you only paid for what was used.</li>
+                        <li id="cancel-settlement-note">Any unpaid remaining-balance settlement is no longer owed.</li>
+                    </ul>
                 </div>
-                <ul class="fee-tier-list">
-                    <li>After 5 campaigns: <strong>3% fee</strong></li>
-                    <li>After 20 campaigns: <strong>1% fee</strong></li>
-                    <li>After 100K ETB spent: <strong>0% fee</strong> (Premium)</li>
-                </ul>
+            </div>
+
+            <!-- Tip: pause instead -->
+            <div class="grace-period-notice" id="cancel-pause-tip" style="display:flex;">
+                <div class="grace-period-content">
+                    <i class="fas fa-pause-circle"></i>
+                    <div>
+                        <strong>Just need a break?</strong>
+                        <span>Use <strong>Pause</strong> instead — it stops delivery without cancelling, and you can resume anytime.</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Warning -->
             <div class="cancellation-warning">
                 <i class="fas fa-exclamation-triangle"></i>
-                <span>This action cannot be undone. Your campaign will be permanently cancelled.</span>
+                <span>This action cannot be undone. Your campaign will be permanently cancelled and no payment is refunded.</span>
             </div>
         </div>
 
@@ -1439,7 +1428,7 @@
             </button>
             <button class="cancellation-modal-btn danger" onclick="BrandsManager.confirmCancelCampaign()">
                 <i class="fas fa-ban"></i>
-                Confirm Cancellation
+                Cancel Campaign
             </button>
         </div>
     </div>

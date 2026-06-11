@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112600');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112800');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -3053,7 +3053,6 @@ const BrandsManager = {
             estimated_impressions: views,
 
             // Terms
-            cancellation_fee_percent: 5,
             min_threshold: 100,
             currency: this.cpiRates?.currency || CurrencyManager.getCurrency()
         };
@@ -4131,41 +4130,70 @@ const BrandsManager = {
         }
     },
 
-    // Populate cancellation modal with campaign data
+    // Populate cancellation modal with campaign data (no refund/fee — non-refundable
+    // model). Shows what's being cancelled + impressions already delivered.
     populateCancellationModal() {
         const campaign = this.currentCampaign;
         if (!campaign) return;
 
-        // Get finance data
-        const totalBudget = campaign.total_budget || campaign.budget || 0;
-        const amountUsed = campaign.amount_used || 0;
-        const remaining = totalBudget - amountUsed;
-        const feePercentage = 5; // Default 5%, could be based on advertiser tier
-        const fee = remaining * (feePercentage / 100);
-        const refund = remaining - fee;
+        this.setElementText('cancel-campaign-name', campaign.name || '—');
+        const delivered = campaign.impressions || campaign.impressions_delivered || 0;
+        this.setElementText('cancel-impressions-delivered', this.formatNumber(delivered));
 
-        // Update modal elements
-        this.setElementText('cancel-remaining-balance', this.formatCurrency(remaining));
-        this.setElementText('cancel-fee-badge', `${feePercentage}%`);
-        this.setElementText('cancel-fee-reason', 'New advertiser');
-        this.setElementText('cancel-fee-amount', this.formatCurrency(fee));
-        this.setElementText('cancel-refund-amount', this.formatCurrency(refund));
-
-        // Check grace period (within 24 hours of launch)
-        const gracePeriod = document.getElementById('cancel-grace-period-notice');
-        if (gracePeriod) {
-            // TODO: Check actual launch time
-            gracePeriod.style.display = 'none';
+        // Hide the "unpaid settlement no longer owed" line if the settlement is
+        // already paid (nothing to void).
+        const settleNote = document.getElementById('cancel-settlement-note');
+        if (settleNote) {
+            const settled = (campaign.settlement_paid === true)
+                || campaign.settlement_status === 'verified' || campaign.settlement_status === 'paid';
+            settleNote.style.display = settled ? 'none' : '';
         }
     },
 
-    // Confirm campaign cancellation
-    confirmCancelCampaign() {
-        // Close the modal first
-        this.closeCancellationModal();
+    // Confirm campaign cancellation. The modal IS the confirmation, so this
+    // performs the cancel directly (no extra confirm()/preview). No refund.
+    async confirmCancelCampaign() {
+        if (!this.currentCampaign) { alert('No campaign selected'); return; }
+        const campaignId = this.currentCampaign.id;
+        const token = localStorage.getItem('token');
+        if (!token) { alert('Not authenticated'); return; }
 
-        // Delegate to the real cancelCampaign function which handles API call
-        this.cancelCampaign();
+        const btn = document.querySelector('.cancellation-modal-btn.danger');
+        const orig = btn ? btn.innerHTML : null;
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling…'; }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/campaign/cancel-enhanced/${campaignId}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: 'Cancelled by advertiser' })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) {
+                throw new Error(data.detail || 'Failed to cancel campaign');
+            }
+
+            this.closeCancellationModal();
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('Campaign cancelled. No refund is issued — payments are non-refundable.', 'success');
+            } else {
+                alert('Campaign cancelled. No refund is issued — payments are non-refundable.');
+            }
+
+            // Remove the cancelled ad from rotation everywhere.
+            if (window.adRotationManager) {
+                try { window.adRotationManager.destroy(); window.adRotationManager.init(); } catch (_) {}
+            }
+            // Refresh the campaign list + close the campaign view.
+            if (this.currentBrand && this.currentBrand.id) {
+                await this.loadBrandCampaigns(this.currentBrand.id);
+            }
+            this.closeCampaignModal();
+        } catch (e) {
+            console.error('[BrandsManager] cancel failed:', e);
+            if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+            alert(e.message || 'Failed to cancel campaign. Please try again.');
+        }
     },
 
     // Format currency
@@ -4767,102 +4795,6 @@ const BrandsManager = {
         } catch (error) {
             console.error('Error pausing campaign:', error);
             alert('Error pausing campaign. Please try again.');
-        }
-    },
-
-    // Cancel campaign (with tiered fee)
-    async cancelCampaign() {
-        if (!this.currentCampaign) {
-            alert('No campaign selected');
-            return;
-        }
-
-        // Get cancellation preview first
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Not authenticated');
-                return;
-            }
-
-            const previewResponse = await fetch(`${API_BASE_URL}/api/campaign/cancellation-calculator/${this.currentCampaign.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const previewData = await previewResponse.json();
-
-            if (!previewResponse.ok || !previewData.success) {
-                alert('Failed to calculate cancellation fee');
-                return;
-            }
-
-            const { finances, cancellation, breakdown } = previewData;
-            const feePercent = cancellation.final_fee_percent || cancellation.base_fee_percent;
-
-            // Confirmation message
-            let confirmMsg = `Are you sure you want to CANCEL this campaign?\n\n`;
-            confirmMsg += `Campaign Budget: ${breakdown.total_budget.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
-            confirmMsg += `Amount Used (non-refundable): ${breakdown.non_refundable_used.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
-            confirmMsg += `Remaining Balance: ${breakdown.remaining.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
-
-            if (cancellation.within_grace_period) {
-                confirmMsg += `🎉 GRACE PERIOD ACTIVE!\n`;
-                confirmMsg += `Cancellation Fee: 0.00 ${CurrencyManager.getSymbol()} (0%)\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
-            } else {
-                confirmMsg += `Cancellation Fee (${feePercent}%): ${breakdown.cancellation_fee.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
-                confirmMsg += `You will receive: ${breakdown.you_will_receive.toFixed(2)} ${CurrencyManager.getSymbol()}\n\n`;
-                confirmMsg += `💡 TIP: Use "Pause" instead to avoid fees!\n\n`;
-            }
-
-            confirmMsg += `This action cannot be undone.`;
-
-            if (!confirm(confirmMsg)) return;
-
-            // Ask for reason
-            const reason = prompt('Reason for cancellation (optional):');
-            if (reason === null) return; // User cancelled
-
-            // Execute cancellation
-            const cancelResponse = await fetch(`${API_BASE_URL}/api/campaign/cancel-enhanced/${this.currentCampaign.id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reason })
-            });
-
-            const cancelData = await cancelResponse.json();
-
-            if (cancelResponse.ok && cancelData.success) {
-                const summary = cancelData.cancellation_summary;
-                let successMsg = `Campaign cancelled successfully!\n\n`;
-                successMsg += `Refund: ${summary.refund_amount.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
-                if (summary.cancellation_fee_amount > 0) {
-                    successMsg += `Cancellation Fee (${summary.final_fee_percent}%): ${summary.cancellation_fee_amount.toFixed(2)} ${CurrencyManager.getSymbol()}\n`;
-                }
-                successMsg += `\nYour new balance: ${cancelData.advertiser_balance.balance_after.toFixed(2)} ${CurrencyManager.getSymbol()}`;
-
-                alert(successMsg);
-
-                // Refresh all ads globally to remove cancelled campaign
-                if (window.adRotationManager) {
-                    window.adRotationManager.destroy();
-                    window.adRotationManager.init();
-                }
-
-                // Refresh campaign list
-                this.loadBrands();
-                this.closeCampaignModal();
-            } else {
-                alert(cancelData.detail || 'Failed to cancel campaign');
-            }
-        } catch (error) {
-            console.error('Error cancelling campaign:', error);
-            alert('Error cancelling campaign. Please try again.');
         }
     },
 
