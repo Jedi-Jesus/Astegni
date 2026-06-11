@@ -180,64 +180,13 @@ async def launch_campaign(campaign_id: int):
                 detail="Campaign must have at least one media file uploaded before launching"
             )
 
-        # Check advertiser balance and process advance payment if deposit is configured
+        # NOTE: No balance is charged at launch. This platform uses the RECEIPT-
+        # based model: the advance was paid by the advertiser via bank transfer
+        # and verified by an admin BEFORE launch (the invoice_status == 'verified'
+        # gate above). The legacy balance-deduction + advertiser_transactions
+        # insert here double-charged and also violated NOT NULL company_id — it has
+        # been removed. Launch simply activates the already-paid campaign.
         advance_payment = 0
-        if deposit_amount > 0 or deposit_percent > 0:
-            cursor.execute("""
-                SELECT balance FROM advertiser_profiles
-                WHERE id = %s
-            """, (advertiser_id,))
-
-            balance_row = cursor.fetchone()
-            if not balance_row:
-                raise HTTPException(status_code=404, detail="Advertiser not found")
-
-            advertiser_balance = float(balance_row[0]) if balance_row[0] else 0
-
-            # Calculate advance payment (use deposit_amount if set, otherwise calculate from percent)
-            if deposit_amount > 0:
-                advance_payment = deposit_amount
-            else:
-                advance_payment = campaign_budget * (deposit_percent / 100)
-
-            if advertiser_balance < advance_payment:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Insufficient balance. Need {advance_payment:.2f} {currency} for {deposit_percent:.0f}% advance payment. Current balance: {advertiser_balance:.2f} {currency}"
-                )
-
-            # Deduct advance payment
-            cursor.execute("""
-                UPDATE advertiser_profiles
-                SET
-                    balance = balance - %s,
-                    total_spent = total_spent + %s,
-                    last_transaction_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-            """, (advance_payment, advance_payment, advertiser_id))
-
-            # Record transaction
-            cursor.execute("""
-                INSERT INTO advertiser_transactions (
-                    advertiser_id,
-                    campaign_id,
-                    transaction_type,
-                    amount,
-                    balance_before,
-                    balance_after,
-                    description,
-                    status
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                advertiser_id,
-                campaign_id,
-                'campaign_launch',
-                advance_payment,
-                advertiser_balance,
-                advertiser_balance - advance_payment,
-                f"{deposit_percent:.0f}% advance payment for campaign '{campaign_name}' launch",
-                'completed'
-            ))
 
         # Update campaign to active
         cursor.execute("""
@@ -263,7 +212,7 @@ async def launch_campaign(campaign_id: int):
             "launched_at": launched_at.isoformat() if launched_at else None,
             "advance_payment": advance_payment,
             "currency": currency,
-            "message": f"Campaign '{campaign_name}' launched successfully!" + (f" Advance payment of {advance_payment:.2f} {currency} charged." if advance_payment > 0 else "")
+            "message": f"Campaign '{campaign_name}' launched successfully!"
         }
 
     except HTTPException:
