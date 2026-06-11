@@ -75,6 +75,16 @@ class PaymentStatusUpdate(BaseModel):
     admin_id: Optional[int] = None
 
 
+def _extract_paid_to(notes) -> Optional[str]:
+    """Pull the 'Paid to: <bank> (A/C <num>).' fragment the receipt-upload writes
+    into the invoice notes, so the admin sees which account the advertiser paid."""
+    if not notes:
+        return None
+    import re
+    m = re.search(r'Paid to:\s*(.+?)\.?\s*$', notes)
+    return m.group(1).strip() if m else None
+
+
 def _resolve_advertiser_names(rows: List[dict]) -> dict:
     """Map advertiser_id -> display name/email, read directly from advertiser_profiles.
 
@@ -141,6 +151,9 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                    ci.invoice_number, ci.amount, ci.status, ci.payment_method,
                    ci.invoice_pdf_url, ci.notes, ci.issued_at, ci.updated_at,
                    cp.name AS campaign_name, cp.company_id,
+                   cp.description, cp.objective, cp.target_location, cp.start_date,
+                   cp.call_to_action, cp.cpi_rate, cp.campaign_budget,
+                   cp.total_impressions_planned, cp.deposit_percent,
                    bp.name AS brand_name, comp.company_name
             FROM campaign_invoices ci
             LEFT JOIN campaign_profile cp ON ci.campaign_id = cp.id
@@ -158,6 +171,7 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
             adv = names.get(r['advertiser_id'], {})
             payments.append({
                 "invoice_id": r['id'],
+                "invoice_number": r['invoice_number'],
                 "campaign_id": r['campaign_id'],
                 "campaign_name": r['campaign_name'],
                 "company_name": r['company_name'],
@@ -171,6 +185,18 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                 "notes": r['notes'],
                 "issued_at": str(r['issued_at']) if r['issued_at'] else None,
                 "updated_at": str(r['updated_at']) if r['updated_at'] else None,
+                # Campaign detail (for the full-description modal)
+                "description": r.get('description'),
+                "objective": r.get('objective'),
+                "target_location": r.get('target_location'),
+                "start_date": str(r['start_date']) if r.get('start_date') else None,
+                "call_to_action": r.get('call_to_action'),
+                "cpi_rate": float(r['cpi_rate']) if r.get('cpi_rate') is not None else None,
+                "campaign_budget": float(r['campaign_budget']) if r.get('campaign_budget') is not None else None,
+                "planned_views": int(r['total_impressions_planned']) if r.get('total_impressions_planned') is not None else None,
+                "deposit_percent": float(r['deposit_percent']) if r.get('deposit_percent') is not None else None,
+                # The bank the advertiser said they paid to is recorded in the notes.
+                "paid_to_bank": _extract_paid_to(r['notes']),
             })
         return {"success": True, "count": len(payments), "payments": payments}
     finally:

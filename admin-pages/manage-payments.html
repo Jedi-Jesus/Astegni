@@ -180,20 +180,30 @@
                                 <th>Company</th>
                                 <th>Brand</th>
                                 <th>Advertiser</th>
-                                <th>Advance</th>
                                 <th>Status</th>
-                                <th>Updated</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="payments-body">
-                            <tr><td colspan="8" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>
+                            <tr><td colspan="6" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Payment detail modal (full campaign description + verify/reject) -->
+    <div id="payment-detail-overlay" style="display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; padding:1rem;">
+        <div style="position:absolute; inset:0; background:rgba(17,24,39,.6);" onclick="ManagePayments.closeDetail()"></div>
+        <div id="payment-detail-card" style="position:relative; width:100%; max-width:620px; max-height:88vh; overflow-y:auto; background:var(--card-bg,#fff); border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.3);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-color,#e5e7eb);">
+                <h2 style="font-size:1.3rem; font-weight:800; display:flex; align-items:center; gap:.6rem;"><i class="fas fa-file-invoice-dollar" style="color:#6366f1;"></i> Payment Details</h2>
+                <button onclick="ManagePayments.closeDetail()" style="background:none; border:none; font-size:1.6rem; color:#9ca3af; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="payment-detail-body" style="padding:1.5rem;"></div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer-section mt-16">
@@ -207,7 +217,7 @@
     <!-- Scripts -->
     <script src="./js/api-config.js"></script>
     <script src="./js/auth.js"></script>
-    <script src="./js/admin-pages/manage-payments.js?v202606090300"></script>
+    <script src="./js/admin-pages/manage-payments.js?v202606110200"></script>
 
     <!-- Theme toggle + live clock (lightweight, self-contained) -->
     <script>
