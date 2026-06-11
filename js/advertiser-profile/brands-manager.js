@@ -3610,12 +3610,24 @@ const BrandsManager = {
     // Open the LAUNCH confirmation modal. By the time Launch is reachable, the
     // advance is already paid+verified and the ad reviewed — this modal confirms
     // those gates and that the campaign is about to go live (NOT a payment step).
-    openPaymentConfirmationModal() {
+    async openPaymentConfirmationModal() {
         if (!this.currentCampaign) return;
 
         const modal = document.getElementById('payment-confirmation-modal-overlay');
         if (!modal) return;
         const c = this.currentCampaign;
+
+        // Refresh settlement + verification status straight from the backend so the
+        // notice is never stale (settlement_paid may not be on the cached object).
+        try {
+            const token = localStorage.getItem('token');
+            const r = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${c.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (r.ok) Object.assign(c, await r.json());
+        } catch (e) {
+            console.warn('[BrandsManager] launch-modal status refresh failed; using cached:', e);
+        }
 
         // Campaign details
         const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
