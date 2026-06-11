@@ -230,8 +230,13 @@
                     <i class="fas fa-cloud-upload-alt"></i>
                     Choose Receipt File
                 </button>
-                <div id="confirm-receipt-filename" style="margin-top:10px;font-size:0.9rem;color:var(--text-secondary);display:none;">
-                    <i class="fas fa-paperclip"></i> <span id="confirm-receipt-filename-text"></span>
+                <div id="confirm-receipt-filename" style="margin-top:10px;font-size:0.9rem;color:var(--text-secondary);display:none;align-items:center;gap:10px;">
+                    <span><i class="fas fa-paperclip"></i> <span id="confirm-receipt-filename-text"></span></span>
+                    <button type="button" class="btn-secondary" id="confirm-receipt-view-btn"
+                            onclick="CampaignCreationConfirmation.viewSelectedReceipt()"
+                            style="padding:4px 10px;font-size:0.82rem;">
+                        <i class="fas fa-eye"></i> View
+                    </button>
                 </div>
             </div>
 
@@ -1142,11 +1147,30 @@ window.CampaignCreationConfirmation = {
         const fnText = document.getElementById('confirm-receipt-filename-text');
         if (file && fnRow && fnText) {
             fnText.textContent = file.name;
-            fnRow.style.display = 'block';
+            fnRow.style.display = 'flex';
         } else if (fnRow) {
             fnRow.style.display = 'none';
         }
         this.updateCreateButtonState();
+    },
+
+    // Preview the receipt the advertiser just attached, BEFORE they submit it —
+    // opens the selected image/PDF in a new tab from an in-memory object URL.
+    viewSelectedReceipt() {
+        if (!this.receiptFile) {
+            alert('Attach a receipt file first.');
+            return;
+        }
+        try {
+            const url = URL.createObjectURL(this.receiptFile);
+            const win = window.open(url, '_blank', 'noopener');
+            // Release the object URL once the preview tab has had time to load it.
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            if (!win) alert('Please allow pop-ups to preview your receipt.');
+        } catch (e) {
+            console.error('[Confirmation] viewSelectedReceipt failed:', e);
+            alert('Could not preview the selected file.');
+        }
     },
 
     // Create is enabled only when a bank is chosen, terms agreed, AND a receipt attached.
