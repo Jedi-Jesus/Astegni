@@ -1039,6 +1039,17 @@ async def get_campaign(campaign_id: int, current_user = Depends(resolve_advertis
                     reason = _re.sub(r'\s*Paid to:.*$', '', inv['notes']).strip() or None
                 result['payment_rejection_reason'] = reason
 
+                # Attach remaining-balance (final settlement) status so the UI can
+                # tell whether the SECOND payment is already settled.
+                cur.execute("""
+                    SELECT status FROM campaign_invoices
+                    WHERE campaign_id = %s AND invoice_type = 'final_settlement'
+                    ORDER BY id DESC LIMIT 1
+                """, (campaign_id,))
+                sinv = cur.fetchone()
+                result['settlement_status'] = sinv['status'] if sinv else None
+                result['settlement_paid'] = bool(sinv and sinv['status'] in ('verified', 'paid'))
+
                 return result
 
     except HTTPException:

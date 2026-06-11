@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112200');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112300');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -3635,6 +3635,24 @@ const BrandsManager = {
         const adEl = document.getElementById('launch-ad-status');
         if (payEl) payEl.innerHTML = badge(payOk);
         if (adEl) adEl.innerHTML = badge(adOk);
+
+        // Adapt the "Before you launch" notice when the SECOND payment (remaining
+        // settlement) is already paid — the "settled later" + "cancel after first
+        // phase" lines no longer apply.
+        const settlementPaid = (c.settlement_paid === true)
+            || (c.settlement_status === 'verified' || c.settlement_status === 'paid');
+        const settleLi = document.getElementById('launch-notice-settlement');
+        const refundLi = document.getElementById('launch-notice-refund');
+        if (settleLi) {
+            settleLi.textContent = settlementPaid
+                ? 'Your remaining balance is fully paid — nothing further is owed for this campaign.'
+                : 'The remaining balance is settled once the first phase of impressions is delivered.';
+        }
+        if (refundLi) {
+            refundLi.textContent = settlementPaid
+                ? 'All payments are non-refundable.'
+                : 'All payments are non-refundable; you may cancel after the first phase completes.';
+        }
 
         // Show modal
         modal.classList.add('active');
