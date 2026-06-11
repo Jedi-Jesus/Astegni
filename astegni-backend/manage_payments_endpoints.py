@@ -73,6 +73,9 @@ class PaymentStatusUpdate(BaseModel):
     new_status: str           # 'verified' | 'rejected' | 'pending'
     reason: Optional[str] = None
     admin_id: Optional[int] = None
+    # Which invoice this status applies to: 'advance' (default) or
+    # 'final_settlement' (the remaining-balance payment).
+    invoice_type: str = 'advance'
 
 
 def _extract_paid_to(notes) -> Optional[str]:
@@ -231,10 +234,11 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                    cp.total_impressions_planned, cp.deposit_percent,
                    bp.name AS brand_name, comp.company_name,
                    st.id AS settlement_id, st.invoice_number AS settlement_number,
-                   st.amount AS settlement_amount, st.status AS settlement_status
+                   st.amount AS settlement_amount, st.status AS settlement_status,
+                   st.invoice_pdf_url AS settlement_receipt_url, st.notes AS settlement_notes
             FROM campaign_invoices ci
             LEFT JOIN LATERAL (
-                SELECT id, invoice_number, amount, status
+                SELECT id, invoice_number, amount, status, invoice_pdf_url, notes
                 FROM campaign_invoices s
                 WHERE s.campaign_id = ci.campaign_id AND s.invoice_type = 'final_settlement'
                 ORDER BY s.id DESC LIMIT 1
@@ -286,6 +290,8 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                 "settlement_invoice_number": r.get('settlement_number'),
                 "settlement_amount": float(r['settlement_amount']) if r.get('settlement_amount') is not None else None,
                 "settlement_status": r.get('settlement_status'),
+                "settlement_receipt_url": r.get('settlement_receipt_url'),
+                "settlement_paid_to_bank": _extract_paid_to(r.get('settlement_notes')),
             })
         return {"success": True, "count": len(payments), "payments": payments}
     finally:
@@ -295,12 +301,13 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
 
 @router.put("/payments/{campaign_id}/status")
 async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
-    """Verify/reject an advance-payment receipt (payment verification)."""
+    """Verify/reject a payment receipt (advance or remaining-balance settlement)."""
     valid = ['verified', 'rejected', 'pending']
     if body.new_status not in valid:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid)}")
     if body.new_status == 'rejected' and not (body.reason and body.reason.strip()):
         raise HTTPException(status_code=400, detail="A reason is required when rejecting a payment.")
+    inv_type = body.invoice_type if body.invoice_type in ('advance', 'final_settlement') else 'advance'
     verify_payments_access(body.admin_id)
 
     conn = get_advertiser_db()
@@ -308,12 +315,13 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
         cur = conn.cursor()
         cur.execute("""
             SELECT id FROM campaign_invoices
-            WHERE campaign_id = %s AND invoice_type = 'advance'
+            WHERE campaign_id = %s AND invoice_type = %s
             ORDER BY id DESC LIMIT 1
-        """, (campaign_id,))
+        """, (campaign_id, inv_type))
         inv = cur.fetchone()
         if not inv:
-            raise HTTPException(status_code=404, detail="No advance-payment receipt found for this campaign")
+            label = "settlement-payment" if inv_type == 'final_settlement' else "advance-payment"
+            raise HTTPException(status_code=404, detail=f"No {label} receipt found for this campaign")
 
         # Build the status note, but PRESERVE the "Paid to: <bank> (A/C ...)."
         # fragment the receipt upload wrote into notes — otherwise verifying
@@ -337,10 +345,11 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
             WHERE id = %s
         """, (body.new_status, body.new_status, note, inv['id']))
 
-        # On verify, AUTO-ISSUE the remaining-balance settlement invoice (the
-        # second payment). Idempotent — re-verifying won't create duplicates.
+        # When the ADVANCE is verified, AUTO-ISSUE the remaining-balance
+        # settlement invoice (the second payment). Idempotent. Not triggered when
+        # verifying the settlement receipt itself.
         settlement = None
-        if body.new_status == 'verified':
+        if body.new_status == 'verified' and inv_type == 'advance':
             settlement = _create_settlement_invoice(cur, campaign_id)
 
         conn.commit()
@@ -348,6 +357,7 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
             "success": True,
             "campaign_id": campaign_id,
             "invoice_id": inv['id'],
+            "invoice_type": inv_type,
             "payment_status": body.new_status,
             "settlement_invoice": settlement,
             "message": f"Payment {body.new_status}.",

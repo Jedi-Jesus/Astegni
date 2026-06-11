@@ -177,11 +177,24 @@ const ManagePayments = {
         if (!verified) {
             settlementBlock = `<span class="mp-muted">Auto-issued when the advance is verified.</span>`;
         } else if (p.settlement_invoice_id) {
+            const sStatus = p.settlement_status || 'pending';
+            const sBadgeClass = (sStatus === 'verified' || sStatus === 'paid') ? 'verified' : (sStatus === 'rejected' ? 'rejected' : 'pending');
+            // Advertiser has uploaded a settlement receipt that's awaiting review?
+            const sHasReceipt = !!p.settlement_receipt_url;
+            const sPending = sStatus === 'pending' && sHasReceipt;
+            const sReceiptLink = sHasReceipt
+                ? `<a href="${p.settlement_receipt_url}" target="_blank" rel="noopener" class="mp-btn mp-btn-view" style="display:inline-flex;"><i class="fas fa-file-invoice"></i> Receipt</a>` : '';
+            const sPaidTo = p.settlement_paid_to_bank ? `<span class="mp-muted">🏦 ${this.esc(p.settlement_paid_to_bank)}</span>` : '';
+            const sActions = sPending
+                ? `<button class="mp-btn mp-btn-verify" onclick="ManagePayments.verifySettlement(${p.campaign_id})"><i class="fas fa-check"></i> Verify</button>
+                   <button class="mp-btn mp-btn-reject" onclick="ManagePayments.rejectSettlement(${p.campaign_id})"><i class="fas fa-times"></i> Reject</button>` : '';
             settlementBlock = `
                 <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
-                    <span class="mp-badge ${p.settlement_status === 'verified' || p.settlement_status === 'paid' ? 'verified' : 'pending'}">${p.settlement_status || 'pending'}</span>
+                    <span class="mp-badge ${sBadgeClass}">${sStatus}</span>
                     <span>${money(p.settlement_amount)}</span>
                     <span class="mp-muted">${this.esc(p.settlement_invoice_number || '')}</span>
+                    ${sReceiptLink} ${sPaidTo} ${sActions}
+                    ${!sHasReceipt ? '<span class="mp-muted">awaiting advertiser payment</span>' : ''}
                 </div>`;
         } else {
             const remaining = (p.campaign_budget != null && p.amount != null) ? (p.campaign_budget - p.amount) : null;
@@ -318,12 +331,12 @@ const ManagePayments = {
         }
     },
 
-    async _update(campaignId, newStatus, reason, keepOpen) {
+    async _update(campaignId, newStatus, reason, keepOpen, invoiceType) {
         try {
             const resp = await fetch(`${this.apiBase}/api/manage-payments/payments/${campaignId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ new_status: newStatus, reason: reason || null, admin_id: this.getAdminId() }),
+                body: JSON.stringify({ new_status: newStatus, reason: reason || null, admin_id: this.getAdminId(), invoice_type: invoiceType || 'advance' }),
             });
             if (resp.ok) {
                 await this.loadCounts();
@@ -354,6 +367,17 @@ const ManagePayments = {
         const reason = prompt('Reason for rejecting this payment:');
         if (!reason) return;
         this._update(campaignId, 'rejected', reason);
+    },
+
+    verifySettlement(campaignId) {
+        if (!confirm('Verify this settlement (remaining-balance) payment?')) return;
+        this._update(campaignId, 'verified', null, true, 'final_settlement');
+    },
+
+    rejectSettlement(campaignId) {
+        const reason = prompt('Reason for rejecting this settlement payment:');
+        if (!reason) return;
+        this._update(campaignId, 'rejected', reason, true, 'final_settlement');
     },
 
     showAccessDenied() {

@@ -11,7 +11,7 @@
             <div class="confirmation-icon-wrapper">
                 <i class="fas fa-plus-circle confirmation-icon"></i>
             </div>
-            <h2 class="confirmation-title">Create Campaign</h2>
+            <h2 class="confirmation-title" id="confirm-modal-title">Create Campaign</h2>
             <button class="modal-close-btn" onclick="CampaignCreationConfirmation.close()">
                 <i class="fas fa-times"></i>
             </button>
@@ -843,10 +843,83 @@ window.CampaignCreationConfirmation = {
         }
     },
 
+    // Open in PAYMENT mode to pay an existing invoice (e.g. the remaining-balance
+    // settlement). Reuses the same confirmation UI but: shows the advance as
+    // already paid, pre-selects the previously-used bank, sets the amount to the
+    // invoice's outstanding total, and on submit uploads the receipt against the
+    // invoice (admin-verified) instead of creating a campaign.
+    // opts: { invoiceId, amount, currency, campaign_name, preselectBankCode,
+    //         advanceAmount, advanceStatus, onDone }
+    openForPayment(opts) {
+        this.paymentMode = true;
+        this.paymentOpts = opts || {};
+        // Build a campaignData-shaped object so populateData() runs unchanged,
+        // then we override the payment-specific labels below.
+        this.campaignData = {
+            campaign_name: opts.campaign_name,
+            currency: opts.currency || 'ETB',
+            total_cost: opts.amount,
+            advance_amount: opts.amount,   // the amount due now = the full invoice
+            advance_percent: 100,
+        };
+        try { this.populateData(); } catch (e) { console.error('[Confirmation] populateData (payment):', e); }
+
+        const cur = opts.currency || 'ETB';
+        const fmt = (n) => `${(Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${cur}`;
+        const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+
+        // Relabel for payment.
+        setText('confirm-modal-title', 'Pay Remaining Balance');
+        setText('confirm-receipt-amount', fmt(opts.amount));
+        setText('confirm-agreement-cpi', fmt(opts.amount));
+        const btn = document.getElementById('confirm-create-btn');
+        if (btn) btn.innerHTML = '<i class="fas fa-credit-card"></i> Submit Payment';
+
+        // "Already paid" advance note.
+        let paidNote = document.getElementById('confirm-already-paid');
+        if (!paidNote) {
+            paidNote = document.createElement('div');
+            paidNote.id = 'confirm-already-paid';
+            paidNote.style.cssText = 'background:rgba(34,197,94,.08);border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:.9rem;';
+            const body = document.querySelector('#campaign-creation-confirmation-overlay .confirmation-body');
+            if (body) body.insertBefore(paidNote, body.firstChild);
+        }
+        if (paidNote) {
+            paidNote.style.display = 'block';
+            const advTxt = opts.advanceAmount != null ? fmt(opts.advanceAmount) : '';
+            paidNote.innerHTML = `<strong><i class="fas fa-check-circle" style="color:#16a34a;"></i> Advance already paid</strong>` +
+                (advTxt ? ` — ${advTxt}${opts.advanceStatus ? ` (${this._esc(opts.advanceStatus)})` : ''}.` : '.') +
+                ` You're now paying the remaining balance of <strong>${fmt(opts.amount)}</strong>.`;
+        }
+
+        this.selectedBank = null;
+        this.loadBanks();   // preselect handled inside loadBanks via paymentOpts
+
+        const overlay = document.getElementById('campaign-creation-confirmation-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.zIndex = '999999';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            overlay.style.justifyContent = 'center';
+            overlay.style.alignItems = 'center';
+        }
+    },
+
     close() {
         document.getElementById('campaign-creation-confirmation-overlay').style.display = 'none';
         document.getElementById('confirm-agreement-checkbox').checked = false;
         document.getElementById('confirm-create-btn').disabled = true;
+        // Reset payment-mode state + restore the default "Create Campaign" UI.
+        this.paymentMode = false;
+        this.paymentOpts = null;
+        const paidNote = document.getElementById('confirm-already-paid');
+        if (paidNote) paidNote.style.display = 'none';
+        const title = document.getElementById('confirm-modal-title');
+        if (title) title.textContent = 'Confirm Campaign Creation';
+        const cbtn = document.getElementById('confirm-create-btn');
+        if (cbtn) cbtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Campaign';
         this.receiptFile = null;
         this.selectedBank = null;
         const fileEl = document.getElementById('confirm-receipt-file');
@@ -882,6 +955,21 @@ window.CampaignCreationConfirmation = {
         }
         sel.innerHTML = '<option value="">Select the account you paid to…</option>' +
             this.banks.map(b => `<option value="${b.bank_code}">${this._esc(b.bank_name)} — ${this._esc(b.account_number)}</option>`).join('');
+
+        // In payment mode, pre-select the account used for the advance (if known
+        // and still available) — by bank_code, else by bank_name. The user can
+        // still change it.
+        if (this.paymentMode && this.paymentOpts) {
+            const byCode = this.paymentOpts.preselectBankCode &&
+                this.banks.find(b => b.bank_code === this.paymentOpts.preselectBankCode);
+            const byName = !byCode && this.paymentOpts.preselectBankName &&
+                this.banks.find(b => (b.bank_name || '').toLowerCase() === String(this.paymentOpts.preselectBankName).toLowerCase());
+            const match = byCode || byName;
+            if (match) {
+                sel.value = match.bank_code;
+                this.onBankSelected();
+            }
+        }
     },
 
     onBankSelected() {
@@ -1013,7 +1101,13 @@ window.CampaignCreationConfirmation = {
         }
         if (!document.getElementById('confirm-agreement-checkbox').checked) return;
         if (!this.receiptFile) {
-            alert('Please attach your payment receipt before creating the campaign.');
+            alert('Please attach your payment receipt before continuing.');
+            return;
+        }
+
+        // PAYMENT MODE: upload the receipt against the existing invoice (admin-verified).
+        if (this.paymentMode) {
+            this.submitPayment();
             return;
         }
 
@@ -1029,6 +1123,40 @@ window.CampaignCreationConfirmation = {
         }
 
         this.close();
+    },
+
+    async submitPayment() {
+        const opts = this.paymentOpts || {};
+        const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+        const token = localStorage.getItem('advertiserToken') || localStorage.getItem('token') || localStorage.getItem('access_token');
+        const btn = document.getElementById('confirm-create-btn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading…'; }
+        try {
+            const fd = new FormData();
+            fd.append('file', this.receiptFile);
+            fd.append('paid_to_bank_name', this.selectedBank.bank_name || '');
+            fd.append('paid_to_account_number', this.selectedBank.account_number || '');
+            const res = await fetch(`${apiBase}/api/advertiser/invoices/${opts.invoiceId}/upload-receipt`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                body: fd,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                if (typeof showToast === 'function') showToast('Payment receipt uploaded — awaiting verification.', 'success');
+                else alert('Payment receipt uploaded — our team will verify it shortly.');
+                const done = opts.onDone;
+                this.close();
+                if (typeof done === 'function') done();
+            } else {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-credit-card"></i> Submit Payment'; }
+                alert(`Failed: ${data.detail || 'Unknown error'}`);
+            }
+        } catch (e) {
+            console.error('[Confirmation] submitPayment failed:', e);
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-credit-card"></i> Submit Payment'; }
+            alert('An error occurred while uploading your payment receipt.');
+        }
     }
 };
 

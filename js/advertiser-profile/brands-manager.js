@@ -57,7 +57,7 @@ const BrandsManager = {
             }
 
             // Load campaign creation confirmation modal
-            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606110300');
+            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606110900');
             if (!confirmationResponse.ok) {
                 throw new Error(`Failed to load confirmation modal: ${confirmationResponse.status}`);
             }
@@ -1076,8 +1076,10 @@ const BrandsManager = {
             return `<span style="padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:800; text-transform:uppercase; color:${colors[s] || colors.pending};">${esc(s)}</span>`;
         };
         const card = (title, inv) => {
-            const payBtn = inv && inv.status === 'pending'
-                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payCampaignInvoice(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
+            // "Pay now" only for an unpaid settlement that hasn't got a receipt yet.
+            const canPay = inv && inv.invoice_type === 'final_settlement' && inv.status === 'pending' && !inv.invoice_pdf_url;
+            const payBtn = canPay
+                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
             return `
                 <div style="border:1px solid var(--border-color,#e5e7eb); border-radius:12px; padding:1rem; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
@@ -1104,6 +1106,8 @@ const BrandsManager = {
             const mine = ((data && data.invoices) || []).filter(i => i.campaign_id === campaignId);
             const advance = mine.filter(i => i.invoice_type === 'advance').sort((a, b) => b.id - a.id)[0] || null;
             const settlement = mine.filter(i => i.invoice_type === 'final_settlement').sort((a, b) => b.id - a.id)[0] || null;
+            // Cache for the Pay-now flow (needs the settlement amount + the advance's bank).
+            this._invoiceCache = { campaignId, advance, settlement, name: (campaign && campaign.name) || '' };
 
             if (!mine.length) {
                 list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);"><i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.5;"></i> No invoices yet for this campaign.</div>';
@@ -1116,27 +1120,36 @@ const BrandsManager = {
         }
     },
 
-    // Start payment for an outstanding invoice (redirects to the gateway).
-    async payCampaignInvoice(invoiceId) {
-        const API = window.API_BASE_URL || 'http://localhost:8000';
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API}/api/advertiser/invoices/${invoiceId}/pay`, {
-                method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json().catch(() => ({}));
-            if (res.ok && data.payment && data.payment.payment_url) {
-                window.location.href = data.payment.payment_url;
-            } else if (res.ok) {
-                alert(data.message || 'Payment initiated.');
-                this.loadCampaignInvoices();
-            } else {
-                alert(`Failed: ${data.detail || 'Unknown error'}`);
-            }
-        } catch (e) {
-            console.error('[BrandsManager] payCampaignInvoice failed:', e);
-            alert('An error occurred while starting the payment.');
+    // Pay an outstanding settlement invoice: open the confirmation modal in
+    // payment mode (advance shown as already paid, advance bank pre-selected,
+    // amount = remaining balance, upload receipt for admin verification).
+    payInvoiceById(invoiceId) {
+        const c = this._invoiceCache || {};
+        const settlement = c.settlement;
+        if (!settlement || settlement.id !== invoiceId) {
+            alert('Invoice details unavailable. Please reopen the Invoices / Payments tab.');
+            return;
         }
+        if (typeof CampaignCreationConfirmation === 'undefined' || typeof CampaignCreationConfirmation.openForPayment !== 'function') {
+            alert('Payment modal not loaded. Please refresh the page and try again.');
+            return;
+        }
+        // Bank used for the advance: parse "Paid to: <bank> (A/C ...)" from notes.
+        let advanceBankName = null;
+        const notes = (c.advance && c.advance.notes) || '';
+        const m = notes.match(/Paid to:\s*(.+?)\s*(?:\(A\/C|\.|$)/i);
+        if (m) advanceBankName = m[1].trim();
+
+        CampaignCreationConfirmation.openForPayment({
+            invoiceId: settlement.id,
+            amount: settlement.amount,
+            currency: 'ETB',
+            campaign_name: c.name || (c.advance && c.advance.campaign_name) || 'Campaign',
+            preselectBankName: advanceBankName,
+            advanceAmount: c.advance ? c.advance.amount : null,
+            advanceStatus: c.advance ? c.advance.status : null,
+            onDone: () => this.loadCampaignInvoices(),
+        });
     },
 
     // Close campaign modal

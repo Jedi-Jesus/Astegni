@@ -581,6 +581,90 @@ async def pay_invoice(invoice_id: int, current_user = Depends(resolve_advertiser
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/invoices/{invoice_id}/upload-receipt")
+async def upload_invoice_receipt(
+    invoice_id: int,
+    file: UploadFile = File(...),
+    paid_to_bank_name: Optional[str] = Form(None),
+    paid_to_account_number: Optional[str] = Form(None),
+    current_user = Depends(resolve_advertiser),
+):
+    """Upload a payment receipt for an outstanding invoice (e.g. the remaining-
+    balance settlement). Stores the file in B2, sets the invoice's
+    invoice_pdf_url, marks it 'pending' for admin verification, and records which
+    of our bank accounts was paid to (in notes) — mirroring the advance-receipt
+    flow so settlement payments are verified by an admin in manage-payments."""
+    try:
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if not advertiser_profile_id:
+            raise HTTPException(status_code=403, detail="Not authorized as advertiser")
+
+        content_type = (file.content_type or '').lower()
+        if not (content_type.startswith('image/') or content_type == 'application/pdf'):
+            raise HTTPException(status_code=400, detail="Receipt must be an image or PDF")
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="Empty file")
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Verify the invoice belongs to this advertiser.
+                cur.execute("""
+                    SELECT id, campaign_id, invoice_type, status
+                    FROM campaign_invoices
+                    WHERE id = %s AND advertiser_id = %s
+                """, (invoice_id, advertiser_profile_id))
+                inv = cur.fetchone()
+                if not inv:
+                    raise HTTPException(status_code=404, detail="Invoice not found")
+                if inv.get('status') == 'paid':
+                    raise HTTPException(status_code=400, detail="This invoice is already paid.")
+
+                from backblaze_service import get_backblaze_service
+                b2_service = get_backblaze_service()
+                result = b2_service.upload_file(
+                    file_data=contents,
+                    file_name=file.filename or f"receipt_invoice_{invoice_id}",
+                    file_type='document',
+                    user_id=f"advertiser_{advertiser_profile_id}",
+                    content_type=file.content_type,
+                )
+                if not result or not result.get('url'):
+                    raise HTTPException(status_code=500, detail="Receipt upload failed")
+                receipt_url = result['url']
+
+                paid_to = ""
+                if paid_to_bank_name:
+                    paid_to = f" Paid to: {paid_to_bank_name}"
+                    if paid_to_account_number:
+                        paid_to += f" (A/C {paid_to_account_number})"
+                    paid_to += "."
+                note = "Settlement payment receipt awaiting admin verification." + paid_to
+
+                cur.execute("""
+                    UPDATE campaign_invoices
+                    SET invoice_pdf_url = %s,
+                        payment_method = 'receipt',
+                        status = 'pending',
+                        notes = %s,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (receipt_url, note, invoice_id))
+                conn.commit()
+
+                return {
+                    "success": True,
+                    "message": "Receipt uploaded. Our team will verify your payment shortly.",
+                    "receipt_url": receipt_url,
+                    "invoice_id": invoice_id,
+                    "status": "pending",
+                }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================================
 # PAYMENT RECEIPT UPLOAD (advance payment proof)
 # ============================================================
