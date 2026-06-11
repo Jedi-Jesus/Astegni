@@ -497,11 +497,12 @@ const BrandsManager = {
         `;
     },
 
-    // Reapply for a PAYMENT-rejected campaign: open it, jump to the Invoices /
-    // Payments tab, and launch the advance-receipt re-submit flow.
+    // Reapply (from a payment-rejected card): open the CAMPAIGN CREATION form
+    // (edit mode) so the advertiser can review/fix the campaign and resubmit.
+    // (Re-submitting the payment RECEIPT is a separate action in the Invoices
+    // panel — see resubmitAdvanceReceipt.)
     reapplyCampaign(campaignId) {
-        this._reapplyIntent = campaignId;   // hint: auto-open advance re-pay
-        this.selectCampaign(campaignId);
+        this.editCampaignById(campaignId);
     },
 
     // Update campaign stats in modal
@@ -560,14 +561,6 @@ const BrandsManager = {
 
         // Show campaign details directly (no placement selection step)
         this.showCampaignDetails(campaign, 'all');
-
-        // Reapply intent (from a payment-rejected card): jump to Invoices /
-        // Payments and launch the advance-receipt re-submit once it loads.
-        if (this._reapplyIntent === campaignId) {
-            this._reapplyIntent = null;
-            this.switchCampaignTab('invoices');
-            setTimeout(() => this.resubmitAdvanceReceipt(campaignId), 350);
-        }
     },
 
     // ============================================
