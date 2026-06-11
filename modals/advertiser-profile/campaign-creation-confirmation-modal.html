@@ -853,27 +853,68 @@ window.CampaignCreationConfirmation = {
     openForPayment(opts) {
         this.paymentMode = true;
         this.paymentOpts = opts || {};
-        // Build a campaignData-shaped object so populateData() runs unchanged,
-        // then we override the payment-specific labels below.
+        const cur = opts.currency || 'ETB';
+        const total = (opts.totalAmount != null) ? Number(opts.totalAmount) : Number(opts.amount);
+        const advance = (opts.advanceAmount != null) ? Number(opts.advanceAmount) : 0;
+        const remaining = (opts.remainingAmount != null) ? Number(opts.remainingAmount) : Number(opts.amount);
+
+        // Build campaignData from the REAL campaign financials so populateData()
+        // fills the billing breakdown + package card correctly; then override the
+        // payment-specific labels below.
+        const cpi = (opts.cpiRate != null) ? Number(opts.cpiRate) : 0;
         this.campaignData = {
             campaign_name: opts.campaign_name,
-            currency: opts.currency || 'ETB',
-            total_cost: opts.amount,
-            advance_amount: opts.amount,   // the amount due now = the full invoice
-            advance_percent: 100,
+            currency: cur,
+            tier_base_cpi: cpi,
+            total_cpi: cpi,
+            view_count: (opts.views != null) ? Number(opts.views) : 0,
+            total_cost: total,
+            advance_amount: advance,
+            advance_percent: total ? Math.round((advance / total) * 100) : 0,
         };
         try { this.populateData(); } catch (e) { console.error('[Confirmation] populateData (payment):', e); }
 
-        const cur = opts.currency || 'ETB';
         const fmt = (n) => `${(Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${cur}`;
         const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+        const setHtml = (id, t) => { const el = document.getElementById(id); if (el) el.innerHTML = t; };
 
         // Relabel for payment.
         setText('confirm-modal-title', 'Pay Remaining Balance');
-        setText('confirm-receipt-amount', fmt(opts.amount));
-        setText('confirm-agreement-cpi', fmt(opts.amount));
+        setText('confirm-receipt-amount', fmt(remaining));
         const btn = document.getElementById('confirm-create-btn');
         if (btn) btn.innerHTML = '<i class="fas fa-credit-card"></i> Submit Payment';
+
+        // (B) Package + cost card → Package committed / Advance paid / Remaining / Total.
+        const card = document.querySelector('#campaign-creation-confirmation-overlay .estimated-impressions-card');
+        if (card) {
+            const advStatus = opts.advanceStatus ? ` <span style="color:#16a34a;font-size:.8rem;">(${this._esc(opts.advanceStatus)})</span>` : '';
+            card.innerHTML = `
+                <div class="estimate-row"><span class="estimate-label">Package committed (views):</span><span class="estimate-value highlight">${(opts.views != null ? Number(opts.views) : 0).toLocaleString()}</span></div>
+                <div class="estimate-row"><span class="estimate-label">Total:</span><span class="estimate-value">${fmt(total)}</span></div>
+                <div class="estimate-row"><span class="estimate-label">Advance paid:</span><span class="estimate-value" style="color:#16a34a;">${fmt(advance)}${advStatus}</span></div>
+                <div class="estimate-row"><span class="estimate-label">Remaining payment (due now):</span><span class="estimate-value highlight" style="color:#1d4ed8;">${fmt(remaining)}</span></div>`;
+        }
+
+        // (C) Adapt the Important Terms cards + the agreement checkbox to settlement.
+        this._origTermsHtml = this._origTermsHtml || (document.querySelector('#campaign-creation-confirmation-overlay .terms-cards')?.innerHTML);
+        const terms = document.querySelector('#campaign-creation-confirmation-overlay .terms-cards');
+        if (terms) {
+            terms.innerHTML = `
+                <div class="term-card"><div class="term-icon orange"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="term-content"><h4>Remaining-Balance Payment</h4>
+                    <p>The advance of <strong>${fmt(advance)}</strong> is already paid. You're now settling the remaining balance of <strong>${fmt(remaining)}</strong>. Transfer it to one of our accounts and upload the receipt; our team verifies it before the payment is marked complete.</p></div></div>
+                <div class="term-card"><div class="term-icon green"><i class="fas fa-receipt"></i></div>
+                    <div class="term-content"><h4>Invoice on Payment</h4>
+                    <p>This payment settles invoice for the remaining balance. You'll see it reflected on your campaign's Invoices / Payments once verified. Impression delivery and spending stay tracked in real time.</p></div></div>
+                <div class="term-card"><div class="term-icon blue"><i class="fas fa-hand-paper"></i></div>
+                    <div class="term-content"><h4>Stop Anytime - Pay for What You Use</h4>
+                    <p>You can still stop the campaign at any time and only pay for impressions actually delivered. A 2% cancellation fee applies to any unspent budget if you stop early.</p></div></div>`;
+        }
+        const agree = document.querySelector('#campaign-creation-confirmation-overlay .agreement-text');
+        this._origAgreeHtml = this._origAgreeHtml || (agree && agree.innerHTML);
+        if (agree) {
+            agree.innerHTML = `I understand and agree to the billing terms, cancellation policy, and <a href="/terms" target="_blank">Terms of Service</a>. I have paid the remaining balance of <strong>${fmt(remaining)}</strong> and attached its receipt for verification.`;
+        }
 
         // "Already paid" advance note.
         let paidNote = document.getElementById('confirm-already-paid');
@@ -886,10 +927,10 @@ window.CampaignCreationConfirmation = {
         }
         if (paidNote) {
             paidNote.style.display = 'block';
-            const advTxt = opts.advanceAmount != null ? fmt(opts.advanceAmount) : '';
+            const advTxt = advance ? fmt(advance) : '';
             paidNote.innerHTML = `<strong><i class="fas fa-check-circle" style="color:#16a34a;"></i> Advance already paid</strong>` +
                 (advTxt ? ` — ${advTxt}${opts.advanceStatus ? ` (${this._esc(opts.advanceStatus)})` : ''}.` : '.') +
-                ` You're now paying the remaining balance of <strong>${fmt(opts.amount)}</strong>.`;
+                ` You're now paying the remaining balance of <strong>${fmt(remaining)}</strong>.`;
         }
 
         this.selectedBank = null;
@@ -920,6 +961,15 @@ window.CampaignCreationConfirmation = {
         if (title) title.textContent = 'Confirm Campaign Creation';
         const cbtn = document.getElementById('confirm-create-btn');
         if (cbtn) cbtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Campaign';
+        // Restore the original Terms cards + agreement text that payment mode replaced.
+        if (this._origTermsHtml) {
+            const terms = document.querySelector('#campaign-creation-confirmation-overlay .terms-cards');
+            if (terms) terms.innerHTML = this._origTermsHtml;
+        }
+        if (this._origAgreeHtml) {
+            const agree = document.querySelector('#campaign-creation-confirmation-overlay .agreement-text');
+            if (agree) agree.innerHTML = this._origAgreeHtml;
+        }
         this.receiptFile = null;
         this.selectedBank = null;
         const fileEl = document.getElementById('confirm-receipt-file');

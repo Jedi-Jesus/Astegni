@@ -57,7 +57,7 @@ const BrandsManager = {
             }
 
             // Load campaign creation confirmation modal
-            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606110900');
+            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606111000');
             if (!confirmationResponse.ok) {
                 throw new Error(`Failed to load confirmation modal: ${confirmationResponse.status}`);
             }
@@ -1140,14 +1140,27 @@ const BrandsManager = {
         const m = notes.match(/Paid to:\s*(.+?)\s*(?:\(A\/C|\.|$)/i);
         if (m) advanceBankName = m[1].trim();
 
+        // Full financials for the modal's billing/package sections, sourced from
+        // the campaign + the advance/settlement invoices.
+        const cp = this.currentCampaign || {};
+        const advanceAmt = c.advance ? Number(c.advance.amount) : (cp.deposit_amount != null ? Number(cp.deposit_amount) : null);
+        const remainingAmt = Number(settlement.amount);
+        const totalAmt = (cp.campaign_budget != null) ? Number(cp.campaign_budget)
+            : ((advanceAmt != null) ? advanceAmt + remainingAmt : remainingAmt);
+
         CampaignCreationConfirmation.openForPayment({
             invoiceId: settlement.id,
-            amount: settlement.amount,
+            amount: remainingAmt,
             currency: 'ETB',
             campaign_name: c.name || (c.advance && c.advance.campaign_name) || 'Campaign',
             preselectBankName: advanceBankName,
-            advanceAmount: c.advance ? c.advance.amount : null,
+            advanceAmount: advanceAmt,
             advanceStatus: c.advance ? c.advance.status : null,
+            // Billing/package context:
+            views: (cp.total_impressions_planned != null) ? Number(cp.total_impressions_planned) : null,
+            cpiRate: (cp.cpi_rate != null) ? Number(cp.cpi_rate) : (c.settlement && c.settlement.cpi_rate != null ? Number(c.settlement.cpi_rate) : null),
+            totalAmount: totalAmt,
+            remainingAmount: remainingAmt,
             onDone: () => this.loadCampaignInvoices(),
         });
     },
