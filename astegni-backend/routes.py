@@ -7958,25 +7958,15 @@ async def upload_campaign_media(
     ad_placement: str = Form(...),
     campaign_id: Optional[int] = Form(None),
     brand_id: Optional[int] = Form(None),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    adv_db: Session = Depends(get_advertiser_db)
+    current_user=Depends(resolve_advertiser),
 ):
     """Upload campaign media (image or video) to Backblaze B2 with organized folder structure and save to database"""
     import psycopg
 
     try:
-        # Check if user has advertiser role
-        if "advertiser" not in current_user.roles:
-            raise HTTPException(status_code=403, detail="User does not have advertiser role")
-
-        # Get advertiser profile to use profile_id instead of user_id (advertiser DB)
-        advertiser_profile = adv_db.query(AdvertiserProfile).filter(
-            AdvertiserProfile.user_id == current_user.id
-        ).first()
-
-        if not advertiser_profile:
-            raise HTTPException(status_code=404, detail="Advertiser profile not found")
+        # Standalone advertiser auth: advertiser_profiles.id straight from the token
+        # (no users row). resolve_advertiser already 401s a non-advertiser token.
+        advertiser_id = current_user.role_ids['advertiser']
 
         # Validate file
         if not file.content_type:
@@ -8052,7 +8042,7 @@ async def upload_campaign_media(
             with psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL')) as _conn:
                 with _conn.cursor() as _cur:
                     company_id, company_name = resolve_company_for_upload(
-                        _cur, advertiser_profile.id, resolved_company_id,
+                        _cur, advertiser_id, resolved_company_id,
                     )
         except CompanyResolutionError as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -8099,7 +8089,7 @@ async def upload_campaign_media(
                 """, (
                     campaign_id,
                     brand_id,
-                    advertiser_profile.id,
+                    advertiser_id,
                     media_type,
                     result['url'],
                     result['fileName'],
@@ -8145,18 +8135,21 @@ async def get_campaign_media(
     campaign_id: int,
     media_type: Optional[str] = Query(None, description="Filter by media type: 'image' or 'video'"),
     placement: Optional[str] = Query(None, description="Filter by placement: 'placeholder', 'widget', 'popup', 'insession'"),
-    current_user: User = Depends(get_current_user)
+    current_user=Depends(resolve_advertiser)
 ):
     """Get all media files for a campaign"""
     import psycopg
     from psycopg.rows import dict_row
 
     try:
+        advertiser_id = current_user.role_ids['advertiser']
+
         # Get database connection
         conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'), row_factory=dict_row)
         cursor = conn.cursor()
 
-        # Build query with optional filters
+        # Build query with optional filters. Scope to this advertiser's own media
+        # (replaces the ownership guarantee the old user-token path gave us).
         query = """
             SELECT
                 id, campaign_id, brand_id, advertiser_id,
@@ -8164,9 +8157,9 @@ async def get_campaign_media(
                 placement, content_type, folder_path,
                 created_at, updated_at
             FROM campaign_media
-            WHERE campaign_id = %s
+            WHERE campaign_id = %s AND advertiser_id = %s
         """
-        params = [campaign_id]
+        params = [campaign_id, advertiser_id]
 
         if media_type:
             query += " AND media_type = %s"
@@ -8198,26 +8191,23 @@ async def get_campaign_media(
 @router.delete("/api/campaign/media/{media_id}")
 async def delete_campaign_media(
     media_id: int,
-    current_user: User = Depends(get_current_user)
+    current_user=Depends(resolve_advertiser)
 ):
     """Delete a campaign media file"""
     import psycopg
 
     try:
-        # Check if user has advertiser role
-        if "advertiser" not in current_user.roles:
-            raise HTTPException(status_code=403, detail="User does not have advertiser role")
+        advertiser_id = current_user.role_ids['advertiser']
 
         # Get database connection
         conn = psycopg.connect(os.getenv('ADVERTISER_DATABASE_URL'))
         cursor = conn.cursor()
 
-        # Get media info to verify ownership
+        # Get media info to verify ownership (scoped to this advertiser).
         cursor.execute("""
-            SELECT cm.*, ap.user_id
-            FROM campaign_media cm
-            JOIN advertiser_profiles ap ON cm.advertiser_id = ap.id
-            WHERE cm.id = %s
+            SELECT advertiser_id, file_name
+            FROM campaign_media
+            WHERE id = %s
         """, (media_id,))
 
         media = cursor.fetchone()
@@ -8228,7 +8218,7 @@ async def delete_campaign_media(
             raise HTTPException(status_code=404, detail="Media not found")
 
         # Verify ownership
-        if media[13] != current_user.id:  # user_id is at index 13
+        if media[0] != advertiser_id:
             cursor.close()
             conn.close()
             raise HTTPException(status_code=403, detail="You don't have permission to delete this media")
@@ -8237,7 +8227,7 @@ async def delete_campaign_media(
         # the FULL B2 key (e.g. "images/profile_6/Brand/Campaign/.../foo.jpg").
         # folder_path is redundant data; concatenating them produces a doubled
         # path that no real B2 object matches.
-        b2_key = media[6] if len(media) > 6 else None  # file_name is at index 6
+        b2_key = media[1]  # file_name
 
         # Delete from database first
         cursor.execute("DELETE FROM campaign_media WHERE id = %s", (media_id,))
