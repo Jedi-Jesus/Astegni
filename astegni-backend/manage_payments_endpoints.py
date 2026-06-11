@@ -88,6 +88,78 @@ def _extract_paid_to(notes) -> Optional[str]:
     return m.group(1).strip() if m else None
 
 
+def _create_settlement_invoice(cur, campaign_id: int) -> Optional[dict]:
+    """Create the remaining-balance 'final_settlement' invoice for a campaign,
+    using an already-open cursor (caller owns the transaction). Idempotent:
+    returns the existing settlement invoice if one is already present, or None
+    if there's no verified advance to settle against. Amount = campaign_budget
+    minus the advance deposit."""
+    cur.execute("""
+        SELECT id, status, advertiser_id, brand_id FROM campaign_invoices
+        WHERE campaign_id = %s AND invoice_type = 'advance'
+        ORDER BY id DESC LIMIT 1
+    """, (campaign_id,))
+    adv = cur.fetchone()
+    if not adv or adv['status'] != 'verified':
+        return None
+
+    cur.execute("""
+        SELECT id, invoice_number, amount, status FROM campaign_invoices
+        WHERE campaign_id = %s AND invoice_type = 'final_settlement'
+        ORDER BY id DESC LIMIT 1
+    """, (campaign_id,))
+    existing = cur.fetchone()
+    if existing:
+        return {
+            "invoice_id": existing['id'],
+            "invoice_number": existing['invoice_number'],
+            "amount": float(existing['amount']) if existing['amount'] is not None else None,
+            "status": existing['status'],
+            "already_issued": True,
+        }
+
+    cur.execute("""
+        SELECT name, campaign_budget, deposit_amount, cpi_rate
+        FROM campaign_profile WHERE id = %s
+    """, (campaign_id,))
+    cp = cur.fetchone()
+    if not cp:
+        return None
+    budget = float(cp['campaign_budget']) if cp['campaign_budget'] is not None else 0.0
+    deposit = float(cp['deposit_amount']) if cp['deposit_amount'] is not None else 0.0
+    outstanding = max(0.0, budget - deposit)
+
+    from datetime import datetime
+    invoice_number = f"INV-{campaign_id}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    cur.execute("""
+        INSERT INTO campaign_invoices (
+            campaign_id, advertiser_id, brand_id,
+            invoice_number, invoice_type,
+            amount, cpi_rate, deposit_amount, outstanding_amount,
+            status, issued_at, due_date, notes,
+            created_at, updated_at
+        ) VALUES (
+            %s, %s, %s, %s, 'final_settlement',
+            %s, %s, %s, %s,
+            'pending', NOW(), NOW() + INTERVAL '30 days', %s,
+            NOW(), NOW()
+        ) RETURNING id
+    """, (
+        campaign_id, adv['advertiser_id'], adv['brand_id'],
+        invoice_number,
+        outstanding, cp['cpi_rate'], deposit, outstanding,
+        f"Remaining-balance settlement for '{cp['name']}' (budget {budget:.2f} - advance {deposit:.2f}).",
+    ))
+    new_id = cur.fetchone()['id']
+    return {
+        "invoice_id": new_id,
+        "invoice_number": invoice_number,
+        "amount": outstanding,
+        "status": "pending",
+        "already_issued": False,
+    }
+
+
 def _resolve_advertiser_names(rows: List[dict]) -> dict:
     """Map advertiser_id -> display name/email, read directly from advertiser_profiles.
 
@@ -264,12 +336,20 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
                 updated_at = NOW()
             WHERE id = %s
         """, (body.new_status, body.new_status, note, inv['id']))
+
+        # On verify, AUTO-ISSUE the remaining-balance settlement invoice (the
+        # second payment). Idempotent — re-verifying won't create duplicates.
+        settlement = None
+        if body.new_status == 'verified':
+            settlement = _create_settlement_invoice(cur, campaign_id)
+
         conn.commit()
         return {
             "success": True,
             "campaign_id": campaign_id,
             "invoice_id": inv['id'],
             "payment_status": body.new_status,
+            "settlement_invoice": settlement,
             "message": f"Payment {body.new_status}.",
         }
     except HTTPException:
@@ -368,9 +448,9 @@ async def issue_settlement_invoice(campaign_id: int, body: SettlementInvoiceRequ
     conn = get_advertiser_db()
     try:
         cur = conn.cursor()
-        # The advance must be verified before billing the remaining balance.
+        # Disambiguate the "can't settle yet" case for a clear admin message.
         cur.execute("""
-            SELECT id, status, advertiser_id, brand_id FROM campaign_invoices
+            SELECT status FROM campaign_invoices
             WHERE campaign_id = %s AND invoice_type = 'advance'
             ORDER BY id DESC LIMIT 1
         """, (campaign_id,))
@@ -380,70 +460,15 @@ async def issue_settlement_invoice(campaign_id: int, body: SettlementInvoiceRequ
         if adv['status'] != 'verified':
             raise HTTPException(status_code=400, detail="Verify the advance payment before issuing the settlement invoice.")
 
-        # If a settlement invoice already exists, return it (idempotent).
-        cur.execute("""
-            SELECT id, invoice_number, amount, status FROM campaign_invoices
-            WHERE campaign_id = %s AND invoice_type = 'final_settlement'
-            ORDER BY id DESC LIMIT 1
-        """, (campaign_id,))
-        existing = cur.fetchone()
-        if existing:
-            return {
-                "success": True,
-                "campaign_id": campaign_id,
-                "invoice_id": existing['id'],
-                "invoice_number": existing['invoice_number'],
-                "amount": float(existing['amount']) if existing['amount'] is not None else None,
-                "status": existing['status'],
-                "already_issued": True,
-                "message": "Settlement invoice already issued.",
-            }
-
-        # Remaining balance = budget - advance amount.
-        cur.execute("""
-            SELECT name, campaign_budget, deposit_amount, deposit_percent,
-                   total_impressions_planned, cpi_rate
-            FROM campaign_profile WHERE id = %s
-        """, (campaign_id,))
-        cp = cur.fetchone()
-        if not cp:
+        result = _create_settlement_invoice(cur, campaign_id)
+        if not result:
             raise HTTPException(status_code=404, detail="Campaign not found")
-        budget = float(cp['campaign_budget']) if cp['campaign_budget'] is not None else 0.0
-        deposit = float(cp['deposit_amount']) if cp['deposit_amount'] is not None else 0.0
-        outstanding = max(0.0, budget - deposit)
-
-        from datetime import datetime
-        invoice_number = f"INV-{campaign_id}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        cur.execute("""
-            INSERT INTO campaign_invoices (
-                campaign_id, advertiser_id, brand_id,
-                invoice_number, invoice_type,
-                amount, cpi_rate, deposit_amount, outstanding_amount,
-                status, issued_at, due_date, notes,
-                created_at, updated_at
-            ) VALUES (
-                %s, %s, %s, %s, 'final_settlement',
-                %s, %s, %s, %s,
-                'pending', NOW(), NOW() + INTERVAL '30 days', %s,
-                NOW(), NOW()
-            ) RETURNING id
-        """, (
-            campaign_id, adv['advertiser_id'], adv['brand_id'],
-            invoice_number,
-            outstanding, cp['cpi_rate'], deposit, outstanding,
-            f"Remaining-balance settlement for '{cp['name']}' (budget {budget:.2f} - advance {deposit:.2f}).",
-        ))
-        new_id = cur.fetchone()['id']
         conn.commit()
         return {
             "success": True,
             "campaign_id": campaign_id,
-            "invoice_id": new_id,
-            "invoice_number": invoice_number,
-            "amount": outstanding,
-            "status": "pending",
-            "already_issued": False,
-            "message": "Settlement invoice issued.",
+            **result,
+            "message": "Settlement invoice already issued." if result["already_issued"] else "Settlement invoice issued.",
         }
     except HTTPException:
         conn.rollback()

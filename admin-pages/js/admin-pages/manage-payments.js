@@ -156,11 +156,12 @@ const ManagePayments = {
                 </div>`;
         }
 
-        // Remaining-balance settlement invoice (the second payment). Issued by the
-        // admin once the advance is verified; each payment gets its own invoice.
+        // Remaining-balance settlement invoice (the second payment). Auto-issued
+        // when the advance is verified. The manual button only appears as a
+        // fallback for payments verified before auto-issue existed.
         let settlementBlock;
         if (!verified) {
-            settlementBlock = `<span class="mp-muted">Available after the advance is verified.</span>`;
+            settlementBlock = `<span class="mp-muted">Auto-issued when the advance is verified.</span>`;
         } else if (p.settlement_invoice_id) {
             settlementBlock = `
                 <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
