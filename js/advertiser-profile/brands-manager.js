@@ -464,23 +464,42 @@ const BrandsManager = {
 
     // Create small campaign card HTML
     createCampaignCardSmall(campaign) {
-        const statusClass = campaign.status || 'draft';
+        // Badge reflects CAMPAIGN (ad-content) verification: verification_status
+        // is mapped to `status` by the API (pending | verified | rejected).
+        const statusClass = campaign.status || 'pending';
+        const isRejected = statusClass === 'rejected';
+
+        // Rejected campaigns get a Reapply button (opens the campaign so the
+        // advertiser can fix the rejected media, then resubmit). Otherwise no
+        // card-level button — editing happens inside the opened campaign and
+        // verified campaigns aren't edited.
+        const reapplyBtn = isRejected
+            ? `<button class="campaign-card-edit-btn-bottom" style="background:#ef4444;color:#fff;border-color:#ef4444;"
+                       onclick="event.stopPropagation(); BrandsManager.reapplyCampaign(${campaign.id})">
+                   <i class="fas fa-rotate-right"></i> Reapply
+               </button>`
+            : '';
 
         return `
             <div class="campaign-card-small" data-campaign-id="${campaign.id}" onclick="BrandsManager.selectCampaign(${campaign.id})">
                 <div class="campaign-card-small-header">
                     <h4 class="campaign-card-small-name">${campaign.name}</h4>
-                    <span class="campaign-card-small-status ${statusClass}">${this.capitalizeFirst(statusClass)}</span>
+                    <span class="campaign-card-small-status ${statusClass}" title="Campaign verification">${this.capitalizeFirst(statusClass)}</span>
                 </div>
                 <div class="campaign-card-small-meta">
                     <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${CurrencyManager.getSymbol()}</span>
                     <span><i class="fas fa-eye"></i> ${this.formatNumber(campaign.impressions || 0)}</span>
                 </div>
-                <button class="campaign-card-edit-btn-bottom" onclick="event.stopPropagation(); BrandsManager.editCampaignById(${campaign.id})">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
+                ${reapplyBtn}
             </div>
         `;
+    },
+
+    // Reapply for a rejected campaign: open it so the advertiser can fix the
+    // rejected ad/media, then resubmit from the detail footer.
+    reapplyCampaign(campaignId) {
+        this._reapplyIntent = campaignId;   // hint the detail view to nudge resubmit
+        this.selectCampaign(campaignId);
     },
 
     // Update campaign stats in modal
@@ -3580,9 +3599,11 @@ const BrandsManager = {
         if (!this.currentCampaign) return;
 
         const campaign = this.currentCampaign;
+        const isRejected = (campaign.verification_status || campaign.status) === 'rejected';
 
-        // Check if already submitted - show media modal instead of alert
-        if (campaign.submit_for_verification) {
+        // Check if already submitted - show media modal instead of alert.
+        // A REJECTED campaign is allowed to reapply, so skip this gate for it.
+        if (campaign.submit_for_verification && !isRejected) {
             this.showAlreadySubmittedModal(campaign);
             return;
         }
@@ -3736,11 +3757,13 @@ const BrandsManager = {
         }
 
         // Check if campaign is currently under verification (submitted but not yet decided).
-        // Verified/approved campaigns are editable; only pending-review campaigns are locked.
+        // Verified/approved campaigns are editable; only pending-review campaigns are
+        // locked. A REJECTED campaign stays editable so the advertiser can fix + reapply.
         const pendingReview = campaign.submit_for_verification
             && !campaign.is_verified
             && campaign.verification_status !== 'verified'
-            && campaign.verification_status !== 'approved';
+            && campaign.verification_status !== 'approved'
+            && campaign.verification_status !== 'rejected';
         if (pendingReview) {
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast('❌ Cannot edit campaign while under verification', 'error');
@@ -4041,13 +4064,27 @@ const BrandsManager = {
         const status = campaign.campaign_status || campaign.status;
         const isVerified = campaign.is_verified || campaign.verification_status === 'verified' || campaign.verification_status === 'approved';
         const submitForVerification = campaign.submit_for_verification;
+        const isRejected = campaign.verification_status === 'rejected';
 
-        console.log('[BrandsManager] updateFooterButtons:', { status, isVerified, submitForVerification });
+        console.log('[BrandsManager] updateFooterButtons:', { status, isVerified, submitForVerification, isRejected });
 
         // Hide all buttons initially
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (primaryBtn) primaryBtn.style.display = 'none';
         if (submitVerificationBtn) submitVerificationBtn.style.display = 'none';
+
+        // REJECTED campaign verification → show an enabled "Reapply" button that
+        // resubmits for review (takes priority over the lifecycle-status branches).
+        if (isRejected && !isVerified) {
+            if (submitVerificationBtn) {
+                submitVerificationBtn.disabled = false;
+                submitVerificationBtn.style.opacity = '1';
+                submitVerificationBtn.style.cursor = 'pointer';
+                submitVerificationBtn.innerHTML = '<i class="fas fa-rotate-right"></i> Reapply for Verification';
+                submitVerificationBtn.style.display = 'inline-flex';
+            }
+            return;
+        }
 
         if (status === 'active' || status === 'running') {
             // Show Pause button, change primary to Cancel
@@ -4133,10 +4170,13 @@ const BrandsManager = {
 
         // "Under verification" means submitted and still pending review.
         // Once verified/approved, the campaign is editable again.
+        // A rejected campaign is NOT "under verification" — the advertiser needs
+        // to fix the rejected media and reapply, so uploads/buttons stay enabled.
         const isUnderVerification = campaign.submit_for_verification
             && !campaign.is_verified
             && campaign.verification_status !== 'verified'
-            && campaign.verification_status !== 'approved';
+            && campaign.verification_status !== 'approved'
+            && campaign.verification_status !== 'rejected';
 
         // FIRST verification (payment): ad media upload is not allowed until the
         // advance-payment receipt has been verified by an admin.
@@ -5116,12 +5156,15 @@ const BrandsManager = {
         }
 
         // Check if campaign is currently under verification (submitted but not yet decided).
-        // Verified/approved campaigns can have media uploaded; only pending-review is locked.
+        // Verified/approved campaigns can have media uploaded; only pending-review is
+        // locked. A REJECTED campaign stays editable so the advertiser can fix media
+        // and reapply.
         const pendingReview = c
             && c.submit_for_verification
             && !c.is_verified
             && c.verification_status !== 'verified'
-            && c.verification_status !== 'approved';
+            && c.verification_status !== 'approved'
+            && c.verification_status !== 'rejected';
         if (pendingReview) {
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast('❌ Cannot upload media while campaign is under verification', 'error');

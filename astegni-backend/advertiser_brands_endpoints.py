@@ -1395,17 +1395,24 @@ async def submit_campaign_for_verification(campaign_id: int, current_user = Depe
                         detail="Campaign is already verified"
                     )
 
-                # If already submitted for verification
-                if campaign['submit_for_verification']:
+                is_rejected = campaign['verification_status'] == 'rejected'
+
+                # If already submitted and still pending review, block duplicate.
+                # A REJECTED campaign is allowed to reapply (resubmit) even though
+                # submit_for_verification is already true.
+                if campaign['submit_for_verification'] and not is_rejected:
                     raise HTTPException(
                         status_code=400,
                         detail="Campaign is already submitted for verification"
                     )
 
-                # Mark campaign as submitted for verification
+                # Mark campaign as submitted for verification. On a reapply, also
+                # reset the rejected status back to 'pending' so it re-enters review.
                 cur.execute("""
                     UPDATE campaign_profile
                     SET submit_for_verification = true,
+                        verification_status = CASE WHEN verification_status = 'rejected'
+                                                   THEN 'pending' ELSE verification_status END,
                         updated_at = NOW()
                     WHERE id = %s
                     RETURNING id, name, submit_for_verification, verification_status
