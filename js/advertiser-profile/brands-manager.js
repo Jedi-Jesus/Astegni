@@ -17,8 +17,6 @@ const BrandsManager = {
     brands: [],
     campaigns: [],
     currentFilter: 'all',
-    isEditMode: false,  // Track if we're editing an existing campaign
-    editingCampaignId: null,  // ID of campaign being edited
     isEditingBrand: false,  // Track if we're editing a brand
     editingBrandId: null,  // ID of brand being edited
 
@@ -1750,11 +1748,7 @@ const BrandsManager = {
         if (listView) listView.style.display = 'none';
         if (formSection) formSection.style.display = 'flex';
 
-        // Reset edit mode
-        this.isEditMode = false;
-        this.editingCampaignId = null;
-
-        // Hide delete button in create mode
+        // No delete button outside of (removed) edit mode
         if (deleteBtn) deleteBtn.style.display = 'none';
 
         // Reset form
@@ -1764,7 +1758,7 @@ const BrandsManager = {
         // Reset all checkboxes to checked (default state for new campaign)
         this.resetFormCheckboxes();
 
-        // Update form title and button for create mode
+        // Set the create-mode title/button
         this.updateFormMode('create');
 
         // Set default start date to today
@@ -1827,187 +1821,19 @@ const BrandsManager = {
 
     // Update form title and button based on mode (create/edit)
     updateFormMode(mode) {
+        // Campaign editing was removed — the form is always in "create" mode.
         const formTitle = document.querySelector('.create-campaign-form-title span');
         const formIcon = document.querySelector('.create-campaign-form-title i');
         const submitBtn = document.getElementById('campaign-create-btn');
 
-        if (mode === 'edit') {
-            if (formTitle) formTitle.textContent = 'Edit Campaign';
-            if (formIcon) {
-                formIcon.classList.remove('fa-rocket');
-                formIcon.classList.add('fa-edit');
-            }
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-            }
-        } else {
-            if (formTitle) formTitle.textContent = 'New Campaign';
-            if (formIcon) {
-                formIcon.classList.remove('fa-edit');
-                formIcon.classList.add('fa-rocket');
-            }
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Review & Create';
-            }
+        if (formTitle) formTitle.textContent = 'New Campaign';
+        if (formIcon) {
+            formIcon.classList.remove('fa-edit');
+            formIcon.classList.add('fa-rocket');
         }
-    },
-
-    // Show edit campaign form (populated with existing data)
-    showEditCampaignForm(campaign) {
-        const listView = document.getElementById('campaign-list-view');
-        const formSection = document.getElementById('create-campaign-form-section');
-        const deleteBtn = document.getElementById('campaign-delete-btn');
-
-        // Hide list view, show form
-        if (listView) listView.style.display = 'none';
-        if (formSection) formSection.style.display = 'flex';
-
-        // Set edit mode
-        this.isEditMode = true;
-        this.editingCampaignId = campaign.id;
-
-        // Show delete button in edit mode
-        if (deleteBtn) deleteBtn.style.display = 'flex';
-
-        // Update form title and button for edit mode
-        this.updateFormMode('edit');
-
-        // Populate form with campaign data
-        this.populateEditForm(campaign);
-
-        // NOTE: loadAdvertiserBalance() removed - using 20% deposit model with external payment gateway
-
-        // Load CPI rate
-        this.loadCpiRate();
-    },
-
-    // Populate form with existing campaign data
-    populateEditForm(campaign) {
-        // Basic fields
-        const nameInput = document.getElementById('campaign-name-input');
-        const descInput = document.getElementById('campaign-description-input');
-        const budgetInput = document.getElementById('campaign-budget-input');
-        const startDateInput = document.getElementById('campaign-start-date-input');
-        const locationInput = document.getElementById('campaign-location-input');
-
-        if (nameInput) nameInput.value = campaign.name || '';
-        if (descInput) descInput.value = campaign.description || '';
-
-        // For budget, use remaining_balance instead of campaign_budget
-        // This allows them to see/adjust the remaining budget
-        if (budgetInput) {
-            const remainingBalance = campaign.remaining_balance || campaign.campaign_budget || 0;
-            budgetInput.value = remainingBalance;
-            // Update the estimated impressions display
-            this.calculateEstimatedImpressions(remainingBalance);
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Review & Create';
         }
-
-        // Start date
-        if (startDateInput && campaign.start_date) {
-            // Parse date string and format as YYYY-MM-DD for input
-            const dateStr = campaign.start_date.split(' ')[0]; // Get just the date part
-            startDateInput.value = dateStr;
-        }
-
-        // Location
-        if (locationInput) {
-            locationInput.value = campaign.target_location || 'global';
-            // Trigger location change to show/hide regional selection
-            this.onLocationChange();
-        }
-
-        // Populate checkboxes
-        this.populateCheckboxes(campaign);
-
-        // Show info about used budget if any
-        if (campaign.amount_used > 0) {
-            this.showUsedBudgetInfo(campaign);
-        }
-    },
-
-    // Populate checkbox fields from campaign data
-    populateCheckboxes(campaign) {
-        // Target Audiences
-        const audiences = campaign.target_audiences || ['tutor', 'student', 'parent', 'advertiser', 'user'];
-        const allAudiences = ['tutor', 'student', 'parent', 'advertiser', 'user'];
-
-        allAudiences.forEach(audience => {
-            const checkbox = document.getElementById(`audience-${audience}`);
-            if (checkbox) {
-                checkbox.checked = audiences.includes(audience);
-            }
-        });
-
-        // Update "All" checkbox
-        const audienceAll = document.getElementById('audience-all');
-        if (audienceAll) {
-            audienceAll.checked = audiences.length === allAudiences.length;
-        }
-
-        // Target Placements
-        const placements = campaign.target_placements || ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
-        const allPlacements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
-
-        allPlacements.forEach(placement => {
-            const checkbox = document.getElementById(`placement-${placement}`);
-            if (checkbox) {
-                checkbox.checked = placements.includes(placement);
-            }
-        });
-
-        // Update "All" checkbox
-        const placementAll = document.getElementById('placement-all');
-        if (placementAll) {
-            placementAll.checked = placements.length === allPlacements.length;
-        }
-
-        // Objectives (these are stored in the 'objective' field as comma-separated or array)
-        // For now, we'll default to all checked since objectives aren't stored as array in DB
-        const objectiveAll = document.getElementById('objective-all');
-        const objectiveAwareness = document.getElementById('objective-awareness');
-        const objectiveTraffic = document.getElementById('objective-traffic');
-        const objectiveEngagement = document.getElementById('objective-engagement');
-
-        // Default all to checked if no specific objective data
-        if (objectiveAll) objectiveAll.checked = true;
-        if (objectiveAwareness) objectiveAwareness.checked = true;
-        if (objectiveTraffic) objectiveTraffic.checked = true;
-        if (objectiveEngagement) objectiveEngagement.checked = true;
-
-        // Trigger selection updates for CPI calculation
-        this.updateAudienceSelection();
-        this.updatePlacementSelection();
-    },
-
-    // Show info about already used budget
-    showUsedBudgetInfo(campaign) {
-        const budgetInputEl = document.querySelector('#campaign-budget-input');
-        const budgetGroup = budgetInputEl ? budgetInputEl.closest('.campaign-form-group') : null;
-        // Budget input was removed in favor of view-tier packages; nothing to annotate.
-        if (!budgetGroup) return;
-
-        // Remove existing info if any
-        const existingInfo = budgetGroup.querySelector('.used-budget-info');
-        if (existingInfo) existingInfo.remove();
-
-        // Create info element
-        const infoDiv = document.createElement('div');
-        infoDiv.id = 'used-budget-info';
-        infoDiv.className = 'used-budget-info';
-        infoDiv.style.cssText = 'margin-top: 8px; padding: 10px; background: rgba(255, 152, 0, 0.1); border-radius: 6px; border-left: 3px solid #ff9800; font-size: 0.85rem;';
-        infoDiv.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <i class="fas fa-info-circle" style="color: #ff9800;"></i>
-                <strong style="color: #ff9800;">Budget Already Used</strong>
-            </div>
-            <div style="color: var(--text-secondary);">
-                Original budget: <strong>${campaign.campaign_budget.toLocaleString()} ${CurrencyManager.getSymbol()}</strong><br>
-                Already spent: <strong>${campaign.amount_used.toLocaleString()} ${CurrencyManager.getSymbol()}</strong> (non-refundable)<br>
-                Remaining: <strong>${campaign.remaining_balance.toLocaleString()} ${CurrencyManager.getSymbol()}</strong>
-            </div>
-        `;
-
-        budgetGroup.appendChild(infoDiv);
     },
 
     // DEPRECATED: Balance checking removed - using 20% deposit model with external payment gateway
@@ -3087,21 +2913,11 @@ const BrandsManager = {
         // Show list view, hide form (footer is now inside form section)
         if (listView) listView.style.display = 'block';
         if (formSection) formSection.style.display = 'none';
-
-        // Reset edit mode state
-        this.isEditMode = false;
-        this.editingCampaignId = null;
-
-        // Remove used-budget-info element if present (from edit mode)
-        const usedBudgetInfo = document.getElementById('used-budget-info');
-        if (usedBudgetInfo) {
-            usedBudgetInfo.remove();
-        }
     },
 
-    // Submit create/edit campaign form
+    // Submit create campaign form
     async submitCreateCampaign(event) {
-        console.log('[BrandsManager] submitCreateCampaign called, isEditMode:', this.isEditMode);
+        console.log('[BrandsManager] submitCreateCampaign called');
         event.preventDefault();
 
         if (!this.currentBrand) {
@@ -3110,12 +2926,6 @@ const BrandsManager = {
         }
 
         console.log('[BrandsManager] Current brand:', this.currentBrand);
-
-        // If in edit mode, update the campaign directly (no confirmation modal needed)
-        if (this.isEditMode && this.editingCampaignId) {
-            await this.executeUpdate();
-            return;
-        }
 
         // CREATE MODE - Show confirmation modal
 
@@ -3191,119 +3001,6 @@ const BrandsManager = {
             console.error('Modal overlay element exists:', !!document.getElementById('campaign-creation-confirmation-overlay'));
             console.error('Available in window:', typeof window.CampaignCreationConfirmation);
             alert('Confirmation modal not loaded. Please refresh the page and try again.');
-        }
-    },
-
-    // Execute campaign update (for edit mode)
-    async executeUpdate() {
-        console.log('[BrandsManager] executeUpdate called for campaign:', this.editingCampaignId);
-
-        const submitBtn = document.getElementById('campaign-create-btn');
-        const originalText = submitBtn?.innerHTML;
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
-        }
-
-        try {
-            const token = localStorage.getItem('token');
-
-            // Gather form data
-            const selectedObjectives = this.getSelectedObjectives();
-            const selectedAudiences = this.getSelectedAudiences();
-            const selectedRegions = this.getSelectedRegions();
-            const location = document.getElementById('campaign-location-input')?.value || 'global';
-
-            // Get selected placements
-            const placements = ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
-            const selectedPlacements = placements.filter(pl => {
-                const checkbox = document.getElementById(`placement-${pl}`);
-                return checkbox && checkbox.checked;
-            });
-
-            // For edit mode, budget input contains the NEW remaining balance to add
-            // We need to calculate the budget change
-            const newBudgetInput = parseFloat(document.getElementById('campaign-budget-input')?.value) || 0;
-
-            // For national targeting, get user's location and country code
-            let nationalLocation = null;
-            let nationalCountryCode = null;
-            if (location === 'national') {
-                nationalLocation = this.userLocation || null;
-                nationalCountryCode = this.userCountryCode || null;
-            }
-
-            // For regional targeting, use user's country code
-            let regionalCountryCode = null;
-            if (location === 'regional') {
-                regionalCountryCode = this.userCountryCode || null;
-            }
-
-            const updateData = {
-                name: document.getElementById('campaign-name-input').value.trim(),
-                description: document.getElementById('campaign-description-input').value.trim(),
-                objective: selectedObjectives.join(', '),
-                target_audiences: selectedAudiences,
-                target_placements: selectedPlacements,
-                target_location: location,
-                target_regions: location === 'regional' ? selectedRegions : [],
-                national_location: nationalLocation,
-                national_country_code: nationalCountryCode,
-                regional_country_code: regionalCountryCode,
-                start_date: document.getElementById('campaign-start-date-input').value,
-                // Only update budget if it's different from current remaining_balance
-                campaign_budget: newBudgetInput
-            };
-
-            console.log('[BrandsManager] Update data:', updateData);
-
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${this.editingCampaignId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updateData)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('[BrandsManager] Campaign updated:', result);
-
-                // Log activity before resetting edit mode
-                this.addCampaignActivity('edit', 'Campaign Edited', 'Campaign settings were updated');
-
-                // Reset edit mode
-                this.isEditMode = false;
-                this.editingCampaignId = null;
-
-                // Hide form and reload campaigns
-                this.hideCreateCampaignForm();
-                await this.loadBrandCampaigns(this.currentBrand.id);
-
-                // Show success notification
-                if (typeof showNotification === 'function') {
-                    showNotification('Campaign updated successfully!', 'success');
-                } else {
-                    alert('Campaign updated successfully!');
-                }
-            } else {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to update campaign');
-            }
-        } catch (error) {
-            console.error('Error updating campaign:', error);
-            if (typeof showNotification === 'function') {
-                showNotification(error.message || 'Failed to update campaign', 'error');
-            } else {
-                alert(error.message || 'Failed to update campaign');
-            }
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
         }
     },
 
@@ -3805,115 +3502,6 @@ const BrandsManager = {
         } catch (error) {
             console.error('[BrandsManager] Error submitting for verification:', error);
             alert('Failed to submit campaign for verification. Please try again.');
-        }
-    },
-
-    // Edit current campaign
-    editCurrentCampaign() {
-        if (!this.currentCampaign) return;
-
-        // Show the edit form with campaign data (campaign details stay visible)
-        this.showEditCampaignForm(this.currentCampaign);
-    },
-
-    // Edit campaign by ID (from campaign card)
-    editCampaignById(campaignId) {
-        const campaign = this.campaigns.find(c => c.id === campaignId);
-        if (!campaign) {
-            console.error('[BrandsManager] Campaign not found:', campaignId);
-            return;
-        }
-
-        // Check if campaign is currently under verification (submitted but not yet decided).
-        // Verified/approved campaigns are editable; only pending-review campaigns are
-        // locked. A REJECTED campaign stays editable so the advertiser can fix + reapply.
-        const pendingReview = campaign.submit_for_verification
-            && !campaign.is_verified
-            && campaign.verification_status !== 'verified'
-            && campaign.verification_status !== 'approved'
-            && campaign.verification_status !== 'rejected';
-        if (pendingReview) {
-            if (window.Utils && window.Utils.showToast) {
-                window.Utils.showToast('❌ Cannot edit campaign while under verification', 'error');
-            } else {
-                alert('Cannot edit campaign while under verification');
-            }
-            return;
-        }
-
-        // Set as current campaign
-        this.currentCampaign = campaign;
-
-        // Select the campaign first (to show details)
-        this.selectCampaign(campaignId);
-
-        // Then show edit form
-        setTimeout(() => {
-            this.showEditCampaignForm(campaign);
-        }, 100);
-    },
-
-    // Delete campaign
-    async deleteCampaign() {
-        if (!this.editingCampaignId) {
-            console.error('[BrandsManager] No campaign selected for deletion');
-            return;
-        }
-
-        const campaignId = this.editingCampaignId;
-        const campaign = this.campaigns.find(c => c.id === campaignId);
-        if (!campaign) {
-            console.error('[BrandsManager] Campaign not found:', campaignId);
-            return;
-        }
-
-        // Confirm deletion
-        const confirmed = confirm(
-            `Are you sure you want to delete "${campaign.name}"?\n\n` +
-            `This action cannot be undone. All campaign data, media, and analytics will be permanently removed.`
-        );
-
-        if (!confirmed) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaignId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!response.ok) {
-                // Surface backend reason (e.g. "Cannot delete active campaign. Pause it first.")
-                let detail = `Delete failed (HTTP ${response.status})`;
-                try {
-                    const data = await response.json();
-                    if (data && data.detail) detail = data.detail;
-                } catch (_) { /* non-JSON body */ }
-                throw new Error(detail);
-            }
-
-            // Close form and refresh list from DB (drops the deleted campaign + any other server-side changes)
-            this.hideCreateCampaignForm();
-            this.editingCampaignId = null;
-            if (this.currentBrand && this.currentBrand.id) {
-                await this.loadBrandCampaigns(this.currentBrand.id);
-            } else {
-                this.campaigns = this.campaigns.filter(c => c.id !== campaignId);
-                this.renderCampaignList();
-            }
-
-            if (window.Utils && window.Utils.showToast) {
-                window.Utils.showToast(`Campaign "${campaign.name}" deleted`, 'success');
-            } else {
-                alert(`Campaign "${campaign.name}" has been deleted successfully.`);
-            }
-        } catch (error) {
-            console.error('[BrandsManager] Error deleting campaign:', error);
-            if (window.Utils && window.Utils.showToast) {
-                window.Utils.showToast(`❌ ${error.message || 'Failed to delete campaign'}`, 'error');
-            } else {
-                alert(error.message || 'Failed to delete campaign. Please try again.');
-            }
         }
     },
 
