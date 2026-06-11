@@ -192,7 +192,7 @@
         // profile managers still read). Falls back to direct writes if it hasn't
         // loaded for any reason.
         if (window.AdvertiserAuth && typeof window.AdvertiserAuth.store === 'function') {
-            window.AdvertiserAuth.store(tokenResponse.access_token, adv);
+            window.AdvertiserAuth.store(tokenResponse.access_token, adv, tokenResponse.refresh_token);
         } else {
             localStorage.setItem('advertiserToken', tokenResponse.access_token);
             localStorage.setItem('advertiserUser', JSON.stringify(adv));
@@ -200,6 +200,10 @@
             localStorage.setItem('access_token', tokenResponse.access_token);
             localStorage.setItem('currentUser', JSON.stringify(adv));
             localStorage.setItem('userRole', 'advertiser');
+            if (tokenResponse.refresh_token) {
+                localStorage.setItem('advertiserRefreshToken', tokenResponse.refresh_token);
+                localStorage.setItem('refresh_token', tokenResponse.refresh_token);
+            }
         }
     }
 

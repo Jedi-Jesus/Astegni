@@ -27,7 +27,7 @@ import random
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from utils import verify_password, hash_password, create_access_token
+from utils import verify_password, hash_password, create_access_token, create_refresh_token
 
 load_dotenv()
 
@@ -36,7 +36,10 @@ ADVERTISER_DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_advertiser_db'
 )
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key_here')
+REFRESH_SECRET_KEY = os.getenv('REFRESH_SECRET_KEY', 'your_refresh_secret_key_here')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
+# Advertiser refresh tokens live a year, mirroring the user-auth refresh lifetime.
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv('REFRESH_TOKEN_EXPIRE_DAYS', 365))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 # Gate: enable creating brand-new (users-less) advertisers at registration.
@@ -201,6 +204,15 @@ def _issue_token(advertiser_id: int, email: str) -> str:
     )
 
 
+def _issue_refresh_token(advertiser_id: int, email: str) -> str:
+    """Long-lived refresh token (distinct type, signed with REFRESH_SECRET_KEY).
+    Exchanged at /api/advertiser/auth/refresh for a fresh access token."""
+    return create_refresh_token(
+        {"advertiser_id": advertiser_id, "email": email, "type": "advertiser_refresh"},
+        expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+
+
 # ============================================
 # ENDPOINTS
 # ============================================
@@ -243,6 +255,7 @@ async def advertiser_login(request: AdvertiserLoginRequest):
             "name": name,
             "company_name": company_name,
             "access_token": _issue_token(adv_id, email),
+            "refresh_token": _issue_refresh_token(adv_id, email),
             "token_type": "bearer",
         }
     except HTTPException:
@@ -253,6 +266,57 @@ async def advertiser_login(request: AdvertiserLoginRequest):
         if conn:
             conn.rollback()
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+    finally:
+        if conn:
+            conn.close()
+
+
+class AdvertiserRefreshRequest(BaseModel):
+    refresh_token: str
+
+
+@router.post("/auth/refresh")
+async def advertiser_refresh(request: AdvertiserRefreshRequest):
+    """Exchange a valid advertiser refresh token for a fresh access token.
+
+    The refresh token is signed with REFRESH_SECRET_KEY and carries
+    type='advertiser_refresh'. We re-check the advertiser is still active before
+    minting, and rotate the refresh token so a leaked one has a bounded life."""
+    try:
+        payload = jwt.decode(request.refresh_token, REFRESH_SECRET_KEY, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token has expired. Please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    if payload.get("type") != "advertiser_refresh":
+        raise HTTPException(status_code=401, detail="Invalid refresh token type")
+    adv_id = payload.get("advertiser_id")
+    if not adv_id:
+        raise HTTPException(status_code=401, detail="Invalid refresh token payload")
+
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, email FROM advertiser_profiles WHERE id = %s AND is_active = TRUE",
+            (adv_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=401, detail="Advertiser account not found or inactive")
+        adv_id, email = row
+        return {
+            "success": True,
+            "access_token": _issue_token(adv_id, email),
+            "refresh_token": _issue_refresh_token(adv_id, email),
+            "token_type": "bearer",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Token refresh failed: {str(e)}")
     finally:
         if conn:
             conn.close()
@@ -342,6 +406,7 @@ async def verify_registration_otp(request: VerifyRegistrationRequest):
             "name": name,
             "company_name": request.company_name,
             "access_token": _issue_token(adv_id, request.email),
+            "refresh_token": _issue_refresh_token(adv_id, request.email),
             "token_type": "bearer",
         }
     except HTTPException:
@@ -419,6 +484,7 @@ async def set_password(request: SetPasswordRequest):
             "advertiser_id": adv_id,
             "email": email,
             "access_token": _issue_token(adv_id, email),
+            "refresh_token": _issue_refresh_token(adv_id, email),
             "token_type": "bearer",
         }
     except HTTPException:
