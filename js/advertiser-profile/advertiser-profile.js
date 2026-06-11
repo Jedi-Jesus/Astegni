@@ -623,12 +623,6 @@ function createEnhancedCampaignCard(campaign, index) {
                 </svg>
                 Analytics
             </button>
-            <button class="btn-campaign secondary" onclick="viewCampaignInvoices(${campaign.id})">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14h6m-6-4h6m2 8H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"></path>
-                </svg>
-                Invoices / Payments
-            </button>
         </div>
     `;
     
@@ -806,114 +800,6 @@ function viewCampaignAnalytics(id) {
     }, 300);
 }
 
-// Invoices / Payments for a campaign. Self-contained overlay (no external markup):
-// fetches the advertiser's real invoices and shows this campaign's advance +
-// settlement status with pay actions.
-async function viewCampaignInvoices(campaignId) {
-    const API = window.API_BASE_URL || 'http://localhost:8000';
-    const esc = (s) => s == null ? '' : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const money = (v) => (v != null && v !== '') ? `${Number(v).toLocaleString()} ETB` : '—';
-
-    // Build (once) and show the overlay.
-    let overlay = document.getElementById('campaign-invoices-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'campaign-invoices-overlay';
-        overlay.style.cssText = 'display:none; position:fixed; inset:0; z-index:10001; align-items:center; justify-content:center; padding:1rem;';
-        overlay.innerHTML = `
-            <div style="position:absolute; inset:0; background:rgba(17,24,39,.6);" onclick="closeCampaignInvoices()"></div>
-            <div style="position:relative; width:100%; max-width:560px; max-height:88vh; overflow-y:auto; background:var(--card-bg,#fff); border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.3);">
-                <div style="display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-color,#e5e7eb);">
-                    <h2 style="font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:.5rem;"><i class="fas fa-file-invoice-dollar" style="color:#667eea;"></i> Invoices &amp; Payments</h2>
-                    <button onclick="closeCampaignInvoices()" style="background:none; border:none; font-size:1.6rem; color:#9ca3af; cursor:pointer; line-height:1;">&times;</button>
-                </div>
-                <div id="campaign-invoices-body" style="padding:1.5rem;"></div>
-            </div>`;
-        document.body.appendChild(overlay);
-    }
-    const body = document.getElementById('campaign-invoices-body');
-    body.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
-    overlay.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    const badge = (status) => {
-        const s = (status || 'pending').toLowerCase();
-        const colors = {
-            verified: '#15803d;background:rgba(34,197,94,.14)',
-            paid: '#15803d;background:rgba(34,197,94,.14)',
-            pending: '#b45309;background:rgba(245,158,11,.14)',
-            rejected: '#b91c1c;background:rgba(239,68,68,.14)',
-        };
-        return `<span style="padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:800; text-transform:uppercase; color:${colors[s] || colors.pending};">${esc(s)}</span>`;
-    };
-    const card = (title, inv) => {
-        const payBtn = inv && (inv.status === 'pending') && (inv.invoice_type === 'final_settlement' || inv.invoice_type === 'advance')
-            ? `<button class="btn-campaign primary" style="margin-top:.6rem;" onclick="payCampaignInvoice(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
-        return `
-            <div style="border:1px solid var(--border-color,#e5e7eb); border-radius:12px; padding:1rem; margin-bottom:1rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
-                    <strong>${title}</strong> ${inv ? badge(inv.status) : '<span style="color:#9ca3af;">not issued</span>'}
-                </div>
-                ${inv ? `
-                <div style="margin-top:.5rem; color:#374151; font-size:.9rem;">
-                    <div>Amount: <strong>${money(inv.amount)}</strong></div>
-                    ${inv.invoice_number ? `<div style="color:#9ca3af;">Invoice ${esc(inv.invoice_number)}</div>` : ''}
-                    ${inv.due_date ? `<div style="color:#9ca3af;">Due ${new Date(inv.due_date).toLocaleDateString()}</div>` : ''}
-                    ${inv.invoice_pdf_url ? `<a href="${esc(inv.invoice_pdf_url)}" target="_blank" rel="noopener" style="color:#667eea;">View receipt</a>` : ''}
-                    ${inv.admin_invoice_url ? ` · <a href="${esc(inv.admin_invoice_url)}" target="_blank" rel="noopener" style="color:#667eea;">View invoice</a>` : ''}
-                </div>${payBtn}` : ''}
-            </div>`;
-    };
-
-    try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API}/api/advertiser/invoices`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        const all = (data && data.invoices) || [];
-        const mine = all.filter(i => i.campaign_id === campaignId);
-        const advance = mine.filter(i => i.invoice_type === 'advance').sort((a, b) => b.id - a.id)[0] || null;
-        const settlement = mine.filter(i => i.invoice_type === 'final_settlement').sort((a, b) => b.id - a.id)[0] || null;
-
-        if (!mine.length) {
-            body.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af;"><i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.5;"></i> No invoices yet for this campaign.</div>';
-            return;
-        }
-        body.innerHTML = card('Advance payment', advance) + card('Remaining-balance settlement', settlement);
-    } catch (e) {
-        console.error('[viewCampaignInvoices] failed:', e);
-        body.innerHTML = '<div style="text-align:center; padding:2rem; color:#b91c1c;"><i class="fas fa-triangle-exclamation"></i> Failed to load invoices.</div>';
-    }
-}
-
-function closeCampaignInvoices() {
-    const o = document.getElementById('campaign-invoices-overlay');
-    if (o) o.style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-async function payCampaignInvoice(invoiceId) {
-    const API = window.API_BASE_URL || 'http://localhost:8000';
-    try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API}/api/advertiser/invoices/${invoiceId}/pay`, {
-            method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.payment && data.payment.payment_url) {
-            window.location.href = data.payment.payment_url; // redirect to gateway
-        } else if (res.ok) {
-            alert(data.message || 'Payment initiated.');
-        } else {
-            alert(`Failed: ${data.detail || 'Unknown error'}`);
-        }
-    } catch (e) {
-        console.error('[payCampaignInvoice] failed:', e);
-        alert('An error occurred while starting the payment.');
-    }
-}
 
 function initializeCampaignAnalyticsCharts() {
     // Performance chart
@@ -2892,9 +2778,6 @@ window.filterNotifications = filterNotifications;
 window.viewCampaignDetails = viewCampaignDetails;
 window.editCampaignDetails = editCampaignDetails;
 window.viewCampaignAnalytics = viewCampaignAnalytics;
-window.viewCampaignInvoices = viewCampaignInvoices;
-window.closeCampaignInvoices = closeCampaignInvoices;
-window.payCampaignInvoice = payCampaignInvoice;
 window.openModal = openModal;
 window.closeModal = closeModal;
 // Upload modal functions are now in upload-modal-handler.js:

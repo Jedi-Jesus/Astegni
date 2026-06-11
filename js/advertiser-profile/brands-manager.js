@@ -34,7 +34,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606110800');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -1042,6 +1042,100 @@ const BrandsManager = {
         const activeContent = document.getElementById(`tab-${tabName}`);
         if (activeContent) {
             activeContent.classList.add('active');
+        }
+
+        // Lazy-load the Invoices / Payments tab on first open.
+        if (tabName === 'invoices') {
+            this.loadCampaignInvoices();
+        }
+    },
+
+    // Load the current campaign's invoices into the Invoices / Payments tab.
+    async loadCampaignInvoices() {
+        const list = document.getElementById('campaign-invoices-list');
+        if (!list) return;
+        const campaign = this.currentCampaign;
+        const campaignId = campaign && campaign.id;
+        if (!campaignId) {
+            list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);">Open a campaign to see its invoices.</div>';
+            return;
+        }
+        list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
+
+        const API = window.API_BASE_URL || 'http://localhost:8000';
+        const esc = (s) => s == null ? '' : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const money = (v) => (v != null && v !== '') ? `${Number(v).toLocaleString()} ETB` : '—';
+        const badge = (status) => {
+            const s = (status || 'pending').toLowerCase();
+            const colors = {
+                verified: '#15803d;background:rgba(34,197,94,.14)',
+                paid: '#15803d;background:rgba(34,197,94,.14)',
+                pending: '#b45309;background:rgba(245,158,11,.14)',
+                rejected: '#b91c1c;background:rgba(239,68,68,.14)',
+            };
+            return `<span style="padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:800; text-transform:uppercase; color:${colors[s] || colors.pending};">${esc(s)}</span>`;
+        };
+        const card = (title, inv) => {
+            const payBtn = inv && inv.status === 'pending'
+                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payCampaignInvoice(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
+            return `
+                <div style="border:1px solid var(--border-color,#e5e7eb); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
+                        <strong>${title}</strong> ${inv ? badge(inv.status) : '<span style="color:#9ca3af;">not issued</span>'}
+                    </div>
+                    ${inv ? `
+                    <div style="margin-top:.5rem; color:var(--text-color,#374151); font-size:.9rem;">
+                        <div>Amount: <strong>${money(inv.amount)}</strong></div>
+                        ${inv.invoice_number ? `<div style="color:#9ca3af;">Invoice ${esc(inv.invoice_number)}</div>` : ''}
+                        ${inv.due_date ? `<div style="color:#9ca3af;">Due ${new Date(inv.due_date).toLocaleDateString()}</div>` : ''}
+                        ${inv.invoice_pdf_url ? `<a href="${esc(inv.invoice_pdf_url)}" target="_blank" rel="noopener" style="color:#667eea;">View receipt</a>` : ''}
+                        ${inv.admin_invoice_url ? ` · <a href="${esc(inv.admin_invoice_url)}" target="_blank" rel="noopener" style="color:#667eea;">View invoice</a>` : ''}
+                    </div>${payBtn}` : ''}
+                </div>`;
+        };
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API}/api/advertiser/invoices`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            const mine = ((data && data.invoices) || []).filter(i => i.campaign_id === campaignId);
+            const advance = mine.filter(i => i.invoice_type === 'advance').sort((a, b) => b.id - a.id)[0] || null;
+            const settlement = mine.filter(i => i.invoice_type === 'final_settlement').sort((a, b) => b.id - a.id)[0] || null;
+
+            if (!mine.length) {
+                list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);"><i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.5;"></i> No invoices yet for this campaign.</div>';
+                return;
+            }
+            list.innerHTML = card('Advance payment', advance) + card('Remaining-balance settlement', settlement);
+        } catch (e) {
+            console.error('[BrandsManager] loadCampaignInvoices failed:', e);
+            list.innerHTML = '<div style="text-align:center; padding:2rem; color:#b91c1c;"><i class="fas fa-triangle-exclamation"></i> Failed to load invoices.</div>';
+        }
+    },
+
+    // Start payment for an outstanding invoice (redirects to the gateway).
+    async payCampaignInvoice(invoiceId) {
+        const API = window.API_BASE_URL || 'http://localhost:8000';
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API}/api/advertiser/invoices/${invoiceId}/pay`, {
+                method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.payment && data.payment.payment_url) {
+                window.location.href = data.payment.payment_url;
+            } else if (res.ok) {
+                alert(data.message || 'Payment initiated.');
+                this.loadCampaignInvoices();
+            } else {
+                alert(`Failed: ${data.detail || 'Unknown error'}`);
+            }
+        } catch (e) {
+            console.error('[BrandsManager] payCampaignInvoice failed:', e);
+            alert('An error occurred while starting the payment.');
         }
     },
 

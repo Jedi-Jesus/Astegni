@@ -500,6 +500,10 @@
                             <i class="fas fa-chart-line"></i>
                             Analytics
                         </button>
+                        <button class="campaign-tab" data-tab="invoices" onclick="BrandsManager.switchCampaignTab('invoices')">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Invoices / Payments
+                        </button>
                         <button class="campaign-tab" data-tab="insights" onclick="BrandsManager.switchCampaignTab('insights')">
                             <i class="fas fa-brain"></i>
                             AI Insights
@@ -943,6 +947,16 @@
                                         <i class="fas fa-receipt"></i>
                                         <p>No transactions yet</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoices / Payments Tab -->
+                        <div class="campaign-tab-content" id="tab-invoices">
+                            <div id="campaign-invoices-list">
+                                <!-- Populated by BrandsManager.loadCampaignInvoices() -->
+                                <div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading…
                                 </div>
                             </div>
                         </div>
