@@ -3619,12 +3619,30 @@ const BrandsManager = {
 
         // Refresh settlement + verification status straight from the backend so the
         // notice is never stale (settlement_paid may not be on the cached object).
+        console.log('[LaunchModal] opening for campaign', c.id, c.name);
+        console.log('[LaunchModal] cached settlement fields BEFORE fetch:', {
+            settlement_paid: c.settlement_paid,
+            settlement_status: c.settlement_status,
+        });
         try {
             const token = localStorage.getItem('token');
-            const r = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${c.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (r.ok) Object.assign(c, await r.json());
+            const url = `${API_BASE_URL}/api/advertiser/campaigns/${c.id}`;
+            console.log('[LaunchModal] fetching fresh campaign from:', url);
+            const r = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            console.log('[LaunchModal] fetch status:', r.status, r.ok);
+            if (r.ok) {
+                const fresh = await r.json();
+                console.log('[LaunchModal] FRESH campaign payload:', fresh);
+                console.log('[LaunchModal] FRESH settlement fields:', {
+                    settlement_paid: fresh.settlement_paid,
+                    settlement_status: fresh.settlement_status,
+                    payment_status: fresh.payment_status,
+                    verification_status: fresh.verification_status,
+                });
+                Object.assign(c, fresh);
+            } else {
+                console.warn('[LaunchModal] fetch not ok; body:', await r.text());
+            }
         } catch (e) {
             console.warn('[BrandsManager] launch-modal status refresh failed; using cached:', e);
         }
@@ -3655,6 +3673,8 @@ const BrandsManager = {
             || (c.settlement_status === 'verified' || c.settlement_status === 'paid');
         const settleLi = document.getElementById('launch-notice-settlement');
         const refundLi = document.getElementById('launch-notice-refund');
+        console.log('[LaunchModal] settlementPaid =', settlementPaid,
+            '| settle <li> found:', !!settleLi, '| refund <li> found:', !!refundLi);
         if (settleLi) {
             settleLi.textContent = settlementPaid
                 ? 'Your remaining balance is fully paid — nothing further is owed for this campaign.'
