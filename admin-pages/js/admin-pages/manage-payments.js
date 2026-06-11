@@ -23,54 +23,94 @@ const ManagePayments = {
         return id ? `admin_id=${encodeURIComponent(id)}` : '';
     },
 
+    // Lifecycle stage + sub-filter state.
+    //   stage: 'pending' | 'advance' (advance verified) | 'full' (fully verified) | 'rejected' | 'all'
+    //   settleFilter (only within 'advance'): 'all' | 'submitted' | 'unsubmitted'
+    stage: 'pending',
+    settleFilter: 'all',
+
     async init() {
-        await this.loadCounts();
-        await this.loadPayments();
+        await this.loadPayments();   // loads all rows, then renders the active stage
     },
 
-    switchTab(status) {
-        this.status = status;
-        document.querySelectorAll('.tab').forEach(t => {
-            t.classList.toggle('active', t.dataset.status === status);
+    // Derive a payment's lifecycle stage from the advance + settlement statuses.
+    stageOf(p) {
+        if (p.status === 'rejected') return 'rejected';
+        if (p.status !== 'verified') return 'pending';
+        // Advance is verified. Fully verified once the settlement is verified/paid.
+        if (p.settlement_status === 'verified' || p.settlement_status === 'paid') return 'full';
+        return 'advance';
+    },
+
+    // Has the advertiser submitted a settlement receipt yet? (only within 'advance')
+    settlementSubmitted(p) {
+        return !!p.settlement_receipt_url;
+    },
+
+    switchTab(stage) {
+        this.stage = stage;
+        if (stage !== 'advance') this.settleFilter = 'all';
+        document.querySelectorAll('.mp-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.status === stage);
         });
-        this.loadPayments();
+        this.render();
     },
 
-    async loadCounts() {
-        try {
-            const q = this._adminParam();
-            const resp = await fetch(`${this.apiBase}/api/manage-payments/counts${q ? '?' + q : ''}`);
-            if (resp.status === 403) { this.showAccessDenied(); return; }
-            const data = await resp.json();
-            const c = (data && data.counts) || {};
-            this.setText('stat-pending', c.pending || 0);
-            this.setText('stat-verified', c.verified || 0);
-            this.setText('stat-rejected', c.rejected || 0);
-            this.setText('stat-total', c.total || 0);
-        } catch (e) {
-            console.error('[ManagePayments] counts error:', e);
-        }
+    switchSettleFilter(f) {
+        this.settleFilter = f;
+        document.querySelectorAll('.mp-subtab').forEach(t => {
+            t.classList.toggle('active', t.dataset.sub === f);
+        });
+        this.render();
+    },
+
+    updateCounts() {
+        const all = this.payments || [];
+        const c = { pending: 0, advance: 0, full: 0, rejected: 0 };
+        all.forEach(p => { const s = this.stageOf(p); if (c[s] != null) c[s]++; });
+        this.setText('stat-pending', c.pending);
+        this.setText('stat-advance', c.advance);
+        this.setText('stat-full', c.full);
+        this.setText('stat-rejected', c.rejected);
+        this.setText('stat-total', all.length);
+        // Sub-filter counts within the advance-verified stage.
+        const adv = all.filter(p => this.stageOf(p) === 'advance');
+        const sub = adv.filter(p => this.settlementSubmitted(p)).length;
+        this.setText('sub-submitted-count', sub);
+        this.setText('sub-unsubmitted-count', adv.length - sub);
     },
 
     payments: [],
 
+    // Always fetch every row; staging/filtering is derived client-side.
     async loadPayments() {
         const body = document.getElementById('payments-body');
         if (body) body.innerHTML = '<tr><td colspan="7" class="mp-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>';
         try {
-            const params = [];
-            if (this.status && this.status !== 'all') params.push(`status=${encodeURIComponent(this.status)}`);
             const ap = this._adminParam();
-            if (ap) params.push(ap);
-            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments${params.length ? '?' + params.join('&') : ''}`);
+            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments?limit=500${ap ? '&' + ap : ''}`);
             if (resp.status === 403) { this.showAccessDenied(); return; }
             const data = await resp.json();
             this.payments = (data && data.payments) || [];
-            this.renderRows(this.payments);
+            this.updateCounts();
+            this.render();
         } catch (e) {
             console.error('[ManagePayments] list error:', e);
             if (body) body.innerHTML = '<tr><td colspan="7" class="mp-empty"><i class="fas fa-triangle-exclamation"></i> Failed to load payments.</td></tr>';
         }
+    },
+
+    // Apply the active stage + settlement sub-filter, then render rows.
+    render() {
+        let rows = this.payments.filter(p => this.stage === 'all' || this.stageOf(p) === this.stage);
+        if (this.stage === 'advance' && this.settleFilter !== 'all') {
+            const wantSubmitted = this.settleFilter === 'submitted';
+            rows = rows.filter(p => this.settlementSubmitted(p) === wantSubmitted);
+        }
+        // The Submitted/Unsubmitted sub-tabs only make sense in the advance stage.
+        const subBar = document.getElementById('mp-subtabs');
+        if (subBar) subBar.style.display = (this.stage === 'advance') ? 'flex' : 'none';
+        this.renderRows(rows);
     },
 
     renderRows(payments) {
@@ -80,17 +120,26 @@ const ManagePayments = {
             body.innerHTML = '<tr><td colspan="7" class="mp-empty"><i class="fas fa-inbox"></i> No payments in this view.</td></tr>';
             return;
         }
-        const statusIcon = { pending: 'fa-clock', verified: 'fa-check', rejected: 'fa-times' };
+        // Stage badge (lifecycle): pending → advance verified → fully verified / rejected.
+        const stageBadge = {
+            pending:  '<span class="mp-badge pending"><i class="fas fa-clock"></i> Pending</span>',
+            advance:  '<span class="mp-badge advance"><i class="fas fa-check"></i> Advance verified</span>',
+            full:     '<span class="mp-badge verified"><i class="fas fa-check-double"></i> Fully verified</span>',
+            rejected: '<span class="mp-badge rejected"><i class="fas fa-times"></i> Rejected</span>',
+        };
         body.innerHTML = payments.map(p => {
-            // Invoice-sent badge: has the admin uploaded the advertiser invoice yet?
-            // Only meaningful once the payment is verified.
-            let invoiceCell;
-            if (p.status !== 'verified') {
-                invoiceCell = '<span class="mp-muted">—</span>';
-            } else if (p.admin_invoice_url) {
-                invoiceCell = '<span class="mp-badge verified"><i class="fas fa-paper-plane"></i> Sent</span>';
+            const stage = this.stageOf(p);
+            // Settlement column: surfaces the second-payment state once the advance
+            // is verified — Unsubmitted / Submitted (awaiting verify) / Verified.
+            let settleCell;
+            if (stage === 'pending' || stage === 'rejected') {
+                settleCell = '<span class="mp-muted">—</span>';
+            } else if (stage === 'full') {
+                settleCell = '<span class="mp-badge verified"><i class="fas fa-check"></i> Verified</span>';
+            } else if (this.settlementSubmitted(p)) {
+                settleCell = '<span class="mp-badge pending"><i class="fas fa-inbox"></i> Submitted</span>';
             } else {
-                invoiceCell = '<span class="mp-badge pending"><i class="fas fa-hourglass-half"></i> Not sent</span>';
+                settleCell = '<span class="mp-badge unsubmitted"><i class="fas fa-hourglass-half"></i> Unsubmitted</span>';
             }
             return `
                 <tr>
@@ -98,8 +147,8 @@ const ManagePayments = {
                     <td>${this.esc(p.company_name) || '<span class="mp-muted">—</span>'}</td>
                     <td>${this.esc(p.brand_name) || '<span class="mp-muted">—</span>'}</td>
                     <td>${this.esc(p.advertiser_name) || '—'}<div class="mp-muted">${this.esc(p.advertiser_email) || ''}</div></td>
-                    <td><span class="mp-badge ${p.status}"><i class="fas ${statusIcon[p.status] || 'fa-circle'}"></i> ${p.status}</span></td>
-                    <td>${invoiceCell}</td>
+                    <td>${stageBadge[stage] || ''}</td>
+                    <td>${settleCell}</td>
                     <td><div class="mp-actions">
                         <button class="mp-btn mp-btn-view" onclick="ManagePayments.openDetail(${p.campaign_id})"><i class="fas fa-eye"></i> View</button>
                     </div></td>
@@ -112,7 +161,7 @@ const ManagePayments = {
     async fetchPayment(campaignId) {
         try {
             const ap = this._adminParam();
-            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments${ap ? '?' + ap : ''}`);
+            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments?limit=500${ap ? '&' + ap : ''}`);
             if (!resp.ok) return null;
             const data = await resp.json();
             return ((data && data.payments) || []).find(x => x.campaign_id === campaignId) || null;
@@ -339,8 +388,7 @@ const ManagePayments = {
                 body: JSON.stringify({ new_status: newStatus, reason: reason || null, admin_id: this.getAdminId(), invoice_type: invoiceType || 'advance' }),
             });
             if (resp.ok) {
-                await this.loadCounts();
-                await this.loadPayments();
+                await this.loadPayments();   // re-derives stages + counts
                 // On verify, keep the modal open and re-render so the invoice-upload
                 // control (only shown for verified payments) appears immediately.
                 if (keepOpen && document.getElementById('payment-detail-overlay')?.style.display !== 'none') {

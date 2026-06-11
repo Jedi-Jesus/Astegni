@@ -56,8 +56,23 @@
 
         .mp-badge { padding: .25rem .7rem; border-radius: 999px; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; display: inline-flex; align-items: center; gap: .3rem; }
         .mp-badge.pending { background: rgba(245,158,11,.14); color: #b45309; }
+        .mp-badge.advance { background: rgba(59,130,246,.14); color: #1d4ed8; }
         .mp-badge.verified { background: rgba(34,197,94,.14); color: #15803d; }
         .mp-badge.rejected { background: rgba(239,68,68,.14); color: #b91c1c; }
+        .mp-badge.unsubmitted { background: rgba(107,114,128,.14); color: #4b5563; }
+
+        .mp-stat-icon.advance { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+
+        /* Settlement sub-filter bar */
+        .mp-subtabs { display: flex; align-items: center; gap: .5rem; margin: -.5rem 0 1.25rem; flex-wrap: wrap; }
+        .mp-subtabs-label { font-size: .8rem; font-weight: 700; color: var(--text-muted,#6b7280); text-transform: uppercase; letter-spacing: .03em; margin-right: .25rem; }
+        .mp-subtab { padding: .4rem .9rem; border-radius: 999px; border: 1px solid var(--border-color,#e5e7eb); background: var(--card-bg,#fff); color: var(--text-color,#374151); cursor: pointer; font-size: .82rem; font-weight: 600; display: inline-flex; align-items: center; gap: .35rem; transition: all .15s ease; }
+        .mp-subtab:hover { border-color: #6366f1; }
+        .mp-subtab.active { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
+        .mp-subcount { background: rgba(0,0,0,.08); border-radius: 999px; padding: 0 .45rem; font-size: .72rem; }
+        .mp-subtab.active .mp-subcount { background: rgba(99,102,241,.2); }
+        [data-theme="dark"] .mp-subtab { background: #2a2a2a; border-color: #3a3a3a; }
+        [data-theme="dark"] .mp-subtab.active { background: #312e81; color: #c7d2fe; }
 
         .mp-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
         .mp-btn { padding: .45rem .85rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .82rem; color: #fff; display: inline-flex; align-items: center; gap: .35rem; transition: filter .12s ease; text-decoration: none; }
@@ -150,8 +165,12 @@
                         <div><div class="mp-stat-num" id="stat-pending">0</div><div class="mp-stat-label">Pending</div></div>
                     </div>
                     <div class="mp-stat-card">
-                        <div class="mp-stat-icon verified"><i class="fas fa-check-circle"></i></div>
-                        <div><div class="mp-stat-num" id="stat-verified">0</div><div class="mp-stat-label">Verified</div></div>
+                        <div class="mp-stat-icon advance"><i class="fas fa-check"></i></div>
+                        <div><div class="mp-stat-num" id="stat-advance">0</div><div class="mp-stat-label">Advance Verified</div></div>
+                    </div>
+                    <div class="mp-stat-card">
+                        <div class="mp-stat-icon verified"><i class="fas fa-check-double"></i></div>
+                        <div><div class="mp-stat-num" id="stat-full">0</div><div class="mp-stat-label">Fully Verified</div></div>
                     </div>
                     <div class="mp-stat-card">
                         <div class="mp-stat-icon rejected"><i class="fas fa-times-circle"></i></div>
@@ -163,12 +182,21 @@
                     </div>
                 </div>
 
-                <!-- Filter tabs -->
+                <!-- Lifecycle stage tabs -->
                 <div class="mp-tabs">
                     <div class="mp-tab active" data-status="pending" onclick="ManagePayments.switchTab('pending')"><i class="fas fa-clock"></i> Pending Review</div>
-                    <div class="mp-tab" data-status="verified" onclick="ManagePayments.switchTab('verified')"><i class="fas fa-check"></i> Verified</div>
+                    <div class="mp-tab" data-status="advance" onclick="ManagePayments.switchTab('advance')"><i class="fas fa-check"></i> Advance Verified</div>
+                    <div class="mp-tab" data-status="full" onclick="ManagePayments.switchTab('full')"><i class="fas fa-check-double"></i> Fully Verified</div>
                     <div class="mp-tab" data-status="rejected" onclick="ManagePayments.switchTab('rejected')"><i class="fas fa-times"></i> Rejected</div>
                     <div class="mp-tab" data-status="all" onclick="ManagePayments.switchTab('all')"><i class="fas fa-list"></i> All</div>
+                </div>
+
+                <!-- Settlement sub-filter (only within Advance Verified): submitted vs unsubmitted -->
+                <div class="mp-subtabs" id="mp-subtabs" style="display:none;">
+                    <span class="mp-subtabs-label">Settlement payment:</span>
+                    <div class="mp-subtab active" data-sub="all" onclick="ManagePayments.switchSettleFilter('all')">All</div>
+                    <div class="mp-subtab" data-sub="submitted" onclick="ManagePayments.switchSettleFilter('submitted')"><i class="fas fa-inbox"></i> Submitted <span class="mp-subcount" id="sub-submitted-count">0</span></div>
+                    <div class="mp-subtab" data-sub="unsubmitted" onclick="ManagePayments.switchSettleFilter('unsubmitted')"><i class="fas fa-hourglass-half"></i> Unsubmitted <span class="mp-subcount" id="sub-unsubmitted-count">0</span></div>
                 </div>
 
                 <!-- Table -->
@@ -218,7 +246,7 @@
     <!-- Scripts -->
     <script src="./js/api-config.js"></script>
     <script src="./js/auth.js"></script>
-    <script src="./js/admin-pages/manage-payments.js?v202606110900"></script>
+    <script src="./js/admin-pages/manage-payments.js?v202606111000"></script>
 
     <!-- Theme toggle + live clock (lightweight, self-contained) -->
     <script>
