@@ -885,7 +885,11 @@ window.CampaignCreationConfirmation = {
         if (btn) btn.innerHTML = '<i class="fas fa-credit-card"></i> Submit Payment';
 
         // (B) Package + cost card → Package committed / Advance paid / Remaining / Total.
+        // Save the original markup so close() can restore it — this card holds
+        // confirm-* elements (confirm-estimated-impressions, confirm-deposit-amount,
+        // …) that the CREATE flow's populateData() requires.
         const card = document.querySelector('#campaign-creation-confirmation-overlay .estimated-impressions-card');
+        this._origImpressionsHtml = this._origImpressionsHtml || (card && card.innerHTML);
         if (card) {
             const advStatus = opts.advanceStatus ? ` <span style="color:#16a34a;font-size:.8rem;">(${this._esc(opts.advanceStatus)})</span>` : '';
             card.innerHTML = `
@@ -965,6 +969,12 @@ window.CampaignCreationConfirmation = {
         if (this._origTermsHtml) {
             const terms = document.querySelector('#campaign-creation-confirmation-overlay .terms-cards');
             if (terms) terms.innerHTML = this._origTermsHtml;
+        }
+        // Restore the impressions/cost card (payment mode overwrote it, destroying
+        // the confirm-* elements the create flow needs).
+        if (this._origImpressionsHtml) {
+            const card = document.querySelector('#campaign-creation-confirmation-overlay .estimated-impressions-card');
+            if (card) card.innerHTML = this._origImpressionsHtml;
         }
         if (this._origAgreeHtml) {
             const agree = document.querySelector('#campaign-creation-confirmation-overlay .agreement-text');
@@ -1070,13 +1080,15 @@ window.CampaignCreationConfirmation = {
         } = this.campaignData;
 
         const fmtMoney = (n) => `${(Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+        // Null-safe setter: payment mode can transiently replace cards that hold
+        // these elements; a missing node must not abort the whole populate.
+        const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
 
         // Campaign name
-        document.getElementById('confirm-campaign-name').textContent = campaign_name || 'Unnamed Campaign';
+        setText('confirm-campaign-name', campaign_name || 'Unnamed Campaign');
 
         // Targeting
-        document.getElementById('confirm-audience-targets').textContent =
-            (audiences && audiences.length > 0) ? audiences.join(', ') : 'All Users';
+        setText('confirm-audience-targets', (audiences && audiences.length > 0) ? audiences.join(', ') : 'All Users');
 
         // Location (handle both string and object format)
         let locationText = 'Global (International)';
@@ -1093,26 +1105,26 @@ window.CampaignCreationConfirmation = {
         } else if (location === 'national') {
             locationText = 'National (Ethiopia)';
         }
-        document.getElementById('confirm-location-targets').textContent = locationText;
+        setText('confirm-location-targets', locationText);
 
         // Per-view rate breakdown (tier rate + targeting premiums)
-        document.getElementById('confirm-base-cpi').textContent = `${(tier_base_cpi || 0).toFixed(2)} ${currency}`;
-        document.getElementById('confirm-audience-premium').textContent = `+${(audience_premium || 0).toFixed(3)} ${currency}`;
-        document.getElementById('confirm-location-premium').textContent = `+${(location_premium || 0).toFixed(3)} ${currency}`;
-        document.getElementById('confirm-total-cpi').textContent = `${(total_cpi || 0).toFixed(2)} ${currency}`;
+        setText('confirm-base-cpi', `${(tier_base_cpi || 0).toFixed(2)} ${currency}`);
+        setText('confirm-audience-premium', `+${(audience_premium || 0).toFixed(3)} ${currency}`);
+        setText('confirm-location-premium', `+${(location_premium || 0).toFixed(3)} ${currency}`);
+        setText('confirm-total-cpi', `${(total_cpi || 0).toFixed(2)} ${currency}`);
 
         // Package + cost summary
-        document.getElementById('confirm-estimated-impressions').textContent = `${(view_count || 0).toLocaleString()}`;
-        document.getElementById('confirm-deposit-amount').textContent = fmtMoney(total_cost);
+        setText('confirm-estimated-impressions', `${(view_count || 0).toLocaleString()}`);
+        setText('confirm-deposit-amount', fmtMoney(total_cost));
 
         const advance = (advance_amount != null) ? advance_amount : (Number(total_cost) || 0) * (advance_percent / 100);
         const remaining = (Number(total_cost) || 0) - advance;
-        document.getElementById('confirm-advance-percent').textContent = String(advance_percent);
-        document.getElementById('confirm-advance-amount').textContent = fmtMoney(advance);
-        document.getElementById('confirm-deposit-20-percent').textContent = `${fmtMoney(advance)} (${advance_percent}%)`;
-        document.getElementById('confirm-remaining-80-percent').textContent = `${fmtMoney(remaining)} (${100 - advance_percent}%)`;
-        document.getElementById('confirm-receipt-amount').textContent = fmtMoney(advance);
-        document.getElementById('confirm-agreement-cpi').textContent = fmtMoney(advance);
+        setText('confirm-advance-percent', String(advance_percent));
+        setText('confirm-advance-amount', fmtMoney(advance));
+        setText('confirm-deposit-20-percent', `${fmtMoney(advance)} (${advance_percent}%)`);
+        setText('confirm-remaining-80-percent', `${fmtMoney(remaining)} (${100 - advance_percent}%)`);
+        setText('confirm-receipt-amount', fmtMoney(advance));
+        setText('confirm-agreement-cpi', fmtMoney(advance));
 
         // Reset receipt selection each time the modal opens
         this.receiptFile = null;

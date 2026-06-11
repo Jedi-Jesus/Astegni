@@ -55,7 +55,7 @@ const BrandsManager = {
             }
 
             // Load campaign creation confirmation modal
-            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606111000');
+            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606111900');
             if (!confirmationResponse.ok) {
                 throw new Error(`Failed to load confirmation modal: ${confirmationResponse.status}`);
             }
@@ -495,13 +495,62 @@ const BrandsManager = {
         `;
     },
 
-    // Reapply (from a payment-rejected card): open the CAMPAIGN CREATION form
-    // fresh (create mode, from the beginning) — NOT the edit form. The advertiser
-    // builds the campaign anew rather than editing the rejected one.
-    // (Re-submitting the payment RECEIPT is a separate action in the Invoices
-    // panel — see resubmitAdvanceReceipt.)
+    // Reapply (from a rejected card): open the CAMPAIGN CREATION form PRE-FILLED
+    // with this campaign's data, keeping the SAME campaign id. The button stays
+    // "Review & Create"; on confirm we UPDATE the same campaign (reset to pending)
+    // and require a fresh advance receipt — we do NOT create a new campaign row.
     reapplyCampaign(campaignId) {
-        this.showCreateCampaignForm();
+        const campaign = this.campaigns.find(c => c.id === campaignId);
+        if (!campaign) {
+            console.error('[BrandsManager] Reapply: campaign not found:', campaignId);
+            return;
+        }
+        this.currentBrand = this.currentBrand || (this.brands || []).find(b =>
+            (b.campaign_ids || []).includes(campaignId));
+        this.showCreateCampaignForm();          // resets the form to a clean create state
+        this.reapplyCampaignId = campaignId;     // mark this submit as an update-in-place
+        this.prefillCampaignForm(campaign);      // then pre-fill from the rejected campaign
+    },
+
+    // Pre-fill the create-campaign form from an existing campaign (used by Reapply).
+    prefillCampaignForm(campaign) {
+        // Remember the committed views so renderViewTierPackages can pre-select the
+        // matching package once the (async) tiers render.
+        const views = campaign.total_impressions_planned || campaign.view_count || null;
+        if (views) this._reapplyDesiredViews = Number(views);
+
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el != null && v != null) el.value = v; };
+        setVal('campaign-name-input', campaign.name || '');
+        setVal('campaign-description-input', campaign.description || '');
+        if (campaign.start_date) setVal('campaign-start-date-input', String(campaign.start_date).split(' ')[0].split('T')[0]);
+
+        // Location
+        const locInput = document.getElementById('campaign-location-input');
+        if (locInput) {
+            locInput.value = campaign.target_location || 'global';
+            if (typeof this.onLocationChange === 'function') this.onLocationChange();
+        }
+
+        // Targeting checkboxes (audiences / placements)
+        const audiences = campaign.target_audiences || ['tutor', 'student', 'parent', 'advertiser', 'user'];
+        ['tutor', 'student', 'parent', 'advertiser', 'user'].forEach(a => {
+            const cb = document.getElementById(`audience-${a}`);
+            if (cb) cb.checked = audiences.includes(a);
+        });
+        const audAll = document.getElementById('audience-all');
+        if (audAll) audAll.checked = audiences.length === 5;
+
+        const placements = campaign.target_placements || ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'];
+        ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner'].forEach(p => {
+            const cb = document.getElementById(`placement-${p}`);
+            if (cb) cb.checked = placements.includes(p);
+        });
+        const plAll = document.getElementById('placement-all');
+        if (plAll) plAll.checked = placements.length === 3;
+
+        // Recompute CPI/selection state for the confirmation modal.
+        if (typeof this.updateAudienceSelection === 'function') this.updateAudienceSelection();
+        if (typeof this.updatePlacementSelection === 'function') this.updatePlacementSelection();
     },
 
     // Update campaign stats in modal
@@ -1751,6 +1800,10 @@ const BrandsManager = {
         // No delete button outside of (removed) edit mode
         if (deleteBtn) deleteBtn.style.display = 'none';
 
+        // Default to a fresh CREATE (Reapply re-sets these right after calling us).
+        this.reapplyCampaignId = null;
+        this._reapplyDesiredViews = null;
+
         // Reset form
         const form = document.getElementById('create-campaign-form');
         if (form) form.reset();
@@ -1958,9 +2011,17 @@ const BrandsManager = {
                 }).join('')}
             </div>`;
 
-        // Auto-select the first tier so the form always has a valid selection.
-        this.selectViewTier(Number(tiers[0].view_count) || 0,
-                            Number(tiers[0].base_cpi != null ? tiers[0].base_cpi : tiers[0].premium) || 0);
+        // Pre-select the tier matching a reapplied campaign's committed views if
+        // one exists; otherwise default to the first tier so the form always has
+        // a valid selection.
+        let pick = tiers[0];
+        if (this._reapplyDesiredViews != null) {
+            const match = tiers.find(t => Number(t.view_count) === Number(this._reapplyDesiredViews));
+            if (match) pick = match;
+            this._reapplyDesiredViews = null;
+        }
+        this.selectViewTier(Number(pick.view_count) || 0,
+                            Number(pick.base_cpi != null ? pick.base_cpi : pick.premium) || 0);
     },
 
     // Handle view-tier package selection
@@ -3176,6 +3237,10 @@ const BrandsManager = {
                 regionalCountryCode = this.userCountryCode || null;
             }
 
+            // REAPPLY MODE keeps the SAME campaign id (update-in-place + reset to
+            // pending); otherwise create a brand-new campaign.
+            const reapplyId = this.reapplyCampaignId || null;
+
             const campaignData = {
                 brand_id: this.currentBrand.id,
                 name: document.getElementById('campaign-name-input').value.trim(),
@@ -3197,15 +3262,17 @@ const BrandsManager = {
                 cpi_rate: confirmationData.total_cpi
             };
 
-            // Use new deposit/package endpoint
-            const response = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/create-with-deposit`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(campaignData)
-            });
+            const response = reapplyId
+                ? await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${reapplyId}/reapply`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(campaignData)
+                })
+                : await fetch(`${API_BASE_URL}/api/advertiser/campaigns/create-with-deposit`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(campaignData)
+                });
 
             // After the campaign is created, upload the payment receipt (if attached)
             // so the advance can be verified by an admin before ad upload.
@@ -3246,18 +3313,26 @@ const BrandsManager = {
                 // Campaign created successfully. With the receipt-based model there is
                 // no external payment URL; a created campaign (result.campaign) is enough.
                 if (result.campaign) {
+                    const wasReapply = !!reapplyId;
+                    // Clear the reapply marker so the next New-campaign creates fresh.
+                    this.reapplyCampaignId = null;
+
                     // Hide create campaign form first
                     this.hideCreateCampaignForm();
 
                     // Show success notification with toast
                     if (window.Utils && window.Utils.showToast) {
-                        window.Utils.showToast('✅ Campaign created successfully!', 'success');
+                        window.Utils.showToast(
+                            wasReapply ? '✅ Campaign resubmitted successfully!' : '✅ Campaign created successfully!',
+                            'success');
                     }
 
                     // Show success in confirmation modal
                     this.showConfirmationModal({
-                        title: 'Campaign Created Successfully!',
-                        message: `Your campaign "${result.campaign?.name || 'campaign'}" has been created and your payment receipt was submitted.`,
+                        title: wasReapply ? 'Campaign Resubmitted!' : 'Campaign Created Successfully!',
+                        message: wasReapply
+                            ? `Your campaign "${result.campaign?.name || 'campaign'}" was resubmitted with a new payment receipt.`
+                            : `Your campaign "${result.campaign?.name || 'campaign'}" has been created and your payment receipt was submitted.`,
                         details: `
                             <ul>
                                 <li>Our team verifies your payment receipt</li>
@@ -3271,7 +3346,7 @@ const BrandsManager = {
                         icon: 'check-circle',
                         showCancel: false,
                         onConfirm: async () => {
-                            // Reload campaigns to show the new campaign
+                            // Reload campaigns to reflect the new/updated campaign
                             await this.loadBrandCampaigns(this.currentBrand.id);
                             this.closeConfirmationModal();
                         }
@@ -3290,6 +3365,7 @@ const BrandsManager = {
             } else {
                 alert(error.message || 'Failed to create campaign');
             }
+            // Keep reapplyCampaignId set so a retry still updates in place.
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;

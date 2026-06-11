@@ -149,6 +149,32 @@ class CampaignUpdate(BaseModel):
     regional_country_code: Optional[str] = None   # Country code for regional targeting (e.g., "ET")
 
 
+class CampaignReapply(BaseModel):
+    """Reapply a REJECTED campaign: keep the same campaign id, update its fields
+    from the (pre-filled) create form, recompute the package financials, and
+    reset it to 'pending'. A fresh advance receipt is uploaded separately via
+    POST /campaigns/{id}/upload-receipt (which flips the advance invoice back to
+    pending). Mirrors the create-with-deposit payload."""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    objective: Optional[str] = None
+    target_location: Optional[str] = None
+    start_date: Optional[str] = None
+    call_to_action: Optional[str] = None
+    target_audiences: Optional[List[str]] = None
+    target_regions: Optional[List[str]] = None
+    target_placements: Optional[List[str]] = None
+    national_location: Optional[str] = None
+    national_country_code: Optional[str] = None
+    regional_country_code: Optional[str] = None
+    # Package model (same as create-with-deposit)
+    view_count: Optional[int] = None
+    total_cost: Optional[float] = None
+    advance_amount: Optional[float] = None
+    advance_percent: Optional[float] = None
+    cpi_rate: Optional[float] = None
+
+
 # ============================================================
 # BRAND ENDPOINTS
 # ============================================================
@@ -1153,6 +1179,132 @@ async def update_campaign(campaign_id: int, campaign: CampaignUpdate, current_us
                 conn.commit()
 
                 return {"message": "Campaign updated successfully", "campaign": dict(updated_campaign)}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/campaigns/{campaign_id}/reapply")
+async def reapply_campaign(campaign_id: int, payload: CampaignReapply, current_user = Depends(resolve_advertiser)):
+    """Reapply a REJECTED campaign without creating a new row.
+
+    Keeps the SAME campaign id. Updates the editable fields + recomputes the
+    package financials from the (pre-filled) create form, then resets the
+    campaign to 'pending' for re-review. The advertiser uploads a FRESH advance
+    receipt separately (POST /campaigns/{id}/upload-receipt), which flips the
+    ADV-{id} advance invoice back to 'pending'.
+
+    Only campaigns whose ad-content OR payment was rejected may reapply.
+    """
+    try:
+        advertiser_profile_id = current_user.role_ids.get('advertiser') if current_user.role_ids else None
+        if not advertiser_profile_id:
+            raise HTTPException(status_code=403, detail="Not authorized as advertiser")
+
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Ownership + current state.
+                cur.execute("""
+                    SELECT id, advertiser_id, verification_status, cpi_rate,
+                           campaign_budget, deposit_percent
+                    FROM campaign_profile
+                    WHERE id = %s
+                """, (campaign_id,))
+                camp = cur.fetchone()
+                if not camp:
+                    raise HTTPException(status_code=404, detail="Campaign not found")
+                if camp['advertiser_id'] != advertiser_profile_id:
+                    raise HTTPException(status_code=403, detail="You don't own this campaign")
+
+                # Eligible to reapply when ad-content is rejected OR the latest
+                # advance payment was rejected.
+                cur.execute("""
+                    SELECT status FROM campaign_invoices
+                    WHERE campaign_id = %s AND invoice_type = 'advance'
+                    ORDER BY id DESC LIMIT 1
+                """, (campaign_id,))
+                inv = cur.fetchone()
+                pay_rejected = bool(inv and inv['status'] == 'rejected')
+                ad_rejected = camp['verification_status'] == 'rejected'
+                if not (ad_rejected or pay_rejected):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Only a rejected campaign can be reapplied.",
+                    )
+
+                # Recompute package financials when a package was submitted.
+                cpi_rate = float(payload.cpi_rate) if payload.cpi_rate else (float(camp['cpi_rate']) if camp['cpi_rate'] else 0)
+                if payload.view_count and payload.view_count > 0:
+                    total_impressions_planned = int(payload.view_count)
+                    planned_budget = float(payload.total_cost) if payload.total_cost else (total_impressions_planned * cpi_rate)
+                else:
+                    total_impressions_planned = None
+                    planned_budget = None
+
+                if payload.advance_percent and payload.advance_percent > 0:
+                    deposit_percent = float(payload.advance_percent)
+                else:
+                    deposit_percent = float(camp['deposit_percent']) if camp['deposit_percent'] else 20.00
+                if payload.advance_amount is not None and payload.advance_amount >= 0:
+                    deposit_amount = float(payload.advance_amount)
+                elif planned_budget is not None:
+                    deposit_amount = planned_budget * (deposit_percent / 100)
+                else:
+                    deposit_amount = None
+
+                # Build the field updates.
+                updates, values = [], []
+                def _set(col, val):
+                    if val is not None:
+                        updates.append(f"{col} = %s")
+                        values.append(val)
+                _set("name", payload.name)
+                _set("description", payload.description)
+                _set("objective", payload.objective)
+                _set("target_location", payload.target_location)
+                _set("start_date", payload.start_date)
+                _set("call_to_action", payload.call_to_action)
+                _set("target_audiences", payload.target_audiences)
+                _set("target_regions", payload.target_regions)
+                _set("target_placements", payload.target_placements)
+                _set("national_location", payload.national_location)
+                _set("national_country_code", payload.national_country_code)
+                _set("regional_country_code", payload.regional_country_code)
+                if cpi_rate:
+                    _set("cpi_rate", cpi_rate)
+                if planned_budget is not None:
+                    _set("campaign_budget", planned_budget)
+                    _set("total_charged", planned_budget)
+                    _set("total_impressions_planned", total_impressions_planned)
+                    _set("outstanding_balance", planned_budget - (deposit_amount or 0))
+                if deposit_amount is not None:
+                    _set("deposit_amount", deposit_amount)
+                _set("deposit_percent", deposit_percent)
+
+                # Reset verification + submission state for a fresh review cycle.
+                updates.append("verification_status = 'pending'")
+                updates.append("is_verified = FALSE")
+                updates.append("submit_for_verification = FALSE")
+                updates.append("updated_at = NOW()")
+                values.append(campaign_id)
+
+                cur.execute(f"""
+                    UPDATE campaign_profile
+                    SET {', '.join(updates)}
+                    WHERE id = %s
+                    RETURNING id, name, verification_status, deposit_amount,
+                              campaign_budget, total_impressions_planned
+                """, values)
+                updated = cur.fetchone()
+                conn.commit()
+
+                return {
+                    "success": True,
+                    "message": "Campaign reapplied. Upload your advance receipt to resubmit.",
+                    "campaign": dict(updated),
+                }
 
     except HTTPException:
         raise
