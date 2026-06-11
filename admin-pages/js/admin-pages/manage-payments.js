@@ -98,8 +98,21 @@ const ManagePayments = {
 
     // ---------- Detail modal ----------
 
-    openDetail(campaignId) {
-        const p = this.payments.find(x => x.campaign_id === campaignId);
+    async fetchPayment(campaignId) {
+        try {
+            const ap = this._adminParam();
+            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments${ap ? '?' + ap : ''}`);
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            return ((data && data.payments) || []).find(x => x.campaign_id === campaignId) || null;
+        } catch (_) { return null; }
+    },
+
+    async openDetail(campaignId) {
+        let p = this.payments.find(x => x.campaign_id === campaignId);
+        // After a verify/reject the payment may have left the current tab's list,
+        // so it's no longer cached. Fetch it directly (status-agnostic) as a fallback.
+        if (!p) p = await this.fetchPayment(campaignId);
         if (!p) return;
         const money = (v) => (v != null) ? `${Number(v).toLocaleString()} ETB` : '—';
         const isPending = p.status === 'pending';
@@ -143,6 +156,29 @@ const ManagePayments = {
                 </div>`;
         }
 
+        // Remaining-balance settlement invoice (the second payment). Issued by the
+        // admin once the advance is verified; each payment gets its own invoice.
+        let settlementBlock;
+        if (!verified) {
+            settlementBlock = `<span class="mp-muted">Available after the advance is verified.</span>`;
+        } else if (p.settlement_invoice_id) {
+            settlementBlock = `
+                <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+                    <span class="mp-badge ${p.settlement_status === 'verified' || p.settlement_status === 'paid' ? 'verified' : 'pending'}">${p.settlement_status || 'pending'}</span>
+                    <span>${money(p.settlement_amount)}</span>
+                    <span class="mp-muted">${this.esc(p.settlement_invoice_number || '')}</span>
+                </div>`;
+        } else {
+            const remaining = (p.campaign_budget != null && p.amount != null) ? (p.campaign_budget - p.amount) : null;
+            settlementBlock = `
+                <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+                    <button class="mp-btn mp-btn-verify" onclick="ManagePayments.issueSettlement(${p.campaign_id})">
+                        <i class="fas fa-file-invoice-dollar"></i> Issue settlement invoice${remaining != null ? ` (${money(remaining)})` : ''}
+                    </button>
+                    <span id="mp-settlement-status" class="mp-muted"></span>
+                </div>`;
+        }
+
         document.getElementById('payment-detail-body').innerHTML = `
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem;">
                 <div>
@@ -165,6 +201,7 @@ const ManagePayments = {
             ${row('🏦 Paid to', this.esc(p.paid_to_bank) || '<span class="mp-muted">not specified</span>')}
             ${row('Receipt', receiptBlock)}
             ${row('🧾 Advertiser invoice', invoiceBlock)}
+            ${row('💵 Settlement (remaining)', settlementBlock)}
             ${row('Updated', p.updated_at ? new Date(p.updated_at).toLocaleString() : '—')}
 
             <div style="display:flex; gap:.6rem; margin-top:1.5rem;">
@@ -205,7 +242,7 @@ const ManagePayments = {
             if (resp.ok) {
                 if (statusEl) statusEl.textContent = 'Uploaded ✓';
                 await this.loadPayments();
-                this.openDetail(campaignId);   // re-render with the new invoice link
+                await this.openDetail(campaignId);   // re-render with the new invoice link
             } else {
                 if (statusEl) statusEl.textContent = '';
                 alert(`Failed: ${data.detail || 'Unknown error'}`);
@@ -217,7 +254,32 @@ const ManagePayments = {
         }
     },
 
-    async _update(campaignId, newStatus, reason) {
+    async issueSettlement(campaignId) {
+        if (!confirm('Issue the remaining-balance settlement invoice for this campaign?')) return;
+        const statusEl = document.getElementById('mp-settlement-status');
+        if (statusEl) statusEl.textContent = 'Issuing…';
+        try {
+            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments/${campaignId}/settlement-invoice`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ admin_id: this.getAdminId() }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok) {
+                await this.loadPayments();
+                await this.openDetail(campaignId);
+            } else {
+                if (statusEl) statusEl.textContent = '';
+                alert(`Failed: ${data.detail || 'Unknown error'}`);
+            }
+        } catch (err) {
+            console.error('[ManagePayments] settlement error:', err);
+            if (statusEl) statusEl.textContent = '';
+            alert('An error occurred while issuing the settlement invoice.');
+        }
+    },
+
+    async _update(campaignId, newStatus, reason, keepOpen) {
         try {
             const resp = await fetch(`${this.apiBase}/api/manage-payments/payments/${campaignId}/status`, {
                 method: 'PUT',
@@ -225,9 +287,15 @@ const ManagePayments = {
                 body: JSON.stringify({ new_status: newStatus, reason: reason || null, admin_id: this.getAdminId() }),
             });
             if (resp.ok) {
-                this.closeDetail();
                 await this.loadCounts();
                 await this.loadPayments();
+                // On verify, keep the modal open and re-render so the invoice-upload
+                // control (only shown for verified payments) appears immediately.
+                if (keepOpen && document.getElementById('payment-detail-overlay')?.style.display !== 'none') {
+                    await this.openDetail(campaignId);
+                } else {
+                    this.closeDetail();
+                }
             } else {
                 const e = await resp.json().catch(() => ({}));
                 alert(`Failed: ${e.detail || 'Unknown error'}`);
@@ -239,8 +307,8 @@ const ManagePayments = {
     },
 
     verify(campaignId) {
-        if (!confirm('Verify this advance payment? The advertiser will then be able to upload their ad.')) return;
-        this._update(campaignId, 'verified', null);
+        if (!confirm('Verify this advance payment? You can then upload the advertiser invoice, and the advertiser can upload their ad.')) return;
+        this._update(campaignId, 'verified', null, true);
     },
 
     reject(campaignId) {
