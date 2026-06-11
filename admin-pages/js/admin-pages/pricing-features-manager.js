@@ -35,13 +35,7 @@ let cpiSettings = {
     locationPremiums: {
         national: 0
     },
-    regionExclusionPremiums: {},  // JSONB format by country code
-    placementPremiums: {
-        placeholder: 0,
-        widget: 0,
-        popup: 0,
-        insession: 0
-    }
+    regionExclusionPremiums: {}  // JSONB format by country code
 };
 
 // Country regions configuration (loaded from backend)
@@ -418,16 +412,6 @@ function loadCpiSettingsToForm() {
     // Region exclusion premiums (dynamic, country-agnostic)
     // Render regions for the current country (only visible when regional is selected)
     renderRegionsForCountry(currentSelectedCountry);
-
-    // Placement premiums (Ad Placeholder, Widget, Whiteboard Pop-up, Whiteboard In-Session)
-    const placeholderEl = document.getElementById('cpi-placeholder-premium');
-    const widgetEl = document.getElementById('cpi-widget-premium');
-    const popupEl = document.getElementById('cpi-popup-premium');
-    const insessionEl = document.getElementById('cpi-insession-premium');
-    if (placeholderEl) placeholderEl.value = cpiSettings.placementPremiums?.placeholder || '';
-    if (widgetEl) widgetEl.value = cpiSettings.placementPremiums?.widget || '';
-    if (popupEl) popupEl.value = cpiSettings.placementPremiums?.popup || '';
-    if (insessionEl) insessionEl.value = cpiSettings.placementPremiums?.insession || '';
 }
 
 // Render regions for a specific country (dynamic UI generation)
@@ -556,15 +540,10 @@ function calculateCpiPreview() {
     const advertiserPremium = parseFloat(document.getElementById('cpi-advertiser-premium')?.value) || 0;
     const userPremium = parseFloat(document.getElementById('cpi-user-premium')?.value) || 0;
     const nationalPremium = parseFloat(document.getElementById('cpi-national-premium')?.value) || 0;
-    const placeholderPremium = parseFloat(document.getElementById('cpi-placeholder-premium')?.value) || 0;
-    const widgetPremium = parseFloat(document.getElementById('cpi-widget-premium')?.value) || 0;
-    const popupPremium = parseFloat(document.getElementById('cpi-popup-premium')?.value) || 0;
-    const insessionPremium = parseFloat(document.getElementById('cpi-insession-premium')?.value) || 0;
 
     // Get selected scenario
     const selectedAudience = document.getElementById('cpi-preview-audience')?.value || 'none';
     const selectedLocation = document.getElementById('cpi-preview-location')?.value || 'none';
-    const selectedPlacement = document.getElementById('cpi-preview-placement')?.value || 'none';
 
     // Calculate audience exclusion premium (excluding audiences = more specific = higher cost)
     let audiencePremium = 0;
@@ -613,26 +592,9 @@ function calculateCpiPreview() {
         }
     }
 
-    // Calculate placement exclusion premium (excluding placements = more specific = higher cost)
-    let placementPremium = 0;
-    let placementLabel = '';
-    if (selectedPlacement === 'placeholder') {
-        placementPremium = placeholderPremium;
-        placementLabel = 'Exclude Placeholder';
-    } else if (selectedPlacement === 'widget') {
-        placementPremium = widgetPremium;
-        placementLabel = 'Exclude Widget';
-    } else if (selectedPlacement === 'popup') {
-        placementPremium = popupPremium;
-        placementLabel = 'Exclude WB Pop-up';
-    } else if (selectedPlacement === 'insession') {
-        placementPremium = insessionPremium;
-        placementLabel = 'Exclude WB In-Session';
-    }
-
     // Calculate total CPI
     // Formula for Regional: Base + National + Region Exclusion
-    const totalCpi = baseRate + audiencePremium + locationPremium + regionExclusionPremium + placementPremium;
+    const totalCpi = baseRate + audiencePremium + locationPremium + regionExclusionPremium;
 
     // Update preview display
     const formatPrice = (price) => price.toFixed(3);
@@ -683,20 +645,6 @@ function calculateCpiPreview() {
         }
     }
 
-    // Placement row
-    const placementRow = document.getElementById('cpi-preview-placement-row');
-    const placementLabelEl = document.getElementById('cpi-preview-placement-label');
-    const placementValueEl = document.getElementById('cpi-preview-placement-value');
-    if (placementRow) {
-        if (selectedPlacement !== 'none' && placementPremium > 0) {
-            placementRow.classList.remove('hidden');
-            if (placementLabelEl) placementLabelEl.textContent = placementLabel;
-            if (placementValueEl) placementValueEl.textContent = `+${formatPrice(placementPremium)} ${cpiDetectedCurrency}`;
-        } else {
-            placementRow.classList.add('hidden');
-        }
-    }
-
     // Total CPI
     const totalEl = document.getElementById('cpi-preview-total');
     if (totalEl) totalEl.textContent = `${formatPrice(totalCpi)} ${cpiDetectedCurrency}`;
@@ -711,6 +659,7 @@ function calculateCpiPreview() {
 
     return { baseRate, audiencePremium, locationPremium, regionExclusionPremium, totalCpi };
 }
+
 
 // Save CPI Settings
 async function saveCpiSettings(event) {
@@ -735,11 +684,6 @@ async function saveCpiSettings(event) {
 
     // Save current country's region premiums before collecting all
     saveCurrentCountryPremiums();
-
-    const placeholderPremium = parseFloat(document.getElementById('cpi-placeholder-premium')?.value) || 0;
-    const widgetPremium = parseFloat(document.getElementById('cpi-widget-premium')?.value) || 0;
-    const popupPremium = parseFloat(document.getElementById('cpi-popup-premium')?.value) || 0;
-    const insessionPremium = parseFloat(document.getElementById('cpi-insession-premium')?.value) || 0;
 
     const tiers = cpiSettings.viewTierPremiums || [];
     if (tiers.length === 0) {
@@ -775,12 +719,6 @@ async function saveCpiSettings(event) {
             national: nationalPremium
         },
         regionExclusionPremiums: cpiSettings.regionExclusionPremiums || {},  // Keep JSONB format
-        placementPremiums: {
-            placeholder: placeholderPremium,
-            widget: widgetPremium,
-            popup: popupPremium,
-            insession: insessionPremium
-        },
         viewTierPremiums: cpiSettings.viewTierPremiums || [],
         advancePaymentPercent
     };
@@ -954,44 +892,6 @@ function renderCpiRatesGrid() {
             </div>
         </div>
 
-        <!-- Placement Exclusion Premiums Card -->
-        <div class="border-2 border-purple-300 rounded-lg p-4 bg-white hover:shadow-lg transition-all">
-            <div class="flex items-center gap-2 mb-3">
-                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-ad text-purple-600"></i>
-                </div>
-                <div>
-                    <h4 class="font-bold text-gray-800">Placement Exclusion</h4>
-                    <p class="text-xs text-gray-500">Charged when unchecked</p>
-                </div>
-            </div>
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between items-center">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-minus-circle text-gray-400 text-xs"></i> Placeholder
-                    </span>
-                    <span class="font-semibold text-gray-600">+${formatPrice(cpiSettings.placementPremiums?.placeholder || 0)} ${currency}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-minus-circle text-blue-400 text-xs"></i> Widget
-                    </span>
-                    <span class="font-semibold text-blue-600">+${formatPrice(cpiSettings.placementPremiums?.widget || 0)} ${currency}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-minus-circle text-orange-400 text-xs"></i> WB Pop-up
-                    </span>
-                    <span class="font-semibold text-orange-600">+${formatPrice(cpiSettings.placementPremiums?.popup || 0)} ${currency}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-minus-circle text-red-400 text-xs"></i> WB In-Session
-                    </span>
-                    <span class="font-semibold text-red-600">+${formatPrice(cpiSettings.placementPremiums?.insession || 0)} ${currency}</span>
-                </div>
-            </div>
-        </div>
     `;
 }
 

@@ -57,7 +57,7 @@ const BrandsManager = {
             }
 
             // Load campaign creation confirmation modal
-            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html');
+            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606110300');
             if (!confirmationResponse.ok) {
                 throw new Error(`Failed to load confirmation modal: ${confirmationResponse.status}`);
             }

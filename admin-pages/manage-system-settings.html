@@ -3144,7 +3144,7 @@
     <script src="./js/admin-pages/sms-ethiopian-providers-safe.js"></script>
 
     <!-- Pricing & Features Manager (CPI View-Tier Pricing, Subscription Pricing, Affiliate Settings) -->
-    <script src="./js/admin-pages/pricing-features-manager.js?v202606080200"></script>
+    <script src="./js/admin-pages/pricing-features-manager.js?v202606110300"></script>
 
     <!-- Fix theme background -->
     <script>
@@ -5091,70 +5091,6 @@ The Team" required></textarea>
                                 </div>
                             </div>
 
-                            <!-- Ad Placement Exclusion Premiums -->
-                            <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
-                                    <i class="fas fa-ad text-purple-600"></i>
-                                    Placement Exclusion Premiums
-                                </h4>
-                                <p class="text-xs text-gray-600 mb-4">Charged when advertisers EXCLUDE (uncheck) placements. More exclusions = higher CPI.</p>
-                                <div class="mb-3 p-2 bg-amber-100 border border-amber-300 rounded-lg flex items-center gap-2">
-                                    <i class="fas fa-info-circle text-amber-600"></i>
-                                    <span class="text-xs text-amber-700"><strong>How it works:</strong> All placements checked = Base CPI. Unchecking a placement adds its exclusion premium.</span>
-                                </div>
-
-                                <!-- Ad Placeholder Exclusion -->
-                                <div class="mb-3 p-3 bg-white rounded-lg border">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label class="flex items-center gap-2">
-                                            <i class="fas fa-rectangle-ad text-gray-500"></i>
-                                            <span class="font-semibold">Exclude Ad Placeholder</span>
-                                        </label>
-                                    </div>
-                                    <input type="number" id="cpi-placeholder-premium" class="w-full px-3 py-2 border rounded-lg"
-                                        placeholder="e.g., 0.01" min="0" step="0.001" oninput="calculateCpiPreview()">
-                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Ad Placeholder</p>
-                                </div>
-
-                                <!-- Ad Widget Exclusion -->
-                                <div class="mb-3 p-3 bg-white rounded-lg border">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label class="flex items-center gap-2">
-                                            <i class="fas fa-window-maximize text-blue-500"></i>
-                                            <span class="font-semibold">Exclude Ad Widget</span>
-                                        </label>
-                                    </div>
-                                    <input type="number" id="cpi-widget-premium" class="w-full px-3 py-2 border rounded-lg"
-                                        placeholder="e.g., 0.02" min="0" step="0.001" oninput="calculateCpiPreview()">
-                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Ad Widget</p>
-                                </div>
-
-                                <!-- Whiteboard Pop-up Exclusion -->
-                                <div class="mb-3 p-3 bg-white rounded-lg border">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label class="flex items-center gap-2">
-                                            <i class="fas fa-window-restore text-orange-500"></i>
-                                            <span class="font-semibold">Exclude WB Pop-up</span>
-                                        </label>
-                                    </div>
-                                    <input type="number" id="cpi-popup-premium" class="w-full px-3 py-2 border rounded-lg"
-                                        placeholder="e.g., 0.05" min="0" step="0.001" oninput="calculateCpiPreview()">
-                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Whiteboard Pop-up</p>
-                                </div>
-
-                                <!-- Whiteboard In-Session Exclusion -->
-                                <div class="p-3 bg-white rounded-lg border">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label class="flex items-center gap-2">
-                                            <i class="fas fa-chalkboard text-red-500"></i>
-                                            <span class="font-semibold">Exclude WB In-Session</span>
-                                        </label>
-                                    </div>
-                                    <input type="number" id="cpi-insession-premium" class="w-full px-3 py-2 border rounded-lg"
-                                        placeholder="e.g., 0.10" min="0" step="0.001" oninput="calculateCpiPreview()">
-                                    <p class="text-xs text-gray-500 mt-1">Added to CPI when advertiser unchecks Whiteboard In-Session</p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Right Column: Live Preview Calculator -->
@@ -5166,7 +5102,7 @@ The Team" required></textarea>
                             <!-- Scenario Selector -->
                             <div class="mb-4 p-3 bg-white rounded-lg border">
                                 <label class="block text-sm font-semibold mb-2">Preview Scenario</label>
-                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                <div class="grid grid-cols-2 gap-2 mb-3">
                                     <div>
                                         <label class="block text-xs text-gray-500 mb-1">Exclude Audience</label>
                                         <select id="cpi-preview-audience" class="w-full px-2 py-1.5 border rounded text-sm" onchange="calculateCpiPreview()">
@@ -5184,16 +5120,6 @@ The Team" required></textarea>
                                             <option value="none">No targeting</option>
                                             <option value="national">National</option>
                                             <option value="regional">Regional</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Exclude Placement</label>
-                                        <select id="cpi-preview-placement" class="w-full px-2 py-1.5 border rounded text-sm" onchange="calculateCpiPreview()">
-                                            <option value="none">All Placements (Base)</option>
-                                            <option value="placeholder">Exclude Placeholder</option>
-                                            <option value="widget">Exclude Widget</option>
-                                            <option value="popup">Exclude WB Pop-up</option>
-                                            <option value="insession">Exclude WB In-Session</option>
                                         </select>
                                     </div>
                                 </div>
@@ -5241,17 +5167,6 @@ The Team" required></textarea>
                                         <span id="cpi-preview-region-value" class="font-semibold text-orange-700">+0.00 ETB</span>
                                     </div>
                                     <p class="text-xs text-orange-500 mt-1">Actual varies by excluded regions</p>
-                                </div>
-
-                                <!-- Placement Exclusion Premium -->
-                                <div id="cpi-preview-placement-row" class="bg-purple-50 rounded-lg p-3 border border-purple-200 hidden">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-purple-700">
-                                            <i class="fas fa-minus-circle mr-1"></i>
-                                            <span id="cpi-preview-placement-label">Exclusion Premium</span>
-                                        </span>
-                                        <span id="cpi-preview-placement-value" class="font-semibold text-purple-700">+0.00 ETB</span>
-                                    </div>
                                 </div>
 
                                 <!-- Total CPI -->

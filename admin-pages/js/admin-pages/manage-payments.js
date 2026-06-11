@@ -123,6 +123,26 @@ const ManagePayments = {
             ? `<a href="${p.receipt_url}" target="_blank" rel="noopener" class="mp-btn mp-btn-view" style="display:inline-flex;"><i class="fas fa-file-invoice"></i> Open Receipt</a>`
             : `<span class="mp-muted">No receipt uploaded</span>`;
 
+        // Advertiser invoice: admins upload it ONCE the payment is verified.
+        const verified = p.status === 'verified';
+        const existingInvoice = p.admin_invoice_url
+            ? `<a href="${p.admin_invoice_url}" target="_blank" rel="noopener" class="mp-btn mp-btn-view" style="display:inline-flex; margin-right:.5rem;"><i class="fas fa-file-pdf"></i> View Invoice</a>`
+            : '';
+        let invoiceBlock;
+        if (!verified) {
+            invoiceBlock = `<span class="mp-muted">Available after the payment is verified.</span>`;
+        } else {
+            invoiceBlock = `
+                <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+                    ${existingInvoice}
+                    <input type="file" id="mp-invoice-file" accept="image/*,application/pdf" style="font-size:.8rem; max-width:230px;">
+                    <button class="mp-btn mp-btn-verify" onclick="ManagePayments.uploadInvoice(${p.campaign_id})">
+                        <i class="fas fa-upload"></i> ${p.admin_invoice_url ? 'Replace' : 'Upload'} Invoice
+                    </button>
+                    <span id="mp-invoice-status" class="mp-muted"></span>
+                </div>`;
+        }
+
         document.getElementById('payment-detail-body').innerHTML = `
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem;">
                 <div>
@@ -144,6 +164,7 @@ const ManagePayments = {
             ${row('Advance due', money(p.amount) + (p.deposit_percent != null ? ` (${p.deposit_percent}%)` : ''))}
             ${row('🏦 Paid to', this.esc(p.paid_to_bank) || '<span class="mp-muted">not specified</span>')}
             ${row('Receipt', receiptBlock)}
+            ${row('🧾 Advertiser invoice', invoiceBlock)}
             ${row('Updated', p.updated_at ? new Date(p.updated_at).toLocaleString() : '—')}
 
             <div style="display:flex; gap:.6rem; margin-top:1.5rem;">
@@ -164,6 +185,36 @@ const ManagePayments = {
     closeDetail() {
         const o = document.getElementById('payment-detail-overlay');
         if (o) o.style.display = 'none';
+    },
+
+    async uploadInvoice(campaignId) {
+        const input = document.getElementById('mp-invoice-file');
+        const statusEl = document.getElementById('mp-invoice-status');
+        const file = input && input.files && input.files[0];
+        if (!file) { if (statusEl) statusEl.textContent = 'Choose a file first.'; return; }
+        if (statusEl) statusEl.textContent = 'Uploading…';
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const adminId = this.getAdminId();
+            if (adminId) fd.append('admin_id', adminId);
+            const resp = await fetch(`${this.apiBase}/api/manage-payments/payments/${campaignId}/invoice`, {
+                method: 'POST', body: fd,
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok) {
+                if (statusEl) statusEl.textContent = 'Uploaded ✓';
+                await this.loadPayments();
+                this.openDetail(campaignId);   // re-render with the new invoice link
+            } else {
+                if (statusEl) statusEl.textContent = '';
+                alert(`Failed: ${data.detail || 'Unknown error'}`);
+            }
+        } catch (err) {
+            console.error('[ManagePayments] invoice upload error:', err);
+            if (statusEl) statusEl.textContent = '';
+            alert('An error occurred while uploading the invoice.');
+        }
     },
 
     async _update(campaignId, newStatus, reason) {

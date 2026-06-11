@@ -56,7 +56,7 @@ class CpiSettingsUpdate(BaseModel):
     audiencePremiums: dict  # {tutor: float, student: float, parent: float, advertiser: float, user: float}
     locationPremiums: dict  # {national: float}
     regionExclusionPremiums: dict = {}  # {"ET": {"addis-ababa": 1.0, ...}, "KE": {...}}
-    placementPremiums: dict = {}  # {'leaderboard-banner': float, 'logo': float, 'in-session-skyscrapper-banner': float}
+    placementPremiums: dict = {}  # DEPRECATED: placement-exclusion premiums removed; accepted for backward compat, ignored.
     viewTierPremiums: list = []  # [{view_count: int, premium: float, label: str}, ...]
     advancePaymentPercent: float = 20.0  # % of total cost charged up-front (advertiser uploads receipt)
 
@@ -216,11 +216,6 @@ async def get_full_cpi_rates():
                 },
                 "regionExclusionPremiums": default_region_premiums,
                 "countryRegions": default_country_regions,
-                "placementPremiums": {
-                    "leaderboard-banner": 0.01,
-                    "logo": 0.02,
-                    "in-session-skyscrapper-banner": 0.05
-                },
                 "viewTierPremiums": [],
                 "advancePaymentPercent": 20.0,
                 "currency": "ETB",
@@ -248,11 +243,6 @@ async def get_full_cpi_rates():
             },
             "regionExclusionPremiums": region_premiums,
             "countryRegions": country_regions,
-            "placementPremiums": {
-                "leaderboard-banner": float(row[7]) if row[7] else 0,
-                "logo": float(row[8]) if row[8] else 0,
-                "in-session-skyscrapper-banner": float(row[9]) if row[9] else 0
-            },
             "viewTierPremiums": view_tier_premiums,
             "advancePaymentPercent": advance_payment_percent,
             "currency": row[10]
@@ -429,11 +419,6 @@ async def get_cpi_settings():
                     "national": float(row[7]) if row[7] else 0
                 },
                 "regionExclusionPremiums": region_premiums,
-                "placementPremiums": {
-                    "leaderboard-banner": float(row[8]) if row[8] else 0,
-                    "logo": float(row[9]) if row[9] else 0,
-                    "in-session-skyscrapper-banner": float(row[10]) if row[10] else 0
-                },
                 "viewTierPremiums": view_tier_premiums,
                 "advancePaymentPercent": advance_payment_percent,
                 "currency": row[11],
@@ -505,9 +490,6 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     advertiser_premium = %s,
                     user_premium = %s,
                     national_premium = %s,
-                    leaderboard_banner_premium = %s,
-                    logo_premium = %s,
-                    in_session_skyscrapper_banner_premium = %s,
                     region_exclusion_premiums = %s,
                     view_tier_premiums = %s,
                     advance_payment_percent = %s,
@@ -522,9 +504,6 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.audiencePremiums.get('advertiser', 0),
                 settings.audiencePremiums.get('user', 0),
                 settings.locationPremiums.get('national', 0),
-                settings.placementPremiums.get('leaderboard-banner', 0),
-                settings.placementPremiums.get('logo', 0),
-                settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
                 json.dumps(region_premiums),
                 json.dumps(view_tiers),
                 getattr(settings, 'advancePaymentPercent', 20.0),
@@ -542,13 +521,10 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                     advertiser_premium,
                     user_premium,
                     national_premium,
-                    leaderboard_banner_premium,
-                    logo_premium,
-                    in_session_skyscrapper_banner_premium,
                     region_exclusion_premiums,
                     view_tier_premiums,
                     advance_payment_percent
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 settings.baseRate,
                 getattr(settings, 'country', 'all'),
@@ -558,9 +534,6 @@ async def update_cpi_settings(settings: CpiSettingsUpdate):
                 settings.audiencePremiums.get('advertiser', 0),
                 settings.audiencePremiums.get('user', 0),
                 settings.locationPremiums.get('national', 0),
-                settings.placementPremiums.get('leaderboard-banner', 0),
-                settings.placementPremiums.get('logo', 0),
-                settings.placementPremiums.get('in-session-skyscrapper-banner', 0),
                 json.dumps(region_premiums),
                 json.dumps(view_tiers),
                 getattr(settings, 'advancePaymentPercent', 20.0)

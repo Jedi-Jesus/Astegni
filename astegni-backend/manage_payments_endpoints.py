@@ -11,7 +11,7 @@ invoice_type='advance'. The uploaded receipt is at invoice_pdf_url; status is
 pending | verified | rejected.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional, List
 import psycopg
@@ -149,7 +149,7 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
         cur.execute(f"""
             SELECT ci.id, ci.campaign_id, ci.advertiser_id, ci.brand_id,
                    ci.invoice_number, ci.amount, ci.status, ci.payment_method,
-                   ci.invoice_pdf_url, ci.notes, ci.issued_at, ci.updated_at,
+                   ci.invoice_pdf_url, ci.admin_invoice_url, ci.notes, ci.issued_at, ci.updated_at,
                    cp.name AS campaign_name, cp.company_id,
                    cp.description, cp.objective, cp.target_location, cp.start_date,
                    cp.call_to_action, cp.cpi_rate, cp.campaign_budget,
@@ -182,6 +182,7 @@ async def list_payments(status: Optional[str] = None, limit: int = 50, admin_id:
                 "status": r['status'],
                 "payment_method": r['payment_method'],
                 "receipt_url": r['invoice_pdf_url'],
+                "admin_invoice_url": r.get('admin_invoice_url'),
                 "notes": r['notes'],
                 "issued_at": str(r['issued_at']) if r['issued_at'] else None,
                 "updated_at": str(r['updated_at']) if r['updated_at'] else None,
@@ -251,6 +252,75 @@ async def update_payment_status(campaign_id: int, body: PaymentStatusUpdate):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to update payment status: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.post("/payments/{campaign_id}/invoice")
+async def upload_advertiser_invoice(
+    campaign_id: int,
+    file: UploadFile = File(...),
+    admin_id: Optional[int] = Form(None),
+):
+    """Admin uploads the advertiser invoice (image or PDF) for a VERIFIED advance
+    payment. Stored in B2; its URL is recorded on the advance invoice's
+    admin_invoice_url. Only allowed once the payment has been verified."""
+    verify_payments_access(admin_id)
+
+    content_type = (file.content_type or '').lower()
+    if not (content_type.startswith('image/') or content_type == 'application/pdf'):
+        raise HTTPException(status_code=400, detail="Invoice must be an image or PDF")
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    conn = get_advertiser_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, advertiser_id, status FROM campaign_invoices
+            WHERE campaign_id = %s AND invoice_type = 'advance'
+            ORDER BY id DESC LIMIT 1
+        """, (campaign_id,))
+        inv = cur.fetchone()
+        if not inv:
+            raise HTTPException(status_code=404, detail="No advance-payment receipt found for this campaign")
+        if inv['status'] != 'verified':
+            raise HTTPException(status_code=400, detail="Verify the payment before uploading an invoice.")
+
+        from backblaze_service import get_backblaze_service
+        b2_service = get_backblaze_service()
+        result = b2_service.upload_file(
+            file_data=contents,
+            file_name=file.filename or f"invoice_campaign_{campaign_id}",
+            file_type='document',
+            user_id=f"advertiser_{inv['advertiser_id']}",
+            content_type=file.content_type,
+        )
+        if not result or not result.get('url'):
+            raise HTTPException(status_code=500, detail="Invoice upload failed")
+        invoice_url = result['url']
+
+        cur.execute("""
+            UPDATE campaign_invoices
+            SET admin_invoice_url = %s, updated_at = NOW()
+            WHERE id = %s
+        """, (invoice_url, inv['id']))
+        conn.commit()
+        return {
+            "success": True,
+            "campaign_id": campaign_id,
+            "invoice_id": inv['id'],
+            "admin_invoice_url": invoice_url,
+            "message": "Advertiser invoice uploaded.",
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to upload invoice: {str(e)}")
     finally:
         cur.close()
         conn.close()
