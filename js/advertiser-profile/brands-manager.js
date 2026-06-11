@@ -498,11 +498,12 @@ const BrandsManager = {
     },
 
     // Reapply (from a payment-rejected card): open the CAMPAIGN CREATION form
-    // (edit mode) so the advertiser can review/fix the campaign and resubmit.
+    // fresh (create mode, from the beginning) — NOT the edit form. The advertiser
+    // builds the campaign anew rather than editing the rejected one.
     // (Re-submitting the payment RECEIPT is a separate action in the Invoices
     // panel — see resubmitAdvanceReceipt.)
     reapplyCampaign(campaignId) {
-        this.editCampaignById(campaignId);
+        this.showCreateCampaignForm();
     },
 
     // Update campaign stats in modal
