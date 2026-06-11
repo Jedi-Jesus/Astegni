@@ -15,6 +15,57 @@
     const REDIRECT_URL = '../index.html';
 
     /**
+     * Unified "is this user verified?" predicate — matches the rest of the app
+     * (see profile-completion-guard.js). A user is verified if ANY of the
+     * verified flags is true; older accounts may only carry kyc_verified.
+     */
+    function isUserVerified(user) {
+        if (!user) return false;
+        return user.is_verified === true ||
+               user.kyc_verified === true ||
+               user.verified === true;
+    }
+
+    /**
+     * Refresh currentUser from the server so the guard never decides off a
+     * stale localStorage blob. Returning sessions can carry is_verified=false
+     * from a login that predates the user's verification (common on mobile,
+     * where sessions persist for a long time without re-login). Prefer
+     * AuthManager.fetchUserData() (handles dedupe + localStorage write); fall
+     * back to a direct /api/me call. Never throws — the caller still has the
+     * cached value to fall back on.
+     */
+    async function refreshUserFromServer(token) {
+        try {
+            if (window.AuthManager && typeof window.AuthManager.fetchUserData === 'function') {
+                await window.AuthManager.fetchUserData();
+                return;
+            }
+            const API_BASE = (window.API_BASE_URL) ||
+                (window.AuthManager && window.AuthManager.API_BASE_URL) ||
+                'http://localhost:8000';
+            const resp = await fetch(`${API_BASE}/api/me`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            if (!resp.ok) return; // keep cached value
+            const data = await resp.json();
+            const fresh = data.user || data;
+            const userStr = localStorage.getItem('currentUser');
+            const cached = userStr ? JSON.parse(userStr) : {};
+            const merged = {
+                ...cached,
+                ...fresh,
+                is_verified: fresh.is_verified || false,
+                kyc_verified: fresh.kyc_verified || false,
+                verified: fresh.is_verified || fresh.kyc_verified || false
+            };
+            localStorage.setItem('currentUser', JSON.stringify(merged));
+        } catch (e) {
+            console.warn('[AccessGuard] Could not refresh user from /api/me, using cached value:', e);
+        }
+    }
+
+    /**
      * Pull a normalized roles array off the user object.
      * Accepts user.roles (array), or single user.role / user.active_role.
      */
@@ -58,8 +109,19 @@
             return false;
         }
 
+        // Refresh from /api/me first so we never gate on a stale cached
+        // is_verified, then re-read currentUser. If the refresh failed
+        // (network/offline), we fall back to the value we already parsed.
+        await refreshUserFromServer(token);
+        try {
+            const refreshedStr = localStorage.getItem('currentUser');
+            if (refreshedStr) user = JSON.parse(refreshedStr);
+        } catch (e) {
+            console.warn('[AccessGuard] Failed to re-parse refreshed user, using prior value:', e);
+        }
+
         const roles = getUserRoles(user);
-        const isVerified = user.is_verified === true;
+        const isVerified = isUserVerified(user);
 
         console.log('[AccessGuard] is_verified:', isVerified, 'roles:', roles);
 
