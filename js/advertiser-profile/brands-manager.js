@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606112800');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606113000');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -4131,14 +4131,48 @@ const BrandsManager = {
     },
 
     // Populate cancellation modal with campaign data (no refund/fee — non-refundable
-    // model). Shows what's being cancelled + impressions already delivered.
-    populateCancellationModal() {
+    // model). Warns when the advertiser has paid for more impressions than have
+    // been delivered, so cancelling now would forfeit the unused (paid-for) portion.
+    async populateCancellationModal() {
         const campaign = this.currentCampaign;
         if (!campaign) return;
 
+        // Refresh from the backend so delivered impressions + planned/deposit are fresh.
+        try {
+            const token = localStorage.getItem('token');
+            const r = await fetch(`${API_BASE_URL}/api/advertiser/campaigns/${campaign.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (r.ok) Object.assign(campaign, await r.json());
+        } catch (e) {
+            console.warn('[BrandsManager] cancel-modal refresh failed; using cached:', e);
+        }
+
         this.setElementText('cancel-campaign-name', campaign.name || '—');
-        const delivered = campaign.impressions || campaign.impressions_delivered || 0;
+
+        // Package (committed views), impressions paid-for (advance %), delivered.
+        const planned = Number(campaign.total_impressions_planned || campaign.view_count || 0);
+        const depositPct = Number(campaign.deposit_percent || 0);
+        const paidFor = depositPct > 0 ? Math.round(planned * depositPct / 100) : planned;
+        const delivered = Number(campaign.impressions || campaign.impressions_delivered || 0);
+        const unused = Math.max(0, paidFor - delivered);
+
+        this.setElementText('cancel-package-views', this.formatNumber(planned));
+        this.setElementText('cancel-paid-for-views', this.formatNumber(paidFor));
         this.setElementText('cancel-impressions-delivered', this.formatNumber(delivered));
+
+        // Show the forfeit warning only when paid-for impressions remain unused.
+        const warn = document.getElementById('cancel-unused-warning');
+        if (warn) {
+            if (unused > 0 && paidFor > 0) {
+                this.setElementText('cancel-paid-for-inline', this.formatNumber(paidFor));
+                this.setElementText('cancel-delivered-inline', this.formatNumber(delivered));
+                this.setElementText('cancel-unused-inline', this.formatNumber(unused));
+                warn.style.display = 'flex';
+            } else {
+                warn.style.display = 'none';
+            }
+        }
 
         // Hide the "unpaid settlement no longer owed" line if the settlement is
         // already paid (nothing to void).
