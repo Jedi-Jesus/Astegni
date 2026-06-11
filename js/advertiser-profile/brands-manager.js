@@ -1080,6 +1080,14 @@ const BrandsManager = {
             const canPay = inv && inv.invoice_type === 'final_settlement' && inv.status === 'pending' && !inv.invoice_pdf_url;
             const payBtn = canPay
                 ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
+            // When rejected, surface the admin's reason from notes (strip "Paid to:").
+            let rejReason = '';
+            if (inv && inv.status === 'rejected' && inv.notes) {
+                rejReason = String(inv.notes).replace(/\s*Paid to:.*$/, '').trim();
+            }
+            const rejHtml = rejReason
+                ? `<div style="margin-top:.5rem;padding:8px 10px;border-radius:6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);font-size:.85rem;"><strong style="color:#b91c1c;">Rejected — reason:</strong> ${esc(rejReason)}</div>`
+                : '';
             return `
                 <div style="border:1px solid var(--border-color,#e5e7eb); border-radius:12px; padding:1rem; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
@@ -1092,7 +1100,7 @@ const BrandsManager = {
                         ${inv.due_date ? `<div style="color:#9ca3af;">Due ${new Date(inv.due_date).toLocaleDateString()}</div>` : ''}
                         ${inv.invoice_pdf_url ? `<a href="${esc(inv.invoice_pdf_url)}" target="_blank" rel="noopener" style="color:#667eea;">View receipt</a>` : ''}
                         ${inv.admin_invoice_url ? ` · <a href="${esc(inv.admin_invoice_url)}" target="_blank" rel="noopener" style="color:#667eea;">View invoice</a>` : ''}
-                    </div>${payBtn}` : ''}
+                    </div>${rejHtml}${payBtn}` : ''}
                 </div>`;
         };
 
@@ -3588,9 +3596,12 @@ const BrandsManager = {
         // FIRST verification (payment) must pass before submitting the ad for
         // content verification.
         if (campaign.payment_verified !== true) {
-            const msg = campaign.payment_status === 'rejected'
+            let msg = campaign.payment_status === 'rejected'
                 ? 'Your payment receipt was rejected. Re-upload a valid receipt and wait for verification first.'
                 : 'Your advance payment must be verified before you can submit the campaign for ad review.';
+            if (campaign.payment_status === 'rejected' && campaign.payment_rejection_reason) {
+                msg += ` Reason: ${campaign.payment_rejection_reason}`;
+            }
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast(`🔒 ${msg}`, 'error');
             } else {
@@ -4157,7 +4168,7 @@ const BrandsManager = {
         });
 
         // Show a hint banner in the Images/Videos tabs when payment isn't verified.
-        this.renderPaymentGateNotice(!paymentVerified, campaign.payment_status);
+        this.renderPaymentGateNotice(!paymentVerified, campaign.payment_status, campaign.payment_rejection_reason);
 
         // Also disable/enable edit buttons on campaign cards
         const editButtons = document.querySelectorAll('.campaign-card-edit-btn-bottom');
@@ -4181,8 +4192,9 @@ const BrandsManager = {
 
     // Show/hide a notice in the Images & Videos tabs explaining that ad media
     // upload is locked until the advance payment is verified.
-    renderPaymentGateNotice(show, paymentStatus) {
+    renderPaymentGateNotice(show, paymentStatus, rejectionReason) {
         const tabs = ['tab-images', 'tab-videos'];
+        const esc = (s) => s == null ? '' : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
         tabs.forEach(tabId => {
             const tab = document.getElementById(tabId);
             if (!tab) return;
@@ -4193,17 +4205,29 @@ const BrandsManager = {
                 return;
             }
 
-            const msg = paymentStatus === 'rejected'
+            const rejected = paymentStatus === 'rejected';
+            const title = rejected ? 'Payment receipt rejected' : 'Awaiting payment verification';
+            const msg = rejected
                 ? 'Your payment receipt was rejected. Please re-upload a valid receipt; ad uploads unlock once it is verified.'
                 : 'Ad uploads are locked until our team verifies your advance-payment receipt.';
+            // Show the admin's rejection reason when one was given.
+            const reasonHtml = (rejected && rejectionReason)
+                ? `<div style="margin-top:6px;padding:8px 10px;border-radius:6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);">
+                       <strong style="color:#b91c1c;">Reason:</strong> <span style="color:var(--text);">${esc(rejectionReason)}</span>
+                   </div>`
+                : '';
 
+            const accent = rejected ? '#ef4444' : '#fcd34d';
+            const iconColor = rejected ? '#b91c1c' : '#d97706';
+            const bg = rejected ? 'rgba(239,68,68,0.08)' : 'rgba(251,191,36,0.12)';
             const html = `
                 <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;margin-bottom:12px;
-                            border-radius:8px;border:1px solid #fcd34d;background:rgba(251,191,36,0.12);color:var(--text);">
-                    <i class="fas fa-lock" style="color:#d97706;margin-top:2px;"></i>
-                    <div style="font-size:0.9rem;">
-                        <strong>Awaiting payment verification</strong><br>
+                            border-radius:8px;border:1px solid ${accent};background:${bg};color:var(--text);">
+                    <i class="fas ${rejected ? 'fa-times-circle' : 'fa-lock'}" style="color:${iconColor};margin-top:2px;"></i>
+                    <div style="font-size:0.9rem;flex:1;">
+                        <strong>${title}</strong><br>
                         <span style="color:var(--text-secondary);">${msg}</span>
+                        ${reasonHtml}
                     </div>
                 </div>`;
 
@@ -5077,9 +5101,12 @@ const BrandsManager = {
         // FIRST verification (payment): ad media upload is locked until the
         // advance-payment receipt is verified by an admin.
         if (c && c.payment_verified !== true) {
-            const msg = c.payment_status === 'rejected'
+            let msg = c.payment_status === 'rejected'
                 ? '❌ Your payment receipt was rejected. Re-upload a valid receipt to unlock ad uploads.'
                 : '🔒 Ad uploads unlock after your advance payment is verified.';
+            if (c.payment_status === 'rejected' && c.payment_rejection_reason) {
+                msg += ` Reason: ${c.payment_rejection_reason}`;
+            }
             if (window.Utils && window.Utils.showToast) {
                 window.Utils.showToast(msg, 'error');
             } else {

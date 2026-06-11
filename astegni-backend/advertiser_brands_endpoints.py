@@ -979,13 +979,21 @@ async def get_campaign(campaign_id: int, current_user = Depends(resolve_advertis
                 # Attach advance-payment (receipt) verification status. Ad media
                 # upload + submit-for-verification are gated on this being 'verified'.
                 cur.execute("""
-                    SELECT status FROM campaign_invoices
+                    SELECT status, notes FROM campaign_invoices
                     WHERE campaign_id = %s AND invoice_type = 'advance'
                     ORDER BY id DESC LIMIT 1
                 """, (campaign_id,))
                 inv = cur.fetchone()
                 result['payment_status'] = inv['status'] if inv else None
                 result['payment_verified'] = bool(inv and inv['status'] == 'verified')
+                # On rejection, surface WHY: the admin's reason lives in notes
+                # ("<reason> Paid to: <bank>." or just "<reason>"). Strip the
+                # trailing "Paid to:" fragment so the advertiser sees the reason.
+                reason = None
+                if inv and inv['status'] == 'rejected' and inv.get('notes'):
+                    import re as _re
+                    reason = _re.sub(r'\s*Paid to:.*$', '', inv['notes']).strip() or None
+                result['payment_rejection_reason'] = reason
 
                 return result
 
