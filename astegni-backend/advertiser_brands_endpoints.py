@@ -691,7 +691,13 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(resolve_adve
                         COALESCE(COUNT(DISTINCT ce.id) FILTER (WHERE ce.engagement_type = 'share'), 0) as shares,
                         COALESCE(COUNT(DISTINCT ce.id) FILTER (WHERE ce.engagement_type = 'comment'), 0) as comments,
                         (SELECT file_url FROM campaign_media WHERE campaign_id = cp.id AND media_type = 'image' LIMIT 1) as thumbnail_url,
-                        (SELECT file_url FROM campaign_media WHERE campaign_id = cp.id LIMIT 1) as file_url
+                        (SELECT file_url FROM campaign_media WHERE campaign_id = cp.id LIMIT 1) as file_url,
+                        (SELECT status FROM campaign_invoices
+                            WHERE campaign_id = cp.id AND invoice_type = 'advance'
+                            ORDER BY id DESC LIMIT 1) as payment_status,
+                        (SELECT notes FROM campaign_invoices
+                            WHERE campaign_id = cp.id AND invoice_type = 'advance'
+                            ORDER BY id DESC LIMIT 1) as payment_notes
                     FROM campaign_profile cp
                     LEFT JOIN campaign_impressions ci ON cp.id = ci.campaign_id
                     LEFT JOIN campaign_engagement ce ON cp.id = ce.campaign_id
@@ -701,8 +707,15 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(resolve_adve
                 """, (campaign_ids,))
                 campaigns = cur.fetchall()
 
+                import re as _re
                 result = []
                 for c in campaigns:
+                    # Payment axis (advance receipt): drives the small CARD badge +
+                    # Reapply. Strip the "Paid to:" fragment from the rejection note.
+                    pay_status = c.get('payment_status')
+                    pay_reason = None
+                    if pay_status == 'rejected' and c.get('payment_notes'):
+                        pay_reason = _re.sub(r'\s*Paid to:.*$', '', c['payment_notes']).strip() or None
                     result.append({
                         'id': c['id'],
                         'name': c['name'],
@@ -710,7 +723,12 @@ async def get_brand_campaigns(brand_id: int, current_user = Depends(resolve_adve
                         'thumbnail_url': c['thumbnail_url'],
                         'file_url': c['file_url'],
                         'objective': c['objective'],
+                        # `status` = AD-CONTENT verification (shown on the campaign
+                        # DASHBOARD). The card badge uses payment_status instead.
                         'status': c['verification_status'] or 'pending',
+                        'ad_verification_status': c['verification_status'] or 'pending',
+                        'payment_status': pay_status,
+                        'payment_rejection_reason': pay_reason,
                         'is_verified': c['is_verified'],
                         'submit_for_verification': c.get('submit_for_verification', False),
                         'impressions': c['impressions'] or 0,

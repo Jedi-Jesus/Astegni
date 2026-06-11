@@ -464,16 +464,18 @@ const BrandsManager = {
 
     // Create small campaign card HTML
     createCampaignCardSmall(campaign) {
-        // Badge reflects CAMPAIGN (ad-content) verification: verification_status
-        // is mapped to `status` by the API (pending | verified | rejected).
-        const statusClass = campaign.status || 'pending';
-        const isRejected = statusClass === 'rejected';
+        // The small CARD badge reflects the PAYMENT axis (advance receipt):
+        // pending | verified | rejected. (Ad-content verification lives on the
+        // campaign dashboard, not here.) Map null payment -> 'pending'.
+        const payStatus = (campaign.payment_status || 'pending').toLowerCase();
+        const isPayRejected = payStatus === 'rejected';
+        const badgeLabel = payStatus === 'verified' ? 'Payment verified'
+            : payStatus === 'rejected' ? 'Payment rejected'
+            : 'Payment pending';
 
-        // Rejected campaigns get a Reapply button (opens the campaign so the
-        // advertiser can fix the rejected media, then resubmit). Otherwise no
-        // card-level button — editing happens inside the opened campaign and
-        // verified campaigns aren't edited.
-        const reapplyBtn = isRejected
+        // Payment rejected → Reapply re-submits the advance receipt (opens the
+        // payment modal). No button otherwise.
+        const reapplyBtn = isPayRejected
             ? `<button class="campaign-card-edit-btn-bottom" style="background:#ef4444;color:#fff;border-color:#ef4444;"
                        onclick="event.stopPropagation(); BrandsManager.reapplyCampaign(${campaign.id})">
                    <i class="fas fa-rotate-right"></i> Reapply
@@ -484,7 +486,7 @@ const BrandsManager = {
             <div class="campaign-card-small" data-campaign-id="${campaign.id}" onclick="BrandsManager.selectCampaign(${campaign.id})">
                 <div class="campaign-card-small-header">
                     <h4 class="campaign-card-small-name">${campaign.name}</h4>
-                    <span class="campaign-card-small-status ${statusClass}" title="Campaign verification">${this.capitalizeFirst(statusClass)}</span>
+                    <span class="campaign-card-small-status ${payStatus}" title="Payment verification">${badgeLabel}</span>
                 </div>
                 <div class="campaign-card-small-meta">
                     <span><i class="fas fa-coins"></i> ${this.formatNumber(campaign.budget || 0)} ${CurrencyManager.getSymbol()}</span>
@@ -495,10 +497,10 @@ const BrandsManager = {
         `;
     },
 
-    // Reapply for a rejected campaign: open it so the advertiser can fix the
-    // rejected ad/media, then resubmit from the detail footer.
+    // Reapply for a PAYMENT-rejected campaign: open it, jump to the Invoices /
+    // Payments tab, and launch the advance-receipt re-submit flow.
     reapplyCampaign(campaignId) {
-        this._reapplyIntent = campaignId;   // hint the detail view to nudge resubmit
+        this._reapplyIntent = campaignId;   // hint: auto-open advance re-pay
         this.selectCampaign(campaignId);
     },
 
@@ -558,6 +560,14 @@ const BrandsManager = {
 
         // Show campaign details directly (no placement selection step)
         this.showCampaignDetails(campaign, 'all');
+
+        // Reapply intent (from a payment-rejected card): jump to Invoices /
+        // Payments and launch the advance-receipt re-submit once it loads.
+        if (this._reapplyIntent === campaignId) {
+            this._reapplyIntent = null;
+            this.switchCampaignTab('invoices');
+            setTimeout(() => this.resubmitAdvanceReceipt(campaignId), 350);
+        }
     },
 
     // ============================================
@@ -800,14 +810,27 @@ const BrandsManager = {
         }
 
         if (campaignStatus) {
+            // The DASHBOARD shows the AD-CONTENT (campaign) verification axis.
+            // (The small card shows the PAYMENT axis instead.)
+            const adStatus = (campaign.ad_verification_status || campaign.status || 'pending').toLowerCase();
             const statusColor = {
+                'verified': '#10b981',
+                'pending': '#f59e0b',
+                'rejected': '#ef4444',
+                'suspended': '#6b7280',
+                // legacy operational states (if ever present):
                 'active': '#10b981',
                 'paused': '#f59e0b',
                 'completed': '#6b7280',
                 'draft': '#3b82f6'
             };
-            campaignStatus.innerHTML = `<i class="fas fa-circle" style="color: ${statusColor[campaign.status] || '#6b7280'}; font-size: 0.5rem;"></i> ${this.capitalizeFirst(campaign.status)}`;
-            campaignStatus.className = `header-campaign-status ${campaign.status}`;
+            const label = adStatus === 'verified' ? 'Ad verified'
+                : adStatus === 'rejected' ? 'Ad rejected'
+                : adStatus === 'pending' ? 'Ad pending review'
+                : this.capitalizeFirst(adStatus);
+            campaignStatus.innerHTML = `<i class="fas fa-circle" style="color: ${statusColor[adStatus] || '#6b7280'}; font-size: 0.5rem;"></i> ${label}`;
+            campaignStatus.className = `header-campaign-status ${adStatus}`;
+            campaignStatus.title = 'Ad-content verification';
         }
 
         if (campaignDates) {
@@ -1097,8 +1120,13 @@ const BrandsManager = {
         const card = (title, inv) => {
             // "Pay now" only for an unpaid settlement that hasn't got a receipt yet.
             const canPay = inv && inv.invoice_type === 'final_settlement' && inv.status === 'pending' && !inv.invoice_pdf_url;
+            // A REJECTED advance receipt can be re-submitted (upload a new proof).
+            const canResubmitAdvance = inv && inv.invoice_type === 'advance' && inv.status === 'rejected';
             const payBtn = canPay
-                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>` : '';
+                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>`
+                : canResubmitAdvance
+                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;background:#ef4444;border-color:#ef4444;" onclick="BrandsManager.resubmitAdvanceReceipt(${this.currentCampaign ? this.currentCampaign.id : 'null'})"><i class="fas fa-rotate-right"></i> Re-submit receipt</button>`
+                : '';
             // When rejected, surface the admin's reason from notes (strip "Paid to:").
             let rejReason = '';
             if (inv && inv.status === 'rejected' && inv.notes) {
@@ -1188,6 +1216,52 @@ const BrandsManager = {
             cpiRate: (cp.cpi_rate != null) ? Number(cp.cpi_rate) : (c.settlement && c.settlement.cpi_rate != null ? Number(c.settlement.cpi_rate) : null),
             totalAmount: totalAmt,
             remainingAmount: remainingAmt,
+            onDone: () => this.loadCampaignInvoices(),
+        });
+    },
+
+    // Re-submit a REJECTED advance receipt: open the payment modal targeting the
+    // advance invoice so the advertiser can upload a fresh proof for re-verification.
+    async resubmitAdvanceReceipt(campaignId) {
+        // Make sure the invoice cache matches this campaign (Reapply may have just
+        // switched campaigns); reload if stale or missing.
+        let c = this._invoiceCache || {};
+        if (!c.advance || (campaignId != null && c.campaignId !== campaignId)) {
+            await this.loadCampaignInvoices();
+            c = this._invoiceCache || {};
+        }
+        const advance = c.advance;
+        if (!advance) {
+            alert('Advance invoice unavailable. Please reopen the Invoices / Payments tab.');
+            return;
+        }
+        if (typeof CampaignCreationConfirmation === 'undefined' || typeof CampaignCreationConfirmation.openForPayment !== 'function') {
+            alert('Payment modal not loaded. Please refresh the page and try again.');
+            return;
+        }
+        // Re-use the bank chosen for the original advance, parsed from its notes.
+        let advanceBankName = null;
+        const notes = (advance.notes) || '';
+        const m = notes.match(/Paid to:\s*(.+?)\s*(?:\(A\/C|\.|$)/i);
+        if (m) advanceBankName = m[1].trim();
+
+        const cp = this.currentCampaign || {};
+        const advanceAmt = Number(advance.amount);
+        const totalAmt = (cp.campaign_budget != null) ? Number(cp.campaign_budget) : advanceAmt;
+
+        CampaignCreationConfirmation.openForPayment({
+            invoiceId: advance.id,
+            amount: advanceAmt,
+            currency: 'ETB',
+            campaign_name: c.name || advance.campaign_name || 'Campaign',
+            preselectBankName: advanceBankName,
+            // This IS the advance, so don't show a separate "already paid" advance line.
+            advanceAmount: null,
+            advanceStatus: null,
+            views: (cp.total_impressions_planned != null) ? Number(cp.total_impressions_planned) : null,
+            cpiRate: (cp.cpi_rate != null) ? Number(cp.cpi_rate) : null,
+            totalAmount: totalAmt,
+            remainingAmount: advanceAmt,
             onDone: () => this.loadCampaignInvoices(),
         });
     },

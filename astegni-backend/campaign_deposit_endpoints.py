@@ -639,7 +639,11 @@ async def upload_invoice_receipt(
                     if paid_to_account_number:
                         paid_to += f" (A/C {paid_to_account_number})"
                     paid_to += "."
-                note = "Settlement payment receipt awaiting admin verification." + paid_to
+                # Adapt the note to the invoice type so a re-submitted ADVANCE
+                # receipt (after a rejection) isn't mislabeled as a settlement.
+                kind = ("Advance" if inv.get('invoice_type') == 'advance'
+                        else "Settlement")
+                note = f"{kind} payment receipt awaiting admin verification." + paid_to
 
                 cur.execute("""
                     UPDATE campaign_invoices
