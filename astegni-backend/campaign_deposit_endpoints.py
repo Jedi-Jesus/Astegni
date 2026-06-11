@@ -162,7 +162,11 @@ async def create_campaign_with_deposit(campaign: CampaignCreateWithDeposit, curr
                 # Set default targeting arrays
                 target_audiences = campaign.target_audiences or ['tutor', 'student', 'parent', 'advertiser', 'user']
                 target_regions = campaign.target_regions or []
-                target_placements = campaign.target_placements or ['placeholder', 'widget', 'popup', 'insession']
+                # Use the CANONICAL placement vocabulary the ad-serving pages request
+                # (leaderboard-banner / logo / in-session-skyscrapper-banner). The old
+                # default (placeholder/widget/popup/insession) never matched any page
+                # slot, so those campaigns' ads were silently never served.
+                target_placements = campaign.target_placements or ['leaderboard-banner', 'logo', 'in-session-skyscrapper-banner']
 
                 # campaign_profile.company_id is NOT NULL — resolve it from the brand.
                 cur.execute("SELECT company_id FROM brand_profile WHERE id = %s", (campaign.brand_id,))
