@@ -55,7 +55,7 @@ const BrandsManager = {
             }
 
             // Load campaign creation confirmation modal
-            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606111900');
+            const confirmationResponse = await fetch('../modals/advertiser-profile/campaign-creation-confirmation-modal.html?v202606112000');
             if (!confirmationResponse.ok) {
                 throw new Error(`Failed to load confirmation modal: ${confirmationResponse.status}`);
             }
@@ -1163,10 +1163,14 @@ const BrandsManager = {
             const canPay = inv && inv.invoice_type === 'final_settlement' && inv.status === 'pending' && !inv.invoice_pdf_url;
             // A REJECTED advance receipt can be re-submitted (upload a new proof).
             const canResubmitAdvance = inv && inv.invoice_type === 'advance' && inv.status === 'rejected';
+            // A REJECTED settlement receipt can likewise be re-submitted.
+            const canResubmitSettlement = inv && inv.invoice_type === 'final_settlement' && inv.status === 'rejected';
             const payBtn = canPay
                 ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-credit-card"></i> Pay now</button>`
                 : canResubmitAdvance
                 ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;background:#ef4444;border-color:#ef4444;" onclick="BrandsManager.resubmitAdvanceReceipt(${this.currentCampaign ? this.currentCampaign.id : 'null'})"><i class="fas fa-rotate-right"></i> Re-submit receipt</button>`
+                : canResubmitSettlement
+                ? `<button class="campaign-footer-btn primary" style="margin-top:.6rem;background:#ef4444;border-color:#ef4444;" onclick="BrandsManager.payInvoiceById(${inv.id})"><i class="fas fa-rotate-right"></i> Re-submit receipt</button>`
                 : '';
             // When rejected, surface the admin's reason from notes (strip "Paid to:").
             let rejReason = '';
@@ -1175,6 +1179,14 @@ const BrandsManager = {
             }
             const rejHtml = rejReason
                 ? `<div style="margin-top:.5rem;padding:8px 10px;border-radius:6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);font-size:.85rem;"><strong style="color:#b91c1c;">Rejected — reason:</strong> ${esc(rejReason)}</div>`
+                : '';
+            // View-receipt / view-invoice buttons (the advertiser's uploaded proof
+            // and the admin-issued invoice, when present).
+            const viewReceiptBtn = (inv && inv.invoice_pdf_url)
+                ? `<a class="campaign-footer-btn" href="${esc(inv.invoice_pdf_url)}" target="_blank" rel="noopener" style="margin-top:.6rem;margin-right:.5rem;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;"><i class="fas fa-file-invoice"></i> View receipt</a>`
+                : '';
+            const viewInvoiceBtn = (inv && inv.admin_invoice_url)
+                ? `<a class="campaign-footer-btn" href="${esc(inv.admin_invoice_url)}" target="_blank" rel="noopener" style="margin-top:.6rem;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;"><i class="fas fa-receipt"></i> View invoice</a>`
                 : '';
             return `
                 <div style="border:1px solid var(--border-color,#e5e7eb); border-radius:12px; padding:1rem; margin-bottom:1rem;">
@@ -1186,9 +1198,9 @@ const BrandsManager = {
                         <div>Amount: <strong>${money(inv.amount)}</strong></div>
                         ${inv.invoice_number ? `<div style="color:#9ca3af;">Invoice ${esc(inv.invoice_number)}</div>` : ''}
                         ${inv.due_date ? `<div style="color:#9ca3af;">Due ${new Date(inv.due_date).toLocaleDateString()}</div>` : ''}
-                        ${inv.invoice_pdf_url ? `<a href="${esc(inv.invoice_pdf_url)}" target="_blank" rel="noopener" style="color:#667eea;">View receipt</a>` : ''}
-                        ${inv.admin_invoice_url ? ` · <a href="${esc(inv.admin_invoice_url)}" target="_blank" rel="noopener" style="color:#667eea;">View invoice</a>` : ''}
-                    </div>${rejHtml}${payBtn}` : ''}
+                    </div>${rejHtml}
+                    <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;">${viewReceiptBtn}${viewInvoiceBtn}</div>
+                    ${payBtn}` : ''}
                 </div>`;
         };
 
