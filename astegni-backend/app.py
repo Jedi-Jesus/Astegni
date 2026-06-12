@@ -377,6 +377,10 @@ app.include_router(events_clubs_router)
 from partner_request_endpoints import router as partner_request_router
 app.include_router(partner_request_router)
 
+# Include partner-application identity KYC routes
+from partner_kyc_endpoints import router as partner_kyc_router
+app.include_router(partner_kyc_router)
+
 # Include manage-astegni routes (admin Manage Astegni page: partners, featured
 # videos, professional testimonials — plus the public /api/partners + /api/reviews
 # reads that index.html consumes; these moved out of routes.py).

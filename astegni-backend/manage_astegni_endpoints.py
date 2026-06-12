@@ -52,10 +52,13 @@ def _admin_conn():
 
 
 def _fetch_user_profiles(user_ids):
-    """Map {user_id: {name, profile_picture, role}} from the USER db.
+    """Map {user_id: {name, profile_picture, role, tutor_rating, tutor_rating_count}}
+    from the USER db.
 
-    astegni_reviews only stores reviewer_id; names/avatars live in users (a
-    different database), so we look them up here and merge in Python.
+    astegni_reviews (admin db) only stores reviewer_id; the reviewer's name,
+    avatar, role AND — if they're a tutor — their own average received rating all
+    live in the USER db, so we look them up here and merge in Python (no cross-DB
+    JOIN is possible). tutor_rating is None for non-tutors.
     """
     ids = [i for i in {*user_ids} if i is not None]
     if not ids:
@@ -63,12 +66,17 @@ def _fetch_user_profiles(user_ids):
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id,
-                   TRIM(CONCAT_WS(' ', first_name, father_name)) AS name,
-                   profile_picture,
-                   active_role
-            FROM users
-            WHERE id = ANY(%s)
+            SELECT u.id,
+                   TRIM(CONCAT_WS(' ', u.first_name, u.father_name)) AS name,
+                   u.profile_picture,
+                   u.active_role,
+                   AVG(tr.rating)   AS tutor_rating,
+                   COUNT(tr.id)     AS tutor_rating_count
+            FROM users u
+            LEFT JOIN tutor_profiles tp ON tp.user_id = u.id
+            LEFT JOIN tutor_reviews  tr ON tr.tutor_id = tp.id
+            WHERE u.id = ANY(%s)
+            GROUP BY u.id, u.first_name, u.father_name, u.profile_picture, u.active_role
             """,
             (ids,),
         )
@@ -78,6 +86,8 @@ def _fetch_user_profiles(user_ids):
             "name": r["name"] or "Astegni User",
             "profile_picture": r["profile_picture"],
             "role": r["active_role"],
+            "tutor_rating": round(float(r["tutor_rating"]), 1) if r["tutor_rating"] is not None else None,
+            "tutor_rating_count": int(r["tutor_rating_count"] or 0),
         }
         for r in rows
     }
@@ -88,13 +98,25 @@ def _fetch_user_profiles(user_ids):
 # ============================================================
 
 @router.get("/api/partners")
-async def list_partners(include_inactive: bool = Query(False)):
-    """Public: partner orgs for index.html. Active-only unless include_inactive."""
-    where = "" if include_inactive else "WHERE is_active = TRUE"
+async def list_partners(
+    include_inactive: bool = Query(False),
+    featured_only: bool = Query(False),
+):
+    """Partner orgs.
+
+    - index.html requests featured_only=true: only featured + active partners show.
+    - the admin panel requests include_inactive=true: everything, for management.
+    """
+    clauses = []
+    if not include_inactive:
+        clauses.append("is_active = TRUE")
+    if featured_only:
+        clauses.append("is_featured = TRUE")
+    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
             f"""
-            SELECT id, name, logo_url, website, description, is_active, sort_order
+            SELECT id, name, logo_url, website, description, is_active, is_featured, sort_order
             FROM partners
             {where}
             ORDER BY sort_order ASC, id ASC
@@ -111,11 +133,30 @@ async def list_partners(include_inactive: bool = Query(False)):
             "website": r["website"],
             "description": r["description"],
             "is_active": r["is_active"],
+            "is_featured": r["is_featured"],
             "sort_order": r["sort_order"],
         }
         for r in rows
     ]
     return {"partners": partners, "total": len(partners)}
+
+
+@router.post("/api/admin/partners/{partner_id}/feature")
+async def set_partner_featured(
+    partner_id: int,
+    is_featured: bool = Form(...),
+    admin=Depends(get_current_admin),
+):
+    """Admin: toggle whether a partner is featured on the homepage."""
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE partners SET is_featured=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s",
+            (is_featured, partner_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Partner not found")
+        conn.commit()
+    return {"success": True, "is_featured": is_featured}
 
 
 @router.post("/api/admin/partners")
@@ -572,6 +613,16 @@ async def delete_testimonial(testimonial_id: int, admin=Depends(get_current_admi
 # PARTNER APPLICATIONS (partner_requests submitted via index.html)
 # ============================================================
 
+def _applicant_email(app) -> Optional[str]:
+    """Best email to notify an applicant: personal_email, else first listed email."""
+    if app.get("personal_email"):
+        return app["personal_email"]
+    emails = app.get("emails")
+    if isinstance(emails, list) and emails:
+        return emails[0]
+    return None
+
+
 @router.get("/api/admin/partner-applications")
 async def list_partner_applications(
     status: Optional[str] = Query(None),
@@ -586,18 +637,26 @@ async def list_partner_applications(
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
             f"""
-            SELECT id, company_name, contact_person, emails, phones,
-                   partnership_type, partnership_type_category, description,
-                   proposal_file_path, status, created_at, reviewed_at, admin_notes
-            FROM partner_requests
-            {where}
-            ORDER BY created_at DESC
+            SELECT pr.id, pr.company_name, pr.contact_person, pr.emails, pr.phones,
+                   pr.partnership_type, pr.partnership_type_category, pr.description,
+                   pr.proposal_file_path, pr.logo_url, pr.website, pr.social_link,
+                   pr.naming_system, pr.applicant_first_name, pr.applicant_father_name,
+                   pr.applicant_grandfather_name, pr.applicant_last_name,
+                   pr.date_of_birth, pr.personal_email, pr.ownership_proof_url,
+                   pr.kyc_status, pr.status, pr.created_at, pr.reviewed_at, pr.admin_notes,
+                   k.status AS kyc_verification_status, k.document_image_url,
+                   k.selfie_image_url, k.face_match_passed, k.liveliness_passed
+            FROM partner_requests pr
+            LEFT JOIN LATERAL (
+                SELECT * FROM partner_kyc_verifications
+                WHERE partner_request_id = pr.id ORDER BY id DESC LIMIT 1
+            ) k ON TRUE
+            {where.replace('status', 'pr.status') if where else ''}
+            ORDER BY pr.created_at DESC
             """,
             params,
         )
         rows = cur.fetchall()
-    # emails/phones are stored as JSON; psycopg returns them already parsed for
-    # jsonb, but tolerate text too.
     import json as _json
     for r in rows:
         for k in ("emails", "phones"):
@@ -606,6 +665,15 @@ async def list_partner_applications(
                     r[k] = _json.loads(r[k])
                 except Exception:
                     r[k] = [r[k]]
+        if r.get("date_of_birth"):
+            r["date_of_birth"] = r["date_of_birth"].isoformat()
+        # Build a display name from the naming system.
+        if (r.get("naming_system") or "ethiopian") == "international":
+            r["applicant_name"] = " ".join(filter(None, [r.get("applicant_first_name"), r.get("applicant_last_name")]))
+        else:
+            r["applicant_name"] = " ".join(filter(None, [
+                r.get("applicant_first_name"), r.get("applicant_father_name"),
+                r.get("applicant_grandfather_name")]))
     return {"applications": rows, "total": len(rows)}
 
 
@@ -615,8 +683,12 @@ async def reject_partner_application(
     admin_notes: str = Form(""),
     admin=Depends(get_current_admin),
 ):
-    """Admin: reject a partnership application."""
+    """Admin: reject a partnership application and email the reason to the applicant."""
     with _conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM partner_requests WHERE id=%s", (request_id,))
+        app = cur.fetchone()
+        if not app:
+            raise HTTPException(status_code=404, detail="Application not found")
         cur.execute(
             """
             UPDATE partner_requests
@@ -626,30 +698,29 @@ async def reject_partner_application(
             """,
             (admin["id"], admin_notes.strip() or None, request_id),
         )
-        if cur.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Application not found")
         conn.commit()
-    return {"success": True}
+
+    emailed = False
+    to_email = _applicant_email(app)
+    if to_email:
+        from email_service import email_service
+        emailed = email_service.send_partner_rejection_email(
+            to_email, app.get("company_name") or app.get("contact_person"), admin_notes)
+    return {"success": True, "emailed": emailed, "email": to_email}
 
 
 @router.post("/api/admin/partner-applications/{request_id}/approve")
 async def approve_partner_application(
     request_id: int,
-    logo_url: str = Form(""),
-    website: str = Form(""),
     admin_notes: str = Form(""),
     admin=Depends(get_current_admin),
 ):
-    """Admin: approve an application AND create the corresponding live partner.
+    """Admin: approve an application, create the live partner, and email the applicant.
 
-    Verifying an application promotes it into the public `partners` list shown
-    on index.html.
+    The new partner reuses the logo/website the applicant already submitted.
     """
     with _conn() as conn, conn.cursor() as cur:
-        cur.execute(
-            "SELECT company_name, description, status FROM partner_requests WHERE id=%s",
-            (request_id,),
-        )
+        cur.execute("SELECT * FROM partner_requests WHERE id=%s", (request_id,))
         app = cur.fetchone()
         if not app:
             raise HTTPException(status_code=404, detail="Application not found")
@@ -664,21 +735,75 @@ async def approve_partner_application(
             (admin["id"], admin_notes.strip() or None, request_id),
         )
 
-        # Create the public partner from the application (idempotent-ish: a
-        # re-approve just inserts again, which admins can clean up in the
-        # partners panel — kept simple intentionally).
+        # Promote to a live partner, carrying over the submitted logo + website
+        # (falling back to a social link). Skip if a partner with this name was
+        # already created from this application.
         cur.execute(
             """
             INSERT INTO partners (name, logo_url, website, description, created_by)
             VALUES (%s, %s, %s, %s, %s)
             RETURNING id
             """,
-            (app["company_name"] or "Partner", logo_url.strip() or None,
-             website.strip() or None, app["description"], admin["id"]),
+            (app["company_name"] or "Partner", app.get("logo_url"),
+             app.get("website") or app.get("social_link"), app.get("description"), admin["id"]),
         )
         partner_id = cur.fetchone()["id"]
         conn.commit()
-    return {"success": True, "partner_id": partner_id}
+
+    emailed = False
+    to_email = _applicant_email(app)
+    if to_email:
+        from email_service import email_service
+        emailed = email_service.send_partner_approval_email(
+            to_email, app.get("company_name") or app.get("contact_person"))
+    return {"success": True, "partner_id": partner_id, "emailed": emailed, "email": to_email}
+
+
+@router.post("/api/admin/partners/{partner_id}/reject-partnership")
+async def reject_existing_partnership(
+    partner_id: int,
+    reason: str = Form(""),
+    admin=Depends(get_current_admin),
+):
+    """Admin: end an existing (approved) partnership.
+
+    Deactivates the partner so it leaves the homepage, marks the originating
+    application 'rejected', and emails the reason to the applicant.
+    """
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT name FROM partners WHERE id=%s", (partner_id,))
+        partner = cur.fetchone()
+        if not partner:
+            raise HTTPException(status_code=404, detail="Partner not found")
+
+        cur.execute(
+            "UPDATE partners SET is_active=FALSE, is_featured=FALSE, updated_at=CURRENT_TIMESTAMP WHERE id=%s",
+            (partner_id,),
+        )
+
+        # Find the originating application by name to update + get the email.
+        cur.execute(
+            "SELECT * FROM partner_requests WHERE company_name=%s ORDER BY id DESC LIMIT 1",
+            (partner["name"],),
+        )
+        app = cur.fetchone()
+        if app:
+            cur.execute(
+                """UPDATE partner_requests
+                   SET status='rejected', reviewed_by=%s, reviewed_at=CURRENT_TIMESTAMP,
+                       admin_notes=%s, updated_at=CURRENT_TIMESTAMP
+                   WHERE id=%s""",
+                (admin["id"], reason.strip() or None, app["id"]),
+            )
+        conn.commit()
+
+    emailed = False
+    to_email = _applicant_email(app) if app else None
+    if to_email:
+        from email_service import email_service
+        emailed = email_service.send_partner_rejection_email(
+            to_email, partner["name"], reason)
+    return {"success": True, "emailed": emailed, "email": to_email}
 
 
 # ============================================================
@@ -699,6 +824,9 @@ def _shape_user_review(r, profiles):
         "name": name,
         "profile_picture": avatar,
         "role": prof.get("role"),
+        # The reviewer's OWN rating (received as a tutor); None for non-tutors.
+        "tutor_rating": prof.get("tutor_rating"),
+        "tutor_rating_count": prof.get("tutor_rating_count", 0),
         "rating": float(r["rating"]) if r.get("rating") is not None else None,
         "ease_of_use": r.get("ease_of_use"),
         "features_quality": r.get("features_quality"),
@@ -784,7 +912,12 @@ async def list_featured_user_reviews(limit: int = Query(12, ge=1, le=50)):
             "profile_picture": prof.get("profile_picture")
                 or ("https://ui-avatars.com/api/?name=" + name.replace(" ", "+")),
             "role": prof.get("role"),
-            "rating": round(float(r["rating"])) if r.get("rating") is not None else 5,
+            # astegni_rating = stars the reviewer gave Astegni.
+            "astegni_rating": round(float(r["rating"])) if r.get("rating") is not None else 5,
+            # tutor_rating = the reviewer's OWN received rating, only if they're a
+            # tutor (else None -> the frontend hides that star).
+            "tutor_rating": prof.get("tutor_rating"),
+            "tutor_rating_count": prof.get("tutor_rating_count", 0),
             "review_text": r["review_text"],
         })
     return {"reviews": reviews, "total": len(reviews)}

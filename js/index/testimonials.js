@@ -41,23 +41,35 @@ async function initializeTestimonials() {
         slider.innerHTML = "";
         const start = currentSet * perPage;
         // Show up to `perPage` cards for this page (last page may have fewer).
+        const starStr = (n) => '⭐'.repeat(Math.max(1, Math.min(5, Math.round(n || 0))));
         for (let i = 0; i < perPage && (start + i) < reviews.length; i++) {
             const t = reviews[start + i];
-            const stars = '⭐'.repeat(Math.max(1, Math.min(5, t.rating || 5)));
+            // Two distinct stars:
+            //  - tutor's OWN rating (received as a tutor) shows just under the name;
+            //    only for tutors (tutor_rating != null).
+            //  - astegni rating (the stars they gave Astegni) shows just above the review.
+            const astegniStars = starStr(t.astegni_rating != null ? t.astegni_rating : t.rating);
+            const hasTutorStar = (t.tutor_rating != null && t.tutor_rating > 0);
+            const tutorStars = hasTutorStar
+                ? `<div class="rating tutor-rating" title="Tutor's own rating from students">
+                       ${starStr(t.tutor_rating)} <span class="rating-value">${t.tutor_rating.toFixed(1)}</span>
+                   </div>`
+                : '';
             const card = document.createElement("div");
             card.className = "testimonial-card active";
             card.innerHTML = `
                 <div class="testimonial-content">
-                    <div class="quote-icon">"</div>
-                    <p class="testimonial-text">${esc(t.review_text)}</p>
-                    <div class="testimonial-author">
+                    <div class="testimonial-author" style="margin-bottom:0.75rem;">
                         <img src="${esc(t.profile_picture)}" alt="${esc(t.name)}" class="author-avatar" loading="lazy">
                         <div class="author-info">
                             <h4>${esc(t.name)}</h4>
                             <p>${esc(roleLabel(t.role))}</p>
-                            <div class="rating">${stars}</div>
+                            ${tutorStars}
                         </div>
                     </div>
+                    <div class="rating astegni-rating" title="Rating given to Astegni">${astegniStars}</div>
+                    <div class="quote-icon">"</div>
+                    <p class="testimonial-text">${esc(t.review_text)}</p>
                 </div>
             `;
             slider.appendChild(card);

@@ -85,10 +85,64 @@
                 <label>Briefly describe your company</label>
             </div>
 
+            <!-- Branding: logo (required) + website / social (recommended) -->
+            <div class="form-group">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Logo (PNG/JPG/SVG) *</label>
+                <input type="file" id="partner-logo" accept="image/*" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            </div>
+
+            <div class="form-group">
+                <input type="url" id="partner-website" placeholder=" ">
+                <label>Website (recommended)</label>
+            </div>
+
+            <div class="form-group">
+                <input type="url" id="partner-social" placeholder=" ">
+                <label>Social media link (if no website)</label>
+            </div>
+
+            <!-- Applicant identity -->
+            <div class="form-group" style="background: var(--bg-secondary); padding: 14px; border-radius: 10px;">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; display:block;">Applicant — naming system</label>
+                <div style="display:flex; gap:18px; margin-bottom:10px;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="radio" name="partnerNaming" value="ethiopian" id="partnerNamingEthiopian" checked onchange="togglePartnerNaming()">
+                        <span style="font-size:13px;">Ethiopian (First / Father / Grandfather)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="radio" name="partnerNaming" value="international" id="partnerNamingInternational" onchange="togglePartnerNaming()">
+                        <span style="font-size:13px;">International (First / Last)</span>
+                    </label>
+                </div>
+
+                <div id="partner-ethiopian-names">
+                    <div class="form-group"><input type="text" id="partner-first-name" placeholder=" "><label>First name *</label></div>
+                    <div class="form-group"><input type="text" id="partner-father-name" placeholder=" "><label>Father's name *</label></div>
+                    <div class="form-group"><input type="text" id="partner-grandfather-name" placeholder=" "><label>Grandfather's name *</label></div>
+                </div>
+                <div id="partner-international-names" style="display:none;">
+                    <div class="form-group"><input type="text" id="partner-first-name-intl" placeholder=" "><label>First name *</label></div>
+                    <div class="form-group"><input type="text" id="partner-last-name" placeholder=" "><label>Last name *</label></div>
+                </div>
+
+                <div class="form-group"><input type="date" id="partner-dob" placeholder=" "><label style="position: relative; top: 0; font-size: 13px; color: var(--text-secondary);">Date of birth</label></div>
+                <div class="form-group"><input type="email" id="partner-personal-email" placeholder=" " required><label>Personal email *</label></div>
+            </div>
+
+            <!-- Business ownership proof + proposal -->
+            <div class="form-group">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Business ownership proof (PDF/DOC/Image) *</label>
+                <input type="file" id="partner-ownership-proof" accept=".pdf,.doc,.docx,image/*" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            </div>
+
             <div class="form-group">
                 <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Upload Proposal (PDF, DOC, DOCX - Max 10MB) *</label>
                 <input type="file" id="partner-proposal" accept=".pdf,.doc,.docx" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
             </div>
+
+            <p style="font-size:12px; color: var(--text-secondary); margin: 4px 0 12px;">
+                After you submit, you'll complete a quick identity check (photo of your ID + a selfie).
+            </p>
 
             <button type="submit" class="submit-btn">Submit Partnership Request</button>
         </form>

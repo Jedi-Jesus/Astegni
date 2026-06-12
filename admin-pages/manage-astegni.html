@@ -404,6 +404,21 @@
         </div>
     </div>
 
+    <!-- ============ GENERIC DETAIL MODAL (partner / application view) ============ -->
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ManageAstegni.closeModal('detail-modal')"></div>
+        <div class="modal-content" style="max-width:560px;">
+            <div class="modal-header">
+                <h2>Details</h2>
+                <button class="modal-close" onclick="ManageAstegni.closeModal('detail-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="detail-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="ManageAstegni.closeModal('detail-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Config + scripts -->
     <script src="./js/api-config.js"></script>
     <script src="./js/auth.js"></script>
@@ -451,6 +466,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606121700"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606121800"></script>
 </body>
 </html>

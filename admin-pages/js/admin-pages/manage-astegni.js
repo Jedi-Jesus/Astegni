@@ -107,20 +107,83 @@ const ManageAstegni = {
                 ? `<img src="${this._escape(p.logo)}" alt="${this._escape(p.name)}" class="ma-logo">`
                 : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
             const inactive = p.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>';
+            const featured = p.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
             return `
             <div class="ma-card">
                 ${logo}
                 <div class="ma-card-body">
-                    <h3>${this._escape(p.name)} ${inactive}</h3>
+                    <h3>${this._escape(p.name)} ${inactive} ${featured}</h3>
                     <p class="ma-muted">${this._escape(p.description || '')}</p>
                     ${p.website ? `<a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link"><i class="fas fa-external-link-alt"></i> ${this._escape(p.website)}</a>` : ''}
+                    <label class="ma-toggle" style="margin-top:0.5rem;">
+                        <input type="checkbox" ${p.is_featured ? 'checked' : ''}
+                               onchange="ManageAstegni.togglePartnerFeatured(${p.id}, this.checked, this)">
+                        <span>Feature on home page</span>
+                    </label>
                 </div>
                 <div class="ma-card-actions">
-                    <button class="ma-icon-btn" title="Edit" onclick='ManageAstegni.openPartnerModal(${p.id})'><i class="fas fa-edit"></i></button>
+                    <button class="ma-icon-btn" title="View" onclick="ManageAstegni.viewPartner(${p.id})"><i class="fas fa-eye"></i></button>
+                    <button class="ma-icon-btn danger" title="Reject partnership" onclick="ManageAstegni.rejectPartnership(${p.id})"><i class="fas fa-ban"></i></button>
                     <button class="ma-icon-btn danger" title="Delete" onclick="ManageAstegni.deletePartner(${p.id})"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`;
         }).join('');
+    },
+
+    async togglePartnerFeatured(id, desired, el) {
+        if (el) el.disabled = true;
+        const fd = new FormData();
+        fd.append('is_featured', desired);
+        try {
+            await this._send('POST', `/api/admin/partners/${id}/feature`, fd);
+            const p = this.partners.find(x => x.id === id);
+            if (p) p.is_featured = desired;
+            this.renderPartners();
+        } catch (err) {
+            if (el) el.checked = !desired;
+            alert('Failed to update: ' + err.message);
+        } finally {
+            if (el) el.disabled = false;
+        }
+    },
+
+    viewPartner(id) {
+        const p = this.partners.find(x => x.id === id);
+        if (!p) return;
+        const body = document.getElementById('detail-body');
+        document.querySelector('#detail-modal .modal-header h2').textContent = 'Partner Details';
+        const logo = p.logo
+            ? `<img src="${this._escape(p.logo)}" alt="" class="ma-avatar-lg" style="border-radius:10px;">`
+            : `<div class="ma-avatar-lg ma-logo-placeholder" style="border-radius:10px;"><i class="fas fa-handshake"></i></div>`;
+        body.innerHTML = `
+            <div class="ma-review-head">
+                ${logo}
+                <div>
+                    <h3 style="margin:0;">${this._escape(p.name)}</h3>
+                    <p class="ma-muted" style="margin:0;">
+                        ${p.is_featured ? 'Featured' : 'Not featured'} · ${p.is_active ? 'Active' : 'Inactive'}
+                    </p>
+                </div>
+            </div>
+            ${p.description ? `<blockquote class="ma-quote" style="margin:1rem 0;">${this._escape(p.description)}</blockquote>` : ''}
+            ${p.website ? `<p class="ma-muted"><i class="fas fa-globe"></i> <a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link">${this._escape(p.website)}</a></p>` : ''}
+        `;
+        this._show('detail-modal');
+    },
+
+    async rejectPartnership(id) {
+        const reason = prompt('Reason for ending this partnership (emailed to the partner):', '');
+        if (reason === null) return;
+        const fd = new FormData();
+        fd.append('reason', reason || '');
+        try {
+            const r = await this._send('POST', `/api/admin/partners/${id}/reject-partnership`, fd);
+            await this.loadPartners();
+            alert(r.emailed ? `Partnership ended; the partner was emailed at ${r.email}.`
+                            : 'Partnership ended. (No email on file or email not configured.)');
+        } catch (err) {
+            alert('Failed: ' + err.message);
+        }
     },
 
     openPartnerModal(id = null) {
@@ -475,21 +538,26 @@ const ManageAstegni = {
             const emails = (a.emails || []).map(e => this._escape(e)).join(', ');
             const phones = (a.phones || []).map(p => this._escape(p)).join(', ');
             const statusBadge = `<span class="ma-badge ${a.status === 'approved' ? 'verified' : a.status === 'rejected' ? 'inactive' : ''}">${this._escape(a.status)}</span>`;
+            const kyc = a.kyc_verification_status || a.kyc_status || 'pending';
+            const kycBadge = `<span class="ma-badge ${kyc === 'passed' ? 'verified' : ''}" title="Identity KYC">KYC: ${this._escape(kyc)}</span>`;
             const isPending = a.status === 'pending';
+            const logo = a.logo_url
+                ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-logo">`
+                : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
             return `
             <div class="ma-card">
+                ${logo}
                 <div class="ma-card-body">
-                    <h3>${this._escape(a.company_name || 'Unnamed')} ${statusBadge}</h3>
-                    <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.contact_person || '')}</p>
+                    <h3>${this._escape(a.company_name || 'Unnamed')} ${statusBadge} ${kycBadge}</h3>
+                    <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.applicant_name || a.contact_person || '')}</p>
                     <p class="ma-muted">${this._escape(a.partnership_type || '')}${a.partnership_type_category ? ' · ' + this._escape(a.partnership_type_category) : ''}</p>
                     ${emails ? `<p class="ma-muted"><i class="fas fa-envelope"></i> ${emails}</p>` : ''}
-                    ${phones ? `<p class="ma-muted"><i class="fas fa-phone"></i> ${phones}</p>` : ''}
-                    ${a.description ? `<p>${this._escape(a.description)}</p>` : ''}
                     ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
                 </div>
                 <div class="ma-card-actions">
+                    <button class="ma-icon-btn" title="View details" onclick="ManageAstegni.viewApplication(${a.id})"><i class="fas fa-eye"></i></button>
                     ${isPending ? `
-                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id}, '${this._escape((a.company_name || '').replace(/'/g, ''))}')"><i class="fas fa-check"></i></button>
+                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id})"><i class="fas fa-check"></i></button>
                     <button class="ma-icon-btn danger" title="Reject" onclick="ManageAstegni.rejectApplication(${a.id})"><i class="fas fa-times"></i></button>
                     ` : ''}
                 </div>
@@ -497,32 +565,68 @@ const ManageAstegni = {
         }).join('');
     },
 
-    async approveApplication(id, name) {
-        const website = prompt(`Approve "${name}" and publish as a partner.\n\nOptional partner website URL:`, '');
-        if (website === null) return;  // cancelled
-        const logo_url = prompt('Optional logo image URL (you can also add/replace it later in the Partners tab):', '');
-        if (logo_url === null) return;
-        const fd = new FormData();
-        fd.append('website', website || '');
-        fd.append('logo_url', logo_url || '');
+    viewApplication(id) {
+        const a = this.applications.find(x => x.id === id);
+        if (!a) return;
+        const body = document.getElementById('detail-body');
+        document.querySelector('#detail-modal .modal-header h2').textContent = 'Application Details';
+        const link = (label, url) => url
+            ? `<p class="ma-muted"><i class="fas fa-paperclip"></i> <a href="${this._escape(url)}" target="_blank" rel="noopener" class="ma-link">${label}</a></p>` : '';
+        const kyc = a.kyc_verification_status || a.kyc_status || 'pending';
+        const logo = a.logo_url
+            ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-avatar-lg" style="border-radius:10px;">`
+            : `<div class="ma-avatar-lg ma-logo-placeholder" style="border-radius:10px;"><i class="fas fa-handshake"></i></div>`;
+        body.innerHTML = `
+            <div class="ma-review-head">
+                ${logo}
+                <div>
+                    <h3 style="margin:0;">${this._escape(a.company_name || 'Unnamed')}</h3>
+                    <p class="ma-muted" style="margin:0;">${this._escape(a.partnership_type || '')} · Status: ${this._escape(a.status)}</p>
+                </div>
+            </div>
+            <div class="ma-subratings" style="grid-template-columns:1fr;">
+                <div class="ma-subrating"><span>Applicant</span><b>${this._escape(a.applicant_name || a.contact_person || '—')}</b></div>
+                <div class="ma-subrating"><span>Date of birth</span><b>${this._escape(a.date_of_birth || '—')}</b></div>
+                <div class="ma-subrating"><span>Personal email</span><b>${this._escape(a.personal_email || '—')}</b></div>
+                <div class="ma-subrating"><span>Identity KYC</span><b>${this._escape(kyc)}</b></div>
+                ${a.face_match_passed != null ? `<div class="ma-subrating"><span>Face match</span><b>${a.face_match_passed ? 'Passed' : 'Failed'}</b></div>` : ''}
+            </div>
+            <p class="ma-muted"><i class="fas fa-envelope"></i> ${(a.emails || []).map(e => this._escape(e)).join(', ')}</p>
+            <p class="ma-muted"><i class="fas fa-phone"></i> ${(a.phones || []).map(p => this._escape(p)).join(', ')}</p>
+            ${a.website ? `<p class="ma-muted"><i class="fas fa-globe"></i> <a href="${this._escape(a.website)}" target="_blank" rel="noopener" class="ma-link">${this._escape(a.website)}</a></p>` : ''}
+            ${a.social_link ? `<p class="ma-muted"><i class="fas fa-hashtag"></i> <a href="${this._escape(a.social_link)}" target="_blank" rel="noopener" class="ma-link">${this._escape(a.social_link)}</a></p>` : ''}
+            ${a.description ? `<blockquote class="ma-quote" style="margin:0.75rem 0;">${this._escape(a.description)}</blockquote>` : ''}
+            ${link('Proposal document', a.proposal_file_path)}
+            ${link('Business ownership proof', a.ownership_proof_url)}
+            ${link('ID document image', a.document_image_url)}
+            ${link('Selfie image', a.selfie_image_url)}
+        `;
+        this._show('detail-modal');
+    },
+
+    async approveApplication(id) {
+        if (!confirm('Approve this application and publish it as a partner? The applicant will be emailed.')) return;
         try {
-            await this._send('POST', `/api/admin/partner-applications/${id}/approve`, fd);
+            const r = await this._send('POST', `/api/admin/partner-applications/${id}/approve`, new FormData());
             await this.loadApplications();
             await this.loadPartners();
-            alert('Approved and added to Partners.');
+            alert(r.emailed ? `Approved and added to Partners. Applicant emailed at ${r.email}.`
+                            : 'Approved and added to Partners. (Email not sent — none on file or email not configured.)');
         } catch (err) {
             alert('Failed to approve: ' + err.message);
         }
     },
 
     async rejectApplication(id) {
-        const reason = prompt('Reason for rejecting (optional, shown in admin notes):', '');
+        const reason = prompt('Reason for rejecting (emailed to the applicant):', '');
         if (reason === null) return;
         const fd = new FormData();
         fd.append('admin_notes', reason || '');
         try {
-            await this._send('POST', `/api/admin/partner-applications/${id}/reject`, fd);
+            const r = await this._send('POST', `/api/admin/partner-applications/${id}/reject`, fd);
             await this.loadApplications();
+            alert(r.emailed ? `Rejected; the applicant was emailed at ${r.email}.`
+                            : 'Rejected. (Email not sent — none on file or email not configured.)');
         } catch (err) {
             alert('Failed to reject: ' + err.message);
         }

@@ -1410,6 +1410,78 @@ Astegni Team
             print(f"[EMAIL FALLBACK] Invitation token for {to_email}: {invitation_token}")
             return False
 
+    # ------------------------------------------------------------------
+    # Partnership application result emails
+    # ------------------------------------------------------------------
+    def _send_html(self, to_email: str, subject: str, heading: str, body_html: str) -> bool:
+        """Send a simple branded HTML email. Returns False (logs) if unconfigured."""
+        if not self.is_configured:
+            print(f"[EMAIL] Not configured. Would send '{subject}' to {to_email}")
+            return False
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+            html = f"""
+<!DOCTYPE html>
+<html><head><style>
+  body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+  .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+  .header {{ background: #F59E0B; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
+  .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }}
+  .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+</style></head><body>
+  <div class="container">
+    <div class="header"><h1>{heading}</h1></div>
+    <div class="content">{body_html}
+      <div class="footer"><p>&copy; Astegni - Ethiopian Educational Platform</p></div>
+    </div>
+  </div>
+</body></html>"""
+            # Strip tags for the plain-text alternative.
+            import re as _re
+            text = _re.sub(r"<[^>]+>", "", body_html)
+            msg.attach(MIMEText(text, 'plain'))
+            msg.attach(MIMEText(html, 'html'))
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+            print(f"[EMAIL] Sent '{subject}' to {to_email}")
+            return True
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send '{subject}' to {to_email}: {e}")
+            return False
+
+    def send_partner_approval_email(self, to_email: str, partner_name: str) -> bool:
+        body = (
+            f"<p>Dear {partner_name or 'Partner'},</p>"
+            "<p>Great news — your partnership application with Astegni has been "
+            "<strong>approved</strong>. Your organization is now a recognized Astegni partner "
+            "and may be featured on our homepage.</p>"
+            "<p>Our team will reach out with next steps. Welcome aboard!</p>"
+            "<p>Warm regards,<br>The Astegni Team</p>"
+        )
+        return self._send_html(to_email, "Your Astegni partnership has been approved",
+                               "Partnership Approved 🎉", body)
+
+    def send_partner_rejection_email(self, to_email: str, partner_name: str, reason: str) -> bool:
+        reason_html = (
+            f"<p><strong>Reason:</strong> {reason}</p>" if reason and reason.strip()
+            else "<p>After careful review, we are unable to proceed with this application at this time.</p>"
+        )
+        body = (
+            f"<p>Dear {partner_name or 'Applicant'},</p>"
+            "<p>Thank you for your interest in partnering with Astegni. After reviewing your "
+            "application, we are unable to approve it at this time.</p>"
+            f"{reason_html}"
+            "<p>You are welcome to address the points above and re-apply.</p>"
+            "<p>Sincerely,<br>The Astegni Team</p>"
+        )
+        return self._send_html(to_email, "Update on your Astegni partnership application",
+                               "Partnership Application Update", body)
+
 
 # Create singleton instance
 email_service = EmailService()
