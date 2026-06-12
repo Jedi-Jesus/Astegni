@@ -296,6 +296,8 @@ async function handleLogin(event) {
         localStorage.setItem('adminToken', data.access_token);  // Primary admin token key
         localStorage.setItem('admin_access_token', data.access_token);  // Fallback
         localStorage.setItem('adminAuth', 'true');
+        // Refresh token lets the session silently renew the 30-min access token.
+        if (data.refresh_token) localStorage.setItem('adminRefreshToken', data.refresh_token);
 
         // Store admin_id for profile lookups
         localStorage.setItem('adminId', data.admin_id);
@@ -485,6 +487,7 @@ async function handleRegister(event) {
         localStorage.setItem('adminToken', data.access_token);  // Primary admin token key
         localStorage.setItem('admin_access_token', data.access_token);  // Fallback
         localStorage.setItem('adminAuth', 'true');
+        if (data.refresh_token) localStorage.setItem('adminRefreshToken', data.refresh_token);
         localStorage.setItem('adminId', data.admin_id);
 
         // Build full name from response or use the form values
@@ -728,6 +731,7 @@ async function handleLogout() {
     localStorage.removeItem('token');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('adminRefreshToken');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('userRole');
 
@@ -1304,3 +1308,98 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// ============================================================
+// ADMIN SESSION KEEP-ALIVE (silent token refresh)
+// The admin access token expires after 30 min. Rather than logging admins out
+// mid-session, we exchange the longer-lived refresh token for a fresh access
+// token: proactively on a timer, and reactively when an API call 401s.
+// ============================================================
+window.AdminSession = (function () {
+    const apiBase = () => (window.API_BASE_URL || 'http://localhost:8000');
+    const getRefresh = () => localStorage.getItem('adminRefreshToken');
+    const getAccess = () =>
+        localStorage.getItem('adminToken') ||
+        localStorage.getItem('token') ||
+        localStorage.getItem('access_token') || '';
+
+    let refreshing = null; // de-dupe concurrent refreshes
+
+    function storeAccess(token) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('admin_access_token', token);
+    }
+
+    // Returns the new access token, or null if refresh failed (caller should
+    // then treat the session as truly expired).
+    async function refreshAccessToken() {
+        const rt = getRefresh();
+        if (!rt) return null;
+        if (refreshing) return refreshing; // share an in-flight refresh
+        refreshing = (async () => {
+            try {
+                const res = await fetch(`${apiBase()}/api/admin/refresh-token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: rt }),
+                });
+                if (!res.ok) {
+                    // Refresh token itself is dead -> drop it so we stop trying.
+                    if (res.status === 401) localStorage.removeItem('adminRefreshToken');
+                    return null;
+                }
+                const data = await res.json();
+                if (data.access_token) {
+                    storeAccess(data.access_token);
+                    if (Array.isArray(data.departments)) {
+                        const u = JSON.parse(localStorage.getItem('adminUser') || '{}');
+                        u.departments = data.departments;
+                        localStorage.setItem('adminUser', JSON.stringify(u));
+                    }
+                    return data.access_token;
+                }
+                return null;
+            } catch (e) {
+                console.warn('[AdminSession] refresh failed:', e);
+                return null;
+            } finally {
+                refreshing = null;
+            }
+        })();
+        return refreshing;
+    }
+
+    // fetch() wrapper that injects the admin bearer token and, on a 401, refreshes
+    // once and retries. Pass the URL + standard fetch options (no Authorization
+    // header needed — it's added here).
+    async function fetchWithAuth(url, options = {}) {
+        const withAuth = (token) => {
+            const headers = Object.assign({}, options.headers || {});
+            headers['Authorization'] = `Bearer ${token}`;
+            return Object.assign({}, options, { headers });
+        };
+        let res = await fetch(url, withAuth(getAccess()));
+        if (res.status === 401) {
+            const fresh = await refreshAccessToken();
+            if (fresh) res = await fetch(url, withAuth(fresh));
+        }
+        return res;
+    }
+
+    // Proactive refresh a few minutes before the 30-min token lapses. Only runs
+    // when a refresh token exists (i.e. the admin is logged in).
+    function startAutoRefresh() {
+        if (!getRefresh()) return;
+        // Refresh every 20 minutes (token lives 30) — comfortably ahead of expiry.
+        setInterval(() => { refreshAccessToken(); }, 20 * 60 * 1000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+    } else {
+        startAutoRefresh();
+    }
+
+    return { refreshAccessToken, fetchWithAuth, startAutoRefresh };
+})();

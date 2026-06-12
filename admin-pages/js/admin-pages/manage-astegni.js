@@ -28,6 +28,17 @@ const ManageAstegni = {
         return { 'Authorization': `Bearer ${this._token()}` };
     },
 
+    // All admin calls go through AdminSession.fetchWithAuth (auth.js), which
+    // injects the bearer token and silently refreshes + retries once on a 401.
+    // Falls back to a plain authenticated fetch if AdminSession isn't loaded.
+    _fetch(url, options = {}) {
+        if (window.AdminSession && typeof window.AdminSession.fetchWithAuth === 'function') {
+            return window.AdminSession.fetchWithAuth(url, options);
+        }
+        const headers = Object.assign({}, options.headers || {}, this._authHeaders());
+        return fetch(url, Object.assign({}, options, { headers }));
+    },
+
     _escape(s) {
         return String(s ?? '').replace(/[&<>"']/g, c => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
@@ -35,11 +46,8 @@ const ManageAstegni = {
     },
 
     async _send(method, url, formData) {
-        const res = await fetch(`${MA_API}${url}`, {
-            method,
-            headers: this._authHeaders(),  // do NOT set Content-Type; browser sets multipart boundary
-            body: formData,
-        });
+        // do NOT set Content-Type; the browser sets the multipart boundary.
+        const res = await this._fetch(`${MA_API}${url}`, { method, body: formData });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             throw new Error(err.detail || `HTTP ${res.status}`);
@@ -72,7 +80,7 @@ const ManageAstegni = {
         if (res.status === 401 || res.status === 403) {
             const el = document.getElementById(containerId);
             if (el) el.innerHTML = `<div class="error-state"><i class="fas fa-lock"></i>
-                <div>Your admin session has expired or lacks access.</div>
+                <div>Your admin session has ended. Please log in again.</div>
                 <button class="btn-primary" style="margin-top:0.75rem" onclick="window.location.href='index.html'">Log in again</button>
             </div>`;
             return true;
@@ -379,10 +387,10 @@ const ManageAstegni = {
     async loadReviews() {
         const list = document.getElementById('reviews-list');
         try {
-            const res = await fetch(`${MA_API}/api/admin/testimonials`, { headers: this._authHeaders() });
+            const res = await this._fetch(`${MA_API}/api/admin/testimonials`);
             if (res.status === 401 || res.status === 403) {
                 if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-lock"></i>
-                    <div>Your admin session has expired or lacks access.</div>
+                    <div>Your admin session has ended. Please log in again.</div>
                     <button class="btn-primary" style="margin-top:0.75rem" onclick="window.location.href='index.html'">Log in again</button>
                 </div>`;
                 return;
@@ -525,8 +533,7 @@ const ManageAstegni = {
         const list = document.getElementById('applications-list');
         const status = document.getElementById('applications-filter')?.value || 'pending';
         try {
-            const res = await fetch(`${MA_API}/api/admin/partner-applications?status=${encodeURIComponent(status)}`,
-                { headers: this._authHeaders() });
+            const res = await this._fetch(`${MA_API}/api/admin/partner-applications?status=${encodeURIComponent(status)}`);
             if (this._handleAuth(res, 'applications-list')) return;
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
@@ -656,8 +663,7 @@ const ManageAstegni = {
         const list = document.getElementById('user-reviews-list');
         const featuredOnly = (document.getElementById('testimonials-filter')?.value === 'featured');
         try {
-            const res = await fetch(`${MA_API}/api/admin/user-reviews?featured_only=${featuredOnly}`,
-                { headers: this._authHeaders() });
+            const res = await this._fetch(`${MA_API}/api/admin/user-reviews?featured_only=${featuredOnly}`);
             if (this._handleAuth(res, 'user-reviews-list')) return;
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();

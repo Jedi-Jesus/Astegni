@@ -19,7 +19,7 @@ import jwt
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from utils import verify_password, create_access_token
+from utils import verify_password, create_access_token, create_refresh_token
 
 load_dotenv()
 # Use ADMIN_DATABASE_URL for admin tables (astegni_admin_db)
@@ -28,7 +28,10 @@ ADMIN_DATABASE_URL = os.getenv(
     'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
 )
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key_here')
+REFRESH_SECRET_KEY = os.getenv('REFRESH_SECRET_KEY', 'your_refresh_secret_key_here')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
+# Admin refresh tokens last a working span; admins don't re-enter creds for a week.
+ADMIN_REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv('ADMIN_REFRESH_TOKEN_EXPIRE_DAYS', 7))
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Auth"])
 
@@ -256,6 +259,12 @@ async def admin_login(request: AdminLoginRequest):
             token_data,
             expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         )
+        # Longer-lived refresh token so the admin's session survives the 30-min
+        # access-token expiry without re-entering credentials.
+        refresh_token = create_refresh_token(
+            {"admin_id": admin_id, "email": email, "type": "admin_refresh"},
+            expires_delta=timedelta(days=ADMIN_REFRESH_TOKEN_EXPIRE_DAYS)
+        )
 
         return {
             "success": True,
@@ -265,6 +274,7 @@ async def admin_login(request: AdminLoginRequest):
             "email": email,
             "departments": departments or [],  # Return all departments
             "access_token": access_token,
+            "refresh_token": refresh_token,
             "token_type": "bearer"
         }
 
@@ -272,6 +282,59 @@ async def admin_login(request: AdminLoginRequest):
         if conn:
             conn.rollback()
         raise
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+
+class AdminRefreshRequest(BaseModel):
+    refresh_token: str
+
+
+@router.post("/refresh-token")
+async def admin_refresh_token(request: AdminRefreshRequest):
+    """Exchange a valid admin refresh token for a fresh access token.
+
+    Lets the admin UI silently renew the 30-min access token in the background
+    so admins aren't logged out mid-session. Departments are re-read from the DB
+    so any change to the admin's access takes effect on the next refresh.
+    """
+    try:
+        payload = jwt.decode(request.refresh_token, REFRESH_SECRET_KEY, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token has expired. Please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token. Please log in again.")
+
+    if payload.get("type") != "admin_refresh":
+        raise HTTPException(status_code=401, detail="Invalid refresh token.")
+
+    admin_id = payload.get("admin_id")
+    email = payload.get("email")
+    if not admin_id:
+        raise HTTPException(status_code=401, detail="Invalid refresh token payload.")
+
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT departments FROM admin_profile WHERE id = %s", (admin_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=401, detail="Admin account no longer exists.")
+        departments = row[0] or []
+
+        access_token = create_access_token(
+            {"admin_id": admin_id, "email": email, "departments": departments, "type": "admin"},
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        )
+        return {
+            "success": True,
+            "access_token": access_token,
+            "departments": departments,
+            "token_type": "bearer",
+        }
     finally:
         if conn:
             cursor.close()
