@@ -166,7 +166,16 @@ async def get_trending_tutors(
         # Update trending scores before querying
         update_trending_scores(db)
 
-        # Get trending tutors (verified tutors only)
+        # Get trending tutors: verified, and with at least one active public package.
+        # tutor_packages has no ORM model (raw-SQL only), so correlate via EXISTS.
+        has_active_package = text("""
+            EXISTS (
+                SELECT 1 FROM tutor_packages tp
+                WHERE tp.tutor_id = tutor_profiles.id
+                AND tp.is_active = true
+                AND tp.visibility = 'public'
+            )
+        """)
         trending_tutors = db.query(
             TutorProfile
         ).join(
@@ -174,7 +183,8 @@ async def get_trending_tutors(
         ).filter(
             TutorProfile.search_count >= min_searches,
             TutorProfile.is_active == True,
-            User.is_verified == True
+            User.is_verified == True,
+            has_active_package
         ).order_by(
             desc(TutorProfile.trending_score)
         ).limit(limit).all()
