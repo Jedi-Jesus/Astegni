@@ -681,7 +681,16 @@ const ManageAstegni = {
             list.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><div>No user reviews yet.</div></div>';
             return;
         }
-        list.innerHTML = this.userReviews.map(r => {
+        // Client-side star rating filter (1-5), applied over the loaded list.
+        const ratingFilter = document.getElementById('testimonials-rating-filter')?.value || 'all';
+        const reviews = ratingFilter === 'all'
+            ? this.userReviews
+            : this.userReviews.filter(r => Math.round(r.rating || 0) === Number(ratingFilter));
+        if (!reviews.length) {
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-comment-dots"></i><div>No reviews rated ${this._escape(ratingFilter)} ★.</div></div>`;
+            return;
+        }
+        list.innerHTML = reviews.map(r => {
             const stars = '★'.repeat(Math.round(r.rating || 0));
             const featured = r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
             const text = r.review_text ? this._escape(r.review_text) : '<em class="ma-muted">No written review</em>';

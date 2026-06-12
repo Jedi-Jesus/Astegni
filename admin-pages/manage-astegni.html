@@ -199,11 +199,23 @@
                         <h2>Testimonials</h2>
                         <p class="ma-muted">Real reviews users left via "Review Astegni". Feature one to show it in the homepage "Success Stories" section.</p>
                     </div>
-                    <div class="ma-filter">
-                        <select id="testimonials-filter" class="ma-input" onchange="ManageAstegni.loadUserReviews()">
-                            <option value="all">All reviews</option>
-                            <option value="featured">Featured only</option>
-                        </select>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <div class="ma-filter">
+                            <select id="testimonials-rating-filter" class="ma-input" onchange="ManageAstegni.renderUserReviews()">
+                                <option value="all">All ratings</option>
+                                <option value="5">5 ★</option>
+                                <option value="4">4 ★</option>
+                                <option value="3">3 ★</option>
+                                <option value="2">2 ★</option>
+                                <option value="1">1 ★</option>
+                            </select>
+                        </div>
+                        <div class="ma-filter">
+                            <select id="testimonials-filter" class="ma-input" onchange="ManageAstegni.loadUserReviews()">
+                                <option value="all">All reviews</option>
+                                <option value="featured">Featured only</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div id="user-reviews-list" class="ma-card-grid">
@@ -475,6 +487,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606122100"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606122200"></script>
 </body>
 </html>
