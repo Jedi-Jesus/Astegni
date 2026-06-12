@@ -337,7 +337,6 @@ const ManageAstegni = {
             const stars = '★'.repeat(r.rating || 0);
             const badges = [
                 r.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>',
-                r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '',
                 r.is_verified ? '<span class="ma-badge verified">Verified</span>' : '',
             ].join(' ');
             return `
@@ -348,6 +347,11 @@ const ManageAstegni = {
                     <p class="ma-muted">${this._escape(r.title || '')}${r.organization ? ' · ' + this._escape(r.organization) : ''}</p>
                     <blockquote class="ma-quote">"${this._escape(r.review)}"</blockquote>
                     <div>${badges}</div>
+                    <label class="ma-toggle" style="margin-top:0.5rem;">
+                        <input type="checkbox" ${r.is_featured ? 'checked' : ''}
+                               onchange="ManageAstegni.toggleReviewFeatured(${r.id}, this.checked, this)">
+                        <span>Feature on home page</span>
+                    </label>
                 </div>
                 <div class="ma-card-actions">
                     <button class="ma-icon-btn" title="Edit" onclick="ManageAstegni.openReviewModal(${r.id})"><i class="fas fa-edit"></i></button>
@@ -355,6 +359,22 @@ const ManageAstegni = {
                 </div>
             </div>`;
         }).join('');
+    },
+
+    async toggleReviewFeatured(id, desired, el) {
+        if (el) el.disabled = true;
+        const fd = new FormData();
+        fd.append('is_featured', desired);
+        try {
+            await this._send('POST', `/api/admin/testimonials/${id}/feature`, fd);
+            const r = this.reviews.find(x => x.id === id);
+            if (r) r.is_featured = desired;
+        } catch (err) {
+            if (el) el.checked = !desired;  // revert on failure
+            alert('Failed to update: ' + err.message);
+        } finally {
+            if (el) el.disabled = false;
+        }
     },
 
     openReviewModal(id = null) {

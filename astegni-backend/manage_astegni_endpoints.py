@@ -540,6 +540,24 @@ async def update_testimonial(
     return {"success": True}
 
 
+@router.post("/api/admin/testimonials/{testimonial_id}/feature")
+async def set_testimonial_featured(
+    testimonial_id: int,
+    is_featured: bool = Form(...),
+    admin=Depends(get_current_admin),
+):
+    """Admin: quick-toggle whether a professional review shows on the home page."""
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE astegni_testimonials SET is_featured=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s",
+            (is_featured, testimonial_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Testimonial not found")
+        conn.commit()
+    return {"success": True, "is_featured": is_featured}
+
+
 @router.delete("/api/admin/testimonials/{testimonial_id}")
 async def delete_testimonial(testimonial_id: int, admin=Depends(get_current_admin)):
     with _conn() as conn, conn.cursor() as cur:
