@@ -197,3 +197,16 @@
     display: flex; justify-content: flex-end; gap: 0.6rem;
     padding-top: 1rem; margin-top: 0.5rem;
 }
+
+/* Danger button (used in the partner detail modal) */
+.btn-danger {
+    border: none;
+    padding: 0.45rem 0.95rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #dc2626;
+    color: #fff;
+}
+.btn-danger:hover { background: #b91c1c; }

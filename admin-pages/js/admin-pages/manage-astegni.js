@@ -15,7 +15,7 @@ const ManageAstegni = {
     reviews: [],
     userReviews: [],
     currentUserReview: null,
-    activeTab: 'partners',
+    activeTab: 'applications',
 
     // ---- auth ----
     _token() {
@@ -133,16 +133,9 @@ const ManageAstegni = {
                     <h3>${this._escape(p.name)} ${inactive} ${featured}</h3>
                     <p class="ma-muted">${this._escape(p.description || '')}</p>
                     ${p.website ? `<a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link"><i class="fas fa-external-link-alt"></i> ${this._escape(p.website)}</a>` : ''}
-                    <label class="ma-toggle" style="margin-top:0.5rem;">
-                        <input type="checkbox" ${p.is_featured ? 'checked' : ''}
-                               onchange="ManageAstegni.togglePartnerFeatured(${p.id}, this.checked, this)">
-                        <span>Feature on home page</span>
-                    </label>
                 </div>
                 <div class="ma-card-actions">
                     <button class="ma-icon-btn" title="View" onclick="ManageAstegni.viewPartner(${p.id})"><i class="fas fa-eye"></i></button>
-                    <button class="ma-icon-btn danger" title="Reject partnership" onclick="ManageAstegni.rejectPartnership(${p.id})"><i class="fas fa-ban"></i></button>
-                    <button class="ma-icon-btn danger" title="Delete" onclick="ManageAstegni.deletePartner(${p.id})"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`;
         }).join('');
@@ -168,6 +161,7 @@ const ManageAstegni = {
     viewPartner(id) {
         const p = this.partners.find(x => x.id === id);
         if (!p) return;
+        this.currentPartner = p;
         const body = document.getElementById('detail-body');
         document.querySelector('#detail-modal .modal-header h2').textContent = 'Partner Details';
         const logo = p.logo
@@ -185,6 +179,22 @@ const ManageAstegni = {
             </div>
             ${p.description ? `<blockquote class="ma-quote" style="margin:1rem 0;">${this._escape(p.description)}</blockquote>` : ''}
             ${p.website ? `<p class="ma-muted"><i class="fas fa-globe"></i> <a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link">${this._escape(p.website)}</a></p>` : ''}
+
+            <div style="border-top:1px solid var(--border-color,#e5e7eb); margin-top:1rem; padding-top:1rem;">
+                <label class="ma-toggle">
+                    <input type="checkbox" id="detail-partner-featured" ${p.is_featured ? 'checked' : ''}
+                           onchange="ManageAstegni.togglePartnerFeatured(${p.id}, this.checked, this)">
+                    <span>Feature on home page</span>
+                </label>
+                <div style="display:flex; gap:0.5rem; margin-top:0.9rem; flex-wrap:wrap;">
+                    <button class="btn-secondary" onclick="ManageAstegni.rejectPartnership(${p.id})">
+                        <i class="fas fa-ban mr-1"></i> Reject partnership
+                    </button>
+                    <button class="btn-danger" onclick="ManageAstegni.deletePartner(${p.id})">
+                        <i class="fas fa-trash mr-1"></i> Delete
+                    </button>
+                </div>
+            </div>
         `;
         this._show('detail-modal');
     },
@@ -196,6 +206,7 @@ const ManageAstegni = {
         fd.append('reason', reason || '');
         try {
             const r = await this._send('POST', `/api/admin/partners/${id}/reject-partnership`, fd);
+            this.closeModal('detail-modal');
             await this.loadPartners();
             alert(r.emailed ? `Partnership ended; the partner was emailed at ${r.email}.`
                             : 'Partnership ended. (No email on file or email not configured.)');
@@ -256,6 +267,7 @@ const ManageAstegni = {
         if (!confirm('Delete this partner?')) return;
         try {
             await this._send('DELETE', `/api/admin/partners/${id}`);
+            this.closeModal('detail-modal');
             await this.loadPartners();
         } catch (err) {
             alert('Failed to delete: ' + err.message);

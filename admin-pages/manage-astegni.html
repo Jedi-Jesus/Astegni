@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./css/root.css">
     <link rel="stylesheet" href="./css/admin-profile/admin.css">
     <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606121600">
+    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606122900">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -97,11 +97,11 @@
 
             <!-- Tabs -->
             <div class="ma-tabs mb-6">
-                <button class="ma-tab active" data-tab="partners" onclick="ManageAstegni.switchTab('partners')">
-                    <i class="fas fa-handshake mr-2"></i> Partners
-                </button>
-                <button class="ma-tab" data-tab="applications" onclick="ManageAstegni.switchTab('applications')">
+                <button class="ma-tab active" data-tab="applications" onclick="ManageAstegni.switchTab('applications')">
                     <i class="fas fa-inbox mr-2"></i> Partner Applications
+                </button>
+                <button class="ma-tab" data-tab="partners" onclick="ManageAstegni.switchTab('partners')">
+                    <i class="fas fa-handshake mr-2"></i> Partners
                 </button>
                 <button class="ma-tab" data-tab="videos" onclick="ManageAstegni.switchTab('videos')">
                     <i class="fas fa-video mr-2"></i> Featured Videos
@@ -114,8 +114,29 @@
                 </button>
             </div>
 
+            <!-- ============ PARTNER APPLICATIONS PANEL ============ -->
+            <div class="ma-panel" id="panel-applications">
+                <div class="ma-panel-head">
+                    <div>
+                        <h2>Partner Applications</h2>
+                        <p class="ma-muted">Submissions from the homepage "Become a Partner" form. Open an application to verify or reject it.</p>
+                    </div>
+                    <div class="ma-filter">
+                        <select id="applications-filter" class="ma-input" onchange="ManageAstegni.loadApplications()">
+                            <option value="pending">Pending</option>
+                            <option value="all">All</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="applications-list" class="ma-card-grid">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading applications...</div>
+                </div>
+            </div>
+
             <!-- ============ PARTNERS PANEL ============ -->
-            <div class="ma-panel" id="panel-partners">
+            <div class="ma-panel" id="panel-partners" style="display:none;">
                 <div class="ma-panel-head">
                     <div>
                         <h2>Trusted Partners</h2>
@@ -136,27 +157,6 @@
                 </div>
                 <div id="partners-list" class="ma-card-grid">
                     <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading partners...</div>
-                </div>
-            </div>
-
-            <!-- ============ PARTNER APPLICATIONS PANEL ============ -->
-            <div class="ma-panel" id="panel-applications" style="display:none;">
-                <div class="ma-panel-head">
-                    <div>
-                        <h2>Partner Applications</h2>
-                        <p class="ma-muted">Submissions from the homepage "Become a Partner" form. Approve to publish as a partner, or reject.</p>
-                    </div>
-                    <div class="ma-filter">
-                        <select id="applications-filter" class="ma-input" onchange="ManageAstegni.loadApplications()">
-                            <option value="pending">Pending</option>
-                            <option value="all">All</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="applications-list" class="ma-card-grid">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading applications...</div>
                 </div>
             </div>
 
@@ -487,6 +487,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606122500"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606122900"></script>
 </body>
 </html>
