@@ -15,7 +15,7 @@ const ManageAstegni = {
     reviews: [],
     userReviews: [],
     currentUserReview: null,
-    activeTab: 'applications',
+    activeTab: 'partners',
 
     // ---- auth ----
     _token() {
@@ -57,8 +57,7 @@ const ManageAstegni = {
 
     // ---- init / tabs ----
     init() {
-        this.loadPartners();
-        this.loadApplications();
+        this.loadPartnersPanel();
         this.loadVideos();
         this.loadReviews();
         this.loadUserReviews();
@@ -68,7 +67,7 @@ const ManageAstegni = {
         this.activeTab = tab;
         document.querySelectorAll('.ma-tab').forEach(b =>
             b.classList.toggle('active', b.dataset.tab === tab));
-        ['partners', 'applications', 'videos', 'reviews', 'testimonials'].forEach(t => {
+        ['partners', 'videos', 'reviews', 'testimonials'].forEach(t => {
             const panel = document.getElementById(`panel-${t}`);
             if (panel) panel.style.display = (t === tab) ? '' : 'none';
         });
@@ -89,56 +88,123 @@ const ManageAstegni = {
     },
 
     // ============================================================
-    // PARTNERS
+    // PARTNERS (unified: KYC-verified applications + live partners)
+    //   Status filter:
+    //     pending  -> applications awaiting a decision (verify / reject)
+    //     approved -> live partners (feature toggle / reject / delete)
+    //     rejected -> rejected applications
+    //     all      -> pending apps + approved partners + rejected apps
+    //   KYC-pending applications are filtered out by the backend and never shown.
     // ============================================================
-    async loadPartners() {
+    partnersStatus: 'all',
+
+    async loadPartnersPanel() {
         const list = document.getElementById('partners-list');
         try {
-            const res = await fetch(`${MA_API}/api/partners?include_inactive=true`);
-            const data = await res.json();
-            this.partners = data.partners || [];
-            this.renderPartners();
+            const [partnersRes, appsRes] = await Promise.all([
+                fetch(`${MA_API}/api/partners?include_inactive=true`),
+                this._fetch(`${MA_API}/api/admin/partner-applications?status=all`),
+            ]);
+            if (this._handleAuth(appsRes, 'partners-list')) return;
+            const partnersData = await partnersRes.json().catch(() => ({}));
+            const appsData = await appsRes.json().catch(() => ({}));
+            this.partners = partnersData.partners || [];
+            this.applications = appsData.applications || [];
+            this.renderPartnersPanel();
         } catch (e) {
             if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${this._escape(e.message)}</div>`;
         }
     },
 
-    renderPartners() {
+    setPartnersStatus(status) {
+        this.partnersStatus = status;
+        document.querySelectorAll('.ma-status-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.status === status));
+        // The featured filter only applies to approved/live partners.
+        const wrap = document.getElementById('partners-featured-filter-wrap');
+        if (wrap) wrap.style.display = (status === 'approved') ? '' : 'none';
+        this.renderPartnersPanel();
+    },
+
+    renderPartnersPanel() {
         const list = document.getElementById('partners-list');
         if (!list) return;
-        // Featured / not-featured filter (client-side over the loaded list).
-        const filter = document.getElementById('partners-filter')?.value || 'all';
-        const partners = this.partners.filter(p =>
-            filter === 'featured' ? p.is_featured
-            : filter === 'not-featured' ? !p.is_featured
-            : true);
-        if (!this.partners.length) {
-            list.innerHTML = '<div class="empty-state"><i class="fas fa-handshake"></i><div>No partners yet. Add one above.</div></div>';
+        const status = this.partnersStatus || 'all';
+        const pendingApps = this.applications.filter(a => a.status === 'pending');
+        const rejectedApps = this.applications.filter(a => a.status === 'rejected');
+
+        // Approved = live partners; apply the featured dropdown when on Approved.
+        let approved = this.partners;
+        if (status === 'approved') {
+            const f = document.getElementById('partners-featured-filter')?.value || 'all';
+            approved = this.partners.filter(p =>
+                f === 'featured' ? p.is_featured
+                : f === 'not-featured' ? !p.is_featured
+                : true);
+        }
+
+        let cards = [];
+        if (status === 'pending') {
+            cards = pendingApps.map(a => this._applicationCard(a));
+        } else if (status === 'approved') {
+            cards = approved.map(p => this._partnerCard(p));
+        } else if (status === 'rejected') {
+            cards = rejectedApps.map(a => this._applicationCard(a));
+        } else { // all
+            cards = [
+                ...pendingApps.map(a => this._applicationCard(a)),
+                ...this.partners.map(p => this._partnerCard(p)),
+                ...rejectedApps.map(a => this._applicationCard(a)),
+            ];
+        }
+
+        if (!cards.length) {
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><div>No ${status === 'all' ? '' : status + ' '}partners.</div></div>`;
             return;
         }
-        if (!partners.length) {
-            list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><div>No ${filter === 'featured' ? 'featured' : 'non-featured'} partners.</div></div>`;
-            return;
-        }
-        list.innerHTML = partners.map(p => {
-            const logo = p.logo
-                ? `<img src="${this._escape(p.logo)}" alt="${this._escape(p.name)}" class="ma-logo">`
-                : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
-            const inactive = p.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>';
-            const featured = p.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
-            return `
-            <div class="ma-card">
-                ${logo}
-                <div class="ma-card-body">
-                    <h3>${this._escape(p.name)} ${inactive} ${featured}</h3>
-                    <p class="ma-muted">${this._escape(p.description || '')}</p>
-                    ${p.website ? `<a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link"><i class="fas fa-external-link-alt"></i> ${this._escape(p.website)}</a>` : ''}
-                </div>
-                <div class="ma-card-actions">
-                    <button class="ma-icon-btn" title="View" onclick="ManageAstegni.viewPartner(${p.id})"><i class="fas fa-eye"></i></button>
-                </div>
-            </div>`;
-        }).join('');
+        list.innerHTML = cards.join('');
+    },
+
+    // A live-partner card (approved). View-only; actions live in the modal.
+    _partnerCard(p) {
+        const logo = p.logo
+            ? `<img src="${this._escape(p.logo)}" alt="${this._escape(p.name)}" class="ma-logo">`
+            : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
+        const inactive = p.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>';
+        const featured = p.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
+        return `
+        <div class="ma-card">
+            ${logo}
+            <div class="ma-card-body">
+                <h3>${this._escape(p.name)} <span class="ma-badge verified">Approved</span> ${inactive} ${featured}</h3>
+                <p class="ma-muted">${this._escape(p.description || '')}</p>
+                ${p.website ? `<a href="${this._escape(p.website)}" target="_blank" rel="noopener" class="ma-link"><i class="fas fa-external-link-alt"></i> ${this._escape(p.website)}</a>` : ''}
+            </div>
+            <div class="ma-card-actions">
+                <button class="ma-icon-btn" title="View" onclick="ManageAstegni.viewPartner(${p.id})"><i class="fas fa-eye"></i></button>
+            </div>
+        </div>`;
+    },
+
+    // An application card (pending / rejected). View-only; actions in the modal.
+    _applicationCard(a) {
+        const statusBadge = `<span class="ma-badge ${a.status === 'approved' ? 'verified' : a.status === 'rejected' ? 'inactive' : ''}">${this._escape(a.status)}</span>`;
+        const logo = a.logo_url
+            ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-logo">`
+            : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
+        return `
+        <div class="ma-card">
+            ${logo}
+            <div class="ma-card-body">
+                <h3>${this._escape(a.company_name || 'Unnamed')} ${statusBadge}</h3>
+                <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.applicant_name || a.contact_person || '')}</p>
+                <p class="ma-muted">${this._escape(a.partnership_type || '')}${a.partnership_type_category ? ' · ' + this._escape(a.partnership_type_category) : ''}</p>
+                ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
+            </div>
+            <div class="ma-card-actions">
+                <button class="ma-icon-btn" title="View details" onclick="ManageAstegni.viewApplication(${a.id})"><i class="fas fa-eye"></i></button>
+            </div>
+        </div>`;
     },
 
     async togglePartnerFeatured(id, desired, el) {
@@ -149,7 +215,7 @@ const ManageAstegni = {
             await this._send('POST', `/api/admin/partners/${id}/feature`, fd);
             const p = this.partners.find(x => x.id === id);
             if (p) p.is_featured = desired;
-            this.renderPartners();
+            this.renderPartnersPanel();
         } catch (err) {
             if (el) el.checked = !desired;
             alert('Failed to update: ' + err.message);
@@ -207,7 +273,7 @@ const ManageAstegni = {
         try {
             const r = await this._send('POST', `/api/admin/partners/${id}/reject-partnership`, fd);
             this.closeModal('detail-modal');
-            await this.loadPartners();
+            await this.loadPartnersPanel();
             alert(r.emailed ? `Partnership ended; the partner was emailed at ${r.email}.`
                             : 'Partnership ended. (No email on file or email not configured.)');
         } catch (err) {
@@ -255,7 +321,7 @@ const ManageAstegni = {
             if (id) await this._send('PUT', `/api/admin/partners/${id}`, fd);
             else await this._send('POST', '/api/admin/partners', fd);
             this.closeModal('partner-modal');
-            await this.loadPartners();
+            await this.loadPartnersPanel();
         } catch (err) {
             alert('Failed to save partner: ' + err.message);
         } finally {
@@ -268,7 +334,7 @@ const ManageAstegni = {
         try {
             await this._send('DELETE', `/api/admin/partners/${id}`);
             this.closeModal('detail-modal');
-            await this.loadPartners();
+            await this.loadPartnersPanel();
         } catch (err) {
             alert('Failed to delete: ' + err.message);
         }
@@ -542,66 +608,6 @@ const ManageAstegni = {
     // ============================================================
     // PARTNER APPLICATIONS (partner_requests submitted on index.html)
     // ============================================================
-    async loadApplications() {
-        const list = document.getElementById('applications-list');
-        const status = document.getElementById('applications-filter')?.value || 'pending';
-        try {
-            const res = await this._fetch(`${MA_API}/api/admin/partner-applications?status=${encodeURIComponent(status)}`);
-            if (this._handleAuth(res, 'applications-list')) return;
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            this.applications = data.applications || [];
-            this.renderApplications();
-        } catch (e) {
-            if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${this._escape(e.message)}</div>`;
-        }
-    },
-
-    renderApplications() {
-        const list = document.getElementById('applications-list');
-        if (!list) return;
-        if (!this.applications.length) {
-            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><div>No applications for this filter.</div></div>';
-            return;
-        }
-        list.innerHTML = this.applications.map(a => {
-            const emails = (a.emails || []).map(e => this._escape(e)).join(', ');
-            const phones = (a.phones || []).map(p => this._escape(p)).join(', ');
-            const statusBadge = `<span class="ma-badge ${a.status === 'approved' ? 'verified' : a.status === 'rejected' ? 'inactive' : ''}">${this._escape(a.status)}</span>`;
-            const kyc = a.kyc_verification_status || a.kyc_status || 'pending';
-            const kycPassed = (kyc === 'passed');
-            const kycBadge = `<span class="ma-badge ${kycPassed ? 'verified' : 'inactive'}" title="Identity KYC">KYC: ${this._escape(kyc)}</span>`;
-            const isPending = a.status === 'pending';
-            const logo = a.logo_url
-                ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-logo">`
-                : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
-            // Approve/Reject are only available once identity KYC has passed.
-            const reviewActions = !isPending ? '' : (kycPassed ? `
-                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id})"><i class="fas fa-check"></i></button>
-                    <button class="ma-icon-btn danger" title="Reject" onclick="ManageAstegni.rejectApplication(${a.id})"><i class="fas fa-times"></i></button>
-                ` : `
-                    <button class="ma-icon-btn" disabled title="Locked until identity KYC passes" style="opacity:.4;cursor:not-allowed;"><i class="fas fa-check"></i></button>
-                    <button class="ma-icon-btn danger" disabled title="Locked until identity KYC passes" style="opacity:.4;cursor:not-allowed;"><i class="fas fa-times"></i></button>
-                `);
-            return `
-            <div class="ma-card">
-                ${logo}
-                <div class="ma-card-body">
-                    <h3>${this._escape(a.company_name || 'Unnamed')} ${statusBadge} ${kycBadge}</h3>
-                    <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.applicant_name || a.contact_person || '')}</p>
-                    <p class="ma-muted">${this._escape(a.partnership_type || '')}${a.partnership_type_category ? ' · ' + this._escape(a.partnership_type_category) : ''}</p>
-                    ${emails ? `<p class="ma-muted"><i class="fas fa-envelope"></i> ${emails}</p>` : ''}
-                    ${isPending && !kycPassed ? `<p class="ma-muted" style="color:#b45309;"><i class="fas fa-lock"></i> Awaiting identity verification — can't approve or reject yet.</p>` : ''}
-                    ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
-                </div>
-                <div class="ma-card-actions">
-                    <button class="ma-icon-btn" title="View details" onclick="ManageAstegni.viewApplication(${a.id})"><i class="fas fa-eye"></i></button>
-                    ${reviewActions}
-                </div>
-            </div>`;
-        }).join('');
-    },
-
     viewApplication(id) {
         const a = this.applications.find(x => x.id === id);
         if (!a) return;
@@ -613,6 +619,16 @@ const ManageAstegni = {
         const logo = a.logo_url
             ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-avatar-lg" style="border-radius:10px;">`
             : `<div class="ma-avatar-lg ma-logo-placeholder" style="border-radius:10px;"><i class="fas fa-handshake"></i></div>`;
+        // Pending applications can be verified (approved) or rejected from here.
+        const actions = a.status === 'pending' ? `
+            <div style="border-top:1px solid var(--border-color,#e5e7eb); margin-top:1rem; padding-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-primary" onclick="ManageAstegni.approveApplication(${a.id})">
+                    <i class="fas fa-check mr-1"></i> Verify &amp; publish as partner
+                </button>
+                <button class="btn-danger" onclick="ManageAstegni.rejectApplication(${a.id})">
+                    <i class="fas fa-times mr-1"></i> Reject
+                </button>
+            </div>` : '';
         body.innerHTML = `
             <div class="ma-review-head">
                 ${logo}
@@ -637,6 +653,8 @@ const ManageAstegni = {
             ${link('Business ownership proof', a.ownership_proof_url)}
             ${link('ID document image', a.document_image_url)}
             ${link('Selfie image', a.selfie_image_url)}
+            ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
+            ${actions}
         `;
         this._show('detail-modal');
     },
@@ -645,8 +663,8 @@ const ManageAstegni = {
         if (!confirm('Approve this application and publish it as a partner? The applicant will be emailed.')) return;
         try {
             const r = await this._send('POST', `/api/admin/partner-applications/${id}/approve`, new FormData());
-            await this.loadApplications();
-            await this.loadPartners();
+            this.closeModal('detail-modal');
+            await this.loadPartnersPanel();
             alert(r.emailed ? `Approved and added to Partners. Applicant emailed at ${r.email}.`
                             : 'Approved and added to Partners. (Email not sent — none on file or email not configured.)');
         } catch (err) {
@@ -661,7 +679,8 @@ const ManageAstegni = {
         fd.append('admin_notes', reason || '');
         try {
             const r = await this._send('POST', `/api/admin/partner-applications/${id}/reject`, fd);
-            await this.loadApplications();
+            this.closeModal('detail-modal');
+            await this.loadPartnersPanel();
             alert(r.emailed ? `Rejected; the applicant was emailed at ${r.email}.`
                             : 'Rejected. (Email not sent — none on file or email not configured.)');
         } catch (err) {

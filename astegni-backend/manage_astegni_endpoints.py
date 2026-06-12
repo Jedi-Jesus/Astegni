@@ -628,12 +628,18 @@ async def list_partner_applications(
     status: Optional[str] = Query(None),
     admin=Depends(get_current_admin),
 ):
-    """Admin: list partnership applications (partner_requests), newest first."""
-    clauses, params = [], []
+    """Admin: list partnership applications (partner_requests), newest first.
+
+    Applications whose identity KYC has not passed are NOT returned — admins only
+    deal with KYC-verified applicants.
+    """
+    # Only KYC-passed applications are ever shown.
+    clauses = ["pr.kyc_status = 'passed'"]
+    params = []
     if status and status != "all":
-        clauses.append("status = %s")
+        clauses.append("pr.status = %s")
         params.append(status)
-    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    where = "WHERE " + " AND ".join(clauses)
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
             f"""
@@ -651,7 +657,7 @@ async def list_partner_applications(
                 SELECT * FROM partner_kyc_verifications
                 WHERE partner_request_id = pr.id ORDER BY id DESC LIMIT 1
             ) k ON TRUE
-            {where.replace('status', 'pr.status') if where else ''}
+            {where}
             ORDER BY pr.created_at DESC
             """,
             params,

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./css/root.css">
     <link rel="stylesheet" href="./css/admin-profile/admin.css">
     <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606122900">
+    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606123000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -97,10 +97,7 @@
 
             <!-- Tabs -->
             <div class="ma-tabs mb-6">
-                <button class="ma-tab active" data-tab="applications" onclick="ManageAstegni.switchTab('applications')">
-                    <i class="fas fa-inbox mr-2"></i> Partner Applications
-                </button>
-                <button class="ma-tab" data-tab="partners" onclick="ManageAstegni.switchTab('partners')">
+                <button class="ma-tab active" data-tab="partners" onclick="ManageAstegni.switchTab('partners')">
                     <i class="fas fa-handshake mr-2"></i> Partners
                 </button>
                 <button class="ma-tab" data-tab="videos" onclick="ManageAstegni.switchTab('videos')">
@@ -114,47 +111,35 @@
                 </button>
             </div>
 
-            <!-- ============ PARTNER APPLICATIONS PANEL ============ -->
-            <div class="ma-panel" id="panel-applications">
+            <!-- ============ PARTNERS PANEL (applications + live partners) ============ -->
+            <div class="ma-panel" id="panel-partners">
                 <div class="ma-panel-head">
                     <div>
-                        <h2>Partner Applications</h2>
-                        <p class="ma-muted">Submissions from the homepage "Become a Partner" form. Open an application to verify or reject it.</p>
+                        <h2>Partners</h2>
+                        <p class="ma-muted">KYC-verified partnership applications and live partners. Pending applications can be approved or rejected; approved partners can be featured on the homepage.</p>
                     </div>
-                    <div class="ma-filter">
-                        <select id="applications-filter" class="ma-input" onchange="ManageAstegni.loadApplications()">
-                            <option value="pending">Pending</option>
-                            <option value="all">All</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
+                    <button class="btn-primary" onclick="ManageAstegni.openPartnerModal()">
+                        <i class="fas fa-plus mr-2"></i> Add Partner
+                    </button>
+                </div>
+
+                <!-- Status filter buttons -->
+                <div class="ma-status-filters" style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                    <button class="ma-status-btn active" data-status="all" onclick="ManageAstegni.setPartnersStatus('all')">All</button>
+                    <button class="ma-status-btn" data-status="pending" onclick="ManageAstegni.setPartnersStatus('pending')">Pending</button>
+                    <button class="ma-status-btn" data-status="approved" onclick="ManageAstegni.setPartnersStatus('approved')">Approved</button>
+                    <button class="ma-status-btn" data-status="rejected" onclick="ManageAstegni.setPartnersStatus('rejected')">Rejected</button>
+
+                    <!-- Featured filter: only meaningful for approved/live partners -->
+                    <div class="ma-filter" id="partners-featured-filter-wrap" style="display:none; margin-left:auto;">
+                        <select id="partners-featured-filter" class="ma-input" onchange="ManageAstegni.renderPartnersPanel()">
+                            <option value="all">All approved</option>
+                            <option value="featured">Featured</option>
+                            <option value="not-featured">Not featured</option>
                         </select>
                     </div>
                 </div>
-                <div id="applications-list" class="ma-card-grid">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading applications...</div>
-                </div>
-            </div>
 
-            <!-- ============ PARTNERS PANEL ============ -->
-            <div class="ma-panel" id="panel-partners" style="display:none;">
-                <div class="ma-panel-head">
-                    <div>
-                        <h2>Trusted Partners</h2>
-                        <p class="ma-muted">Logos shown in the "Trusted Partners" section on the homepage.</p>
-                    </div>
-                    <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                        <div class="ma-filter">
-                            <select id="partners-filter" class="ma-input" onchange="ManageAstegni.renderPartners()">
-                                <option value="all">All partners</option>
-                                <option value="featured">Featured</option>
-                                <option value="not-featured">Not featured</option>
-                            </select>
-                        </div>
-                        <button class="btn-primary" onclick="ManageAstegni.openPartnerModal()">
-                            <i class="fas fa-plus mr-2"></i> Add Partner
-                        </button>
-                    </div>
-                </div>
                 <div id="partners-list" class="ma-card-grid">
                     <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading partners...</div>
                 </div>
@@ -487,6 +472,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606122900"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606123000"></script>
 </body>
 </html>
