@@ -424,9 +424,10 @@ const ManageAstegni = {
             <div class="ma-card">
                 ${avatar}
                 <div class="ma-card-body">
-                    <h3>${this._escape(r.reviewer_name)} <span class="ma-stars">${stars}</span></h3>
+                    <h3>${this._escape(r.reviewer_name)}</h3>
                     <p class="ma-muted">${this._escape(r.title || '')}${r.organization ? ' · ' + this._escape(r.organization) : ''}</p>
                     <blockquote class="ma-quote">"${this._escape(r.review)}"</blockquote>
+                    <div class="ma-stars">${stars}</div>
                     <div>${badges}</div>
                     <label class="ma-toggle" style="margin-top:0.5rem;">
                         <input type="checkbox" ${r.is_featured ? 'checked' : ''}

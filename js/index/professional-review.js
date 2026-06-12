@@ -150,9 +150,9 @@ async function initializeProfessionalReviews() {
                         <span class="expertise-badge">${review.expertise}</span>
                     </div>
                 </div>
-                <div class="review-rating">${'★'.repeat(review.rating)}</div>
             </div>
             <blockquote class="review-content">"${review.review}"</blockquote>
+            <div class="review-rating">${'★'.repeat(review.rating)}</div>
         </div>
     `).join('');
 
