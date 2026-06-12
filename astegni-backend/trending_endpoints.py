@@ -98,6 +98,89 @@ def update_trending_scores(db: Session):
 
 
 # ============================================
+# SMART RANKING
+# ============================================
+
+def smart_rank_tutors(db: Session, tutors: List[TutorProfile]) -> List[TutorProfile]:
+    """
+    Re-rank a list of tutors by the same composite "smart" score used by the
+    find-tutors page (routes.py get_tutors, sort_by="smart").
+
+    Mirrors that algorithm minus the per-request student search-history factor,
+    which has no context in the trending home widget. Returns tutors sorted by
+    descending score (ties keep the input order, i.e. raw trending_score).
+    """
+    # Imported lazily to avoid a heavy import at module load if scoring deps fail.
+    from tutor_scoring import TutorScoringCalculator
+    from datetime import datetime
+
+    scoring_calculator = TutorScoringCalculator(db)
+
+    def calculate_tutor_score(tutor: TutorProfile) -> float:
+        score = 0
+
+        # TRENDING SCORE (0-200+ points) - POPULARITY BOOST
+        trending_score = getattr(tutor, 'trending_score', 0) or 0
+        search_count = getattr(tutor, 'search_count', 0) or 0
+        if trending_score > 0:
+            if trending_score >= 100:
+                score += 200
+            elif trending_score >= 50:
+                score += 100 + (trending_score - 50) * 2
+            else:
+                score += trending_score * 2
+            if search_count >= 1000:
+                score += 100
+            elif search_count >= 500:
+                score += 50
+            elif search_count >= 100:
+                score += 25
+
+        # Composite scoring (rating, students, completion, response, experience, etc.)
+        try:
+            new_scores, _ = scoring_calculator.calculate_all_new_scores(
+                tutor_id=tutor.id,
+                tutor_user_id=tutor.user_id,
+                tutor_profile_created_at=tutor.created_at,
+                student_interests=[],
+                student_hobbies=[]
+            )
+            score += new_scores
+        except Exception as e:
+            print(f"⚠️ Error calculating smart scores for tutor {tutor.id}: {e}")
+
+        # Legacy basic flag (100 points)
+        if tutor.is_basic:
+            score += 100
+
+        # New tutor bonus
+        is_new = False
+        if tutor.created_at:
+            days_old = (datetime.utcnow() - tutor.created_at).days
+            if days_old <= 30:
+                is_new = True
+                score += 30
+                if days_old <= 7:
+                    score += 20
+
+        # New + Basic combo
+        if is_new and tutor.is_basic:
+            score += 50
+
+        # Verification bonus (25 points)
+        if tutor.user and tutor.user.is_verified:
+            score += 25
+
+        return score
+
+    return [t for t, _ in sorted(
+        ((tutor, calculate_tutor_score(tutor)) for tutor in tutors),
+        key=lambda x: x[1],
+        reverse=True
+    )]
+
+
+# ============================================
 # ENDPOINTS
 # ============================================
 
@@ -159,7 +242,8 @@ async def get_trending_tutors(
     - limit: Maximum number of tutors to return (default: 20)
     - min_searches: Minimum search count to be included (default: 5)
 
-    Returns tutors sorted by trending_score (time-weighted popularity)
+    Tutors are smart-ranked (same composite score as find-tutors' "smart" sort),
+    drawn from the verified, package-having pool of trending tutors.
     Includes enriched data: rating, subjects, teaches_at, profile_picture, location
     """
     try:
@@ -176,7 +260,11 @@ async def get_trending_tutors(
                 AND tp.visibility = 'public'
             )
         """)
-        trending_tutors = db.query(
+        # Fetch the candidate pool of trending tutors (verified, with a package),
+        # ordered by raw trending_score. Cap the pool so smart-scoring stays cheap;
+        # smart sorting then re-ranks this genuinely-trending pool and we take `limit`.
+        candidate_cap = max(limit * 5, 50)
+        candidates = db.query(
             TutorProfile
         ).join(
             User, User.id == TutorProfile.user_id
@@ -187,7 +275,12 @@ async def get_trending_tutors(
             has_active_package
         ).order_by(
             desc(TutorProfile.trending_score)
-        ).limit(limit).all()
+        ).limit(candidate_cap).all()
+
+        # Smart ranking: re-rank the trending pool by the same composite score used
+        # by find-tutors' "smart" sort, then take the top `limit`. No per-request
+        # student search history here (home widget), so that factor is omitted.
+        trending_tutors = smart_rank_tutors(db, candidates)[:limit]
 
         if not trending_tutors:
             return {
