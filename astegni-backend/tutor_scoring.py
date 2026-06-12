@@ -334,15 +334,18 @@ class TutorScoringCalculator:
 
     def calculate_experience_score(self, tutor_user_id: int, tutor_profile_created_at: datetime) -> tuple[int, dict]:
         """
-        Calculate score based on experience (0-50 points)
+        Calculate score based on experience (0-200 points)
+
+        Experience is the second-heaviest smart-ranking factor (after rating),
+        ahead of completion rate.
 
         Experience measured by:
         1. Account age (user.created_at)
         2. Credentials/certificates count
 
         Scoring:
-        - Account age: 0-30 points (1 point per month, max 30 points at 2.5 years)
-        - Credentials: 0-20 points (5 points per credential, max 20 points at 4+ credentials)
+        - Account age: 0-120 points (4 points per month, max 120 points at 2.5 years)
+        - Credentials: 0-80 points (20 points per credential, max 80 points at 4+ credentials)
 
         Returns: (score, details_dict)
         """
@@ -353,8 +356,8 @@ class TutorScoringCalculator:
             account_age_days = (datetime.utcnow() - tutor_profile_created_at).days
             account_age_months = account_age_days / 30.0
 
-            # 1 point per month, max 30 points (2.5 years)
-            age_score = min(int(account_age_months), 30)
+            # 4 points per month, max 120 points (2.5 years)
+            age_score = min(int(account_age_months) * 4, 120)
             score += age_score
         else:
             account_age_months = 0
@@ -371,8 +374,8 @@ class TutorScoringCalculator:
         cred_result = self.db.execute(credentials_query, {"tutor_user_id": tutor_user_id}).fetchone()
         credential_count = cred_result.credential_count if cred_result else 0
 
-        # 5 points per credential, max 20 points (4+ credentials)
-        credential_score = min(credential_count * 5, 20)
+        # 20 points per credential, max 80 points (4+ credentials)
+        credential_score = min(credential_count * 20, 80)
         score += credential_score
 
         return score, {
@@ -640,7 +643,7 @@ class TutorScoringCalculator:
         }
 
         breakdown["total_new_score"] = total_score
-        breakdown["max_possible_new_score"] = 940  # 500(rating)+150+100+80+60+50
+        breakdown["max_possible_new_score"] = 1090  # 500(rating)+150+100+80(completion)+60+200(experience)
         breakdown["payment_penalty_applied"] = payment_penalty
 
         return total_score, breakdown

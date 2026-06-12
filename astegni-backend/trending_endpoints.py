@@ -149,23 +149,13 @@ def smart_rank_tutors(db: Session, tutors: List[TutorProfile]) -> List[TutorProf
         except Exception as e:
             print(f"⚠️ Error calculating smart scores for tutor {tutor.id}: {e}")
 
-        # Legacy basic flag (100 points)
-        if tutor.is_basic:
-            score += 100
-
         # New tutor bonus
-        is_new = False
         if tutor.created_at:
             days_old = (datetime.utcnow() - tutor.created_at).days
             if days_old <= 30:
-                is_new = True
                 score += 30
                 if days_old <= 7:
                     score += 20
-
-        # New + Basic combo
-        if is_new and tutor.is_basic:
-            score += 50
 
         # Verification bonus (25 points)
         if tutor.user and tutor.user.is_verified:

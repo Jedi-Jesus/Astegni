@@ -1587,17 +1587,16 @@ def get_tutors(
             SCORING SYSTEM (subscription plan removed - rating is now primary,
             to reward genuinely good tutors over paid placement):
             - Rating (confidence-weighted): 0-500 points (PRIMARY, via TutorScoringCalculator)
+            - Experience: 0-200 points (SECOND: account age + credentials)
             - Trending Score: 0-200+ points
             - Interest/Hobby Match: 0-150 points
             - Total Students: 0-100 points
             - Completion Rate: 0-80 points
             - Response Time: 0-60 points
-            - Experience: 0-50 points
             - Search History: 0-50 points
-            - Legacy Basic Flag: 0-100 points
             - New Tutor Bonus: 0-50 points
             - Verification: 0-25 points
-            - Combo Bonuses: 0-150 points
+            - Combo Bonus (New + Search History): 0-60 points
             - Payment Reliability: 0 to -100 points (penalty)
             """
             score = 0
@@ -1653,11 +1652,6 @@ def get_tutors(
             if in_search_history:
                 score += 50
 
-            # Check if tutor is basic (100 points) - legacy field, may be deprecated
-            is_basic = tutor.is_basic or False
-            if is_basic:
-                score += 100
-
             # Check if tutor is new (created within last 30 days) (30 points)
             is_new = False
             if tutor.created_at:
@@ -1669,15 +1663,9 @@ def get_tutors(
                     if days_old <= 7:
                         score += 20
 
-            # COMBO BONUSES (exponential benefits for matching multiple criteria)
-            if is_new and is_basic and in_search_history:
-                score += 150  # Triple combo bonus
-            elif is_basic and in_search_history:
-                score += 80   # Basic + History combo
-            elif is_new and in_search_history:
+            # COMBO BONUS
+            if is_new and in_search_history:
                 score += 60   # New + History combo
-            elif is_new and is_basic:
-                score += 50   # New + Basic combo
 
             # Verification bonus (25 points)
             if tutor.user.is_verified:
