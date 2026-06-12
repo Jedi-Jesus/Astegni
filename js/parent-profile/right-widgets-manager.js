@@ -648,19 +648,21 @@ class ParentRightWidgetsManager {
             exploreBtn.classList.remove('hidden');
         }
 
-        // Start carousel animation
-        this.startTutorCarousel(tutors.length);
+        // All 3 cards are shown at once (no carousel). Clear any stale interval
+        // from a previous render that may have used the carousel.
+        if (this.tutorCarouselInterval) {
+            clearInterval(this.tutorCarouselInterval);
+            this.tutorCarouselInterval = null;
+        }
     }
 
     createTrendingTutorCard(tutor, index) {
         const tutorElement = document.createElement('div');
         tutorElement.className = 'trending-tutor-card';
+        // Show all cards simultaneously, stacked vertically (no carousel).
         tutorElement.style.cssText = `
-            position: absolute;
             width: 100%;
-            opacity: ${index === 0 ? 1 : 0};
-            transition: opacity 0.6s ease-in-out;
-            ${index === 0 ? '' : 'pointer-events: none;'}
+            ${index > 0 ? 'margin-top: 0.75rem;' : ''}
         `;
         tutorElement.setAttribute('data-index', index);
 
@@ -731,48 +733,6 @@ class ParentRightWidgetsManager {
         return '★'.repeat(fullStars) +
                (hasHalfStar ? '☆' : '') +
                '☆'.repeat(emptyStars);
-    }
-
-    startTutorCarousel(tutorCount) {
-        // Clear any existing interval
-        if (this.tutorCarouselInterval) {
-            clearInterval(this.tutorCarouselInterval);
-        }
-
-        if (tutorCount <= 1) return; // No carousel needed for 1 or 0 tutors
-
-        let currentIndex = 0;
-
-        this.tutorCarouselInterval = setInterval(() => {
-            const dataContainer = document.getElementById('trending-tutors-data');
-            if (!dataContainer) {
-                clearInterval(this.tutorCarouselInterval);
-                return;
-            }
-
-            const cards = dataContainer.querySelectorAll('.trending-tutor-card');
-            if (cards.length === 0) {
-                clearInterval(this.tutorCarouselInterval);
-                return;
-            }
-
-            // Fade out current card
-            const currentCard = cards[currentIndex];
-            if (currentCard) {
-                currentCard.style.opacity = '0';
-                currentCard.style.pointerEvents = 'none';
-            }
-
-            // Move to next card
-            currentIndex = (currentIndex + 1) % tutorCount;
-
-            // Fade in next card
-            const nextCard = cards[currentIndex];
-            if (nextCard) {
-                nextCard.style.opacity = '1';
-                nextCard.style.pointerEvents = 'auto';
-            }
-        }, 5000); // Change every 5 seconds
     }
 
     getDefaultAvatar(name) {
