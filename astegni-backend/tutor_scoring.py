@@ -29,14 +29,14 @@ class TutorScoringCalculator:
         student_hobbies: List[str] = None
     ) -> tuple[int, dict]:
         """
-        Calculate interest/hobby matching score (0-100 points)
+        Calculate interest/hobby matching score (0-120 points)
 
         Scoring:
         - Perfect interest match: +100 points
         - Partial interest match: +50 points
         - Hobby match: +50 points
         - Multiple matches: bonus up to +50 points
-        (raw total capped at 100)
+        (raw total capped at 120)
 
         Returns: (score, details_dict)
         """
@@ -117,8 +117,8 @@ class TutorScoringCalculator:
         elif details["match_count"] == 2:
             score += 25  # 2 matches
 
-        # Cap at 100 points
-        score = min(score, 100)
+        # Cap at 120 points
+        score = min(score, 120)
 
         return score, details
 
@@ -389,23 +389,18 @@ class TutorScoringCalculator:
 
     def calculate_payment_reliability_penalty(self, tutor_user_id: int) -> tuple[int, dict]:
         """
-        Calculate payment reliability penalty (0 to -100 points)
+        Calculate payment reliability penalty (0 to -300 points)
+
+        This is the heaviest negative factor: a chronically non-paying tutor can
+        lose more than the entire rating ceiling (500), forcing them down the list.
 
         Penalties based on payment history from user_investments table:
         - On-time payments: 0 penalty
-        - Late payments: -5 points per late payment
-        - Missed payments: -15 points per missed payment
-        - Accumulated debt: -1 point per 100 ETB owed
-        - Complete non-payment: -100 points (score = 0)
-
-        Scoring:
-        - Perfect payment history (100%): 0 penalty
-        - 1-2 late payments: -5 to -10 penalty
-        - 3-5 late payments: -15 to -25 penalty
-        - 6+ late payments: -30 to -50 penalty
-        - 1+ missed payments: -15 to -50 penalty
-        - Total debt > 5000 ETB: -50 to -100 penalty
-        - Subscription expired + debt: -100 penalty (complete removal)
+        - Late payments: -15 points per late payment (cap -150)
+        - Missed payments: -45 points per missed payment (cap -150)
+        - Accumulated debt: -3 points per 100 ETB owed (cap -150)
+        - Severe overdue (>60 days): -90 points
+        - Complete non-payment: -300 points
 
         Returns: (penalty_score, details_dict)
         """
@@ -471,39 +466,39 @@ class TutorScoringCalculator:
 
             # Calculate penalties
 
-            # 1. Late payment penalty (-5 points each)
+            # 1. Late payment penalty (-15 points each)
             if late_count > 0:
-                late_penalty = min(late_count * -5, -50)  # Max -50 for late payments
+                late_penalty = max(late_count * -15, -150)  # Max -150 for late payments
                 penalty += late_penalty
                 details["late_payment_penalty"] = late_penalty
 
-            # 2. Missed payment penalty (-15 points each)
+            # 2. Missed payment penalty (-45 points each)
             if missed_count > 0:
-                missed_penalty = min(missed_count * -15, -50)  # Max -50 for missed payments
+                missed_penalty = max(missed_count * -45, -150)  # Max -150 for missed payments
                 penalty += missed_penalty
                 details["missed_payment_penalty"] = missed_penalty
 
-            # 3. Accumulated debt penalty (-1 point per 100 ETB)
+            # 3. Accumulated debt penalty (-3 points per 100 ETB)
             if total_debt > 0:
-                debt_penalty = min(int(total_debt / 100) * -1, -50)  # Max -50 for debt
+                debt_penalty = max(int(total_debt / 100) * -3, -150)  # Max -150 for debt
                 penalty += debt_penalty
                 details["debt_penalty"] = debt_penalty
 
             # 4. Severe overdue penalty (payment > 60 days overdue)
             if max_days_overdue > 60:
-                severe_penalty = -30
+                severe_penalty = -90
                 penalty += severe_penalty
                 details["severe_overdue_penalty"] = severe_penalty
 
             # 5. Complete non-payment check (total debt > 5000 ETB and missed > 2)
             if total_debt > 5000 and missed_count >= 2:
                 # Complete removal from visibility
-                penalty = -100
+                penalty = -300
                 details["complete_non_payment"] = True
                 details["reason"] = f"Total debt {total_debt} ETB with {missed_count} missed payments"
 
-            # Cap penalty at -100 (complete score removal)
-            penalty = max(penalty, -100)
+            # Cap penalty at -300 (complete score removal)
+            penalty = max(penalty, -300)
 
             details["total_penalty"] = penalty
 
@@ -644,7 +639,7 @@ class TutorScoringCalculator:
         }
 
         breakdown["total_new_score"] = total_score
-        breakdown["max_possible_new_score"] = 1310  # 500(rating)+100(interest)+150(students)+200(completion)+60(response)+300(experience)
+        breakdown["max_possible_new_score"] = 1330  # 500(rating)+120(interest)+150(students)+200(completion)+60(response)+300(experience)
         breakdown["payment_penalty_applied"] = payment_penalty
 
         return total_score, breakdown

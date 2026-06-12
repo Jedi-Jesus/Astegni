@@ -1590,14 +1590,14 @@ def get_tutors(
             - Experience: 0-300 points (SECOND: account age + credentials)
             - Completion Rate: 0-200 points
             - Total Students: 0-150 points
-            - Interest/Hobby Match: 0-100 points
+            - Interest/Hobby Match: 0-120 points
             - Trending Score: 0-100 points
             - Response Time: 0-60 points
             - Search History: 0-50 points
             - New Tutor Bonus: 0-50 points
             - Verification: 0-25 points
             - Combo Bonus (New + Search History): 0-60 points
-            - Payment Reliability: 0 to -100 points (penalty)
+            - Payment Reliability: 0 to -300 points (penalty)
             """
             score = 0
 
