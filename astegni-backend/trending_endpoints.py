@@ -166,12 +166,15 @@ async def get_trending_tutors(
         # Update trending scores before querying
         update_trending_scores(db)
 
-        # Get trending tutors
+        # Get trending tutors (verified tutors only)
         trending_tutors = db.query(
             TutorProfile
+        ).join(
+            User, User.id == TutorProfile.user_id
         ).filter(
             TutorProfile.search_count >= min_searches,
-            TutorProfile.is_active == True
+            TutorProfile.is_active == True,
+            User.is_verified == True
         ).order_by(
             desc(TutorProfile.trending_score)
         ).limit(limit).all()
