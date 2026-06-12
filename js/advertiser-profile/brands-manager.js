@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606113000');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606113100');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -1109,6 +1109,10 @@ const BrandsManager = {
 
     // Switch campaign tab
     switchCampaignTab(tabName) {
+        // Finances + Invoices/Payments merged into one "Billing" tab. Keep the old
+        // names working by aliasing them to 'billing'.
+        if (tabName === 'finances' || tabName === 'invoices') tabName = 'billing';
+
         // Update tab buttons
         document.querySelectorAll('.campaign-tab').forEach(tab => {
             tab.classList.remove('active');
@@ -1127,8 +1131,9 @@ const BrandsManager = {
             activeContent.classList.add('active');
         }
 
-        // Lazy-load the Invoices / Payments tab on first open.
-        if (tabName === 'invoices') {
+        // Billing tab: refresh the finance summary + load invoices/payments.
+        if (tabName === 'billing') {
+            if (this.currentCampaign) this.updateFinancesFromCampaign(this.currentCampaign);
             this.loadCampaignInvoices();
         }
     },

@@ -488,9 +488,9 @@
                             <i class="fas fa-palette"></i>
                             Templates
                         </button>
-                        <button class="campaign-tab" data-tab="finances" onclick="BrandsManager.switchCampaignTab('finances')">
-                            <i class="fas fa-wallet"></i>
-                            Finances
+                        <button class="campaign-tab" data-tab="billing" onclick="BrandsManager.switchCampaignTab('billing')">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Billing
                         </button>
                         <button class="campaign-tab" data-tab="engagement" onclick="BrandsManager.switchCampaignTab('engagement')">
                             <i class="fas fa-heart"></i>
@@ -499,10 +499,6 @@
                         <button class="campaign-tab" data-tab="analytics" onclick="BrandsManager.switchCampaignTab('analytics')">
                             <i class="fas fa-chart-line"></i>
                             Analytics
-                        </button>
-                        <button class="campaign-tab" data-tab="invoices" onclick="BrandsManager.switchCampaignTab('invoices')">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            Invoices / Payments
                         </button>
                         <button class="campaign-tab" data-tab="insights" onclick="BrandsManager.switchCampaignTab('insights')">
                             <i class="fas fa-brain"></i>
@@ -839,8 +835,8 @@
                         </div>
 
                         <!-- Finances Tab -->
-                        <div class="campaign-tab-content" id="tab-finances">
-                            <!-- Campaign Finance Overview -->
+                        <div class="campaign-tab-content" id="tab-billing">
+                            <!-- Campaign Billing Overview -->
                             <div class="finance-overview-grid">
                                 <!-- Total Investment Card -->
                                 <div class="finance-card total-investment-card">
@@ -909,7 +905,7 @@
                                         </div>
                                         <div class="finance-card-title">
                                             <h4>Remaining Balance</h4>
-                                            <p>Refundable</p>
+                                            <p>Non-refundable</p>
                                         </div>
                                     </div>
                                     <div class="finance-card-body">
@@ -933,6 +929,22 @@
                                 </div>
                             </div>
 
+                            <!-- Invoices & Payments (merged from the old Invoices tab) -->
+                            <div class="finance-transactions-card">
+                                <div class="finance-transactions-header">
+                                    <h4>
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                        Invoices &amp; Payments
+                                    </h4>
+                                </div>
+                                <div id="campaign-invoices-list">
+                                    <!-- Populated by BrandsManager.loadCampaignInvoices() -->
+                                    <div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading…
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Transaction History -->
                             <div class="finance-transactions-card">
                                 <div class="finance-transactions-header">
@@ -947,16 +959,6 @@
                                         <i class="fas fa-receipt"></i>
                                         <p>No transactions yet</p>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Invoices / Payments Tab -->
-                        <div class="campaign-tab-content" id="tab-invoices">
-                            <div id="campaign-invoices-list">
-                                <!-- Populated by BrandsManager.loadCampaignInvoices() -->
-                                <div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);">
-                                    <i class="fas fa-spinner fa-spin"></i> Loading…
                                 </div>
                             </div>
                         </div>
