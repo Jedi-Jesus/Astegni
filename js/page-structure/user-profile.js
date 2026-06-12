@@ -1536,7 +1536,7 @@ async function loadTrendingTutors() {
         container.style.transition = 'opacity 0.5s ease-in-out';
 
         let currentIndex = 0;
-        const tutorsPerPage = 5;
+        const tutorsPerPage = 3;
 
         // Function to render a batch of tutors
         function renderTutorBatch(tutors) {
