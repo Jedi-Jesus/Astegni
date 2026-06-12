@@ -126,13 +126,18 @@ class TutorScoringCalculator:
         """
         Calculate score based on total students taught (0-200 points)
 
+        Tiers are set so having more students always wins within reason: even a
+        5-student tutor outranks a 1-student tutor, regardless of completion
+        rate, because real teaching volume is a stronger signal than one
+        "perfect" session.
+
         Scoring:
         - 100+ students: 200 points
         - 50-99 students: 150 points
         - 20-49 students: 100 points
         - 10-19 students: 60 points
-        - 5-9 students: 33 points
-        - 1-4 students: 13 points
+        - 5-9 students: 45 points
+        - 1-4 students: 8 points
 
         Returns: (score, details_dict)
         """
@@ -155,9 +160,9 @@ class TutorScoringCalculator:
         elif total_students >= 10:
             score = 60
         elif total_students >= 5:
-            score = 33
+            score = 45
         elif total_students >= 1:
-            score = 13
+            score = 8
         else:
             score = 0
 
@@ -172,18 +177,25 @@ class TutorScoringCalculator:
 
         Completion rate = (completed sessions / total sessions) * 100
 
-        Scoring:
+        Two guards so a tiny, "perfect" sample can't out-rank a proven tutor:
+        - Completion only counts from 70% up; below 70% earns 0.
+        - The tier score is confidence-weighted by sample size
+          (factor = n / (n + 4)), so 100% from 1 enrollment is heavily
+          discounted vs 100% from 20. A lone perfect session is worth little.
+
+        Tier scoring (before the confidence weight):
         - 95%+ completion: 150 points
         - 90-94%: 131 points
         - 85-89%: 113 points
         - 80-84%: 94 points
         - 75-79%: 75 points
         - 70-74%: 56 points
-        - <70%: 19 points
+        - <70%: 0 points
         - No data: 0 points
 
         Returns: (score, details_dict)
         """
+        CONFIDENCE_K = 4  # enrollments needed before completion is ~half-trusted
         # Get session completion data from enrolled_students
         # Assuming enrolled_students tracks active/completed enrollments
         query = text("""
@@ -201,27 +213,34 @@ class TutorScoringCalculator:
         # Calculate completion rate (assume active enrollments are completed)
         completion_rate = (result.active_enrollments / result.total_enrollments) * 100
 
-        # Score based on completion rate
+        # Score based on completion rate (only counts from 70% up)
         if completion_rate >= 95:
-            score = 150
+            tier_score = 150
         elif completion_rate >= 90:
-            score = 131
+            tier_score = 131
         elif completion_rate >= 85:
-            score = 113
+            tier_score = 113
         elif completion_rate >= 80:
-            score = 94
+            tier_score = 94
         elif completion_rate >= 75:
-            score = 75
+            tier_score = 75
         elif completion_rate >= 70:
-            score = 56
+            tier_score = 56
         else:
-            score = 19
+            tier_score = 0  # below 70% earns nothing
+
+        # Confidence weight by sample size: a perfect rate from 1 enrollment is
+        # untrustworthy, so scale toward 0 for small samples.
+        confidence = result.total_enrollments / (result.total_enrollments + CONFIDENCE_K)
+        score = int(round(tier_score * confidence))
 
         return score, {
             "total_enrollments": result.total_enrollments,
             "active_enrollments": result.active_enrollments,
             "completion_rate": round(completion_rate, 1),
-            "score_tier": f"{completion_rate:.1f}% → {score} points"
+            "tier_score": tier_score,
+            "confidence": round(confidence, 2),
+            "score_tier": f"{completion_rate:.1f}% × conf {confidence:.2f} → {score} points"
         }
 
     def calculate_response_time_score(self, tutor_profile_id: int, tutor_user_id: int) -> tuple[int, dict]:
