@@ -17,94 +17,117 @@
             <p class="modal-subtitle">Join our network of trusted educational partners</p>
         </div>
 
+        <!-- Step progress indicator -->
+        <div class="partner-steps-indicator" id="partner-steps-indicator">
+            <div class="partner-step-dot active" data-step="1"><span class="num">1</span><span class="lbl">Business details</span></div>
+            <div class="partner-step-line"></div>
+            <div class="partner-step-dot" data-step="2"><span class="num">2</span><span class="lbl">Personal verification</span></div>
+            <div class="partner-step-line"></div>
+            <div class="partner-step-dot" data-step="3"><span class="num">3</span><span class="lbl">KYC verification</span></div>
+        </div>
+
         <form id="partner-form" class="auth-form">
-            <div class="form-group">
-                <input type="text" id="partner-company" placeholder=" ">
-                <label>Company/Institution Name</label>
-            </div>
 
-            <div class="form-group">
-                <input type="text" id="partner-contact" placeholder=" " required>
-                <label>Contact Person *</label>
-            </div>
-
-            <!-- Multiple Emails Section -->
-            <div class="form-group">
-                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
-                    Email(s) *
-                </label>
-                <div id="emails-container" style="margin-bottom: 12px;">
-                    <div class="email-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <input type="email" class="partner-email" placeholder="email@company.com" required style="flex: 1;">
-                    </div>
+            <!-- ============ STEP 1: BUSINESS DETAILS ============ -->
+            <div class="partner-step" data-step="1">
+                <div class="form-group">
+                    <input type="text" id="partner-company" placeholder=" ">
+                    <label>Company/Institution Name</label>
                 </div>
-                <button type="button" onclick="addEmailField()" class="add-field-btn-with-text" title="Add another email">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <span>Add Email</span>
-                </button>
-            </div>
 
-            <!-- Multiple Phones Section -->
-            <div class="form-group">
-                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
-                    Phone Number(s) *
-                </label>
-                <div id="phones-container" style="margin-bottom: 12px;">
-                    <div class="phone-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <input type="tel" class="partner-phone" placeholder="+251 912 345 678" required style="flex: 1;">
-                    </div>
+                <div class="form-group">
+                    <input type="text" id="partner-contact" placeholder=" " required>
+                    <label>Contact Person *</label>
                 </div>
-                <button type="button" onclick="addPhoneField()" class="add-field-btn-with-text" title="Add another phone">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <span>Add Phone</span>
-                </button>
+
+                <!-- Multiple Emails Section -->
+                <div class="form-group">
+                    <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
+                        Email(s) *
+                    </label>
+                    <div id="emails-container" style="margin-bottom: 12px;">
+                        <div class="email-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="email" class="partner-email" placeholder="email@company.com" style="flex: 1;">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addEmailField()" class="add-field-btn-with-text" title="Add another email">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Add Email</span>
+                    </button>
+                </div>
+
+                <!-- Multiple Phones Section -->
+                <div class="form-group">
+                    <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
+                        Phone Number(s) *
+                    </label>
+                    <div id="phones-container" style="margin-bottom: 12px;">
+                        <div class="phone-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="tel" class="partner-phone" placeholder="+251 912 345 678" style="flex: 1;">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addPhoneField()" class="add-field-btn-with-text" title="Add another phone">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Add Phone</span>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <select id="partner-type" onchange="toggleOtherPartnerType(this.value)">
+                        <option value="">Select Partnership Type</option>
+                        <option value="educational_institution">Educational Institution</option>
+                        <option value="technology">Technology Partner</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <label>Partnership Type *</label>
+                </div>
+
+                <!-- Other Partnership Type Specification (Hidden by default) -->
+                <div class="form-group" id="other-partner-type-container" style="display: none;">
+                    <input type="text" id="other-partner-type" placeholder=" ">
+                    <label>Please specify partnership type *</label>
+                </div>
+
+                <div class="form-group">
+                    <textarea id="partner-description" placeholder=" " rows="4"></textarea>
+                    <label>Briefly describe your company</label>
+                </div>
+
+                <!-- Branding: logo (required) + website / social (recommended) -->
+                <div class="form-group">
+                    <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Logo (PNG/JPG/SVG) *</label>
+                    <input type="file" id="partner-logo" accept="image/*" style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+                </div>
+
+                <div class="form-group">
+                    <input type="url" id="partner-website" placeholder=" ">
+                    <label>Website (recommended)</label>
+                </div>
+
+                <div class="form-group">
+                    <input type="url" id="partner-social" placeholder=" ">
+                    <label>Social media link (if no website)</label>
+                </div>
+
+                <div class="form-group">
+                    <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Business ownership proof (PDF/DOC/Image) *</label>
+                    <input type="file" id="partner-ownership-proof" accept=".pdf,.doc,.docx,image/*" style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+                </div>
+
+                <div class="form-group">
+                    <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Upload Proposal (PDF, DOC, DOCX - Max 10MB) *</label>
+                    <input type="file" id="partner-proposal" accept=".pdf,.doc,.docx" style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+                </div>
             </div>
 
-            <div class="form-group">
-                <select id="partner-type" required onchange="toggleOtherPartnerType(this.value)">
-                    <option value="">Select Partnership Type</option>
-                    <option value="educational_institution">Educational Institution</option>
-                    <option value="technology">Technology Partner</option>
-                    <option value="other">Other</option>
-                </select>
-                <label>Partnership Type *</label>
-            </div>
-
-            <!-- Other Partnership Type Specification (Hidden by default) -->
-            <div class="form-group" id="other-partner-type-container" style="display: none;">
-                <input type="text" id="other-partner-type" placeholder=" ">
-                <label>Please specify partnership type *</label>
-            </div>
-
-            <div class="form-group">
-                <textarea id="partner-description" placeholder=" " rows="4"></textarea>
-                <label>Briefly describe your company</label>
-            </div>
-
-            <!-- Branding: logo (required) + website / social (recommended) -->
-            <div class="form-group">
-                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Logo (PNG/JPG/SVG) *</label>
-                <input type="file" id="partner-logo" accept="image/*" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
-            </div>
-
-            <div class="form-group">
-                <input type="url" id="partner-website" placeholder=" ">
-                <label>Website (recommended)</label>
-            </div>
-
-            <div class="form-group">
-                <input type="url" id="partner-social" placeholder=" ">
-                <label>Social media link (if no website)</label>
-            </div>
-
-            <!-- Applicant identity -->
-            <div class="form-group" style="background: var(--bg-secondary); padding: 14px; border-radius: 10px;">
+            <!-- ============ STEP 2: PERSONAL VERIFICATION ============ -->
+            <div class="partner-step" data-step="2" style="display:none;">
                 <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; display:block;">Applicant — naming system</label>
-                <div style="display:flex; gap:18px; margin-bottom:10px;">
+                <div style="display:flex; gap:18px; margin-bottom:10px; flex-wrap:wrap;">
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
                         <input type="radio" name="partnerNaming" value="ethiopian" id="partnerNamingEthiopian" checked onchange="togglePartnerNaming()">
                         <span style="font-size:13px;">Ethiopian (First / Father / Grandfather)</span>
@@ -126,29 +149,35 @@
                 </div>
 
                 <div class="form-group"><input type="date" id="partner-dob" placeholder=" "><label style="position: relative; top: 0; font-size: 13px; color: var(--text-secondary);">Date of birth</label></div>
-                <div class="form-group"><input type="email" id="partner-personal-email" placeholder=" " required><label>Personal email *</label></div>
+                <div class="form-group"><input type="email" id="partner-personal-email" placeholder=" "><label>Personal email *</label></div>
             </div>
 
-            <!-- Business ownership proof + proposal -->
-            <div class="form-group">
-                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Business ownership proof (PDF/DOC/Image) *</label>
-                <input type="file" id="partner-ownership-proof" accept=".pdf,.doc,.docx,image/*" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            <!-- ============ STEP 3: KYC VERIFICATION ============ -->
+            <div class="partner-step" data-step="3" style="display:none;">
+                <p style="font-size:14px; color: var(--text-secondary); margin: 0 0 12px;">
+                    Final step: a quick identity check. We'll capture a photo of your ID and a selfie to
+                    confirm your identity. This happens after you submit — your application is saved first.
+                </p>
+                <ul style="font-size:13px; color: var(--text-secondary); padding-left:18px; margin:0 0 12px;">
+                    <li>Step A — clear photo of your ID document</li>
+                    <li>Step B — a selfie (we match it to your ID)</li>
+                </ul>
+                <p style="font-size:12px; color: var(--text-secondary);">
+                    Make sure your camera is available and you have your ID ready. You may skip and our team
+                    will verify manually, but verified applications are reviewed faster.
+                </p>
             </div>
 
-            <div class="form-group">
-                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Upload Proposal (PDF, DOC, DOCX - Max 10MB) *</label>
-                <input type="file" id="partner-proposal" accept=".pdf,.doc,.docx" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            <!-- Step navigation -->
+            <div class="partner-nav" style="display:flex; gap:10px; margin-top:8px;">
+                <button type="button" class="submit-btn" id="partner-back-btn" onclick="partnerStepBack()" style="display:none; flex:1; background:var(--bg-secondary); color:var(--text-primary);">Back</button>
+                <button type="button" class="submit-btn" id="partner-next-btn" onclick="partnerStepNext()" style="flex:2;">Next</button>
+                <button type="submit" class="submit-btn" id="partner-submit-btn" style="display:none; flex:2;">Submit &amp; Verify</button>
             </div>
-
-            <p style="font-size:12px; color: var(--text-secondary); margin: 4px 0 12px;">
-                After you submit, you'll complete a quick identity check (photo of your ID + a selfie).
-            </p>
-
-            <button type="submit" class="submit-btn">Submit Partnership Request</button>
         </form>
 
         <p class="auth-footer">
-            Have questions? Contact us at <a href="mailto:partners@astegni.com">partners@astegni.com</a>
+            Have questions? Contact us at <a href="mailto:contact@astegni.com">contact@astegni.com</a>
         </p>
     </div>
 </div>

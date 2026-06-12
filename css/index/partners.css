@@ -86,3 +86,57 @@
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(var(--button-bg-rgb), 0.3);
 }
+
+/* ============================================
+   Partner request wizard (Business -> Personal -> KYC)
+   ============================================ */
+.partner-steps-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 0 20px;
+    flex-wrap: wrap;
+}
+.partner-step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-align: center;
+    min-width: 70px;
+}
+.partner-step-dot .num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+.partner-step-dot.active .num {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+    color: var(--button-text, #fff);
+}
+.partner-step-dot.done .num {
+    background: var(--success, #16a34a);
+    border-color: var(--success, #16a34a);
+    color: #fff;
+}
+.partner-step-dot.active .lbl { color: var(--text-primary); font-weight: 600; }
+.partner-step-line {
+    flex: 0 1 40px;
+    height: 2px;
+    background: var(--border-color);
+    margin-bottom: 18px;
+}
+.partner-nav .submit-btn { margin-top: 0; }

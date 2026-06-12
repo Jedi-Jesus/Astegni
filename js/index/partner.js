@@ -115,6 +115,98 @@ window.togglePartnerNaming = function() {
     if (intlEl) intlEl.style.display = intl ? '' : 'none';
 };
 
+// ============================================
+//   PARTNER REQUEST WIZARD (Business -> Personal -> KYC)
+// ============================================
+let partnerCurrentStep = 1;
+const PARTNER_TOTAL_STEPS = 3;
+
+function partnerShowStep(step) {
+    partnerCurrentStep = step;
+    document.querySelectorAll('#partner-form .partner-step').forEach(el => {
+        el.style.display = (Number(el.dataset.step) === step) ? '' : 'none';
+    });
+    // Indicator
+    document.querySelectorAll('#partner-steps-indicator .partner-step-dot').forEach(dot => {
+        const n = Number(dot.dataset.step);
+        dot.classList.toggle('active', n === step);
+        dot.classList.toggle('done', n < step);
+    });
+    // Nav buttons
+    const back = document.getElementById('partner-back-btn');
+    const next = document.getElementById('partner-next-btn');
+    const submit = document.getElementById('partner-submit-btn');
+    if (back) back.style.display = step > 1 ? '' : 'none';
+    if (next) next.style.display = step < PARTNER_TOTAL_STEPS ? '' : 'none';
+    if (submit) submit.style.display = step === PARTNER_TOTAL_STEPS ? '' : 'none';
+    // Scroll the modal body back to top on step change.
+    const content = document.querySelector('#partner-modal .modal-content');
+    if (content) content.scrollTop = 0;
+}
+
+// Validate the fields of the current step before advancing.
+function partnerValidateStep(step) {
+    if (step === 1) {
+        const contactPerson = document.getElementById('partner-contact').value.trim();
+        const emails = Array.from(document.querySelectorAll('.partner-email')).map(i => i.value.trim()).filter(Boolean);
+        const phones = Array.from(document.querySelectorAll('.partner-phone')).map(i => i.value.trim()).filter(Boolean);
+        const partnershipType = document.getElementById('partner-type').value;
+        const otherType = document.getElementById('other-partner-type').value.trim();
+        const logoFile = document.getElementById('partner-logo').files[0];
+        const ownershipFile = document.getElementById('partner-ownership-proof').files[0];
+        const proposalFile = document.getElementById('partner-proposal').files[0];
+        const website = document.getElementById('partner-website').value.trim();
+        const social = document.getElementById('partner-social').value.trim();
+
+        if (!contactPerson) return 'Please enter the contact person.';
+        if (emails.length === 0) return 'Please enter at least one email.';
+        if (phones.length === 0) return 'Please enter at least one phone number.';
+        if (!partnershipType) return 'Please select a partnership type.';
+        if (partnershipType === 'other' && !otherType) return 'Please specify your partnership type.';
+        if (!logoFile) return 'Please upload your logo.';
+        if (!ownershipFile) return 'Please upload business ownership proof.';
+        if (!proposalFile) return 'Please upload a proposal file.';
+        for (const [f, label] of [[logoFile,'Logo'],[ownershipFile,'Ownership proof'],[proposalFile,'Proposal']]) {
+            if (f.size > 10 * 1024 * 1024) return `${label} must be under 10MB.`;
+        }
+        if (!website && !social) {
+            if (!confirm('No website or social media link provided. Continue anyway?')) return '__cancel__';
+        }
+        return null;
+    }
+    if (step === 2) {
+        const isIntl = document.getElementById('partnerNamingInternational')?.checked;
+        const firstName = (isIntl
+            ? document.getElementById('partner-first-name-intl')
+            : document.getElementById('partner-first-name')).value.trim();
+        const fatherName = document.getElementById('partner-father-name').value.trim();
+        const grandfatherName = document.getElementById('partner-grandfather-name').value.trim();
+        const lastName = document.getElementById('partner-last-name').value.trim();
+        const personalEmail = document.getElementById('partner-personal-email').value.trim();
+        if (!firstName) return 'Please enter the applicant first name.';
+        if (isIntl ? !lastName : (!fatherName || !grandfatherName)) return 'Please complete the applicant name fields.';
+        if (!personalEmail || !personalEmail.includes('@')) return 'Please enter a valid personal email.';
+        return null;
+    }
+    return null;
+}
+
+window.partnerStepNext = function() {
+    const err = partnerValidateStep(partnerCurrentStep);
+    if (err === '__cancel__') return;
+    if (err) { alert(err); return; }
+    if (partnerCurrentStep < PARTNER_TOTAL_STEPS) partnerShowStep(partnerCurrentStep + 1);
+};
+
+window.partnerStepBack = function() {
+    if (partnerCurrentStep > 1) partnerShowStep(partnerCurrentStep - 1);
+};
+
+// Reset the wizard to step 1 (called when the modal opens).
+window.resetPartnerWizard = function() {
+    partnerShowStep(1);
+};
+
 // Toggle "Other" partnership type text field
 window.toggleOtherPartnerType = function(value) {
     const otherContainer = document.getElementById('other-partner-type-container');
@@ -140,14 +232,14 @@ window.closePartnerSuccessModal = function() {
     const emailsContainer = document.getElementById('emails-container');
     emailsContainer.innerHTML = `
         <div class="email-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input type="email" class="partner-email" placeholder="email@company.com" required style="flex: 1;">
+            <input type="email" class="partner-email" placeholder="email@company.com" style="flex: 1;">
         </div>
     `;
 
     const phonesContainer = document.getElementById('phones-container');
     phonesContainer.innerHTML = `
         <div class="phone-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input type="tel" class="partner-phone" placeholder="+251 912 345 678" required style="flex: 1;">
+            <input type="tel" class="partner-phone" placeholder="+251 912 345 678" style="flex: 1;">
         </div>
     `;
 
@@ -159,6 +251,9 @@ window.closePartnerSuccessModal = function() {
         otherInput.required = false;
         otherInput.value = '';
     }
+
+    // Back to step 1 for the next applicant.
+    if (typeof window.resetPartnerWizard === 'function') window.resetPartnerWizard();
 };
 
 // Handle partner form submission
@@ -219,9 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isIntl ? !lastName : (!fatherName || !grandfatherName)) {
                 alert('Please complete the applicant name fields'); return;
             }
-            if (!website && !socialLink) {
-                if (!confirm('No website or social media link provided. Submit anyway?')) return;
-            }
+            // (website/social already confirmed at step 1 of the wizard)
             for (const [f, label] of [[logoFile,'Logo'],[ownershipFile,'Ownership proof'],[proposalFile,'Proposal']]) {
                 if (f.size > 10 * 1024 * 1024) { alert(`${label} must be under 10MB`); return; }
             }
@@ -282,6 +375,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = false;
             }
         });
+    }
+
+    // Reset the wizard to step 1 each time the modal is opened (it toggles the
+    // `hidden` class). Guards against reopening mid-flow after closing with X.
+    const partnerModal = document.getElementById('partner-modal');
+    if (partnerModal && typeof MutationObserver !== 'undefined') {
+        let wasHidden = partnerModal.classList.contains('hidden');
+        new MutationObserver(() => {
+            const hidden = partnerModal.classList.contains('hidden');
+            if (wasHidden && !hidden && typeof window.resetPartnerWizard === 'function') {
+                window.resetPartnerWizard();
+            }
+            wasHidden = hidden;
+        }).observe(partnerModal, { attributes: true, attributeFilter: ['class'] });
     }
 });
 
