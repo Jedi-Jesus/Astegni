@@ -539,11 +539,20 @@ const ManageAstegni = {
             const phones = (a.phones || []).map(p => this._escape(p)).join(', ');
             const statusBadge = `<span class="ma-badge ${a.status === 'approved' ? 'verified' : a.status === 'rejected' ? 'inactive' : ''}">${this._escape(a.status)}</span>`;
             const kyc = a.kyc_verification_status || a.kyc_status || 'pending';
-            const kycBadge = `<span class="ma-badge ${kyc === 'passed' ? 'verified' : ''}" title="Identity KYC">KYC: ${this._escape(kyc)}</span>`;
+            const kycPassed = (kyc === 'passed');
+            const kycBadge = `<span class="ma-badge ${kycPassed ? 'verified' : 'inactive'}" title="Identity KYC">KYC: ${this._escape(kyc)}</span>`;
             const isPending = a.status === 'pending';
             const logo = a.logo_url
                 ? `<img src="${this._escape(a.logo_url)}" alt="" class="ma-logo">`
                 : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
+            // Approve/Reject are only available once identity KYC has passed.
+            const reviewActions = !isPending ? '' : (kycPassed ? `
+                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id})"><i class="fas fa-check"></i></button>
+                    <button class="ma-icon-btn danger" title="Reject" onclick="ManageAstegni.rejectApplication(${a.id})"><i class="fas fa-times"></i></button>
+                ` : `
+                    <button class="ma-icon-btn" disabled title="Locked until identity KYC passes" style="opacity:.4;cursor:not-allowed;"><i class="fas fa-check"></i></button>
+                    <button class="ma-icon-btn danger" disabled title="Locked until identity KYC passes" style="opacity:.4;cursor:not-allowed;"><i class="fas fa-times"></i></button>
+                `);
             return `
             <div class="ma-card">
                 ${logo}
@@ -552,14 +561,12 @@ const ManageAstegni = {
                     <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.applicant_name || a.contact_person || '')}</p>
                     <p class="ma-muted">${this._escape(a.partnership_type || '')}${a.partnership_type_category ? ' · ' + this._escape(a.partnership_type_category) : ''}</p>
                     ${emails ? `<p class="ma-muted"><i class="fas fa-envelope"></i> ${emails}</p>` : ''}
+                    ${isPending && !kycPassed ? `<p class="ma-muted" style="color:#b45309;"><i class="fas fa-lock"></i> Awaiting identity verification — can't approve or reject yet.</p>` : ''}
                     ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
                 </div>
                 <div class="ma-card-actions">
                     <button class="ma-icon-btn" title="View details" onclick="ManageAstegni.viewApplication(${a.id})"><i class="fas fa-eye"></i></button>
-                    ${isPending ? `
-                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id})"><i class="fas fa-check"></i></button>
-                    <button class="ma-icon-btn danger" title="Reject" onclick="ManageAstegni.rejectApplication(${a.id})"><i class="fas fa-times"></i></button>
-                    ` : ''}
+                    ${reviewActions}
                 </div>
             </div>`;
         }).join('');

@@ -683,12 +683,20 @@ async def reject_partner_application(
     admin_notes: str = Form(""),
     admin=Depends(get_current_admin),
 ):
-    """Admin: reject a partnership application and email the reason to the applicant."""
+    """Admin: reject a partnership application and email the reason to the applicant.
+
+    An application can only be acted on once its identity KYC has passed.
+    """
     with _conn() as conn, conn.cursor() as cur:
         cur.execute("SELECT * FROM partner_requests WHERE id=%s", (request_id,))
         app = cur.fetchone()
         if not app:
             raise HTTPException(status_code=404, detail="Application not found")
+        if (app.get("kyc_status") or "pending") != "passed":
+            raise HTTPException(
+                status_code=400,
+                detail="This applicant has not completed identity verification (KYC), so the application cannot be rejected yet.",
+            )
         cur.execute(
             """
             UPDATE partner_requests
@@ -718,12 +726,18 @@ async def approve_partner_application(
     """Admin: approve an application, create the live partner, and email the applicant.
 
     The new partner reuses the logo/website the applicant already submitted.
+    An application can only be approved once its identity KYC has passed.
     """
     with _conn() as conn, conn.cursor() as cur:
         cur.execute("SELECT * FROM partner_requests WHERE id=%s", (request_id,))
         app = cur.fetchone()
         if not app:
             raise HTTPException(status_code=404, detail="Application not found")
+        if (app.get("kyc_status") or "pending") != "passed":
+            raise HTTPException(
+                status_code=400,
+                detail="This applicant has not completed identity verification (KYC), so the application cannot be approved yet.",
+            )
 
         cur.execute(
             """
