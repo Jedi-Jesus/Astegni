@@ -29,13 +29,14 @@ class TutorScoringCalculator:
         student_hobbies: List[str] = None
     ) -> tuple[int, dict]:
         """
-        Calculate interest/hobby matching score (0-150 points)
+        Calculate interest/hobby matching score (0-100 points)
 
         Scoring:
         - Perfect interest match: +100 points
         - Partial interest match: +50 points
         - Hobby match: +50 points
         - Multiple matches: bonus up to +50 points
+        (raw total capped at 100)
 
         Returns: (score, details_dict)
         """
@@ -116,22 +117,22 @@ class TutorScoringCalculator:
         elif details["match_count"] == 2:
             score += 25  # 2 matches
 
-        # Cap at 150 points
-        score = min(score, 150)
+        # Cap at 100 points
+        score = min(score, 100)
 
         return score, details
 
     def calculate_total_students_score(self, tutor_id: int) -> tuple[int, dict]:
         """
-        Calculate score based on total students taught (0-100 points)
+        Calculate score based on total students taught (0-150 points)
 
         Scoring:
-        - 100+ students: 100 points
-        - 50-99 students: 75 points
-        - 20-49 students: 50 points
-        - 10-19 students: 30 points
-        - 5-9 students: 15 points
-        - 1-4 students: 5 points
+        - 100+ students: 150 points
+        - 50-99 students: 110 points
+        - 20-49 students: 75 points
+        - 10-19 students: 45 points
+        - 5-9 students: 25 points
+        - 1-4 students: 10 points
 
         Returns: (score, details_dict)
         """
@@ -146,17 +147,17 @@ class TutorScoringCalculator:
 
         # Calculate score based on thresholds
         if total_students >= 100:
-            score = 100
+            score = 150
         elif total_students >= 50:
-            score = 75
+            score = 110
         elif total_students >= 20:
-            score = 50
+            score = 75
         elif total_students >= 10:
-            score = 30
+            score = 45
         elif total_students >= 5:
-            score = 15
+            score = 25
         elif total_students >= 1:
-            score = 5
+            score = 10
         else:
             score = 0
 
@@ -167,18 +168,18 @@ class TutorScoringCalculator:
 
     def calculate_completion_rate_score(self, tutor_id: int) -> tuple[int, dict]:
         """
-        Calculate score based on session completion rate (0-80 points)
+        Calculate score based on session completion rate (0-200 points)
 
         Completion rate = (completed sessions / total sessions) * 100
 
         Scoring:
-        - 95%+ completion: 80 points
-        - 90-94%: 70 points
-        - 85-89%: 60 points
-        - 80-84%: 50 points
-        - 75-79%: 40 points
-        - 70-74%: 30 points
-        - <70%: 10 points
+        - 95%+ completion: 200 points
+        - 90-94%: 175 points
+        - 85-89%: 150 points
+        - 80-84%: 125 points
+        - 75-79%: 100 points
+        - 70-74%: 75 points
+        - <70%: 25 points
         - No data: 0 points
 
         Returns: (score, details_dict)
@@ -202,19 +203,19 @@ class TutorScoringCalculator:
 
         # Score based on completion rate
         if completion_rate >= 95:
-            score = 80
+            score = 200
         elif completion_rate >= 90:
-            score = 70
+            score = 175
         elif completion_rate >= 85:
-            score = 60
+            score = 150
         elif completion_rate >= 80:
-            score = 50
+            score = 125
         elif completion_rate >= 75:
-            score = 40
+            score = 100
         elif completion_rate >= 70:
-            score = 30
+            score = 75
         else:
-            score = 10
+            score = 25
 
         return score, {
             "total_enrollments": result.total_enrollments,
@@ -334,7 +335,7 @@ class TutorScoringCalculator:
 
     def calculate_experience_score(self, tutor_user_id: int, tutor_profile_created_at: datetime) -> tuple[int, dict]:
         """
-        Calculate score based on experience (0-200 points)
+        Calculate score based on experience (0-300 points)
 
         Experience is the second-heaviest smart-ranking factor (after rating),
         ahead of completion rate.
@@ -344,8 +345,8 @@ class TutorScoringCalculator:
         2. Credentials/certificates count
 
         Scoring:
-        - Account age: 0-120 points (4 points per month, max 120 points at 2.5 years)
-        - Credentials: 0-80 points (20 points per credential, max 80 points at 4+ credentials)
+        - Account age: 0-180 points (6 points per month, max 180 points at 2.5 years)
+        - Credentials: 0-120 points (30 points per credential, max 120 points at 4+ credentials)
 
         Returns: (score, details_dict)
         """
@@ -356,8 +357,8 @@ class TutorScoringCalculator:
             account_age_days = (datetime.utcnow() - tutor_profile_created_at).days
             account_age_months = account_age_days / 30.0
 
-            # 4 points per month, max 120 points (2.5 years)
-            age_score = min(int(account_age_months) * 4, 120)
+            # 6 points per month, max 180 points (2.5 years)
+            age_score = min(int(account_age_months) * 6, 180)
             score += age_score
         else:
             account_age_months = 0
@@ -374,8 +375,8 @@ class TutorScoringCalculator:
         cred_result = self.db.execute(credentials_query, {"tutor_user_id": tutor_user_id}).fetchone()
         credential_count = cred_result.credential_count if cred_result else 0
 
-        # 20 points per credential, max 80 points (4+ credentials)
-        credential_score = min(credential_count * 20, 80)
+        # 30 points per credential, max 120 points (4+ credentials)
+        credential_score = min(credential_count * 30, 120)
         score += credential_score
 
         return score, {
@@ -643,7 +644,7 @@ class TutorScoringCalculator:
         }
 
         breakdown["total_new_score"] = total_score
-        breakdown["max_possible_new_score"] = 1090  # 500(rating)+150+100+80(completion)+60+200(experience)
+        breakdown["max_possible_new_score"] = 1310  # 500(rating)+100(interest)+150(students)+200(completion)+60(response)+300(experience)
         breakdown["payment_penalty_applied"] = payment_penalty
 
         return total_score, breakdown

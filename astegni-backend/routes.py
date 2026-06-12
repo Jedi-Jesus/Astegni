@@ -1587,11 +1587,11 @@ def get_tutors(
             SCORING SYSTEM (subscription plan removed - rating is now primary,
             to reward genuinely good tutors over paid placement):
             - Rating (confidence-weighted): 0-500 points (PRIMARY, via TutorScoringCalculator)
-            - Experience: 0-200 points (SECOND: account age + credentials)
-            - Trending Score: 0-200+ points
-            - Interest/Hobby Match: 0-150 points
-            - Total Students: 0-100 points
-            - Completion Rate: 0-80 points
+            - Experience: 0-300 points (SECOND: account age + credentials)
+            - Completion Rate: 0-200 points
+            - Total Students: 0-150 points
+            - Interest/Hobby Match: 0-100 points
+            - Trending Score: 0-100 points
             - Response Time: 0-60 points
             - Search History: 0-50 points
             - New Tutor Bonus: 0-50 points
@@ -1601,25 +1601,25 @@ def get_tutors(
             """
             score = 0
 
-            # TRENDING SCORE (0-200+ points) - POPULARITY BOOST
+            # TRENDING SCORE (0-100 points) - POPULARITY BOOST
             trending_score = getattr(tutor, 'trending_score', 0) or 0
             search_count = getattr(tutor, 'search_count', 0) or 0
 
             if trending_score > 0:
                 if trending_score >= 100:
-                    score += 200  # Maximum trending bonus
+                    score += 100  # Maximum trending bonus
                 elif trending_score >= 50:
-                    score += 100 + (trending_score - 50) * 2  # 100-200 points
+                    score += 50 + (trending_score - 50)  # 50-100 points
                 else:
-                    score += trending_score * 2  # 0-100 points
+                    score += trending_score  # 0-50 points
 
                 # Additional boost for very high search counts (viral tutors)
                 if search_count >= 1000:
-                    score += 100  # Viral tutor bonus
+                    score += 50  # Viral tutor bonus
                 elif search_count >= 500:
-                    score += 50  # Very popular tutor bonus
+                    score += 25  # Very popular tutor bonus
                 elif search_count >= 100:
-                    score += 25  # Popular tutor bonus
+                    score += 12  # Popular tutor bonus
 
             # NEW: Calculate all new scoring factors using TutorScoringCalculator
             try:

@@ -119,22 +119,22 @@ def smart_rank_tutors(db: Session, tutors: List[TutorProfile]) -> List[TutorProf
     def calculate_tutor_score(tutor: TutorProfile) -> float:
         score = 0
 
-        # TRENDING SCORE (0-200+ points) - POPULARITY BOOST
+        # TRENDING SCORE (0-100 points) - POPULARITY BOOST
         trending_score = getattr(tutor, 'trending_score', 0) or 0
         search_count = getattr(tutor, 'search_count', 0) or 0
         if trending_score > 0:
             if trending_score >= 100:
-                score += 200
-            elif trending_score >= 50:
-                score += 100 + (trending_score - 50) * 2
-            else:
-                score += trending_score * 2
-            if search_count >= 1000:
                 score += 100
-            elif search_count >= 500:
+            elif trending_score >= 50:
+                score += 50 + (trending_score - 50)
+            else:
+                score += trending_score
+            if search_count >= 1000:
                 score += 50
-            elif search_count >= 100:
+            elif search_count >= 500:
                 score += 25
+            elif search_count >= 100:
+                score += 12
 
         # Composite scoring (rating, students, completion, response, experience, etc.)
         try:
