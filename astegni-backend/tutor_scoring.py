@@ -243,113 +243,92 @@ class TutorScoringCalculator:
             "score_tier": f"{completion_rate:.1f}% × conf {confidence:.2f} → {score} points"
         }
 
+    # A pending session request older than this (hours) with no response counts
+    # as "ignored" and drives the response score negative.
+    IGNORE_AFTER_HOURS = 48
+
     def calculate_response_time_score(self, tutor_profile_id: int, tutor_user_id: int) -> tuple[int, dict]:
         """
-        Calculate score based on average response time (0-60 points)
+        Calculate score based on how the tutor handles PACKAGE/SESSION REQUESTS
+        (requested_sessions), NOT chat messages (-60 to +60 points).
 
-        Measures how quickly tutor responds to first message in conversations
-        and to session requests.
+        For answered requests, speed of the response (responded_at - created_at)
+        earns a positive tier. For requests the tutor never answered (still
+        'pending', no responded_at, older than IGNORE_AFTER_HOURS), an ignore
+        penalty is applied. A tutor who ignores students is pushed below zero.
 
-        Scoring:
-        - <5 min avg response: 60 points (instant responder)
-        - 5-15 min: 50 points (very fast)
-        - 15-30 min: 40 points (fast)
-        - 30-60 min: 30 points (good)
-        - 1-2 hours: 20 points (moderate)
-        - 2-6 hours: 10 points (slow)
-        - >6 hours: 5 points (very slow)
-        - No data: 0 points
+        Speed tier (answered requests):
+        - <5 min: 60   - 5-15 min: 50   - 15-30 min: 40   - 30-60 min: 30
+        - 1-2 h: 20    - 2-6 h: 10      - >6 h: 5
+
+        Final score = tier * (1 - ignore_rate) - 60 * ignore_rate
+          where ignore_rate = ignored / (answered + ignored)
+        - 0% ignored  -> the speed tier (up to +60)
+        - 100% ignored -> -60
+        - No requests at all -> 0 (new tutors are not penalized)
 
         Returns: (score, details_dict)
         """
-        # Calculate average response time from chat messages
-        chat_query = text("""
-            WITH conversation_first_messages AS (
-                SELECT
-                    cm1.conversation_id,
-                    cm1.created_at as student_message_time,
-                    (
-                        SELECT MIN(cm2.created_at)
-                        FROM chat_messages cm2
-                        WHERE cm2.conversation_id = cm1.conversation_id
-                        AND cm2.sender_user_id = :tutor_user_id
-                        AND cm2.created_at > cm1.created_at
-                    ) as tutor_response_time
-                FROM chat_messages cm1
-                WHERE cm1.sender_user_id != :tutor_user_id
-                AND cm1.conversation_id IN (
-                    SELECT conversation_id
-                    FROM conversation_participants
-                    WHERE profile_id = :tutor_profile_id
-                    AND profile_type = 'tutor'
-                )
-            )
+        query = text("""
             SELECT
-                COUNT(*) FILTER (WHERE tutor_response_time IS NOT NULL) as response_count,
-                AVG(EXTRACT(EPOCH FROM (tutor_response_time - student_message_time)) / 60) as avg_response_minutes
-            FROM conversation_first_messages
-            WHERE tutor_response_time IS NOT NULL
+                COUNT(*) FILTER (
+                    WHERE responded_at IS NOT NULL
+                ) AS answered,
+                COUNT(*) FILTER (
+                    WHERE responded_at IS NULL
+                    AND status = 'pending'
+                    AND created_at < (NOW() - (:ignore_hours || ' hours')::interval)
+                ) AS ignored,
+                AVG(
+                    EXTRACT(EPOCH FROM (responded_at - created_at)) / 60
+                ) FILTER (WHERE responded_at IS NOT NULL) AS avg_response_minutes
+            FROM requested_sessions
+            WHERE tutor_id = :tutor_id
         """)
-
-        chat_result = self.db.execute(chat_query, {
-            "tutor_profile_id": tutor_profile_id,
-            "tutor_user_id": tutor_user_id
+        result = self.db.execute(query, {
+            "tutor_id": tutor_profile_id,
+            "ignore_hours": self.IGNORE_AFTER_HOURS
         }).fetchone()
 
-        # Calculate response time from connection requests (requested_at to connected_at)
-        connection_query = text("""
-            SELECT
-                COUNT(*) as request_count,
-                AVG(EXTRACT(EPOCH FROM (connected_at - requested_at)) / 60) as avg_response_minutes
-            FROM connections
-            WHERE recipient_id = :tutor_user_id
-            AND recipient_type = 'tutor'
-            AND status = 'accepted'
-            AND connected_at IS NOT NULL
-        """)
+        answered = (result.answered if result else 0) or 0
+        ignored = (result.ignored if result else 0) or 0
+        total = answered + ignored
 
-        connection_result = self.db.execute(connection_query, {
-            "tutor_user_id": tutor_user_id
-        }).fetchone()
+        if total == 0:
+            return 0, {"reason": "No session requests", "avg_response_time": None}
 
-        # Combine chat and connection response times
-        total_responses = 0
-        total_response_time = 0
-
-        if chat_result and chat_result.response_count:
-            total_responses += chat_result.response_count
-            total_response_time += chat_result.avg_response_minutes * chat_result.response_count
-
-        if connection_result and connection_result.request_count:
-            total_responses += connection_result.request_count
-            total_response_time += connection_result.avg_response_minutes * connection_result.request_count
-
-        if total_responses == 0:
-            return 0, {"reason": "No response data", "avg_response_time": None}
-
-        avg_response_minutes = total_response_time / total_responses
-
-        # Score based on response time
-        if avg_response_minutes < 5:
-            score = 60  # Instant responder
-        elif avg_response_minutes < 15:
-            score = 50  # Very fast
-        elif avg_response_minutes < 30:
-            score = 40  # Fast
-        elif avg_response_minutes < 60:
-            score = 30  # Good
-        elif avg_response_minutes < 120:
-            score = 20  # Moderate
-        elif avg_response_minutes < 360:
-            score = 10  # Slow
+        # Speed tier from answered requests
+        avg_response_minutes = result.avg_response_minutes
+        if answered > 0 and avg_response_minutes is not None:
+            m = avg_response_minutes
+            if m < 5:
+                tier = 60
+            elif m < 15:
+                tier = 50
+            elif m < 30:
+                tier = 40
+            elif m < 60:
+                tier = 30
+            elif m < 120:
+                tier = 20
+            elif m < 360:
+                tier = 10
+            else:
+                tier = 5
         else:
-            score = 5  # Very slow
+            tier = 0
+
+        # Blend speed with ignore penalty (-60 floor when everything is ignored)
+        ignore_rate = ignored / total
+        score = int(round(tier * (1 - ignore_rate) - 60 * ignore_rate))
 
         return score, {
-            "total_responses": total_responses,
-            "avg_response_minutes": round(avg_response_minutes, 1),
-            "avg_response_hours": round(avg_response_minutes / 60, 1),
-            "score_tier": f"{avg_response_minutes:.1f} min → {score} points"
+            "answered_requests": answered,
+            "ignored_requests": ignored,
+            "ignore_rate": round(ignore_rate, 2),
+            "avg_response_minutes": round(avg_response_minutes, 1) if avg_response_minutes is not None else None,
+            "speed_tier": tier,
+            "score_tier": f"tier {tier} × resp {1-ignore_rate:.2f} − ignore → {score} points"
         }
 
     def calculate_experience_score(self, tutor_user_id: int, tutor_profile_created_at: datetime) -> tuple[int, dict]:

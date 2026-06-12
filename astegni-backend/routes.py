@@ -1592,7 +1592,7 @@ def get_tutors(
             - Completion Rate: 0-150 points
             - Interest/Hobby Match: 0-120 points
             - Trending Score: 0-100 points
-            - Response Time: 0-60 points
+            - Response Time (package requests): -60 to +60 points (ignoring requests penalized)
             - Search History: 0-50 points
             - New Tutor Bonus: 0-50 points
             - Verification: 0-25 points
