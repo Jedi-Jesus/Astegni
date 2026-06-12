@@ -288,6 +288,13 @@ const ManageAstegni = {
         const list = document.getElementById('reviews-list');
         try {
             const res = await fetch(`${MA_API}/api/admin/testimonials`, { headers: this._authHeaders() });
+            if (res.status === 401 || res.status === 403) {
+                if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-lock"></i>
+                    <div>Your admin session has expired or lacks access.</div>
+                    <button class="btn-primary" style="margin-top:0.75rem" onclick="window.location.href='index.html'">Log in again</button>
+                </div>`;
+                return;
+            }
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             this.reviews = data.testimonials || [];
