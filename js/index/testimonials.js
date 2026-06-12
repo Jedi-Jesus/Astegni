@@ -1,78 +1,61 @@
 
 // ============================================
-//   TESTIMONIALS WITH ZOOM ANIMATION
+//   TESTIMONIALS (real user reviews of Astegni)
+//   Renders the reviews an admin featured via the Manage Astegni page.
+//   Source: GET /api/featured-reviews. Section stays hidden when empty.
 // ============================================
-function initializeTestimonials() {
-    const testimonialData = [
-        {
-            text: "Astegni helped me find the perfect math tutor. My grades improved from C to A in just 3 months!",
-            author: "Sara Tadesse",
-            role: "Grade 12 Student",
-            avatar: "https://picsum.photos/60",
-            dataType: "Test data"
-        },
-        {
-            text: "As a tutor, Astegni gave me the platform to reach students nationwide. I now teach over 50 students online!",
-            author: "Daniel Bekele",
-            role: "Physics Tutor",
-            avatar: "https://picsum.photos/61",
-            dataType: "Test data"            
-        },
-        {
-            text: "The variety of courses and quality of instructors on Astegni is unmatched. Best investment in my child's education!",
-            author: "Marta Alemu",
-            role: "Parent",
-            avatar: "https://picsum.photos/62",
-            dataType: "Test data"
-        },
-        {
-            text: "I found my dream job through Astegni's job portal. The platform is truly life-changing!",
-            author: "Yohannes Girma",
-            role: "Software Developer",
-            avatar: "https://picsum.photos/63",
-            dataType: "Test data"
-        },
-        {
-            text: "Our training center reached 10x more students after joining Astegni. Highly recommended!",
-            author: "Tigist Haile",
-            role: "Training Center Director",
-            avatar: "https://picsum.photos/64",
-            dataType: "Test data"
-        },
-        {
-            text: "The online learning tools and resources are amazing. I can learn at my own pace!",
-            author: "Abebe Mengistu",
-            role: "University Student",
-            avatar: "https://picsum.photos/65",
-            dataType: "Test data"
-        },
-    ];
-
-    let currentSet = 0;
+async function initializeTestimonials() {
+    const section = document.getElementById("testimonials-section");
     const slider = document.getElementById("testimonials-slider");
-
     if (!slider) return;
 
-    function updateTestimonials() {
-        slider.innerHTML = "";
-        const startIndex = currentSet * 3;
+    const base = window.API_BASE_URL || 'http://localhost:8000';
+    let reviews = [];
+    try {
+        const res = await fetch(`${base}/api/featured-reviews?limit=12`);
+        if (res.ok) {
+            const data = await res.json();
+            reviews = data.reviews || [];
+        }
+    } catch (e) {
+        console.log('No featured testimonials available');
+    }
 
-        for (let i = 0; i < 3; i++) {
-            const testimonial =
-                testimonialData[(startIndex + i) % testimonialData.length];
+    // No featured user reviews -> keep the section hidden entirely.
+    if (reviews.length === 0) {
+        if (section) section.style.display = "none";
+        return;
+    }
+    if (section) section.style.display = "";
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+    const roleLabel = (r) => r ? r.charAt(0).toUpperCase() + r.slice(1) : 'Astegni User';
+
+    let currentSet = 0;
+    const perPage = 3;
+    const pages = Math.ceil(reviews.length / perPage);
+
+    function render() {
+        slider.innerHTML = "";
+        const start = currentSet * perPage;
+        // Show up to `perPage` cards for this page (last page may have fewer).
+        for (let i = 0; i < perPage && (start + i) < reviews.length; i++) {
+            const t = reviews[start + i];
+            const stars = '⭐'.repeat(Math.max(1, Math.min(5, t.rating || 5)));
             const card = document.createElement("div");
             card.className = "testimonial-card active";
             card.innerHTML = `
                 <div class="testimonial-content">
                     <div class="quote-icon">"</div>
-                    <p class="testimonial-text">${testimonial.text}</p>
+                    <p class="testimonial-text">${esc(t.review_text)}</p>
                     <div class="testimonial-author">
-                        <img src="${testimonial.avatar}" alt="${testimonial.author}" class="author-avatar">
+                        <img src="${esc(t.profile_picture)}" alt="${esc(t.name)}" class="author-avatar" loading="lazy">
                         <div class="author-info">
-                            <h4>${testimonial.author}</h4>
-                            <p>${testimonial.role}</p>
-                            <div class="rating">⭐⭐⭐⭐⭐</div>
-                            <p>${testimonial.dataType}</p>
+                            <h4>${esc(t.name)}</h4>
+                            <p>${esc(roleLabel(t.role))}</p>
+                            <div class="rating">${stars}</div>
                         </div>
                     </div>
                 </div>
@@ -80,7 +63,6 @@ function initializeTestimonials() {
             slider.appendChild(card);
         }
 
-        // Restart animation
         setTimeout(() => {
             document.querySelectorAll(".testimonial-card").forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.3}s`;
@@ -88,11 +70,13 @@ function initializeTestimonials() {
         }, 100);
     }
 
-    updateTestimonials();
+    render();
 
-    // Change testimonials every 9 seconds
-    setInterval(() => {
-        currentSet = (currentSet + 1) % Math.ceil(testimonialData.length / 3);
-        updateTestimonials();
-    }, 9000);
+    // Rotate pages every 9s (only if there's more than one page).
+    if (pages > 1) {
+        setInterval(() => {
+            currentSet = (currentSet + 1) % pages;
+            render();
+        }, 9000);
+    }
 }

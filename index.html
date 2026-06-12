@@ -576,24 +576,12 @@
                         </svg>
                     </a>
                 </div>
-
-                <!-- Quick News Items -->
-                <div class="quick-news-grid">
-                    <div class="quick-news-item">
-                        <span class="quick-news-icon">🎉</span>
-                        <p>Astegni launched on December 1, 2025</p>
-                    </div>
-                    <div class="quick-news-item">
-                        <span class="quick-news-icon">📰</span>
-                        <p>Other education news coming soon</p>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Enhanced Video Section -->
-    <section class="video-showcase py-16">
+    <!-- Enhanced Video Section. Hidden by video-carousel.js when no featured videos exist. -->
+    <section class="video-showcase py-16" id="video-showcase-section">
         <div class="container mx-auto px-4">
             <div class="section-header">
                 <h2 class="section-title">Featured Content</h2>
@@ -670,8 +658,9 @@
         <!-- Ads will be loaded dynamically via adRotationManager -->
     </div>
 
-    <!-- Testimonials Section (New) - Hidden until we have real testimonials -->
-    <section class="testimonials-section py-16" style="display: none;">
+    <!-- Testimonials Section. Populated with admin-featured user reviews by
+         testimonials.js; stays hidden when there are none. -->
+    <section class="testimonials-section py-16" id="testimonials-section" style="display: none;">
         <div class="container mx-auto px-4">
             <div class="section-header">
                 <h2 class="section-title">Success Stories</h2>
@@ -730,17 +719,18 @@
         </div>
     </section>
 
-    <!-- Partners Section Enhanced - commented out
-    <section class="partners-section py-16">
+    <!-- Partners Section Enhanced. The logos area is hidden by partner.js when
+         there are no approved partners; the "Become a Partner" CTA always shows. -->
+    <section class="partners-section py-16" id="partners-section">
         <div class="container mx-auto px-4">
-            <div class="section-header" style="display: none;">
+            <div class="section-header" id="partners-header" style="display: none;">
                 <h2 class="section-title">Trusted Partners</h2>
                 <p class="section-subtitle">Collaborating with industry leaders</p>
             </div>
 
-            <div class="partners-wrapper" style="display: none;">
+            <div class="partners-wrapper" id="partners-wrapper" style="display: none;">
                 <div class="partners-track" id="partners-track">
-                    Partner logos will be dynamically generated
+                    <!-- Partner logos are generated dynamically -->
                 </div>
             </div>
 
@@ -750,7 +740,6 @@
             </div>
         </div>
     </section>
-    -->
 
     <!-- Modal Container - Modals loaded dynamically via IndexModalLoader -->
     <div id="modal-container"></div>
@@ -970,11 +959,11 @@
     <script src="js/index/profile-and-authentication.js?v202605211228"></script>
     <script src="js/index/init-index.js?v202605211228"></script>
     <script src="js/index/hero-section.js?v202605211228"></script>
-    <script src="js/index/professional-review.js?v202605211228"></script>
-    <script src="js/index/video-carousel.js?v202606121300"></script>
+    <script src="js/index/professional-review.js?v202606121600"></script>
+    <script src="js/index/video-carousel.js?v202606121600"></script>
     <script src="js/index/course-flip.js?v202605211228"></script>
-    <script src="js/index/testimonials.js?v202605211228"></script>
-    <script src="js/index/partner.js?v202605211228"></script>
+    <script src="js/index/testimonials.js?v202606121600"></script>
+    <script src="js/index/partner.js?v202606121600"></script>
     <script src="js/index/news-section.js?v202606121300"></script>
     <script src="js/index/counter-anime.js?v202605211228"></script>
     <script src="js/index/review-stats-counter.js?v202605211228"></script>

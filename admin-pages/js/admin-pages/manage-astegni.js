@@ -10,8 +10,11 @@ const MA_API = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://lo
 
 const ManageAstegni = {
     partners: [],
+    applications: [],
     videos: [],
     reviews: [],
+    userReviews: [],
+    currentUserReview: null,
     activeTab: 'partners',
 
     // ---- auth ----
@@ -47,18 +50,34 @@ const ManageAstegni = {
     // ---- init / tabs ----
     init() {
         this.loadPartners();
+        this.loadApplications();
         this.loadVideos();
         this.loadReviews();
+        this.loadUserReviews();
     },
 
     switchTab(tab) {
         this.activeTab = tab;
         document.querySelectorAll('.ma-tab').forEach(b =>
             b.classList.toggle('active', b.dataset.tab === tab));
-        ['partners', 'videos', 'reviews'].forEach(t => {
+        ['partners', 'applications', 'videos', 'reviews', 'testimonials'].forEach(t => {
             const panel = document.getElementById(`panel-${t}`);
             if (panel) panel.style.display = (t === tab) ? '' : 'none';
         });
+    },
+
+    // Centralized 401/403 handling: returns true if the response was an auth
+    // failure (and renders a re-login prompt into the given container).
+    _handleAuth(res, containerId) {
+        if (res.status === 401 || res.status === 403) {
+            const el = document.getElementById(containerId);
+            if (el) el.innerHTML = `<div class="error-state"><i class="fas fa-lock"></i>
+                <div>Your admin session has expired or lacks access.</div>
+                <button class="btn-primary" style="margin-top:0.75rem" onclick="window.location.href='index.html'">Log in again</button>
+            </div>`;
+            return true;
+        }
+        return false;
     },
 
     // ============================================================
@@ -403,6 +422,185 @@ const ManageAstegni = {
             await this.loadReviews();
         } catch (err) {
             alert('Failed to delete: ' + err.message);
+        }
+    },
+
+    // ============================================================
+    // PARTNER APPLICATIONS (partner_requests submitted on index.html)
+    // ============================================================
+    async loadApplications() {
+        const list = document.getElementById('applications-list');
+        const status = document.getElementById('applications-filter')?.value || 'pending';
+        try {
+            const res = await fetch(`${MA_API}/api/admin/partner-applications?status=${encodeURIComponent(status)}`,
+                { headers: this._authHeaders() });
+            if (this._handleAuth(res, 'applications-list')) return;
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            this.applications = data.applications || [];
+            this.renderApplications();
+        } catch (e) {
+            if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${this._escape(e.message)}</div>`;
+        }
+    },
+
+    renderApplications() {
+        const list = document.getElementById('applications-list');
+        if (!list) return;
+        if (!this.applications.length) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><div>No applications for this filter.</div></div>';
+            return;
+        }
+        list.innerHTML = this.applications.map(a => {
+            const emails = (a.emails || []).map(e => this._escape(e)).join(', ');
+            const phones = (a.phones || []).map(p => this._escape(p)).join(', ');
+            const statusBadge = `<span class="ma-badge ${a.status === 'approved' ? 'verified' : a.status === 'rejected' ? 'inactive' : ''}">${this._escape(a.status)}</span>`;
+            const isPending = a.status === 'pending';
+            return `
+            <div class="ma-card">
+                <div class="ma-card-body">
+                    <h3>${this._escape(a.company_name || 'Unnamed')} ${statusBadge}</h3>
+                    <p class="ma-muted"><i class="fas fa-user"></i> ${this._escape(a.contact_person || '')}</p>
+                    <p class="ma-muted">${this._escape(a.partnership_type || '')}${a.partnership_type_category ? ' · ' + this._escape(a.partnership_type_category) : ''}</p>
+                    ${emails ? `<p class="ma-muted"><i class="fas fa-envelope"></i> ${emails}</p>` : ''}
+                    ${phones ? `<p class="ma-muted"><i class="fas fa-phone"></i> ${phones}</p>` : ''}
+                    ${a.description ? `<p>${this._escape(a.description)}</p>` : ''}
+                    ${a.admin_notes ? `<p class="ma-muted"><em>Note: ${this._escape(a.admin_notes)}</em></p>` : ''}
+                </div>
+                <div class="ma-card-actions">
+                    ${isPending ? `
+                    <button class="ma-icon-btn" title="Approve &amp; publish as partner" onclick="ManageAstegni.approveApplication(${a.id}, '${this._escape((a.company_name || '').replace(/'/g, ''))}')"><i class="fas fa-check"></i></button>
+                    <button class="ma-icon-btn danger" title="Reject" onclick="ManageAstegni.rejectApplication(${a.id})"><i class="fas fa-times"></i></button>
+                    ` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    async approveApplication(id, name) {
+        const website = prompt(`Approve "${name}" and publish as a partner.\n\nOptional partner website URL:`, '');
+        if (website === null) return;  // cancelled
+        const logo_url = prompt('Optional logo image URL (you can also add/replace it later in the Partners tab):', '');
+        if (logo_url === null) return;
+        const fd = new FormData();
+        fd.append('website', website || '');
+        fd.append('logo_url', logo_url || '');
+        try {
+            await this._send('POST', `/api/admin/partner-applications/${id}/approve`, fd);
+            await this.loadApplications();
+            await this.loadPartners();
+            alert('Approved and added to Partners.');
+        } catch (err) {
+            alert('Failed to approve: ' + err.message);
+        }
+    },
+
+    async rejectApplication(id) {
+        const reason = prompt('Reason for rejecting (optional, shown in admin notes):', '');
+        if (reason === null) return;
+        const fd = new FormData();
+        fd.append('admin_notes', reason || '');
+        try {
+            await this._send('POST', `/api/admin/partner-applications/${id}/reject`, fd);
+            await this.loadApplications();
+        } catch (err) {
+            alert('Failed to reject: ' + err.message);
+        }
+    },
+
+    // ============================================================
+    // TESTIMONIALS — real user reviews of Astegni (astegni_reviews)
+    // ============================================================
+    async loadUserReviews() {
+        const list = document.getElementById('user-reviews-list');
+        const featuredOnly = (document.getElementById('testimonials-filter')?.value === 'featured');
+        try {
+            const res = await fetch(`${MA_API}/api/admin/user-reviews?featured_only=${featuredOnly}`,
+                { headers: this._authHeaders() });
+            if (this._handleAuth(res, 'user-reviews-list')) return;
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            this.userReviews = data.reviews || [];
+            this.renderUserReviews();
+        } catch (e) {
+            if (list) list.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i> ${this._escape(e.message)}</div>`;
+        }
+    },
+
+    renderUserReviews() {
+        const list = document.getElementById('user-reviews-list');
+        if (!list) return;
+        if (!this.userReviews.length) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><div>No user reviews yet.</div></div>';
+            return;
+        }
+        list.innerHTML = this.userReviews.map(r => {
+            const stars = '★'.repeat(Math.round(r.rating || 0));
+            const featured = r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
+            const text = r.review_text ? this._escape(r.review_text) : '<em class="ma-muted">No written review</em>';
+            return `
+            <div class="ma-card">
+                <img src="${this._escape(r.profile_picture)}" alt="" class="ma-avatar">
+                <div class="ma-card-body">
+                    <h3>${this._escape(r.name)} <span class="ma-stars">${stars}</span> ${featured}</h3>
+                    <p class="ma-muted">${this._escape(r.role || 'User')}</p>
+                    <blockquote class="ma-quote">${text}</blockquote>
+                </div>
+                <div class="ma-card-actions">
+                    <button class="ma-icon-btn" title="View" onclick="ManageAstegni.openUserReview(${r.id})"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    openUserReview(id) {
+        const r = (this.userReviews || []).find(x => x.id === id);
+        if (!r) return;
+        this.currentUserReview = r;
+        const body = document.getElementById('user-review-body');
+        const stars = '★'.repeat(Math.round(r.rating || 0)) + '☆'.repeat(5 - Math.round(r.rating || 0));
+        const sub = (label, val) => val == null ? '' :
+            `<div class="ma-subrating"><span>${label}</span><b>${val}/5</b></div>`;
+        body.innerHTML = `
+            <div class="ma-review-head">
+                <img src="${this._escape(r.profile_picture)}" alt="" class="ma-avatar-lg">
+                <div>
+                    <h3 style="margin:0;">${this._escape(r.name)}</h3>
+                    <p class="ma-muted" style="margin:0;">${this._escape(r.role || 'User')}</p>
+                    <div class="ma-stars" style="font-size:1.1rem;">${stars} <span class="ma-muted">(${r.rating ?? '—'})</span></div>
+                </div>
+            </div>
+            <blockquote class="ma-quote" style="margin:1rem 0;">${r.review_text ? this._escape(r.review_text) : '<em>No written review.</em>'}</blockquote>
+            <div class="ma-subratings">
+                ${sub('Ease of use', r.ease_of_use)}
+                ${sub('Features', r.features_quality)}
+                ${sub('Support', r.support_quality)}
+                ${sub('Pricing', r.pricing)}
+            </div>
+            ${r.would_recommend != null ? `<p class="ma-muted">Would recommend: <b>${r.would_recommend ? 'Yes' : 'No'}</b></p>` : ''}
+        `;
+        const toggle = document.getElementById('user-review-featured-toggle');
+        if (toggle) { toggle.checked = !!r.is_featured; toggle.disabled = false; }
+        this._show('user-review-modal');
+    },
+
+    async toggleUserReviewFeatured() {
+        const r = this.currentUserReview;
+        const toggle = document.getElementById('user-review-featured-toggle');
+        if (!r || !toggle) return;
+        const desired = toggle.checked;
+        toggle.disabled = true;
+        const fd = new FormData();
+        fd.append('is_featured', desired);
+        try {
+            await this._send('POST', `/api/admin/user-reviews/${r.id}/feature`, fd);
+            r.is_featured = desired;
+            this.renderUserReviews();
+        } catch (err) {
+            toggle.checked = !desired;  // revert on failure
+            alert('Failed to update: ' + err.message);
+        } finally {
+            toggle.disabled = false;
         }
     },
 

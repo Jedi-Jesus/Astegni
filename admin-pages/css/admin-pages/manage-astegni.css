@@ -41,6 +41,26 @@
 }
 .ma-panel-head h2 { font-size: 1.4rem; font-weight: 700; margin: 0; }
 .ma-muted { color: var(--text-secondary, #6b7280); font-size: 0.85rem; margin: 0.15rem 0 0; }
+.ma-filter .ma-input { width: auto; min-width: 160px; }
+
+/* ---- User-review view modal ---- */
+.ma-review-head { display: flex; gap: 1rem; align-items: center; }
+.ma-avatar-lg {
+    width: 72px; height: 72px; border-radius: 50%;
+    object-fit: cover; background: var(--bg-secondary, #f3f4f6);
+}
+.ma-subratings {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+.ma-subrating {
+    display: flex; justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 8px; font-size: 0.85rem;
+}
+.ma-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; }
+.ma-toggle input[type="checkbox"] { width: 18px; height: 18px; }
 
 /* ---- Card grid ---- */
 .ma-card-grid {

@@ -114,6 +114,7 @@ async function fetchReviewsFromAPI() {
 async function initializeProfessionalReviews() {
     const container = document.getElementById('professionalReviewsContainer');
     const statsContainer = document.getElementById('reviewStats');
+    const section = document.getElementById('reviews');
 
     if (!container || !statsContainer) {
         console.log('Professional reviews containers not found');
@@ -122,9 +123,16 @@ async function initializeProfessionalReviews() {
 
     console.log('Initializing professional reviews...');
 
-    // Try to fetch from API first
+    // Only admin-authored professional reviews are shown (managed via the admin
+    // Manage Astegni page). With none, keep the whole section hidden — no
+    // placeholder reviews.
     const apiData = await fetchReviewsFromAPI();
-    const reviewsToUse = apiData?.reviews || professionalReviewsData;
+    const reviewsToUse = apiData?.reviews || [];
+    if (reviewsToUse.length === 0) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    if (section) section.style.display = '';
 
     // Render reviews
     container.innerHTML = reviewsToUse.map((review, index) => `

@@ -5,40 +5,6 @@
 // Use global API base URL
 const partnerApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 
-// Default partners data
-const defaultPartners = [
-    {
-        name: "Addis Ababa University",
-        logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Addis_Ababa_University_logo.png/150px-Addis_Ababa_University_logo.png",
-        description: "Leading Ethiopian University"
-    },
-    {
-        name: "Ministry of Education",
-        logo: "https://ui-avatars.com/api/?name=MoE&background=f59e0b&color=fff&size=150",
-        description: "Ethiopian Ministry of Education"
-    },
-    {
-        name: "Ethiopian Institute of Technology",
-        logo: "https://ui-avatars.com/api/?name=EIT&background=3b82f6&color=fff&size=150",
-        description: "Technology Institute"
-    },
-    {
-        name: "Jimma University",
-        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Jimma_University_logo.png/150px-Jimma_University_logo.png",
-        description: "Ethiopian University"
-    },
-    {
-        name: "Bahir Dar University",
-        logo: "https://ui-avatars.com/api/?name=BDU&background=10b981&color=fff&size=150",
-        description: "Ethiopian University"
-    },
-    {
-        name: "Hawassa University",
-        logo: "https://ui-avatars.com/api/?name=HU&background=8b5cf6&color=fff&size=150",
-        description: "Ethiopian University"
-    }
-];
-
 async function fetchPartnersFromAPI() {
     try {
         const response = await fetch(`${partnerApiUrl}/api/partners`);
@@ -49,7 +15,7 @@ async function fetchPartnersFromAPI() {
             }
         }
     } catch (error) {
-        console.log('Using fallback partners data');
+        console.log('No partners available');
     }
     return null;
 }
@@ -58,32 +24,37 @@ async function initializePartners() {
     const track = document.getElementById("partners-track");
     if (!track) return;
 
-    // Try to fetch from API first
-    const apiPartners = await fetchPartnersFromAPI();
-    const partners = apiPartners || defaultPartners;
+    const header = document.getElementById("partners-header");
+    const wrapper = document.getElementById("partners-wrapper");
 
+    // Only admin-approved partners are shown. With none, keep the logos area
+    // hidden (the "Become a Partner" CTA still renders) — no placeholder logos.
+    const partners = await fetchPartnersFromAPI();
+    if (!partners || partners.length === 0) {
+        if (header) header.style.display = "none";
+        if (wrapper) wrapper.style.display = "none";
+        return;
+    }
+
+    if (header) header.style.display = "";
+    if (wrapper) wrapper.style.display = "";
     track.innerHTML = "";
 
-    // Create partner cards with logos
     const createPartnerCard = (partner) => {
         const card = document.createElement("div");
         card.className = "partner-logo";
+        const logo = partner.logo || partner.logo_url || '';
         card.innerHTML = `
-            <img src="${partner.logo}" alt="${partner.name}" loading="lazy" />
+            ${logo ? `<img src="${logo}" alt="${partner.name}" loading="lazy" />` : ''}
             <div class="partner-name">${partner.name}</div>
         `;
         card.title = partner.description || partner.name;
         return card;
     };
 
-    // Add partners twice for infinite scroll effect
-    partners.forEach((partner) => {
-        track.appendChild(createPartnerCard(partner));
-    });
-
-    partners.forEach((partner) => {
-        track.appendChild(createPartnerCard(partner));
-    });
+    // Add partners twice for the infinite-scroll marquee effect.
+    partners.forEach((partner) => track.appendChild(createPartnerCard(partner)));
+    partners.forEach((partner) => track.appendChild(createPartnerCard(partner)));
 }
 
 // ============================================

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./css/root.css">
     <link rel="stylesheet" href="./css/admin-profile/admin.css">
     <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606121300">
+    <link rel="stylesheet" href="./css/admin-pages/manage-astegni.css?v202606121600">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -100,11 +100,17 @@
                 <button class="ma-tab active" data-tab="partners" onclick="ManageAstegni.switchTab('partners')">
                     <i class="fas fa-handshake mr-2"></i> Partners
                 </button>
+                <button class="ma-tab" data-tab="applications" onclick="ManageAstegni.switchTab('applications')">
+                    <i class="fas fa-inbox mr-2"></i> Partner Applications
+                </button>
                 <button class="ma-tab" data-tab="videos" onclick="ManageAstegni.switchTab('videos')">
                     <i class="fas fa-video mr-2"></i> Featured Videos
                 </button>
                 <button class="ma-tab" data-tab="reviews" onclick="ManageAstegni.switchTab('reviews')">
                     <i class="fas fa-star mr-2"></i> Professional Reviews
+                </button>
+                <button class="ma-tab" data-tab="testimonials" onclick="ManageAstegni.switchTab('testimonials')">
+                    <i class="fas fa-comment-dots mr-2"></i> Testimonials
                 </button>
             </div>
 
@@ -124,6 +130,27 @@
                 </div>
             </div>
 
+            <!-- ============ PARTNER APPLICATIONS PANEL ============ -->
+            <div class="ma-panel" id="panel-applications" style="display:none;">
+                <div class="ma-panel-head">
+                    <div>
+                        <h2>Partner Applications</h2>
+                        <p class="ma-muted">Submissions from the homepage "Become a Partner" form. Approve to publish as a partner, or reject.</p>
+                    </div>
+                    <div class="ma-filter">
+                        <select id="applications-filter" class="ma-input" onchange="ManageAstegni.loadApplications()">
+                            <option value="pending">Pending</option>
+                            <option value="all">All</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="applications-list" class="ma-card-grid">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading applications...</div>
+                </div>
+            </div>
+
             <!-- ============ FEATURED VIDEOS PANEL ============ -->
             <div class="ma-panel" id="panel-videos" style="display:none;">
                 <div class="ma-panel-head">
@@ -140,12 +167,12 @@
                 </div>
             </div>
 
-            <!-- ============ REVIEWS PANEL ============ -->
+            <!-- ============ PROFESSIONAL REVIEWS PANEL ============ -->
             <div class="ma-panel" id="panel-reviews" style="display:none;">
                 <div class="ma-panel-head">
                     <div>
                         <h2>Professional Reviews</h2>
-                        <p class="ma-muted">Testimonials shown in the homepage "Success Stories" section.</p>
+                        <p class="ma-muted">Admin-authored expert reviews shown in the homepage "Expert Reviews &amp; Recognition" section.</p>
                     </div>
                     <button class="btn-primary" onclick="ManageAstegni.openReviewModal()">
                         <i class="fas fa-plus mr-2"></i> Add Review
@@ -153,6 +180,25 @@
                 </div>
                 <div id="reviews-list" class="ma-card-grid">
                     <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</div>
+                </div>
+            </div>
+
+            <!-- ============ TESTIMONIALS (USER REVIEWS) PANEL ============ -->
+            <div class="ma-panel" id="panel-testimonials" style="display:none;">
+                <div class="ma-panel-head">
+                    <div>
+                        <h2>Testimonials</h2>
+                        <p class="ma-muted">Real reviews users left via "Review Astegni". Feature one to show it in the homepage "Success Stories" section.</p>
+                    </div>
+                    <div class="ma-filter">
+                        <select id="testimonials-filter" class="ma-input" onchange="ManageAstegni.loadUserReviews()">
+                            <option value="all">All reviews</option>
+                            <option value="featured">Featured only</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="user-reviews-list" class="ma-card-grid">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading testimonials...</div>
                 </div>
             </div>
         </div>
@@ -336,6 +382,28 @@
         </div>
     </div>
 
+    <!-- ============ USER REVIEW VIEW MODAL (testimonials) ============ -->
+    <div id="user-review-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="ManageAstegni.closeModal('user-review-modal')"></div>
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header">
+                <h2>Review Details</h2>
+                <button class="modal-close" onclick="ManageAstegni.closeModal('user-review-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="user-review-body">
+                <!-- Filled by ManageAstegni.openUserReview -->
+            </div>
+            <div class="modal-footer" style="justify-content:space-between; align-items:center;">
+                <label class="ma-toggle">
+                    <input type="checkbox" id="user-review-featured-toggle"
+                           onchange="ManageAstegni.toggleUserReviewFeatured()">
+                    <span>Feature this on home page</span>
+                </label>
+                <button type="button" class="btn-secondary" onclick="ManageAstegni.closeModal('user-review-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Config + scripts -->
     <script src="./js/api-config.js"></script>
     <script src="./js/auth.js"></script>
@@ -383,6 +451,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606121500"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606121600"></script>
 </body>
 </html>

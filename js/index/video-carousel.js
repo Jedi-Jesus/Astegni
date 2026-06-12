@@ -3,7 +3,7 @@
 // ============================================
 
 // Admin-curated featured videos (managed via admin Manage Astegni page). Falls
-// back to the bundled VIDEO_DATA when none are configured or the API is down.
+// the section is hidden when none are configured or the API is down.
 async function fetchFeaturedVideos() {
     try {
         const base = window.API_BASE_URL || 'http://localhost:8000';
@@ -33,8 +33,16 @@ async function initializeVideoCarousel() {
     const carousel = document.getElementById("video-carousel");
     if (!carousel) return;
 
+    // Only admin-uploaded featured videos are shown. With none, hide the whole
+    // "Featured Content" section rather than showing placeholder videos.
     const featured = await fetchFeaturedVideos();
-    const videos = (featured && featured.length) ? featured : VIDEO_DATA;
+    const section = document.getElementById("video-showcase-section");
+    if (!featured || featured.length === 0) {
+        if (section) section.style.display = "none";
+        return;
+    }
+    if (section) section.style.display = "";
+    const videos = featured;
 
     carousel.innerHTML = "";
 

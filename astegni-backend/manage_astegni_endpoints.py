@@ -1,12 +1,17 @@
 """
 Manage-Astegni endpoints — back the admin "Manage Astegni" page (manage-astegni.html).
 
-Three resources, each with public reads (consumed by index.html) and admin-only
+Resources, each with public reads (consumed by index.html) and admin-only
 writes (consumed by the admin page):
 
-  - Partners            -> index.html "Trusted Partners"
-  - Featured videos     -> index.html "Featured Content" carousel (admin uploads to B2)
-  - Testimonials        -> index.html "Success Stories" professional reviews
+  - Partners              -> index.html "Trusted Partners"
+  - Partner applications  -> partner_requests submitted via index.html; admin verify/reject
+  - Featured videos       -> index.html "Featured Content" carousel (admin uploads to B2)
+  - Professional reviews  -> index.html "Expert Reviews & Recognition" (admin-authored)
+  - User testimonials     -> index.html "Success Stories" (real user astegni_reviews the
+                             admin features). astegni_reviews lives in the ADMIN db; the
+                             reviewer's name/picture live in the USER db, so those are
+                             fetched separately and merged (no cross-DB JOIN is possible).
 
 Admin writes are guarded by get_current_admin (JWT, type=="admin"). Public reads
 take no auth. Tables created by migrate_create_manage_astegni_tables.py.
@@ -27,6 +32,10 @@ from backblaze_service import BackblazeService
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+ADMIN_DATABASE_URL = os.getenv(
+    "ADMIN_DATABASE_URL",
+    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db",
+)
 
 router = APIRouter()
 b2_service = BackblazeService()
@@ -35,6 +44,43 @@ b2_service = BackblazeService()
 def _conn():
     """Open a user-db connection with dict rows."""
     return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+
+
+def _admin_conn():
+    """Open an admin-db connection with dict rows (astegni_reviews lives here)."""
+    return psycopg.connect(ADMIN_DATABASE_URL, row_factory=dict_row)
+
+
+def _fetch_user_profiles(user_ids):
+    """Map {user_id: {name, profile_picture, role}} from the USER db.
+
+    astegni_reviews only stores reviewer_id; names/avatars live in users (a
+    different database), so we look them up here and merge in Python.
+    """
+    ids = [i for i in {*user_ids} if i is not None]
+    if not ids:
+        return {}
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id,
+                   TRIM(CONCAT_WS(' ', first_name, father_name)) AS name,
+                   profile_picture,
+                   active_role
+            FROM users
+            WHERE id = ANY(%s)
+            """,
+            (ids,),
+        )
+        rows = cur.fetchall()
+    return {
+        r["id"]: {
+            "name": r["name"] or "Astegni User",
+            "profile_picture": r["profile_picture"],
+            "role": r["active_role"],
+        }
+        for r in rows
+    }
 
 
 # ============================================================
@@ -502,3 +548,225 @@ async def delete_testimonial(testimonial_id: int, admin=Depends(get_current_admi
             raise HTTPException(status_code=404, detail="Testimonial not found")
         conn.commit()
     return {"success": True}
+
+
+# ============================================================
+# PARTNER APPLICATIONS (partner_requests submitted via index.html)
+# ============================================================
+
+@router.get("/api/admin/partner-applications")
+async def list_partner_applications(
+    status: Optional[str] = Query(None),
+    admin=Depends(get_current_admin),
+):
+    """Admin: list partnership applications (partner_requests), newest first."""
+    clauses, params = [], []
+    if status and status != "all":
+        clauses.append("status = %s")
+        params.append(status)
+    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT id, company_name, contact_person, emails, phones,
+                   partnership_type, partnership_type_category, description,
+                   proposal_file_path, status, created_at, reviewed_at, admin_notes
+            FROM partner_requests
+            {where}
+            ORDER BY created_at DESC
+            """,
+            params,
+        )
+        rows = cur.fetchall()
+    # emails/phones are stored as JSON; psycopg returns them already parsed for
+    # jsonb, but tolerate text too.
+    import json as _json
+    for r in rows:
+        for k in ("emails", "phones"):
+            if isinstance(r.get(k), str):
+                try:
+                    r[k] = _json.loads(r[k])
+                except Exception:
+                    r[k] = [r[k]]
+    return {"applications": rows, "total": len(rows)}
+
+
+@router.post("/api/admin/partner-applications/{request_id}/reject")
+async def reject_partner_application(
+    request_id: int,
+    admin_notes: str = Form(""),
+    admin=Depends(get_current_admin),
+):
+    """Admin: reject a partnership application."""
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE partner_requests
+            SET status='rejected', reviewed_by=%s, reviewed_at=CURRENT_TIMESTAMP,
+                admin_notes=%s, updated_at=CURRENT_TIMESTAMP
+            WHERE id=%s
+            """,
+            (admin["id"], admin_notes.strip() or None, request_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Application not found")
+        conn.commit()
+    return {"success": True}
+
+
+@router.post("/api/admin/partner-applications/{request_id}/approve")
+async def approve_partner_application(
+    request_id: int,
+    logo_url: str = Form(""),
+    website: str = Form(""),
+    admin_notes: str = Form(""),
+    admin=Depends(get_current_admin),
+):
+    """Admin: approve an application AND create the corresponding live partner.
+
+    Verifying an application promotes it into the public `partners` list shown
+    on index.html.
+    """
+    with _conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT company_name, description, status FROM partner_requests WHERE id=%s",
+            (request_id,),
+        )
+        app = cur.fetchone()
+        if not app:
+            raise HTTPException(status_code=404, detail="Application not found")
+
+        cur.execute(
+            """
+            UPDATE partner_requests
+            SET status='approved', reviewed_by=%s, reviewed_at=CURRENT_TIMESTAMP,
+                admin_notes=%s, updated_at=CURRENT_TIMESTAMP
+            WHERE id=%s
+            """,
+            (admin["id"], admin_notes.strip() or None, request_id),
+        )
+
+        # Create the public partner from the application (idempotent-ish: a
+        # re-approve just inserts again, which admins can clean up in the
+        # partners panel — kept simple intentionally).
+        cur.execute(
+            """
+            INSERT INTO partners (name, logo_url, website, description, created_by)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (app["company_name"] or "Partner", logo_url.strip() or None,
+             website.strip() or None, app["description"], admin["id"]),
+        )
+        partner_id = cur.fetchone()["id"]
+        conn.commit()
+    return {"success": True, "partner_id": partner_id}
+
+
+# ============================================================
+# USER TESTIMONIALS (real user reviews of Astegni — astegni_reviews in admin db)
+# Admins browse them, view full detail, and toggle is_featured to surface the
+# review in index.html "Success Stories".
+# ============================================================
+
+def _shape_user_review(r, profiles):
+    prof = profiles.get(r["reviewer_id"], {})
+    name = prof.get("name") or "Astegni User"
+    avatar = prof.get("profile_picture") or (
+        "https://ui-avatars.com/api/?name=" + name.replace(" ", "+")
+    )
+    return {
+        "id": r["id"],
+        "reviewer_id": r["reviewer_id"],
+        "name": name,
+        "profile_picture": avatar,
+        "role": prof.get("role"),
+        "rating": float(r["rating"]) if r.get("rating") is not None else None,
+        "ease_of_use": r.get("ease_of_use"),
+        "features_quality": r.get("features_quality"),
+        "support_quality": r.get("support_quality"),
+        "pricing": r.get("pricing"),
+        "review_text": r.get("review_text"),
+        "would_recommend": r.get("would_recommend"),
+        "is_featured": r.get("is_featured", False),
+        "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
+    }
+
+
+@router.get("/api/admin/user-reviews")
+async def admin_list_user_reviews(
+    featured_only: bool = Query(False),
+    admin=Depends(get_current_admin),
+):
+    """Admin: list user-submitted Astegni reviews with reviewer profile data."""
+    where = "WHERE is_featured = TRUE" if featured_only else ""
+    with _admin_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT id, reviewer_id, rating, ease_of_use,
+                   features_quality, support_quality, pricing, review_text,
+                   would_recommend, is_featured, created_at
+            FROM astegni_reviews
+            {where}
+            ORDER BY is_featured DESC, created_at DESC
+            """
+        )
+        rows = cur.fetchall()
+    profiles = _fetch_user_profiles([r["reviewer_id"] for r in rows])
+    return {"reviews": [_shape_user_review(r, profiles) for r in rows], "total": len(rows)}
+
+
+@router.post("/api/admin/user-reviews/{review_id}/feature")
+async def set_user_review_featured(
+    review_id: int,
+    is_featured: bool = Form(...),
+    admin=Depends(get_current_admin),
+):
+    """Admin: toggle whether a user review is featured on the home page."""
+    with _admin_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE astegni_reviews SET is_featured=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s",
+            (is_featured, review_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Review not found")
+        conn.commit()
+    return {"success": True, "is_featured": is_featured}
+
+
+@router.get("/api/featured-reviews")
+async def list_featured_user_reviews(limit: int = Query(12, ge=1, le=50)):
+    """Public: featured user reviews for index.html "Success Stories".
+
+    Only reviews with written text are surfaced (a star-only review makes a poor
+    testimonial card).
+    """
+    with _admin_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, reviewer_id, rating, review_text, created_at
+            FROM astegni_reviews
+            WHERE is_featured = TRUE
+              AND review_text IS NOT NULL
+              AND TRIM(review_text) <> ''
+            ORDER BY created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        rows = cur.fetchall()
+    profiles = _fetch_user_profiles([r["reviewer_id"] for r in rows])
+    reviews = []
+    for r in rows:
+        prof = profiles.get(r["reviewer_id"], {})
+        name = prof.get("name") or "Astegni User"
+        reviews.append({
+            "id": r["id"],
+            "name": name,
+            "profile_picture": prof.get("profile_picture")
+                or ("https://ui-avatars.com/api/?name=" + name.replace(" ", "+")),
+            "role": prof.get("role"),
+            "rating": round(float(r["rating"])) if r.get("rating") is not None else 5,
+            "review_text": r["review_text"],
+        })
+    return {"reviews": reviews, "total": len(reviews)}
