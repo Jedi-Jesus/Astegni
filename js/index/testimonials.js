@@ -47,7 +47,7 @@ async function initializeTestimonials() {
             // Two distinct stars:
             //  - tutor's OWN rating (received as a tutor) shows just under the name;
             //    only for tutors (tutor_rating != null).
-            //  - astegni rating (the stars they gave Astegni) shows just above the review.
+            //  - astegni rating (the stars they gave Astegni) shows after the review.
             const astegniStars = starStr(t.astegni_rating != null ? t.astegni_rating : t.rating);
             const hasTutorStar = (t.tutor_rating != null && t.tutor_rating > 0);
             const tutorStars = hasTutorStar
@@ -67,9 +67,9 @@ async function initializeTestimonials() {
                             ${tutorStars}
                         </div>
                     </div>
-                    <div class="rating astegni-rating" title="Rating given to Astegni">${astegniStars}</div>
                     <div class="quote-icon">"</div>
                     <p class="testimonial-text">${esc(t.review_text)}</p>
+                    <div class="rating astegni-rating" title="Rating given to Astegni">${astegniStars}</div>
                 </div>
             `;
             slider.appendChild(card);
