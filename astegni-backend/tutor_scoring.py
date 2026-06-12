@@ -124,15 +124,15 @@ class TutorScoringCalculator:
 
     def calculate_total_students_score(self, tutor_id: int) -> tuple[int, dict]:
         """
-        Calculate score based on total students taught (0-150 points)
+        Calculate score based on total students taught (0-200 points)
 
         Scoring:
-        - 100+ students: 150 points
-        - 50-99 students: 110 points
-        - 20-49 students: 75 points
-        - 10-19 students: 45 points
-        - 5-9 students: 25 points
-        - 1-4 students: 10 points
+        - 100+ students: 200 points
+        - 50-99 students: 150 points
+        - 20-49 students: 100 points
+        - 10-19 students: 60 points
+        - 5-9 students: 33 points
+        - 1-4 students: 13 points
 
         Returns: (score, details_dict)
         """
@@ -147,17 +147,17 @@ class TutorScoringCalculator:
 
         # Calculate score based on thresholds
         if total_students >= 100:
-            score = 150
+            score = 200
         elif total_students >= 50:
-            score = 110
+            score = 150
         elif total_students >= 20:
-            score = 75
+            score = 100
         elif total_students >= 10:
-            score = 45
+            score = 60
         elif total_students >= 5:
-            score = 25
+            score = 33
         elif total_students >= 1:
-            score = 10
+            score = 13
         else:
             score = 0
 
@@ -168,18 +168,18 @@ class TutorScoringCalculator:
 
     def calculate_completion_rate_score(self, tutor_id: int) -> tuple[int, dict]:
         """
-        Calculate score based on session completion rate (0-200 points)
+        Calculate score based on session completion rate (0-150 points)
 
         Completion rate = (completed sessions / total sessions) * 100
 
         Scoring:
-        - 95%+ completion: 200 points
-        - 90-94%: 175 points
-        - 85-89%: 150 points
-        - 80-84%: 125 points
-        - 75-79%: 100 points
-        - 70-74%: 75 points
-        - <70%: 25 points
+        - 95%+ completion: 150 points
+        - 90-94%: 131 points
+        - 85-89%: 113 points
+        - 80-84%: 94 points
+        - 75-79%: 75 points
+        - 70-74%: 56 points
+        - <70%: 19 points
         - No data: 0 points
 
         Returns: (score, details_dict)
@@ -203,19 +203,19 @@ class TutorScoringCalculator:
 
         # Score based on completion rate
         if completion_rate >= 95:
-            score = 200
-        elif completion_rate >= 90:
-            score = 175
-        elif completion_rate >= 85:
             score = 150
+        elif completion_rate >= 90:
+            score = 131
+        elif completion_rate >= 85:
+            score = 113
         elif completion_rate >= 80:
-            score = 125
+            score = 94
         elif completion_rate >= 75:
-            score = 100
-        elif completion_rate >= 70:
             score = 75
+        elif completion_rate >= 70:
+            score = 56
         else:
-            score = 25
+            score = 19
 
         return score, {
             "total_enrollments": result.total_enrollments,
@@ -639,7 +639,7 @@ class TutorScoringCalculator:
         }
 
         breakdown["total_new_score"] = total_score
-        breakdown["max_possible_new_score"] = 1330  # 500(rating)+120(interest)+150(students)+200(completion)+60(response)+300(experience)
+        breakdown["max_possible_new_score"] = 1330  # 500(rating)+120(interest)+200(students)+150(completion)+60(response)+300(experience)
         breakdown["payment_penalty_applied"] = payment_penalty
 
         return total_score, breakdown

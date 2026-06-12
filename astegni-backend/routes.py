@@ -1588,8 +1588,8 @@ def get_tutors(
             to reward genuinely good tutors over paid placement):
             - Rating (confidence-weighted): 0-500 points (PRIMARY, via TutorScoringCalculator)
             - Experience: 0-300 points (SECOND: account age + credentials)
-            - Completion Rate: 0-200 points
-            - Total Students: 0-150 points
+            - Total Students: 0-200 points
+            - Completion Rate: 0-150 points
             - Interest/Hobby Match: 0-120 points
             - Trending Score: 0-100 points
             - Response Time: 0-60 points
