@@ -32,7 +32,7 @@ const BrandsManager = {
     async loadModals() {
         try {
             // Load campaign modal (includes media upload modal)
-            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606113100');
+            const campaignResponse = await fetch('../modals/advertiser-profile/campaign-modal.html?v202606113200');
             const campaignHtml = await campaignResponse.text();
 
             if (!document.getElementById('campaign-modal-overlay')) {
@@ -1081,31 +1081,98 @@ const BrandsManager = {
         this.renderActivityTimeline();
     },
 
-    // Update finances tab with campaign data
+    // Back-compat shim: the Billing summary is now driven by renderBillingSummary,
+    // which has the invoice data. Calling this just triggers a refresh.
     updateFinancesFromCampaign(campaign) {
-        if (!campaign) return;
-
-        const totalBudget = campaign.total_budget || campaign.budget || 0;
-        const amountUsed = campaign.amount_used || 0;
-        const remaining = totalBudget - amountUsed;
-        const usedPercentage = totalBudget > 0 ? ((amountUsed / totalBudget) * 100).toFixed(1) : 0;
-        const remainingPercentage = totalBudget > 0 ? ((remaining / totalBudget) * 100).toFixed(1) : 100;
-
-        // Update Total Investment
-        this.setElementText('finance-total-investment', this.formatCurrency(totalBudget));
-
-        // Update Amount Used
-        this.setElementText('finance-amount-used', this.formatCurrency(amountUsed));
-        this.setElementText('finance-used-percentage', `${usedPercentage}%`);
-        const usedProgress = document.getElementById('finance-used-progress');
-        if (usedProgress) usedProgress.style.width = `${usedPercentage}%`;
-
-        // Update Remaining Balance
-        this.setElementText('finance-remaining-balance', this.formatCurrency(remaining));
-        this.setElementText('finance-remaining-percentage', `${remainingPercentage}%`);
-        const remainingProgress = document.getElementById('finance-remaining-progress');
-        if (remainingProgress) remainingProgress.style.width = `${remainingPercentage}%`;
+        this.renderBillingSummary(campaign || this.currentCampaign, this._invoiceCache);
     },
+
+    // Render the three Billing summary cards from the real package + invoices:
+    //   Total Investment = campaign_budget (package total)
+    //   Amount Paid      = sum of VERIFIED/PAID invoices, + impressions delivered + % of package
+    //   Remaining        = package − paid, with status badge + Pay-now / Re-submit actions
+    renderBillingSummary(campaign, invoiceCache) {
+        if (!campaign) return;
+        const fmt = (n) => this.formatCurrency(Number(n) || 0);
+        const advance = invoiceCache && invoiceCache.advance;
+        const settlement = invoiceCache && invoiceCache.settlement;
+
+        // ---- Total Investment (package) ----
+        const total = Number(campaign.campaign_budget || campaign.total_cost || 0);
+        const plannedViews = Number(campaign.total_impressions_planned || campaign.view_count || 0);
+        const cpi = Number(campaign.cpi_rate || 0);
+        this.setElementText('finance-total-investment', fmt(total));
+        this.setElementText('finance-package-views', this.formatNumber(plannedViews));
+        this.setElementText('finance-cpi-rate', cpi ? cpi.toFixed(2) : '0.00');
+
+        // ---- Amount Paid (verified/paid invoices only — non-refundable) ----
+        const isPaid = (inv) => inv && (inv.status === 'verified' || inv.status === 'paid');
+        let paid = 0;
+        if (isPaid(advance)) paid += Number(advance.amount || campaign.deposit_amount || 0);
+        if (isPaid(settlement)) paid += Number(settlement.amount || 0);
+        // Fallback before invoices load: a verified advance status on the campaign.
+        if (!advance && !settlement && (campaign.payment_verified === true || campaign.payment_status === 'verified')) {
+            paid = Number(campaign.deposit_amount || 0);
+        }
+        const delivered = Number(campaign.impressions || campaign.impressions_delivered || 0);
+        const paidPct = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
+        this.setElementText('finance-amount-used', fmt(paid));
+        this.setElementText('finance-impressions-delivered', this.formatNumber(delivered));
+        this.setElementText('finance-used-percentage', `${paidPct.toFixed(0)}%`);
+        const usedProgress = document.getElementById('finance-used-progress');
+        if (usedProgress) usedProgress.style.width = `${paidPct}%`;
+
+        // Amount-Paid badge + actions (View receipt for the advance).
+        this._setFinanceBadge('finance-paid-badge', isPaid(advance) ? 'paid' : (advance ? advance.status : 'none'),
+            { paid: 'Advance verified', pending: 'Advance pending', rejected: 'Advance rejected', none: 'Unpaid' });
+        const paidActions = [];
+        if (advance && advance.invoice_pdf_url) {
+            paidActions.push(`<a class="finance-act-btn" href="${this._escAttr(advance.invoice_pdf_url)}" target="_blank" rel="noopener"><i class="fas fa-file-invoice"></i> View receipt</a>`);
+        }
+        if (advance && advance.status === 'rejected') {
+            paidActions.push(`<button class="finance-act-btn danger" onclick="BrandsManager.resubmitAdvanceReceipt(${campaign.id})"><i class="fas fa-rotate-right"></i> Re-submit receipt</button>`);
+        }
+        this._setHtml('finance-paid-actions', paidActions.join(''));
+
+        // ---- Remaining Balance (package − paid) ----
+        const remaining = Math.max(0, total - paid);
+        const remPct = total > 0 ? (remaining / total) * 100 : 0;
+        this.setElementText('finance-remaining-balance', fmt(remaining));
+        this.setElementText('finance-remaining-percentage', `${remPct.toFixed(0)}%`);
+        const remProgress = document.getElementById('finance-remaining-progress');
+        if (remProgress) remProgress.style.width = `${remPct}%`;
+
+        // Remaining badge + actions (status of the settlement + Pay/Re-submit).
+        const sStatus = settlement ? settlement.status : (remaining <= 0 ? 'paid' : 'none');
+        this._setFinanceBadge('finance-remaining-badge', sStatus,
+            { paid: 'Paid', verified: 'Paid', pending: 'Awaiting verification', rejected: 'Rejected', cancelled: 'Cancelled', none: 'Not due yet' });
+        const remActions = [];
+        if (settlement && settlement.invoice_pdf_url) {
+            remActions.push(`<a class="finance-act-btn" href="${this._escAttr(settlement.invoice_pdf_url)}" target="_blank" rel="noopener"><i class="fas fa-file-invoice"></i> View receipt</a>`);
+        }
+        if (settlement && settlement.status === 'pending' && !settlement.invoice_pdf_url) {
+            remActions.push(`<button class="finance-act-btn primary" onclick="BrandsManager.payInvoiceById(${settlement.id})"><i class="fas fa-credit-card"></i> Pay now</button>`);
+        }
+        if (settlement && settlement.status === 'rejected') {
+            remActions.push(`<button class="finance-act-btn danger" onclick="BrandsManager.payInvoiceById(${settlement.id})"><i class="fas fa-rotate-right"></i> Re-submit receipt</button>`);
+        }
+        this._setHtml('finance-remaining-actions', remActions.join(''));
+    },
+
+    // Set a finance status badge: maps a status to a label + colour class.
+    _setFinanceBadge(id, status, labels) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const s = (status || 'none').toLowerCase();
+        const cls = (s === 'verified' || s === 'paid') ? 'is-paid'
+            : s === 'pending' ? 'is-pending'
+            : s === 'rejected' ? 'is-rejected' : 'is-none';
+        el.className = `finance-status-badge ${cls}`;
+        el.textContent = labels[s] || labels.none || s;
+    },
+
+    _setHtml(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; },
+    _escAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); },
 
     // Switch campaign tab
     switchCampaignTab(tabName) {
@@ -1221,6 +1288,9 @@ const BrandsManager = {
             const settlement = mine.filter(i => i.invoice_type === 'final_settlement').sort((a, b) => b.id - a.id)[0] || null;
             // Cache for the Pay-now flow (needs the settlement amount + the advance's bank).
             this._invoiceCache = { campaignId, advance, settlement, name: (campaign && campaign.name) || '' };
+
+            // Drive the Billing summary cards from the freshly-loaded invoices.
+            this.renderBillingSummary(campaign, this._invoiceCache);
 
             if (!mine.length) {
                 list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted,#9ca3af);"><i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.5;"></i> No invoices yet for this campaign.</div>';
