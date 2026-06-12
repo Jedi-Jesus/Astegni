@@ -770,6 +770,7 @@ function requireAuth(page) {
         'manage-payments': ['manage-payments.html'],
         'manage-companies': ['manage-companies.html'],
         'manage-admins': ['manage-admins.html'],
+        'manage-astegni': ['manage-astegni.html'],
         'manage-system-settings': [  // Full access (super admin)
             'manage-advertisers.html',
             'manage-schools.html',
@@ -782,6 +783,7 @@ function requireAuth(page) {
             'manage-payments.html',
             'manage-companies.html',
             'manage-admins.html',
+            'manage-astegni.html',
             'manage-system-settings.html'
         ]
     };

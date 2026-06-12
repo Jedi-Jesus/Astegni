@@ -43,6 +43,7 @@ DEPARTMENT_ACCESS = {
     "manage-tutor-documents": ["manage-tutor-documents.html"],
     "manage-customers": ["manage-customers.html"],
     "manage-contents": ["manage-contents.html"],
+    "manage-astegni": ["manage-astegni.html"],
     "manage-credentials": ["manage-credentials.html"],
     "manage-advertisers": ["manage-advertisers.html"],
     "manage-system-settings": [  # Full access
@@ -52,6 +53,7 @@ DEPARTMENT_ACCESS = {
         "manage-tutor-documents.html",
         "manage-customers.html",
         "manage-contents.html",
+        "manage-astegni.html",
         "manage-credentials.html",
         "manage-advertisers.html",
         "manage-system-settings.html"
