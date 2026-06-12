@@ -43,14 +43,6 @@
     justify-content: flex-start;
 }
 
-.quote-icon {
-    font-size: 1.5rem;
-    color: var(--button-bg);
-    opacity: 0.3;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
 .testimonial-text {
     font-size: 1.125rem;
     color: var(--text);

@@ -67,7 +67,6 @@ async function initializeTestimonials() {
                             ${tutorStars}
                         </div>
                     </div>
-                    <div class="quote-icon">"</div>
                     <p class="testimonial-text">${esc(t.review_text)}</p>
                     <div class="rating astegni-rating" title="Rating given to Astegni">${astegniStars}</div>
                 </div>
