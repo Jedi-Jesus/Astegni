@@ -535,16 +535,11 @@ class ParentRightWidgetsManager {
             // Show loading state
             this.showTrendingTutorsLoading();
 
-            // Get token from localStorage
-            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-
-            // Fetch tutors from API (sorted by score/rating)
-            const response = await fetch(`${this.API_BASE_URL}/api/tutors?page=1&limit=10`, {
+            // Fetch from the trending endpoint, which already filters to verified
+            // tutors with an active public package and returns them smart-sorted.
+            const response = await fetch(`${this.API_BASE_URL}/api/tutors/trending?limit=20&min_searches=1`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : undefined,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             });
 
             if (!response.ok) {
@@ -552,14 +547,12 @@ class ParentRightWidgetsManager {
             }
 
             const data = await response.json();
-            const tutors = data.tutors || [];  // Extract tutors array from response object
-            console.log('[ParentRightWidgets] Loaded tutors:', tutors.length);
+            // Backend already smart-sorts; keep that order, don't re-sort client-side.
+            const tutors = data.trending_tutors || [];
+            console.log('[ParentRightWidgets] Loaded trending tutors:', tutors.length);
 
-            // Sort tutors by rating (highest first)
-            const sortedTutors = tutors.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-
-            // Get top 6 tutors
-            const topTutors = sortedTutors.slice(0, 6);
+            // Show the top 3
+            const topTutors = tutors.slice(0, 3);
 
             // Display the tutors
             if (topTutors.length === 0) {
@@ -689,10 +682,12 @@ class ParentRightWidgetsManager {
             ? parseFloat(tutor.rating).toFixed(1)
             : '0.0';
 
-        // Get subject (first course or default)
-        const subject = Array.isArray(tutor.courses) && tutor.courses.length > 0
-            ? tutor.courses[0]
-            : 'Tutor';
+        // Get subject (first subject/course or default).
+        // The trending endpoint returns `subjects`; the legacy list returned `courses`.
+        const subjectList = Array.isArray(tutor.subjects) && tutor.subjects.length > 0
+            ? tutor.subjects
+            : (Array.isArray(tutor.courses) ? tutor.courses : []);
+        const subject = subjectList.length > 0 ? subjectList[0] : 'Tutor';
 
         // Generate stars
         const stars = this.generateStars(parseFloat(rating));
