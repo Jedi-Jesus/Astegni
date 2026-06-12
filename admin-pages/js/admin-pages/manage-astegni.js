@@ -698,9 +698,10 @@ const ManageAstegni = {
             <div class="ma-card">
                 <img src="${this._escape(r.profile_picture)}" alt="" class="ma-avatar">
                 <div class="ma-card-body">
-                    <h3>${this._escape(r.name)} <span class="ma-stars">${stars}</span> ${featured}</h3>
+                    <h3>${this._escape(r.name)} ${featured}</h3>
                     <p class="ma-muted">${this._escape(r.role || 'User')}</p>
                     <blockquote class="ma-quote">${text}</blockquote>
+                    <div class="ma-stars" title="Rating given to Astegni">${stars}</div>
                 </div>
                 <div class="ma-card-actions">
                     <button class="ma-icon-btn" title="View" onclick="ManageAstegni.openUserReview(${r.id})"><i class="fas fa-eye"></i></button>
