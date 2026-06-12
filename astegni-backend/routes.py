@@ -6362,70 +6362,9 @@ def get_user_playlists(
 # REVIEWS ENDPOINTS
 # ============================================
 
-@router.get("/api/reviews")
-def get_reviews(
-    type: str = Query("all", regex="^(all|professional|student|parent|tutor)$"),
-    limit: int = Query(10, ge=1, le=50),
-    featured: bool = Query(False),
-    db: Session = Depends(get_db)
-):
-    """Get reviews and testimonials"""
-    professional_reviews = [
-        {
-            "id": 1,
-            "type": "professional",
-            "reviewer": {
-                "name": "Dr. Abebe Kebede",
-                "title": "Dean of Education",
-                "organization": "Addis Ababa University",
-                "avatar": "https://picsum.photos/100?random=1"
-            },
-            "rating": 5,
-            "review": "Astegni has revolutionized educational technology in Ethiopia.",
-            "date": "2024-01-15",
-            "verified": True,
-            "featured": True
-        }
-    ]
-
-    user_testimonials = [
-        {
-            "id": 4,
-            "type": "student",
-            "reviewer": {
-                "name": "Sara Tadesse",
-                "title": "Grade 12 Student",
-                "organization": "Addis Ababa",
-                "avatar": "https://picsum.photos/100?random=4"
-            },
-            "rating": 5,
-            "review": "My grades improved from C to A in just 3 months!",
-            "date": "2024-01-20",
-            "verified": True,
-            "featured": False
-        }
-    ]
-
-    all_reviews = professional_reviews + user_testimonials
-
-    if type != "all":
-        all_reviews = [r for r in all_reviews if r["type"] == type]
-
-    if featured:
-        all_reviews = [r for r in all_reviews if r.get("featured", False)]
-
-    all_reviews.sort(key=lambda x: x["date"], reverse=True)
-
-    return {
-        "reviews": all_reviews[:limit],
-        "total": len(all_reviews),
-        "stats": {
-            "average_rating": 4.9,
-            "total_reviews": 1250,
-            "professional_endorsements": 15,
-            "verified_reviews": 1180
-        }
-    }
+# NOTE: GET /api/reviews now lives in manage_astegni_endpoints.py (DB-backed
+# professional testimonials, managed via the admin "Manage Astegni" page).
+# The old hardcoded list was removed.
 
 # ============================================
 # OTHER ENDPOINTS (NEWS, STATISTICS, ETC.)
@@ -6543,29 +6482,8 @@ def get_statistics(db: Session = Depends(get_db)):
         "monthly_growth": 12.5
     }
 
-@router.get("/api/partners")
-async def get_partners(db: Session = Depends(get_db)):
-    """Get partner organizations"""
-    try:
-        partners = [
-            {
-                "id": 1,
-                "name": "Addis Ababa University",
-                "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Addis_Ababa_University_logo.png/150px-Addis_Ababa_University_logo.png",
-                "description": "Ethiopia's oldest and largest university",
-                "website": "http://www.aau.edu.et"
-            },
-            {
-                "id": 2,
-                "name": "Ministry of Education",
-                "logo": "https://ui-avatars.com/api/?name=MoE&background=f59e0b&color=fff&size=150",
-                "description": "Federal Ministry of Education of Ethiopia",
-                "website": "http://www.moe.gov.et"
-            }
-        ]
-        return {"partners": partners, "total": len(partners)}
-    except Exception as e:
-        return {"partners": [], "total": 0}
+# NOTE: GET /api/partners now lives in manage_astegni_endpoints.py (DB-backed,
+# managed via the admin "Manage Astegni" page). The old hardcoded list was removed.
 
 # ============================================
 # EXTENDED TUTOR PROFILE ENDPOINTS  

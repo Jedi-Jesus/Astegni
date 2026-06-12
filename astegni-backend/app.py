@@ -377,6 +377,12 @@ app.include_router(events_clubs_router)
 from partner_request_endpoints import router as partner_request_router
 app.include_router(partner_request_router)
 
+# Include manage-astegni routes (admin Manage Astegni page: partners, featured
+# videos, professional testimonials — plus the public /api/partners + /api/reviews
+# reads that index.html consumes; these moved out of routes.py).
+from manage_astegni_endpoints import router as manage_astegni_router
+app.include_router(manage_astegni_router)
+
 # student_requests_router already included above (before routes.py to avoid /api/student/{student_id} conflict)
 
 # Include student profile routes

@@ -2,25 +2,21 @@
 (function() {
     'use strict';
 
-    // News data - will be replaced with backend data
+    // Hard-coded news items. The launch item's user count is filled in live
+    // from /api/statistics (see refreshLaunchNews). Astegni launched on
+    // 2025-12-01 (date of first production deployment).
     const newsData = [
         {
-            title: "New AI-Powered Learning Tools Now Available",
-            content: "Revolutionary AI tutoring features have been integrated into the platform, providing personalized learning experiences for every student.",
-            date: "Today",
+            title: "Astegni Has Launched!",
+            content: "Astegni launched its website on December 1, 2025, and is now serving a growing community of users.",
+            date: "Dec 1, 2025",
+            category: "Announcement"
+        },
+        {
+            title: "More Education News Coming Soon",
+            content: "Other education news and announcements are coming soon. Stay tuned!",
+            date: "Coming soon",
             category: "Education"
-        },
-        {
-            title: "Partnership with Ethiopian Universities",
-            content: "We're proud to announce partnerships with major Ethiopian universities, expanding our course offerings significantly.",
-            date: "Yesterday",
-            category: "Partnership"
-        },
-        {
-            title: "500+ New Courses Added This Month",
-            content: "Our platform continues to grow with over 500 new courses added across various subjects and skill levels.",
-            date: "2 days ago",
-            category: "Courses"
         }
     ];
 
@@ -106,34 +102,28 @@
         }, 2000);
     }
 
-    // Fetch news from backend
-    async function fetchNewsFromBackend() {
+    // Pull the live total-user count into the launch news item so the copy
+    // always reflects the current number of users.
+    async function refreshLaunchNews() {
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/news`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/statistics`);
             if (response.ok) {
-                const data = await response.json();
-                if (data.news && data.news.length > 0) {
-                    newsData.length = 0; // Clear existing data
-                    newsData.push(...data.news);
-                    displayNews();
+                const stats = await response.json();
+                const totalUsers = stats.total_users;
+                if (typeof totalUsers === 'number' && totalUsers > 0) {
+                    newsData[0].content =
+                        `Astegni launched its website on December 1, 2025, and is now serving ${totalUsers.toLocaleString()} users.`;
                 }
             }
         } catch (error) {
-            console.log('Using fallback news data');
-            // Use existing newsData as fallback
-            displayNews();
+            console.log('Using fallback launch news copy');
         }
+        displayNews();
     }
 
     // Initialize on DOM load
     document.addEventListener('DOMContentLoaded', () => {
-        fetchNewsFromBackend();
+        refreshLaunchNews();
 
         // Rotate news every 12 seconds (10s reading + 2s added delay)
         setInterval(rotateNews, 12000);
@@ -141,7 +131,7 @@
 
     // Initialize news section
     function initializeNewsSection() {
-        fetchNewsFromBackend();
+        refreshLaunchNews();
         // Rotate news every 12 seconds (10s reading + 2s added delay)
         setInterval(rotateNews, 12000);
     }
@@ -150,7 +140,7 @@
     window.newsSection = {
         displayNews,
         rotateNews,
-        fetchNewsFromBackend
+        refreshLaunchNews
     };
 
     // Export initialization function

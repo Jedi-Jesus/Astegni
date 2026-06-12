@@ -1,25 +1,56 @@
 // ============================================
 //   VIDEO CAROUSEL
 // ============================================
-function initializeVideoCarousel() {
+
+// Admin-curated featured videos (managed via admin Manage Astegni page). Falls
+// back to the bundled VIDEO_DATA when none are configured or the API is down.
+async function fetchFeaturedVideos() {
+    try {
+        const base = window.API_BASE_URL || 'http://localhost:8000';
+        const res = await fetch(`${base}/api/featured-videos`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.videos && data.videos.length > 0) {
+                return data.videos.map(v => ({
+                    id: v.id,
+                    title: v.title,
+                    description: v.description || '',
+                    category: v.category || 'all',
+                    videoUrl: v.video_url,
+                    thumbnail: v.thumbnail_url || '',
+                    views: v.views || 0,
+                    duration: v.duration || ''
+                }));
+            }
+        }
+    } catch (e) {
+        console.log('Using fallback video data');
+    }
+    return null;
+}
+
+async function initializeVideoCarousel() {
     const carousel = document.getElementById("video-carousel");
     if (!carousel) return;
 
+    const featured = await fetchFeaturedVideos();
+    const videos = (featured && featured.length) ? featured : VIDEO_DATA;
+
     carousel.innerHTML = "";
 
-    VIDEO_DATA.forEach((video, index) => {
+    videos.forEach((video, index) => {
         const card = createVideoCard(video, index);
         carousel.appendChild(card);
     });
 
-    VIDEO_DATA.forEach((video, index) => {
+    videos.forEach((video, index) => {
         const card = createVideoCard(video, index);
         carousel.appendChild(card);
     });
 
     let currentPosition = 0;
     const cardWidth = 320 + 24;
-    const totalCards = VIDEO_DATA.length;
+    const totalCards = videos.length;
 
     window.navigateCarousel = function(direction) {
         if (!carousel) return;
@@ -70,7 +101,7 @@ function createVideoCard(video, index) {
         </div>
         <div class="video-info">
             <h4 class="video-title">${video.title}</h4>
-            <p class="video-description">${video.description.substring(0, 100)}...</p>
+            <p class="video-description">${(video.description || '').substring(0, 100)}${(video.description || '').length > 100 ? '...' : ''}</p>
             <div class="video-meta">
                 <span class="video-views">${video.views} views</span>
                 <span class="video-duration">${video.duration}</span>

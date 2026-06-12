@@ -26,7 +26,8 @@
         'manage-contents.html': ['manage-contents', 'manage-system-settings'],
         'manage-customers.html': ['manage-customers', 'manage-system-settings'],
         'manage-admins.html': ['manage-admins', 'manage-system-settings'],
-        'manage-advertisers.html': ['manage-advertisers', 'manage-system-settings']
+        'manage-advertisers.html': ['manage-advertisers', 'manage-system-settings'],
+        'manage-astegni.html': ['manage-contents', 'manage-system-settings']
     };
 
     /**
