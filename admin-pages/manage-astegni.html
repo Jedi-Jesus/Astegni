@@ -312,15 +312,36 @@
         </div>
     </div>
 
-    <!-- ============ REVIEW MODAL ============ -->
+    <!-- ============ VIEW / EDIT PROFESSIONAL REVIEW MODAL ============ -->
     <div id="review-modal" class="modal hidden">
         <div class="modal-overlay" onclick="ManageAstegni.closeModal('review-modal')"></div>
         <div class="modal-content" style="max-width:560px;">
             <div class="modal-header">
-                <h2 id="review-modal-title">Add Professional Review</h2>
+                <h2 id="review-modal-title">View Professional Review</h2>
                 <button class="modal-close" onclick="ManageAstegni.closeModal('review-modal')">&times;</button>
             </div>
-            <form id="review-form" class="modal-body" onsubmit="ManageAstegni.saveReview(event)">
+
+            <!-- VIEW pane (read-only; shown when opening an existing review) -->
+            <div class="modal-body" id="review-view-pane">
+                <div id="review-view-content"></div>
+                <div class="modal-footer" style="justify-content:space-between; align-items:center;">
+                    <label class="ma-toggle">
+                        <input type="checkbox" id="review-view-featured" onchange="ManageAstegni.toggleReviewFeaturedFromModal()">
+                        <span>Feature on home page</span>
+                    </label>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button type="button" class="btn-danger" onclick="ManageAstegni.deleteReviewFromModal()">
+                            <i class="fas fa-trash mr-1"></i> Delete
+                        </button>
+                        <button type="button" class="btn-primary" onclick="ManageAstegni.enterReviewEdit()">
+                            <i class="fas fa-edit mr-1"></i> Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDIT pane (the form; shown for Add or after clicking Edit) -->
+            <form id="review-form" class="modal-body" onsubmit="ManageAstegni.saveReview(event)" style="display:none;">
                 <input type="hidden" id="review-id">
                 <label class="ma-label">Reviewer name *</label>
                 <input type="text" id="review-name" class="ma-input" required placeholder="e.g. Dr. Sarah Johnson">
@@ -472,6 +493,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606123000"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606123100"></script>
 </body>
 </html>

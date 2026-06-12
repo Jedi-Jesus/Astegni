@@ -13,6 +13,7 @@ const ManageAstegni = {
     applications: [],
     videos: [],
     reviews: [],
+    currentReview: null,
     userReviews: [],
     currentUserReview: null,
     activeTab: 'partners',
@@ -498,69 +499,134 @@ const ManageAstegni = {
                 r.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>',
                 r.is_verified ? '<span class="ma-badge verified">Verified</span>' : '',
             ].join(' ');
+            const featured = r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
             return `
             <div class="ma-card">
                 ${avatar}
                 <div class="ma-card-body">
-                    <h3>${this._escape(r.reviewer_name)}</h3>
+                    <h3>${this._escape(r.reviewer_name)} ${featured}</h3>
                     <p class="ma-muted">${this._escape(r.title || '')}${r.organization ? ' · ' + this._escape(r.organization) : ''}</p>
                     <blockquote class="ma-quote">"${this._escape(r.review)}"</blockquote>
                     <div class="ma-stars">${stars}</div>
                     <div>${badges}</div>
-                    <label class="ma-toggle" style="margin-top:0.5rem;">
-                        <input type="checkbox" ${r.is_featured ? 'checked' : ''}
-                               onchange="ManageAstegni.toggleReviewFeatured(${r.id}, this.checked, this)">
-                        <span>Feature on home page</span>
-                    </label>
                 </div>
                 <div class="ma-card-actions">
-                    <button class="ma-icon-btn" title="Edit" onclick="ManageAstegni.openReviewModal(${r.id})"><i class="fas fa-edit"></i></button>
-                    <button class="ma-icon-btn danger" title="Delete" onclick="ManageAstegni.deleteReview(${r.id})"><i class="fas fa-trash"></i></button>
+                    <button class="ma-icon-btn" title="View" onclick="ManageAstegni.openReviewModal(${r.id})"><i class="fas fa-eye"></i></button>
                 </div>
             </div>`;
         }).join('');
     },
 
-    async toggleReviewFeatured(id, desired, el) {
-        if (el) el.disabled = true;
+
+    // Open the modal. With an id -> read-only VIEW pane (Edit/Feature/Delete).
+    // Without an id -> the form directly in add mode.
+    openReviewModal(id = null) {
+        const f = document.getElementById('review-form');
+        const viewPane = document.getElementById('review-view-pane');
+        f.reset();
+        document.getElementById('review-id').value = '';
+
+        if (id) {
+            const r = this.reviews.find(x => x.id === id);
+            if (!r) return;
+            this.currentReview = r;
+            document.getElementById('review-modal-title').textContent = 'View Professional Review';
+            // Populate the form fields too (so Edit just reveals them, pre-filled).
+            document.getElementById('review-id').value = r.id;
+            document.getElementById('review-name').value = r.reviewer_name || '';
+            document.getElementById('review-title').value = r.title || '';
+            document.getElementById('review-org').value = r.organization || '';
+            document.getElementById('review-expertise').value = r.expertise || '';
+            document.getElementById('review-rating').value = String(r.rating || 5);
+            document.getElementById('review-text').value = r.review || '';
+            document.getElementById('review-avatar-url').value = '';
+            document.getElementById('review-verified').checked = !!r.is_verified;
+            document.getElementById('review-featured').checked = !!r.is_featured;
+            document.getElementById('review-active').checked = !!r.is_active;
+            document.getElementById('review-active-wrap').style.display = '';
+            document.getElementById('review-sort').value = r.sort_order ?? 0;
+            // Render the read-only view.
+            this._renderReviewView(r);
+            viewPane.style.display = '';
+            f.style.display = 'none';
+        } else {
+            // Add mode: form only.
+            this.currentReview = null;
+            document.getElementById('review-modal-title').textContent = 'Add Professional Review';
+            document.getElementById('review-active-wrap').style.display = 'none';
+            viewPane.style.display = 'none';
+            f.style.display = '';
+        }
+        this._show('review-modal');
+    },
+
+    _renderReviewView(r) {
+        const avatar = r.avatar_url
+            ? `<img src="${this._escape(r.avatar_url)}" alt="" class="ma-avatar-lg">`
+            : `<div class="ma-avatar-lg ma-logo-placeholder"><i class="fas fa-user"></i></div>`;
+        const stars = '★'.repeat(Math.round(r.rating || 0)) + '☆'.repeat(5 - Math.round(r.rating || 0));
+        const badges = [
+            r.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>',
+            r.is_verified ? '<span class="ma-badge verified">Verified</span>' : '',
+            r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '',
+        ].join(' ');
+        document.getElementById('review-view-content').innerHTML = `
+            <div class="ma-review-head">
+                ${avatar}
+                <div>
+                    <h3 style="margin:0;">${this._escape(r.reviewer_name)}</h3>
+                    <p class="ma-muted" style="margin:0;">${this._escape(r.title || '')}${r.organization ? ' · ' + this._escape(r.organization) : ''}</p>
+                    ${r.expertise ? `<p class="ma-muted" style="margin:0;">${this._escape(r.expertise)}</p>` : ''}
+                </div>
+            </div>
+            <blockquote class="ma-quote" style="margin:1rem 0;">"${this._escape(r.review)}"</blockquote>
+            <div class="ma-stars" style="font-size:1.1rem;">${stars}</div>
+            <div style="margin-top:0.5rem;">${badges}</div>
+        `;
+        // Sync the modal's feature toggle to the current state.
+        const t = document.getElementById('review-view-featured');
+        if (t) { t.checked = !!r.is_featured; t.disabled = false; }
+    },
+
+    // Reveal the edit form (pre-filled) inside the same modal.
+    enterReviewEdit() {
+        document.getElementById('review-modal-title').textContent = 'Edit Professional Review';
+        document.getElementById('review-view-pane').style.display = 'none';
+        document.getElementById('review-form').style.display = '';
+    },
+
+    async toggleReviewFeaturedFromModal() {
+        const r = this.currentReview;
+        const t = document.getElementById('review-view-featured');
+        if (!r || !t) return;
+        const desired = t.checked;
+        t.disabled = true;
         const fd = new FormData();
         fd.append('is_featured', desired);
         try {
-            await this._send('POST', `/api/admin/testimonials/${id}/feature`, fd);
-            const r = this.reviews.find(x => x.id === id);
-            if (r) r.is_featured = desired;
+            await this._send('POST', `/api/admin/testimonials/${r.id}/feature`, fd);
+            r.is_featured = desired;
+            this._renderReviewView(r);
+            this.renderReviews();
         } catch (err) {
-            if (el) el.checked = !desired;  // revert on failure
+            t.checked = !desired;
             alert('Failed to update: ' + err.message);
         } finally {
-            if (el) el.disabled = false;
+            t.disabled = false;
         }
     },
 
-    openReviewModal(id = null) {
-        const f = document.getElementById('review-form');
-        f.reset();
-        document.getElementById('review-id').value = '';
-        document.getElementById('review-active-wrap').style.display = id ? '' : 'none';
-        document.getElementById('review-modal-title').textContent = id ? 'Edit Professional Review' : 'Add Professional Review';
-        if (id) {
-            const r = this.reviews.find(x => x.id === id);
-            if (r) {
-                document.getElementById('review-id').value = r.id;
-                document.getElementById('review-name').value = r.reviewer_name || '';
-                document.getElementById('review-title').value = r.title || '';
-                document.getElementById('review-org').value = r.organization || '';
-                document.getElementById('review-expertise').value = r.expertise || '';
-                document.getElementById('review-rating').value = String(r.rating || 5);
-                document.getElementById('review-text').value = r.review || '';
-                document.getElementById('review-avatar-url').value = '';
-                document.getElementById('review-verified').checked = !!r.is_verified;
-                document.getElementById('review-featured').checked = !!r.is_featured;
-                document.getElementById('review-active').checked = !!r.is_active;
-                document.getElementById('review-sort').value = r.sort_order ?? 0;
-            }
+    async deleteReviewFromModal() {
+        const r = this.currentReview;
+        if (!r) return;
+        if (!confirm('Delete this review?')) return;
+        try {
+            await this._send('DELETE', `/api/admin/testimonials/${r.id}`);
+            this.closeModal('review-modal');
+            await this.loadReviews();
+        } catch (err) {
+            alert('Failed to delete: ' + err.message);
         }
-        this._show('review-modal');
     },
 
     async saveReview(e) {
@@ -592,16 +658,6 @@ const ManageAstegni = {
             alert('Failed to save review: ' + err.message);
         } finally {
             btn.disabled = false; btn.textContent = 'Save Review';
-        }
-    },
-
-    async deleteReview(id) {
-        if (!confirm('Delete this review?')) return;
-        try {
-            await this._send('DELETE', `/api/admin/testimonials/${id}`);
-            await this.loadReviews();
-        } catch (err) {
-            alert('Failed to delete: ' + err.message);
         }
     },
 
