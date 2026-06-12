@@ -121,9 +121,18 @@
                         <h2>Trusted Partners</h2>
                         <p class="ma-muted">Logos shown in the "Trusted Partners" section on the homepage.</p>
                     </div>
-                    <button class="btn-primary" onclick="ManageAstegni.openPartnerModal()">
-                        <i class="fas fa-plus mr-2"></i> Add Partner
-                    </button>
+                    <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                        <div class="ma-filter">
+                            <select id="partners-filter" class="ma-input" onchange="ManageAstegni.renderPartners()">
+                                <option value="all">All partners</option>
+                                <option value="featured">Featured</option>
+                                <option value="not-featured">Not featured</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="ManageAstegni.openPartnerModal()">
+                            <i class="fas fa-plus mr-2"></i> Add Partner
+                        </button>
+                    </div>
                 </div>
                 <div id="partners-list" class="ma-card-grid">
                     <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading partners...</div>
@@ -466,6 +475,6 @@
         }
         window.logout = logout;
     </script>
-    <script src="./js/admin-pages/manage-astegni.js?v202606121900"></script>
+    <script src="./js/admin-pages/manage-astegni.js?v202606122000"></script>
 </body>
 </html>

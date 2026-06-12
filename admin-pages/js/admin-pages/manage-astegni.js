@@ -98,11 +98,21 @@ const ManageAstegni = {
     renderPartners() {
         const list = document.getElementById('partners-list');
         if (!list) return;
+        // Featured / not-featured filter (client-side over the loaded list).
+        const filter = document.getElementById('partners-filter')?.value || 'all';
+        const partners = this.partners.filter(p =>
+            filter === 'featured' ? p.is_featured
+            : filter === 'not-featured' ? !p.is_featured
+            : true);
         if (!this.partners.length) {
             list.innerHTML = '<div class="empty-state"><i class="fas fa-handshake"></i><div>No partners yet. Add one above.</div></div>';
             return;
         }
-        list.innerHTML = this.partners.map(p => {
+        if (!partners.length) {
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><div>No ${filter === 'featured' ? 'featured' : 'non-featured'} partners.</div></div>`;
+            return;
+        }
+        list.innerHTML = partners.map(p => {
             const logo = p.logo
                 ? `<img src="${this._escape(p.logo)}" alt="${this._escape(p.name)}" class="ma-logo">`
                 : `<div class="ma-logo ma-logo-placeholder"><i class="fas fa-handshake"></i></div>`;
