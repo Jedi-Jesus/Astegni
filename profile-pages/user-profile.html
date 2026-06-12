@@ -1173,7 +1173,6 @@
                 <a href="#" onclick="switchPanel('my-engagements'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">❤️</span>
                     <span>My Engagements</span>
-                    <span class="badge-count">12</span>
                 </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
@@ -2778,7 +2777,7 @@
     <script src="../js/utils/currency-utils.js?v202605211228"></script>
 
     <!-- Leave Astegni Modal - LOADED LAST to ensure all dependencies are ready -->
-    <script src="../js/common-modals/leave-astegni-modal.js?v202605211228"></script>
+    <script src="../js/common-modals/leave-astegni-modal.js?v202606121200"></script>
 
     <!-- Helper functions and fallback loading -->
     <script>
@@ -2788,43 +2787,25 @@
             return locationInput ? [locationInput.value.trim()].filter(v => v) : [];
         };
 
-        // FIX: Ensure Leave Astegni modal functions are loaded
-        // This handles cases where the script loads but doesn't execute properly
+        // Failsafe: if the Leave Astegni script (loaded above) somehow failed to
+        // execute, reload it once after the page is fully loaded. The script is
+        // idempotent (guarded by window.__leaveAstegniModalLoaded), so a redundant
+        // load is a harmless no-op rather than a "already declared" SyntaxError.
         (function ensureLeaveAstegniLoaded() {
-            function checkAndLoad() {
-                if (typeof openLeaveAstegniModal === 'undefined') {
-                    console.warn('⚠️ Leave Astegni functions not loaded, attempting to reload...');
-
-                    // Reload the script
-                    const script = document.createElement('script');
-                    script.src = '../js/common-modals/leave-astegni-modal.js?v202605211228' + Date.now();
-                    script.onload = function() {
-                        console.log('✅ Leave Astegni modal functions loaded successfully');
-                        console.log('   Function type:', typeof openLeaveAstegniModal);
-                    };
-                    script.onerror = function() {
-                        console.error('❌ Failed to load leave-astegni-modal.js');
-                    };
-                    document.head.appendChild(script);
-                } else {
-                    console.log('✅ Leave Astegni modal functions already loaded');
-                }
-            }
-
-            // Try immediately
-            checkAndLoad();
-
-            // Also check after DOM is fully loaded (failsafe)
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', checkAndLoad);
-            }
-
-            // Final check after window load (last resort)
             window.addEventListener('load', function() {
-                if (typeof openLeaveAstegniModal === 'undefined') {
-                    console.error('❌ CRITICAL: Leave Astegni functions still not loaded after page load!');
-                    checkAndLoad();
-                }
+                if (typeof window.openLeaveAstegniModal === 'function') return;
+
+                console.warn('⚠️ Leave Astegni functions not loaded, reloading once...');
+                const script = document.createElement('script');
+                script.src = '../js/common-modals/leave-astegni-modal.js?v=' + Date.now();
+                script.onload = function() {
+                    console.log('✅ Leave Astegni modal functions reloaded:',
+                        typeof window.openLeaveAstegniModal);
+                };
+                script.onerror = function() {
+                    console.error('❌ Failed to load leave-astegni-modal.js');
+                };
+                document.head.appendChild(script);
             });
         })();
     </script>

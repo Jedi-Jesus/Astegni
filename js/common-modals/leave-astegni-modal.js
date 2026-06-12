@@ -1,6 +1,14 @@
 /**
  * Open Leave Astegni Modal
  */
+// Idempotent guard: this file uses top-level `let`/`function` declarations,
+// so loading it twice would throw "Identifier already declared" and abort the
+// second copy before any functions attach. Bail out if already loaded.
+if (window.__leaveAstegniModalLoaded) {
+    console.log('ℹ️ Leave Astegni modal already loaded, skipping re-init');
+} else {
+    window.__leaveAstegniModalLoaded = true;
+
 // ===== SUBSCRIPTION MANAGEMENT FUNCTIONS =====
 
 let currentSubscription = null; // Track current subscription
@@ -808,3 +816,5 @@ window.closeDeleteFinalModal = closeDeleteFinalModal;
 window.toggleOtherTextarea = toggleOtherTextarea;
 
 console.log('✅ Subscription & Leave Astegni: JavaScript loaded');
+
+} // end idempotent guard (window.__leaveAstegniModalLoaded)

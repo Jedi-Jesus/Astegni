@@ -249,7 +249,7 @@ async def get_trending_tutors(
                 "father_name": tutor.user.father_name if tutor.user else None,
                 "last_name": tutor.user.last_name if tutor.user else None,
                 "profile_picture": tutor.user.profile_picture if tutor.user else None,
-                "location": tutor.location,
+                "location": tutor.user.location if tutor.user else None,
                 "subjects": subjects_map.get(tutor.id, []),
                 "teaches_at": teaches_at_map.get(tutor.id, None),
                 "rating": rating_data["rating"],
