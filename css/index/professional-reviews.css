@@ -82,9 +82,22 @@
     z-index: 1;
     padding: 0 2rem;
     /* 2 cards per row */
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 1.5rem;
+}
+
+/* Belt-and-suspenders: ensure cards never fall back to the old absolute fade
+   layout (which made them stack full-width on top of each other). */
+.professional-reviews-grid .professional-review-card {
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
 }
 
 @media (max-width: 768px) {
