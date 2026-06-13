@@ -102,7 +102,7 @@
 
 @media (max-width: 768px) {
     .professional-reviews-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 }
 
