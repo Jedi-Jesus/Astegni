@@ -133,24 +133,27 @@ async function initializeProfessionalReviews() {
     }
     if (section) section.style.display = '';
 
-    // Render reviews
-    container.innerHTML = reviewsToUse.map((review, index) => `
-        <div class="professional-review-card ${index === 0 ? 'active' : ''}" data-index="${index}">
-            <div class="review-header">
-                <div class="reviewer-info">
-                    <img src="${review.image}" alt="${review.name}" class="reviewer-avatar" loading="lazy">
-                    <div class="reviewer-details">
-                        <h4 class="reviewer-name">${review.name}</h4>
-                        <p class="reviewer-title">${review.title}</p>
-                        <p class="reviewer-institution">${review.institution}</p>
-                        <span class="expertise-badge">${review.expertise}</span>
+    // Render reviews using the same card layout as the testimonials section:
+    // avatar + name + role line at top, review text, then the rating stars after.
+    container.innerHTML = reviewsToUse.map((review, index) => {
+        const roleLine = [review.title, review.institution].filter(Boolean).join(' · ');
+        const stars = '⭐'.repeat(Math.max(1, Math.min(5, Math.round(review.rating || 0))));
+        return `
+        <div class="testimonial-card professional-review-card ${index === 0 ? 'active' : ''}" data-index="${index}">
+            <div class="testimonial-content">
+                <div class="testimonial-author" style="margin-bottom:0.75rem;">
+                    <img src="${review.image}" alt="${review.name}" class="author-avatar" loading="lazy">
+                    <div class="author-info">
+                        <h4>${review.name}</h4>
+                        ${roleLine ? `<p>${roleLine}</p>` : ''}
+                        ${review.expertise ? `<span class="expertise-badge">${review.expertise}</span>` : ''}
                     </div>
                 </div>
+                <p class="testimonial-text">${review.review}</p>
+                <div class="rating astegni-rating" title="Rating">${stars}</div>
             </div>
-            <blockquote class="review-content">"${review.review}"</blockquote>
-            <div class="review-rating">${'★'.repeat(review.rating)}</div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
     // Start the carousel
     startReviewCarousel();
