@@ -139,7 +139,7 @@ async function initializeProfessionalReviews() {
         const roleLine = [review.title, review.institution].filter(Boolean).join(' · ');
         const stars = '⭐'.repeat(Math.max(1, Math.min(5, Math.round(review.rating || 0))));
         return `
-        <div class="testimonial-card professional-review-card ${index === 0 ? 'active' : ''}" data-index="${index}">
+        <div class="testimonial-card professional-review-card active" data-index="${index}">
             <div class="testimonial-content">
                 <div class="testimonial-author" style="margin-bottom:0.75rem;">
                     <img src="${review.image}" alt="${review.name}" class="author-avatar" loading="lazy">
@@ -155,8 +155,7 @@ async function initializeProfessionalReviews() {
         </div>`;
     }).join('');
 
-    // Start the carousel
-    startReviewCarousel();
+    // Cards now render in a static 2-per-row grid (no fade carousel).
 
     // Render stats (static - no animation)
     statsContainer.innerHTML = `
@@ -177,6 +176,10 @@ let currentReviewIndex = 0;
 let reviewInterval;
 
 function startReviewCarousel() {
+    // Reviews now render in a static 2-per-row grid (all cards visible), so the
+    // fade carousel is disabled. Kept as a no-op for any legacy callers.
+    return;
+    // eslint-disable-next-line no-unreachable
     const cards = document.querySelectorAll('.professional-review-card');
     if (cards.length <= 1) return;
 
