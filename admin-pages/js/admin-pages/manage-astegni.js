@@ -495,10 +495,6 @@ const ManageAstegni = {
                 ? `<img src="${this._escape(r.avatar_url)}" alt="" class="ma-avatar">`
                 : `<div class="ma-avatar ma-logo-placeholder"><i class="fas fa-user"></i></div>`;
             const stars = '★'.repeat(r.rating || 0);
-            const badges = [
-                r.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>',
-                r.is_verified ? '<span class="ma-badge verified">Verified</span>' : '',
-            ].join(' ');
             const featured = r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
             return `
             <div class="ma-card">
@@ -508,7 +504,6 @@ const ManageAstegni = {
                     <p class="ma-muted">${this._escape(r.title || '')}${r.organization ? ' · ' + this._escape(r.organization) : ''}</p>
                     <blockquote class="ma-quote">"${this._escape(r.review)}"</blockquote>
                     <div class="ma-stars">${stars}</div>
-                    <div>${badges}</div>
                 </div>
                 <div class="ma-card-actions">
                     <button class="ma-icon-btn" title="View" onclick="ManageAstegni.openReviewModal(${r.id})"><i class="fas fa-eye"></i></button>
@@ -540,10 +535,7 @@ const ManageAstegni = {
             document.getElementById('review-rating').value = String(r.rating || 5);
             document.getElementById('review-text').value = r.review || '';
             document.getElementById('review-avatar-url').value = '';
-            document.getElementById('review-verified').checked = !!r.is_verified;
             document.getElementById('review-featured').checked = !!r.is_featured;
-            document.getElementById('review-active').checked = !!r.is_active;
-            document.getElementById('review-active-wrap').style.display = '';
             document.getElementById('review-sort').value = r.sort_order ?? 0;
             // Render the read-only view.
             this._renderReviewView(r);
@@ -553,7 +545,6 @@ const ManageAstegni = {
             // Add mode: form only.
             this.currentReview = null;
             document.getElementById('review-modal-title').textContent = 'Add Professional Review';
-            document.getElementById('review-active-wrap').style.display = 'none';
             viewPane.style.display = 'none';
             f.style.display = '';
         }
@@ -565,11 +556,7 @@ const ManageAstegni = {
             ? `<img src="${this._escape(r.avatar_url)}" alt="" class="ma-avatar-lg">`
             : `<div class="ma-avatar-lg ma-logo-placeholder"><i class="fas fa-user"></i></div>`;
         const stars = '★'.repeat(Math.round(r.rating || 0)) + '☆'.repeat(5 - Math.round(r.rating || 0));
-        const badges = [
-            r.is_active ? '' : '<span class="ma-badge inactive">Inactive</span>',
-            r.is_verified ? '<span class="ma-badge verified">Verified</span>' : '',
-            r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '',
-        ].join(' ');
+        const badges = r.is_featured ? '<span class="ma-badge featured">Featured</span>' : '';
         document.getElementById('review-view-content').innerHTML = `
             <div class="ma-review-head">
                 ${avatar}
@@ -640,13 +627,11 @@ const ManageAstegni = {
         fd.append('expertise', document.getElementById('review-expertise').value);
         fd.append('review', document.getElementById('review-text').value);
         fd.append('rating', document.getElementById('review-rating').value);
-        fd.append('is_verified', document.getElementById('review-verified').checked);
         fd.append('is_featured', document.getElementById('review-featured').checked);
         fd.append('sort_order', document.getElementById('review-sort').value || '0');
         fd.append('avatar_url', document.getElementById('review-avatar-url').value);
         const file = document.getElementById('review-avatar-file').files[0];
         if (file) fd.append('avatar', file);
-        if (id) fd.append('is_active', document.getElementById('review-active').checked);
 
         btn.disabled = true; btn.textContent = 'Saving...';
         try {

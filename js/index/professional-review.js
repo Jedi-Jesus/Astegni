@@ -98,8 +98,7 @@ async function fetchReviewsFromAPI() {
                         review: r.review,
                         rating: r.rating,
                         expertise: r.type === 'professional' ? 'EdTech' : 'Education',
-                        image: r.reviewer.avatar,
-                        verified: r.verified
+                        image: r.reviewer.avatar
                     })),
                     stats: data.stats || recognitionStats
                 };
@@ -141,10 +140,7 @@ async function initializeProfessionalReviews() {
                 <div class="reviewer-info">
                     <img src="${review.image}" alt="${review.name}" class="reviewer-avatar" loading="lazy">
                     <div class="reviewer-details">
-                        <h4 class="reviewer-name">
-                            ${review.name}
-                            ${review.verified ? '<span class="verified-badge" title="Verified Professional">✓</span>' : ''}
-                        </h4>
+                        <h4 class="reviewer-name">${review.name}</h4>
                         <p class="reviewer-title">${review.title}</p>
                         <p class="reviewer-institution">${review.institution}</p>
                         <span class="expertise-badge">${review.expertise}</span>

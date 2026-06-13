@@ -405,7 +405,6 @@ def _testimonial_public(r):
         "rating": r["rating"],
         "type": "professional",
         "expertise": r["expertise"],
-        "verified": r["is_verified"],
     }
 
 
@@ -417,7 +416,8 @@ async def list_reviews(
 ):
     """Public: professional testimonials for index.html "Success Stories".
 
-    Mirrors the contract professional-review.js calls:
+    Only FEATURED reviews are shown — featuring is the single gate. Mirrors the
+    contract professional-review.js calls:
     /api/reviews?type=professional&featured=true&limit=6
 
     This table only holds professional testimonials, so a request for any other
@@ -426,18 +426,13 @@ async def list_reviews(
     if type not in ("all", "professional"):
         return {"reviews": [], "total": 0, "stats": []}
 
-    clauses = ["is_active = TRUE"]
-    if featured:
-        clauses.append("is_featured = TRUE")
-    where = "WHERE " + " AND ".join(clauses)
-
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
-            f"""
+            """
             SELECT id, reviewer_name, title, organization, expertise, review,
-                   rating, avatar_url, is_verified
+                   rating, avatar_url
             FROM astegni_testimonials
-            {where}
+            WHERE is_featured = TRUE
             ORDER BY sort_order ASC, id DESC
             LIMIT %s
             """,
@@ -450,12 +445,12 @@ async def list_reviews(
 
 @router.get("/api/admin/testimonials")
 async def admin_list_testimonials(admin=Depends(get_current_admin)):
-    """Admin: full list including inactive, raw columns for editing."""
+    """Admin: full list, raw columns for editing."""
     with _conn() as conn, conn.cursor() as cur:
         cur.execute(
             """
             SELECT id, reviewer_name, title, organization, expertise, review,
-                   rating, avatar_url, is_verified, is_active, is_featured, sort_order
+                   rating, avatar_url, is_featured, sort_order
             FROM astegni_testimonials
             ORDER BY sort_order ASC, id DESC
             """
@@ -472,7 +467,6 @@ async def create_testimonial(
     expertise: str = Form(""),
     review: str = Form(...),
     rating: int = Form(5),
-    is_verified: bool = Form(True),
     is_featured: bool = Form(True),
     sort_order: int = Form(0),
     avatar: Optional[UploadFile] = File(None),
@@ -501,13 +495,13 @@ async def create_testimonial(
             """
             INSERT INTO astegni_testimonials
                 (reviewer_name, title, organization, expertise, review, rating,
-                 avatar_url, is_verified, is_featured, sort_order, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 avatar_url, is_featured, sort_order, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
             (reviewer_name, title.strip() or None, organization.strip() or None,
              expertise.strip() or None, review, rating, final_avatar,
-             is_verified, is_featured, sort_order, admin["id"]),
+             is_featured, sort_order, admin["id"]),
         )
         new_id = cur.fetchone()["id"]
         conn.commit()
@@ -523,9 +517,7 @@ async def update_testimonial(
     expertise: str = Form(""),
     review: str = Form(...),
     rating: int = Form(5),
-    is_verified: bool = Form(True),
     is_featured: bool = Form(True),
-    is_active: bool = Form(True),
     sort_order: int = Form(0),
     avatar: Optional[UploadFile] = File(None),
     avatar_url: str = Form(""),
@@ -554,26 +546,26 @@ async def update_testimonial(
                 """
                 UPDATE astegni_testimonials
                 SET reviewer_name=%s, title=%s, organization=%s, expertise=%s,
-                    review=%s, rating=%s, avatar_url=%s, is_verified=%s,
-                    is_featured=%s, is_active=%s, sort_order=%s, updated_at=CURRENT_TIMESTAMP
+                    review=%s, rating=%s, avatar_url=%s,
+                    is_featured=%s, sort_order=%s, updated_at=CURRENT_TIMESTAMP
                 WHERE id=%s
                 """,
                 (reviewer_name, title.strip() or None, organization.strip() or None,
-                 expertise.strip() or None, review, rating, new_avatar, is_verified,
-                 is_featured, is_active, sort_order, testimonial_id),
+                 expertise.strip() or None, review, rating, new_avatar,
+                 is_featured, sort_order, testimonial_id),
             )
         else:
             cur.execute(
                 """
                 UPDATE astegni_testimonials
                 SET reviewer_name=%s, title=%s, organization=%s, expertise=%s,
-                    review=%s, rating=%s, is_verified=%s,
-                    is_featured=%s, is_active=%s, sort_order=%s, updated_at=CURRENT_TIMESTAMP
+                    review=%s, rating=%s,
+                    is_featured=%s, sort_order=%s, updated_at=CURRENT_TIMESTAMP
                 WHERE id=%s
                 """,
                 (reviewer_name, title.strip() or None, organization.strip() or None,
-                 expertise.strip() or None, review, rating, is_verified,
-                 is_featured, is_active, sort_order, testimonial_id),
+                 expertise.strip() or None, review, rating,
+                 is_featured, sort_order, testimonial_id),
             )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="Testimonial not found")
